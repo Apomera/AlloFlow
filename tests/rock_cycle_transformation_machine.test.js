@@ -387,7 +387,7 @@ describe('rock cycle specimen art', () => {
 
   function specimens() {
     const src = readSrc();
-    const block = src.slice(src.indexOf('const RC_SPECIMENS = ['), src.indexOf('const RC_AGENTS'));
+    const block = src.slice(src.indexOf('var RC_SPECIMENS = ['), src.indexOf('var RC_AGENTS'));
     return [...block.matchAll(/\{ id: '(\w+)',\s*label: '([^']+)',\s*family: '(\w+)',\s*texture: '(\w+)'/g)]
       .map((m) => ({ id: m[1], label: m[2], family: m[3], texture: m[4] }));
   }
@@ -420,11 +420,11 @@ describe('rock cycle specimen art', () => {
     // catch-all, so an unhandled texture silently draws a marble-like mosaic
     // with no error — a typo would look like a deliberate rock.
     const src = readSrc();
-    const block = src.slice(src.indexOf('const RC_SPECIMENS = ['), src.indexOf('// ── Animated Canvas2D for Rock Cycle'));
+    const block = src.slice(src.indexOf('var RC_SPECIMENS = ['), src.indexOf('var RC_FAMILY_COLORS'));
     const requested = new Set([...block.matchAll(/texture:\s*'([^']+)'/g)].map((m) => m[1]));
     expect(requested.size).toBeGreaterThan(5);
 
-    const fn = src.slice(src.indexOf('const rcSwatch = function'), src.indexOf('const RC_FAMILY_TEXTURE'));
+    const fn = src.slice(src.indexOf('var rcSwatch = function'), src.indexOf('var RC_FAMILY_TEXTURE'));
     requested.forEach((t) => {
       // 'nonfoliated' is the one legitimately reached via the else.
       if (t === 'nonfoliated') return;

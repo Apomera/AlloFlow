@@ -68,7 +68,9 @@ describe('WCAG 1.4.3 — text contrast on the surfaces it is actually drawn on',
 
   it('keeps every rock-cycle family ink readable on its own tinted chip', () => {
     const s = src();
-    const rows = [...s.matchAll(/id: '(\w+)', label: t\('stem\.rocks\.\w+'\), emoji: '[^']*', color: '(#[0-9a-f]{6})', glow: '#[0-9a-f]{6}', ink: '(#[0-9a-f]{6})'/g)];
+    // RC_FAMILIES is module-scope pure data now, so the display label is a
+    // `labelKey` the render resolves rather than a t() call baked into the row.
+    const rows = [...s.matchAll(/id: '(\w+)', labelKey: 'stem\.rocks\.\w+', emoji: '[^']*', color: '(#[0-9a-f]{6})', glow: '#[0-9a-f]{6}', ink: '(#[0-9a-f]{6})'/g)];
     expect(rows.length).toBe(3);
     rows.forEach((m) => {
       const chip = over(m[2], 0x15 / 255, '#ffffff');

@@ -93,9 +93,10 @@ describe('rock cycle colour contrast', () => {
   it('family colours used as TEXT clear AA on the light panel', () => {
     PATHS.forEach((p) => {
       const src = readFileSync(p, 'utf8');
-      const rc = src.slice(src.indexOf("registerTool('rockCycle'"));
-      // Scope to the ROCKS family table — the only place an ink is read from.
-      const rocksTable = rc.slice(rc.indexOf('const ROCKS = ['), rc.indexOf('const PROCESSES = ['));
+      // RC_FAMILIES now lives at module scope, ABOVE registerTool('rockCycle'),
+      // so slicing from the registration no longer contains it. The RC_ prefix
+      // is unique to this tool, which is all that slice was scoping for.
+      const rocksTable = src.slice(src.indexOf('var RC_FAMILIES = ['), src.indexOf('var RC_PROCESSES = ['));
       const inks = [...rocksTable.matchAll(/ink:\s*'(#[0-9a-fA-F]{6})'/g)].map((m) => m[1]);
       expect(inks, 'every rockCycle family needs a text-safe ink').toHaveLength(3);
       inks.forEach((hex) => {

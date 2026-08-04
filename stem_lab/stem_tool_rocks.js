@@ -5999,6 +5999,331 @@ const d = labToolData.rocks || {};
   });
 
   // ═══ 🔬 rockCycle (rockCycle) ═══
+  // ── Rock Cycle data + renderers (hoisted to module scope) ─────────────
+  // These were declared INSIDE the rockCycle render function, which rebuilt
+  // every table and both SVG renderers on each render, put them out of reach
+  // of testHooks, and made them impossible to share with the sibling `rocks`
+  // tool that holds richer versions of the same specimens.
+  //
+  // The families/processes tables previously baked t() into a `label` at
+  // declaration time, which is why they could not live out here. They now
+  // carry `labelKey` and the render localizes them, so the data is pure.
+  //
+  // NOTE the old name for the families table was ROCKS - the SAME identifier
+  // the sibling tool uses for its 20 specimens. Two different datasets under
+  // one name in one file; renamed RC_FAMILIES.
+  var RC_FAMILIES = [
+
+    {
+
+      id: 'igneous', labelKey: 'stem.rocks.igneous', emoji: '\uD83C\uDF0B', color: '#ef4444', glow: '#fca5a5', ink: '#b91c1c',
+
+      desc: 'Formed when magma or lava cools and solidifies. Intrusive igneous rocks (granite) cool slowly underground with large crystals. Extrusive rocks (basalt) cool quickly at the surface with fine grains.',
+
+      examples: 'Granite, Basalt, Obsidian, Pumice, Rhyolite, Gabbro',
+
+      hardness: '6-7 (Mohs)', crystals: 'Visible in intrusive; microscopic in extrusive',
+
+      uses: 'Countertops (granite), road gravel (basalt), surgical blades (obsidian)',
+
+      funFact: 'Obsidian fractures so cleanly it was used for Stone Age scalpels, sharper than modern steel!'
+
+    },
+
+    {
+
+      id: 'sedimentary', labelKey: 'stem.rocks.sedimentary', emoji: '\uD83C\uDFD6\uFE0F', color: '#eab308', glow: '#fde68a', ink: '#92400e',
+
+      desc: 'Formed from layers of sediment (sand, mud, shells, organic matter) compressed and cemented over millions of years. The only rock type that commonly contains fossils, making it essential for paleontology.',
+
+      examples: 'Sandstone, Limestone, Shale, Chalk, Conglomerate, Coal',
+
+      hardness: '3-6 (Mohs)', crystals: 'Layered grain structure, not crystalline',
+
+      uses: 'Building stone (sandstone), cement (limestone), energy (coal)',
+
+      funFact: 'The White Cliffs of Dover are chalk, made from trillions of microscopic coccolithophore shells!'
+
+    },
+
+    {
+
+      id: 'metamorphic', labelKey: 'stem.rocks.metamorphic', emoji: '\uD83D\uDC8E', color: '#8b5cf6', glow: '#c4b5fd', ink: '#6d28d9',
+
+      desc: 'Formed when existing rocks are transformed by extreme heat and/or pressure deep underground. The minerals recrystallize without melting, creating new textures and sometimes foliation (layered banding).',
+
+      examples: 'Marble, Slate, Quartzite, Gneiss, Schist, Phyllite',
+
+      hardness: '6-8 (Mohs)', crystals: 'Recrystallized; often banded (foliated)',
+
+      uses: 'Sculpture (marble), roofing (slate), decorative stone (gneiss)',
+
+      funFact: 'Michelangelo\'s David is carved from Carrara marble, metamorphosed limestone from Tuscany!'
+
+    },
+
+  ];
+
+  var RC_PROCESSES = [
+
+    { from: 'igneous', to: 'sedimentary', labelKey: 'stem.rock_cycle.weathering_erosion', emoji: '\uD83C\uDF2C\uFE0F', desc: 'Wind, water, ice, and biological activity break igneous rocks into sediments. Rivers carry fragments to basins where they settle in layers.' },
+
+    { from: 'sedimentary', to: 'metamorphic', labelKey: 'stem.rock_cycle.heat_pressure', emoji: '\uD83D\uDD25', desc: 'Deep burial subjects sedimentary rock to intense heat (200-800°C) and pressure, transforming its mineral structure without melting.' },
+
+    { from: 'metamorphic', to: 'igneous', labelKey: 'stem.rock_cycle.melting_cooling', emoji: '\uD83C\uDF0B', desc: 'Extreme heat (>800\u00B0C) melts metamorphic rock into magma. When it cools (slowly underground or quickly at the surface), new igneous rock forms.' },
+
+    { from: 'igneous', to: 'metamorphic', labelKey: 'stem.rock_cycle.heat_pressure', emoji: '\u2B07\uFE0F', desc: 'Igneous rock can be buried deep and subjected to extreme conditions, directly transforming into metamorphic rock.' },
+
+    { from: 'sedimentary', to: 'igneous', labelKey: 'stem.rock_cycle.melting_cooling', emoji: '\uD83C\uDF0B', desc: 'Under extreme heat, sedimentary rock can melt into magma and re-solidify as igneous rock.' },
+
+    { from: 'metamorphic', to: 'sedimentary', labelKey: 'stem.rock_cycle.weathering_erosion', emoji: '\uD83C\uDF2C\uFE0F', desc: 'Metamorphic rocks exposed at the surface weather and erode into sediments over time.' },
+
+  ];
+
+  var RC_SPECIMENS = [
+    { id: 'granite',   label: 'Granite',   family: 'igneous',     texture: 'crystalline', note: 'Coarse interlocking quartz, feldspar and mica crystals.' },
+    { id: 'basalt',    label: 'Basalt',    family: 'igneous',     texture: 'finegrained', note: 'Dark, fine-grained; often pitted with gas vesicles.' },
+    { id: 'sandstone', label: 'Sandstone', family: 'sedimentary', texture: 'clastic',     note: 'Cemented quartz sand grains with visible bedding.' },
+    { id: 'limestone', label: 'Limestone', family: 'sedimentary', texture: 'bioclastic',  note: 'Calcite (CaCO₃); often fossil-rich; fizzes in acid.' },
+    { id: 'shale',     label: 'Shale',     family: 'sedimentary', texture: 'finelayered', note: 'Compacted clay; splits into thin sheets.' },
+    { id: 'slate',     label: 'Slate',     family: 'metamorphic', texture: 'foliated',    note: 'Low-grade; flat cleavage planes, dull sheen.' },
+    { id: 'marble',    label: 'Marble',    family: 'metamorphic', texture: 'nonfoliated', note: 'Recrystallized calcite; sugary, unlayered.' },
+    { id: 'gneiss',    label: 'Gneiss',    family: 'metamorphic', texture: 'banded',      note: 'High-grade; alternating light and dark mineral bands.' }
+  ];
+
+  var RC_AGENTS = [
+    { id: 'melting_cooling',    short: 'Melt & Cool',      icon: '🌋', produces: 'igneous',     verb: 'Melting and crystallization' },
+    { id: 'heat_pressure',      short: 'Heat & Press',     icon: '🔥', produces: 'metamorphic', verb: 'Metamorphism' },
+    { id: 'weathering_erosion', short: 'Weather & Erode',  icon: '🌧️', produces: 'sedimentary', verb: 'Weathering, transport and lithification' }
+  ];
+
+  var RC_TRANSFORMS = {
+    granite: {
+      melting_cooling:    { product: 'Granite or Rhyolite', family: 'igneous', texture: 'crystalline', process: 'Partial melting, then crystallization', conditions: '650–750 °C (water-bearing), 15–30 km deep', time: '10,000s–millions of years', change: 'Quartz and feldspar melt into a sticky, silica-rich (felsic) magma. Cooling slowly at depth regrows large crystals — granite. Erupted and chilled, the same melt becomes fine-grained rhyolite.', evidence: 'Crystal size tells you the cooling rate: coarse = slow and deep, fine = fast and erupted.', stages: ['Heating toward the solidus', 'First melt on crystal edges', 'Felsic magma body forms', 'Crystals nucleate and grow'] },
+      heat_pressure:      { product: 'Gneiss', family: 'metamorphic', texture: 'banded', process: 'High-grade regional metamorphism', conditions: '600–700 °C, 20–30 km deep', time: 'Millions of years', change: 'Minerals recrystallize and segregate into alternating light (quartz/feldspar) and dark (biotite/amphibole) bands. Nothing melts — the rock stays solid throughout.', evidence: 'Look for gneissic banding: stripes that swirl around, not flat sedimentary layers.', stages: ['Burial and heating', 'Minerals begin to align', 'Light/dark segregation', 'Gneissic banding locked in'] },
+      weathering_erosion: { product: 'Sandstone and Shale', family: 'sedimentary', texture: 'clastic', process: 'Hydrolysis, transport, lithification', conditions: 'Surface temperatures and rainfall', time: '1,000s–millions of years', change: 'Feldspar reacts with weak acid in rainwater and breaks down to clay; quartz is too tough to dissolve and survives as sand. The two travel different distances and settle separately — sand near the source, clay far out in quiet water.', evidence: 'One granite yields TWO sedimentary rocks: quartz sand → sandstone, clay → shale.', stages: ['Rain and frost open cracks', 'Feldspar → clay, quartz freed', 'Rivers sort sand from clay', 'Burial, compaction, cementation'] }
+    },
+    basalt: {
+      melting_cooling:    { product: 'Basalt or Gabbro', family: 'igneous', texture: 'finegrained', process: 'Melting, then crystallization', conditions: '1000–1250 °C', time: 'Days (lava) to millions of years (pluton)', change: 'Basalt melts to a runny, iron- and magnesium-rich (mafic) magma. Erupted, it chills fast into fine-grained basalt; trapped at depth, the same melt cools slowly into coarse gabbro.', evidence: 'Same magma, two rocks — the only difference is cooling rate.', stages: ['Mafic rock reaches melting point', 'Low-viscosity magma pools', 'Ascent or ponding', 'Fast chill or slow crystal growth'] },
+      heat_pressure:      { product: 'Greenschist, then Amphibolite', family: 'metamorphic', texture: 'foliated', process: 'Prograde regional metamorphism', conditions: '400–600 °C, 10–25 km deep', time: 'Millions of years', change: 'New minerals grow that are stable at the higher temperature: chlorite and epidote give greenschist its green colour, and at higher grade hornblende takes over to form amphibolite.', evidence: 'The colour change is the data — green means chlorite, black-and-white speckle means hornblende + plagioclase.', stages: ['Burial in a subduction zone', 'Chlorite and epidote grow', 'Greenschist stage', 'Hornblende replaces chlorite'] },
+      weathering_erosion: { product: 'Mudstone (iron-rich)', family: 'sedimentary', texture: 'finelayered', process: 'Chemical weathering, transport, lithification', conditions: 'Warm, wet surface conditions', time: '1,000s–millions of years', change: 'Olivine and pyroxene weather quickly to clay minerals, and the iron they release oxidizes to rust-red iron oxide. In the tropics this leaves deep red soils (laterite) that later harden into iron-rich mudstone.', evidence: 'The red colour is oxidized iron — direct evidence that oxygen and water did the work.', stages: ['Water attacks olivine', 'Clay forms, iron released', 'Iron oxidizes rust-red', 'Deposition and compaction'] }
+    },
+    sandstone: {
+      melting_cooling:    { product: 'Rhyolite or Granite', family: 'igneous', texture: 'crystalline', process: 'Crustal melting, then crystallization', conditions: '850–1100 °C, deep burial', time: 'Millions of years', change: 'A quartz-rich sandstone must be buried very deep before it melts. The result is a silica-rich melt that crystallizes into granite at depth or rhyolite if it erupts.', evidence: 'Quartz has a high melting point, so this route needs more heat than melting basalt does.', stages: ['Deep burial', 'Quartz cement breaks down', 'Silica-rich melt forms', 'Crystallization'] },
+      heat_pressure:      { product: 'Quartzite', family: 'metamorphic', texture: 'nonfoliated', process: 'Contact or regional metamorphism', conditions: '300–500 °C', time: '10,000s–millions of years', change: 'Quartz grains recrystallize and fuse together, sealing the pore space. Because quartz grains are blocky rather than flat, they cannot line up — so quartzite has no foliation.', evidence: 'Break it: sandstone fractures AROUND its grains, quartzite fractures straight THROUGH them.', stages: ['Heating of buried sand', 'Pore space closes', 'Grain boundaries fuse', 'Interlocking quartz mosaic'] },
+      weathering_erosion: { product: 'Sandstone (recycled)', family: 'sedimentary', texture: 'clastic', process: 'Erosion, transport, re-lithification', conditions: 'Surface conditions', time: '1,000s–millions of years', change: 'The cement dissolves and releases the sand grains, but quartz itself is chemically tough and physically hard, so the grains simply travel and are buried again. Each cycle rounds them a little more.', evidence: 'Well-rounded, highly sorted quartz grains have been recycled many times.', stages: ['Cement dissolves', 'Grains released', 'Rounded during transport', 'Re-cemented as new sandstone'] }
+    },
+    limestone: {
+      melting_cooling:    { product: 'Igneous rock (model outcome)', family: 'igneous', texture: 'crystalline', process: 'Melting, then crystallization', conditions: 'Above ~900 °C', time: 'Millions of years', change: 'In the standard rock cycle any rock can melt and re-crystallize as igneous rock, and that is the pathway shown here.', evidence: 'Use a silicate rock such as granite or basalt for a cleaner example of the melting pathway.', caveat: 'Real limestone is the awkward case: heated at shallow depth, calcite tends to break down and release CO₂ (decarbonation) rather than melt. Genuine carbonate magmas (carbonatites) exist but are rare and come from the mantle, not from melting a limestone bed.', stages: ['Strong heating', 'Calcite becomes unstable', 'Melt or CO₂ release', 'Crystallization'] },
+      heat_pressure:      { product: 'Marble', family: 'metamorphic', texture: 'nonfoliated', process: 'Contact or regional metamorphism', conditions: '300–600 °C', time: '10,000s–millions of years', change: 'Calcite crystals dissolve and regrow larger and interlocking. Fossils and bedding are erased in the process, which is why marble looks uniform and sugary.', evidence: 'Lost fossils are the tell — if you can still see shells, it is limestone, not marble.', stages: ['Burial or nearby intrusion', 'Calcite starts recrystallizing', 'Fossils and bedding erased', 'Interlocking calcite mosaic'] },
+      weathering_erosion: { product: 'Limestone or Travertine', family: 'sedimentary', texture: 'bioclastic', process: 'Carbonate dissolution and re-precipitation', conditions: 'Rainwater with dissolved CO₂', time: '1,000s–millions of years', change: 'Rain plus CO₂ makes weak carbonic acid, which dissolves calcite outright instead of grinding it into grains. The calcium is carried away in solution and re-precipitates elsewhere — as cave formations, travertine, or new marine limestone.', evidence: 'This is why limestone regions form caves, sinkholes and karst instead of sandy beaches.', stages: ['Acidic rainwater contact', 'Calcite dissolves', 'Ca²⁺ carried in solution', 'Re-precipitates as new carbonate'] }
+    },
+    shale: {
+      melting_cooling:    { product: 'Granite (S-type)', family: 'igneous', texture: 'crystalline', process: 'Melting of sedimentary crust', conditions: '650–800 °C, deep crust', time: 'Millions of years', change: 'Clay-rich rock buried into the deep crust melts to a silica- and aluminium-rich magma. Geologists call the granite it forms "S-type" because its source was Sedimentary.', evidence: 'S-type granites carry aluminium-rich minerals inherited from the original clay.', stages: ['Deep burial of clay beds', 'Water-bearing minerals break down', 'Aluminous melt forms', 'Crystallization as S-type granite'] },
+      heat_pressure:      { product: 'Slate → Phyllite → Schist → Gneiss', family: 'metamorphic', texture: 'foliated', process: 'Prograde regional metamorphism', conditions: '200 °C (slate) rising to 700 °C (gneiss)', time: 'Millions of years', change: 'This is the classic metamorphic series. Flat clay minerals rotate to sit perpendicular to the squeeze, then regrow larger at each step: slate (too small to see) → phyllite (silky sheen) → schist (visible mica flakes) → gneiss (segregated bands).', evidence: 'Grain size IS the thermometer — the coarser the mica, the higher the grade it reached.', stages: ['Clay flakes rotate — slate', 'Mica grows — phyllite sheen', 'Visible flakes — schist', 'Bands segregate — gneiss'] },
+      weathering_erosion: { product: 'Mudstone or Shale', family: 'sedimentary', texture: 'finelayered', process: 'Erosion, transport, lithification', conditions: 'Surface conditions', time: '1,000s–millions of years', change: 'Clay is already the end product of chemical weathering, so it does not break down further — it just splits apart, washes into quiet water and settles again. Clay particles are so fine they only settle where currents are nearly still.', evidence: 'Shale means quiet water: deep sea floor, lake bottom, or floodplain.', stages: ['Layers split and flake', 'Clay suspended in water', 'Settles in still water', 'Compaction to new shale'] }
+    },
+    slate: {
+      melting_cooling:    { product: 'Granite (S-type)', family: 'igneous', texture: 'crystalline', process: 'Melting of metamorphosed mud', conditions: '650–800 °C, deep crust', time: 'Millions of years', change: 'Slate carries the same clay-derived chemistry as the shale it came from, so melting it yields the same aluminium-rich, S-type granitic magma.', evidence: 'The melt "forgets" the foliation entirely — igneous crystals grow in random orientations.', stages: ['Deep burial', 'Mica breaks down', 'Aluminous melt forms', 'Random crystal growth'] },
+      heat_pressure:      { product: 'Phyllite, then Schist', family: 'metamorphic', texture: 'foliated', process: 'Increasing metamorphic grade', conditions: '400–600 °C', time: 'Millions of years', change: 'Turning up heat and pressure on slate grows its microscopic micas into larger flakes. First they are just big enough to give a silky sheen (phyllite), then big enough to see and pick out individually (schist).', evidence: 'Run a finger over it: slate is dull and flat, phyllite is silky, schist sparkles.', stages: ['Grade increases', 'Micas coarsen — silky sheen', 'Phyllite stage', 'Visible mica flakes — schist'] },
+      weathering_erosion: { product: 'Shale or Mudstone', family: 'sedimentary', texture: 'clastic', process: 'Erosion, transport, lithification', conditions: 'Surface conditions', time: '1,000s–millions of years', change: 'Slate splits readily along its cleavage planes, so it breaks into flat chips. Those chips grind down to clay and silt and are deposited as mud once again.', evidence: 'Slate’s cleavage makes it weather into flat plates rather than round cobbles.', stages: ['Splits along cleavage', 'Chips ground to silt and clay', 'Transport and deposition', 'Compaction to mudstone'] }
+    },
+    marble: {
+      melting_cooling:    { product: 'Igneous rock (model outcome)', family: 'igneous', texture: 'crystalline', process: 'Melting, then crystallization', conditions: 'Above ~900 °C', time: 'Millions of years', change: 'In the standard rock cycle any rock can melt and re-crystallize as igneous rock, and that is the pathway shown here.', evidence: 'Granite, basalt or shale give cleaner examples of the melting pathway.', caveat: 'Marble is calcite, so like limestone it tends to release CO₂ (decarbonation) rather than melt cleanly at crustal depths. Carbonate magmas are real but rare and mantle-derived.', stages: ['Strong heating', 'Calcite becomes unstable', 'Melt or CO₂ release', 'Crystallization'] },
+      heat_pressure:      { product: 'Coarse Marble', family: 'metamorphic', texture: 'coarsemosaic', process: 'Continued recrystallization', conditions: '500–700 °C', time: 'Millions of years', change: 'Marble is already calcite, so more heat does not create new minerals — it just lets existing crystals grow larger by consuming their neighbours. Calcite grains are blocky, so even under great pressure they cannot align into foliation.', evidence: 'Marble never develops banding no matter how high the grade — blocky minerals cannot line up.', stages: ['Reheating', 'Grain boundaries migrate', 'Small crystals absorbed', 'Coarse sugary texture'] },
+      weathering_erosion: { product: 'Limestone (re-precipitated)', family: 'sedimentary', texture: 'bioclastic', process: 'Carbonate dissolution and re-precipitation', conditions: 'Rainwater with dissolved CO₂', time: '1,000s–millions of years', change: 'Like limestone, marble dissolves in weak carbonic acid rather than crumbling into grains. The dissolved calcium is carried off and re-precipitated as new carbonate rock.', evidence: 'This is why marble statues and headstones lose their detail in acidic rain.', stages: ['Acid rain contact', 'Calcite dissolves', 'Carried in solution', 'Re-precipitated as carbonate'] }
+    },
+    gneiss: {
+      melting_cooling:    { product: 'Migmatite, then Granite', family: 'igneous', texture: 'crystalline', process: 'Partial melting (anatexis)', conditions: '700–800 °C — the top of the metamorphic range', time: 'Millions of years', change: 'Gneiss sits right at the boundary where metamorphism ends and melting begins. The light quartz-feldspar bands melt first while the dark bands stay solid, producing migmatite — literally a mixed rock, half metamorphic and half igneous.', evidence: 'Migmatite is the visible proof of where the rock cycle’s two branches meet.', stages: ['Temperature hits the solidus', 'Light bands begin to melt', 'Migmatite — part melt, part solid', 'Melt separates and crystallizes'] },
+      heat_pressure:      { product: 'Migmatite', family: 'metamorphic', texture: 'banded', process: 'Ultra-high-grade metamorphism', conditions: '700–800 °C', time: 'Millions of years', change: 'Gneiss is already the highest common grade, so pushing further starts partial melting instead of making a new solid rock. The result is migmatite, which marks the upper limit of metamorphism.', evidence: 'Wispy, folded light-coloured veins cutting through darker gneiss are frozen melt.', stages: ['Already high grade', 'Approaching the solidus', 'First melt in felsic bands', 'Migmatite forms'] },
+      weathering_erosion: { product: 'Sandstone and Shale', family: 'sedimentary', texture: 'clastic', process: 'Hydrolysis, transport, lithification', conditions: 'Surface conditions', time: '1,000s–millions of years', change: 'Gneiss weathers much like granite because it holds the same minerals: feldspar breaks down to clay while quartz survives as sand. The banding is destroyed entirely — sediment keeps no memory of it.', evidence: 'Sediment records the minerals of its parent rock, but not its texture.', stages: ['Bands split along weak micas', 'Feldspar → clay, quartz freed', 'Rivers sort the load', 'Burial and cementation'] }
+    }
+  };
+
+  var RC_FAMILY_COLORS = {
+    igneous:     { base: '#7f1d1d', mid: '#b91c1c', detail: '#fca5a5' },
+    sedimentary: { base: '#78350f', mid: '#b45309', detail: '#fde68a' },
+    metamorphic: { base: '#4c1d95', mid: '#6d28d9', detail: '#c4b5fd' }
+  };
+
+  var rcBlend = function (a, b, t) {
+    var pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16);
+    var part = function (sh) {
+      var va = (pa >> sh) & 255, vb = (pb >> sh) & 255;
+      var v = Math.round(va + (vb - va) * t);
+      if (v < 0) v = 0; if (v > 255) v = 255;
+      return (v < 16 ? '0' : '') + v.toString(16);
+    };
+    return '#' + part(16) + part(8) + part(0);
+  };
+
+  var rcMosaic = function (h, cols, rows, tones, c, x, y, w, hgt) {
+    // A 22px family chip cannot show twelve grains; it just goes muddy.
+    if (Math.min(w, hgt) < 34) { cols = Math.max(2, Math.round(cols / 2)); rows = Math.max(2, Math.round(rows / 2)); }
+    var cw = w / cols, ch = hgt / rows;
+    // Deterministic jitter — index-driven, never Math.random — so a
+    // re-render at the same progress redraws exactly the same frame.
+    var wob = function (seed, span) { return (((seed * 2654435761) % 1000) / 1000 - 0.5) * span; };
+    var pt = [];
+    var row, col;
+    for (row = 0; row <= rows; row++) {
+      pt.push([]);
+      for (col = 0; col <= cols; col++) {
+        var seed = row * 73 + col * 149 + 7;
+        var edgeH = (row === 0 || row === rows);
+        var edgeV = (col === 0 || col === cols);
+        pt[row].push([
+          x + col * cw + (edgeV ? 0 : wob(seed, cw * 0.5)),
+          y + row * ch + (edgeH ? 0 : wob(seed + 31, ch * 0.5))
+        ]);
+      }
+    }
+    var out = [];
+    var n = 0;
+    for (row = 0; row < rows; row++) {
+      for (col = 0; col < cols; col++, n++) {
+        var q = [pt[row][col], pt[row][col + 1], pt[row + 1][col + 1], pt[row + 1][col]];
+        out.push(h('polygon', {
+          key: 'mo' + n,
+          points: q.map(function (p) { return p[0].toFixed(2) + ',' + p[1].toFixed(2); }).join(' '),
+          fill: tones[(n + row) % tones.length], stroke: c.base, strokeWidth: 0.7, strokeLinejoin: 'round'
+        }));
+      }
+    }
+    return out;
+  };
+
+  var rcSwatch = function (h, key, texture, family, x, y, w, hgt, opacity) {
+    var c = RC_FAMILY_COLORS[family] || RC_FAMILY_COLORS.igneous;
+    var kids = [];
+    var clipId = 'rcclip-' + key;
+    kids.push(h('defs', { key: 'defs' },
+      h('clipPath', { id: clipId }, h('rect', { x: x, y: y, width: w, height: hgt, rx: 7 }))));
+    kids.push(h('rect', { key: 'body', x: x, y: y, width: w, height: hgt, rx: 7, fill: c.mid, stroke: c.base, strokeWidth: 1.5 }));
+    var g = [];
+    var i;
+    if (texture === 'crystalline') {
+      // INTERLOCKING coarse crystals — grains that meet, with no matrix
+      // between them. That is the whole distinction the captions rest on
+      // ("coarse interlocking quartz, feldspar and mica crystals"), and
+      // the old drawing showed six identical diamonds floating in a flat
+      // field with wide gaps: not interlocking, and one mineral, not
+      // three. A student reading "interlocking" and seeing "floating"
+      // learns the opposite of the point.
+      //
+      // Grains are laid on a jittered grid at a radius large enough to
+      // guarantee overlap with their neighbours, so every boundary is a
+      // shared edge. Painted in order, later grains clip earlier ones —
+      // which is exactly how an interlocking mosaic reads. Three tones
+      // stand in for the three named minerals.
+      g.push.apply(g, rcMosaic(h, 4, 3, [
+        rcBlend(c.mid, '#ffffff', 0.52),   // pale quartz
+        rcBlend(c.mid, '#ffffff', 0.22),   // feldspar
+        rcBlend(c.base, c.mid, 0.30)       // dark mica
+      ], c, x, y, w, hgt));
+    } else if (texture === 'finegrained') {
+      // Fine matrix plus gas vesicles.
+      for (i = 0; i < 34; i++) {
+        g.push(h('circle', { key: 'f' + i, cx: x + ((i * 37) % 100) / 100 * w, cy: y + ((i * 61) % 100) / 100 * hgt, r: 0.9, fill: c.detail, opacity: 0.55 }));
+      }
+      var ves = [[0.24, 0.34, 3], [0.62, 0.26, 2.4], [0.44, 0.7, 2.8], [0.8, 0.6, 2.2]];
+      for (i = 0; i < ves.length; i++) {
+        g.push(h('circle', { key: 'v' + i, cx: x + ves[i][0] * w, cy: y + ves[i][1] * hgt, r: ves[i][2], fill: c.base, opacity: 0.6 }));
+      }
+    } else if (texture === 'clastic') {
+      // Flat bedding planes with grains between them.
+      for (i = 1; i < 6; i++) {
+        g.push(h('line', { key: 'l' + i, x1: x, y1: y + (i / 6) * hgt, x2: x + w, y2: y + (i / 6) * hgt, stroke: c.detail, strokeWidth: 1.6, opacity: 0.8 }));
+      }
+      for (i = 0; i < 18; i++) {
+        g.push(h('circle', { key: 'g' + i, cx: x + ((i * 43) % 100) / 100 * w, cy: y + ((i * 71) % 100) / 100 * hgt, r: 1.3, fill: c.detail, opacity: 0.45 }));
+      }
+    } else if (texture === 'finelayered') {
+      // Fissile: shale splits into thin sheets, and that is the whole
+      // difference between it and sandstone in the hand. Both were
+      // tagged 'clastic', so two of the eight specimens a student picks
+      // between were drawing the identical picture — and the sibling
+      // rocks tool had already separated them.
+      for (i = 1; i < 12; i++) {
+        g.push(h('line', {
+          key: 'fl' + i, x1: x, y1: y + (i / 12) * hgt, x2: x + w, y2: y + (i / 12) * hgt,
+          stroke: c.detail, strokeWidth: 0.9, opacity: 0.85,
+        }));
+      }
+      // A split running in from the edge — the layers coming apart.
+      g.push(h('path', {
+        key: 'flsplit',
+        d: 'M' + x + ',' + (y + hgt * 0.42) + ' L' + (x + w * 0.55) + ',' + (y + hgt * 0.46)
+          + ' L' + x + ',' + (y + hgt * 0.52) + ' Z',
+        fill: c.base, opacity: 0.55,
+      }));
+    } else if (texture === 'bioclastic') {
+      // Bedding plus shell fragments.
+      for (i = 1; i < 4; i++) {
+        g.push(h('line', { key: 'l' + i, x1: x, y1: y + (i / 4) * hgt, x2: x + w, y2: y + (i / 4) * hgt, stroke: c.detail, strokeWidth: 1.3, opacity: 0.6 }));
+      }
+      var sh = [[0.2, 0.3], [0.55, 0.22], [0.35, 0.66], [0.72, 0.58], [0.84, 0.34]];
+      for (i = 0; i < sh.length; i++) {
+        var sx = x + sh[i][0] * w, sy = y + sh[i][1] * hgt;
+        g.push(h('path', { key: 's' + i, d: 'M' + (sx - 4) + ',' + sy + ' a4,4 0 0,1 8,0', fill: 'none', stroke: c.detail, strokeWidth: 1.6, opacity: 0.95 }));
+      }
+    } else if (texture === 'foliated') {
+      // Tightly spaced aligned mica planes.
+      for (i = 1; i < 11; i++) {
+        var fy = y + (i / 11) * hgt;
+        g.push(h('path', { key: 'p' + i, d: 'M' + x + ',' + fy + ' Q' + (x + w / 2) + ',' + (fy - 1.6) + ' ' + (x + w) + ',' + fy, fill: 'none', stroke: c.detail, strokeWidth: 1.1, opacity: 0.8 }));
+      }
+    } else if (texture === 'coarsemosaic') {
+      // The same interlocking mosaic with fewer, larger grains.
+      // Marble + more heat produces "Coarse Marble" — the panel says
+      // "existing crystals grow larger by consuming their neighbours",
+      // and the product used to be drawn with grains exactly the size
+      // of the marble that went in. The one change described was the
+      // one thing the picture did not show.
+      g.push.apply(g, rcMosaic(h, 3, 2, [
+        rcBlend(c.mid, '#ffffff', 0.48),
+        rcBlend(c.mid, '#ffffff', 0.24),
+        rcBlend(c.mid, '#ffffff', 0.36)
+      ], c, x, y, w, hgt));
+    } else if (texture === 'banded') {
+      // Segregated light/dark gneissic banding.
+      for (i = 0; i < 5; i++) {
+        var by = y + (i / 5) * hgt;
+        g.push(h('path', { key: 'b' + i, d: 'M' + x + ',' + (by + 3) + ' Q' + (x + w * 0.35) + ',' + (by - 2) + ' ' + (x + w * 0.7) + ',' + (by + 3) + ' T' + (x + w) + ',' + (by + 2), fill: 'none', stroke: i % 2 ? c.detail : c.base, strokeWidth: 3.4, opacity: 0.85 }));
+      }
+    } else { // nonfoliated — equant interlocking mosaic.
+      // NOTE: this is also the catch-all. A texture name that is not
+      // handled above lands here and draws a marble-like mosaic with no
+      // error, so a typo would look like a deliberate rock. A test
+      // pins that every texture the data asks for is handled by name.
+      //
+      // Quartzite is the clearest case of the drawing contradicting its
+      // own caption: the panel says grains "recrystallize and FUSE
+      // together, SEALING the pore space", and the tool then drew seven
+      // separated hexagons with the pore space making up most of the
+      // picture. Marble's "interlocking calcite mosaic" had the same
+      // problem. Both are equant mosaics, so both now tile.
+      g.push.apply(g, rcMosaic(h, 5, 4, [
+        rcBlend(c.mid, '#ffffff', 0.44),
+        rcBlend(c.mid, '#ffffff', 0.20),
+        rcBlend(c.mid, '#ffffff', 0.32)
+      ], c, x, y, w, hgt));
+    }
+    kids.push(h('g', { key: 'tex', clipPath: 'url(#' + clipId + ')' }, g));
+    return h('g', { key: key, opacity: opacity == null ? 1 : opacity }, kids);
+  };
+
+  var RC_FAMILY_TEXTURE = { igneous: 'crystalline', sedimentary: 'clastic', metamorphic: 'banded' };
+
+  var rcFamilyChip = function (h, key, familyId, size) {
+    var S = size || 24;
+    return h('svg', {
+      width: S, height: S, viewBox: '0 0 ' + S + ' ' + S,
+      'aria-hidden': true, focusable: 'false',
+      style: { display: 'block', flexShrink: 0 }
+    }, rcSwatch(h, key, RC_FAMILY_TEXTURE[familyId] || 'crystalline', familyId, 0, 0, S, S, 1));
+  };
+
   window.StemLab.registerTool('rockCycle', {
     // 🔬 (microscope) said nothing about a rock cycle and collided with the
     // sibling tool in the catalog; 🔄 matches the animated cycle and the
@@ -6052,6 +6377,13 @@ const d = labToolData.rocks || {};
       return (function() {
 const d = labToolData.rockCycle || {};
 
+          // Localized views of the hoisted tables. The data lives at module scope
+          // as pure records carrying `labelKey`; the display label is resolved
+          // here, once per render, so every existing ROCKS/PROCESSES reference
+          // below keeps reading a plain `.label`.
+          const ROCKS = RC_FAMILIES.map(function (r) { return Object.assign({}, r, { label: t(r.labelKey) }); });
+          const PROCESSES = RC_PROCESSES.map(function (p) { return Object.assign({}, p, { label: t(p.labelKey) }); });
+
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, rockCycle: { ...prev.rockCycle, [key]: val } }));
 
           // Batched sibling of `upd`. The transformation machine called this to
@@ -6068,73 +6400,7 @@ const d = labToolData.rockCycle || {};
             });
           };
 
-          const ROCKS = [
 
-            {
-
-              id: 'igneous', label: t('stem.rocks.igneous'), emoji: '\uD83C\uDF0B', color: '#ef4444', glow: '#fca5a5', ink: '#b91c1c',
-
-              desc: 'Formed when magma or lava cools and solidifies. Intrusive igneous rocks (granite) cool slowly underground with large crystals. Extrusive rocks (basalt) cool quickly at the surface with fine grains.',
-
-              examples: 'Granite, Basalt, Obsidian, Pumice, Rhyolite, Gabbro',
-
-              hardness: '6-7 (Mohs)', crystals: 'Visible in intrusive; microscopic in extrusive',
-
-              uses: 'Countertops (granite), road gravel (basalt), surgical blades (obsidian)',
-
-              funFact: 'Obsidian fractures so cleanly it was used for Stone Age scalpels, sharper than modern steel!'
-
-            },
-
-            {
-
-              id: 'sedimentary', label: t('stem.rocks.sedimentary'), emoji: '\uD83C\uDFD6\uFE0F', color: '#eab308', glow: '#fde68a', ink: '#92400e',
-
-              desc: 'Formed from layers of sediment (sand, mud, shells, organic matter) compressed and cemented over millions of years. The only rock type that commonly contains fossils, making it essential for paleontology.',
-
-              examples: 'Sandstone, Limestone, Shale, Chalk, Conglomerate, Coal',
-
-              hardness: '3-6 (Mohs)', crystals: 'Layered grain structure, not crystalline',
-
-              uses: 'Building stone (sandstone), cement (limestone), energy (coal)',
-
-              funFact: 'The White Cliffs of Dover are chalk, made from trillions of microscopic coccolithophore shells!'
-
-            },
-
-            {
-
-              id: 'metamorphic', label: t('stem.rocks.metamorphic'), emoji: '\uD83D\uDC8E', color: '#8b5cf6', glow: '#c4b5fd', ink: '#6d28d9',
-
-              desc: 'Formed when existing rocks are transformed by extreme heat and/or pressure deep underground. The minerals recrystallize without melting, creating new textures and sometimes foliation (layered banding).',
-
-              examples: 'Marble, Slate, Quartzite, Gneiss, Schist, Phyllite',
-
-              hardness: '6-8 (Mohs)', crystals: 'Recrystallized; often banded (foliated)',
-
-              uses: 'Sculpture (marble), roofing (slate), decorative stone (gneiss)',
-
-              funFact: 'Michelangelo\'s David is carved from Carrara marble, metamorphosed limestone from Tuscany!'
-
-            },
-
-          ];
-
-          const PROCESSES = [
-
-            { from: 'igneous', to: 'sedimentary', label: t('stem.rock_cycle.weathering_erosion'), emoji: '\uD83C\uDF2C\uFE0F', desc: 'Wind, water, ice, and biological activity break igneous rocks into sediments. Rivers carry fragments to basins where they settle in layers.' },
-
-            { from: 'sedimentary', to: 'metamorphic', label: t('stem.rock_cycle.heat_pressure'), emoji: '\uD83D\uDD25', desc: 'Deep burial subjects sedimentary rock to intense heat (200-800°C) and pressure, transforming its mineral structure without melting.' },
-
-            { from: 'metamorphic', to: 'igneous', label: t('stem.rock_cycle.melting_cooling'), emoji: '\uD83C\uDF0B', desc: 'Extreme heat (>800\u00B0C) melts metamorphic rock into magma. When it cools (slowly underground or quickly at the surface), new igneous rock forms.' },
-
-            { from: 'igneous', to: 'metamorphic', label: t('stem.rock_cycle.heat_pressure'), emoji: '\u2B07\uFE0F', desc: 'Igneous rock can be buried deep and subjected to extreme conditions, directly transforming into metamorphic rock.' },
-
-            { from: 'sedimentary', to: 'igneous', label: t('stem.rock_cycle.melting_cooling'), emoji: '\uD83C\uDF0B', desc: 'Under extreme heat, sedimentary rock can melt into magma and re-solidify as igneous rock.' },
-
-            { from: 'metamorphic', to: 'sedimentary', label: t('stem.rock_cycle.weathering_erosion'), emoji: '\uD83C\uDF2C\uFE0F', desc: 'Metamorphic rocks exposed at the surface weather and erode into sediments over time.' },
-
-          ];
 
           const sel = d.selectedRock ? ROCKS.find(r => r.id === d.selectedRock) : null;
 
@@ -6148,69 +6414,12 @@ const d = labToolData.rockCycle || {};
           // field evidence for that specific pairing — the pairings students are
           // actually asked to know (shale → slate, limestone → marble, sandstone →
           // quartzite, granite → gneiss).
-          const RC_SPECIMENS = [
-            { id: 'granite',   label: 'Granite',   family: 'igneous',     texture: 'crystalline', note: 'Coarse interlocking quartz, feldspar and mica crystals.' },
-            { id: 'basalt',    label: 'Basalt',    family: 'igneous',     texture: 'finegrained', note: 'Dark, fine-grained; often pitted with gas vesicles.' },
-            { id: 'sandstone', label: 'Sandstone', family: 'sedimentary', texture: 'clastic',     note: 'Cemented quartz sand grains with visible bedding.' },
-            { id: 'limestone', label: 'Limestone', family: 'sedimentary', texture: 'bioclastic',  note: 'Calcite (CaCO₃); often fossil-rich; fizzes in acid.' },
-            { id: 'shale',     label: 'Shale',     family: 'sedimentary', texture: 'finelayered', note: 'Compacted clay; splits into thin sheets.' },
-            { id: 'slate',     label: 'Slate',     family: 'metamorphic', texture: 'foliated',    note: 'Low-grade; flat cleavage planes, dull sheen.' },
-            { id: 'marble',    label: 'Marble',    family: 'metamorphic', texture: 'nonfoliated', note: 'Recrystallized calcite; sugary, unlayered.' },
-            { id: 'gneiss',    label: 'Gneiss',    family: 'metamorphic', texture: 'banded',      note: 'High-grade; alternating light and dark mineral bands.' }
-          ];
 
-          const RC_AGENTS = [
-            { id: 'melting_cooling',    short: 'Melt & Cool',      icon: '🌋', produces: 'igneous',     verb: 'Melting and crystallization' },
-            { id: 'heat_pressure',      short: 'Heat & Press',     icon: '🔥', produces: 'metamorphic', verb: 'Metamorphism' },
-            { id: 'weathering_erosion', short: 'Weather & Erode',  icon: '🌧️', produces: 'sedimentary', verb: 'Weathering, transport and lithification' }
-          ];
 
           // [specimen][agent] → the specific, named outcome.
           // `caveat` is only set where the tidy classroom rock cycle genuinely
           // oversimplifies, so the tool teaches the model without asserting
           // something a geologist would call wrong.
-          const RC_TRANSFORMS = {
-            granite: {
-              melting_cooling:    { product: 'Granite or Rhyolite', family: 'igneous', texture: 'crystalline', process: 'Partial melting, then crystallization', conditions: '650–750 °C (water-bearing), 15–30 km deep', time: '10,000s–millions of years', change: 'Quartz and feldspar melt into a sticky, silica-rich (felsic) magma. Cooling slowly at depth regrows large crystals — granite. Erupted and chilled, the same melt becomes fine-grained rhyolite.', evidence: 'Crystal size tells you the cooling rate: coarse = slow and deep, fine = fast and erupted.', stages: ['Heating toward the solidus', 'First melt on crystal edges', 'Felsic magma body forms', 'Crystals nucleate and grow'] },
-              heat_pressure:      { product: 'Gneiss', family: 'metamorphic', texture: 'banded', process: 'High-grade regional metamorphism', conditions: '600–700 °C, 20–30 km deep', time: 'Millions of years', change: 'Minerals recrystallize and segregate into alternating light (quartz/feldspar) and dark (biotite/amphibole) bands. Nothing melts — the rock stays solid throughout.', evidence: 'Look for gneissic banding: stripes that swirl around, not flat sedimentary layers.', stages: ['Burial and heating', 'Minerals begin to align', 'Light/dark segregation', 'Gneissic banding locked in'] },
-              weathering_erosion: { product: 'Sandstone and Shale', family: 'sedimentary', texture: 'clastic', process: 'Hydrolysis, transport, lithification', conditions: 'Surface temperatures and rainfall', time: '1,000s–millions of years', change: 'Feldspar reacts with weak acid in rainwater and breaks down to clay; quartz is too tough to dissolve and survives as sand. The two travel different distances and settle separately — sand near the source, clay far out in quiet water.', evidence: 'One granite yields TWO sedimentary rocks: quartz sand → sandstone, clay → shale.', stages: ['Rain and frost open cracks', 'Feldspar → clay, quartz freed', 'Rivers sort sand from clay', 'Burial, compaction, cementation'] }
-            },
-            basalt: {
-              melting_cooling:    { product: 'Basalt or Gabbro', family: 'igneous', texture: 'finegrained', process: 'Melting, then crystallization', conditions: '1000–1250 °C', time: 'Days (lava) to millions of years (pluton)', change: 'Basalt melts to a runny, iron- and magnesium-rich (mafic) magma. Erupted, it chills fast into fine-grained basalt; trapped at depth, the same melt cools slowly into coarse gabbro.', evidence: 'Same magma, two rocks — the only difference is cooling rate.', stages: ['Mafic rock reaches melting point', 'Low-viscosity magma pools', 'Ascent or ponding', 'Fast chill or slow crystal growth'] },
-              heat_pressure:      { product: 'Greenschist, then Amphibolite', family: 'metamorphic', texture: 'foliated', process: 'Prograde regional metamorphism', conditions: '400–600 °C, 10–25 km deep', time: 'Millions of years', change: 'New minerals grow that are stable at the higher temperature: chlorite and epidote give greenschist its green colour, and at higher grade hornblende takes over to form amphibolite.', evidence: 'The colour change is the data — green means chlorite, black-and-white speckle means hornblende + plagioclase.', stages: ['Burial in a subduction zone', 'Chlorite and epidote grow', 'Greenschist stage', 'Hornblende replaces chlorite'] },
-              weathering_erosion: { product: 'Mudstone (iron-rich)', family: 'sedimentary', texture: 'finelayered', process: 'Chemical weathering, transport, lithification', conditions: 'Warm, wet surface conditions', time: '1,000s–millions of years', change: 'Olivine and pyroxene weather quickly to clay minerals, and the iron they release oxidizes to rust-red iron oxide. In the tropics this leaves deep red soils (laterite) that later harden into iron-rich mudstone.', evidence: 'The red colour is oxidized iron — direct evidence that oxygen and water did the work.', stages: ['Water attacks olivine', 'Clay forms, iron released', 'Iron oxidizes rust-red', 'Deposition and compaction'] }
-            },
-            sandstone: {
-              melting_cooling:    { product: 'Rhyolite or Granite', family: 'igneous', texture: 'crystalline', process: 'Crustal melting, then crystallization', conditions: '850–1100 °C, deep burial', time: 'Millions of years', change: 'A quartz-rich sandstone must be buried very deep before it melts. The result is a silica-rich melt that crystallizes into granite at depth or rhyolite if it erupts.', evidence: 'Quartz has a high melting point, so this route needs more heat than melting basalt does.', stages: ['Deep burial', 'Quartz cement breaks down', 'Silica-rich melt forms', 'Crystallization'] },
-              heat_pressure:      { product: 'Quartzite', family: 'metamorphic', texture: 'nonfoliated', process: 'Contact or regional metamorphism', conditions: '300–500 °C', time: '10,000s–millions of years', change: 'Quartz grains recrystallize and fuse together, sealing the pore space. Because quartz grains are blocky rather than flat, they cannot line up — so quartzite has no foliation.', evidence: 'Break it: sandstone fractures AROUND its grains, quartzite fractures straight THROUGH them.', stages: ['Heating of buried sand', 'Pore space closes', 'Grain boundaries fuse', 'Interlocking quartz mosaic'] },
-              weathering_erosion: { product: 'Sandstone (recycled)', family: 'sedimentary', texture: 'clastic', process: 'Erosion, transport, re-lithification', conditions: 'Surface conditions', time: '1,000s–millions of years', change: 'The cement dissolves and releases the sand grains, but quartz itself is chemically tough and physically hard, so the grains simply travel and are buried again. Each cycle rounds them a little more.', evidence: 'Well-rounded, highly sorted quartz grains have been recycled many times.', stages: ['Cement dissolves', 'Grains released', 'Rounded during transport', 'Re-cemented as new sandstone'] }
-            },
-            limestone: {
-              melting_cooling:    { product: 'Igneous rock (model outcome)', family: 'igneous', texture: 'crystalline', process: 'Melting, then crystallization', conditions: 'Above ~900 °C', time: 'Millions of years', change: 'In the standard rock cycle any rock can melt and re-crystallize as igneous rock, and that is the pathway shown here.', evidence: 'Use a silicate rock such as granite or basalt for a cleaner example of the melting pathway.', caveat: 'Real limestone is the awkward case: heated at shallow depth, calcite tends to break down and release CO₂ (decarbonation) rather than melt. Genuine carbonate magmas (carbonatites) exist but are rare and come from the mantle, not from melting a limestone bed.', stages: ['Strong heating', 'Calcite becomes unstable', 'Melt or CO₂ release', 'Crystallization'] },
-              heat_pressure:      { product: 'Marble', family: 'metamorphic', texture: 'nonfoliated', process: 'Contact or regional metamorphism', conditions: '300–600 °C', time: '10,000s–millions of years', change: 'Calcite crystals dissolve and regrow larger and interlocking. Fossils and bedding are erased in the process, which is why marble looks uniform and sugary.', evidence: 'Lost fossils are the tell — if you can still see shells, it is limestone, not marble.', stages: ['Burial or nearby intrusion', 'Calcite starts recrystallizing', 'Fossils and bedding erased', 'Interlocking calcite mosaic'] },
-              weathering_erosion: { product: 'Limestone or Travertine', family: 'sedimentary', texture: 'bioclastic', process: 'Carbonate dissolution and re-precipitation', conditions: 'Rainwater with dissolved CO₂', time: '1,000s–millions of years', change: 'Rain plus CO₂ makes weak carbonic acid, which dissolves calcite outright instead of grinding it into grains. The calcium is carried away in solution and re-precipitates elsewhere — as cave formations, travertine, or new marine limestone.', evidence: 'This is why limestone regions form caves, sinkholes and karst instead of sandy beaches.', stages: ['Acidic rainwater contact', 'Calcite dissolves', 'Ca²⁺ carried in solution', 'Re-precipitates as new carbonate'] }
-            },
-            shale: {
-              melting_cooling:    { product: 'Granite (S-type)', family: 'igneous', texture: 'crystalline', process: 'Melting of sedimentary crust', conditions: '650–800 °C, deep crust', time: 'Millions of years', change: 'Clay-rich rock buried into the deep crust melts to a silica- and aluminium-rich magma. Geologists call the granite it forms "S-type" because its source was Sedimentary.', evidence: 'S-type granites carry aluminium-rich minerals inherited from the original clay.', stages: ['Deep burial of clay beds', 'Water-bearing minerals break down', 'Aluminous melt forms', 'Crystallization as S-type granite'] },
-              heat_pressure:      { product: 'Slate → Phyllite → Schist → Gneiss', family: 'metamorphic', texture: 'foliated', process: 'Prograde regional metamorphism', conditions: '200 °C (slate) rising to 700 °C (gneiss)', time: 'Millions of years', change: 'This is the classic metamorphic series. Flat clay minerals rotate to sit perpendicular to the squeeze, then regrow larger at each step: slate (too small to see) → phyllite (silky sheen) → schist (visible mica flakes) → gneiss (segregated bands).', evidence: 'Grain size IS the thermometer — the coarser the mica, the higher the grade it reached.', stages: ['Clay flakes rotate — slate', 'Mica grows — phyllite sheen', 'Visible flakes — schist', 'Bands segregate — gneiss'] },
-              weathering_erosion: { product: 'Mudstone or Shale', family: 'sedimentary', texture: 'finelayered', process: 'Erosion, transport, lithification', conditions: 'Surface conditions', time: '1,000s–millions of years', change: 'Clay is already the end product of chemical weathering, so it does not break down further — it just splits apart, washes into quiet water and settles again. Clay particles are so fine they only settle where currents are nearly still.', evidence: 'Shale means quiet water: deep sea floor, lake bottom, or floodplain.', stages: ['Layers split and flake', 'Clay suspended in water', 'Settles in still water', 'Compaction to new shale'] }
-            },
-            slate: {
-              melting_cooling:    { product: 'Granite (S-type)', family: 'igneous', texture: 'crystalline', process: 'Melting of metamorphosed mud', conditions: '650–800 °C, deep crust', time: 'Millions of years', change: 'Slate carries the same clay-derived chemistry as the shale it came from, so melting it yields the same aluminium-rich, S-type granitic magma.', evidence: 'The melt "forgets" the foliation entirely — igneous crystals grow in random orientations.', stages: ['Deep burial', 'Mica breaks down', 'Aluminous melt forms', 'Random crystal growth'] },
-              heat_pressure:      { product: 'Phyllite, then Schist', family: 'metamorphic', texture: 'foliated', process: 'Increasing metamorphic grade', conditions: '400–600 °C', time: 'Millions of years', change: 'Turning up heat and pressure on slate grows its microscopic micas into larger flakes. First they are just big enough to give a silky sheen (phyllite), then big enough to see and pick out individually (schist).', evidence: 'Run a finger over it: slate is dull and flat, phyllite is silky, schist sparkles.', stages: ['Grade increases', 'Micas coarsen — silky sheen', 'Phyllite stage', 'Visible mica flakes — schist'] },
-              weathering_erosion: { product: 'Shale or Mudstone', family: 'sedimentary', texture: 'clastic', process: 'Erosion, transport, lithification', conditions: 'Surface conditions', time: '1,000s–millions of years', change: 'Slate splits readily along its cleavage planes, so it breaks into flat chips. Those chips grind down to clay and silt and are deposited as mud once again.', evidence: 'Slate’s cleavage makes it weather into flat plates rather than round cobbles.', stages: ['Splits along cleavage', 'Chips ground to silt and clay', 'Transport and deposition', 'Compaction to mudstone'] }
-            },
-            marble: {
-              melting_cooling:    { product: 'Igneous rock (model outcome)', family: 'igneous', texture: 'crystalline', process: 'Melting, then crystallization', conditions: 'Above ~900 °C', time: 'Millions of years', change: 'In the standard rock cycle any rock can melt and re-crystallize as igneous rock, and that is the pathway shown here.', evidence: 'Granite, basalt or shale give cleaner examples of the melting pathway.', caveat: 'Marble is calcite, so like limestone it tends to release CO₂ (decarbonation) rather than melt cleanly at crustal depths. Carbonate magmas are real but rare and mantle-derived.', stages: ['Strong heating', 'Calcite becomes unstable', 'Melt or CO₂ release', 'Crystallization'] },
-              heat_pressure:      { product: 'Coarse Marble', family: 'metamorphic', texture: 'coarsemosaic', process: 'Continued recrystallization', conditions: '500–700 °C', time: 'Millions of years', change: 'Marble is already calcite, so more heat does not create new minerals — it just lets existing crystals grow larger by consuming their neighbours. Calcite grains are blocky, so even under great pressure they cannot align into foliation.', evidence: 'Marble never develops banding no matter how high the grade — blocky minerals cannot line up.', stages: ['Reheating', 'Grain boundaries migrate', 'Small crystals absorbed', 'Coarse sugary texture'] },
-              weathering_erosion: { product: 'Limestone (re-precipitated)', family: 'sedimentary', texture: 'bioclastic', process: 'Carbonate dissolution and re-precipitation', conditions: 'Rainwater with dissolved CO₂', time: '1,000s–millions of years', change: 'Like limestone, marble dissolves in weak carbonic acid rather than crumbling into grains. The dissolved calcium is carried off and re-precipitated as new carbonate rock.', evidence: 'This is why marble statues and headstones lose their detail in acidic rain.', stages: ['Acid rain contact', 'Calcite dissolves', 'Carried in solution', 'Re-precipitated as carbonate'] }
-            },
-            gneiss: {
-              melting_cooling:    { product: 'Migmatite, then Granite', family: 'igneous', texture: 'crystalline', process: 'Partial melting (anatexis)', conditions: '700–800 °C — the top of the metamorphic range', time: 'Millions of years', change: 'Gneiss sits right at the boundary where metamorphism ends and melting begins. The light quartz-feldspar bands melt first while the dark bands stay solid, producing migmatite — literally a mixed rock, half metamorphic and half igneous.', evidence: 'Migmatite is the visible proof of where the rock cycle’s two branches meet.', stages: ['Temperature hits the solidus', 'Light bands begin to melt', 'Migmatite — part melt, part solid', 'Melt separates and crystallizes'] },
-              heat_pressure:      { product: 'Migmatite', family: 'metamorphic', texture: 'banded', process: 'Ultra-high-grade metamorphism', conditions: '700–800 °C', time: 'Millions of years', change: 'Gneiss is already the highest common grade, so pushing further starts partial melting instead of making a new solid rock. The result is migmatite, which marks the upper limit of metamorphism.', evidence: 'Wispy, folded light-coloured veins cutting through darker gneiss are frozen melt.', stages: ['Already high grade', 'Approaching the solidus', 'First melt in felsic bands', 'Migmatite forms'] },
-              weathering_erosion: { product: 'Sandstone and Shale', family: 'sedimentary', texture: 'clastic', process: 'Hydrolysis, transport, lithification', conditions: 'Surface conditions', time: '1,000s–millions of years', change: 'Gneiss weathers much like granite because it holds the same minerals: feldspar breaks down to clay while quartz survives as sand. The banding is destroyed entirely — sediment keeps no memory of it.', evidence: 'Sediment records the minerals of its parent rock, but not its texture.', stages: ['Bands split along weak micas', 'Feldspar → clay, quartz freed', 'Rivers sort the load', 'Burial and cementation'] }
-            }
-          };
 
           const rcSpecimen = function (id) {
             for (var i = 0; i < RC_SPECIMENS.length; i++) { if (RC_SPECIMENS[i].id === id) return RC_SPECIMENS[i]; }
@@ -6230,25 +6439,10 @@ const d = labToolData.rockCycle || {};
           // base/mid/detail only — an `ink` was defined here and never read, which
           // is exactly the write-only-data smell this pass went looking for. Text
           // colour comes from each ROCKS entry's own `ink`.
-          const RC_FAMILY_COLORS = {
-            igneous:     { base: '#7f1d1d', mid: '#b91c1c', detail: '#fca5a5' },
-            sedimentary: { base: '#78350f', mid: '#b45309', detail: '#fde68a' },
-            metamorphic: { base: '#4c1d95', mid: '#6d28d9', detail: '#c4b5fd' }
-          };
 
           // Mix two hex colours. Literal hex in, literal hex out — for the same
           // reason the palette above is literal: an SVG presentation attribute
           // takes neither var() nor color-mix(), and would render black.
-          const rcBlend = function (a, b, t) {
-            var pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16);
-            var part = function (sh) {
-              var va = (pa >> sh) & 255, vb = (pb >> sh) & 255;
-              var v = Math.round(va + (vb - va) * t);
-              if (v < 0) v = 0; if (v > 255) v = 255;
-              return (v < 16 ? '0' : '') + v.toString(16);
-            };
-            return '#' + part(16) + part(8) + part(0);
-          };
 
           // A TILING grain mosaic: cols × rows of jittered polygons whose radius
           // comes from the cell half-diagonal, so neighbouring grains always
@@ -6277,177 +6471,14 @@ const d = labToolData.rockCycle || {};
           //
           // Lattice points on the outer border move only ALONG that border, so
           // the rock's own outline stays exactly the rect its caller asked for.
-          const rcMosaic = function (cols, rows, tones, c, x, y, w, hgt) {
-            // A 22px family chip cannot show twelve grains; it just goes muddy.
-            if (Math.min(w, hgt) < 34) { cols = Math.max(2, Math.round(cols / 2)); rows = Math.max(2, Math.round(rows / 2)); }
-            var cw = w / cols, ch = hgt / rows;
-            // Deterministic jitter — index-driven, never Math.random — so a
-            // re-render at the same progress redraws exactly the same frame.
-            var wob = function (seed, span) { return (((seed * 2654435761) % 1000) / 1000 - 0.5) * span; };
-            var pt = [];
-            var row, col;
-            for (row = 0; row <= rows; row++) {
-              pt.push([]);
-              for (col = 0; col <= cols; col++) {
-                var seed = row * 73 + col * 149 + 7;
-                var edgeH = (row === 0 || row === rows);
-                var edgeV = (col === 0 || col === cols);
-                pt[row].push([
-                  x + col * cw + (edgeV ? 0 : wob(seed, cw * 0.5)),
-                  y + row * ch + (edgeH ? 0 : wob(seed + 31, ch * 0.5))
-                ]);
-              }
-            }
-            var out = [];
-            var n = 0;
-            for (row = 0; row < rows; row++) {
-              for (col = 0; col < cols; col++, n++) {
-                var q = [pt[row][col], pt[row][col + 1], pt[row + 1][col + 1], pt[row + 1][col]];
-                out.push(h('polygon', {
-                  key: 'mo' + n,
-                  points: q.map(function (p) { return p[0].toFixed(2) + ',' + p[1].toFixed(2); }).join(' '),
-                  fill: tones[(n + row) % tones.length], stroke: c.base, strokeWidth: 0.7, strokeLinejoin: 'round'
-                }));
-              }
-            }
-            return out;
-          };
 
           // Draws one rock specimen as a textured SVG swatch. Texture is the whole
           // point: a student should be able to SEE that quartzite is interlocking
           // and shale is layered, not just read the words.
-          const rcSwatch = function (key, texture, family, x, y, w, hgt, opacity) {
-            var c = RC_FAMILY_COLORS[family] || RC_FAMILY_COLORS.igneous;
-            var kids = [];
-            var clipId = 'rcclip-' + key;
-            kids.push(h('defs', { key: 'defs' },
-              h('clipPath', { id: clipId }, h('rect', { x: x, y: y, width: w, height: hgt, rx: 7 }))));
-            kids.push(h('rect', { key: 'body', x: x, y: y, width: w, height: hgt, rx: 7, fill: c.mid, stroke: c.base, strokeWidth: 1.5 }));
-            var g = [];
-            var i;
-            if (texture === 'crystalline') {
-              // INTERLOCKING coarse crystals — grains that meet, with no matrix
-              // between them. That is the whole distinction the captions rest on
-              // ("coarse interlocking quartz, feldspar and mica crystals"), and
-              // the old drawing showed six identical diamonds floating in a flat
-              // field with wide gaps: not interlocking, and one mineral, not
-              // three. A student reading "interlocking" and seeing "floating"
-              // learns the opposite of the point.
-              //
-              // Grains are laid on a jittered grid at a radius large enough to
-              // guarantee overlap with their neighbours, so every boundary is a
-              // shared edge. Painted in order, later grains clip earlier ones —
-              // which is exactly how an interlocking mosaic reads. Three tones
-              // stand in for the three named minerals.
-              g.push.apply(g, rcMosaic(4, 3, [
-                rcBlend(c.mid, '#ffffff', 0.52),   // pale quartz
-                rcBlend(c.mid, '#ffffff', 0.22),   // feldspar
-                rcBlend(c.base, c.mid, 0.30)       // dark mica
-              ], c, x, y, w, hgt));
-            } else if (texture === 'finegrained') {
-              // Fine matrix plus gas vesicles.
-              for (i = 0; i < 34; i++) {
-                g.push(h('circle', { key: 'f' + i, cx: x + ((i * 37) % 100) / 100 * w, cy: y + ((i * 61) % 100) / 100 * hgt, r: 0.9, fill: c.detail, opacity: 0.55 }));
-              }
-              var ves = [[0.24, 0.34, 3], [0.62, 0.26, 2.4], [0.44, 0.7, 2.8], [0.8, 0.6, 2.2]];
-              for (i = 0; i < ves.length; i++) {
-                g.push(h('circle', { key: 'v' + i, cx: x + ves[i][0] * w, cy: y + ves[i][1] * hgt, r: ves[i][2], fill: c.base, opacity: 0.6 }));
-              }
-            } else if (texture === 'clastic') {
-              // Flat bedding planes with grains between them.
-              for (i = 1; i < 6; i++) {
-                g.push(h('line', { key: 'l' + i, x1: x, y1: y + (i / 6) * hgt, x2: x + w, y2: y + (i / 6) * hgt, stroke: c.detail, strokeWidth: 1.6, opacity: 0.8 }));
-              }
-              for (i = 0; i < 18; i++) {
-                g.push(h('circle', { key: 'g' + i, cx: x + ((i * 43) % 100) / 100 * w, cy: y + ((i * 71) % 100) / 100 * hgt, r: 1.3, fill: c.detail, opacity: 0.45 }));
-              }
-            } else if (texture === 'finelayered') {
-              // Fissile: shale splits into thin sheets, and that is the whole
-              // difference between it and sandstone in the hand. Both were
-              // tagged 'clastic', so two of the eight specimens a student picks
-              // between were drawing the identical picture — and the sibling
-              // rocks tool had already separated them.
-              for (i = 1; i < 12; i++) {
-                g.push(h('line', {
-                  key: 'fl' + i, x1: x, y1: y + (i / 12) * hgt, x2: x + w, y2: y + (i / 12) * hgt,
-                  stroke: c.detail, strokeWidth: 0.9, opacity: 0.85,
-                }));
-              }
-              // A split running in from the edge — the layers coming apart.
-              g.push(h('path', {
-                key: 'flsplit',
-                d: 'M' + x + ',' + (y + hgt * 0.42) + ' L' + (x + w * 0.55) + ',' + (y + hgt * 0.46)
-                  + ' L' + x + ',' + (y + hgt * 0.52) + ' Z',
-                fill: c.base, opacity: 0.55,
-              }));
-            } else if (texture === 'bioclastic') {
-              // Bedding plus shell fragments.
-              for (i = 1; i < 4; i++) {
-                g.push(h('line', { key: 'l' + i, x1: x, y1: y + (i / 4) * hgt, x2: x + w, y2: y + (i / 4) * hgt, stroke: c.detail, strokeWidth: 1.3, opacity: 0.6 }));
-              }
-              var sh = [[0.2, 0.3], [0.55, 0.22], [0.35, 0.66], [0.72, 0.58], [0.84, 0.34]];
-              for (i = 0; i < sh.length; i++) {
-                var sx = x + sh[i][0] * w, sy = y + sh[i][1] * hgt;
-                g.push(h('path', { key: 's' + i, d: 'M' + (sx - 4) + ',' + sy + ' a4,4 0 0,1 8,0', fill: 'none', stroke: c.detail, strokeWidth: 1.6, opacity: 0.95 }));
-              }
-            } else if (texture === 'foliated') {
-              // Tightly spaced aligned mica planes.
-              for (i = 1; i < 11; i++) {
-                var fy = y + (i / 11) * hgt;
-                g.push(h('path', { key: 'p' + i, d: 'M' + x + ',' + fy + ' Q' + (x + w / 2) + ',' + (fy - 1.6) + ' ' + (x + w) + ',' + fy, fill: 'none', stroke: c.detail, strokeWidth: 1.1, opacity: 0.8 }));
-              }
-            } else if (texture === 'coarsemosaic') {
-              // The same interlocking mosaic with fewer, larger grains.
-              // Marble + more heat produces "Coarse Marble" — the panel says
-              // "existing crystals grow larger by consuming their neighbours",
-              // and the product used to be drawn with grains exactly the size
-              // of the marble that went in. The one change described was the
-              // one thing the picture did not show.
-              g.push.apply(g, rcMosaic(3, 2, [
-                rcBlend(c.mid, '#ffffff', 0.48),
-                rcBlend(c.mid, '#ffffff', 0.24),
-                rcBlend(c.mid, '#ffffff', 0.36)
-              ], c, x, y, w, hgt));
-            } else if (texture === 'banded') {
-              // Segregated light/dark gneissic banding.
-              for (i = 0; i < 5; i++) {
-                var by = y + (i / 5) * hgt;
-                g.push(h('path', { key: 'b' + i, d: 'M' + x + ',' + (by + 3) + ' Q' + (x + w * 0.35) + ',' + (by - 2) + ' ' + (x + w * 0.7) + ',' + (by + 3) + ' T' + (x + w) + ',' + (by + 2), fill: 'none', stroke: i % 2 ? c.detail : c.base, strokeWidth: 3.4, opacity: 0.85 }));
-              }
-            } else { // nonfoliated — equant interlocking mosaic.
-              // NOTE: this is also the catch-all. A texture name that is not
-              // handled above lands here and draws a marble-like mosaic with no
-              // error, so a typo would look like a deliberate rock. A test
-              // pins that every texture the data asks for is handled by name.
-              //
-              // Quartzite is the clearest case of the drawing contradicting its
-              // own caption: the panel says grains "recrystallize and FUSE
-              // together, SEALING the pore space", and the tool then drew seven
-              // separated hexagons with the pore space making up most of the
-              // picture. Marble's "interlocking calcite mosaic" had the same
-              // problem. Both are equant mosaics, so both now tile.
-              g.push.apply(g, rcMosaic(5, 4, [
-                rcBlend(c.mid, '#ffffff', 0.44),
-                rcBlend(c.mid, '#ffffff', 0.20),
-                rcBlend(c.mid, '#ffffff', 0.32)
-              ], c, x, y, w, hgt));
-            }
-            kids.push(h('g', { key: 'tex', clipPath: 'url(#' + clipId + ')' }, g));
-            return h('g', { key: key, opacity: opacity == null ? 1 : opacity }, kids);
-          };
 
           // A standalone family chip, so the process list and the transformation
           // machine speak the same visual language. One representative texture
           // per family: igneous crystallises, sedimentary beds, metamorphic bands.
-          const RC_FAMILY_TEXTURE = { igneous: 'crystalline', sedimentary: 'clastic', metamorphic: 'banded' };
-          const rcFamilyChip = function (key, familyId, size) {
-            var S = size || 24;
-            return h('svg', {
-              width: S, height: S, viewBox: '0 0 ' + S + ' ' + S,
-              'aria-hidden': true, focusable: 'false',
-              style: { display: 'block', flexShrink: 0 }
-            }, rcSwatch(key, RC_FAMILY_TEXTURE[familyId] || 'crystalline', familyId, 0, 0, S, S, 1));
-          };
 
           // ── Animated Canvas2D for Rock Cycle ──
           // This initialiser is re-created each render (it closes over the current
@@ -7431,7 +7462,7 @@ const d = labToolData.rockCycle || {};
 
                 // Show the family's texture, not only its emoji — same chip the
                 // process list and the transformation machine use.
-                React.createElement("div", { className: "rounded-lg border border-slate-400 bg-white p-0.5 shrink-0" }, rcFamilyChip('selFamily', sel.id, 36)),
+                React.createElement("div", { className: "rounded-lg border border-slate-400 bg-white p-0.5 shrink-0" }, rcFamilyChip(h, 'selFamily', sel.id, 36)),
 
                 React.createElement("div", null,
 
@@ -7540,9 +7571,9 @@ const d = labToolData.rockCycle || {};
                     // the pathway reads at a glance and matches the textures the
                     // transformation machine uses.
                     React.createElement("div", { className: "flex items-center gap-1 my-1" },
-                      rcFamilyChip('pf' + i, proc.from, 22),
+                      rcFamilyChip(h, 'pf' + i, proc.from, 22),
                       React.createElement("span", { className: "text-[11px] font-black text-slate-600" }, "→"),
-                      rcFamilyChip('pt' + i, proc.to, 22)
+                      rcFamilyChip(h, 'pt' + i, proc.to, 22)
                     ),
 
                     React.createElement("p", { className: "text-[11px] text-slate-700" }, processFromTo),
@@ -7560,12 +7591,12 @@ const d = labToolData.rockCycle || {};
                 // Larger from → to figure: the selected pathway was described in
                 // prose with nothing to look at.
                 React.createElement("div", { className: "flex items-center gap-3 mb-2" },
-                  React.createElement("div", { className: "rounded-lg border border-slate-400 bg-white p-0.5" }, rcFamilyChip('selFrom', d.selectedProcess.from, 40)),
+                  React.createElement("div", { className: "rounded-lg border border-slate-400 bg-white p-0.5" }, rcFamilyChip(h, 'selFrom', d.selectedProcess.from, 40)),
                   React.createElement("div", { className: "text-center" },
                     React.createElement("div", { className: "text-lg leading-none", "aria-hidden": true }, d.selectedProcess.emoji),
                     React.createElement("div", { className: "text-[11px] font-black text-orange-800" }, "→")
                   ),
-                  React.createElement("div", { className: "rounded-lg border border-slate-400 bg-white p-0.5" }, rcFamilyChip('selTo', d.selectedProcess.to, 40)),
+                  React.createElement("div", { className: "rounded-lg border border-slate-400 bg-white p-0.5" }, rcFamilyChip(h, 'selTo', d.selectedProcess.to, 40)),
                   React.createElement("p", { className: "text-xs font-black text-orange-900 ml-1" }, d.selectedProcess.label)
                 ),
 
@@ -7703,7 +7734,7 @@ const d = labToolData.rockCycle || {};
                   style: { maxHeight: '190px' }
                 },
                   // Input specimen
-                  rcSwatch('in', liveSpec.texture, liveSpec.family, inX + 4, swY, swW, swH, inOpacity),
+                  rcSwatch(h, 'in', liveSpec.texture, liveSpec.family, inX + 4, swY, swW, swH, inOpacity),
                   h('text', { key: 'inLbl', x: inX + 4 + swW / 2, y: swY + swH + 15, textAnchor: 'middle', fontSize: '10', fontWeight: '700', fill: '#334155' }, liveSpec.label),
                   h('text', { key: 'inFam', x: inX + 4 + swW / 2, y: swY - 10, textAnchor: 'middle', fontSize: '8', fontWeight: '700', fill: '#475569' }, liveSpec.family.toUpperCase()),
                   // Process chamber
@@ -7713,7 +7744,7 @@ const d = labToolData.rockCycle || {};
                   h('path', { key: 'a1', d: 'M96,' + (swY + swH / 2) + ' l0,-5 l8,5 l-8,5 z', fill: '#78716c' }),
                   h('path', { key: 'a2', d: 'M240,' + (swY + swH / 2) + ' l0,-5 l8,5 l-8,5 z', fill: '#78716c', opacity: prog > 50 ? 1 : 0.3 }),
                   // Product
-                  outOpacity > 0 ? rcSwatch('out', outTexture, outFamily, outX, swY, swW, swH, outOpacity) : h('rect', { key: 'outGhost', x: outX, y: swY, width: swW, height: swH, rx: 7, fill: 'none', stroke: '#cbd5e1', strokeWidth: 1.5, strokeDasharray: '5 4' }),
+                  outOpacity > 0 ? rcSwatch(h, 'out', outTexture, outFamily, outX, swY, swW, swH, outOpacity) : h('rect', { key: 'outGhost', x: outX, y: swY, width: swW, height: swH, rx: 7, fill: 'none', stroke: '#cbd5e1', strokeWidth: 1.5, strokeDasharray: '5 4' }),
                   h('text', { key: 'outLbl', x: outX + swW / 2, y: swY + swH + 15, textAnchor: 'middle', fontSize: '10', fontWeight: '700', fill: outOpacity > 0.4 ? '#334155' : '#64748b' },
                     outOpacity > 0.4 && liveRec ? liveRec.product.split(' → ')[0].split(' or ')[0] : '?'),
                   h('text', { key: 'outFam', x: outX + swW / 2, y: swY - 10, textAnchor: 'middle', fontSize: '8', fontWeight: '700', fill: '#475569' }, outOpacity > 0.4 && liveRec ? liveRec.family.toUpperCase() : '')
