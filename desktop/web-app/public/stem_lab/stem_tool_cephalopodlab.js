@@ -157,12 +157,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
     var skinOp = xray ? 0.30 : 1;
     var SPH = new THREE.SphereGeometry(1, 9, 7);    // ~180 meshes share this
 
+    // ── Body plans ──
+    // The ORGANS are identical across all three: two gills, three hearts, the
+    // brain ring, beak and siphon. Only the body around them changes. That is
+    // the comparison worth drawing — one plan, three solutions — and it is
+    // why this tool ships four species groups but drew one animal.
+    //
+    // Coleoids only, deliberately. Nautilus is the fourth group here but it
+    // has a different gill and heart count from the "two gills / three
+    // hearts" this tab's text states, so drawing one would put the model and
+    // the panel in contradiction. It needs its own reviewed copy first.
+    var MORPHS = {
+      octopus:    { mantle: [0.60, 0.74, 0.56], armLen: 1.00, armR: 1.00, fins: 'none',     support: null,         tentacles: 0 },
+      squid:      { mantle: [0.42, 1.02, 0.42], armLen: 0.60, armR: 0.72, fins: 'terminal', support: null,         tentacles: 2 },
+      cuttlefish: { mantle: [0.66, 0.70, 0.40], armLen: 0.54, armR: 0.74, fins: 'skirt',    support: 'cuttlebone', tentacles: 2 }
+    };
+    var morph = MORPHS[sp.species] || MORPHS.octopus;
+
     // ── Mantle — the sac mistaken for a head. Everything else hangs below it.
     var mantleG = partGroup('mantle', 0, 1.24, 0);
-    var mantle = new THREE.Mesh(SPH, shellMat(partHex('mantle', 0xfb923c), 26));
-    mantle.scale.set(0.60, 0.74, 0.56);
+    var mantleHex = partHex('mantle', 0xfb923c);
+    var mantle;
+    if (morph.fins === 'terminal') {
+      // Squid: a tapered tube, not a sac. Every body plan keeps the SAME
+      // vertical span (roughly y 0.5 to 2.0) — the camera home is fixed at
+      // viewer creation, so a longer animal would simply crop off the top.
+      // Shape carries the difference, not size.
+      mantle = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.44, 1.46, 14), shellMat(mantleHex, 26));
+    } else {
+      mantle = new THREE.Mesh(SPH, shellMat(mantleHex, 26));
+      mantle.scale.set(morph.mantle[0], morph.mantle[1], morph.mantle[2]);
+    }
     if (api.wantShadow) mantle.castShadow = true;
     mantleG.add(pickable(mantle, 'mantle'));
+
+    // Fins ride the mantle, so they take its colour and its x-ray shell.
+    var finMat = shellMat(mantleHex, 22);
+    if (morph.fins === 'terminal') {
+      // Squid: a pair at the far end of a long tapered mantle.
+      for (var tf = 0; tf < 2; tf++) {
+        var fin = new THREE.Mesh(SPH, finMat);
+        fin.scale.set(0.26, 0.20, 0.05);
+        fin.rotation.z = (tf === 0 ? 1 : -1) * 0.5;
+        mantleG.add(addAt(mantleG, fin, (tf === 0 ? -1 : 1) * 0.21, 1.24 + 0.50, 0));
+      }
+    } else if (morph.fins === 'skirt') {
+      // Cuttlefish: one narrow fin running the whole length of each side.
+      for (var sf = 0; sf < 2; sf++) {
+        var skirt = new THREE.Mesh(SPH, finMat);
+        skirt.scale.set(0.06, 0.58, 0.26);
+        mantleG.add(addAt(mantleG, skirt, (sf === 0 ? -1 : 1) * 0.66, 1.24, 0));
+      }
+    }
+    // The cuttlebone is the tool's own glossary entry made visible: an
+    // internal, gas-filled plate you can only see with the skin off.
+    // Added to the SCENE, not to mantleG: it sits inside the mantle but is not
+    // part of it, and a child of that group would light up whenever the mantle
+    // was selected. Built only in x-ray, since that is the only view it is
+    // visible in at all.
+    if (morph.support === 'cuttlebone' && xray) {
+      var bone = new THREE.Mesh(SPH, bodyMat(api.contrast ? 0xffffff : 0xf5f0e6, 8, 1));
+      bone.scale.set(0.30, 0.50, 0.05);
+      bone.position.set(0, 1.30, -0.14);
+      api.scene.add(bone);
+    }
 
     // ── Gills — two feathery columns inside the mantle cavity.
     var gillsG = partGroup('gills', 0, 1.06, 0.02);
@@ -249,9 +307,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
     var cordMat = bodyMat(cordHex, 30, 1);
     var hectoMat = bodyMat(partHex('hectocotylus', 0xf472b6), 30, 1);
 
-    function armPoint(ang, t) {
-      var r = 0.15 + 1.18 * Math.pow(t, 0.90) + 0.16 * Math.sin(t * Math.PI);
-      var y = 0.16 - 1.52 * Math.pow(t, 1.28);
+    // armLen/armR shorten and tighten the crown for the squid and cuttlefish,
+    // whose arms are stubby next to an octopus's — `reach` lets the two
+    // feeding tentacles run past them on the same curve.
+    function armPoint(ang, t, reach) {
+      var L = morph.armLen * (reach || 1), R = morph.armR * (reach || 1);
+      var r = 0.15 + 1.18 * R * Math.pow(t, 0.90) + 0.16 * R * Math.sin(t * Math.PI);
+      var y = 0.16 - 1.52 * L * Math.pow(t, 1.28);
       return new THREE.Vector3(Math.cos(ang) * r, y, Math.sin(ang) * r);
     }
 
@@ -296,6 +358,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       }
     }
 
+    // ── The two feeding tentacles. The tool's own glossary draws the line:
+    // "Squids + cuttlefish have 2; octopuses have arms instead." Longer and
+    // thinner than the arms, with the wider club at the tip. Body geometry,
+    // not a labelled part — the ANATOMY list is the contract for what the
+    // detail panel can explain, and nothing here adds to it.
+    if (morph.tentacles === 2) {
+      var tentMat = shellMat(skinHex, 18);
+      for (var tt2 = 0; tt2 < 2; tt2++) {
+        var tang = (tt2 === 0 ? -1 : 1) * 0.30 + Math.PI * 0.5;
+        // 26 not 16: `reach` stretches the same curve nearly twice as far, so
+        // the segment count has to rise with it or the tentacle beads.
+        for (var ts = 0; ts <= 26; ts++) {
+          var tp = ts / 26;
+          var tseg = new THREE.Mesh(SPH, tentMat);
+          // Thin along the stalk, swelling into the club over the last fifth.
+          var club = tp > 0.80 ? 1 + 2.5 * (tp - 0.80) / 0.20 : 1;
+          tseg.scale.setScalar(0.055 * (1 - 0.45 * tp) * club);
+          tseg.position.copy(armPoint(tang, tp, 1.85));
+          api.scene.add(tseg);
+        }
+      }
+    }
+
     return { meshes: meshes, picks: picks, anchor: mantle };
   }
 
@@ -311,7 +396,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
     return mk({
       parts: CL_ANAT_PARTS,
       buildScene: buildCephAnatomyScene,
-      home: { yaw: 0.42, pitch: 0.62, dist: 4.3 }
+      home: { yaw: 0.42, pitch: 0.62, dist: 4.8 }   // fits the tallest body plan (squid) with margin
     });
   })();
 
@@ -15956,10 +16041,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         // is the whole reason this view exists.
         var anatXray = d.anatXray !== false;
         var anat3d = (CEPH3D.status() === 'failed') ? 'failed' : (d.anat3dStatus || 'idle');
+        // Same organs, three bodies. Claims here trace to this file's own
+        // glossary (Tentacle: "Squids + cuttlefish have 2; octopuses have
+        // arms instead"; Cuttlebone: internal, gas-filled) and to the Beak
+        // entry above ("the ONLY rigid part of an octopus body").
+        var ANAT_BODIES = [
+          { id: 'octopus', label: __alloT('stem.cephalopodlab.body_octopus', 'Octopus'), emoji: '🐙',
+            note: __alloT('stem.cephalopodlab.body_octopus_note', 'Eight arms, a rounded mantle, and no hard part anywhere but the beak.') },
+          { id: 'squid', label: __alloT('stem.cephalopodlab.body_squid', 'Squid'), emoji: '🦑',
+            note: __alloT('stem.cephalopodlab.body_squid_note', 'Eight arms plus two longer feeding tentacles, on a tapered mantle with fins at the far end.') },
+          { id: 'cuttlefish', label: __alloT('stem.cephalopodlab.body_cuttlefish', 'Cuttlefish'), emoji: '🦑',
+            note: __alloT('stem.cephalopodlab.body_cuttlefish_note', 'Eight arms plus two tentacles, a broad mantle with a fin down each side, and the gas-filled cuttlebone inside it (turn off X-ray to hide it).') }
+        ];
+        var anatBodyId = d.anatBody || 'octopus';
+        var anatBody = ANAT_BODIES.find(function(b) { return b.id === anatBodyId; }) || ANAT_BODIES[0];
         CEPH3D.sync({
           selected: highlightedId,
-          sceneProps: { xray: anatXray },
-          sceneKey: anatXray ? 'xray' : 'skin',
+          sceneProps: { xray: anatXray, species: anatBodyId },
+          sceneKey: (anatXray ? 'xray' : 'skin') + ':' + anatBodyId,
           showAllLabels: !!d.anatLabels,
           dark: true,
           contrast: !!(ctx && ctx.isContrast),
@@ -16048,6 +16147,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   anat3dBtn(__alloT('stem.cephalopodlab.zoom_in', 'Zoom in'), '＋', function() { CEPH3D.zoom(-0.5); }),
                   anat3dBtn(__alloT('stem.cephalopodlab.zoom_out', 'Zoom out'), '－', function() { CEPH3D.zoom(0.5); }),
                   anat3dBtn(__alloT('stem.cephalopodlab.reset_view', 'Reset the view'), '⌂', function() { CEPH3D.reset(); })),
+                anat3d !== 'failed' && h('div', { style: { display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap', alignItems: 'center' } },
+                  h('span', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' } },
+                    __alloT('stem.cephalopodlab.body_plan_picker', 'Body plan')),
+                  ANAT_BODIES.map(function(b) {
+                    var on = b.id === anatBodyId;
+                    return h('button', { key: b.id,
+                      onClick: function() { setCL({ anatBody: b.id }); clAnnounce(b.label + '. ' + b.note); },
+                      'aria-pressed': on ? 'true' : 'false',
+                      style: { padding: '6px 11px', fontSize: 11.5, fontWeight: 700, borderRadius: 6, cursor: 'pointer',
+                        background: on ? 'rgba(99,102,241,0.35)' : 'rgba(15,23,42,0.6)',
+                        color: on ? '#c7d2fe' : '#cbd5e1',
+                        border: '1px solid ' + (on ? 'rgba(167,139,250,0.6)' : 'rgba(100,116,139,0.35)') } },
+                      h('span', { 'aria-hidden': 'true' }, b.emoji + ' '), b.label);
+                  })),
+                anat3d !== 'failed' && h('div', { style: { marginTop: 6, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5,
+                    borderLeft: '3px solid rgba(167,139,250,0.6)', paddingLeft: 8 } },
+                  h('strong', { style: { color: '#c7d2fe' } }, anatBody.label + ': '), anatBody.note,
+                  h('div', { style: { marginTop: 3, color: '#64748b', fontSize: 10 } },
+                    __alloT('stem.cephalopodlab.same_organs_note', 'The organs do not change between these three — two gills, three hearts, one brain ring. Only the body around them does.'))),
                 anat3d !== 'failed' && h('div', { style: { display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' } },
                   h('button', { onClick: function() { setCL({ anatXray: !anatXray }); clAnnounce(anatXray ? 'Skin view' : 'X-ray view'); },
                     'aria-pressed': anatXray ? 'true' : 'false',
