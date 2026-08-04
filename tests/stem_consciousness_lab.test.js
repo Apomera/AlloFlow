@@ -582,3 +582,61 @@ describe('3D network view', () => {
     expect(html).not.toContain('Step through the run');
   });
 });
+
+describe('Accessibility regressions', () => {
+  // These pin the two defects the axe sweep found on the live tool, plus the
+  // AT contract for the 3D surface. Colour values are asserted directly because
+  // jsdom cannot compute contrast, and the failures here were contrast failures.
+  const CONTRAST_FIXED = { light: '#92400e', dark: '#fbbf24', contrast: '#facc15' };
+
+  it('themes the OPEN QUESTION label instead of hard-coding an amber that fails AA', () => {
+    // #d97706 measured 2.90:1 on the light raised surface for 9px bold text.
+    const light = renderView('11th Grade', 'learn');
+    expect(light).not.toContain('#d97706');
+    expect(light).toContain(CONTRAST_FIXED.light);
+
+    const dark = renderTool(TOOL_ID, { consciousnessLab: { activeView: 'learn' } },
+      { gradeLevel: '11th Grade', isDark: true });
+    expect(dark).toContain(CONTRAST_FIXED.dark);
+
+    const contrast = renderTool(TOOL_ID, { consciousnessLab: { activeView: 'learn' } },
+      { gradeLevel: '11th Grade', isContrast: true });
+    expect(contrast).toContain(CONTRAST_FIXED.contrast);
+  });
+
+  it('puts role=tabpanel only on elements that allow it', () => {
+    const html = renderView('11th Grade', 'cases');
+    // <article role="tabpanel"> is not an allowed role pairing, so the mapping
+    // was dropped from the accessibility tree entirely.
+    expect(html).not.toMatch(/<article[^>]*role="tabpanel"/);
+    expect(html).toMatch(/<div[^>]*id="cns-case-panel"[^>]*role="tabpanel"/);
+  });
+
+  it('points every tab at a panel id that is actually rendered', () => {
+    ['learn', 'cases', 'bench'].forEach((view) => {
+      const html = renderView('11th Grade', view);
+      const controls = [...html.matchAll(/aria-controls="([^"]+)"/g)].map((m) => m[1]);
+      expect(controls.length).toBeGreaterThan(0);
+      new Set(controls).forEach((id) => {
+        expect(html, view + ' references missing panel ' + id).toContain('id="' + id + '"');
+      });
+    });
+  });
+
+  it('keeps the 3D canvas out of the accessibility tree behind a described container', () => {
+    const html = renderView('11th Grade', 'bench');
+    expect(html).toMatch(/class="cns-net-stage"[^>]*role="img"/);
+    expect(html).toContain('aria-label="Schematic three-dimensional network');
+    // the text equivalent must ship alongside it, not instead of it
+    expect(html).toContain('Peak activity by stage');
+    expect(html).toContain('Step through the run');
+  });
+
+  it('gives the source links a 24px target', () => {
+    // The stylesheet is injected into document.head, not returned in the markup.
+    renderView('11th Grade', 'sources');
+    const sheet = document.getElementById('consciousness-lab-styles');
+    expect(sheet).toBeTruthy();
+    expect(sheet.textContent).toContain('.cns-sources a{display:inline-block;padding:3px 0;min-height:24px}');
+  });
+});
