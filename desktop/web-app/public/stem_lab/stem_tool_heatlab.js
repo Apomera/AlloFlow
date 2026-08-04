@@ -878,7 +878,7 @@
         return React.cloneElement(node, {
           id: 'htsec-' + id,
           'data-ht-sec': id,
-          style: Object.assign({}, node.props.style, { scrollMarginTop: '92px' })
+          style: Object.assign({}, node.props.style, { scrollMarginTop: '188px' })
         });
       };
       var heading = function (accent, text) {
@@ -1021,7 +1021,9 @@
             }, 'Show ' + g.label + ', ' + n + ' topics');
           })
         ),
-        h('div', { className: 'flex flex-wrap gap-1 mt-1.5' },
+        // Cap the list height: 13 pills wrap to several rows, and an uncapped
+        // sticky bar would sit on a third of a phone screen permanently.
+        h('div', { className: 'flex flex-wrap gap-1 mt-1.5', style: { maxHeight: '92px', overflowY: 'auto' } },
           htVisible.length === 0
             ? h('span', { className: 'text-[11px]', style: { color: isDark ? '#cbd5e1' : '#475569' } },
                 'No topic matches “' + (d.htQuery || '') + '”.')
