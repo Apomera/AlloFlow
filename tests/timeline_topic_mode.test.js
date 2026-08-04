@@ -288,3 +288,102 @@ describe('decorateTimelineForDisplay', () => {
     expect(timeline.title.text.text).toBe('Key events.');
   });
 });
+
+// ── Explicit-citation fallback (2026-08-04) ─────────────────────────────────
+// The production Canvas/local search transport synthesizes groundingChunks but
+// NEVER groundingSupports (ai_backend _buildGroundingMetadata: client-side
+// search has no claim-level byte offsets; its contract is explicit [Source N]
+// citations). The segments-only mapper attached zero sources to every event on
+// that transport — the field report's "0/7 events tied to a source" on a good
+// research pass. These pin the citation path and the honesty modes around it.
+describe('attachSourcesToEvents — explicit citations when supports are absent', () => {
+  const CHUNKS_ONLY = {
+    groundingChunks: [
+      { web: { uri: 'https://example.org/a', title: 'Source A' } },
+      { web: { uri: 'https://example.org/b', title: 'Source B' } },
+    ],
+    // groundingSupports intentionally absent — the transport's documented shape.
+  };
+
+  it('honors per-event "sources": [N] evidence numbers (1-based into groundingChunks)', () => {
+    const events = [
+      { start_date: { year: '1958' }, text: { headline: 'NASA is founded', text: 'NASA begins operations.' }, sources: [1] },
+      { start_date: { year: '1961' }, text: { headline: 'Apollo starts', text: 'The program officially starts.' }, sources: [2, 1] },
+      { start_date: { year: '1969' }, text: { headline: 'Moon landing', text: 'Apollo 11 lands.' }, sources: [] },
+    ];
+    const out = H.attachSourcesToEvents(events, rawTextFor(events), CHUNKS_ONLY);
+    expect(out.attributionMode).toBe('citations');
+    expect(out.sourcedCount).toBe(2);
+    expect(out.events[0].sources).toEqual([{ title: 'Source A', uri: 'https://example.org/a' }]);
+    expect(out.events[1].sources.map((s) => s.uri)).toEqual(['https://example.org/b', 'https://example.org/a']);
+    expect(out.events[2].sources).toEqual([]);
+  });
+
+  it('harvests inline [Source N] tokens and strips them from display text', () => {
+    const events = [
+      { start_date: { year: '1958' }, text: { headline: 'NASA is founded', text: 'NASA begins operations. [Source 2]' } },
+    ];
+    const out = H.attachSourcesToEvents(events, rawTextFor(events), CHUNKS_ONLY);
+    expect(out.attributionMode).toBe('citations');
+    expect(out.events[0].sources).toEqual([{ title: 'Source B', uri: 'https://example.org/b' }]);
+    expect(out.events[0].text.text).toBe('NASA begins operations.');
+  });
+
+  it('ignores out-of-range citation numbers rather than fabricating a source', () => {
+    const events = [
+      { start_date: { year: '1958' }, text: { headline: 'NASA is founded', text: 'x' }, sources: [7] },
+    ];
+    const out = H.attachSourcesToEvents(events, rawTextFor(events), CHUNKS_ONLY);
+    expect(out.events[0].sources).toEqual([]);
+    expect(out.attributionMode).toBe('none');
+  });
+
+  it('no supports and no citations → attributionMode "none" with the doc list intact', () => {
+    const events = [
+      { start_date: { year: '1958' }, text: { headline: 'NASA is founded', text: 'x' } },
+    ];
+    const out = H.attachSourcesToEvents(events, rawTextFor(events), CHUNKS_ONLY);
+    expect(out.attributionMode).toBe('none');
+    expect(out.docSources.length).toBe(2);
+  });
+
+  it('segments still win when supports exist (citation path does not override them)', () => {
+    const raw = rawTextFor(EVENTS);
+    const out = H.attachSourcesToEvents(EVENTS, raw, metaFor(raw));
+    expect(out.attributionMode).toBe('segments');
+    expect(out.sourcedCount).toBe(2);
+  });
+});
+
+describe('decorateTimelineForDisplay — attribution-unavailable honesty', () => {
+  it('mode "none": no per-event "No source matched" spam; disclosure explains instead of claiming 0/N', () => {
+    const tl = { title: { text: { headline: 'T', text: 'Key events.' } }, events: [
+      { start_date: { year: '1958' }, text: { headline: 'A', text: 'a' }, sources: [] },
+      { start_date: { year: '1961' }, text: { headline: 'B', text: 'b' }, sources: [] },
+    ] };
+    const research = { hasGrounding: true, sourcedCount: 0, attributionMode: 'none', docSources: [{ title: 'S', uri: 'https://example.org/s' }], verifyStatus: 'ok' };
+    const { timeline } = H.decorateTimelineForDisplay(tl, research, null);
+    expect(timeline.title.text.text).toContain('attribution was not available');
+    expect(timeline.title.text.text).not.toContain('0/2');
+    expect(timeline.events[0].text.text).not.toContain('No source matched');
+  });
+
+  it('mode "citations": counts stay and an uncited event keeps its per-event warning', () => {
+    const tl = { title: { text: { headline: 'T', text: 'Key events.' } }, events: [
+      { start_date: { year: '1958' }, text: { headline: 'A', text: 'a' }, sources: [{ title: 'S', uri: 'https://example.org/s' }] },
+      { start_date: { year: '1961' }, text: { headline: 'B', text: 'b' }, sources: [] },
+    ] };
+    const research = { hasGrounding: true, sourcedCount: 1, attributionMode: 'citations', docSources: [{ title: 'S', uri: 'https://example.org/s' }], verifyStatus: 'ok' };
+    const { timeline } = H.decorateTimelineForDisplay(tl, research, null);
+    expect(timeline.title.text.text).toContain('1/2');
+    expect(timeline.events[1].text.text).toContain('No source matched');
+  });
+});
+
+describe('topic research prompt — citation contract', () => {
+  it('asks each event for explicit "sources" evidence numbers', () => {
+    const p = H.buildTopicResearchPrompt('the Apollo program', '', '', 'middle-school');
+    expect(p).toContain('"sources"');
+    expect(p).toContain('ONLY when that evidence item genuinely supports');
+  });
+});

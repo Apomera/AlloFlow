@@ -127,6 +127,7 @@
       '- Every event MUST include start_date.year as a numeric string, such as "1969". Include month/day ONLY if a source confirms the precise date. Never invent a precise date; when unsure, give the year only.',
       '- For dates before year 1, use a negative year string, such as "-3000", and mention BCE in the headline.',
       '- Headline: at most 8 words. Text: 1-2 sentences, factually careful, grade-appropriate, no markdown.',
+      '- Each event MUST also include "sources": an array of the Source numbers from the provided web evidence that support it, for example "sources": [1, 3]. Cite a Source number ONLY when that evidence item genuinely supports the event; use an empty array when none does.',
       '- If a requested must-include event cannot be grounded in a source, leave it out rather than guessing a date.',
       '- If the topic has no datable events (for example a cyclic process), return {"title":{"text":{"headline":"No dated events found","text":"This topic did not produce clearly dated events for a timeline."}},"events":[]}.'
     ]);
@@ -193,6 +194,7 @@
       spans.push(idx);
       if (idx !== -1) cursor = idx + head.length;
     });
+    var usedCitations = false;
     var outEvents = events.map(function (e, i) {
       var start = spans[i];
       var attached = [];
@@ -216,12 +218,51 @@
           });
         });
       }
+      // ── Explicit-citation fallback (2026-08-04) ─────────────────────────────
+      // The production Canvas/local search transport synthesizes groundingChunks
+      // but NEVER groundingSupports (ai_backend _buildGroundingMetadata:
+      // claim-level byte offsets do not exist for client-side search, and its
+      // documented contract is "honor valid explicit [Source N] tokens, but do
+      // not guess paragraph attribution"). The segments-only path above
+      // therefore attached ZERO sources to every event on that transport —
+      // "0/7 events tied to a source" on a perfectly good research pass. Honor
+      // the contract instead: the research prompt asks each event for
+      // "sources": [N] evidence numbers, and models may also inline
+      // "[Source N]" tokens in the prose. Source number N is 1-based over the
+      // SAME sanitized evidence order groundingChunks is built from, so the
+      // mapping is exact. Only explicit citations are honored — never guessed.
+      var head = (e.text && e.text.headline) || '';
+      var body = (e.text && e.text.text) || '';
+      var _tokRe = /\s*\[Source\s+(\d+(?:\s*,\s*\d+)*)\]/gi;
+      if (attached.length === 0 && chunks.length > 0) {
+        var cited = [];
+        if (Array.isArray(e.sources)) {
+          e.sources.forEach(function (n) { var k = parseInt(n, 10); if (isFinite(k)) cited.push(k); });
+        }
+        var m;
+        while ((m = _tokRe.exec(head + ' ' + body)) !== null) {
+          m[1].split(',').forEach(function (n) { var k = parseInt(n, 10); if (isFinite(k)) cited.push(k); });
+        }
+        var seenC = {};
+        cited.forEach(function (k) {
+          var c = chunks[k - 1];
+          var uri = (c && c.web && c.web.uri) || '';
+          if (!uri || seenC[uri]) return;
+          seenC[uri] = true;
+          if (attached.length < 3) { attached.push({ title: (c.web && c.web.title) || uri, uri: uri }); usedCitations = true; }
+        });
+      }
       var copy = Object.assign({}, e);
+      // Inline citation tokens are attribution data, not prose — never display them.
+      copy.text = { headline: head.replace(_tokRe, '').trim(), text: body.replace(_tokRe, '').trim() };
       copy.sources = attached;
       return copy;
     });
     var sourcedCount = outEvents.filter(function (e) { return e.sources.length > 0; }).length;
-    return { events: outEvents, docSources: docSources, hasSupports: hasSupports, sourcedCount: sourcedCount };
+    // 'segments' = native grounding offsets; 'citations' = explicit [Source N] contract;
+    // 'none' = neither available (per-event attribution impossible on this response).
+    var attributionMode = hasSupports ? 'segments' : (usedCitations ? 'citations' : 'none');
+    return { events: outEvents, docSources: docSources, hasSupports: hasSupports, sourcedCount: sourcedCount, attributionMode: attributionMode };
   }
 
   // ── Topic-mode step 2: reuse the Sequence Builder verifier, grounded. ──────
@@ -326,7 +367,12 @@
             return '<a href="' + safeUri(src.uri) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(src.title) + '</a>';
           }).join(', ');
           bits.push('<small>' + escapeHtml(tr(t, 'timeline_studio.source_label_inline', 'Source:')) + ' ' + links + '</small>');
-        } else {
+        } else if (research.attributionMode !== 'none') {
+          // Meaningful only when OTHER events did get attribution — then an
+          // uncited event is a real per-event signal. When the whole response
+          // had no attribution channel (mode 'none'), that is a transport-level
+          // fact the title disclosure explains; repeating a scary warning on
+          // every single event misreads as "the research failed".
           bits.push('<small>' + escapeHtml(tr(t, 'timeline_studio.unsourced', 'No source matched this event — verify before teaching.')) + '</small>');
         }
       }
@@ -343,8 +389,15 @@
       if (!research.hasGrounding) {
         discl = tr(t, 'timeline_studio.disclosure_ungrounded', 'AI draft — no web sources were retrieved for this topic. Treat every date as unverified.');
       } else {
-        discl = tr(t, 'timeline_studio.disclosure_grounded', 'AI-researched from web sources.') +
-          ' ' + research.sourcedCount + '/' + out.events.length + ' ' + tr(t, 'timeline_studio.disclosure_sourced', 'events tied to a source.');
+        discl = tr(t, 'timeline_studio.disclosure_grounded', 'AI-researched from web sources.');
+        if (research.attributionMode === 'none') {
+          // Sources were retrieved and used, but this response carried neither
+          // grounding segments nor explicit citations — per-event attribution is
+          // impossible, which is different from "0 events are sourced".
+          discl += ' ' + tr(t, 'timeline_studio.disclosure_attr_unavailable', 'Per-event source attribution was not available for this response — the source list below covers the timeline as a whole. Verify individual dates before teaching.');
+        } else {
+          discl += ' ' + research.sourcedCount + '/' + out.events.length + ' ' + tr(t, 'timeline_studio.disclosure_sourced', 'events tied to a source.');
+        }
         if (research.verifyStatus === 'ok') {
           discl += ' ' + tr(t, 'timeline_studio.disclosure_verified', 'An automated accuracy check ran on every event; it is a helpful signal, not proof — review flagged items.');
         } else {
@@ -600,6 +653,7 @@
             hasGrounding: hasGrounding,
             sourcedCount: attach.sourcedCount,
             docSources: attach.docSources,
+            attributionMode: attach.attributionMode,
             verifyStatus: verify.status
           };
           var deco = decorateTimelineForDisplay(tl, research, t);
@@ -609,7 +663,8 @@
             sourcedCount: attach.sourcedCount,
             flagged: deco.flagged,
             verifyStatus: verify.status,
-            hasGrounding: hasGrounding
+            hasGrounding: hasGrounding,
+            attributionMode: attach.attributionMode
           });
           busyRef.current = false;
           setBusy(false);
@@ -642,7 +697,9 @@
       if (!summary) return null;
       var parts = [];
       parts.push(summary.events + ' ' + tr(t, 'timeline_studio.sum_events', 'events'));
-      if (summary.hasGrounding) {
+      if (summary.hasGrounding && summary.attributionMode === 'none') {
+        parts.push(tr(t, 'timeline_studio.sum_attr_unavailable', 'sources retrieved; per-event attribution unavailable'));
+      } else if (summary.hasGrounding) {
         parts.push(summary.sourcedCount + '/' + summary.events + ' ' + tr(t, 'timeline_studio.sum_sourced', 'tied to a web source'));
       } else {
         parts.push(tr(t, 'timeline_studio.sum_nogrounding', 'no web sources retrieved — unverified draft'));
