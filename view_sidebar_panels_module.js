@@ -216,6 +216,61 @@ const SurpriseMeEngine = {
     ].filter(Boolean).join("\n");
   }
 };
+function SurpriseMeCompare(props) {
+  const { directions, hood, onUse } = props;
+  const [pinnedIndex, setPinnedIndex] = React.useState(null);
+  const [editedBrief, setEditedBrief] = React.useState("");
+  const pin = (index) => {
+    setPinnedIndex(index);
+    setEditedBrief(SurpriseMeEngine.directionBrief(directions[index]));
+  };
+  const DIMENSIONS = [
+    ["Essential question", (d) => d.essentialQuestion],
+    ["Phenomenon (hook)", (d) => d.phenomenon],
+    ["Activity", (d) => d.activity],
+    ["Evidence of learning", (d) => d.evidence],
+    ["UDL supports", (d) => (d.udlSupports || []).join(" \xB7 ")]
+  ];
+  return /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-2 md:grid-cols-3" }, directions.map(function(direction, index) {
+    const isPinned = pinnedIndex === index;
+    return /* @__PURE__ */ React.createElement("div", { key: index, className: "rounded border bg-white p-2 " + (isPinned ? "border-violet-600 ring-2 ring-violet-300" : "border-violet-200") }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-violet-950" }, direction.title), DIMENSIONS.map(function(dimension) {
+      const value = dimension[1](direction);
+      return value ? /* @__PURE__ */ React.createElement("div", { key: dimension[0], className: "mt-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wide text-slate-500" }, dimension[0]), /* @__PURE__ */ React.createElement("div", null, value)) : null;
+    }), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: function() {
+          pin(index);
+        },
+        "aria-pressed": isPinned,
+        className: "mt-2 w-full rounded px-2 py-1 font-bold " + (isPinned ? "bg-violet-800 text-white" : "bg-violet-100 text-violet-900 hover:bg-violet-200")
+      },
+      isPinned ? "\u2713 Pinned" : "Pin to edit & use"
+    ));
+  })), hood && hood.prerequisites.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[10px] text-slate-600" }, "Prerequisites (from source data): ", hood.prerequisites.map(function(p) {
+    return p.code;
+  }).filter(Boolean).join(", "), " \u2014 shared by all three directions."), pinnedIndex !== null && /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded border border-violet-300 bg-white p-2" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-violet-950" }, "Edit before using \u2014 your judgment wins over the proposal"), /* @__PURE__ */ React.createElement(
+    "textarea",
+    {
+      value: editedBrief,
+      onChange: (e) => setEditedBrief(e.target.value),
+      rows: 6,
+      "aria-label": "Edit the pinned lesson direction before using it",
+      className: "mt-1 w-full rounded border border-violet-200 p-1.5 text-[11px] focus:border-violet-500 focus:ring-2 focus:ring-violet-200 outline-none"
+    }
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: function() {
+        onUse(directions[pinnedIndex], editedBrief);
+      },
+      className: "mt-1 rounded bg-violet-700 px-2 py-1 font-bold text-white hover:bg-violet-800"
+    },
+    "Use this direction"
+  )));
+}
 function UniversalSettingsPanel(props) {
   const {
     InfoTooltip,
@@ -295,9 +350,9 @@ function UniversalSettingsPanel(props) {
       addToast("Could not propose lesson directions. Try again.", "error");
     }
   };
-  const useSurpriseDirection = (direction) => {
+  const useSurpriseDirection = (direction, editedBrief) => {
     if (typeof handleUseResolvedStandard === "function" && localResolution) handleUseResolvedStandard(localResolution);
-    const brief = SurpriseMeEngine.directionBrief(direction);
+    const brief = typeof editedBrief === "string" && editedBrief.trim() ? editedBrief : SurpriseMeEngine.directionBrief(direction);
     if (typeof setSourceTopic === "function") {
       setSourceTopic(brief);
       addToast("Standard attached and topic seeded with this direction.", "success");
@@ -536,21 +591,7 @@ function UniversalSettingsPanel(props) {
       className: "rounded bg-violet-700 px-2 py-1 font-bold text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50"
     },
     surpriseState === "loading" ? "Proposing\u2026" : surpriseState === "ready" ? "Propose again" : "\u2728 Propose 3 directions"
-  )), surpriseState === "ready" && surpriseHood && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-violet-900" }, "Graph context: ", surpriseHood.prerequisites.length, " prerequisite(s), ", surpriseHood.leadsTo.length, " next, ", surpriseHood.related.length, " related", surpriseHood.dataset && surpriseHood.dataset.provider ? " \u2014 " + surpriseHood.dataset.provider : "", ". Directions are AI proposals grounded in these source edges, for educator judgment \u2014 not certification."), surpriseState === "ready" && surpriseDirections.map(function(direction, index) {
-    return /* @__PURE__ */ React.createElement("div", { key: index, className: "mt-2 rounded border border-violet-200 bg-white p-2" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-violet-950" }, direction.title), /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 italic" }, direction.essentialQuestion), /* @__PURE__ */ React.createElement("div", { className: "mt-0.5" }, direction.phenomenon), /* @__PURE__ */ React.createElement("div", { className: "mt-0.5" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Activity:"), " ", direction.activity), /* @__PURE__ */ React.createElement("div", { className: "mt-0.5" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Evidence:"), " ", direction.evidence), direction.udlSupports.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-0.5" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "UDL:"), " ", direction.udlSupports.join(" \xB7 ")), surpriseHood && surpriseHood.prerequisites.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 text-[10px] text-slate-600" }, "Prerequisites (from source data): ", surpriseHood.prerequisites.map(function(p) {
-      return p.code;
-    }).filter(Boolean).join(", ")), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        onClick: function() {
-          useSurpriseDirection(direction);
-        },
-        className: "mt-1 rounded bg-violet-700 px-2 py-1 font-bold text-white hover:bg-violet-800"
-      },
-      "Use this direction"
-    ));
-  })), localResolution && localResolution.status === "ambiguous" && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded border border-amber-200 bg-white p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-amber-800" }, "Multiple exact matches. Choose the intended framework."), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-wrap gap-1" }, (localResolution.candidates || []).map((candidate) => /* @__PURE__ */ React.createElement(
+  )), surpriseState === "ready" && surpriseHood && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-violet-900" }, "Graph context: ", surpriseHood.prerequisites.length, " prerequisite(s), ", surpriseHood.leadsTo.length, " next, ", surpriseHood.related.length, " related", surpriseHood.dataset && surpriseHood.dataset.provider ? " \u2014 " + surpriseHood.dataset.provider : "", ". Directions are AI proposals grounded in these source edges, for educator judgment \u2014 not certification."), surpriseState === "ready" && surpriseDirections.length > 0 && /* @__PURE__ */ React.createElement(SurpriseMeCompare, { directions: surpriseDirections, hood: surpriseHood, onUse: useSurpriseDirection })), localResolution && localResolution.status === "ambiguous" && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded border border-amber-200 bg-white p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-amber-800" }, "Multiple exact matches. Choose the intended framework."), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-wrap gap-1" }, (localResolution.candidates || []).map((candidate) => /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -3111,6 +3152,7 @@ window.AlloModules.LessonPlanPanel = (typeof LessonPlanPanel !== 'undefined') ? 
 window.AlloModules.AnalysisPanel = (typeof AnalysisPanel !== 'undefined') ? AnalysisPanel : null;
 window.AlloModules.UiToolWordsoundsPanel = (typeof UiToolWordsoundsPanel !== 'undefined') ? UiToolWordsoundsPanel : null;
 window.AlloModules.SurpriseMeEngine = (typeof SurpriseMeEngine !== 'undefined') ? SurpriseMeEngine : null;
+window.AlloModules.SurpriseMeCompare = (typeof SurpriseMeCompare !== 'undefined') ? SurpriseMeCompare : null;
 window.AlloModules.ViewSidebarPanelsModule = true;
 window.AlloModules.SidebarPanels = true;  // satisfies loadModule('SidebarPanels', ...)
 console.log('[CDN] ViewSidebarPanelsModule loaded — 19 panels registered');

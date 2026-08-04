@@ -1488,8 +1488,9 @@ function SurpriseTopicLauncher(props) {
     setResolution({ status: "resolved", match: candidate, candidates: [] });
     proposeFor(candidate);
   };
-  const useDirection = (direction) => {
-    if (typeof setSourceTopic === "function") setSourceTopic(engine.directionBrief(direction));
+  const useDirection = (direction, editedBrief) => {
+    const brief = typeof editedBrief === "string" && editedBrief.trim() ? editedBrief : engine.directionBrief(direction);
+    if (typeof setSourceTopic === "function") setSourceTopic(brief);
     const match = resolution && resolution.match;
     if (match && match.code && typeof setStandardInputValue === "function") setStandardInputValue(match.code);
     if (addToast) addToast("Topic seeded with this direction. The standard code is prefilled in Universal Settings.", "success");
@@ -1526,21 +1527,7 @@ function SurpriseTopicLauncher(props) {
     candidate.code,
     " \xB7 ",
     candidate.framework || candidate.jurisdiction || candidate.id
-  ))), resolution && resolution.status === "not-found" && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mt-1" }, "No exact local match for that code in the loaded snapshots."), resolution && resolution.status === "error" && /* @__PURE__ */ React.createElement("div", { role: "alert", className: "mt-1 text-red-700" }, "The local snapshot could not resolve this entry."), surpriseState === "ready" && resolvedMatch && hood && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-violet-900" }, "Graph context: ", hood.prerequisites.length, " prerequisite(s), ", hood.leadsTo.length, " next, ", hood.related.length, " related", hood.dataset && hood.dataset.provider ? " \u2014 " + hood.dataset.provider : "", ". Directions are AI proposals grounded in these source edges, for educator judgment \u2014 not certification."), surpriseState === "ready" && directions.map(function(direction, index) {
-    return /* @__PURE__ */ React.createElement("div", { key: index, className: "mt-2 rounded border border-violet-200 bg-white p-2" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-violet-950" }, direction.title), /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 italic" }, direction.essentialQuestion), /* @__PURE__ */ React.createElement("div", { className: "mt-0.5" }, direction.phenomenon), /* @__PURE__ */ React.createElement("div", { className: "mt-0.5" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Activity:"), " ", direction.activity), /* @__PURE__ */ React.createElement("div", { className: "mt-0.5" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Evidence:"), " ", direction.evidence), direction.udlSupports.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-0.5" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "UDL:"), " ", direction.udlSupports.join(" \xB7 ")), hood && hood.prerequisites.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 text-[10px] text-slate-600" }, "Prerequisites (from source data): ", hood.prerequisites.map(function(p) {
-      return p.code;
-    }).filter(Boolean).join(", ")), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        onClick: function() {
-          useDirection(direction);
-        },
-        className: "mt-1 rounded bg-violet-700 px-2 py-1 font-bold text-white hover:bg-violet-800"
-      },
-      "Use this direction"
-    ));
-  }));
+  ))), resolution && resolution.status === "not-found" && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mt-1" }, "No exact local match for that code in the loaded snapshots."), resolution && resolution.status === "error" && /* @__PURE__ */ React.createElement("div", { role: "alert", className: "mt-1 text-red-700" }, "The local snapshot could not resolve this entry."), surpriseState === "ready" && resolvedMatch && hood && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-violet-900" }, "Graph context: ", hood.prerequisites.length, " prerequisite(s), ", hood.leadsTo.length, " next, ", hood.related.length, " related", hood.dataset && hood.dataset.provider ? " \u2014 " + hood.dataset.provider : "", ". Directions are AI proposals grounded in these source edges, for educator judgment \u2014 not certification."), surpriseState === "ready" && directions.length > 0 && window.AlloModules && window.AlloModules.SurpriseMeCompare && React.createElement(window.AlloModules.SurpriseMeCompare, { directions, hood, onUse: useDirection }));
 }
 function SourceGenPanel(props) {
   const {

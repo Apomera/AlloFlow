@@ -28,12 +28,23 @@ describe('grounding discipline', () => {
     }
   });
 
-  it('the prerequisite line on each card renders PROVIDER data', () => {
-    // surpriseHood.prerequisites, never direction.prerequisites — the model
-    // cannot invent an edge that then renders as if it were source data.
-    expect(source).toContain('surpriseHood.prerequisites.map');
+  it('the prerequisite line renders PROVIDER data, once, below the comparison', () => {
+    // hood.prerequisites (provider data via hood={surpriseHood}), never
+    // direction.prerequisites — the model cannot invent an edge that then
+    // renders as if it were source data.
+    expect(source).toContain('hood.prerequisites.map');
+    expect(source).toContain('hood={surpriseHood}');
     expect(source).not.toContain('direction.prerequisites');
     expect(source).toContain('Prerequisites (from source data)');
+  });
+
+  it('three directions render as a comparison with pin-to-edit (open question 6)', () => {
+    // Aligned dimensions, pin one, edit the brief — and the TEACHER'S edit
+    // wins over the model proposal when the direction is used.
+    expect(source).toContain('function SurpriseMeCompare(props)');
+    expect(source).toContain('Pin to edit & use');
+    expect(source).toContain('aria-pressed={isPinned}');
+    expect(source).toMatch(/editedBrief\.trim\(\)\) \? editedBrief : SurpriseMeEngine\.directionBrief\(direction\)/);
   });
 
   it('directions carry the judgment framing, not certification', () => {

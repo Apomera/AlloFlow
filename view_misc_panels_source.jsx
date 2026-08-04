@@ -1849,8 +1849,10 @@ function SurpriseTopicLauncher(props) {
     setResolution({ status: 'resolved', match: candidate, candidates: [] });
     proposeFor(candidate);
   };
-  const useDirection = (direction) => {
-    if (typeof setSourceTopic === 'function') setSourceTopic(engine.directionBrief(direction));
+  const useDirection = (direction, editedBrief) => {
+    // The teacher's edited brief wins; the raw proposal is only the fallback.
+    const brief = (typeof editedBrief === 'string' && editedBrief.trim()) ? editedBrief : engine.directionBrief(direction);
+    if (typeof setSourceTopic === 'function') setSourceTopic(brief);
     const match = resolution && resolution.match;
     // Prefill the resolver in Universal Settings with the code so attaching
     // the standard is one click away — this launcher never attaches silently.
@@ -1891,19 +1893,8 @@ function SurpriseTopicLauncher(props) {
       {surpriseState === 'ready' && resolvedMatch && hood && (
         <p className="mt-1 text-violet-900">Graph context: {hood.prerequisites.length} prerequisite(s), {hood.leadsTo.length} next, {hood.related.length} related{hood.dataset && hood.dataset.provider ? ' — ' + hood.dataset.provider : ''}. Directions are AI proposals grounded in these source edges, for educator judgment — not certification.</p>
       )}
-      {surpriseState === 'ready' && directions.map(function (direction, index) {
-        return <div key={index} className="mt-2 rounded border border-violet-200 bg-white p-2">
-          <div className="font-bold text-violet-950">{direction.title}</div>
-          <div className="mt-0.5 italic">{direction.essentialQuestion}</div>
-          <div className="mt-0.5">{direction.phenomenon}</div>
-          <div className="mt-0.5"><span className="font-bold">Activity:</span> {direction.activity}</div>
-          <div className="mt-0.5"><span className="font-bold">Evidence:</span> {direction.evidence}</div>
-          {direction.udlSupports.length > 0 && <div className="mt-0.5"><span className="font-bold">UDL:</span> {direction.udlSupports.join(' · ')}</div>}
-          {hood && hood.prerequisites.length > 0 && <div className="mt-0.5 text-[10px] text-slate-600">Prerequisites (from source data): {hood.prerequisites.map(function (p) { return p.code; }).filter(Boolean).join(', ')}</div>}
-          <button type="button" onClick={function () { useDirection(direction); }}
-            className="mt-1 rounded bg-violet-700 px-2 py-1 font-bold text-white hover:bg-violet-800">Use this direction</button>
-        </div>;
-      })}
+      {surpriseState === 'ready' && directions.length > 0 && window.AlloModules && window.AlloModules.SurpriseMeCompare &&
+        React.createElement(window.AlloModules.SurpriseMeCompare, { directions: directions, hood: hood, onUse: useDirection })}
     </div>
   );
 }

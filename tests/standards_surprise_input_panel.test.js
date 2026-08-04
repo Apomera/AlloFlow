@@ -54,15 +54,17 @@ describe('launcher grounding and honesty', () => {
     expect(miscSource).toContain('Multiple exact matches');
   });
 
-  it('prerequisite lines on cards render PROVIDER data, and the judgment framing is present', () => {
-    expect(miscSource).toContain('hood.prerequisites.map');
+  it('directions render through the SHARED comparison component, and the judgment framing is present', () => {
+    // No launcher-local card markup: the comparison (and its provider-data
+    // prerequisite line) lives in SurpriseMeCompare, in the engine home file.
+    expect(miscSource).toContain('window.AlloModules.SurpriseMeCompare');
     expect(miscSource).not.toContain('direction.prerequisites');
-    expect(miscSource).toContain('Prerequisites (from source data)');
     expect(miscSource).toMatch(/for educator judgment — not certification/);
   });
 
-  it('"Use this direction" seeds the topic and prefills — never silently attaches — the standard', () => {
-    expect(miscSource).toMatch(/setSourceTopic\(engine\.directionBrief\(direction\)\)/);
+  it('"Use this direction" seeds the teacher-edited brief and prefills — never silently attaches — the standard', () => {
+    expect(miscSource).toMatch(/editedBrief\.trim\(\)\) \? editedBrief : engine\.directionBrief\(direction\)/);
+    expect(miscSource).toContain('setSourceTopic(brief)');
     expect(miscSource).toContain('setStandardInputValue');
     expect(miscSource).toContain('never attaches silently');
   });
@@ -81,5 +83,10 @@ describe('the built modules ship it', () => {
   it('the sidebar module still ships the resolver entry (both surfaces live)', () => {
     expect(sidebarModule).toContain('Surprise me: lessons in this learning space');
     expect(sidebarModule).toMatch(/window\.AlloModules\.SurpriseMeEngine = \(typeof SurpriseMeEngine/);
+  });
+
+  it('the comparison component is registered and carried by the built module', () => {
+    expect(sidebarModule).toMatch(/window\.AlloModules\.SurpriseMeCompare = \(typeof SurpriseMeCompare/);
+    expect(sidebarModule).toContain('Pin to edit & use');
   });
 });

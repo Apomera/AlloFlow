@@ -203,6 +203,64 @@ const SurpriseMeEngine = {
   }
 };
 
+// ── SurpriseMeCompare: three directions side by side, pin to edit, then use ──
+// Answers handoff open question 6 with "comparison card": the three proposals
+// render with ALIGNED dimensions so a teacher can compare like with like,
+// pin one, edit the brief (the teacher's edit always wins over model text),
+// and only then hand it to onUse. The prerequisite line renders PROVIDER data
+// once, below the grid — it is shared truth, not a per-proposal claim.
+// Registered as AlloModules.SurpriseMeCompare; both entry points use it.
+function SurpriseMeCompare(props) {
+  const { directions, hood, onUse } = props;
+  const [pinnedIndex, setPinnedIndex] = React.useState(null);
+  const [editedBrief, setEditedBrief] = React.useState('');
+  const pin = (index) => {
+    setPinnedIndex(index);
+    setEditedBrief(SurpriseMeEngine.directionBrief(directions[index]));
+  };
+  const DIMENSIONS = [
+    ['Essential question', (d) => d.essentialQuestion],
+    ['Phenomenon (hook)', (d) => d.phenomenon],
+    ['Activity', (d) => d.activity],
+    ['Evidence of learning', (d) => d.evidence],
+    ['UDL supports', (d) => (d.udlSupports || []).join(' · ')]
+  ];
+  return (
+    <div className="mt-2">
+      <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
+        {directions.map(function (direction, index) {
+          const isPinned = pinnedIndex === index;
+          return <div key={index} className={'rounded border bg-white p-2 ' + (isPinned ? 'border-violet-600 ring-2 ring-violet-300' : 'border-violet-200')}>
+            <div className="font-bold text-violet-950">{direction.title}</div>
+            {DIMENSIONS.map(function (dimension) {
+              const value = dimension[1](direction);
+              return value ? <div key={dimension[0]} className="mt-1">
+                <div className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{dimension[0]}</div>
+                <div>{value}</div>
+              </div> : null;
+            })}
+            <button type="button" onClick={function () { pin(index); }} aria-pressed={isPinned}
+              className={'mt-2 w-full rounded px-2 py-1 font-bold ' + (isPinned ? 'bg-violet-800 text-white' : 'bg-violet-100 text-violet-900 hover:bg-violet-200')}>
+              {isPinned ? '✓ Pinned' : 'Pin to edit & use'}
+            </button>
+          </div>;
+        })}
+      </div>
+      {hood && hood.prerequisites.length > 0 && <div className="mt-1 text-[10px] text-slate-600">Prerequisites (from source data): {hood.prerequisites.map(function (p) { return p.code; }).filter(Boolean).join(', ')} — shared by all three directions.</div>}
+      {pinnedIndex !== null && (
+        <div className="mt-2 rounded border border-violet-300 bg-white p-2">
+          <div className="font-bold text-violet-950">Edit before using — your judgment wins over the proposal</div>
+          <textarea value={editedBrief} onChange={(e) => setEditedBrief(e.target.value)} rows={6}
+            aria-label="Edit the pinned lesson direction before using it"
+            className="mt-1 w-full rounded border border-violet-200 p-1.5 text-[11px] focus:border-violet-500 focus:ring-2 focus:ring-violet-200 outline-none" />
+          <button type="button" onClick={function () { onUse(directions[pinnedIndex], editedBrief); }}
+            className="mt-1 rounded bg-violet-700 px-2 py-1 font-bold text-white hover:bg-violet-800">Use this direction</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function UniversalSettingsPanel(props) {
   const {
     InfoTooltip, addInterest, addToast, aiStandardQuery,
@@ -264,9 +322,10 @@ function UniversalSettingsPanel(props) {
       addToast('Could not propose lesson directions. Try again.', 'error');
     }
   };
-  const useSurpriseDirection = (direction) => {
+  const useSurpriseDirection = (direction, editedBrief) => {
     if (typeof handleUseResolvedStandard === 'function' && localResolution) handleUseResolvedStandard(localResolution);
-    const brief = SurpriseMeEngine.directionBrief(direction);
+    // The teacher's edited brief wins; the raw proposal is only the fallback.
+    const brief = (typeof editedBrief === 'string' && editedBrief.trim()) ? editedBrief : SurpriseMeEngine.directionBrief(direction);
     if (typeof setSourceTopic === 'function') {
       // Host passes the topic setter: seed generation directly, no paste step.
       setSourceTopic(brief);
@@ -579,19 +638,7 @@ function UniversalSettingsPanel(props) {
                                                     {surpriseState === 'ready' && surpriseHood && (
                                                         <p className="mt-1 text-violet-900">Graph context: {surpriseHood.prerequisites.length} prerequisite(s), {surpriseHood.leadsTo.length} next, {surpriseHood.related.length} related{surpriseHood.dataset && surpriseHood.dataset.provider ? ' — ' + surpriseHood.dataset.provider : ''}. Directions are AI proposals grounded in these source edges, for educator judgment — not certification.</p>
                                                     )}
-                                                    {surpriseState === 'ready' && surpriseDirections.map(function (direction, index) {
-                                                        return <div key={index} className="mt-2 rounded border border-violet-200 bg-white p-2">
-                                                            <div className="font-bold text-violet-950">{direction.title}</div>
-                                                            <div className="mt-0.5 italic">{direction.essentialQuestion}</div>
-                                                            <div className="mt-0.5">{direction.phenomenon}</div>
-                                                            <div className="mt-0.5"><span className="font-bold">Activity:</span> {direction.activity}</div>
-                                                            <div className="mt-0.5"><span className="font-bold">Evidence:</span> {direction.evidence}</div>
-                                                            {direction.udlSupports.length > 0 && <div className="mt-0.5"><span className="font-bold">UDL:</span> {direction.udlSupports.join(' · ')}</div>}
-                                                            {surpriseHood && surpriseHood.prerequisites.length > 0 && <div className="mt-0.5 text-[10px] text-slate-600">Prerequisites (from source data): {surpriseHood.prerequisites.map(function (p) { return p.code; }).filter(Boolean).join(', ')}</div>}
-                                                            <button type="button" onClick={function () { useSurpriseDirection(direction); }}
-                                                                className="mt-1 rounded bg-violet-700 px-2 py-1 font-bold text-white hover:bg-violet-800">Use this direction</button>
-                                                        </div>;
-                                                    })}
+                                                    {surpriseState === 'ready' && surpriseDirections.length > 0 && <SurpriseMeCompare directions={surpriseDirections} hood={surpriseHood} onUse={useSurpriseDirection} />}
                                                 </div>
                                             )}
                                             {localResolution && localResolution.status === 'ambiguous' && (

@@ -101,6 +101,7 @@ window.AlloModules.LessonPlanPanel = (typeof LessonPlanPanel !== 'undefined') ? 
 window.AlloModules.AnalysisPanel = (typeof AnalysisPanel !== 'undefined') ? AnalysisPanel : null;
 window.AlloModules.UiToolWordsoundsPanel = (typeof UiToolWordsoundsPanel !== 'undefined') ? UiToolWordsoundsPanel : null;
 window.AlloModules.SurpriseMeEngine = (typeof SurpriseMeEngine !== 'undefined') ? SurpriseMeEngine : null;
+window.AlloModules.SurpriseMeCompare = (typeof SurpriseMeCompare !== 'undefined') ? SurpriseMeCompare : null;
 window.AlloModules.ViewSidebarPanelsModule = true;
 window.AlloModules.SidebarPanels = true;  // satisfies loadModule('SidebarPanels', ...)
 console.log('[CDN] ViewSidebarPanelsModule loaded — 19 panels registered');
