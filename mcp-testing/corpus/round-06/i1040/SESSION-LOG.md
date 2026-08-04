@@ -222,11 +222,42 @@ so term-by-term navigation is the point. The worked "Example." under
 than a heading: it illustrates one entry rather than defining a term, so the
 heading level stays a clean list of terms.
 
-### Sessions 7+ — REMAINING (suggested boundaries from the printed TOC)
+### Session 7 (2026-08-04) — pages 23-26 · tranche-07 · 95 blocks · VALIDATED (merged)
+
+The start of the "Income" line instructions: general income rules (PPP
+forgiveness, foreign-source income, chapter 11, community property, rounding)
+and lines 1a through 4b. `merge-plans t01..t07` → 475 blocks, `ok: true`,
+pages 1-26 covered. Recall 0.9856, all shortfall furniture plus one familiar
+extraction artifact (`divtip`/`idends` — "dividends" split at a column break
+with the TIP icon label wedged between the halves, the same shape as
+`informa6` in tranche 2 and `employ12` in tranche 4).
+
+**Scope narrowed from the planned 23-38.** That span is 16 pages and two
+structures: pages 23-26 (and on to 28) are three-column line instructions,
+but from page 29 the section switches to fill-in **worksheets** — "Simplified
+Method Worksheet—Lines 5a and 5b", with dot leaders and numbered entry
+lines — which are a new shape and need their own session.
+
+**Line headings carry both parts.** The source prints each instruction as a
+small bold `Line 1a` above a larger bold description. They are authored as one
+heading, "Line 1a. Total Amount From Form(s) W-2, Box 1", because a reader
+navigating by heading needs both halves; neither alone says enough.
+
+**An interrupted list became two lists.** Line 1h's bulleted income types are
+broken on page 25 by a caution callout, and a flat list cannot hold a callout
+mid-list. Authored as two lists with the callout between them, exactly where
+the source prints it, with no item reordered.
+
+Also settled here: numbered worked examples (`Example 1/2/3` under line 3a)
+ARE headings, unlike the single run-in "Example." in tranche 6 — these are
+parallel, self-contained scenarios a reader may jump between.
+
+### Sessions 8+ — REMAINING (suggested boundaries from the printed TOC)
 
 | Tranche | Pages | Content | Notes |
 | --- | --- | --- | --- |
-| 07 | 23-38 | Income, AGI, Tax and Credits | line-instruction structure: `Line N` headings |
+| 08 | 27-31 | Lines 4c-6, pensions/annuities/social security | ★ introduces the WORKSHEET structure (p29 Simplified Method, dot leaders + numbered entry lines) — decide the shape once and reuse it for every later worksheet |
+| 09 | 32-38 | Lines 7-15, standard deduction, tax | more worksheets; p32/35/37/38 are full-width |
 | 07 | 39-60 | Payments (EIC!) | EIC worksheets + tables; heavy geometry work |
 | 08 | 61-67 | Refund, Amount You Owe, Sign, Assemble | |
 | 09 | 68-80 | 2025 Tax Table | MECHANICAL: generate rows from extract-text with a per-tranche generator; thousands of rows; verify row count against page count |
