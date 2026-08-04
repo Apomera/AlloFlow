@@ -256,6 +256,44 @@ describe('Nuclear lab renders', () => {
     expect(html).toContain('Binding energy per nucleon');
   });
 
+  // The heading numbers are read off NK_SECTIONS, and the index labels each
+  // jump button with its position in that list. When sections were inserted
+  // during earlier passes nobody renumbered, and the tool shipped reading
+  // 1,2,3,9,3,4,5,7,5,6,7,8,9,10 — two 3s, two 5s, two 7s, two 9s. Nothing
+  // caught it because every number was individually a plausible string.
+  it('numbers its sections 1..N with no duplicates or gaps', () => {
+    const nums = [...SRC.matchAll(/heading\([^,]+, '[^']*?(\d+)\. /g)].map((m) => Number(m[1]));
+    expect(nums.length).toBeGreaterThan(10);
+    expect(nums).toEqual(nums.map((_, i) => i + 1));
+  });
+
+  it('keeps the topic index in the same order as the sections it links to', () => {
+    const registry = [...SRC.matchAll(/\{ id: '([a-z0-9]+)', grp: '[a-z]+', icon:/g)].map((m) => m[1]);
+    const dom = [...SRC.matchAll(/^        sec\('([a-z0-9]+)'/gm)].map((m) => m[1]).filter((id) => id !== 'next');
+    expect(registry.length).toBe(14);
+    // Not a set comparison — order IS the contract, because the index prints
+    // each topic's position as its section number.
+    expect(dom).toEqual(registry);
+  });
+
+  it('gives every indexed topic a reachable anchor and a jump button', () => {
+    const html = renderTool('nuclearLab', {});
+    const registry = [...SRC.matchAll(/\{ id: '([a-z0-9]+)', grp: '[a-z]+', icon:/g)].map((m) => m[1]);
+    registry.forEach((id) => expect(html, 'no anchor for ' + id).toContain('id="nksec-' + id + '"'));
+    expect((html.match(/aria-label="Jump to /g) || []).length).toBe(registry.length);
+    expect(html).toContain('aria-label="Nuclear lab topics"');
+  });
+
+  it('filters the index by search text without hiding the sections themselves', () => {
+    const html = renderTool('nuclearLab', { _nuclearLab: { nkQuery: 'radon' } });
+    const jumps = (html.match(/aria-label="Jump to /g) || []).length;
+    expect(jumps).toBeGreaterThan(0);
+    expect(jumps).toBeLessThan(14);
+    // Filtering is navigation only: the content stays on the page, so a reader
+    // who searched for one thing has not lost access to everything else.
+    expect(html).toContain('id="nksec-halflife"');
+  });
+
   it('renders no React key warnings for its static card children', () => {
     const warnings = [];
     const original = console.error;

@@ -870,6 +870,17 @@
           }
         }].concat(children));
       };
+      // Same card, plus the anchor the topic index jumps to. scroll-margin keeps
+      // the heading clear of the sticky index bar instead of hiding under it.
+      var sec = function (id, accent) {
+        var children = Array.prototype.slice.call(arguments, 2);
+        var node = card.apply(null, [accent].concat(children));
+        return React.cloneElement(node, {
+          id: 'htsec-' + id,
+          'data-ht-sec': id,
+          style: Object.assign({}, node.props.style, { scrollMarginTop: '92px' })
+        });
+      };
       var heading = function (accent, text) {
         return h('p', { className: 'text-xs font-black mb-2', style: { color: accent } }, text);
       };
@@ -931,6 +942,105 @@
       ];
       var activeMode = MODES.filter(function (m) { return m.id === mode; })[0] || MODES[0];
 
+      // ── topic index ──
+      // Order here MUST match DOM order — the heading numbers are read off it.
+      var HT_GROUPS = [
+        { id: 'all', label: 'All' },
+        { id: 'transfer', label: 'How heat moves' },
+        { id: 'energy', label: 'Energy & temperature' },
+        { id: 'engines', label: 'Engines & entropy' },
+        { id: 'practice', label: 'Practice' }
+      ];
+      var HT_SECTIONS = [
+        { id: 'conduction', grp: 'transfer', icon: '🔥', label: 'Three ways heat moves', kw: 'conduction convection radiation mechanism transfer race bar' },
+        { id: 'insulation', grp: 'transfer', icon: '🧣', label: 'Insulation', kw: 'mug keep hot foam wool material conductivity lag cooling' },
+        { id: 'wall', grp: 'transfer', icon: '🧱', label: 'Build a wall', kw: 'r-value resistance layers brick cavity plaster u-value adds up' },
+        { id: 'range', grp: 'transfer', icon: '📊', label: 'Conductivity range', kw: 'orders of magnitude diamond copper air scale log bigger than it looks' },
+        { id: 'mixing', grp: 'energy', icon: '⚖️', label: 'Mix two things', kw: 'final temperature calorimetry specific heat capacity equilibrium hot cold' },
+        { id: 'heatingcurve', grp: 'energy', icon: '♨️', label: 'The heating curve', kw: 'latent heat fusion vaporisation plateau melting boiling phase change' },
+        { id: 'engines', grp: 'engines', icon: '⚙️', label: 'Why no engine reaches 100%', kw: 'carnot efficiency limit petrol diesel turbine hot cold reservoir' },
+        { id: 'convection3d', grp: 'transfer', icon: '🧊', label: 'Convection in 3D', kw: 'three dimensional rolling cell plume buoyancy turn it over simulation' },
+        { id: 'radiation', grp: 'transfer', icon: '📡', label: 'Radiation & the fourth power', kw: 'stefan boltzmann t4 emissivity infrared black body vacuum sun' },
+        { id: 'expansion', grp: 'energy', icon: '📏', label: 'Thermal expansion', kw: 'bridges gaps rails coefficient linear expand contract buckle' },
+        { id: 'spot', grp: 'practice', icon: '🌍', label: 'Spot the mechanism', kw: 'quiz practice identify scenario which one test yourself' },
+        { id: 'entropy', grp: 'engines', icon: '🎲', label: 'Entropy', kw: 'second law disorder one way arrow of time irreversible microstates' },
+        { id: 'heatpumps', grp: 'engines', icon: '🔄', label: 'Heat pumps', kw: 'cop coefficient of performance reverse fridge air source ground heating' }
+      ];
+      var htQuery = (d.htQuery || '').trim().toLowerCase();
+      var htGroup = d.htGroup || 'all';
+      function htMatches(s) {
+        if (htGroup !== 'all' && s.grp !== htGroup) return false;
+        if (!htQuery) return true;
+        return (s.id + ' ' + s.label + ' ' + s.kw).toLowerCase().indexOf(htQuery) !== -1;
+      }
+      var htVisible = HT_SECTIONS.filter(htMatches);
+      function htGoTo(s) {
+        var target = typeof document !== 'undefined' && document.getElementById('htsec-' + s.id);
+        if (target) {
+          var rm = !!(typeof window !== 'undefined' && window.matchMedia
+            && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+          try { target.scrollIntoView({ behavior: rm ? 'auto' : 'smooth', block: 'start' }); }
+          catch (e) { target.scrollIntoView(); }
+        }
+        if (typeof announceToSR === 'function') announceToSR('Jumped to ' + s.label + '.');
+      }
+      var htIndex = h('nav', {
+        'aria-label': 'Heat lab topics',
+        className: 'rounded-xl border px-2.5 py-2 mt-1',
+        style: {
+          position: 'sticky', top: 0, zIndex: 30,
+          borderColor: 'rgba(251,146,60,0.4)',
+          background: isDark ? 'rgba(15,23,42,0.97)' : 'rgba(255,255,255,0.97)',
+          backdropFilter: 'blur(6px)'
+        }
+      },
+        h('div', { className: 'flex flex-wrap items-center gap-2' },
+          h('span', { className: 'text-[11px] font-black', style: { color: isDark ? '#fdba74' : '#c2410c' } },
+            '🧭 ' + HT_SECTIONS.length + ' topics'),
+          h('label', { htmlFor: 'ht-topic-search', className: 'sr-only' }, 'Search topics'),
+          h('input', {
+            id: 'ht-topic-search', type: 'search', value: d.htQuery || '',
+            placeholder: 'Search topics…',
+            'aria-label': 'Search the ' + HT_SECTIONS.length + ' topics by name or keyword',
+            onChange: function (e) { upd({ htQuery: e.target.value }); },
+            className: 'flex-1 min-w-[8rem] rounded-lg px-2 py-1 text-[11px]',
+            style: {
+              background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.95)',
+              color: isDark ? '#e2e8f0' : '#1e293b',
+              border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)')
+            }
+          }),
+          h('span', { className: 'text-[10px] font-bold', style: { color: isDark ? '#94a3b8' : '#64748b' } },
+            htVisible.length === HT_SECTIONS.length ? 'showing all' : 'showing ' + htVisible.length)
+        ),
+        h('div', { className: 'flex flex-wrap gap-1 mt-1.5' },
+          HT_GROUPS.map(function (g) {
+            var n = g.id === 'all' ? HT_SECTIONS.length : HT_SECTIONS.filter(function (s) { return s.grp === g.id; }).length;
+            return pill(htGroup === g.id, '#fb923c', g.label + ' (' + n + ')', function () {
+              upd({ htGroup: g.id });
+            }, 'Show ' + g.label + ', ' + n + ' topics');
+          })
+        ),
+        h('div', { className: 'flex flex-wrap gap-1 mt-1.5' },
+          htVisible.length === 0
+            ? h('span', { className: 'text-[11px]', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+                'No topic matches “' + (d.htQuery || '') + '”.')
+            : htVisible.map(function (s) {
+                return h('button', {
+                  key: s.id, type: 'button',
+                  onClick: function () { htGoTo(s); },
+                  'aria-label': 'Jump to ' + s.label,
+                  className: 'min-h-11 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-colors',
+                  style: {
+                    background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(251,146,60,0.09)',
+                    color: isDark ? '#e2e8f0' : '#334155',
+                    border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.28)' : 'rgba(251,146,60,0.35)')
+                  }
+                }, s.icon + ' ' + (HT_SECTIONS.indexOf(s) + 1) + '. ' + s.label);
+              })
+        )
+      );
+
       return h('div', { 'data-heat-lab': 'true', className: 'max-w-5xl mx-auto animate-in fade-in duration-200' },
 
         // ── header ──
@@ -949,8 +1059,10 @@
           )
         ),
 
+        htIndex,
+
         // ── 1. heat transfer ──
-        card('#f97316',
+        sec('conduction', '#f97316',
           heading('#fb923c', '🔥 1. The three ways heat moves'),
           h('div', { role: 'group', 'aria-label': 'Heat transfer mechanism', className: 'flex flex-wrap gap-1.5 mb-2' },
             MODES.map(function (m) {
@@ -1058,7 +1170,7 @@
         ),
 
         // ── 2. insulation ──
-        card('#fbbf24',
+        sec('insulation', '#fbbf24',
           heading('#fbbf24', '🧣 2. Insulation: keep the mug hot'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'A 350 ml mug of tea at 90 °C in a 20 °C room. Wrap it and see how much you can slow the loss. Getting it above 65 °C after a full hour earns the badge — only a genuine insulator manages that, and thickness alone will not rescue a metal.'),
@@ -1105,7 +1217,7 @@
         ),
 
         // ── 2b. composite wall ──
-        card('#84cc16',
+        sec('wall', '#84cc16',
           heading('#84cc16', '🧱 3. Build a wall: resistances add up'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'A real wall is layers in series, and their R-values simply add. Tap to add or remove a layer and watch the U-value. New-build regulations here want 0.18 W/m²K or lower.'),
@@ -1166,7 +1278,7 @@
         ),
 
         // ── 2c. how far apart are these materials? ──
-        card('#f97316',
+        sec('range', '#f97316',
           heading('#fb923c', '📊 4. The range is bigger than it looks'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Conductivity is plotted on a logarithmic scale, because a linear one would squash everything below copper into a single line at the bottom.'),
@@ -1192,8 +1304,8 @@
         ),
 
         // ── 3. calorimetry ──
-        card('#38bdf8',
-          heading('#38bdf8', '⚖️ 3. Mix two things: what temperature do you get?'),
+        sec('mixing', '#38bdf8',
+          heading('#38bdf8', '⚖️ 5. Mix two things: what temperature do you get?'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Energy lost by the hot one equals energy gained by the cold one. Predict the final temperature before you reveal it.'),
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
@@ -1259,8 +1371,8 @@
         ),
 
         // ── 4. heating curve ──
-        card('#a78bfa',
-          heading('#a78bfa', '♨️ 4. The heating curve: where the energy hides'),
+        sec('heatingcurve', '#a78bfa',
+          heading('#a78bfa', '♨️ 6. The heating curve: where the energy hides'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Pour energy into 1 kg of ice at −20 °C and watch the temperature. It does not rise steadily, and the reason is the most useful idea in this whole tool.'),
           h('div', { className: 'rounded-lg overflow-hidden border mb-2', style: { borderColor: 'rgba(167,139,250,0.35)', height: '190px' } },
@@ -1304,8 +1416,8 @@
         ),
 
         // ── 5. engines ──
-        card('#34d399',
-          heading('#34d399', '⚙️ 5. Why no engine reaches 100 percent'),
+        sec('engines', '#34d399',
+          heading('#34d399', '⚙️ 7. Why no engine reaches 100 percent'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Carnot showed the ceiling depends only on the two temperatures: η = 1 − Tc/Th, in kelvin. No amount of engineering beats it — this is the second law, not a design flaw.'),
           h('div', { className: 'space-y-1' },
@@ -1378,8 +1490,8 @@
         ),
 
         // ── 3D convection tank ──
-        card('#fb923c',
-          heading('#fb923c', '🧊 Turn it over: convection in 3D'),
+        sec('convection3d', '#fb923c',
+          heading('#fb923c', '🧊 8. Turn it over: convection in 3D'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'A flat arrow diagram makes convection look like a circle. It is not — it is a closed roll wrapping all the way round the tank. Drag to rotate, or use the buttons and arrow keys.'),
 
@@ -1455,8 +1567,8 @@
         ),
 
         // ── 6. Stefan-Boltzmann ──
-        card('#f472b6',
-          heading('#f472b6', '📡 6. Radiation has a fourth-power law'),
+        sec('radiation', '#f472b6',
+          heading('#f472b6', '📡 9. Radiation has a fourth-power law'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Everything above absolute zero radiates. The power goes as T⁴ in kelvin, so a modest temperature rise makes a startling difference — and that single exponent explains thermal cameras, why embers glow, and why a small planet-wide warming matters.'),
           slider('heat-radt', 'Surface temp', -20, 900, 5, radT,
@@ -1481,8 +1593,8 @@
         ),
 
         // ── 7. thermal expansion ──
-        card('#22d3ee',
-          heading('#22d3ee', '📏 7. Thermal expansion: why bridges have gaps'),
+        sec('expansion', '#22d3ee',
+          heading('#22d3ee', '📏 10. Thermal expansion: why bridges have gaps'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Heat something and it grows. The effect is tiny per metre and per degree, which is exactly why it catches engineers out over long spans and wide temperature swings.'),
           h('div', { className: 'flex flex-wrap gap-1 mb-1' },
@@ -1512,8 +1624,8 @@
         ),
 
         // ── 8. everyday cases ──
-        card('#60a5fa',
-          heading('#60a5fa', '🌍 8. Spot the mechanism'),
+        sec('spot', '#60a5fa',
+          heading('#60a5fa', '🌍 11. Spot the mechanism'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Each of these beats heat transfer in a different way. Pick one and name the mechanism before you read the answer.'),
           h('div', { className: 'space-y-1 max-h-56 overflow-y-auto pr-1' },
@@ -1547,8 +1659,8 @@
         ),
 
         // ── entropy ──
-        card('#f472b6',
-          heading('#f472b6', '🎲 9. Entropy: why heat only goes one way'),
+        sec('entropy', '#f472b6',
+          heading('#f472b6', '🎲 12. Entropy: why heat only goes one way'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Nothing forbids a cold cup warming itself by cooling the room — energy would still be conserved. It does not happen because of counting. Two blocks share 80 units of energy; the graph plots how many ways each split can be arranged.'),
           h('div', { className: 'rounded-lg overflow-hidden border mb-2', style: { borderColor: 'rgba(244,114,182,0.35)', height: '190px' } },
@@ -1580,8 +1692,8 @@
         ),
 
         // ── heat pumps ──
-        card('#22d3ee',
-          heading('#22d3ee', '🔄 10. Heat pumps: the engine in reverse'),
+        sec('heatpumps', '#22d3ee',
+          heading('#22d3ee', '🔄 13. Heat pumps: the engine in reverse'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Run a heat engine backwards and you spend work to move heat up the temperature gradient. Because you are moving heat rather than making it, you get out more than you put in — and no law is broken.'),
           slider('heat-hp-out', 'Outdoor temp', -20, 20, 1, hpOut,
@@ -1612,7 +1724,7 @@
 
         // ── where this goes next ──
         // Four tools in this lab lean hard on heat and had nowhere to point back to.
-        card('#94a3b8',
+        sec('next', '#94a3b8',
           heading(isDark ? '#cbd5e1' : '#475569', '🔗 Take this somewhere'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Every one of these runs on the ideas above. Open one and look for them.'),

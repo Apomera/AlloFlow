@@ -950,6 +950,17 @@
           boxShadow: '0 1px 2px rgba(15,23,42,0.05), 0 12px 28px -22px rgba(15,23,42,0.5)'
         } }].concat(children));
       };
+      // Same card, plus the anchor the topic index jumps to. scroll-margin keeps
+      // the heading clear of the sticky index bar instead of hiding under it.
+      var sec = function (id, accent) {
+        var children = Array.prototype.slice.call(arguments, 2);
+        var node = card.apply(null, [accent].concat(children));
+        return React.cloneElement(node, {
+          id: 'nksec-' + id,
+          'data-nk-sec': id,
+          style: Object.assign({}, node.props.style, { scrollMarginTop: '92px' })
+        });
+      };
       var heading = function (accent, text) {
         return h('p', { className: 'text-xs font-black mb-2', style: { color: accent } }, text);
       };
@@ -993,6 +1004,109 @@
         return h('span', { className: 'block text-[11px] leading-relaxed mt-1', style: { color: colour || (isDark ? '#e2e8f0' : '#334155') } }, txt);
       };
 
+      // ── topic index ──
+      // 14 sections is a long scroll to hunt through. Order here MUST match DOM
+      // order — the numbers in the headings are read off this list.
+      var NK_GROUPS = [
+        { id: 'all', label: 'All' },
+        { id: 'decay', label: 'Decay & dating' },
+        { id: 'radiation', label: 'Radiation & dose' },
+        { id: 'reactors', label: 'Reactors' },
+        { id: 'society', label: 'Risk & society' }
+      ];
+      var NK_SECTIONS = [
+        { id: 'halflife', grp: 'decay', icon: '⏳', label: 'Half-life', kw: 'decay constant rate exponential isotope carbon caesium tritium never changes' },
+        { id: 'dating', grp: 'decay', icon: '🦴', label: 'Carbon dating', kw: 'carbon-14 c14 archaeology age sample radiocarbon 5730 years old' },
+        { id: 'chain', grp: 'decay', icon: '⛓️', label: 'Uranium decay chain', kw: 'u238 lead radon basement alpha beta daughter series progeny' },
+        { id: 'enrichment', grp: 'reactors', icon: '🔢', label: 'Enrichment', kw: 'u235 percent centrifuge weapons grade reactor fuel not a bomb proliferation' },
+        { id: 'shielding', grp: 'radiation', icon: '🛡️', label: 'Shielding', kw: 'alpha beta gamma neutron lead concrete paper stopping attenuation' },
+        { id: 'criticality', grp: 'reactors', icon: '⚛️', label: 'Chain reaction', kw: 'critical subcritical supercritical k neutron multiplication moderator control' },
+        { id: 'binding', grp: 'decay', icon: '⛰️', label: 'Binding energy', kw: 'curve iron-56 fission fusion mass defect e=mc2 nucleon why energy' },
+        { id: 'mydose', grp: 'radiation', icon: '🧮', label: 'Your annual dose', kw: 'personal estimate radon flights scans altitude millisievert msv background' },
+        { id: 'doseladder', grp: 'radiation', icon: '📏', label: 'Dose ladder', kw: 'sievert banana flight ct scan lethal acute compare how much is a lot' },
+        { id: 'accidents', grp: 'society', icon: '📋', label: 'The three accidents', kw: 'chernobyl fukushima three mile island deaths tmi meltdown numbers' },
+        { id: 'reactors', grp: 'reactors', icon: '🏭', label: 'Reactor designs & SMRs', kw: 'pwr bwr candu rbmk smr molten salt fusion small modular status' },
+        { id: 'waste', grp: 'society', icon: '🗄️', label: 'The waste question', kw: 'spent fuel repository onkalo storage geological million years disposal' },
+        { id: 'compare', grp: 'society', icon: '⚖️', label: 'Compared with alternatives', kw: 'deaths per twh coal gas solar wind carbon co2 lifecycle safest' },
+        { id: 'operate', grp: 'reactors', icon: '🎛️', label: 'Operate a reactor', kw: 'simulator control rods scram xenon blackout scenario 3d core hands on' }
+      ];
+      var nkQuery = (d.nkQuery || '').trim().toLowerCase();
+      var nkGroup = d.nkGroup || 'all';
+      function nkMatches(s) {
+        if (nkGroup !== 'all' && s.grp !== nkGroup) return false;
+        if (!nkQuery) return true;
+        return (s.id + ' ' + s.label + ' ' + s.kw).toLowerCase().indexOf(nkQuery) !== -1;
+      }
+      var nkVisible = NK_SECTIONS.filter(nkMatches);
+      function nkGoTo(s) {
+        var target = typeof document !== 'undefined' && document.getElementById('nksec-' + s.id);
+        if (target) {
+          var rm = !!(typeof window !== 'undefined' && window.matchMedia
+            && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+          try { target.scrollIntoView({ behavior: rm ? 'auto' : 'smooth', block: 'start' }); }
+          catch (e) { target.scrollIntoView(); }
+        }
+        if (typeof announceToSR === 'function') announceToSR('Jumped to ' + s.label + '.');
+      }
+      // Every section stays open, so the index is pure navigation — nothing here
+      // marks a topic as engaged. The quest hooks still measure real interaction.
+      var nkIndex = h('nav', {
+        'aria-label': 'Nuclear lab topics',
+        className: 'rounded-xl border px-2.5 py-2 mt-1',
+        style: {
+          position: 'sticky', top: 0, zIndex: 30,
+          borderColor: 'rgba(167,139,250,0.4)',
+          background: isDark ? 'rgba(15,23,42,0.97)' : 'rgba(255,255,255,0.97)',
+          backdropFilter: 'blur(6px)'
+        }
+      },
+        h('div', { className: 'flex flex-wrap items-center gap-2' },
+          h('span', { className: 'text-[11px] font-black', style: { color: isDark ? '#c4b5fd' : '#6d28d9' } },
+            '🧭 ' + NK_SECTIONS.length + ' topics'),
+          h('label', { htmlFor: 'nk-topic-search', className: 'sr-only' }, 'Search topics'),
+          h('input', {
+            id: 'nk-topic-search', type: 'search', value: d.nkQuery || '',
+            placeholder: 'Search topics…',
+            'aria-label': 'Search the ' + NK_SECTIONS.length + ' topics by name or keyword',
+            onChange: function (e) { upd({ nkQuery: e.target.value }); },
+            className: 'flex-1 min-w-[8rem] rounded-lg px-2 py-1 text-[11px]',
+            style: {
+              background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.95)',
+              color: isDark ? '#e2e8f0' : '#1e293b',
+              border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)')
+            }
+          }),
+          h('span', { className: 'text-[10px] font-bold', style: { color: isDark ? '#94a3b8' : '#64748b' } },
+            nkVisible.length === NK_SECTIONS.length ? 'showing all' : 'showing ' + nkVisible.length)
+        ),
+        h('div', { className: 'flex flex-wrap gap-1 mt-1.5' },
+          NK_GROUPS.map(function (g) {
+            var n = g.id === 'all' ? NK_SECTIONS.length : NK_SECTIONS.filter(function (s) { return s.grp === g.id; }).length;
+            return pill(nkGroup === g.id, '#a78bfa', g.label + ' (' + n + ')', function () {
+              upd({ nkGroup: g.id });
+            }, 'Show ' + g.label + ', ' + n + ' topics');
+          })
+        ),
+        h('div', { className: 'flex flex-wrap gap-1 mt-1.5' },
+          nkVisible.length === 0
+            ? h('span', { className: 'text-[11px]', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+                'No topic matches “' + (d.nkQuery || '') + '”.')
+            : nkVisible.map(function (s, i) {
+                return h('button', {
+                  key: s.id, type: 'button',
+                  onClick: function () { nkGoTo(s); },
+                  'aria-label': 'Jump to ' + s.label,
+                  className: 'min-h-11 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-colors',
+                  style: {
+                    background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(167,139,250,0.09)',
+                    color: isDark ? '#e2e8f0' : '#334155',
+                    border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.28)' : 'rgba(167,139,250,0.35)')
+                  }
+                }, s.icon + ' ' + (NK_SECTIONS.indexOf(s) + 1) + '. ' + s.label);
+              })
+        )
+      );
+
       return h('div', { 'data-nuclear-lab': 'true', className: 'max-w-5xl mx-auto animate-in fade-in duration-200' },
 
         h('div', { className: 'relative overflow-hidden rounded-xl border mb-1 px-3 py-2.5', style: { background: 'linear-gradient(115deg, #1a0f2e 0%, #2e1065 46%, #0b1a2e 100%)', borderColor: 'rgba(167,139,250,0.4)' } },
@@ -1010,8 +1124,10 @@
           )
         ),
 
+        nkIndex,
+
         // ── 1. decay ──
-        card('#a78bfa',
+        sec('halflife', '#a78bfa',
           heading('#c4b5fd', '⏳ 1. Half-life: the one rule that never changes'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Every half-life, exactly half of what is left decays. Not half the original — half of what remains. Nothing changes the rate: not heat, not pressure, not chemistry.'),
@@ -1044,7 +1160,7 @@
         ),
 
         // ── 2. carbon dating ──
-        card('#22d3ee',
+        sec('dating', '#22d3ee',
           heading('#22d3ee', '🦴 2. Read a date out of the decay'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Living things take in carbon-14 while alive and stop at death. Measure how much is left and you can run the half-life backwards to a date.'),
@@ -1083,7 +1199,7 @@
 
 
         // ── decay chain ──
-        card('#c084fc',
+        sec('chain', '#c084fc',
           heading('#c084fc', '⛓️ 3. The chain from uranium to lead — and why radon is in basements'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Most heavy nuclei do not reach stability in one step. Uranium-238 takes fourteen, alternating alpha and beta, and finishes as lead. One member of that chain is a gas, and that changes everything.'),
@@ -1125,8 +1241,8 @@
         ),
 
         // ── enrichment ──
-        card('#fb923c',
-          heading('#fb923c', '🔢 9. Enrichment: why reactor fuel is not a bomb'),
+        sec('enrichment', '#fb923c',
+          heading('#fb923c', '🔢 4. Enrichment: why reactor fuel is not a bomb'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Natural uranium is 99.3% U-238 and only 0.72% the fissile U-235. Separating them is the hardest industrial step in the whole business — and the reason a power reactor is not a weapon waiting to happen.'),
           h('div', { role: 'list', className: 'space-y-1' },
@@ -1164,8 +1280,8 @@
         ),
 
         // ── 3. shielding ──
-        card('#f87171',
-          heading('#f87171', '🛡️ 3. What actually stops it'),
+        sec('shielding', '#f87171',
+          heading('#f87171', '🛡️ 5. What actually stops it'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             '"Radiation" is four different things that behave nothing alike. Pick one and try to stop it.'),
           h('div', { className: 'flex flex-wrap gap-1 mb-2' },
@@ -1229,8 +1345,8 @@
         ),
 
         // ── 4. chain reaction ──
-        card('#34d399',
-          heading('#34d399', '⚛️ 4. The chain reaction, and what holds it steady'),
+        sec('criticality', '#34d399',
+          heading('#34d399', '⚛️ 6. The chain reaction, and what holds it steady'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'A uranium-235 nucleus absorbs a neutron, splits, and releases 2 or 3 more. k is how many of those go on to cause another fission. Everything about reactor control is holding k at exactly 1.'),
           slider('nk-rods', 'Control rods in', 0, 100, 1, rods,
@@ -1260,8 +1376,8 @@
 
 
         // ── binding energy: the one curve behind both ──
-        card('#38bdf8',
-          heading('#38bdf8', '⛰️ 5. One curve explains fission AND fusion'),
+        sec('binding', '#38bdf8',
+          heading('#38bdf8', '⛰️ 7. One curve explains fission AND fusion'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Binding energy per nucleon is how tightly each particle is held. The curve rises steeply from hydrogen, peaks, then falls slowly. Energy comes out whenever you move DOWNHILL toward that peak — and you can arrive from either side.'),
           h('div', { className: 'rounded-lg overflow-hidden border mb-2', style: { borderColor: 'rgba(56,189,248,0.35)', height: '190px' } },
@@ -1304,8 +1420,8 @@
         ),
 
         // ── personal dose ──
-        card('#22d3ee',
-          heading('#22d3ee', '🧮 7. Estimate your own annual dose'),
+        sec('mydose', '#22d3ee',
+          heading('#22d3ee', '🧮 8. Estimate your own annual dose'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Everyone is exposed, all the time, mostly from the ground and from radon. Put your own numbers in and see where yours comes from.'),
           slider('ds-alt', 'Home altitude', 0, 3000, 50, dsAlt,
@@ -1362,8 +1478,8 @@
         ),
 
         // ── 5. dose ──
-        card('#fbbf24',
-          heading('#fbbf24', '📏 5. How much is a lot? The dose ladder'),
+        sec('doseladder', '#fbbf24',
+          heading('#fbbf24', '📏 9. How much is a lot? The dose ladder'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Doses span eight orders of magnitude, so this scale is logarithmic — each step along it is ten times the last. Tap any row.'),
           h('div', { role: 'list', className: 'space-y-1' },
@@ -1400,8 +1516,8 @@
         ),
 
         // ── 6. accidents ──
-        card('#f87171',
-          heading('#f87171', '📋 6. The three accidents, in the actual numbers'),
+        sec('accidents', '#f87171',
+          heading('#f87171', '📋 10. The three accidents, in the actual numbers'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'These are the events that shaped how the world thinks about nuclear power. The figures below come from UNSCEAR and the relevant national reports, and where the range is disputed the tool says so.'),
           h('div', { className: 'space-y-1' },
@@ -1425,8 +1541,8 @@
         ),
 
         // ── 7. reactors and SMRs ──
-        card('#38bdf8',
-          heading('#38bdf8', '🏭 7. Reactor designs, and where SMRs really stand'),
+        sec('reactors', '#38bdf8',
+          heading('#38bdf8', '🏭 11. Reactor designs, and where SMRs really stand'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Every row says how it works, what makes it safe, and — the part usually left out — what the catch is.'),
           h('div', { className: 'space-y-1' },
@@ -1466,8 +1582,8 @@
 
 
         // ── 8. waste ──
-        card('#94a3b8',
-          heading(isDark ? '#cbd5e1' : '#475569', '🗄️ 8. The waste question, taken seriously'),
+        sec('waste', '#94a3b8',
+          heading(isDark ? '#cbd5e1' : '#475569', '🗄️ 12. The waste question, taken seriously'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'This is the objection that survives every other answer, so it deserves a straight one — including the part that genuinely has no solution.'),
           h('div', { className: 'space-y-1' },
@@ -1486,8 +1602,8 @@
         ),
 
         // ── 9. comparison ──
-        card('#a3e635',
-          heading('#84cc16', '⚖️ 9. Compared with the alternatives'),
+        sec('compare', '#a3e635',
+          heading('#84cc16', '⚖️ 13. Compared with the alternatives'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Risk only means something next to the risk of the thing you would do instead. Both charts are full life cycle, including mining, construction and accidents.'),
           h('p', { className: 'text-[11px] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Deaths per terawatt-hour of electricity'),
@@ -1525,8 +1641,8 @@
         ),
 
         // ── reactor operation simulator ──
-        card('#34d399',
-          heading('#34d399', '🎛️ 10. Operate a reactor'),
+        sec('operate', '#34d399',
+          heading('#34d399', '🎛️ 14. Operate a reactor'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'A modern reactor, run properly. The two accident conditions are here as engineering case studies — the point is to watch the physics do it, not to score a disaster.'),
 
@@ -1649,7 +1765,7 @@
         ),
 
         // ── bridges ──
-        card('#94a3b8',
+        sec('next', '#94a3b8',
           heading(isDark ? '#cbd5e1' : '#475569', '🔗 Take this somewhere'),
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
             [{ id: 'heatLab', icon: '🌡️', name: 'Heat & Thermodynamics Lab', why: 'A reactor is a heat engine. Carnot caps it at about 33%, which is why two-thirds of the energy goes up the cooling towers.' },

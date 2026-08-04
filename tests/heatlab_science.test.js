@@ -232,4 +232,38 @@ describe('Heat lab renders', () => {
     const html = renderTool('heatLab', {});
     expect(html).toMatch(/order-of-magnitude accurate for teaching/i);
   });
+
+  // Same drift as the nuclear lab: sections were inserted without renumbering,
+  // so the tool shipped reading 1,2,3,4,3,4,5,-,6,7,8,9,10 — two 3s, two 4s,
+  // and the 3D convection card with no number at all.
+  it('numbers its sections 1..N with no duplicates or gaps', () => {
+    const nums = [...SRC.matchAll(/heading\([^,]+, '[^']*?(\d+)\. /g)].map((m) => Number(m[1]));
+    expect(nums.length).toBeGreaterThan(10);
+    expect(nums).toEqual(nums.map((_, i) => i + 1));
+  });
+
+  it('keeps the topic index in the same order as the sections it links to', () => {
+    const registry = [...SRC.matchAll(/\{ id: '([a-z0-9]+)', grp: '[a-z]+', icon:/g)].map((m) => m[1]);
+    const dom = [...SRC.matchAll(/^        sec\('([a-z0-9]+)'/gm)].map((m) => m[1]).filter((id) => id !== 'next');
+    expect(registry.length).toBe(13);
+    // Order IS the contract: the index prints each topic's position as its
+    // section number, so a reordering that kept the same set would misnumber.
+    expect(dom).toEqual(registry);
+  });
+
+  it('gives every indexed topic a reachable anchor and a jump button', () => {
+    const html = renderTool('heatLab', {});
+    const registry = [...SRC.matchAll(/\{ id: '([a-z0-9]+)', grp: '[a-z]+', icon:/g)].map((m) => m[1]);
+    registry.forEach((id) => expect(html, 'no anchor for ' + id).toContain('id="htsec-' + id + '"'));
+    expect((html.match(/aria-label="Jump to /g) || []).length).toBe(registry.length);
+    expect(html).toContain('aria-label="Heat lab topics"');
+  });
+
+  it('filters the index by search text without hiding the sections themselves', () => {
+    const html = renderTool('heatLab', { _heatLab: { htQuery: 'carnot' } });
+    const jumps = (html.match(/aria-label="Jump to /g) || []).length;
+    expect(jumps).toBeGreaterThan(0);
+    expect(jumps).toBeLessThan(13);
+    expect(html).toContain('id="htsec-conduction"');
+  });
 });
