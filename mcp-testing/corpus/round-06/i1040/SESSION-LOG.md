@@ -34,23 +34,48 @@ No partial rebuild was delivered.
    through `merge-plans` (they carry no h1 by design). Checkpoint after each
    session: `merge-plans --tranches t01 ... tNN --out /tmp/checkpoint.json`
    and read `pagesWithoutBlocks`.
+6. Per-tranche recall check (added session 2, worth keeping): tokenise the
+   source pages and the authored blocks with the SAME normalisation — close
+   `-\s*` on both sides, or justified line-break hyphens read as misses — and
+   list the shortfall. Session 2 scored 0.9982 with every missing token
+   explained (two printed page numbers, one of which sits *inside* a
+   hyphen-split word at the column break). It catches a dropped sentence in
+   the session that wrote it, instead of at the final merge.
 
-### Sessions 2+ — REMAINING (suggested boundaries from the printed TOC)
+### Session 2 (2026-08-04) — pages 6-7 · tranche-02 · 44 blocks · VALIDATED (merged)
+
+The complete "What's New" section. Authored only after the round-7 column fix
+landed: before it, these two pages interleaved their three columns
+mid-sentence and could not be read in order at all.
+
+Decisions, all disclosed in the tranche's 9 review notes: the 19 bold run-in
+item leads promoted to level-3 headings (trailing period dropped) so the
+section is navigable; justified line-break hyphens closed while genuine
+compounds are kept; the four link URLs taken from the PDF's own Link
+annotations rather than the visible text (each wraps across two lines, so
+pdf.js reports two rects per logical link); the full-width banner authored as
+the section's first paragraph; italic cross-references marked emphasis and
+bold-italic bullet leads marked strong; the "Enhanced deduction for seniors"
+bullet spans the 6→7 break and is authored whole at page 6.
+
+`merge-plans t01+t02` → 86 blocks, `ok: true`. Recall 0.9982 (see step 6).
+
+### Sessions 3+ — REMAINING (suggested boundaries from the printed TOC)
 
 | Tranche | Pages | Content | Notes |
 | --- | --- | --- | --- |
-| 02 | 6-11 | What's New, Filing Requirements, Charts A/B/C | 3-column prose; charts are drawn tables → geometry method |
-| 03 | 12-22 | Name/SSN, Filing Status, Dependents | includes flowchart-like boxes; expect review notes |
-| 04 | 23-38 | Income, AGI, Tax and Credits | line-instruction structure: `Line N` headings |
-| 05 | 39-60 | Payments (EIC!) | EIC worksheets + tables; heavy geometry work |
-| 06 | 61-67 | Refund, Amount You Owe, Sign, Assemble | |
-| 07 | 68-80 | 2025 Tax Table | MECHANICAL: generate rows from extract-text with a per-tranche generator; thousands of rows; verify row count against page count |
-| 08 | 81-87 | General Info, Tax Help, Refund Info | |
-| 09 | 88-110 | Schedule 1 + 1-A instructions | |
-| 10 | 111-117 | Schedules 2-3 instructions | |
-| 11 | 118-126 | Tax Topics, Disclosure, Outlays, Index | index = long reference list; consider list-per-letter |
+| 03 | 8-11 | Filing Requirements, Charts A/B/C | 3-column prose + TIP/CAUTION icon callouts (convey the label in text); charts are drawn tables → geometry method |
+| 04 | 12-22 | Name/SSN, Filing Status, Dependents | includes flowchart-like boxes; expect review notes |
+| 05 | 23-38 | Income, AGI, Tax and Credits | line-instruction structure: `Line N` headings |
+| 06 | 39-60 | Payments (EIC!) | EIC worksheets + tables; heavy geometry work |
+| 07 | 61-67 | Refund, Amount You Owe, Sign, Assemble | |
+| 08 | 68-80 | 2025 Tax Table | MECHANICAL: generate rows from extract-text with a per-tranche generator; thousands of rows; verify row count against page count |
+| 09 | 81-87 | General Info, Tax Help, Refund Info | |
+| 10 | 88-110 | Schedule 1 + 1-A instructions | |
+| 11 | 111-117 | Schedules 2-3 instructions | |
+| 12 | 118-126 | Tax Topics, Disclosure, Outlays, Index | index = long reference list; consider list-per-letter |
 
-After tranche 11: `merge-plans` (expect `pagesWithoutBlocks` ≈ [] plus known
+After the last tranche: `merge-plans` (expect `pagesWithoutBlocks` ≈ [] plus known
 blanks) → `remediate` → recall channels → `verify-init` → independent verifier
 (multiple passes; budget for discrepancies) → `verify-check`. Expected recall
 shortfall to explain: the hidden per-page print-control lines (see findings).
