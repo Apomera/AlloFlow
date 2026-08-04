@@ -754,6 +754,94 @@ describe('model cache', () => {
   });
 });
 
+// On-device Whisper engine + "hey Allo" standby (2026-08-04). The engine
+// itself needs a live mic; these cover its pure parts and the privacy
+// invariants the code must never lose.
+describe('on-device voice engine', () => {
+  it('downsampleAudio decimates with interpolation and never upsamples', () => {
+    const { downsampleAudio } = AC._voicePure;
+    const src = new Float32Array(48000);
+    for (let i = 0; i < src.length; i++) src[i] = Math.sin(i / 10);
+    const out = downsampleAudio(src, 48000, 16000);
+    expect(out.length).toBe(16000);
+    expect(Math.abs(out[0] - src[0])).toBeLessThan(1e-6);
+    // Interpolated midpoints stay bounded by the signal.
+    expect(Math.max(...out.slice(0, 100))).toBeLessThanOrEqual(1);
+    expect(downsampleAudio(src, 8000, 16000)).toBe(src); // never upsample
+    expect(downsampleAudio(null, 48000, 16000).length).toBe(0);
+  });
+
+  it('wake phrase matches whole words only, and carries the one-breath command', () => {
+    const { detectWakeCommand } = AC._voicePure;
+    expect(detectWakeCommand('hey allo, open the educator hub')).toEqual({ woke: true, command: 'open the educator hub' });
+    expect(detectWakeCommand('Allo bigger text').woke).toBe(true);
+    expect(detectWakeCommand('okay allobot')).toEqual({ woke: true, command: '' });
+    expect(detectWakeCommand('AlloFlow make a quiz').woke).toBe(true);
+    // The false-positive traps: substrings must never wake the mic router.
+    expect(detectWakeCommand('hello everyone').woke).toBe(false);
+    expect(detectWakeCommand('please allow me to explain').woke).toBe(false);
+    expect(detectWakeCommand('she allotted ten minutes').woke).toBe(false);
+    expect(detectWakeCommand('').woke).toBe(false);
+  });
+
+  it('VAD segmenter closes on silence, keeps pre-roll, drops sub-speech blips', () => {
+    const { createVadSegmenter } = AC._voicePure;
+    const seg = createVadSegmenter({ sampleRate: 1000, threshold: 0.05, minSpeechMs: 100, silenceMs: 200, maxMs: 5000, preRollMs: 50 });
+    const quiet = new Float32Array(100); // 100ms of silence per frame
+    const loud = new Float32Array(100).fill(0.5);
+    expect(seg.push(quiet)).toBeNull();
+    expect(seg.push(loud)).toBeNull();   // speech opens
+    expect(seg.push(loud)).toBeNull();
+    expect(seg.push(quiet)).toBeNull();  // 100ms silence — not yet
+    const out = seg.push(quiet);         // 200ms silence — segment closes
+    expect(out).toBeInstanceOf(Float32Array);
+    // 200ms speech + 200ms trailing silence; the 100ms quiet frame was
+    // trimmed from pre-roll (frame-granular, capped at 50ms) and the first
+    // loud frame entered via pre-roll — no double count.
+    expect(out.length).toBe(400);
+    // A blip shorter than minSpeechMs yields nothing.
+    const seg2 = createVadSegmenter({ sampleRate: 1000, threshold: 0.05, minSpeechMs: 300, silenceMs: 200, preRollMs: 0 });
+    seg2.push(loud);
+    seg2.push(quiet);
+    expect(seg2.push(quiet)).toBeNull();
+  });
+
+  it('privacy invariants are pinned in source, root and mirror identical', () => {
+    const mod = readFileSync('allo_commands_module.js', 'utf-8');
+    // Standby NEVER runs on Web Speech (its mic streams to a cloud service).
+    expect(mod).toMatch(/setStandby: \(on\) => \{\s*if \(on && engineName !== "whisper"\) return false;/);
+    expect(mod).toContain('standby = false; // NEVER standby on Web Speech');
+    // The kill phrase is checked BEFORE the standby gate.
+    const h = mod.indexOf('const handleUtterance');
+    expect(mod.indexOf('stop listening|stop voice|voice off', h)).toBeLessThan(mod.indexOf('standby && engineName === "whisper"', h));
+    // Replies can't be transcribed: frames dropped + segmenter reset while speaking.
+    expect(mod).toContain('if (speaking) { seg.reset(); return; }');
+    // Whisper teardown stops mic tracks first.
+    expect(mod).toMatch(/whisperState\.stream\.getTracks\(\)\.forEach[\s\S]{0,80}whisperState\.proc\.disconnect/);
+    // Engine choice: cached model → whisper; otherwise fall back, plus a hard override.
+    expect(mod).toContain('if (_voiceEnginePref() === "webspeech")');
+    expect(mod).toMatch(/hasWhisper\(\)\.then\(function \(has\) \{\s*if \(!active\) return;\s*if \(!has\) \{ beginWebSpeech\(c, standbyWanted\); return; \}/);
+    expect(readFileSync('desktop/web-app/public/allo_commands_module.js', 'utf-8')).toBe(mod);
+  });
+
+  it('toggle_wake_word persists, applies live only when the loop allows it, and is demo-unsafe', () => {
+    const { ctx } = mkCtx({ voiceAvailable: true });
+    try { localStorage.removeItem('allo_voice_standby'); } catch (_) {}
+    let standbyCalls = [];
+    window.__alloVoiceLoop = { isActive: () => true, setStandby: (v) => { standbyCalls.push(v); return false; } }; // engine = webspeech
+    const r1 = AC.runCommandById(ctx, 'toggle_wake_word', {}, {});
+    expect(localStorage.getItem('allo_voice_standby')).toBe('on');
+    expect(r1.narration).toContain('download voice models'); // refused live → honest redirect
+    window.__alloVoiceLoop = { isActive: () => true, setStandby: (v) => { standbyCalls.push(v); return true; } };
+    const r2 = AC.runCommandById(ctx, 'toggle_wake_word', {}, {});
+    expect(localStorage.getItem('allo_voice_standby')).toBe('off');
+    expect(r2.narration).toContain('off');
+    expect(standbyCalls).toEqual([true, false]);
+    delete window.__alloVoiceLoop;
+    expect(AC.getCommandContract('toggle_wake_word').demoSafe).toBe(false);
+  });
+});
+
 describe('runCommandById awaitCompletion isolation', () => {
   it('keeps the sync path synchronous for existing surfaces', () => {
     const { ctx } = mkCtx();

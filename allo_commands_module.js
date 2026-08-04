@@ -366,6 +366,7 @@ const PLAN_CONTRACTS = Object.freeze({
   filter_glossary: { requires: ["glossary"], params: ["tier"] },
   download_voice_models: { demoSafe: false, interaction: "external", reason: "Starts a ~40 MB network download into durable device storage." },
   set_model_download_policy: { params: ["policy"] },
+  toggle_wake_word: { demoSafe: false, reason: "Changes when the live microphone routes commands." },
   export_pack: {
     demoSafe: false,
     requires: ["source"],
@@ -1117,6 +1118,22 @@ function buildAlloCommands(ctx, opts = {}) {
       var v = modelCache.setPolicy(p && p.policy);
       return t("cmd.set_model_download_policy_done", "Model downloads: ") + v + ".";
     } },
+    { id: "toggle_wake_word", icon: "\u{1F4E3}", roles: "all", when: (c) => !!c.voiceAvailable, label: t("cmd.toggle_wake_word", "Toggle \u201chey Allo\u201d standby"), aliases: ["wake word", "hey allo", "standby listening", "wake up word"], hint: t("cmd.toggle_wake_word_hint", "Voice control idles until you say \u201chey Allo\u201d. Needs the on-device model \u2014 while idling, audio never leaves this device"), run: () => {
+      var on = "off";
+      try {
+        on = localStorage.getItem("allo_voice_standby") === "on" ? "off" : "on";
+        localStorage.setItem("allo_voice_standby", on);
+      } catch (_) {}
+      var lp = window.__alloVoiceLoop;
+      var live = !!(lp && typeof lp.isActive === "function" && lp.isActive());
+      if (on === "on" && live && typeof lp.setStandby === "function" && !lp.setStandby(true)) {
+        return t("cmd.toggle_wake_word_needs_model", "\u201cHey Allo\u201d standby is saved, but it needs the on-device speech model \u2014 say \u201cdownload voice models\u201d first. Until then, tap-to-talk keeps working.");
+      }
+      if (on === "off" && live && typeof lp.setStandby === "function") lp.setStandby(false);
+      return on === "on"
+        ? t("cmd.toggle_wake_word_on", "\u201cHey Allo\u201d standby on \u2014 voice control idles until it hears the wake phrase (applies now if listening, and on every future start).")
+        : t("cmd.toggle_wake_word_off", "Wake-word standby off \u2014 listening handles every utterance again.");
+    } },
     // \u2500\u2500 Coverage batch (2026-08-04, from audit_command_coverage.cjs) \u2014 each is a
     //    thin wrapper on an existing host handler, same as every command above. \u2500\u2500
     { id: "generate_note_taking", icon: "\u{1F4DD}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis && typeof c.generateNoteTaking === "function", label: t("cmd.generate_note_taking", "Create a note-taking guide"), aliases: ["note taking", "guided notes", "notes template", "cornell notes"], hint: t("cmd.generate_note_taking_hint", "Generate a structured note-taking guide from the current content"), runAsync: (c) => Promise.resolve(c.generateNoteTaking()).then(() => t("cmd.generate_note_taking_ready", "Note-taking guide ready \u2014 it\u2019s in the output panel.")) },
@@ -1768,8 +1785,99 @@ var modelCache = {
   }
 };
 
+// ── Voice engine pure helpers (exported via AC._voicePure for tests) ────────
+function downsampleAudio(input, fromRate, toRate) {
+  toRate = toRate || 16000;
+  if (!input || !input.length || !fromRate || fromRate === toRate || fromRate < toRate) return input || new Float32Array(0);
+  var ratio = fromRate / toRate;
+  var outLen = Math.floor(input.length / ratio);
+  var out = new Float32Array(outLen);
+  for (var i = 0; i < outLen; i++) {
+    var pos = i * ratio;
+    var i0 = Math.floor(pos);
+    var i1 = Math.min(input.length - 1, i0 + 1);
+    var frac = pos - i0;
+    out[i] = input[i0] * (1 - frac) + input[i1] * frac;
+  }
+  return out;
+}
+// Wake phrase: optional greeting + "allo"/"allobot"/"alloflow" as a WHOLE
+// word (never inside "hello"/"allow"), then the command remainder if the
+// teacher said it all in one breath ("hey allo, open the educator hub").
+var WAKE_RE = /\b(?:hey|hi|ok|okay)?[,\s]*allo(?:bot|flow)?\b[,.!?:;]*\s*/i;
+function detectWakeCommand(text) {
+  var s = String(text || "");
+  var m = WAKE_RE.exec(s);
+  if (!m) return { woke: false, command: "" };
+  return { woke: true, command: s.slice(m.index + m[0].length).trim() };
+}
+// RMS-gated segmenter: buffers speech, closes a segment after sustained
+// silence (or a hard cap), keeps a short pre-roll so the first syllable
+// isn't clipped, and drops segments shorter than plausible speech.
+function createVadSegmenter(opts) {
+  opts = opts || {};
+  var sampleRate = opts.sampleRate || 48000;
+  var threshold = opts.threshold || 0.01;
+  var minSpeechMs = opts.minSpeechMs || 250;
+  var silenceMs = opts.silenceMs || 700;
+  var maxMs = opts.maxMs || 10000;
+  var preRollMs = opts.preRollMs || 240;
+  var buf = [], bufSamples = 0, speech = false, silentSamples = 0, speechSamples = 0;
+  var preRoll = [], preRollSamples = 0;
+  function msToSamples(ms) { return Math.round(sampleRate * ms / 1000); }
+  function reset() { buf = []; bufSamples = 0; speech = false; silentSamples = 0; speechSamples = 0; preRoll = []; preRollSamples = 0; }
+  function push(frame) {
+    if (!frame || !frame.length) return null;
+    var sum = 0;
+    for (var i = 0; i < frame.length; i++) sum += frame[i] * frame[i];
+    var voiced = Math.sqrt(sum / frame.length) >= threshold;
+    if (!speech) {
+      preRoll.push(frame.slice(0));
+      preRollSamples += frame.length;
+      while (preRollSamples > msToSamples(preRollMs) && preRoll.length > 1) preRollSamples -= preRoll.shift().length;
+      if (voiced) {
+        speech = true;
+        buf = preRoll.slice();
+        bufSamples = preRollSamples;
+        speechSamples = frame.length;
+        silentSamples = 0;
+        preRoll = []; preRollSamples = 0;
+      }
+      return null;
+    }
+    buf.push(frame.slice(0));
+    bufSamples += frame.length;
+    if (voiced) { speechSamples += frame.length; silentSamples = 0; }
+    else silentSamples += frame.length;
+    if (silentSamples < msToSamples(silenceMs) && bufSamples < msToSamples(maxMs)) return null;
+    var out = null;
+    if (speechSamples >= msToSamples(minSpeechMs)) {
+      out = new Float32Array(bufSamples);
+      var off = 0;
+      for (var j = 0; j < buf.length; j++) { out.set(buf[j], off); off += buf[j].length; }
+    }
+    reset();
+    return out;
+  }
+  return { push: push, reset: reset };
+}
+var TRANSFORMERS_URL = "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.1";
+var _whisperPipelinePromise = null;
+function _getWhisperPipeline() {
+  if (!_whisperPipelinePromise) {
+    _whisperPipelinePromise = import(TRANSFORMERS_URL).then(function (T) {
+      modelCache.installTransformersCache(T.env);
+      return T.pipeline("automatic-speech-recognition", "Xenova/whisper-tiny.en", { device: "wasm", dtype: "q8" });
+    }).catch(function (e) { _whisperPipelinePromise = null; throw e; });
+  }
+  return _whisperPipelinePromise;
+}
+function _voiceStandbyPref() { try { return localStorage.getItem("allo_voice_standby") === "on"; } catch (_) { return false; } }
+function _voiceEnginePref() { try { return localStorage.getItem("allo_voice_engine") === "webspeech" ? "webspeech" : "auto"; } catch (_) { return "auto"; } }
+
 function createVoiceLoop(getCtx) {
   let rec = null, active = false, errStreak = 0, routeController = null, routeSerial = 0, pageHideHandler = null;
+  let whisperState = null, engineName = "webspeech", standby = false, awake = false, awakeTimer = null;
   const cancelRoute = () => {
     routeSerial++;
     const controller = routeController;
@@ -1844,6 +1952,19 @@ function createVoiceLoop(getCtx) {
     } catch (_) {
     }
     rec = null;
+    // Whisper engine teardown: release the mic tracks FIRST (the browser's
+    // recording indicator must go dark immediately), then the audio graph.
+    if (whisperState) {
+      try { whisperState.stream.getTracks().forEach(function (tr) { tr.stop(); }); } catch (_) {}
+      try { whisperState.proc.disconnect(); } catch (_) {}
+      try { whisperState.gain.disconnect(); } catch (_) {}
+      try { whisperState.ac.close(); } catch (_) {}
+      whisperState = null;
+    }
+    engineName = "webspeech";
+    standby = false;
+    awake = false;
+    if (awakeTimer) { clearTimeout(awakeTimer); awakeTimer = null; }
     const c = getCtx();
     try {
       if (c && c.setVoiceActive) c.setVoiceActive(false);
@@ -1851,56 +1972,113 @@ function createVoiceLoop(getCtx) {
     }
     if (reason) announce(reason);
   };
-  const start = () => {
-    const c = getCtx();
+  // Shared by BOTH engines: one utterance in, one routed command (or wake
+  // handling) out. "Stop listening" always works — even in standby, and even
+  // without the wake word — a kill phrase must never be gated.
+  const handleUtterance = async (text) => {
+    errStreak = 0;
+    text = String(text || "").trim();
+    if (!text) return;
+    const cc = getCtx();
+    if (/^(stop listening|stop voice|voice off)\b/i.test(text)) {
+      stop("Voice control off — the microphone is released.");
+      return;
+    }
+    if (standby && engineName === "whisper") {
+      if (!awake) {
+        const wk = detectWakeCommand(text);
+        if (!wk.woke) return; // discarded — transcribed locally, routed nowhere
+        if (!wk.command) {
+          awake = true;
+          if (awakeTimer) clearTimeout(awakeTimer);
+          awakeTimer = setTimeout(() => { awake = false; awakeTimer = null; }, 12e3);
+          announce("Listening.");
+          return;
+        }
+        text = wk.command;
+      } else {
+        awake = false;
+        if (awakeTimer) { clearTimeout(awakeTimer); awakeTimer = null; }
+      }
+    }
+    if (routeController) {
+      try { routeController.abort(); } catch (_) {}
+    }
+    const currentRouteSerial = ++routeSerial;
+    const controller = typeof AbortController === "function" ? new AbortController() : null;
+    routeController = controller;
+    const signal = controller ? controller.signal : null;
+    try {
+      const r = await routeUtterance(cc, text, { allowAi: true, signal });
+      if (!active || currentRouteSerial !== routeSerial || signal && signal.aborted) return;
+      if (r && r.handled) announce(r.narration);
+      else announce("Didn’t catch a command in “" + text.slice(0, 60) + "” — try “bigger text” or " + (getCommandAudience(cc) === "student" ? "“read directions”." : "“open the educator hub”."));
+    } catch (error) {
+      if (!active || currentRouteSerial !== routeSerial || error && error.name === "AbortError") return;
+      announce("Didn’t catch a command in “" + text.slice(0, 60) + "” — try “bigger text” or " + (getCommandAudience(cc) === "student" ? "“read directions”." : "“open the educator hub”."));
+    } finally {
+      if (currentRouteSerial === routeSerial) routeController = null;
+    }
+  };
+  // On-device engine: getUserMedia → RMS-segmented PCM → local Whisper →
+  // handleUtterance. Raw audio NEVER leaves the device; only a recognized
+  // command's TEXT enters the normal (FERPA-covered) routing path. While a
+  // reply is speaking, frames are dropped and the segmenter reset so the
+  // loop can't transcribe its own voice.
+  const startWhisperEngine = async () => {
+    const asr = await _getWhisperPipeline();
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+    if (!active) { try { stream.getTracks().forEach(function (tr) { tr.stop(); }); } catch (_) {} return; }
+    const AC2 = window.AudioContext || window.webkitAudioContext;
+    const ac = new AC2();
+    try { await ac.resume(); } catch (_) {}
+    const src = ac.createMediaStreamSource(stream);
+    const proc = ac.createScriptProcessor(4096, 1, 1);
+    const gain = ac.createGain();
+    gain.gain.value = 0; // processor needs a destination; nothing audible
+    const seg = createVadSegmenter({ sampleRate: ac.sampleRate });
+    let busy = false;
+    proc.onaudioprocess = (ev) => {
+      if (!active || engineName !== "whisper") return;
+      if (speaking) { seg.reset(); return; }
+      const segment = seg.push(ev.inputBuffer.getChannelData(0));
+      if (!segment || busy) return; // still transcribing: drop, keep memory flat
+      busy = true;
+      Promise.resolve(asr(downsampleAudio(segment, ac.sampleRate, 16000))).then((out) => {
+        busy = false;
+        const text = String(out && out.text || "").trim();
+        // Whisper emits bracketed non-speech tokens ("[BLANK_AUDIO]", "(music)").
+        if (text && !/^[\[(]/.test(text)) handleUtterance(text);
+      }).catch(() => { busy = false; });
+    };
+    src.connect(proc);
+    proc.connect(gain);
+    gain.connect(ac.destination);
+    whisperState = { stream: stream, ac: ac, proc: proc, gain: gain, seg: seg };
+  };
+  const beginWebSpeech = (c, standbyWanted) => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) {
-      announce("Voice control isn\u2019t available in this browser.");
-      return false;
+      stop("Voice control isn’t available in this browser.");
+      return;
     }
-    if (active) return true;
     try {
+      engineName = "webspeech";
+      standby = false; // NEVER standby on Web Speech: its mic streams to the browser's speech service
+      if (standbyWanted) announce("“Hey Allo” standby needs the on-device speech model — say “download voice models” first. Tap-to-talk listening is on instead.");
       rec = new SR();
       rec.continuous = true;
       rec.interimResults = false;
       rec.lang = c && c.voiceLang || "en-US";
-      rec.onresult = async (ev) => {
-        errStreak = 0;
+      rec.onresult = (ev) => {
         const last = ev.results[ev.results.length - 1];
         if (!last || !last.isFinal) return;
-        const text = String(last[0] && last[0].transcript || "").trim();
-        if (!text) return;
-        const cc = getCtx();
-        if (/^(stop listening|stop voice|voice off)\b/i.test(text)) {
-          stop("Voice control off \u2014 the microphone is released.");
-          return;
-        }
-        if (routeController) {
-          try {
-            routeController.abort();
-          } catch (_) {
-          }
-        }
-        const currentRouteSerial = ++routeSerial;
-        const controller = typeof AbortController === "function" ? new AbortController() : null;
-        routeController = controller;
-        const signal = controller ? controller.signal : null;
-        try {
-          const r = await routeUtterance(cc, text, { allowAi: true, signal });
-          if (!active || currentRouteSerial !== routeSerial || signal && signal.aborted) return;
-          if (r && r.handled) announce(r.narration);
-          else announce("Didn\u2019t catch a command in \u201C" + text.slice(0, 60) + "\u201D \u2014 try \u201Cbigger text\u201D or " + (getCommandAudience(cc) === "student" ? "\u201Cread directions\u201D." : "\u201Copen the educator hub\u201D."));
-        } catch (error) {
-          if (!active || currentRouteSerial !== routeSerial || error && error.name === "AbortError") return;
-          announce("Didn\u2019t catch a command in \u201C" + text.slice(0, 60) + "\u201D \u2014 try \u201Cbigger text\u201D or " + (getCommandAudience(cc) === "student" ? "\u201Cread directions\u201D." : "\u201Copen the educator hub\u201D."));
-        } finally {
-          if (currentRouteSerial === routeSerial) routeController = null;
-        }
+        handleUtterance(String(last[0] && last[0].transcript || ""));
       };
       rec.onerror = (ev) => {
         errStreak++;
         if (ev && (ev.error === "not-allowed" || ev.error === "service-not-allowed")) {
-          stop("Microphone permission was denied \u2014 voice control stopped.");
+          stop("Microphone permission was denied — voice control stopped.");
           return;
         }
         if (errStreak >= 3) stop("Voice control stopped after repeated microphone errors.");
@@ -1917,41 +2095,82 @@ function createVoiceLoop(getCtx) {
         }
       };
       rec.start();
-      active = true;
-      errStreak = 0;
-      // Policy 'auto': first voice use quietly fetches the on-device speech
-      // model in the background so the local engine is ready when it ships.
-      // Never blocks the loop; failures stay silent (the explicit
-      // download_voice_models command reports errors properly).
-      try {
-        if (_modelPolicy() === "auto") {
-          modelCache.hasWhisper().then(function (has) {
-            if (has) return;
-            announce("Downloading the on-device speech model in the background (one time).");
-            return modelCache.prefetchWhisper().then(function (r) {
-              announce("On-device speech model ready — " + Math.max(1, Math.round(r.bytes / 1048576)) + " MB cached on this device.");
-            });
-          }).catch(function (_) {});
-        }
-      } catch (_) {}
-      try {
-        if (c && c.setVoiceActive) c.setVoiceActive(true);
-      } catch (_) {
-      }
-      pageHideHandler = () => stop();
-      try {
-        window.addEventListener("pagehide", pageHideHandler, { once: true });
-      } catch (_) {
-        pageHideHandler = null;
-      }
-      return true;
     } catch (e) {
-      announce("Voice control could not start: " + (e && e.message || "unknown"));
-      return false;
+      stop("Voice control could not start: " + (e && e.message || "unknown"));
     }
   };
-  return { start, stop: () => stop("Voice control off \u2014 the microphone is released."), isActive: () => active };
+  const start = () => {
+    const c = getCtx();
+    if (active) return true;
+    active = true;
+    errStreak = 0;
+    awake = false;
+    try {
+      if (c && c.setVoiceActive) c.setVoiceActive(true);
+    } catch (_) {
+    }
+    pageHideHandler = () => stop();
+    try {
+      window.addEventListener("pagehide", pageHideHandler, { once: true });
+    } catch (_) {
+      pageHideHandler = null;
+    }
+    // Policy 'auto': first voice use quietly fetches the on-device speech
+    // model in the background so the local engine is ready next start.
+    // Never blocks the loop; failures stay silent (the explicit
+    // download_voice_models command reports errors properly).
+    try {
+      if (_modelPolicy() === "auto") {
+        modelCache.hasWhisper().then(function (has) {
+          if (has) return;
+          announce("Downloading the on-device speech model in the background (one time).");
+          return modelCache.prefetchWhisper().then(function (r) {
+            announce("On-device speech model ready — " + Math.max(1, Math.round(r.bytes / 1048576)) + " MB cached on this device.");
+          });
+        }).catch(function (_) {});
+      }
+    } catch (_) {}
+    const standbyWanted = _voiceStandbyPref();
+    if (_voiceEnginePref() === "webspeech") {
+      beginWebSpeech(c, standbyWanted);
+      return true;
+    }
+    modelCache.hasWhisper().then(function (has) {
+      if (!active) return;
+      if (!has) { beginWebSpeech(c, standbyWanted); return; }
+      engineName = "whisper";
+      standby = standbyWanted;
+      return startWhisperEngine().then(function () {
+        if (!active) return;
+        announce(standby
+          ? "On-device listening in standby — say “hey Allo” before a command. Audio never leaves this device."
+          : "On-device recognition active — audio stays on this device.");
+      });
+    }).catch(function (e) {
+      if (!active) return;
+      whisperState = null;
+      announce("On-device engine could not start (" + (e && e.message || "unknown") + ") — using browser speech instead.");
+      beginWebSpeech(c, false);
+    });
+    return true;
+  };
+  return {
+    start,
+    stop: () => stop("Voice control off — the microphone is released."),
+    isActive: () => active,
+    engine: () => engineName,
+    // Live standby switch. Refuses on Web Speech: standby means a hot mic,
+    // and a hot mic is only acceptable when transcription is on-device.
+    setStandby: (on) => {
+      if (on && engineName !== "whisper") return false;
+      standby = !!on;
+      awake = false;
+      if (awakeTimer) { clearTimeout(awakeTimer); awakeTimer = null; }
+      return true;
+    }
+  };
 }
+
 function scoreCommand(cmd, q) {
   if (!q) return 1;
   const needle = q.toLowerCase().trim();
@@ -2712,6 +2931,6 @@ const AlloCommandProgress = ({ ctx }) => {
 };
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.AlloCommands = { modelCache: modelCache, AlloCommandPalette: AlloCommandPalette, AlloCommandProgress: AlloCommandProgress, buildAlloCommands: buildAlloCommands, getCommandAudience: getCommandAudience, getCommandAvailability: getCommandAvailability, getLocalCommandInsights: getLocalCommandInsights, mergeCommandProgressItems: mergeCommandProgressItems, scoreCommand: scoreCommand, routeUtterance: routeUtterance, executeCommand: executeCommand, cancelCommand, runCommandById: runCommandById, findReadingMatches: findReadingMatches, normalizeReadingRequest: normalizeReadingRequest, readingMatchReasons: readingMatchReasons, readingMatchWhyText: readingMatchWhyText, createVoiceLoop: createVoiceLoop, looksMultiStep: looksMultiStep, getCommandContract: getCommandContract, sanitizeCommandParams: sanitizeCommandParams, validatePlan: validatePlan, planUtterance: planUtterance, runPlan: runPlan };
+  window.AlloModules.AlloCommands = { modelCache: modelCache, _voicePure: { downsampleAudio: downsampleAudio, detectWakeCommand: detectWakeCommand, createVadSegmenter: createVadSegmenter }, AlloCommandPalette: AlloCommandPalette, AlloCommandProgress: AlloCommandProgress, buildAlloCommands: buildAlloCommands, getCommandAudience: getCommandAudience, getCommandAvailability: getCommandAvailability, getLocalCommandInsights: getLocalCommandInsights, mergeCommandProgressItems: mergeCommandProgressItems, scoreCommand: scoreCommand, routeUtterance: routeUtterance, executeCommand: executeCommand, cancelCommand, runCommandById: runCommandById, findReadingMatches: findReadingMatches, normalizeReadingRequest: normalizeReadingRequest, readingMatchReasons: readingMatchReasons, readingMatchWhyText: readingMatchWhyText, createVoiceLoop: createVoiceLoop, looksMultiStep: looksMultiStep, getCommandContract: getCommandContract, sanitizeCommandParams: sanitizeCommandParams, validatePlan: validatePlan, planUtterance: planUtterance, runPlan: runPlan };
   console.log('[CDN] AlloCommands loaded');
 })();

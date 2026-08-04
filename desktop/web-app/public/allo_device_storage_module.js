@@ -70,7 +70,7 @@
   var RECOVERY_NAMESPACE = 'workspace_recovery';
   var RECOVERY_KEY = 'store_v1';
   var RECOVERY_VERSION = 1;
-  var RECOVERY_MAX_SNAPSHOTS = 8;
+  var RECOVERY_MAX_SNAPSHOTS = 20;
   var RECOVERY_COMPACT_MAX_SNAPSHOTS = 4;
   // Paired size budget: snapshots embed karaoke base64 audio, so a pure count
   // cap lets a tight device force the app to strip the NEWEST workspace's

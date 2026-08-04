@@ -6892,7 +6892,7 @@ const ALLO_WORKSPACE_RECOVERY = (() => {
   // write, stripLargeAssets guts the audio out of the snapshot BEING SAVED.
   // So the count cap is paired with a size budget and the store drops the
   // OLDEST workspace before the device can strip the NEWEST one's read-aloud.
-  const MAX_SNAPSHOTS = 8;
+  const MAX_SNAPSHOTS = 20;
   const MAX_TOTAL_BYTES = 150 * 1024 * 1024;
   const COMPACT_MAX_SNAPSHOTS = 4;
   const COMPACT_MAX_TOTAL_BYTES = 50 * 1024 * 1024;
