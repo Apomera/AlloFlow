@@ -9,6 +9,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 import { buildLigatureFixturePdf } from './helpers/ligature_fixture.js';
+import { buildStampedXObjectPdf } from './helpers/stamped_xobject_fixture.js';
 
 const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 
@@ -1575,5 +1576,117 @@ describe('R7 — Differences /f_i, ligature expansion, and CFF built-in encoding
 
   it('no raw control characters survive in the fixture text', () => {
     expect(/[\x00-\x08\x0B\x0C\x0E-\x1F]/.test(pages.join(''))).toBe(false);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Corpus round 8 — mixed-layout pages and too-narrow gutters.
+//
+// Two independent reasons a real multi-column page read as one interleaved
+// column, both found on the IRS i1040:
+//   1. The minimum gutter was 3 of 96 bins — 16.5pt on a letter page — while a
+//      normal two-column gutter is 10pt, so it could never be detected. Bins
+//      are now ~2pt and the minimum is stated in POINTS.
+//   2. On a page whose layout CHANGES down the page (columns above a full-width
+//      chart, or a full-width title block above columns), the full-width part
+//      fills the gutters. A horizontal band cut now runs when the vertical
+//      search is rejected — but only if some band then finds real columns,
+//      which is what kept the corpus regression at zero.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('R8 — narrow gutters and layouts that change down the page', () => {
+  let orderTextItems;
+  beforeAll(() => {
+    loadAlloModule('doc_pipeline_module.js');
+    orderTextItems = window.AlloModules.createDocPipeline.orderTextItems;
+  });
+
+  const LONG = 'a line of prose long enough to look like a real column of text';
+  const item = (str, x, y, w) => ({ str, width: w, transform: [9, 0, 0, 9, x, y] });
+
+  function twoColumns(lines, x0, x1, width, yTop, tag) {
+    const items = [];
+    for (let i = 0; i < lines; i++) {
+      const y = yTop - i * 14;
+      items.push(item(`${tag}L${i} ${LONG}`, x0, y, width));
+      items.push(item(`${tag}R${i} ${LONG}`, x1, y, width));
+    }
+    return items;
+  }
+
+  it('a 10pt gutter is wide enough to split — 16.5pt was never reachable', () => {
+    // Columns at x=42..292 and x=302..552: a completely empty 10pt channel,
+    // exactly the i1040 definition pages that read as one column before.
+    const ord = orderTextItems(twoColumns(26, 42, 302, 250, 700, ''), {});
+    expect(ord.applied).toBe(true);
+    expect(ord.columns).toBe(2);
+    const sides = ord.items.map((i) => i.str[0]);
+    expect(sides.lastIndexOf('L')).toBeLessThan(sides.indexOf('R'));
+  });
+
+  it('columns above a full-width block: the columns are still found', () => {
+    // Top: two columns. Bottom: full-width rows that cross the gutter, which is
+    // what defeated the whole-page gutter search.
+    const items = twoColumns(20, 42, 302, 250, 700, '');
+    for (let i = 0; i < 10; i++) {
+      items.push(item(`WIDE${i} ${LONG} ${LONG}`, 42, 380 - i * 14, 510));
+    }
+    const ord = orderTextItems(items, {});
+    expect(ord.applied).toBe(true);
+    const strs = ord.items.map((i) => i.str);
+    const lastLeft = strs.map((s) => s.startsWith('L')).lastIndexOf(true);
+    const firstRight = strs.map((s) => s.startsWith('R')).indexOf(true);
+    const firstWide = strs.map((s) => s.startsWith('WIDE')).indexOf(true);
+    expect(lastLeft).toBeLessThan(firstRight); // top band read in column order
+    expect(firstRight).toBeLessThan(firstWide); // and before the full-width block
+  });
+
+  it('a full-width block ABOVE columns keeps the block first', () => {
+    const items = [];
+    for (let i = 0; i < 8; i++) items.push(item(`HEAD${i} ${LONG} ${LONG}`, 42, 740 - i * 14, 510));
+    items.push(...twoColumns(20, 42, 302, 250, 580, ''));
+    const ord = orderTextItems(items, {});
+    expect(ord.applied).toBe(true);
+    const strs = ord.items.map((i) => i.str);
+    expect(strs.map((s) => s.startsWith('HEAD')).lastIndexOf(true))
+      .toBeLessThan(strs.map((s) => s.startsWith('L')).indexOf(true));
+  });
+
+  it('a single column with a big blank gap is NOT carved into bands', () => {
+    // The band cut is only kept when a band then finds real columns; otherwise
+    // it would slice ordinary pages into stacked pieces for no benefit.
+    const items = [];
+    for (let i = 0; i < 14; i++) items.push(item(`top${i} ${LONG}`, 42, 700 - i * 14, 500));
+    for (let i = 0; i < 14; i++) items.push(item(`bot${i} ${LONG}`, 42, 400 - i * 14, 500));
+    const ord = orderTextItems(items, {});
+    expect(ord.applied).toBe(false);
+    expect(ord.columns).toBe(1);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Corpus round 8 — Form XObjects are extracted per DRAW, in stream order.
+//
+// The content-stream extractor walked the page's /XObject resource dictionary,
+// so it visited each XObject once no matter how often the page stamped it, and
+// appended its text after the page's rather than at the draw site. On the i1040
+// that recovered 2 of 9 STOP badges. Worse, an XObject whose own resources name
+// the page's dictionary re-entered itself, so the USCIS civics footer came out
+// 18 times across 11 pages. Both are settled by following `Do`.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('R8 — a stamped Form XObject is read once per draw, in place', () => {
+  let pages;
+  beforeAll(async () => {
+    loadAlloModule('doc_pipeline_module.js');
+    const pdf = buildStampedXObjectPdf();
+    pages = await window.__alloCsPageTexts(new Uint8Array(pdf.buffer, pdf.byteOffset, pdf.length));
+  });
+
+  it('extracts the stamp once per draw, not once per resource entry', () => {
+    expect((pages.join('').match(/STAMP/g) || []).length).toBe(3);
+  });
+
+  it('places each stamp at its draw site rather than after the page text', () => {
+    const order = (pages.join('').match(/ALPHA|BETA|GAMMA|STAMP/g) || []);
+    expect(order).toEqual(['ALPHA', 'STAMP', 'BETA', 'STAMP', 'GAMMA', 'STAMP']);
   });
 });

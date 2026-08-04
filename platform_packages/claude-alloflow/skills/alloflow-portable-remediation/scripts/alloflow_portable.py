@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 
-VERSION = "0.2.1"
+VERSION = "0.2.2"
 MAX_SOURCE_BYTES = 200 * 1024 * 1024
 MAX_PLAN_BYTES = 8 * 1024 * 1024
 MAX_HTML_BYTES = 8 * 1024 * 1024
@@ -2314,12 +2314,20 @@ def _dict_value(index: Dict[int, Tuple[bytes, Optional[bytes]]], container: Opti
     return None
 
 
+# The last alternative is `/Name Do`, a Form XObject invocation, captured HERE
+# in stream order rather than by walking the page's /XObject resource dict: a
+# dict walk visits each XObject once, so a badge stamped four times on a page
+# contributed its text once and in the wrong place (corpus round 8 — the
+# i1040's STOP badge is one XObject drawn at every flowchart dead end, and 2
+# of 9 survived). The Tf alternative requires a number before Tf, so `/I1 Do`
+# cannot be mistaken for a font selection.
 _TEXT_OPS = re.compile(
     rb"/(\w+)\s+[\d.+-]+\s+Tf"
     rb"|\(((?:[^()\\]|\\.)*)\)\s*(Tj|'|\")"
     rb"|<([0-9A-Fa-f\s]+)>\s*Tj"
     rb"|\[((?:[^\]\\]|\\.)*)\]\s*TJ"
-    rb"|\b(ET|T\*)\b",
+    rb"|\b(ET|T\*)\b"
+    rb"|/([\w.]+)\s+Do\b",
     re.S,
 )
 _TJ_PIECES = re.compile(
@@ -2336,14 +2344,28 @@ def _decode_hex_string(hex_bytes: bytes, font: Optional[Dict[str, Any]]) -> str:
     return _decode_font_bytes(bytes.fromhex(digits), font)
 
 
-def _page_content_text(content: bytes, fonts: Dict[str, Dict[str, Any]]) -> str:
+def _page_content_segments(
+    content: bytes, fonts: Dict[str, Dict[str, Any]]
+) -> List[Tuple[str, str]]:
+    """One content stream in order as ("text", s) and ("xobject", name) parts.
+
+    The caller resolves "xobject" parts, because resolution needs the resource
+    dictionary the stream was invoked with.
+    """
     # Consecutive show operators are glyph runs of the same visual line (word
     # gaps arrive as explicit space glyphs or large TJ kerns), so they join
     # without a separator; only true line operators (ET, T*, ', ") break.
+    segments: List[Tuple[str, str]] = []
     pieces: List[str] = []
     current: Optional[Dict[str, Any]] = None
+
+    def flush() -> None:
+        if pieces:
+            segments.append(("text", "".join(pieces)))
+            pieces.clear()
+
     for match in _TEXT_OPS.finditer(content):
-        font_name, literal, literal_op, hex_str, tj_array, line_op = match.groups()
+        font_name, literal, literal_op, hex_str, tj_array, line_op, xobject = match.groups()
         if font_name is not None:
             current = fonts.get(font_name.decode("latin1"))
         elif literal is not None:
@@ -2362,7 +2384,15 @@ def _page_content_text(content: bytes, fonts: Dict[str, Dict[str, Any]]) -> str:
                     pieces.append(" ")
         elif line_op is not None:
             pieces.append("\n")
-    return "".join(pieces)
+        elif xobject is not None:
+            flush()
+            segments.append(("xobject", xobject.decode("latin1")))
+    flush()
+    return segments
+
+
+def _page_content_text(content: bytes, fonts: Dict[str, Dict[str, Any]]) -> str:
+    return "".join(body for kind, body in _page_content_segments(content, fonts) if kind == "text")
 
 
 def _decompress_stream(dictionary: bytes, raw: bytes) -> Optional[bytes]:
@@ -2706,12 +2736,22 @@ def _pdf_extract_text(data: bytes) -> Dict[str, Any]:
         fonts = page_fonts(dictionary)
         page_text: List[str] = []
 
-        def collect(stream_num: int, inherited_fonts: Dict[str, Dict[str, Any]], depth: int) -> None:
-            """Extract a content stream, then recurse into the Form XObjects it
-            references — text layers routinely live inside Form XObjects, not
-            the page's direct content stream (corpus round 1: the 1913 Form
-            1040's hidden print-production text layer)."""
-            if depth > 3:
+        draw_budget = [4000]
+
+        def collect(
+            stream_num: int,
+            inherited_fonts: Dict[str, Dict[str, Any]],
+            parent_resources: Optional[bytes],
+            depth: int,
+            stack: Tuple[int, ...],
+        ) -> None:
+            """Extract a content stream, splicing each Form XObject's text in at
+            its `Do` — text layers routinely live inside Form XObjects, not the
+            page's direct content stream (corpus round 1: the 1913 Form 1040's
+            hidden print-production text layer), and a stamped XObject may be
+            drawn many times (corpus round 8). `stack` guards reference cycles.
+            """
+            if depth > 6 or stream_num in stack:
                 return
             entry = index.get(stream_num)
             if not entry or entry[1] is None:
@@ -2725,20 +2765,29 @@ def _pdf_extract_text(data: bytes) -> Dict[str, Any]:
                 own_font_dict = _fonts_from_resources(index, own_resources)
                 if own_font_dict:
                     own_fonts = {**inherited_fonts, **own_font_dict}
-            page_text.append(_page_content_text(content, own_fonts))
-            # Recurse into referenced Form XObjects (from the stream's own
-            # resources when present, else the page's).
-            resources = own_resources if own_resources is not None else _dict_value(index, dictionary, "Resources")
+            resources = own_resources if own_resources is not None else parent_resources
             xobjects = _dict_value(index, resources, "XObject")
-            if not xobjects:
-                return
-            for _xname, xref in re.findall(rb"/(\w+)\s+(\d+)\s+0\s+R", xobjects):
-                xentry = index.get(int(xref))
-                if xentry and re.search(rb"/Subtype\s*/Form\b", xentry[0]):
-                    collect(int(xref), own_fonts, depth + 1)
+            next_stack = stack + (stream_num,)
+            for kind, body in _page_content_segments(content, own_fonts):
+                if kind == "text":
+                    page_text.append(body)
+                    continue
+                if not xobjects or draw_budget[0] <= 0:
+                    continue
+                named = re.search(
+                    rb"/" + re.escape(body.encode("latin1")) + rb"\s+(\d+)\s+0\s+R", xobjects
+                )
+                if not named:
+                    continue
+                xentry = index.get(int(named.group(1)))
+                if not xentry or not re.search(rb"/Subtype\s*/Form\b", xentry[0]):
+                    continue
+                draw_budget[0] -= 1
+                collect(int(named.group(1)), own_fonts, resources, depth + 1, next_stack)
 
+        page_resources = _dict_value(index, dictionary, "Resources")
         for ref in content_refs:
-            collect(ref, fonts, 0)
+            collect(ref, fonts, page_resources, 0, ())
         pages.append("".join(page_text))
 
     text = "\n".join(pages)

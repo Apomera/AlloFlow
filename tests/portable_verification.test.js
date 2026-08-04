@@ -353,3 +353,19 @@ describe('simple-font decoding layers (ligature fixture)', () => {
     expect(/[\x00-\x08\x0B\x0C\x0E-\x1F]/.test(result.json.text)).toBe(false);
   });
 });
+
+// Corpus round 8 — Form XObjects are read once per DRAW, in stream order, and
+// a self-referential resource dictionary no longer re-enters itself. Same
+// runtime-generated fixture as the JS side (tests/helpers/stamped_xobject_fixture.js):
+// /Fm0 holds "STAMP" and is drawn three times between ALPHA, BETA and GAMMA.
+describe('stamped Form XObject extraction', () => {
+  it('extract-text reads each draw once, in place', async () => {
+    const { buildStampedXObjectPdf } = await import('./helpers/stamped_xobject_fixture.js');
+    const fixture = join(scratch, 'stamped-xobject.pdf');
+    writeFileSync(fixture, buildStampedXObjectPdf());
+    const result = runPortable(['extract-text', '--source', fixture, '--include-text']);
+    expect(result.status, result.stderr || result.stdout).toBe(0);
+    const order = result.json.text.match(/ALPHA|BETA|GAMMA|STAMP/g) || [];
+    expect(order).toEqual(['ALPHA', 'STAMP', 'BETA', 'STAMP', 'GAMMA', 'STAMP']);
+  });
+});

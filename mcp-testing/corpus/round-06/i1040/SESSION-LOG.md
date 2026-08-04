@@ -175,6 +175,10 @@ page 19 and its branches print atop page 20; it is authored whole at page 19,
 so **tranche 6 starts at "Definitions and Special Rules" and must not
 re-author it**.
 
+**FIXED in round 8 (2026-08-04).** Both this and the mixed-layout finding
+above were fixed together; see the round-8 notes at the end of this file. The
+description below is kept as the diagnosis.
+
 **New engine finding — repeated Form XObjects are extracted once per page,
 not once per draw.** Chasing an odd recall result (the plan had 8 more
 `STOP` tokens than the source baseline) turned up a real bug: the STOP badge
@@ -238,3 +242,71 @@ shortfall to explain: the hidden per-page print-control lines (see findings).
    modern pdfjs-dist (`npm i pdfjs-dist --no-save`, does not persist) which
    rebuilds the cmap — i1040 pages render fully readable — and falls back to
    the vendored build (layout only) with a stderr hint.
+
+## Round 8 (2026-08-04) — both queued engine findings fixed
+
+Measured like round 7: change the engine, sweep the whole corpus, and let the
+content-stream text referee the reading order (token-bigram agreement; the CS
+pass is ordering-independent of the text layer).
+
+### 1. Column detection — two independent causes
+
+**Cause A: the minimum gutter was wider than a real gutter.** The search used
+96 fixed bins, so a letter page got 5.5pt bins and a 3-bin minimum of 16.5pt,
+while a normal two-column gutter is 10pt. The i1040 definition pages carry a
+*completely empty* 10pt channel at x=302 that could never be detected. Bins
+are now ~2pt and the minimum gutter is stated in POINTS (8pt).
+
+**Cause B: layouts that change down the page.** Columns above a full-width
+chart (p9), or a full-width title block above columns (p12), fill the gutters
+and defeat the whole-page search. A horizontal band cut now runs whenever the
+vertical search is *rejected* — not only when no gutter is found, since such
+pages often present a gutter that the balance or table gate then vetoes.
+
+Two guards, both added because the corpus said so:
+
+* the band cut keeps the widest gap that leaves two *substantial* regions —
+  the widest blank strip on a page is usually the one above the footer, which
+  would peel off a one-item band;
+* a band cut is kept only if some band then finds real columns. Without this,
+  ordinary single-column pages were sliced into stacked bands: the first
+  measurement was 433 pages changed with 9 regressions. With it, **131 pages
+  changed: 108 better, 0 worse, 3 unchanged**.
+
+Column order is now decided at each split (right side first for RTL) rather
+than by sorting the finished column list by x — with band cuts in play, a
+global x-sort would shuffle a lower band's left column above an upper band's
+right column. The RTL pins still pass.
+
+Target pages: p9 1→4, p12 1→4, p17/18/20/21/22 1→2. Tax tables p68/p70
+correctly stay unsplit.
+
+### 2. Form XObjects — read per DRAW, in stream order
+
+Both extractors (the JS content-stream oracle and the Python portable engine,
+changed in lockstep) now follow `Do` operators instead of walking the page's
+`/XObject` resource dictionary. Two bugs fell out of the one change, both
+refereed against pdf.js:
+
+| | before | after | pdf.js |
+| --- | --- | --- | --- |
+| i1040 `STOP` badges | 14 | **32** | 32 |
+| USCIS civics footer | 18 | **11** | 11 (11 pages) |
+
+The first is the under-count logged in session 5. The second was the opposite
+and was NOT previously known: an XObject whose own `/Resources` names the
+page's dictionary made the old walker re-enter itself, so a page footer came
+out several times per page. A stack-based cycle guard settles it, with a draw
+budget and an inflate cache for stamps. Corpus-wide only these two documents
+changed; the other fourteen are identical.
+
+**The session-5 caveat is retired** — the recall baseline is trustworthy for
+repeated stamped content again.
+
+### Tests
+
+`R8` blocks in `remediation_pipeline_audit_fixes` (10pt gutter splits; columns
+above a full-width block; a full-width block above columns; a single column
+with a big blank gap is NOT carved into bands; stamp read once per draw and in
+place) and in `portable_verification` (same fixture through the real CLI),
+sharing `tests/helpers/stamped_xobject_fixture.js`. Portable engine 0.2.2.

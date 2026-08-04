@@ -2489,9 +2489,49 @@ function _alloOrderTextItems(items, opts) {
       medianChars: nLines ? charCounts[Math.floor(nLines / 2)] : 0,
     };
   };
-  var MAX_DEPTH = 2;
+  var MAX_DEPTH = 4; // deeper than the old 2: a band cut may sit above a column cut
+  var MIN_GUTTER_PT = 8; // measured: real gutters here are 10-12pt (see below)
+  // Horizontal band cut (corpus round 8). Used ONLY when no vertical gutter was
+  // found, which is the signature of a page whose layout CHANGES down the page:
+  // the i1040 sets three columns of prose above a full-width chart (p9) and a
+  // full-width title block above three columns (p12), and the full-width part
+  // fills the gutters the vertical search looks for, so the whole page read as
+  // one interleaved column. Cutting at the blank band first lets each region
+  // find its own columns. Requiring the vertical search to fail first keeps
+  // this away from ordinary multi-column pages, where cutting mid-column would
+  // break reading order.
+  var bandCut = function (arr) {
+    var levels = {}, key;
+    for (var iB = 0; iB < arr.length; iB++) levels[Math.round(_y(arr[iB]) / 3) * 3] = true;
+    var ys = [];
+    for (key in levels) if (Object.prototype.hasOwnProperty.call(levels, key)) ys.push(parseFloat(key));
+    if (ys.length < 6) return null;
+    ys.sort(function (a, b) { return b - a; });
+    var gaps = [];
+    for (var g = 1; g < ys.length; g++) gaps.push(ys[g - 1] - ys[g]);
+    var sorted = gaps.slice().sort(function (a, b) { return a - b; });
+    var leading = sorted[Math.floor(sorted.length / 2)] || 0;
+    var need = Math.max(14, leading * 2.2);
+    var candidates = [];
+    for (var g2 = 0; g2 < gaps.length; g2++) {
+      if (gaps[g2] >= need) candidates.push({ gap: gaps[g2], yCut: (ys[g2] + ys[g2 + 1]) / 2 });
+    }
+    if (!candidates.length) return null;
+    // Widest first, but keep looking: the widest blank strip on a page is often
+    // the one above the footer, which would peel off a band of one item. Take
+    // the widest cut that actually leaves two substantial regions.
+    candidates.sort(function (a, b) { return b.gap - a.gap; });
+    for (var c2 = 0; c2 < candidates.length; c2++) {
+      var top = [], bottom = [];
+      for (var iC = 0; iC < arr.length; iC++) (_y(arr[iC]) > candidates[c2].yCut ? top : bottom).push(arr[iC]);
+      if (top.length >= 6 && bottom.length >= 6) return { top: top, bottom: bottom };
+    }
+    return null;
+  };
   var split = function (arr, depth) {
-    if (arr.length < 20 || depth > MAX_DEPTH) return { cols: [arr], gutters: [] };
+    // Sub-regions are allowed to be smaller than a whole page: the i1040's
+    // page-12 title band is 17 items and is itself two columns.
+    if (arr.length < (depth === 0 ? 20 : 10) || depth > MAX_DEPTH) return { cols: [arr], gutters: [] };
     var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
     for (var i2 = 0; i2 < arr.length; i2++) {
       var x0 = _x(arr[i2]), x1 = x0 + _w(arr[i2]), yy = _y(arr[i2]);
@@ -2500,33 +2540,56 @@ function _alloOrderTextItems(items, opts) {
     }
     var span = maxX - minX;
     if (!(span > 80) || !(maxY - minY > 40)) return { cols: [arr], gutters: [] }; // too narrow/short to be columnar
-    var BINS = 96, cov = new Array(BINS);
+    // Bin width ~2pt rather than a fixed 96 bins. At 96 bins a letter-width page
+    // gives 5.5pt bins and a minimum gutter of 3 bins = 16.5pt — wider than a
+    // real two-column gutter, so the i1040's definition pages (a completely
+    // EMPTY 10pt channel at x=302) could never be detected at all.
+    var BINS = Math.max(96, Math.min(600, Math.round(span / 2)));
+    var binPt = span / BINS;
+    var cov = new Array(BINS);
     for (var b0 = 0; b0 < BINS; b0++) cov[b0] = 0;
     for (var i3 = 0; i3 < arr.length; i3++) {
       var s0 = Math.max(0, Math.floor((_x(arr[i3]) - minX) / span * BINS));
       var s1 = Math.min(BINS - 1, Math.ceil((_x(arr[i3]) + _w(arr[i3]) - minX) / span * BINS) - 1);
       for (var bb = s0; bb <= s1; bb++) cov[bb]++;
     }
-    // Deepest interior gutter: a run of near-empty bins (≤2% of items) at least ~2.5% of the
-    // span wide, whose center lies in the middle 70% of the text extent.
+    // Deepest interior gutter: a run of near-empty bins (≤2% of items) at least
+    // MIN_GUTTER_PT wide, whose center lies in the middle 70% of the text extent.
     var thresh = Math.max(1, Math.floor(arr.length * 0.02));
+    var minRun = Math.max(2, Math.ceil(MIN_GUTTER_PT / binPt));
     var best = null, runStart = -1;
     for (var b1 = 0; b1 <= BINS; b1++) {
       var empty = b1 < BINS && cov[b1] <= thresh;
       if (empty && runStart < 0) runStart = b1;
       if (!empty && runStart >= 0) {
         var runLen = b1 - runStart, center = (runStart + b1) / 2 / BINS;
-        if (runLen >= Math.max(3, Math.floor(BINS * 0.025)) && center > 0.15 && center < 0.85) {
+        if (runLen >= minRun && center > 0.15 && center < 0.85) {
           if (!best || runLen > best.len) best = { len: runLen, xCut: minX + ((runStart + b1) / 2 / BINS) * span };
         }
         runStart = -1;
       }
     }
-    if (!best) return { cols: [arr], gutters: [] };
+    // Every way of REJECTING a vertical split falls through to here, not just
+    // "no gutter found": a page whose layout changes down the page can present
+    // a gutter that the balance or table gates then veto, and the band cut is
+    // exactly what such a page needs (i1040 p9 — three columns of prose above
+    // a full-width chart).
+    var noVertical = function () {
+      var band = bandCut(arr);
+      if (!band) return { cols: [arr], gutters: [] };
+      var T = split(band.top, depth + 1), B = split(band.bottom, depth + 1);
+      // Keep the cut ONLY if it let some band find real columns. A band cut that
+      // merely slices single-column content into stacked pieces changes nothing
+      // a reader would notice and, measured across the corpus, cost more in
+      // subtle reordering than it ever gained.
+      if (T.gutters.length + B.gutters.length === 0) return { cols: [arr], gutters: [] };
+      return { cols: T.cols.concat(B.cols), gutters: T.gutters.concat(B.gutters) };
+    };
+    if (!best) return noVertical();
     var left = [], right = [];
     for (var i4 = 0; i4 < arr.length; i4++) { (( _x(arr[i4]) + _w(arr[i4]) / 2 ) < best.xCut ? left : right).push(arr[i4]); }
     // Balance guard: a stray margin note isn't a column.
-    if (left.length < 5 || right.length < 5 || left.length / right.length > 8 || right.length / left.length > 8) return { cols: [arr], gutters: [] };
+    if (left.length < 5 || right.length < 5 || left.length / right.length > 8 || right.length / left.length > 8) return noVertical();
     // Table discriminator: fraction of left baselines (3pt buckets) that also appear on the right.
     var leftY = Object.create(null), matches = 0, lY = 0;
     for (var i5 = 0; i5 < left.length; i5++) leftY[Math.round(_y(left[i5]) / 3)] = true;
@@ -2553,25 +2616,29 @@ function _alloOrderTextItems(items, opts) {
       var proseColumns = LS.lines >= 8 && RS.lines >= 8 &&
         LS.medianFill >= 0.8 && LS.itemsPerLine <= 2.5 && RS.itemsPerLine <= 4.5 &&
         LS.medianChars >= 18 && RS.medianChars >= 18;
-      if (!proseColumns) return { cols: [arr], gutters: [] };
+      if (!proseColumns) return noVertical();
     }
     var L = split(left, depth + 1), R = split(right, depth + 1);
-    return { cols: L.cols.concat(R.cols), gutters: L.gutters.concat([best.xCut]).concat(R.gutters) };
+    // Emit in reading order HERE (right side first for RTL) rather than sorting
+    // the finished column list by x. Once a region can also be cut into
+    // horizontal BANDS, a global x-sort would shuffle a lower band's left
+    // column back above an upper band's right column.
+    var near = _rtl ? R : L, far = _rtl ? L : R;
+    return {
+      cols: near.cols.concat(far.cols),
+      gutters: near.gutters.concat([best.xCut]).concat(far.gutters),
+    };
   };
   var res = split(real, 0);
   if (res.cols.length <= 1) {
     var _single = { items: _legacy(items || [], _rtl), columns: 1, gutters: [], applied: false, rtl: !!_rtl };
     return _single;
   }
-  // Column order: left→right (or right→left for RTL); items legacy-sorted within each column.
-  var colsOrdered = res.cols.slice().sort(function (A, B) {
-    var ax = Infinity, bx = Infinity;
-    for (var iA = 0; iA < A.length; iA++) ax = Math.min(ax, _x(A[iA]));
-    for (var iB = 0; iB < B.length; iB++) bx = Math.min(bx, _x(B[iB]));
-    return _rtl ? bx - ax : ax - bx;
-  });
+  // res.cols already arrives in reading order — bands top→bottom, and within a
+  // band left→right (right→left for RTL), decided at each split. Items are
+  // legacy-sorted within each column.
   var out = [];
-  for (var c = 0; c < colsOrdered.length; c++) out = out.concat(_legacy(colsOrdered[c], _rtl));
+  for (var c = 0; c < res.cols.length; c++) out = out.concat(_legacy(res.cols[c], _rtl));
   if (keepEmpties > 0) { for (var i7 = 0; i7 < (items || []).length; i7++) { var e = items[i7]; if (!(e && String(e.str || '').trim())) out.push(e); } }
   var _multi = { items: out, columns: res.cols.length, gutters: res.gutters, applied: true, rtl: !!_rtl };
   return _multi;
@@ -3018,35 +3085,56 @@ function _csHexCodes(hexStr, font) {
   return _csDecodeCodes(bytes, font);
 }
 
-var _CS_TEXT_OPS = /\/(\w+)\s+[\d.+-]+\s+Tf|\(((?:[^()\\]|\\[\s\S])*)\)\s*(Tj|'|")|<([0-9A-Fa-f\s]+)>\s*Tj|\[((?:[^\]\\]|\\[\s\S])*)\]\s*TJ|\b(ET|T\*)\b/g;
+// Group 7 is `/Name Do` — a Form XObject invocation. It is matched here, in
+// stream order, rather than by walking the page's /XObject resource dict:
+// a dict walk visits each XObject ONCE, so a badge stamped four times on a
+// page contributed its text once and in the wrong place (corpus round 8 —
+// the i1040's STOP badge is one XObject drawn at every flowchart dead end,
+// and 2 of 9 survived). The Tf alternative requires a number before Tf, so
+// `/I1 Do` cannot be mistaken for a font selection.
+var _CS_TEXT_OPS = /\/(\w+)\s+[\d.+-]+\s+Tf|\(((?:[^()\\]|\\[\s\S])*)\)\s*(Tj|'|")|<([0-9A-Fa-f\s]+)>\s*Tj|\[((?:[^\]\\]|\\[\s\S])*)\]\s*TJ|\b(ET|T\*)\b|\/([\w.]+)\s+Do\b/g;
 var _CS_TJ_PIECES = /\(((?:[^()\\]|\\[\s\S])*)\)|<([0-9A-Fa-f\s]+)>|(-?\d+(?:\.\d+)?)/g;
 var _CS_TJ_SPACE = 150; // thousandths of an em; portable-engine parity
 
-function _csPageContentText(content, fonts) {
-  var pieces = [];
+// Segments of one content stream in order: {t:'s'} decoded text, {t:'x'} a
+// Form XObject to splice in at that position. The caller resolves 'x' because
+// resolution needs the resource dictionary and an async inflate.
+function _csPageContentSegments(content, fonts) {
+  var segs = [];
+  var buf = [];
   var current = null;
   var m;
+  var flush = function () { if (buf.length) { segs.push({ t: 's', v: buf.join('') }); buf = []; } };
   _CS_TEXT_OPS.lastIndex = 0;
   while ((m = _CS_TEXT_OPS.exec(content)) !== null) {
     if (m[1] !== undefined) { current = fonts[m[1]] || null; }
     else if (m[2] !== undefined) {
-      if (m[3] === "'" || m[3] === '"') pieces.push('\n');
-      pieces.push(_csDecodeCodes(_csLiteralCodes(m[2]), current));
+      if (m[3] === "'" || m[3] === '"') buf.push('\n');
+      buf.push(_csDecodeCodes(_csLiteralCodes(m[2]), current));
     }
-    else if (m[4] !== undefined) { pieces.push(_csHexCodes(m[4], current)); }
+    else if (m[4] !== undefined) { buf.push(_csHexCodes(m[4], current)); }
     else if (m[5] !== undefined) {
       var piece;
       _CS_TJ_PIECES.lastIndex = 0;
       while ((piece = _CS_TJ_PIECES.exec(m[5])) !== null) {
-        if (piece[1] !== undefined) pieces.push(_csDecodeCodes(_csLiteralCodes(piece[1]), current));
-        else if (piece[2] !== undefined) pieces.push(_csHexCodes(piece[2], current));
-        else if (piece[3] !== undefined && Math.abs(parseFloat(piece[3])) >= _CS_TJ_SPACE) pieces.push(' ');
+        if (piece[1] !== undefined) buf.push(_csDecodeCodes(_csLiteralCodes(piece[1]), current));
+        else if (piece[2] !== undefined) buf.push(_csHexCodes(piece[2], current));
+        else if (piece[3] !== undefined && Math.abs(parseFloat(piece[3])) >= _CS_TJ_SPACE) buf.push(' ');
       }
-      pieces.push('');
+      buf.push('');
     }
-    else if (m[6] !== undefined) { pieces.push('\n'); }
+    else if (m[6] !== undefined) { buf.push('\n'); }
+    else if (m[7] !== undefined) { flush(); segs.push({ t: 'x', v: m[7] }); }
   }
-  return pieces.join('');
+  flush();
+  return segs;
+}
+
+function _csPageContentText(content, fonts) {
+  var segs = _csPageContentSegments(content, fonts);
+  var out = '';
+  for (var i = 0; i < segs.length; i++) if (segs[i].t === 's') out += segs[i].v;
+  return out;
 }
 
 // Full-file extraction: returns an array of page texts in PAGE TREE order, or
@@ -3183,6 +3271,7 @@ async function _alloContentStreamPageTexts(u8) {
     };
 
     var pageTexts = [];
+    var xobjContentCache = {}; // stamped XObjects repeat across a page and the document
     for (i = 0; i < pagesOrder.length; i++) {
       var page = pagesOrder[i];
       var resources = _csDictValue(index, page.dict, 'Resources');
@@ -3216,13 +3305,19 @@ async function _alloContentStreamPageTexts(u8) {
       // Text layers routinely live inside Form XObjects, not the page's direct
       // content stream (corpus: the 1913 print-master, the USCIS footnote), so
       // recurse into /XObject /Form entries with their own fonts merged in.
-      var collected = { text: '' };
-      var collectStream = async function (streamNum, inheritedFonts, parentResources, depth) {
-        if (depth > 3) return;
+      // Walk the stream, splicing each Form XObject's text in at its `Do`.
+      // `stack` is a cycle guard (an XObject may legally reference one that
+      // references it back); `drawBudget` bounds pathological stamp counts.
+      var drawBudget = { left: 4000 };
+      var collectStream = async function (streamNum, inheritedFonts, parentResources, depth, stack) {
+        if (depth > 6 || stack.indexOf(streamNum) >= 0) return '';
         var ce = index[streamNum];
-        if (!ce || ce.rawStart < 0) return;
-        var content = /\/FlateDecode\b/.test(ce.dict) ? await _csInflate(u8.subarray(ce.rawStart, ce.rawEnd)) : (/\/Filter\b/.test(ce.dict) ? null : u8.subarray(ce.rawStart, ce.rawEnd));
-        if (!content) return;
+        if (!ce || ce.rawStart < 0) return '';
+        var content = depth > 0 && Object.prototype.hasOwnProperty.call(xobjContentCache, streamNum)
+          ? xobjContentCache[streamNum]
+          : (/\/FlateDecode\b/.test(ce.dict) ? await _csInflate(u8.subarray(ce.rawStart, ce.rawEnd)) : (/\/Filter\b/.test(ce.dict) ? null : u8.subarray(ce.rawStart, ce.rawEnd)));
+        if (depth > 0) xobjContentCache[streamNum] = content; // stamps repeat; inflate once
+        if (!content) return '';
         var ownResources = _csDictValue(index, ce.dict, 'Resources');
         var ownFonts = inheritedFonts;
         if (ownResources) {
@@ -3233,19 +3328,27 @@ async function _alloContentStreamPageTexts(u8) {
           for (key in extra) if (Object.prototype.hasOwnProperty.call(extra, key)) merged[key] = extra[key];
           ownFonts = merged;
         }
-        collected.text += _csPageContentText(_csLatin1(content), ownFonts);
         var resForX = ownResources || parentResources;
         var xobjects = _csDictValue(index, resForX, 'XObject');
-        if (!xobjects) return;
-        var xRe = /\/\w+\s+(\d+)\s+0\s+R/g;
-        var xM;
-        while ((xM = xRe.exec(xobjects)) !== null) {
-          var xe = index[parseInt(xM[1], 10)];
-          if (xe && /\/Subtype\s*\/Form\b/.test(xe.dict)) await collectStream(parseInt(xM[1], 10), ownFonts, resForX, depth + 1);
+        var segs = _csPageContentSegments(_csLatin1(content), ownFonts);
+        var nextStack = stack.concat([streamNum]);
+        var out = '';
+        for (var si = 0; si < segs.length; si++) {
+          if (segs[si].t === 's') { out += segs[si].v; continue; }
+          if (!xobjects || drawBudget.left <= 0) continue;
+          var nameM = new RegExp('\\/' + segs[si].v.replace(/[^\w.]/g, '') + '\\s+(\\d+)\\s+0\\s+R').exec(xobjects);
+          if (!nameM) continue;
+          var xNum = parseInt(nameM[1], 10);
+          var xe = index[xNum];
+          if (!xe || !/\/Subtype\s*\/Form\b/.test(xe.dict)) continue;
+          drawBudget.left--;
+          out += await collectStream(xNum, ownFonts, resForX, depth + 1, nextStack);
         }
+        return out;
       };
-      for (var c = 0; c < contentRefs.length; c++) await collectStream(contentRefs[c], fonts, resources, 0);
-      pageTexts.push(collected.text);
+      var pageText = '';
+      for (var c = 0; c < contentRefs.length; c++) pageText += await collectStream(contentRefs[c], fonts, resources, 0, []);
+      pageTexts.push(pageText);
     }
     return pageTexts;
   } catch (_) { return null; }
