@@ -221,7 +221,89 @@ not seen rendered in their review surface.
 Each phase carries its constraint tests (never-accuse pins, schema-only collection pins,
 disclaimer-presence pins) the way today's agentic work pinned its privacy invariants.
 
-## 12. Open questions for Aaron (SME judgment, not engineering)
+## 12. Open questions for Aaron — RESOLVED 2026-08-04 (Aaron accepted recommendations)
+
+1. **Default**: off; enabled per assignment by the teacher.
+2. **Checkpoints**: end-of-assignment by default; mid-work gates optional per assignment.
+3. **Teacher first-view**: the one-line process summary ("4 sessions · 62 min · 2 AI
+   supports · checkpoints attached"), expanding on demand.
+4. **Student-facing name**: **"Work Story"** (working title; Aaron may veto).
+5. **District policy review** happens before any pilot classroom.
+6. **Accommodation note is mandatory** in teacher docs (speech-to-text = paste-like
+   bursts; AT must never read as an anomaly).
+
+## 13. Where this lives — one coach, one ledger, one artifact pattern
+
+Added after Aaron's cohesion critique: features earn usage only if they are one story.
+This section is that story, and it is mostly *unification of things that already exist*.
+
+### 13.1 One coach, many postures
+
+There is exactly one agent in AlloFlow: **AlloBot**. The Screen Coach, spotlight/where-is,
+demo autopilot, plan cards, voice loop, and checkpoints are not products — they are
+AlloBot's *capabilities*. Every coaching surface presents as AlloBot; nothing gets a
+second mascot or a second entry point to learn.
+
+What changes per audience is **posture**, and the governing principle is:
+
+> **Socratic about the lesson, direct about the tool.**
+> Productive struggle belongs to the learning objective — never to the UI. Concept
+> struggle is signal; navigation friction is noise.
+
+| Audience | Content questions ("what does erosion mean?") | Navigation questions ("where do I submit?") | Process questions ("how do I run X?") |
+|---|---|---|---|
+| Student | Socratic, governed by the assignment's AI policy — never hands over assignment answers | **Direct** + spotlight the control + offer to open it | Direct guided steps (read directions / next step commands already exist) |
+| Educator | Direct with cited depth | Direct + spotlight | Guided sequences: explain → spotlight tour → *or* watch a Demo Autopilot run → or a plan card that does it with consent |
+| Independent learner | Socratic-leaning hybrid | Direct + spotlight | Direct guided steps |
+
+Most of this router's targets exist today (help mode, show-me mode, `whereIs`, 155
+commands, tours, demo runs). The cohesion work is **one intent split — concept |
+navigation | process — at the top of AlloBot's routing**, not new machinery. That split
+is a prerequisite phase for provenance's student surface, because checkpoints and
+coaching must not blur: coaching helps you work; checkpoints ask you to explain your
+work with coaching off.
+
+### 13.2 One ledger, two lenses — and a wall between them
+
+Aaron's MTSS insight, adopted: the same event ledger serves two different consumers,
+and the second may matter more than the first.
+
+- **Integrity lens** (this doc's §8): assignments, submission inbox, "did the work
+  evolve honestly."
+- **Support-fade lens** (MTSS/RTI): the coach's scaffolding is a *prompt hierarchy*
+  (errorless-learning style: full model → guided → hint → independent). Recording the
+  prompt level a student needed, per task over weeks, is **progress-monitoring data of
+  response to intervention** — precisely what Tier 2/3 teams lack. A Work Story showing
+  AI-scaffold use fading across a month *is* the intervention evidence. Schema change:
+  `ai` events gain `promptLevel: "model|guided|hint|none"`, and support-fade summaries
+  feed the existing Leadership Hub MTSS module (team-facing, never-decides, like every
+  other admin surface).
+
+**The wall (hard constraint 8, test-pinned like the others):** the support lens and the
+integrity lens must never share a view, a summary, or a visual register. A student who
+needs heavy scaffolding must never *render* as a suspicious student. Separate consumers
+(submission inbox vs. MTSS dashboard), separate summaries computed from the same events,
+and the integrity view never displays prompt-level or support-quantity data at all.
+Conflating "needs help" with "might be cheating" is the equity failure this design
+exists to avoid, so it gets its own pin.
+
+### 13.3 One artifact pattern
+
+The platform already established the pattern with Persona artifacts (2026-07-20):
+**student work = re-importable JSON (source of truth) + a human-readable "permanent
+product" page** downloaded alongside it. The Work Story follows it exactly: ledger +
+chain head ride the project JSON; the student-readable Work Story page renders from it
+(and is what families see). AlloHaven's permanent-product surface is the precedent and
+a natural place for students to *keep* their Work Stories as things they made — process
+as a artifact of pride, not a compliance receipt.
+
+### 13.4 Revised phase order (cohesion first)
+
+- **P-1 (new, before P0): the intent router** — concept | navigation | process split in
+  AlloBot, applying "Socratic about the lesson, direct about the tool" per audience.
+  Ships value immediately (navigation coaching for everyone) and provenance inherits it.
+- P0–P5 as §11, plus: `promptLevel` in the schema from day one (P0), support-fade
+  summary + MTSS feed as **P6**, behind the §13.2 wall from its first commit.
 
 1. **Default posture**: provenance off unless a teacher enables it per assignment
    (recommended), or a school-level default?
