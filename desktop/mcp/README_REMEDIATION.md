@@ -57,12 +57,54 @@ npx playwright install chromium      # once, if Chromium isn't present
 export GEMINI_API_KEY=...            # optional — see key auto-discovery below
 ```
 
-**Key auto-discovery:** if `GEMINI_API_KEY` isn't set, the connector looks in the file at
-`ALLOFLOW_MCP_ENV_PATH`, then in the repo's gitignored `desktop/web-app/.env.maintainer-demo`
-(keys `GEMINI_API_KEY` / `REACT_APP_GEMINI_API_KEY` / `REACT_APP_API_KEY`). The key value is
-never logged or returned by tools — `remediation_capabilities` reports only its source label.
-⚠ 2026-07-16: the key currently in the maintainer file was **disabled by Google as leaked**
-(the June Prismflow incident) — mint a fresh one at aistudio.google.com and replace it there.
+### Supplying your own Gemini key (safely)
+
+The AI tools run on **your** key, not a shared one. A free key from
+[aistudio.google.com](https://aistudio.google.com/app/apikey) takes about two minutes and needs no
+credit card. Pick one of these two, in this order of preference:
+
+```bash
+# Option A — OS environment variable (nothing on disk)
+export GEMINI_API_KEY=...            # macOS/Linux
+setx GEMINI_API_KEY "..."            # Windows, new shells only
+
+# Option B — a key file OUTSIDE this repository
+printf 'GEMINI_API_KEY=...\n' > ~/.alloflow-gemini.env
+export ALLOFLOW_MCP_ENV_PATH=~/.alloflow-gemini.env
+```
+
+Then prove it works — this sends **no document content** and spends no generation quota:
+
+```bash
+node mcp-testing/tools/mcp_call.cjs call desktop/mcp/alloflow-remediation-mcp-stdio.cjs remediation_verify_key
+```
+
+**Do not** paste the key into a chat with an assistant, and **avoid** putting it in an MCP client
+config `env` block (`claude mcp add --env ...`, or `claude_desktop_config.json`). Both leave the
+secret sitting in a file the assistant routinely reads. The two options above keep it out of the
+assistant's reach; the connector itself never logs or returns the value, only a source label such
+as `env:GEMINI_API_KEY`.
+
+Set `ALLOFLOW_MCP_NO_KEY_FILES=1` to guarantee no key file is ever read, whatever is on disk.
+
+**Key auto-discovery order:** `GEMINI_API_KEY` env var → the file at `ALLOFLOW_MCP_ENV_PATH` →
+the repo's gitignored `desktop/web-app/.env.maintainer-demo` (a maintainer artifact; a user should
+not put their key there). Accepted names inside a key file are `GEMINI_API_KEY` and
+`REACT_APP_GEMINI_API_KEY` only. The generic `REACT_APP_API_KEY` was accepted until 2026-08-04 and
+is not, because in a CRA env file that name holds the **Firebase** web key — a different credential
+for a different service, which the connector would then have transmitted to Google's Generative
+Language API.
+
+⚠ Presence is not validity. `remediation_capabilities` only reads whether a key *exists*; it
+reports `onboarding.state: "key-present-untested"` and will not claim the key works. Call
+`remediation_verify_key` for that. It distinguishes `valid`, `valid-but-quota-exhausted`,
+`invalid` (revoked/mistyped/wrong API), `unreachable` (offline, so untested rather than bad), and
+`no-key`.
+
+Free-tier prompts may be used by the provider to improve its products and are subject to daily
+caps. For student-identifiable documents prefer the keyless tools, or the fully local
+[portable pathway](../../agent_skills/alloflow-portable-remediation/SKILL.md), which sends nothing
+anywhere.
 
 The full AI audit/remediation path requires the Gemini API (**document content is sent to it**).
 Core browser libraries and veraPDF are bundled and run locally. The one-time setup downloads
@@ -88,7 +130,9 @@ To register it by hand instead — for a checkout somewhere unusual, or a client
 project scope:
 
 ```bash
-# from the repo root; $PWD keeps it machine-independent
+# from the repo root; $PWD keeps it machine-independent.
+# Deliberately NO --env GEMINI_API_KEY: that writes the key into ~/.claude.json,
+# a file the assistant can read. Supply the key by env var or key file instead.
 claude mcp add alloflow-remediation -- node "$PWD/desktop/mcp/alloflow-remediation-mcp-stdio.cjs"
 ```
 
@@ -108,11 +152,15 @@ node -e "console.log(JSON.stringify({mcpServers:{'alloflow-remediation':{command
     "alloflow-remediation": {
       "command": "node",
       "args": ["<absolute path printed by the command above>"],
-      "env": { "GEMINI_API_KEY": "YOUR_KEY" }
+      "env": { "ALLOFLOW_MCP_ENV_PATH": "<absolute path to your key file>" }
     }
   }
 }
 ```
+
+Note this points at a key *file* rather than inlining the key. Putting
+`"GEMINI_API_KEY": "..."` here would work, but it stores the secret in a config file the
+assistant can read; the file path does not.
 
 For distribution to people who do not have the repo at all, build the `.mcpb` bundle
 (`node desktop/mcp/build_mcpb.cjs`) — see [MCPB_RELEASE.md](MCPB_RELEASE.md). That is the only

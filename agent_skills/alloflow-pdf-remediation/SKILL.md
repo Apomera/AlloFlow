@@ -50,6 +50,18 @@ installed connector's local tools.
 4. **Quota is the teacher's.** Each remediation makes dozens of Gemini calls on
    their key. Don't re-run on a whim; don't start a batch without confirming
    the folder and file count first.
+5. **Never handle their key.** Do not ask the user to paste an API key into the
+   conversation, do not read it out of a file, and do not write it into an MCP
+   client config. If a key is needed, relay the `setup` text that
+   `remediation_verify_key` returns and let them set it themselves, then
+   re-check. A key pasted into chat is in the transcript permanently.
+6. **Presence is not validity.** `remediation_capabilities` only reads whether a
+   key exists; `onboarding.state: "key-present-untested"` means exactly that. If
+   a Gemini-powered tool fails, or before relying on one, call
+   `remediation_verify_key` — it sends no document content and spends no
+   generation quota. `invalid` means their key is bad (relay the setup steps);
+   `valid-but-quota-exhausted` means wait, not re-key; `unreachable` means you
+   could not test it, not that it is broken.
 
 ## Standard flow
 

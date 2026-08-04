@@ -253,7 +253,12 @@ function installChromium(onLog) {
 function readKeyFromEnvFile(p) {
   let text;
   try { text = fs.readFileSync(p, 'utf8'); } catch (_) { return null; }
-  for (const name of ['GEMINI_API_KEY', 'REACT_APP_GEMINI_API_KEY', 'REACT_APP_API_KEY']) {
+  // Gemini-specific names ONLY. `REACT_APP_API_KEY` was accepted here until
+  // 2026-08-04, but in a CRA env file that name holds the FIREBASE web key —
+  // a different credential for a different service. Falling back to it silently
+  // transmitted a Firebase key to generativelanguage.googleapis.com. Never
+  // guess which service a generically-named key belongs to.
+  for (const name of ['GEMINI_API_KEY', 'REACT_APP_GEMINI_API_KEY']) {
     const m = text.match(new RegExp('^\\s*' + name + '\\s*=\\s*(["\']?)([^"\'\\r\\n]+)\\1\\s*$', 'm'));
     if (m && m[2] && m[2].trim() && !/YOUR|CHANGE|PLACEHOLDER|XXXX/i.test(m[2])) return m[2].trim();
   }
@@ -1750,7 +1755,53 @@ function createDriver(options) {
   };
 }
 
-module.exports = { createDriver, classifyHttpFailure, resolveGeminiApiKey, resolveChromium, installChromium, verifyVendorBundle, REPO_ROOT, ASSETS_ROOT, MODULE_FILES };
+/*
+ * Prove the configured key actually WORKS, rather than merely existing.
+ *
+ * Presence is not validity: a revoked, expired, or mistyped key made every
+ * capability field report ready and then every AI tool failed at call time with
+ * API_AUTH_FAILED. This lists models — the cheapest authenticated endpoint —
+ * and sends NO document content, so it is safe to run at any time and costs no
+ * generation quota. The key value is never returned or logged.
+ */
+async function verifyGeminiApiKey({ timeoutMs = 15000 } = {}) {
+  const info = resolveGeminiApiKey();
+  if (!info.key) return { state: 'no-key', source: info.source, checked: false };
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models?pageSize=1',
+      { headers: { 'x-goog-api-key': info.key }, signal: controller.signal },
+    );
+    const body = await response.text();
+    if (response.ok) return { state: 'valid', source: info.source, checked: true };
+    const classified = classifyHttpFailure(response.status, body);
+    // Quota exhaustion means the key is GOOD but currently rate-limited; that is
+    // a different user action from a bad key, so never conflate the two.
+    if (classified.isQuota) {
+      return {
+        state: 'valid-but-quota-exhausted', source: info.source, checked: true,
+        detail: 'The key is accepted but its quota is currently exhausted. Wait for the quota window to reset.',
+      };
+    }
+    return {
+      state: 'invalid', source: info.source, checked: true,
+      detail: 'The API rejected this key (HTTP ' + response.status + '). It is revoked, mistyped, or lacks Generative Language API access.',
+    };
+  } catch (error) {
+    // Offline, DNS failure, proxy, timeout: the key is untested, NOT proven bad.
+    return {
+      state: 'unreachable', source: info.source, checked: false,
+      detail: 'Could not reach the Gemini API to test the key: ' + String((error && error.message) || error).slice(0, 200),
+    };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+module.exports = { createDriver, classifyHttpFailure, resolveGeminiApiKey, verifyGeminiApiKey, resolveChromium, installChromium, verifyVendorBundle, REPO_ROOT, ASSETS_ROOT, MODULE_FILES };
 
 // ── Direct CLI (for manual testing without an MCP client) ──────────────────
 //   GEMINI_API_KEY=... node desktop/mcp/remediation_headless_driver.cjs audit <file.pdf>

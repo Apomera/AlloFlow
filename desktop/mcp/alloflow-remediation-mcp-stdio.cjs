@@ -931,6 +931,13 @@ const TOOLS = [
     annotations: { title: 'Check remediation environment', readOnlyHint: true, destructiveHint: false, openWorldHint: false },
   },
   {
+    name: 'remediation_verify_key',
+    title: 'Test whether the Gemini key actually works',
+    description: "Prove the configured Gemini key WORKS rather than merely existing, by listing models — the cheapest authenticated call. Sends NO document content and spends no generation quota. Call this whenever remediation_capabilities reports a key but Gemini-powered tools fail, and after setting up a key for the first time. Distinguishes: no key configured, valid, valid-but-quota-exhausted, invalid (revoked/mistyped/wrong API), and unreachable (offline — key untested, not proven bad). When no key or an invalid key is found it returns exact setup instructions. Never returns or logs the key value.",
+    inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    annotations: { title: 'Test whether the Gemini key actually works', readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+  },
+  {
     name: 'remediation_selftest',
     title: 'Prove this install can actually remediate',
     description: 'Run the REAL remediation pipeline end-to-end in headless Chromium against a scripted local model and a generated one-page PDF, then report which stage worked. Needs NO Gemini key and spends NO quota (nothing leaves the machine; the scripted model is a loopback server), writes no files you keep. Takes roughly 20-60s. Use this when remediation_capabilities says ready but real runs fail, after installing or updating the connector, or to tell a broken install apart from an API-key/quota problem: a failure here names the stage (assets / browser / module-boot / ownership-gate / audit-contract) and is never about your key.',
@@ -1334,8 +1341,36 @@ const PUBLIC_DEPENDENCY_DOWNLOAD_TOOL_NAMES = Object.freeze([
   'export_alt_format',
 ]);
 const PUBLIC_DEPENDENCY_DOWNLOAD_TOOL_SET = new Set(PUBLIC_DEPENDENCY_DOWNLOAD_TOOL_NAMES);
+
+// A third network shape, distinct from both: contacts the Gemini API using ONLY the
+// configured key, to test whether that key works. No document content is sent, so
+// listing it under geminiDocumentEgressToolNames would be a false privacy claim, and
+// listing it as offline would be a false network claim.
+// Self-serve setup, returned in tool output rather than left in a README the
+// assistant relaying this may never have read. The ordering is deliberate: both
+// recommended options keep the key OUT of any file an assistant routinely reads,
+// which the `claude mcp add --env` / `claude_desktop_config.json` "env" route
+// does not.
+const KEY_SETUP_HINT = [
+  'A Gemini key is OPTIONAL and only unlocks the AI tools. To add one:',
+  '(1) get a free key at https://aistudio.google.com/app/apikey (no credit card, about two minutes);',
+  '(2) supply it EITHER by setting the GEMINI_API_KEY environment variable in your OS/shell,',
+  'OR by writing GEMINI_API_KEY=<value> into a file OUTSIDE this repository and setting',
+  'ALLOFLOW_MCP_ENV_PATH to that file path;',
+  '(3) call remediation_verify_key to confirm it works.',
+  'Do NOT paste the key into this conversation, and avoid putting it in an MCP client config',
+  '"env" block — both leave the secret in text an assistant can read.',
+  'Free-tier prompts may be used by the provider to improve their products and have daily caps,',
+  'so prefer the no-key tools for student-identifiable documents.',
+].join(' ');
+
+const CREDENTIAL_CHECK_TOOL_NAMES = Object.freeze(['remediation_verify_key']);
+const CREDENTIAL_CHECK_TOOL_SET = new Set(CREDENTIAL_CHECK_TOOL_NAMES);
+
 const OFFLINE_TOOL_NAMES = Object.freeze(
-  KEYLESS_TOOL_NAMES.filter((name) => !PUBLIC_DEPENDENCY_DOWNLOAD_TOOL_SET.has(name))
+  KEYLESS_TOOL_NAMES.filter(
+    (name) => !PUBLIC_DEPENDENCY_DOWNLOAD_TOOL_SET.has(name) && !CREDENTIAL_CHECK_TOOL_SET.has(name)
+  )
 );
 
 // Fail closed if a future tool is added without a data-handling classification. This remains
@@ -1343,6 +1378,7 @@ const OFFLINE_TOOL_NAMES = Object.freeze(
 const PRIVACY_CLASSIFIED_TOOL_NAMES = new Set([
   ...OFFLINE_TOOL_NAMES,
   ...PUBLIC_DEPENDENCY_DOWNLOAD_TOOL_NAMES,
+  ...CREDENTIAL_CHECK_TOOL_NAMES,
   ...GEMINI_REQUIRED_TOOL_NAMES,
 ]);
 if (PRIVACY_CLASSIFIED_TOOL_NAMES.size !== TOOLS.length || TOOLS.some((tool) => !PRIVACY_CLASSIFIED_TOOL_NAMES.has(tool.name))) {
@@ -1433,7 +1469,7 @@ const S_JOB_VIEW = obj({
 
 const OUTPUT_SCHEMAS = {
   remediation_capabilities: obj({
-    ready: { type: 'boolean', description: 'Parts are present. Presence is not function — see readyMeans and remediation_selftest.' },
+    ready: { type: 'boolean', description: 'Parts are present, including a key that has NOT been tested. Presence is not function — see readyMeans, remediation_verify_key (key works?) and remediation_selftest (pipeline works?).' },
     readyMeans: S_STR,
     fullAiPipelineReady: S_BOOL,
     keylessModeAvailable: S_BOOL,
@@ -1443,10 +1479,11 @@ const OUTPUT_SCHEMAS = {
     dataHandling: strictObj({
       offlineToolNames: { type: 'array', items: S_STR },
       publicDependencyDownloadToolNames: { type: 'array', items: S_STR },
+      credentialCheckToolNames: { type: 'array', items: S_STR },
       geminiDocumentEgressToolNames: { type: 'array', items: S_STR },
       dependencyDownloadsSendDocumentContent: S_BOOL,
       note: S_STR,
-    }, ['offlineToolNames', 'publicDependencyDownloadToolNames', 'geminiDocumentEgressToolNames', 'dependencyDownloadsSendDocumentContent', 'note']),
+    }, ['offlineToolNames', 'publicDependencyDownloadToolNames', 'credentialCheckToolNames', 'geminiDocumentEgressToolNames', 'dependencyDownloadsSendDocumentContent', 'note']),
     onboarding: strictObj({
       state: { type: 'string', enum: ['busy', 'setup-required', 'reinstall-required', 'keyless-ready', 'full-ai-ready'] },
       nextTool: { type: ['string', 'null'] },
@@ -1465,6 +1502,15 @@ const OUTPUT_SCHEMAS = {
     allowedRoots: { type: ['array', 'null'], items: S_STR, description: 'null means unrestricted' },
     networkEgress: { type: 'array', items: S_STR },
   }, ['ready']),
+  remediation_verify_key: obj({
+    state: { type: 'string', enum: ['no-key', 'valid', 'valid-but-quota-exhausted', 'invalid', 'unreachable'] },
+    keyWorks: { type: ['boolean', 'null'], description: 'true/false when tested; null when no key or the API was unreachable' },
+    checked: S_BOOL,
+    geminiKeySource: S_STR,
+    detail: S_STR,
+    setup: S_STR,
+    documentContentSent: S_BOOL,
+  }, ['state', 'keyWorks', 'checked', 'documentContentSent']),
   remediation_selftest: obj({
     ok: S_BOOL,
     stage: { type: 'string', description: "'complete' on success; otherwise the stage that broke: assets | browser | module-boot | ownership-gate | audit-contract | run | output" },
@@ -1611,6 +1657,25 @@ const TOOL_HANDLERS = {
     };
   },
 
+  async remediation_verify_key(args) {
+    assertAllowedKeys(args, [], 'arguments');
+    const result = await Driver.verifyGeminiApiKey();
+    const keyWorks = result.state === 'valid' || result.state === 'valid-but-quota-exhausted'
+      ? true
+      : (result.state === 'invalid' ? false : null);
+    const out = {
+      state: result.state,
+      keyWorks,
+      checked: !!result.checked,
+      geminiKeySource: result.source, // label only; never the value
+      documentContentSent: false,
+    };
+    if (result.detail) out.detail = result.detail;
+    // Only hand back setup steps when the user actually needs to act.
+    if (result.state === 'no-key' || result.state === 'invalid') out.setup = KEY_SETUP_HINT;
+    return out;
+  },
+
   remediation_capabilities(args) {
     assertAllowedKeys(args, [], 'arguments');
     // The playwright PACKAGE resolving is necessary but NOT sufficient — a packaged
@@ -1641,14 +1706,16 @@ const TOOL_HANDLERS = {
         message: 'Call remediation_setup once to download Chromium. No Gemini key or AlloFlow account is needed.',
       };
     } else if (keyInfo.key) {
+      // DETECTED, not verified. This state deliberately does not claim the key works:
+      // a revoked or mistyped key used to report ready here and then fail at call time.
       onboarding = {
-        state: 'full-ai-ready', nextTool: 'remediation_selftest', actionRequired: false,
-        message: 'Local and Gemini-powered tools are available. remediation_selftest is an optional no-key, no-quota end-to-end installation check.',
+        state: 'key-present-untested', nextTool: 'remediation_verify_key', actionRequired: false,
+        message: 'A Gemini key is configured (source: ' + keyInfo.source + '), but its presence has NOT been tested — this check only reads whether a key exists. Call remediation_verify_key to prove it works before relying on the Gemini-powered tools; it sends no document content and spends no generation quota. All keyless tools are ready regardless.',
       };
     } else {
       onboarding = {
         state: 'keyless-ready', nextTool: 'remediation_selftest', actionRequired: false,
-        message: 'Local tools are ready without an account or key. remediation_selftest can prove the browser remediation pipeline works; a Gemini key is optional and only unlocks the named AI tools.',
+        message: 'Local tools are ready without an account or key, and cover audit, structure checks, extraction, exports, redaction, conformance reports and PDF/UA validation. ' + KEY_SETUP_HINT,
       };
     }
     return {
@@ -1661,9 +1728,10 @@ const TOOL_HANDLERS = {
       dataHandling: {
         offlineToolNames: OFFLINE_TOOL_NAMES,
         publicDependencyDownloadToolNames: PUBLIC_DEPENDENCY_DOWNLOAD_TOOL_NAMES,
+        credentialCheckToolNames: CREDENTIAL_CHECK_TOOL_NAMES,
         geminiDocumentEgressToolNames: GEMINI_REQUIRED_TOOL_NAMES,
         dependencyDownloadsSendDocumentContent: false,
-        note: 'Offline tools make no external network request. Dependency-download tools fetch Chromium or pinned public JavaScript libraries; AlloFlow does not intentionally include document content in those requests, though the provider can observe ordinary connection metadata such as IP address and timing. Gemini tools send the document or derived content to Gemini under the user-provided key.',
+        note: 'Offline tools make no external network request. Dependency-download tools fetch Chromium or pinned public JavaScript libraries; AlloFlow does not intentionally include document content in those requests, though the provider can observe ordinary connection metadata such as IP address and timing. Credential-check tools contact the Gemini API with the configured key only, to test whether it works, and send no document content. Gemini tools send the document or derived content to Gemini under the user-provided key.',
       },
       onboarding,
       alloflowAccountRequired: false,
@@ -1697,7 +1765,7 @@ const TOOL_HANDLERS = {
       // `ready` is a PRESENCE check, and presence is not function. It reported true for an install
       // where every run died at the pipeline's ownership gate (2026-07-28). Say so, rather than
       // letting one word imply more than it verifies.
-      readyMeans: 'The parts are present (key, Playwright, Chromium, pipeline modules, and hash-verified local vendor assets). It does NOT prove a run succeeds — run remediation_selftest for that, which needs no key and no quota.',
+      readyMeans: 'The parts are PRESENT (a key was found, plus Playwright, Chromium, pipeline modules, and hash-verified local vendor assets). It does NOT prove a run succeeds, and it does NOT prove the key works: a revoked or mistyped key still reports present. Call remediation_verify_key to test the key (no document content, no generation quota) and remediation_selftest to test the pipeline (no key, no quota).',
     };
   },
 

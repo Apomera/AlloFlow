@@ -71,6 +71,7 @@ function buildManifest() {
   // the server did not have.
   const tools = [
     { name: 'remediation_capabilities', description: 'Report whether this machine can run PDF remediation (key, Chromium, assets). Read-only.' },
+    { name: 'remediation_verify_key', description: 'Test whether the configured Gemini key actually works. Sends no document content and spends no generation quota; returns setup steps when no key or an invalid key is found.' },
     { name: 'remediation_selftest', description: 'Prove the install can actually remediate: real pipeline, scripted local model, no API key or quota.' },
     { name: 'generate_resource_pack', description: "Generate the normal app's student/teacher resource-pack HTML from app-shaped JSON. No API key." },
     { name: 'remediation_setup', description: 'One-time Chromium download via Playwright. Idempotent; needs no API key.' },
