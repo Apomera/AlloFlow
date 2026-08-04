@@ -85,6 +85,17 @@ describe('lesson-plan agent catalog is enriched AND bounded', () => {
     expect(promptsMod).toMatch(/subjects: t\.subjects/); // legacy fallback retained
   });
 
+  it('the fallback reads the registry LIVE, not the load-time snapshot', () => {
+    // createPromptsLibrary auto-instantiates when the module loads, which is
+    // before the STEM plugins load on demand — so the constructor-time
+    // `stemToolRegistry` is an empty array for the life of the page. Reading
+    // window.STEM_TOOL_REGISTRY at call time is what makes the fallback real.
+    for (const [name, src] of [['source', promptsSrc], ['module', promptsMod]]) {
+      expect(src, name + ' reads the live global').toMatch(/window\.STEM_TOOL_REGISTRY\)\s*&&\s*window\.STEM_TOOL_REGISTRY\.length/);
+      expect(src, name + ' still guards with try/catch').toMatch(/live = window\.STEM_TOOL_REGISTRY/);
+    }
+  });
+
   it('the cap actually bounds the payload for a real topic', () => {
     // Simulate the selector against the live index.
     const LIMIT = Number(promptsMod.match(/TOOL_CATALOG_LIMIT\s*=\s*(\d+)/)[1]);

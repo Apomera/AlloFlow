@@ -55,10 +55,21 @@ const createPromptsLibrary = ({ STEM_TOOL_REGISTRY } = {}) => {
   const STOPISH = /^(the|and|for|with|from|that|this|about|into|your|their|what|when|how|why|a|an|of|to|in|on|is|are|it|as)$/i;
   const selectStemTools = (topic, gradeLevel) => {
     const idx = readToolIndex();
-    // No index available (older build, fetch failed): fall back to exactly the
-    // previous behavior rather than sending nothing.
+    // No index available (older build, fetch failed): fall back to the registry
+    // payload. Read the global LIVE rather than using `stemToolRegistry` — this
+    // factory auto-instantiates when the module loads, which is BEFORE the STEM
+    // plugins load on demand, so the constructor-time snapshot is an empty array
+    // for the life of the page. That snapshot is why lesson plans have been
+    // shipping an empty tool list; reading live at least degrades to real data
+    // once a user has opened the STEM Lab.
     if (!idx || !idx.length) {
-      return stemToolRegistry.map((t) => ({ id: t.id, name: t.name, subjects: t.subjects, tags: t.tags }));
+      let live = stemToolRegistry;
+      try {
+        if (typeof window !== 'undefined' && Array.isArray(window.STEM_TOOL_REGISTRY) && window.STEM_TOOL_REGISTRY.length) {
+          live = window.STEM_TOOL_REGISTRY;
+        }
+      } catch (_) { /* keep the snapshot */ }
+      return live.map((t) => ({ id: t.id, name: t.name, subjects: t.subjects, tags: t.tags }));
     }
     const terms = String(topic || '').toLowerCase().match(/[a-z][a-z0-9-]{2,}/g) || [];
     const query = terms.filter((w) => !STOPISH.test(w));
