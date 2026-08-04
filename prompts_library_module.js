@@ -26,6 +26,67 @@ const createPromptsLibrary = ({ STEM_TOOL_REGISTRY } = {}) => {
   // buildLessonPlanPrompt produces "[]" rather than throwing.
   const stemToolRegistry = Array.isArray(STEM_TOOL_REGISTRY) ? STEM_TOOL_REGISTRY : [];
 
+  // ── STEM tool catalog for the lesson-plan prompt ────────────────────────
+  // Two problems this replaces:
+  //   1. The old payload was {id,name,subjects,tags} for EVERY tool — names
+  //      without capabilities, and `subjects` fell through to a generic
+  //      'STEM' for 39% of tools. The model was asked to match tools to a
+  //      lesson while being told almost nothing about what they do.
+  //   2. STEM_TOOL_REGISTRY is populated by registerTool, which only runs
+  //      once the STEM plugins load ON DEMAND. A teacher who never opened
+  //      the STEM Lab got an EMPTY list and silently lost every
+  //      recommendation.
+  // tool_index.json is built at build time (dev-tools/build_tool_index.cjs)
+  // from each tool's own self-description, so it is complete regardless of
+  // load state — and it is RANKED AND CAPPED here rather than dumped, which
+  // keeps the prompt smaller than the old one while carrying far more signal.
+  // Tool SOURCE never enters this path; a single tool file can exceed 2 MB.
+  const TOOL_CATALOG_LIMIT = 24;
+  let toolIndex = null;
+  const readToolIndex = () => {
+    if (toolIndex) return toolIndex;
+    try {
+      if (typeof window !== 'undefined' && window.ALLO_TOOL_INDEX && Array.isArray(window.ALLO_TOOL_INDEX.tools)) {
+        toolIndex = window.ALLO_TOOL_INDEX.tools;
+      }
+    } catch (_) { /* fall through to the registry */ }
+    return toolIndex;
+  };
+  const STOPISH = /^(the|and|for|with|from|that|this|about|into|your|their|what|when|how|why|a|an|of|to|in|on|is|are|it|as)$/i;
+  const selectStemTools = (topic, gradeLevel) => {
+    const idx = readToolIndex();
+    // No index available (older build, fetch failed): fall back to exactly the
+    // previous behavior rather than sending nothing.
+    if (!idx || !idx.length) {
+      return stemToolRegistry.map((t) => ({ id: t.id, name: t.name, subjects: t.subjects, tags: t.tags }));
+    }
+    const terms = String(topic || '').toLowerCase().match(/[a-z][a-z0-9-]{2,}/g) || [];
+    const query = terms.filter((w) => !STOPISH.test(w));
+    const scored = idx.map((t) => {
+      const hayTop = ((t.label || '') + ' ' + (t.topics || []).join(' ')).toLowerCase();
+      const hayAll = hayTop + ' ' + ((t.desc || '') + ' ' + (t.keywords || []).join(' ') + ' ' + (t.section || '')).toLowerCase();
+      let score = 0;
+      for (const w of query) {
+        if (hayTop.indexOf(w) !== -1) score += 3;      // title/heading hit weighs most
+        else if (hayAll.indexOf(w) !== -1) score += 1;
+      }
+      return { t: t, score: score };
+    });
+    scored.sort((a, b) => b.score - a.score || a.t.id.localeCompare(b.t.id));
+    // With no usable topic every score is 0; the slice still yields a stable,
+    // bounded sample instead of the whole catalog.
+    return scored.slice(0, TOOL_CATALOG_LIMIT).map((s) => ({
+      id: s.t.id,
+      name: s.t.label,
+      section: s.t.section || undefined,
+      // The tool's OWN description, trimmed — this is the part that was
+      // missing entirely, and it is what lets the model match on capability.
+      about: String(s.t.desc || '').slice(0, 200),
+      covers: (s.t.topics || []).slice(0, 6)
+    }));
+  };
+
+
   const buildLessonPlanPrompt = ({ context, assetManifest, language, customAdditions, gradeLevel, sourceTopic }) => {
     const hasCustom = customAdditions && customAdditions.trim().length > 0;
     const extensionInstruction = hasCustom
@@ -68,7 +129,7 @@ const createPromptsLibrary = ({ STEM_TOOL_REGISTRY } = {}) => {
            ${extensionInstruction}
         10. STEM Lab Tools (if applicable):
            Review these interactive STEM Lab simulation tools and recommend 1-3 that align with this lesson's learning objectives:
-           ${JSON.stringify(stemToolRegistry.map(function(t) { return { id: t.id, name: t.name, subjects: t.subjects, tags: t.tags }; }))}
+           ${JSON.stringify(selectStemTools(sourceTopic, gradeLevel))}
            If any tools are relevant, include a "recommendedStemTools" array in the output JSON. Each entry should have: id (tool ID), rationale (1 sentence tied to a learning objective), and suggestedActivity (short activity description).
            If no tools are relevant, omit the field entirely.
         INSTRUCTION:

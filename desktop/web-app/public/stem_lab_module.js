@@ -5235,6 +5235,8 @@
               { id: 'alloBotSage', label: 'AlloBot: Starbound Sage', icon: '\uD83E\uDDD9\u200D\u2642\uFE0F', desc: 'Cozy sci-fi roguelite. AlloBot\u2019s spells unlock as you master other STEM Lab tools \u2014 and every cast is a retrieval-practice micro-challenge. Spaced practice, in-game.', color: 'violet', ready: true }
             ];
             // ── Tool search filter ──
+            // Lazily built id -> index-entry map; rebuilt if the index arrives late.
+            var _stemToolIndexById = null;
             var _searchAliasMap = {
               // The search haystack is built from the TILE (id/label/desc/aliases) and never
               // from the tool's own registerTool description, so a feature that exists only
@@ -5289,11 +5291,41 @@
                 .replace(/[^a-z0-9]+/g, ' ')
                 .trim();
             }
+            // The tile blurb is a marketing line, not an inventory. Searching
+            // it alone meant features INSIDE a tool were unfindable — "periodic
+            // table" returned nothing while a 118-element table shipped inside
+            // Molecule Builder, and 7 of 14 realistic teacher queries died.
+            // Two extra sources fix that at the root instead of one alias at a
+            // time:
+            //   1. the LIVE plugin config, richest when the tool has loaded;
+            //   2. the build-time capability index, which is complete even
+            //      before any plugin loads.
+            // Both are self-descriptions and headings, never tool source.
+            function _stemToolIndexEntry(id) {
+              try {
+                var ix = window.ALLO_TOOL_INDEX;
+                if (!ix || !ix.tools) return null;
+                if (!_stemToolIndexById) {
+                  _stemToolIndexById = {};
+                  for (var i = 0; i < ix.tools.length; i++) _stemToolIndexById[ix.tools[i].id] = ix.tools[i];
+                }
+                return _stemToolIndexById[id] || null;
+              } catch (_) { return null; }
+            }
             function _stemToolSearchHaystack(tool) {
               var aliases = [];
               if (tool.aliases) aliases = aliases.concat(tool.aliases);
               if (_searchAliasMap[tool.id]) aliases.push(_searchAliasMap[tool.id]);
-              return _normalizeToolSearchText([tool.id, tool.label, tool.desc, tool.category, aliases.join(' ')].join(' '));
+              var extra = '';
+              try {
+                var plug = window.StemLab && window.StemLab._registry && window.StemLab._registry[tool.id];
+                if (plug && plug.desc) extra += ' ' + plug.desc;
+              } catch (_) {}
+              var entry = _stemToolIndexEntry(tool.id);
+              if (entry) {
+                extra += ' ' + (entry.desc || '') + ' ' + (entry.topics || []).join(' ') + ' ' + (entry.keywords || []).join(' ');
+              }
+              return _normalizeToolSearchText([tool.id, tool.label, tool.desc, tool.category, aliases.join(' '), extra].join(' '));
             }
             var _searchLower = _normalizeToolSearchText(_stemToolSearch);
             var _filteredTools = _searchLower ? _allStemTools.filter(function (tool) {

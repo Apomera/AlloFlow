@@ -12212,6 +12212,28 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=e8c79d3d2');
     loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=e8c79d3d2');
     loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=e8c79d3d2');
+    // Capability index (dev-tools/build_tool_index.cjs): what each STEM tool
+    // actually DOES, ~110 KB for 139 tools. The lesson-plan prompt ranks and
+    // caps against this instead of dumping every tool name, and unlike
+    // STEM_TOOL_REGISTRY it does not depend on the STEM plugins having been
+    // loaded — a teacher who never opened the STEM Lab previously got NO tool
+    // recommendations at all. Failure is silent and non-fatal: prompts_library
+    // falls back to the registry.
+    (function () {
+      try {
+        var _tiUrl = (window.__alloCdnBase || 'https://alloflow-cdn.pages.dev/') + 'tool_index.json';
+        try {
+          var _loc = window.location || {};
+          if (/^(localhost|127\.0\.0\.1)$/i.test(_loc.hostname || '') || /(^|\.)alloflow/i.test(_loc.hostname || '')) {
+            _tiUrl = new URL('/tool_index.json', _loc.origin).toString();
+          }
+        } catch (_) {}
+        fetch(_tiUrl, { cache: 'no-cache' })
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (j) { if (j && Array.isArray(j.tools)) window.ALLO_TOOL_INDEX = j; })
+          .catch(function () {});
+      } catch (_) {}
+    })();
     loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=e8c79d3d2');
     loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=e8c79d3d2');
     loadModule('StandardsContext', 'https://alloflow-cdn.pages.dev/standards_context_module.js?v=e8c79d3d2');
