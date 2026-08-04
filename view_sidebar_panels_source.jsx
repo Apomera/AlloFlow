@@ -160,7 +160,8 @@ function UniversalSettingsPanel(props) {
     differentiationRange, setDifferentiationRange,
     differentiationTypes, setDifferentiationTypes,
     differentiationCustomGrades, setDifferentiationCustomGrades,
-    languageInput, setLanguageInput, addLanguage, removeLanguage, handleKeyDown
+    languageInput, setLanguageInput, addLanguage, removeLanguage, handleKeyDown,
+    setSourceTopic
   } = props;
   // Open state lives in the host: this panel sits inside the 'create' tab
   // subtree, so component-local state re-collapsed the card on every tab switch.
@@ -248,6 +249,12 @@ function UniversalSettingsPanel(props) {
     const brief = [direction.title, 'Phenomenon: ' + direction.phenomenon, 'Essential question: ' + direction.essentialQuestion,
       'Activity: ' + direction.activity, 'Evidence of learning: ' + direction.evidence,
       direction.udlSupports.length ? 'UDL supports: ' + direction.udlSupports.join('; ') : ''].filter(Boolean).join('\n');
+    if (typeof setSourceTopic === 'function') {
+      // Host passes the topic setter: seed generation directly, no paste step.
+      setSourceTopic(brief);
+      addToast('Standard attached and topic seeded with this direction.', 'success');
+      return;
+    }
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(brief);
       addToast('Standard attached; direction copied — paste it into your topic or source field.', 'success');

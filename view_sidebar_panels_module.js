@@ -192,7 +192,8 @@ function UniversalSettingsPanel(props) {
     setLanguageInput,
     addLanguage,
     removeLanguage,
-    handleKeyDown
+    handleKeyDown,
+    setSourceTopic
   } = props;
   const isOpen = !!isUniversalSettingsOpen;
   const setIsOpen = setIsUniversalSettingsOpen;
@@ -284,6 +285,11 @@ function UniversalSettingsPanel(props) {
       "Evidence of learning: " + direction.evidence,
       direction.udlSupports.length ? "UDL supports: " + direction.udlSupports.join("; ") : ""
     ].filter(Boolean).join("\n");
+    if (typeof setSourceTopic === "function") {
+      setSourceTopic(brief);
+      addToast("Standard attached and topic seeded with this direction.", "success");
+      return;
+    }
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(brief);
       addToast("Standard attached; direction copied \u2014 paste it into your topic or source field.", "success");

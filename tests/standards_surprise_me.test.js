@@ -61,6 +61,21 @@ describe('robustness', () => {
     // so downstream generation sees an identical, attributed standardsContext
     expect(source).toMatch(/useSurpriseDirection[\s\S]{0,200}handleUseResolvedStandard\(localResolution\)/);
   });
+
+  it('seeds the topic directly when the host passes setSourceTopic', () => {
+    // ANTI passes setSourceTopic to the panel; the direction brief lands in
+    // sourceTopic with no paste step. The clipboard path survives as fallback
+    // for a host that has not been updated.
+    expect(source).toMatch(/typeof setSourceTopic === 'function'[\s\S]{0,200}setSourceTopic\(brief\)/);
+    expect(source).toContain('topic seeded with this direction');
+    expect(source).toContain('navigator.clipboard');
+    const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+    const srcMirror = readFileSync(resolve(process.cwd(), 'desktop/web-app/src/AlloFlowANTI.txt'), 'utf8');
+    for (const [name, text] of [['ANTI', anti], ['ANTI src mirror', srcMirror]]) {
+      expect(text, `${name} must pass setSourceTopic + callGemini to UniversalSettingsPanel`)
+        .toMatch(/useEmojis,[\s\S]{0,240}setSourceTopic, callGemini,/);
+    }
+  });
 });
 
 describe('the built module ships it', () => {

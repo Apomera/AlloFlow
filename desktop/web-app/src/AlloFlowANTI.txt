@@ -42525,6 +42525,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           setInterestInput, setLeveledTextLanguage, setStandardInputValue, setTargetStandards, setUseEmojis,
           setUniversalImageStyle, standardInputValue, standardMode, studentInterests, suggestedStandards, t,
           targetStandards, universalImageStyle, useEmojis,
+          // Surprise Me: direct topic seeding + the host's canonical AI fn
+          // (the panel falls back to window.callGemini when absent).
+          setSourceTopic, callGemini,
           isUniversalSettingsOpen, setIsUniversalSettingsOpen,
           differentiationRange, setDifferentiationRange,
           differentiationTypes, setDifferentiationTypes,
