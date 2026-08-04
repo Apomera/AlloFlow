@@ -606,6 +606,53 @@
             };
         }
 
+        function getComponentCoverage(queries, options) {
+            // Component-level alignment by SET MEMBERSHIP, the same spine as
+            // getPrerequisiteGaps: resolve the audited standards, then for each
+            // one that has source-provided hasChild components, report which
+            // components are themselves in the audited set and which are not.
+            // "You audited the cluster but only 2 of its 4 component standards
+            // appear in the audited set" — a concrete, checkable statement.
+            // Nothing maps free-text evidence onto components; that would be
+            // inference wearing a coverage badge.
+            const list = array(queries).slice(0, MAX_RESULTS);
+            const maxResults = boundedMax(options);
+            const unresolved = [];
+            const coveredIds = new Set();
+            const resolvedRecords = [];
+            for (const query of list) {
+                const resolution = resolveStandard(query);
+                if (resolution && resolution.status === 'resolved' && resolution.match) {
+                    coveredIds.add(idToken(resolution.match.id));
+                    resolvedRecords.push({ query: text(query, MAX_TEXT), record: byId.get(idToken(resolution.match.id)) });
+                } else {
+                    unresolved.push({ query: text(query, MAX_TEXT), status: resolution ? resolution.status : 'unresolved' });
+                }
+            }
+            const evaluated = [];
+            for (const entry of resolvedRecords) {
+                const children = neighborsByType(entry.record, 'hasChild', 'outgoing', maxResults);
+                if (!children.records.length) continue;   // leaf standards are not "0% covered"
+                const components = children.records.map((component) => ({
+                    ...component,
+                    covered: coveredIds.has(idToken(component.id))
+                }));
+                evaluated.push({
+                    query: entry.query,
+                    standard: publicRecord(entry.record),
+                    components,
+                    coveredCount: components.filter((component) => component.covered).length,
+                    truncated: children.truncated
+                });
+            }
+            return {
+                evaluated,
+                unresolved,
+                edgeSource: 'hasChild',
+                dataset: cloneManifest(value.dataset)
+            };
+        }
+
         return {
             VERSION,
             getManifest: () => cloneManifest(value.dataset),
@@ -620,7 +667,8 @@
             getPrerequisites,
             getRelatedStandards,
             getLearningComponents,
-            getPrerequisiteGaps
+            getPrerequisiteGaps,
+            getComponentCoverage
         };
     }
 

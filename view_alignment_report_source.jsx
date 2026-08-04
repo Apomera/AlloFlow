@@ -133,6 +133,20 @@ var _lazyIcon = function (name) {
       return provider.getPrerequisiteGaps(codes);
     } catch (e) { return null; }
   }
+  function alignmentComponentCoverage(reports) {
+    // Same deterministic spine as the prerequisite gaps: set membership over
+    // source hasChild edges. Standards without components are omitted, not
+    // shown as "0% covered".
+    try {
+      var P = window.AlloModules && window.AlloModules.StandardsProvider;
+      var provider = P && typeof P.getRegisteredProvider === 'function' ? P.getRegisteredProvider() : null;
+      if (!provider || typeof provider.getComponentCoverage !== 'function') return null;
+      var codes = reports.map(function (report) { return report && report.standard; }).filter(Boolean);
+      if (!codes.length) return null;
+      var coverage = provider.getComponentCoverage(codes);
+      return coverage && coverage.evaluated.length ? coverage : null;
+    } catch (e) { return null; }
+  }
   function alignmentMapEntries(standards, graph, auditScope) {
     var reports = Array.isArray(standards && standards.perStandard) ? standards.perStandard : [];
     var standardNodes = graph && Array.isArray(graph.nodes) ? graph.nodes.filter(function (node) { return node && node.type === 'standard'; }) : [];
@@ -299,6 +313,7 @@ var _lazyIcon = function (name) {
     var graph = alignmentMapGraph(standards, auditScope, p && p.alignmentMapGraph);
     var entries = alignmentMapEntries(standards, graph, auditScope);
     var prereqGaps = alignmentPrereqGaps(reports);
+    var componentCoverage = alignmentComponentCoverage(reports);
     var meta = graph && graph.meta && graph.meta.alignmentAudit;
     var confirmAttribution = typeof (p && p.onConfirmAttribution) === 'function' && graph ? function (edgeId) { p.onConfirmAttribution({ edgeId: edgeId, graph: graph }); } : null;
     var exportGraph = typeof (p && p.onExportAlignmentGraph) === 'function' && graph ? function () { p.onExportAlignmentGraph({ graph: graph }); } : null;
@@ -316,6 +331,16 @@ var _lazyIcon = function (name) {
         {prereqGaps.unresolved.length > 0 && <p className="mt-1 text-[11px] text-amber-800">{prereqGaps.unresolved.length + ' audited standard(s) not in the local snapshots were not checked.'}</p>}
       </div>}
       {prereqGaps && !prereqGaps.missing.length && prereqGaps.evaluated.length > 0 && <p className="mt-2 text-[11px] text-emerald-900">Knowledge graph: no missing prerequisites among source buildsTowards edges for the audited standards{prereqGaps.unresolved.length ? ' (' + prereqGaps.unresolved.length + ' not in the local snapshots)' : ''}.</p>}
+      {componentCoverage && <div className="mt-2 rounded border border-sky-300 bg-sky-50 p-2 text-xs" role="note" aria-label="Component coverage from the knowledge graph">
+        <div className="font-bold text-sky-950">Component coverage (knowledge graph)</div>
+        <p className="mt-0.5 text-sky-950">For audited standards that contain source-provided components, which components are themselves in the audited set. Structural containment{componentCoverage.dataset && componentCoverage.dataset.provider ? ' from ' + componentCoverage.dataset.provider : ''} — planning context for educator judgment, not a claim about lesson content.</p>
+        <ul className="mt-1 space-y-1">{componentCoverage.evaluated.slice(0, 8).map(function (entry) {
+          return <li key={entry.standard.id}><span className="font-mono font-bold">{entry.standard.code}</span>{' — ' + entry.coveredCount + ' of ' + entry.components.length + ' components audited: '}
+            {entry.components.map(function (component, index) {
+              return <span key={component.id} className={component.covered ? 'text-emerald-800' : 'text-amber-800'}>{(index ? ', ' : '') + (component.code || component.label) + (component.covered ? ' ✓' : ' (not audited)')}</span>;
+            })}</li>;
+        })}</ul>
+      </div>}
             <AlignmentMapScopeDetails meta={meta} fallbackScope={auditScope} />
       <ol className="mt-3 space-y-3" aria-label="Standards alignment map">{entries.map(function (entry, index) {
         var headingId = 'audit-alignment-standard-' + index;
