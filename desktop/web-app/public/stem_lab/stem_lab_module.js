@@ -537,14 +537,36 @@
             // earlier build dimmed non-selected parts to 0.35 and the whole bay just
             // read as fog — recede the context, don't erase it.
             var pulse = S.reduced ? 1 : (0.78 + 0.22 * Math.sin(S.t0 * 0.08));
+            // Optional per-node activation channel, for tools whose scene shows a
+            // QUANTITY changing over time rather than a set of parts to inspect.
+            // props.levels is {meshId: 0..1}; absent (every existing caller) this
+            // whole block is skipped and behaviour is byte-for-byte unchanged.
+            // Smoothed here rather than by the caller so the motion is owned by the
+            // frame loop that draws it — and so it honours S.reduced like everything
+            // else, instead of a caller re-rendering React on a timer.
+            var levels = props.levels || null;
+            if (levels && !S.lvl) S.lvl = {};
             for (var id in S.meshes) {
               if (!S.meshes.hasOwnProperty(id)) continue;
               var isSel = (id === sel);
               var isHov = (id === S.hovered && !isSel);
               var recede = (sel && !isSel);
               var g = S.meshes[id];
+              var lvl = null;
+              if (levels) {
+                var target = levels[id] == null ? 0 : Math.max(0, Math.min(1, levels[id]));
+                var prev = S.lvl[id] == null ? target : S.lvl[id];
+                // Snap when reduced motion is requested: the value still reads, the
+                // travel does not.
+                S.lvl[id] = S.reduced ? target : prev + (target - prev) * 0.18;
+                lvl = S.lvl[id];
+              }
 
-              var wantScale = isSel ? (S.reduced ? 1.12 : 1.06 + 0.06 * pulse) : 1;
+              // Wide on purpose. At 0.82-1.16 a node at 19% and a node at 74% were
+              // the same dot on screen, which defeats the point of drawing the data
+              // at all — size is the cue that survives a small viewport.
+              var wantScale = isSel ? (S.reduced ? 1.12 : 1.06 + 0.06 * pulse)
+                : (lvl == null ? 1 : 0.52 + 0.78 * lvl);
               g.scale.setScalar(g.scale.x + (wantScale - g.scale.x) * 0.25);
 
               g.traverse(function (o) {
@@ -556,6 +578,7 @@
                   // real engine bay.
                   if (isSel) o.material.emissive.setRGB(0.26 * pulse, 0.19 * pulse, 0.03 * pulse);
                   else if (isHov) o.material.emissive.setRGB(0.16, 0.17, 0.20);
+                  else if (lvl != null) o.material.emissive.setRGB(0.30 * lvl, 0.22 * lvl, 0.44 * lvl);
                   else if (marks[id] === 'checked') o.material.emissive.setRGB(0.02, 0.13, 0.07);
                   else o.material.emissive.setRGB(0, 0, 0);
                 }

@@ -915,6 +915,155 @@
 
   var AWARDED_KEYS = {};
 
+  // ── 3D network view ────────────────────────────────────────────────────
+  // The bench already argues that both lanes run identical arithmetic, but you
+  // have to read a table to believe it. Drawing the SAME five stage values as a
+  // propagating network — laid out two different ways — turns that claim into
+  // something you watch instead of something you are told.
+  //
+  // Every node belongs to one of the five stages, so a population of nodes shows
+  // what a single bar cannot: global availability lighting a distributed set at
+  // once, versus a J-lens band lighting only its own slice. The positions are
+  // SCHEMATIC. Nothing here is anatomy, and the caption says so on screen.
+  // Deliberately deep base colours. These spheres take an additive emissive that
+  // scales with activation, so a bright base leaves no headroom — every node
+  // washes to the same pale wash at high activation and the gradient the whole
+  // view exists to show disappears. Dark base, bright glow.
+  var NET_STAGE_COLORS = {
+    sensory: 0x075985, recurrent: 0x0e7490, workspace: 0x5b21b6, monitor: 0x9d174d, output: 0xb45309
+  };
+  // Nodes are authored around y=0; the shared viewer's camera looks at y=0.30,
+  // so the whole cloud lifts by that much to sit centred in frame.
+  var NET_Y_LIFT = 0.30;
+
+  function buildNetworkNodes(substrateId) {
+    var nodes = [];
+    var i;
+    if (substrateId === 'model') {
+      // Layer stack: columns are depth, the highlighted band is the J-lens subspace.
+      var COLS = 6, ROWS = 4;
+      for (var c = 0; c < COLS; c++) {
+        for (var r = 0; r < ROWS; r++) {
+          var stage;
+          if (c <= 1) stage = 'sensory';
+          else if (c <= 2) stage = 'recurrent';
+          else if (c <= 4) stage = (r === 1 || r === 2) ? 'workspace' : 'recurrent';
+          else stage = (r === 1 || r === 2) ? 'monitor' : 'output';
+          nodes.push({
+            id: 'n-' + c + '-' + r, stage: stage,
+            x: (c - (COLS - 1) / 2) * 0.62,
+            y: (r - (ROWS - 1) / 2) * 0.52,
+            z: 0
+          });
+        }
+      }
+      return nodes;
+    }
+    // Human lane: a schematic posterior→anterior spread. Workspace nodes are
+    // deliberately scattered across the whole volume — that distribution IS the
+    // claim GNWT makes, so it has to be visible as distribution.
+    var LAYOUT = [
+      ['sensory', -1.5, -0.25, 0.0], ['sensory', -1.45, 0.3, 0.35], ['sensory', -1.3, -0.05, -0.4],
+      ['recurrent', -0.95, 0.1, 0.28], ['recurrent', -0.9, -0.35, -0.22], ['recurrent', -0.75, 0.42, -0.05],
+      ['workspace', -0.25, 0.55, 0.3], ['workspace', -0.1, -0.2, -0.45], ['workspace', 0.2, 0.35, -0.15],
+      ['workspace', 0.05, -0.55, 0.25], ['workspace', 0.5, 0.0, 0.42], ['workspace', -0.45, -0.05, 0.05],
+      ['monitor', 0.95, 0.45, 0.15], ['monitor', 1.05, -0.1, -0.3], ['monitor', 1.2, 0.2, 0.3],
+      ['output', 1.55, -0.4, 0.0], ['output', 1.62, 0.15, -0.25]
+    ];
+    for (i = 0; i < LAYOUT.length; i++) {
+      nodes.push({ id: 'n-' + i, stage: LAYOUT[i][0], x: LAYOUT[i][1], y: LAYOUT[i][2], z: LAYOUT[i][3] });
+    }
+    return nodes;
+  }
+
+  // The last tick is fully decayed — everything has drained away — so defaulting
+  // the scrubber to the end showed a quiet network and buried the event the view
+  // exists to display. Open on the busiest tick instead.
+  function peakTickIndex(ticks) {
+    var best = 0, bestSum = -1;
+    for (var i = 0; i < ticks.length; i++) {
+      var sum = 0;
+      for (var k = 0; k < SIM_STAGE_KEYS.length; k++) sum += ticks[i][SIM_STAGE_KEYS[k]] || 0;
+      if (sum > bestSum) { bestSum = sum; best = i; }
+    }
+    return best;
+  }
+
+  function networkLevels(nodes, tick) {
+    var levels = {};
+    for (var i = 0; i < nodes.length; i++) {
+      var key = nodes[i].stage === 'recurrent' ? 'recurrent' : nodes[i].stage;
+      levels[nodes[i].id] = tick ? (tick[key] || 0) : 0;
+    }
+    return levels;
+  }
+
+  var _netViewer = null;
+  var _netNodes = [];
+
+  function ensureNetViewer() {
+    if (_netViewer) return _netViewer;
+    if (!window.StemLab || typeof window.StemLab.makeBayViewer !== 'function') return null;
+    _netViewer = window.StemLab.makeBayViewer({
+      parts: [],
+      home: { yaw: 0.62, pitch: 0.42, dist: 4.1 },
+      buildScene: function (THREE, api) {
+        var substrateId = (api.sceneProps && api.sceneProps.substrate) || 'human';
+        var nodes = buildNetworkNodes(substrateId);
+        _netNodes = nodes;
+        var meshes = {};
+        var picks = [];
+        var group = new THREE.Group();
+        var geo = new THREE.SphereGeometry(0.15, 20, 14);
+        var byStage = {};
+        for (var i = 0; i < nodes.length; i++) {
+          var n = nodes[i];
+          var hex = api.contrast ? 0xffffff : NET_STAGE_COLORS[n.stage];
+          var mesh = new THREE.Mesh(geo, api.trim(hex, 44));
+          mesh.position.set(n.x, n.y + NET_Y_LIFT, n.z);
+          var holder = new THREE.Group();
+          holder.add(mesh);
+          group.add(holder);
+          meshes[n.id] = holder;
+          picks.push(mesh);
+          (byStage[n.stage] = byStage[n.stage] || []).push(n);
+        }
+        // Edges run stage to stage, so the picture reads as a pathway rather than
+        // a constellation. Dim and unlit on purpose: the nodes carry the signal.
+        var order = SIM_STAGE_KEYS;
+        // Faint and sparse. Inactive nodes shrink to about half size, which exposes
+        // edge segments that a full-size sphere used to hide — at the original
+        // weight the graph read as a scribble the moment anything went quiet.
+        var lineMat = new THREE.LineBasicMaterial({
+          color: api.contrast ? 0xffffff : (api.dark ? 0x334155 : 0xcbd5e1),
+          transparent: true, opacity: api.contrast ? 0.85 : 0.30
+        });
+        for (var s = 0; s < order.length - 1; s++) {
+          var from = byStage[order[s]] || [];
+          var to = byStage[order[s + 1]] || [];
+          for (var a = 0; a < from.length; a++) {
+            for (var b = 0; b < to.length; b++) {
+              if ((a + b) % 3 !== 0) continue;   // thin it out; a full mesh is noise
+              var pts = [new THREE.Vector3(from[a].x, from[a].y + NET_Y_LIFT, from[a].z),
+                         new THREE.Vector3(to[b].x, to[b].y + NET_Y_LIFT, to[b].z)];
+              group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), lineMat));
+            }
+          }
+        }
+        api.scene.add(group);
+        return { meshes: meshes, picks: picks, anchor: group };
+      }
+    });
+    return _netViewer;
+  }
+
+  // STABLE ref callback. An inline arrow here re-runs attach on every render,
+  // which tears down and rebuilds the WebGL context each time.
+  function netRefCallback(node) {
+    var viewer = ensureNetViewer();
+    if (viewer) viewer.attach(node || null);
+  }
+
   function availableTheories(profile) {
     return profile.theoryIds.concat(profile.philosophyIds).map(function (id) { return THEORIES[id]; }).filter(Boolean);
   }
@@ -961,6 +1110,13 @@
       runWorkspaceSim: runWorkspaceSim,
       simTheoryReadoutFor: function (theoryId, config) { return simTheoryReadout(THEORIES[theoryId], runWorkspaceSim(config)); },
       simSubstrateIds: Object.keys(SIM_SUBSTRATES),
+      networkNodesFor: function (substrate) { return buildNetworkNodes(substrate); },
+      networkLevelsFor: function (substrate, config, step) {
+        var run = runWorkspaceSim(config);
+        var idx = step == null ? peakTickIndex(run.ticks) : step;
+        return networkLevels(buildNetworkNodes(substrate), run.ticks[idx]);
+      },
+      peakTickIndexFor: function (config) { return peakTickIndex(runWorkspaceSim(config).ticks); },
       simPresetIdsFor: function (grade) { return presetsForProfile(resolveProfile(grade)).map(function (preset) { return preset.id; }); },
       simPresetById: function (id) { return SIM_PRESETS.filter(function (preset) { return preset.id === id; })[0] || null; },
       journeyStagesFor: function (theoryId) {
@@ -1936,6 +2092,73 @@
 
       // At K-2 the comparison rows mirror the three steps shown above it, so nothing
       // appears here that the learner has not already seen in the step table.
+      // Step scrubber. The 3D view shows ONE tick, so the learner drives time
+      // themselves rather than watching an autoplay they cannot stop — and the
+      // marker table above always shows peaks, so the numeric summary never
+      // depends on where the scrubber happens to sit.
+      var stepCount = run.ticks.length;
+      var stepIndex = Math.max(0, Math.min(stepCount - 1,
+        d.simStep == null ? peakTickIndex(run.ticks) : parseInt(d.simStep, 10) || 0));
+      var stepTick = run.ticks[stepIndex];
+
+      function renderNetwork() {
+        if (simple) return null;
+        var nodes = buildNetworkNodes(cfg.substrate);
+        var levels = networkLevels(nodes, stepTick);
+        var viewer = ensureNetViewer();
+        if (viewer) {
+          viewer.sync({
+            selected: null, onPick: null, onStatus: null,
+            dark: dark, contrast: contrast,
+            levels: levels,
+            sceneKey: cfg.substrate,
+            sceneProps: { substrate: cfg.substrate }
+          });
+        }
+        var layoutNote = cfg.substrate === 'model'
+          ? 'Columns are depth through the model; the lit band is the J-lens subspace. Position is schematic — it is not where anything sits in a real network.'
+          : 'Laid out back to front. The workspace nodes are scattered on purpose: being distributed IS the claim. Position is schematic — this is not anatomy.';
+        return h('section', { className: 'cns-net', 'aria-labelledby': 'cns-net-title', style: { borderColor: C.border } },
+          h('div', { className: 'cns-section-heading' },
+            h('div', null,
+              h('span', { className: 'cns-step' }, 'SAME FIVE NUMBERS, DRAWN AS A NETWORK'),
+              h('h4', { id: 'cns-net-title' }, 'Watch it propagate')),
+            h('span', { className: 'cns-count' }, 'Step ' + stepIndex + ' of ' + (stepCount - 1))
+          ),
+          h('p', { className: 'cns-sim-hint' }, layoutNote),
+          h('div', { className: 'cns-net-stage', ref: netRefCallback,
+                     role: 'img', 'aria-label': 'Schematic three-dimensional network for ' + substrate.label
+                       + ' at step ' + stepIndex + '. The table above the diagram carries the same values as text.' }),
+          h('div', { className: 'cns-net-controls' },
+            h('label', { htmlFor: 'cns-net-step' }, 'Step through the run'),
+            h('input', {
+              id: 'cns-net-step', type: 'range', min: 0, max: stepCount - 1, step: 1, value: stepIndex,
+              onChange: function (e) {
+                var next = parseInt(e.target.value, 10) || 0;
+                patchState({ simStep: next }, 'Step ' + next + '. ' + describeTick(run.ticks[next]));
+              }
+            }),
+            h('p', { className: 'cns-net-readout', role: 'status' }, describeTick(stepTick))
+          ),
+          h('ul', { className: 'cns-net-key' }, SIM_STAGE_KEYS.map(function (key) {
+            var stageRow = substrate.stages.filter(function (s) { return s[0] === (key === 'recurrent' ? 'recurrent' : key); })[0];
+            return h('li', { key: key },
+              h('span', { className: 'cns-net-swatch', 'aria-hidden': 'true',
+                          style: { background: '#' + NET_STAGE_COLORS[key].toString(16).padStart(6, '0') } }),
+              (stageRow ? stageRow[1] : key) + ' — ' + Math.round((stepTick[key === 'recurrent' ? 'recurrent' : key] || 0) * 100) + '%'
+            );
+          }))
+        );
+      }
+
+      function describeTick(tick) {
+        if (!tick) return '';
+        return SIM_STAGE_KEYS.map(function (key) {
+          var stageRow = substrate.stages.filter(function (s) { return s[0] === key; })[0];
+          return (stageRow ? stageRow[1] : key) + ' ' + Math.round((tick[key] || 0) * 100) + '%';
+        }).join(', ') + '.';
+      }
+
       var markerRows = simple ? [
         ['First signals', 'sensory'],
         ['Shared with everything', 'workspace'],
@@ -2011,6 +2234,7 @@
               ? 'Ignition: the ' + (cfg.substrate === 'model' ? 'verbalizable subspace' : 'global stage') + ' crossed this toy’s threshold at step ' + run.markers.ignitionTick + '.'
               : 'No ignition: the ' + (cfg.substrate === 'model' ? 'verbalizable subspace' : 'global stage') + ' peaked at ' + simPercent(run.markers.workspace) + ', under this toy’s threshold.')),
           stageBars(run, visibleStages),
+          renderNetwork(),
           h('p', { className: 'cns-sim-confound' }, h('strong', null, simple ? 'What to notice: ' : 'Read-out discipline: '), simConfoundNote(run, simple))
         ),
         h('div', { className: 'cns-sim-compare', style: { background: C.panel, borderColor: C.border } },
@@ -2262,6 +2486,7 @@
       '.cns-case-tabs{display:flex;gap:8px;overflow-x:auto;margin-bottom:12px}.cns-case-tabs button{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;padding:8px 11px;border:1px solid;border-radius:9px;font-size:11px;font-weight:850}.cns-case{padding:18px;border:1px solid;border-radius:13px}.cns-case-heading h3{margin:5px 0;font-size:20px}.cns-case-setup{font-size:14px}.cns-lens-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}.cns-lens-pair>div{padding:12px;border:1px solid;border-radius:9px}.cns-lens-pair p{margin:4px 0 0;color:var(--cns-muted);font-size:12px}.cns-source-inline{font-size:11px}.cns-source-inline a,.cns-sources a{color:var(--cns-link);font-weight:800}.cns-reflection{margin-top:14px}.cns-reflection label span{display:block;margin:3px 0 7px;color:var(--cns-muted);font-size:11px}.cns-objective-anchor{margin-top:9px;padding:9px;border:1px solid;border-radius:8px;font-size:12px}',
       '.cns-case-theories{margin:13px 0;padding:14px;border:1px solid;border-radius:11px}.cns-case-theories h4{margin:2px 0 0;font-size:18px}.cns-case-theories-intro{margin:7px 0 11px;color:var(--cns-muted);font-size:11px}.cns-case-theory-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:9px}.cns-case-interpretation{padding:11px;border-left:4px solid;border-radius:8px}.cns-case-interpretation h5{margin:5px 0 2px;font-size:13px}.cns-case-interpretation p{margin:4px 0;color:var(--cns-muted);font-size:11px}.cns-guided-debate{margin-top:16px;padding:15px;border:1px solid;border-radius:12px}.cns-guided-debate>p{color:var(--cns-muted);font-size:12px}.cns-debate-pickers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:10px 0}.cns-debate-pickers label>span{display:block;margin-bottom:4px;font-size:10px;font-weight:850}.cns-debate-pickers select{width:100%;padding:8px;border:1px solid;border-radius:8px}.cns-debate-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.cns-debate-grid label{display:block}.cns-debate-grid label>strong,.cns-debate-grid label>span{display:block}.cns-debate-grid label>span{min-height:30px;margin:2px 0 5px;color:var(--cns-muted);font-size:10px}.cns-debate-requirement{margin:8px 0 0;font-size:10px!important}.cns-debate-finish{margin-top:12px;padding:8px 13px;border:1px solid;border-radius:8px;font-size:11px;font-weight:900}.cns-debate-finish:disabled{cursor:not-allowed;opacity:.7}.cns-debate-complete{margin:8px 0 0;font-size:11px;font-weight:750}',
       '.cns-sim-substrates{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0}.cns-sim-substrates button{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border:1px solid;border-radius:10px;font-size:12px;font-weight:850}.cns-sim-substrates button>span:first-child{font-size:19px}.cns-sim-blurb{margin:0 0 14px;color:var(--cns-muted);font-size:12px}',
+      '.cns-net{margin:14px 0 0;padding:13px;border:1px solid;border-radius:11px}.cns-net h4{margin:2px 0 0;font-size:16px}.cns-net-stage{position:relative;width:100%;height:300px;margin:10px 0;border:1px solid var(--cns-border);border-radius:10px;overflow:hidden;background:var(--cns-panel)}.cns-net-controls label{display:block;margin-bottom:4px;font-size:11px;font-weight:850}.cns-net-controls input[type=range]{width:100%;min-height:32px;accent-color:var(--cns-step)}.cns-net-readout{margin:6px 0 0;color:var(--cns-muted);font-size:11px;line-height:1.5}.cns-net-key{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0 0;padding:0;list-style:none}.cns-net-key li{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700}.cns-net-swatch{display:inline-block;width:11px;height:11px;border-radius:50%;border:1px solid var(--cns-border)}',
       '.cns-sim-presets{margin:0 0 16px;padding:13px;border:1px solid;border-radius:11px}.cns-sim-presets h3{margin:0 0 5px;font-size:15px}.cns-sim-preset-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}.cns-sim-preset-row button{padding:7px 12px;border:1px solid;border-radius:999px;font-size:11px;font-weight:850}.cns-sim-preset-detail{margin-top:10px;padding:10px 12px;border:1px solid;border-left-width:4px;border-radius:9px}.cns-sim-preset-detail p{margin:0 0 5px;font-size:12px;line-height:1.5}.cns-sim-preset-detail p:last-child{margin-bottom:0}',
       '.cns-sim-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:14px}.cns-sim-control label{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:5px;font-size:12px}.cns-sim-value{font-variant-numeric:tabular-nums;font-weight:850;color:var(--cns-muted)}.cns-sim-control input[type=range]{width:100%;min-height:32px;accent-color:var(--cns-step)}.cns-sim-hint{display:block;margin-top:4px;color:var(--cns-muted);font-size:11px;line-height:1.45}',
       '.cns-sim-toggles{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:16px}.cns-sim-toggle button{width:100%;padding:9px 12px;border:1px solid;border-radius:9px;text-align:left;font-size:12px;font-weight:850}',

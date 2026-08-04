@@ -489,3 +489,96 @@ describe('Workspace Bench presets', () => {
     expect(html).not.toContain('No-report paradigm');
   });
 });
+
+describe('3D network view', () => {
+  const nodes = (s) => config.testHooks.networkNodesFor(s);
+  const STAGES = ['sensory', 'recurrent', 'workspace', 'monitor', 'output'];
+
+  it('lays out both substrates from the same five stages', () => {
+    ['human', 'model'].forEach((s) => {
+      const ns = nodes(s);
+      expect(ns.length, s).toBeGreaterThan(10);
+      const seen = new Set(ns.map((n) => n.stage));
+      STAGES.forEach((stage) => expect(seen.has(stage), s + ' missing ' + stage).toBe(true));
+      ns.forEach((n) => {
+        expect(STAGES).toContain(n.stage);
+        ['x', 'y', 'z'].forEach((ax) => expect(Number.isFinite(n[ax]), n.id + '.' + ax).toBe(true));
+      });
+      expect(new Set(ns.map((n) => n.id)).size, s + ' duplicate ids').toBe(ns.length);
+    });
+  });
+
+  it('shows global availability as a distributed population, not one node', () => {
+    // GNWT's claim is that the content becomes broadly available. If the view
+    // drew that as a single sphere it would be picturing the rival claim.
+    const ws = nodes('human').filter((n) => n.stage === 'workspace');
+    expect(ws.length).toBeGreaterThanOrEqual(5);
+    const spanX = Math.max(...ws.map((n) => n.x)) - Math.min(...ws.map((n) => n.x));
+    expect(spanX).toBeGreaterThan(0.6);
+  });
+
+  it('opens on the busiest tick, not the drained tail', () => {
+    const cfg = { substrate: 'human', strength: 85, interference: 10, topDown: 60 };
+    const idx = config.testHooks.peakTickIndexFor(cfg);
+    const run = config.testHooks.runWorkspaceSim(cfg);
+    const sum = (t) => STAGES.reduce((a, k) => a + (t[k] || 0), 0);
+    expect(idx).toBeLessThan(run.ticks.length - 1);
+    run.ticks.forEach((t) => expect(sum(t)).toBeLessThanOrEqual(sum(run.ticks[idx]) + 1e-9));
+  });
+
+  it('drives every node from its own stage value, clamped to 0..1', () => {
+    const cfg = { substrate: 'human', strength: 85, interference: 10, topDown: 60 };
+    const levels = config.testHooks.networkLevelsFor('human', cfg);
+    const ns = nodes('human');
+    expect(Object.keys(levels).length).toBe(ns.length);
+    Object.keys(levels).forEach((id) => {
+      expect(levels[id]).toBeGreaterThanOrEqual(0);
+      expect(levels[id]).toBeLessThanOrEqual(1);
+    });
+    // nodes sharing a stage must share a level - the view must not invent variation
+    const byStage = {};
+    ns.forEach((n) => { (byStage[n.stage] = byStage[n.stage] || []).push(levels[n.id]); });
+    Object.keys(byStage).forEach((stage) => {
+      const vals = byStage[stage];
+      vals.forEach((v) => expect(v, stage).toBeCloseTo(vals[0], 10));
+    });
+  });
+
+  it('renders a masked run with early stages lit and later stages dark', () => {
+    const masked = { substrate: 'human', strength: 85, interference: 90, topDown: 60 };
+    const levels = config.testHooks.networkLevelsFor('human', masked);
+    const ns = nodes('human');
+    const at = (stage) => levels[ns.find((n) => n.stage === stage).id];
+
+    expect(at('sensory')).toBeGreaterThan(0.5);
+    expect(at('workspace')).toBeLessThan(0.2);
+    expect(at('output')).toBeLessThan(0.2);
+  });
+
+  it('separates masked from sedated on the recurrence stage', () => {
+    const ns = nodes('human');
+    const rec = (cfg) => config.testHooks.networkLevelsFor('human', cfg)[ns.find((n) => n.stage === 'recurrent').id];
+
+    const masked = rec({ substrate: 'human', strength: 85, interference: 90, topDown: 60 });
+    const sedated = rec({ substrate: 'human', strength: 85, interference: 10, topDown: 60, bypass: true });
+
+    // The two presets must not look alike: this is the whole point of drawing it.
+    expect(sedated).toBeGreaterThan(masked * 2);
+  });
+
+  it('keeps the numeric table as the non-visual equivalent and labels the diagram schematic', () => {
+    const html = renderView('11th Grade', 'bench');
+    expect(html).toContain('Watch it propagate');
+    expect(html).toContain('Position is schematic');
+    expect(html).toContain('role="img"');
+    expect(html).toContain('Step through the run');
+    // the accessible marker table still ships alongside the canvas
+    expect(html).toContain('Peak activity by stage');
+  });
+
+  it('omits the 3D view on the youngest reading path', () => {
+    const html = renderView('1st Grade', 'bench');
+    expect(html).not.toContain('Watch it propagate');
+    expect(html).not.toContain('Step through the run');
+  });
+});
