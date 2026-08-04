@@ -96,6 +96,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
     return out;
   }
 
+  // ── ICD-10-CM lookup ─────────────────────────────────────────────────────
+  // The National Library of Medicine's Clinical Tables API is a free NIH
+  // service: no key, CORS-open (verified 2026-08-04), returning official code
+  // descriptions. ICD-10-CM is the PUBLIC layer of the same system DSM-5-TR
+  // sits beside — DSM records these codes, and they are what actually appear
+  // on the outside reports families bring to school meetings.
+  //
+  // ★ This is a DECODER, not a coding assistant. It answers "the report says
+  //   F90.2 — what is that?" It must never suggest which code to assign, and
+  //   a code is not a diagnosis, not criteria, and not eligibility.
+  var ICD_API = 'https://clinicaltables.nlm.nih.gov/api/icd10cm/v3/search?sf=code,name&maxList=8&terms=';
+
+  function icdSearch(term) {
+    return fetch(ICD_API + encodeURIComponent(term), { cache: 'no-cache' })
+      .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function(j) {
+        // Response shape: [total, [codes], null, [[code, name], ...]]
+        var rows = (j && j[3]) || [];
+        return rows.map(function(row) { return { code: row[0], name: row[1] }; });
+      });
+  }
+
   // ── Framing content: our own words about how the two systems differ.
   //    No DSM text, no criteria, no diagnostic guidance.
   var FRAMING = [
@@ -193,6 +215,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
 
       var tick = React.useState(0);
       var setTick = tick[1];
+      var icdQ = React.useState('');
+      var icdQuery = icdQ[0], setIcdQuery = icdQ[1];
+      var icdR = React.useState({ status: 'idle', rows: [], err: '', forTerm: '' });
+      var icd = icdR[0], setIcd = icdR[1];
+
+      // Debounced lookup: this is a live call to NLM on every keystroke
+      // otherwise, and the reader is usually typing a code they can see.
+      React.useEffect(function() {
+        var term = String(icdQuery || '').trim();
+        if (term.length < 2) { setIcd({ status: 'idle', rows: [], err: '', forTerm: '' }); return; }
+        var cancelled = false;
+        setIcd(function(p) { return { status: 'searching', rows: p.rows, err: '', forTerm: term }; });
+        var timer = setTimeout(function() {
+          icdSearch(term).then(function(rows) {
+            if (!cancelled) setIcd({ status: 'ok', rows: rows, err: '', forTerm: term });
+          }).catch(function(e) {
+            if (!cancelled) setIcd({ status: 'error', rows: [], err: String(e.message || e), forTerm: term });
+          });
+        }, 350);
+        return function() { cancelled = true; clearTimeout(timer); };
+      }, [icdQuery]);
       React.useEffect(function() {
         if (_idea) return;
         var cancelled = false;
@@ -274,6 +317,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
             h('p', { className: 'text-[11px] mt-2', style: { color: pal.muted } },
               __alloT('stem.elig.cats_note', 'These are EDUCATIONAL definitions applied by a team — not clinical criteria, and not the same words a clinician uses.'))
           )
+        ),
+
+        // ── ICD-10-CM decoder ───────────────────────────────────────────────
+        h('div', { className: 'rounded-2xl p-4 mb-5', style: { background: pal.card, border: '1px solid ' + pal.border } },
+          h('h3', { className: 'text-sm font-black mb-1' }, '🔢 ' + __alloT('stem.elig.icd', 'Decode a diagnostic code')),
+          h('p', { className: 'text-xs mb-2', style: { color: pal.muted } },
+            __alloT('stem.elig.icd_sub', 'Outside reports arrive carrying codes like F90.2 or F84.0. Type a code to see its official description, or type words to find the code. Codes are the public layer of the diagnostic system; the criteria behind them are copyrighted and are not reproduced here.')),
+          h('label', { htmlFor: 'elig-icd', className: 'sr-only' }, __alloT('stem.elig.icd_label', 'Search ICD-10-CM codes')),
+          h('input', {
+            id: 'elig-icd', type: 'search', value: icdQuery,
+            onChange: function(e) { setIcdQuery(e.target.value); },
+            placeholder: __alloT('stem.elig.icd_ph', 'e.g. F90.2, or "dyslexia"'),
+            className: 'w-full rounded-xl px-3 py-2 text-sm',
+            style: { background: pal.panel, border: '1px solid ' + pal.border, color: pal.text }
+          }),
+          icd.status === 'searching' ? h('p', { className: 'text-[11px] mt-2', style: { color: pal.muted } }, __alloT('stem.elig.icd_searching', 'Looking up…')) : null,
+          icd.status === 'error' ? h('p', { role: 'alert', className: 'text-[11px] mt-2', style: { color: pal.text } },
+            __alloT('stem.elig.icd_err', 'The code lookup could not be reached, so nothing is shown. This tool does not guess code meanings from memory.')) : null,
+          icd.status === 'ok' && !icd.rows.length ? h('p', { className: 'text-[11px] mt-2', style: { color: pal.muted } },
+            __alloT('stem.elig.icd_none', 'No ICD-10-CM entry matches that. Check the characters — codes are picky about the decimal point.')) : null,
+          icd.status === 'ok' && icd.rows.length ? h('div', { className: 'mt-2 flex flex-col gap-1' },
+            icd.rows.map(function(r) {
+              return h('div', { key: r.code, className: 'rounded-lg px-3 py-2 text-[12px]', style: { background: pal.panel, border: '1px solid ' + pal.border } },
+                h('span', { className: 'font-black', style: { color: pal.accent } }, r.code),
+                h('span', { style: { color: pal.text } }, '  ' + r.name));
+            })
+          ) : null,
+          h('p', { className: 'text-[11px] mt-2 leading-snug', style: { color: pal.muted } },
+            __alloT('stem.elig.icd_prov', 'Live from the National Library of Medicine Clinical Tables service (ICD-10-CM).') + ' ' +
+            __alloT('stem.elig.icd_caveat', 'A code is a filing label, not a diagnosis and not a criteria set. Seeing one on a report tells you what a clinician recorded — not whether a child is eligible for anything, which is the team\'s question in the cases below.'))
         ),
 
         // Scenarios — which question does the team still owe?
