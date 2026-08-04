@@ -39,14 +39,16 @@ beforeAll(() => {
   delete window.AlloModules.MeetingDocs;
   delete window.AlloModules.SpedTimelines;
   delete window.AlloModules.FamilyAnnouncements;
+  delete window.AlloModules.MtssTriage;
   loadModule('admin_hub_module.js');
   loadModule('udl_walkthrough_module.js');
   loadModule('dispro_analyzer_module.js');
   loadModule('meeting_docs_module.js');
   loadModule('sped_timelines_module.js');
   loadModule('family_announcements_module.js');
+  loadModule('mtss_triage_module.js');
   Mods = window.AlloModules;
-  for (const k of ['AdminHub', 'UdlWalkthrough', 'DisproAnalyzer', 'MeetingDocs', 'SpedTimelines', 'FamilyAnnouncements']) {
+  for (const k of ['AdminHub', 'UdlWalkthrough', 'DisproAnalyzer', 'MeetingDocs', 'SpedTimelines', 'FamilyAnnouncements', 'MtssTriage']) {
     if (!Mods[k]) throw new Error(k + ' did not register');
   }
 });
@@ -83,12 +85,13 @@ describe('AdminHubPanel', () => {
     const c = mount(Mods.AdminHub.AdminHubPanel, { ...baseProps(), openTool: (id) => opened.push(id) });
     expect(c.textContent).toContain('Leadership Hub');
     expect(c.textContent).toContain('never an automated verdict');
+    clickText(c, 'MTSS Triage');
     clickText(c, 'Family Announcements');
     clickText(c, 'UDL Walkthrough');
     clickText(c, 'Disproportionality Analyzer');
     clickText(c, 'SpEd Timelines');
     clickText(c, 'Meeting Documentation');
-    expect(opened).toEqual(['announcements', 'walkthrough', 'dispro', 'timelines', 'meetings']);
+    expect(opened).toEqual(['mtss', 'announcements', 'walkthrough', 'dispro', 'timelines', 'meetings']);
   });
 });
 
@@ -244,6 +247,56 @@ describe('SpedTimelinesPanel', () => {
     act(() => { box.click(); });
     const stored = JSON.parse(localStorage.getItem('allo_sped_cases_v1'));
     expect(stored.find((x) => x.id === 'c1').completedAt).toBeTruthy();
+  });
+});
+
+describe('MtssTriagePanel', () => {
+  it('renders the tier board from a saved window, shows sibling context, and Progress compares two windows', () => {
+    const cuts = { higherBetter: true, tier2Cut: 40, tier3Cut: 20 };
+    localStorage.setItem('allo_mtss_datasets_v1', JSON.stringify([
+      { id: 'w2', label: 'ORF g3', window: '2027 Winter', cutpoints: cuts, savedAt: 2,
+        rows: [{ code: 'JD', score: 22 }, { code: 'MR', score: 44 }] },
+      { id: 'w1', label: 'ORF g3', window: '2026 Fall', cutpoints: cuts, savedAt: 1,
+        rows: [{ code: 'JD', score: 15 }, { code: 'MR', score: 35 }] },
+    ]));
+    localStorage.setItem('allo_udlwalk_sessions_v1', JSON.stringify([{}, {}, {}]));
+    const c = mount(Mods.MtssTriage.MtssTriagePanel, baseProps());
+    expect(c.textContent).toContain('MTSS Triage');
+    expect(c.textContent).toContain('3 walkthrough visits'); // sibling context strip
+    clickText(c, 'ORF g3 · 2026 Fall');
+    expect(c.textContent).toContain('flagged for team review');
+    expect(c.textContent).toContain('JD'); // T3 at 15
+    // Progress tab: pick both windows through the real selects.
+    clickText(c, 'Progress');
+    const setSelect = (id, v) => {
+      const el = c.querySelector(id);
+      const proto = Object.getPrototypeOf(el);
+      Object.getOwnPropertyDescriptor(proto, 'value').set.call(el, v);
+      act(() => { el.dispatchEvent(new window.Event('change', { bubbles: true })); });
+    };
+    setSelect('#mtss-prog-A', 'w1');
+    setSelect('#mtss-prog-B', 'w2');
+    expect(c.textContent).toContain('2 matched');
+    expect(c.textContent).toContain('T3→T2 ✓'); // JD moved less intensive
+  });
+
+  it('creating a group from checked Tier 2/3 students round-trips to storage', () => {
+    localStorage.setItem('allo_mtss_datasets_v1', JSON.stringify([
+      { id: 'w1', label: 'ORF g3', window: '2026 Fall', cutpoints: { higherBetter: true, tier2Cut: 40, tier3Cut: 20 }, savedAt: 1,
+        rows: [{ code: 'JD', score: 15 }, { code: 'AL', score: 25 }] },
+    ]));
+    const c = mount(Mods.MtssTriage.MtssTriagePanel, baseProps());
+    clickText(c, 'ORF g3 · 2026 Fall');
+    const box = Array.from(c.querySelectorAll('input[type="checkbox"]')).find((b) => (b.getAttribute('aria-label') || '').includes('JD'));
+    act(() => { box.click(); });
+    const name = c.querySelector('#mtss-group-name');
+    const proto = Object.getPrototypeOf(name);
+    Object.getOwnPropertyDescriptor(proto, 'value').set.call(name, 'Decoding group A');
+    act(() => { name.dispatchEvent(new window.Event('input', { bubbles: true })); });
+    clickText(c, 'Create group');
+    expect(c.textContent).toContain('Decoding group A');
+    const stored = JSON.parse(localStorage.getItem('allo_mtss_groups_v1'));
+    expect(stored[0].members).toEqual(['JD']);
   });
 });
 

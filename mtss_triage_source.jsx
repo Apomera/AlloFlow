@@ -1,0 +1,607 @@
+/**
+ * AlloFlow — MTSS Triage (Leadership Hub capstone) — MVP, Aug 2026.
+ *
+ * Universal-screening triage for building teams: paste one screening
+ * window's scores (student code, score), set YOUR measure's benchmark
+ * cut points, and get a suggested-risk tier board, intervention grouping,
+ * and window-over-window progress — plus a building-context strip that
+ * reads the sibling Leadership Hub tools' local data (counts only), which
+ * is what makes this the view that sits on top of the suite.
+ *
+ * Integrity stance (deliberate, in-UI):
+ *  - Cut points are USER-ENTERED. Benchmark tables (Acadience, DIBELS 8,
+ *    aimsweb...) are publisher-owned and measure/season-specific — the
+ *    tool ships none and never pretends to know them.
+ *  - A tier here is a SUGGESTED RISK BAND from one screener. The UI says
+ *    "flagged for team review": MTSS teams decide tiers with multiple
+ *    data sources; a single score never places a student.
+ *  - Student codes/initials only, everything on-device, like the rest of
+ *    the suite.
+ */
+
+const MTSS_DATASETS_KEY = 'allo_mtss_datasets_v1';
+const MTSS_GROUPS_KEY = 'allo_mtss_groups_v1';
+
+function mtssLoad(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw);
+    return parsed == null ? fallback : parsed;
+  } catch (_) { return fallback; }
+}
+
+function mtssStore(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch (_) {}
+}
+
+function mtssNextId(prefix) {
+  return prefix + '_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
+}
+
+function mtssToday() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+// ── Pure seams ──────────────────────────────────────────────────────
+
+// Paste parser: "code, score" per line (comma/tab/semicolon). Header rows
+// (non-numeric score) are skipped — and an EMPTY numeric cell must be NaN,
+// not 0 (the Number('')===0 header-parse bug class from the analyzer).
+function mtssParsePaste(text) {
+  const rows = [];
+  const skipped = [];
+  String(text || '').split(/\r?\n/).forEach((line) => {
+    const t = line.trim();
+    if (!t) return;
+    const parts = t.split(/[\t;,]/).map((p) => p.trim().replace(/^"|"$/g, ''));
+    if (parts.length < 2) { skipped.push(t); return; }
+    const code = parts[0];
+    const cleaned = String(parts[1]).replace(/[^0-9.-]/g, '');
+    const score = cleaned === '' ? NaN : Number(cleaned);
+    if (!code || !Number.isFinite(score)) { skipped.push(t); return; }
+    rows.push({ code, score });
+  });
+  return { rows, skipped };
+}
+
+// Tiering against user cut points.
+// higherBetter (e.g. ORF words/min): benchmark = at/above tier2Cut -> T1;
+//   at/above tier3Cut but below tier2Cut -> T2; below tier3Cut -> T3.
+// !higherBetter (e.g. risk scales): at/below tier2Cut -> T1;
+//   at/below tier3Cut but above tier2Cut -> T2; above tier3Cut -> T3.
+// "At the cut" always lands on the LESS intensive side — a screener at
+// the benchmark line should not flag a student.
+// Number('') is 0 — an EMPTY cut field must be missing, not zero (the
+// header-parse bug class, now on the input side).
+function mtssNum(v) {
+  if (v == null || String(v).trim() === '') return NaN;
+  return Number(v);
+}
+
+function mtssTierOf(score, cutpoints) {
+  const t2 = mtssNum(cutpoints && cutpoints.tier2Cut);
+  const t3 = mtssNum(cutpoints && cutpoints.tier3Cut);
+  if (!Number.isFinite(score) || !Number.isFinite(t2) || !Number.isFinite(t3)) return null;
+  if (cutpoints.higherBetter) {
+    if (score >= t2) return 1;
+    if (score >= t3) return 2;
+    return 3;
+  }
+  if (score <= t2) return 1;
+  if (score <= t3) return 2;
+  return 3;
+}
+
+// Cut points must be ordered sensibly for the direction; returns an error
+// string or null (never throws).
+function mtssValidateCuts(cutpoints) {
+  const t2 = mtssNum(cutpoints && cutpoints.tier2Cut);
+  const t3 = mtssNum(cutpoints && cutpoints.tier3Cut);
+  if (!Number.isFinite(t2) || !Number.isFinite(t3)) return 'Enter both cut scores.';
+  if (cutpoints.higherBetter && !(t3 < t2)) return 'For a higher-is-better measure, the intensive (Tier 3) cut must be BELOW the benchmark (Tier 2) cut.';
+  if (!cutpoints.higherBetter && !(t3 > t2)) return 'For a lower-is-better measure, the intensive (Tier 3) cut must be ABOVE the benchmark (Tier 2) cut.';
+  return null;
+}
+
+function mtssBoard(dataset) {
+  const tiers = { 1: [], 2: [], 3: [] };
+  const invalid = [];
+  const seen = new Set();
+  (dataset && Array.isArray(dataset.rows) ? dataset.rows : []).forEach((r) => {
+    const code = String((r && r.code) || '').trim();
+    const score = Number(r && r.score);
+    if (!code || !Number.isFinite(score)) { invalid.push(r); return; }
+    if (seen.has(code)) { invalid.push({ ...r, duplicate: true }); return; }
+    seen.add(code);
+    const tier = mtssTierOf(score, dataset.cutpoints || {});
+    if (tier == null) { invalid.push(r); return; }
+    tiers[tier].push({ code, score, tier });
+  });
+  // Within a tier, most intensive need first (worst score leads).
+  const dir = dataset && dataset.cutpoints && dataset.cutpoints.higherBetter ? 1 : -1;
+  [1, 2, 3].forEach((tier) => tiers[tier].sort((a, b) => dir * (a.score - b.score)));
+  return { tiers, invalid, total: tiers[1].length + tiers[2].length + tiers[3].length };
+}
+
+// Window-over-window join for the SAME measure: per-code delta and tier
+// movement. Codes present in only one window are reported, never dropped.
+function mtssProgress(datasetA, datasetB) {
+  const boardA = mtssBoard(datasetA);
+  const boardB = mtssBoard(datasetB);
+  const byCode = (board) => {
+    const map = {};
+    [1, 2, 3].forEach((tier) => board.tiers[tier].forEach((r) => { map[r.code] = r; }));
+    return map;
+  };
+  const a = byCode(boardA), b = byCode(boardB);
+  const higherBetter = !!(datasetA && datasetA.cutpoints && datasetA.cutpoints.higherBetter);
+  const joined = [];
+  const onlyA = [], onlyB = [];
+  Object.keys(a).forEach((code) => {
+    if (!b[code]) { onlyA.push(code); return; }
+    const delta = b[code].score - a[code].score;
+    const improvedScore = higherBetter ? delta > 0 : delta < 0;
+    joined.push({
+      code,
+      from: a[code].score, to: b[code].score, delta,
+      fromTier: a[code].tier, toTier: b[code].tier,
+      movement: b[code].tier < a[code].tier ? 'less_intensive' : b[code].tier > a[code].tier ? 'more_intensive' : 'same',
+      improvedScore,
+    });
+  });
+  Object.keys(b).forEach((code) => { if (!a[code]) onlyB.push(code); });
+  joined.sort((x, y) => (y.fromTier - x.fromTier) || x.code.localeCompare(y.code));
+  const summary = {
+    joined: joined.length,
+    lessIntensive: joined.filter((j) => j.movement === 'less_intensive').length,
+    moreIntensive: joined.filter((j) => j.movement === 'more_intensive').length,
+    same: joined.filter((j) => j.movement === 'same').length,
+    improvedScore: joined.filter((j) => j.improvedScore).length,
+  };
+  return { joined, onlyA, onlyB, summary };
+}
+
+// Building-context strip: counts read from the sibling tools' storage.
+// Read-only, junk-tolerant, and honest about being counts — codes are not
+// joined across tools (they may not match).
+function mtssSiblingCounts(storage) {
+  const read = (key) => {
+    try {
+      const raw = storage.getItem(key);
+      if (!raw) return 0;
+      const v = JSON.parse(raw);
+      return Array.isArray(v) ? v.length : 0;
+    } catch (_) { return 0; }
+  };
+  return {
+    walkthroughVisits: read('allo_udlwalk_sessions_v1'),
+    disproAnalyses: read('allo_dispro_analyses_v1'),
+    meetings: read('allo_meetdocs_meetings_v1'),
+    spedOpen: (() => {
+      try {
+        const raw = storage.getItem('allo_sped_cases_v1');
+        if (!raw) return 0;
+        const v = JSON.parse(raw);
+        return Array.isArray(v) ? v.filter((c) => c && !c.completedAt).length : 0;
+      } catch (_) { return 0; }
+    })(),
+  };
+}
+
+function mtssCsv(dataset) {
+  const esc = (v) => {
+    const s = v == null ? '' : String(v);
+    return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+  const board = mtssBoard(dataset);
+  const lines = ['student_code,score,suggested_tier'];
+  [3, 2, 1].forEach((tier) => board.tiers[tier].forEach((r) => {
+    lines.push([esc(r.code), r.score, tier].join(','));
+  }));
+  lines.push('');
+  lines.push(esc('Measure: ' + (dataset.label || '') + ' · Window: ' + (dataset.window || '') + ' · Cuts: T2=' + dataset.cutpoints.tier2Cut + ', T3=' + dataset.cutpoints.tier3Cut + ' (' + (dataset.cutpoints.higherBetter ? 'higher is better' : 'lower is better') + ')'));
+  lines.push(esc('Suggested tiers are risk bands from ONE screener against locally entered cut scores — the MTSS team places students using multiple data sources. Computed locally in AlloFlow.'));
+  return lines.join('\r\n');
+}
+
+function mtssDownload(filename, mime, content, addToast, okMsg, failMsg) {
+  try {
+    const url = URL.createObjectURL(new Blob([content], { type: mime }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    addToast(okMsg, 'info');
+  } catch (e) {
+    addToast(failMsg + String(e && e.message), 'error');
+  }
+}
+
+function mtssAnnounce(message) {
+  try {
+    const region = document.getElementById('allo-live-mtss');
+    if (region) { region.textContent = ''; region.textContent = message; }
+  } catch (_) {}
+}
+
+const MTSS_TIER_META = {
+  1: { label: 'Tier 1 — at/above benchmark', cls: 'bg-green-50 border-green-300 text-green-900' },
+  2: { label: 'Tier 2 — flagged for team review', cls: 'bg-amber-50 border-amber-300 text-amber-900' },
+  3: { label: 'Tier 3 — flagged for team review (intensive range)', cls: 'bg-rose-50 border-rose-300 text-rose-900' },
+};
+
+function MtssTriagePanel(props) {
+  const { onClose, t, addToast = (() => {}) } = props;
+  const tt = React.useCallback((key, fallback) => {
+    if (typeof t === 'function') {
+      try { const v = t(key); if (v) return v; } catch (_) {}
+    }
+    return fallback;
+  }, [t]);
+
+  const [datasets, setDatasets] = React.useState(() => { const v = mtssLoad(MTSS_DATASETS_KEY, []); return Array.isArray(v) ? v : []; });
+  const [groups, setGroups] = React.useState(() => { const v = mtssLoad(MTSS_GROUPS_KEY, []); return Array.isArray(v) ? v : []; });
+  const [tab, setTab] = React.useState('screen');
+  const [activeId, setActiveId] = React.useState(null);
+  const [form, setForm] = React.useState({ label: '', window: '', higherBetter: true, tier2Cut: '', tier3Cut: '', paste: '' });
+  const [checked, setChecked] = React.useState({});
+  const [groupName, setGroupName] = React.useState('');
+  const [groupFocus, setGroupFocus] = React.useState('');
+  const [progA, setProgA] = React.useState('');
+  const [progB, setProgB] = React.useState('');
+  const [armDelete, setArmDelete] = React.useState(null);
+  const dialogRef = React.useRef(null);
+
+  React.useEffect(() => { mtssStore(MTSS_DATASETS_KEY, datasets); }, [datasets]);
+  React.useEffect(() => { mtssStore(MTSS_GROUPS_KEY, groups); }, [groups]);
+
+  React.useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return undefined;
+    const previousFocus = document.activeElement;
+    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const trap = { root: dialog };
+    trapStack.push(trap);
+    const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
+    const getFocusable = () => Array.from(dialog.querySelectorAll(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )).filter((el) => !el.closest('[hidden], [inert], [aria-hidden="true"]'));
+    const first = getFocusable()[0];
+    (first || dialog).focus();
+    const onKeyDown = (event) => {
+      if (!isTopTrap()) return;
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); onClose(); return; }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (focusable.length === 0) { event.preventDefault(); dialog.focus(); return; }
+      const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
+      if (!dialog.contains(document.activeElement)) { event.preventDefault(); (event.shiftKey ? lastItem : firstItem).focus(); }
+      else if (event.shiftKey && document.activeElement === firstItem) { event.preventDefault(); lastItem.focus(); }
+      else if (!event.shiftKey && document.activeElement === lastItem) { event.preventDefault(); firstItem.focus(); }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      const wasTop = isTopTrap();
+      const idx = trapStack.indexOf(trap);
+      if (idx !== -1) trapStack.splice(idx, 1);
+      if (wasTop && previousFocus && previousFocus !== document.body && previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
+    };
+  }, [onClose]);
+
+  const active = activeId ? datasets.find((d) => d.id === activeId) : null;
+  const board = active ? mtssBoard(active) : null;
+  const context = mtssSiblingCounts(typeof localStorage !== 'undefined' ? localStorage : { getItem: () => null });
+
+  const saveDataset = () => {
+    // Validate the RAW field values (Number('') is 0 — coercing first would
+    // let an empty cut field through as zero), then store real numbers.
+    const rawCuts = { higherBetter: !!form.higherBetter, tier2Cut: form.tier2Cut, tier3Cut: form.tier3Cut };
+    const cutError = mtssValidateCuts(rawCuts);
+    const cutpoints = { higherBetter: rawCuts.higherBetter, tier2Cut: Number(form.tier2Cut), tier3Cut: Number(form.tier3Cut) };
+    if (!form.label.trim()) { addToast(tt('mtss.need_label', 'Name the measure (e.g. ORF grade 3).'), 'warning'); return; }
+    if (cutError) { addToast(cutError, 'warning'); return; }
+    const parsed = mtssParsePaste(form.paste);
+    if (parsed.rows.length === 0) { addToast(tt('mtss.need_rows', 'Paste at least one "code, score" row.'), 'warning'); return; }
+    const record = {
+      id: mtssNextId('md'),
+      label: form.label.trim(),
+      window: form.window.trim() || mtssToday(),
+      cutpoints,
+      rows: parsed.rows,
+      savedAt: Date.now(),
+    };
+    setDatasets((list) => [record, ...list]);
+    setActiveId(record.id);
+    setForm((f) => ({ ...f, paste: '' }));
+    const msg = parsed.rows.length + ' ' + tt('mtss.rows_loaded', 'scores loaded.') + (parsed.skipped.length ? (' ' + parsed.skipped.length + ' ' + tt('mtss.rows_skipped', 'lines skipped.')) : '');
+    addToast(msg, parsed.skipped.length ? 'warning' : 'success');
+  };
+
+  const toggleChecked = (code) => setChecked((c) => ({ ...c, [code]: !c[code] }));
+
+  const createGroup = () => {
+    const members = Object.keys(checked).filter((k) => checked[k]);
+    if (!active) return;
+    if (members.length === 0) { addToast(tt('mtss.need_members', 'Check at least one student.'), 'warning'); return; }
+    if (!groupName.trim()) { addToast(tt('mtss.need_group_name', 'Name the group.'), 'warning'); return; }
+    setGroups((g) => [{
+      id: mtssNextId('mg'),
+      name: groupName.trim(),
+      focus: groupFocus.trim(),
+      measure: active.label,
+      window: active.window,
+      members,
+      createdAt: mtssToday(),
+    }, ...g]);
+    setChecked({});
+    setGroupName('');
+    setGroupFocus('');
+    setTab('groups');
+    addToast(tt('mtss.group_saved', 'Group saved on this device.'), 'success');
+  };
+
+  const tabs = [
+    { id: 'screen', label: tt('mtss.tab_screen', 'Screen'), icon: '🧮' },
+    { id: 'groups', label: tt('mtss.tab_groups', 'Groups'), icon: '👥' },
+    { id: 'progress', label: tt('mtss.tab_progress', 'Progress'), icon: '📈' },
+  ];
+
+  const dsA = datasets.find((d) => d.id === progA) || null;
+  const dsB = datasets.find((d) => d.id === progB) || null;
+  const progress = (dsA && dsB && dsA.id !== dsB.id) ? mtssProgress(dsA, dsB) : null;
+
+  return (
+    <div className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-2 sm:p-4" style={{ zIndex: 260 }} role="presentation" onClick={onClose}>
+      <div ref={dialogRef} tabIndex={-1} data-help-key="mtss_panel" className="allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{ maxHeight: '92vh' }} role="dialog" aria-modal="true" aria-labelledby="mtss-title" onClick={(e) => e.stopPropagation()}>
+        <div className="sticky top-0 z-10 bg-slate-50/95 border-b border-slate-200 px-4 pt-4 pb-2 rounded-t-2xl">
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <h2 id="mtss-title" className="text-lg font-bold text-slate-800 flex items-center gap-2"><span aria-hidden="true">🧮</span> {tt('mtss.title', 'MTSS Triage')}</h2>
+              <p className="text-xs text-slate-600">{tt('mtss.subtitle', 'Screening scores in, team-review flags out — your cut scores, your decisions, on this device.')}</p>
+            </div>
+            <button type="button" onClick={onClose} className="min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 text-xl" aria-label={tt('mtss.close_aria', 'Close MTSS Triage')}>✕</button>
+          </div>
+          <div role="tablist" aria-label={tt('mtss.tabs_aria', 'Triage sections')} className="flex gap-1 mt-2">
+            {tabs.map((tb, tbIdx) => (
+              <button key={tb.id} type="button" role="tab" id={'mtss-tab-' + tb.id} aria-selected={tab === tb.id}
+                aria-controls="mtss-tabpanel" tabIndex={tab === tb.id ? 0 : -1} data-help-key={'mtss_tab_' + tb.id}
+                onClick={() => setTab(tb.id)}
+                onKeyDown={(e) => {
+                  let next = null;
+                  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (tbIdx + 1) % tabs.length;
+                  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (tbIdx - 1 + tabs.length) % tabs.length;
+                  else if (e.key === 'Home') next = 0;
+                  else if (e.key === 'End') next = tabs.length - 1;
+                  if (next == null) return;
+                  e.preventDefault();
+                  setTab(tabs[next].id);
+                  const el = document.getElementById('mtss-tab-' + tabs[next].id);
+                  if (el) el.focus();
+                }}
+                className={'min-h-11 px-3 py-1.5 rounded-t-lg text-sm font-bold border-b-2 ' + (tab === tb.id ? 'border-indigo-600 text-indigo-700 bg-white' : 'border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-100')}
+              ><span aria-hidden="true">{tb.icon}</span> {tb.label}</button>
+            ))}
+          </div>
+        </div>
+
+        <div className="p-4" role="tabpanel" id="mtss-tabpanel" aria-labelledby={'mtss-tab-' + tab} tabIndex={-1}>
+          <p className="text-[10px] text-slate-500 mb-3">
+            {tt('mtss.context_strip', 'Building context (from this device’s Leadership Hub data):')}{' '}
+            {context.walkthroughVisits} {tt('mtss.ctx_visits', 'walkthrough visits')} · {context.disproAnalyses} {tt('mtss.ctx_dispro', 'equity analyses')} · {context.spedOpen} {tt('mtss.ctx_sped', 'open SpEd timelines')} · {context.meetings} {tt('mtss.ctx_meetings', 'meeting records')}
+          </p>
+
+          {tab === 'screen' && (
+            <div>
+              <div className="bg-white border border-slate-300 rounded-xl p-3 mb-3">
+                <h3 className="text-sm font-bold text-slate-700 mb-1">{tt('mtss.new_dataset', 'New screening window')}</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div>
+                    <label htmlFor="mtss-label" className="block text-xs font-bold text-slate-600 mb-1">{tt('mtss.measure_label', 'Measure (e.g. ORF grade 3)')}</label>
+                    <input id="mtss-label" type="text" value={form.label} onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))}
+                      className="w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                  </div>
+                  <div>
+                    <label htmlFor="mtss-window" className="block text-xs font-bold text-slate-600 mb-1">{tt('mtss.window_label', 'Window (e.g. 2026 Fall)')}</label>
+                    <input id="mtss-window" type="text" value={form.window} onChange={(e) => setForm((f) => ({ ...f, window: e.target.value }))}
+                      className="w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                  </div>
+                  <div className="flex items-end gap-2">
+                    <button type="button" aria-pressed={form.higherBetter}
+                      onClick={() => setForm((f) => ({ ...f, higherBetter: !f.higherBetter }))}
+                      className={'min-h-11 px-3 py-2 rounded-lg border text-xs font-bold ' + (form.higherBetter ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300')}
+                    >{form.higherBetter ? tt('mtss.higher_better', 'Higher is better (fluency, accuracy)') : tt('mtss.lower_better', 'Lower is better (risk scales, errors)')}</button>
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <label htmlFor="mtss-t2" className="block text-xs font-bold text-slate-600 mb-1">{tt('mtss.t2_label', 'Benchmark cut (T2 below/above)')}</label>
+                      <input id="mtss-t2" type="text" inputMode="decimal" value={form.tier2Cut} onChange={(e) => setForm((f) => ({ ...f, tier2Cut: e.target.value }))}
+                        className="w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                    </div>
+                    <div className="flex-1">
+                      <label htmlFor="mtss-t3" className="block text-xs font-bold text-slate-600 mb-1">{tt('mtss.t3_label', 'Intensive cut (T3 beyond)')}</label>
+                      <input id="mtss-t3" type="text" inputMode="decimal" value={form.tier3Cut} onChange={(e) => setForm((f) => ({ ...f, tier3Cut: e.target.value }))}
+                        className="w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                    </div>
+                  </div>
+                </div>
+                <label htmlFor="mtss-paste" className="block text-xs font-bold text-slate-600 mt-2 mb-1">{tt('mtss.paste_label', 'Scores — one line per student: code, score (header rows are skipped)')}</label>
+                <textarea id="mtss-paste" rows={5} value={form.paste} onChange={(e) => setForm((f) => ({ ...f, paste: e.target.value }))}
+                  placeholder={'Code,Score\nJD,42\nMR,71\nAL,18'}
+                  className="w-full text-xs font-mono border border-slate-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                <p className="text-[10px] text-slate-500 mt-1">{tt('mtss.cuts_note', 'Enter YOUR measure’s benchmark cut scores (publisher tables are measure- and season-specific — this tool ships none). "At the cut" counts as the less intensive band.')}</p>
+                <button type="button" onClick={saveDataset} className="mt-2 min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700">{tt('mtss.save_dataset', 'Save window & triage')}</button>
+              </div>
+
+              {datasets.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {datasets.map((d) => (
+                    <button key={d.id} type="button" aria-pressed={activeId === d.id}
+                      onClick={() => { setActiveId(d.id); setChecked({}); }}
+                      className={'min-h-9 px-2.5 py-1 rounded-full border text-xs font-bold ' + (activeId === d.id ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-100')}>
+                      {d.label} · {d.window}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {active && board && (
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <p className="text-xs text-slate-600">{board.total} {tt('mtss.students', 'students')} · {board.invalid.length > 0 ? (board.invalid.length + ' ' + tt('mtss.invalid_rows', 'invalid/duplicate rows ignored')) : ''}</p>
+                    <div className="flex gap-2">
+                      <button type="button" onClick={() => mtssDownload('mtss-' + (active.window || 'window').replace(/\s+/g, '-') + '.csv', 'text/csv;charset=utf-8', '\uFEFF' + mtssCsv(active), addToast, tt('mtss.export_toast', 'Export started — check your downloads.'), tt('mtss.export_failed', 'Export failed: '))}
+                        className="min-h-9 px-2.5 py-1 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100"><span aria-hidden="true">⬇️</span> {tt('mtss.export_csv', 'CSV')}</button>
+                      <button type="button"
+                        onClick={() => {
+                          if (armDelete === active.id) { setDatasets((l) => l.filter((x) => x.id !== active.id)); setActiveId(null); setArmDelete(null); addToast(tt('mtss.dataset_deleted', 'Window deleted.'), 'info'); }
+                          else { setArmDelete(active.id); mtssAnnounce(tt('mtss.delete_arm_announce', 'Activate delete again to permanently remove this window.')); }
+                        }}
+                        className={'min-h-9 px-2.5 py-1 rounded-lg border text-xs font-bold ' + (armDelete === active.id ? 'bg-rose-600 text-white border-rose-700' : 'bg-white text-rose-700 border-rose-300 hover:bg-rose-50')}
+                      >{armDelete === active.id ? tt('mtss.delete_confirm', 'Tap again to delete') : tt('mtss.delete', 'Delete')}</button>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {[3, 2, 1].map((tier) => (
+                      <div key={tier} className={'rounded-xl border p-2 ' + MTSS_TIER_META[tier].cls}>
+                        <h4 className="text-xs font-bold">{tt('mtss.tier_' + tier, MTSS_TIER_META[tier].label)} ({board.tiers[tier].length})</h4>
+                        <ul className="mt-1 space-y-0.5">
+                          {board.tiers[tier].map((r) => (
+                            <li key={r.code} className="flex items-center gap-1.5 text-xs">
+                              {tier !== 1 && (
+                                <input type="checkbox" checked={!!checked[r.code]} onChange={() => toggleChecked(r.code)}
+                                  aria-label={tt('mtss.check_aria', 'Select for grouping:') + ' ' + r.code} className="w-4 h-4 shrink-0" />
+                              )}
+                              <span className="font-bold">{r.code}</span>
+                              <span className="ml-auto tabular-nums">{r.score}</span>
+                            </li>
+                          ))}
+                          {board.tiers[tier].length === 0 && <li className="text-[10px] opacity-70">{tt('mtss.tier_empty', 'none')}</li>}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-2 bg-white border border-slate-300 rounded-xl p-3">
+                    <h4 className="text-xs font-bold text-slate-700">{tt('mtss.group_title', 'Create an intervention group from checked students')}</h4>
+                    <div className="mt-1.5 flex flex-wrap gap-2 items-end">
+                      <div className="flex-1 min-w-40">
+                        <label htmlFor="mtss-group-name" className="block text-[10px] font-bold text-slate-600 mb-0.5">{tt('mtss.group_name', 'Group name')}</label>
+                        <input id="mtss-group-name" type="text" value={groupName} onChange={(e) => setGroupName(e.target.value)}
+                          className="w-full min-h-10 border border-slate-300 rounded-lg px-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                      </div>
+                      <div className="flex-1 min-w-40">
+                        <label htmlFor="mtss-group-focus" className="block text-[10px] font-bold text-slate-600 mb-0.5">{tt('mtss.group_focus', 'Focus (e.g. decoding, fluency)')}</label>
+                        <input id="mtss-group-focus" type="text" value={groupFocus} onChange={(e) => setGroupFocus(e.target.value)}
+                          className="w-full min-h-10 border border-slate-300 rounded-lg px-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                      </div>
+                      <button type="button" onClick={createGroup} className="min-h-10 px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700">{tt('mtss.create_group', 'Create group')}</button>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-[10px] text-slate-500">
+                    {tt('mtss.integrity_note', 'Tiers here are suggested risk bands from ONE screener against the cut scores you entered — a flag for team review, never a placement. MTSS teams decide with multiple data sources (progress monitoring, classroom evidence, family input). All computation happens on this device.')}
+                  </p>
+                </div>
+              )}
+              {!active && datasets.length === 0 && <p className="text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3">{tt('mtss.empty', 'Paste your first screening window above to build the tier board.')}</p>}
+            </div>
+          )}
+
+          {tab === 'groups' && (
+            <div>
+              <h3 className="text-sm font-bold text-slate-700 mb-2">{tt('mtss.groups_title', 'Intervention groups')}</h3>
+              {groups.length === 0 && <p className="text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3">{tt('mtss.no_groups', 'No groups yet — check students on the Screen tab and create one.')}</p>}
+              <ul className="space-y-1.5">
+                {groups.map((g) => (
+                  <li key={g.id} className="bg-white border border-slate-300 rounded-xl p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <span className="block font-bold text-sm text-slate-800">{g.name}{g.focus ? <span className="font-normal text-slate-600"> — {g.focus}</span> : null}</span>
+                        <span className="block text-[10px] text-slate-500">{g.measure} · {g.window} · {tt('mtss.started', 'created')} {g.createdAt}</span>
+                      </div>
+                      <button type="button"
+                        onClick={() => {
+                          if (armDelete === g.id) { setGroups((l) => l.filter((x) => x.id !== g.id)); setArmDelete(null); addToast(tt('mtss.group_deleted', 'Group deleted.'), 'info'); }
+                          else { setArmDelete(g.id); mtssAnnounce(tt('mtss.delete_arm_announce', 'Activate delete again to permanently remove this group.')); }
+                        }}
+                        className={'shrink-0 min-h-9 px-2.5 py-1 rounded-lg border text-xs font-bold ' + (armDelete === g.id ? 'bg-rose-600 text-white border-rose-700' : 'bg-white text-rose-700 border-rose-300 hover:bg-rose-50')}
+                      >{armDelete === g.id ? tt('mtss.delete_confirm', 'Tap again to delete') : tt('mtss.delete', 'Delete')}</button>
+                    </div>
+                    <ul className="mt-1.5 flex flex-wrap gap-1">
+                      {g.members.map((m) => <li key={m} className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-800 border border-indigo-200">{m}</li>)}
+                    </ul>
+                  </li>
+                ))}
+              </ul>
+              {groups.length > 0 && (
+                <p className="mt-3 text-[10px] text-slate-500">{tt('mtss.groups_note', 'For delivering interventions, the teacher-facing side of AlloFlow (SEL Hub routines, accessible materials, Take-Home Packs) is the natural next stop — groups here are the roster, not the intervention.')}</p>
+              )}
+            </div>
+          )}
+
+          {tab === 'progress' && (
+            <div>
+              <h3 className="text-sm font-bold text-slate-700 mb-1">{tt('mtss.progress_title', 'Window over window')}</h3>
+              <p className="text-[11px] text-slate-500 mb-2">{tt('mtss.progress_hint', 'Compare two saved windows of the SAME measure (matching student codes). Movement toward less intensive bands is the win condition.')}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+                {[['A', progA, setProgA], ['B', progB, setProgB]].map(([label, val, setter]) => (
+                  <div key={label}>
+                    <label htmlFor={'mtss-prog-' + label} className="block text-[10px] font-bold text-slate-600 mb-0.5">{tt('mtss.window', 'Window')} {label}</label>
+                    <select id={'mtss-prog-' + label} value={val} onChange={(e) => setter(e.target.value)}
+                      className="w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                      <option value="">{tt('mtss.pick_window', 'Choose…')}</option>
+                      {datasets.map((d) => <option key={d.id} value={d.id}>{d.label} · {d.window}</option>)}
+                    </select>
+                  </div>
+                ))}
+              </div>
+              {dsA && dsB && dsA.id !== dsB.id && dsA.label !== dsB.label && (
+                <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-2 mb-2">{tt('mtss.measure_mismatch', 'These windows are different measures — deltas across different measures are not comparable.')}</p>
+              )}
+              {progress && (
+                <div>
+                  <p className="text-xs font-bold text-slate-800 mb-1">
+                    {progress.summary.joined} {tt('mtss.matched', 'matched')} · {progress.summary.lessIntensive} {tt('mtss.moved_down', 'to less intensive')} · {progress.summary.moreIntensive} {tt('mtss.moved_up', 'to more intensive')} · {progress.summary.improvedScore} {tt('mtss.improved', 'improved scores')}
+                  </p>
+                  <div className="overflow-x-auto bg-white border border-slate-300 rounded-xl p-2">
+                    <table className="w-full text-xs border-collapse">
+                      <caption className="sr-only">{tt('mtss.progress_caption', 'Per-student progress between the two windows')}</caption>
+                      <thead>
+                        <tr>
+                          <th scope="col" className="text-left p-1.5 text-slate-600">{tt('mtss.col_student', 'Student')}</th>
+                          <th scope="col" className="p-1.5 text-slate-600">A</th>
+                          <th scope="col" className="p-1.5 text-slate-600">B</th>
+                          <th scope="col" className="p-1.5 text-slate-600">Δ</th>
+                          <th scope="col" className="p-1.5 text-slate-600">{tt('mtss.col_band', 'Band')}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {progress.joined.map((j) => (
+                          <tr key={j.code} className="border-t border-slate-200">
+                            <th scope="row" className="text-left p-1.5 font-bold text-slate-800">{j.code}</th>
+                            <td className="p-1.5 text-center text-slate-700 tabular-nums">{j.from}</td>
+                            <td className="p-1.5 text-center text-slate-700 tabular-nums">{j.to}</td>
+                            <td className={'p-1.5 text-center font-bold tabular-nums ' + (j.improvedScore ? 'text-green-800' : j.delta === 0 ? 'text-slate-600' : 'text-rose-800')}>{j.delta > 0 ? '+' + j.delta : j.delta}</td>
+                            <td className="p-1.5 text-center text-slate-700">T{j.fromTier}→T{j.toTier}{j.movement === 'less_intensive' ? ' ✓' : ''}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  {(progress.onlyA.length > 0 || progress.onlyB.length > 0) && (
+                    <p className="mt-1.5 text-[10px] text-slate-500">
+                      {progress.onlyA.length > 0 && (tt('mtss.only_a', 'Only in A:') + ' ' + progress.onlyA.join(', ') + '. ')}
+                      {progress.onlyB.length > 0 && (tt('mtss.only_b', 'Only in B:') + ' ' + progress.onlyB.join(', ') + '.')}
+                    </p>
+                  )}
+                </div>
+              )}
+              {datasets.length < 2 && <p className="text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3">{tt('mtss.need_two', 'Save at least two screening windows to compare progress.')}</p>}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

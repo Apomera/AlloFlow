@@ -12077,10 +12077,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyDisproAnalyzer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DisproAnalyzer', 'https://alloflow-cdn.pages.dev/dispro_analyzer_module.js?v=da080303'); }; })();
     // Leadership Hub (Aug 3 2026) — container shell for the admin suite;
     // Meeting Documentation is its third tool (needs callGemini).
-    window.__alloLazyAdminHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AdminHub', 'https://alloflow-cdn.pages.dev/admin_hub_module.js?v=ah080303'); }; })();
+    window.__alloLazyAdminHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AdminHub', 'https://alloflow-cdn.pages.dev/admin_hub_module.js?v=ah080304'); }; })();
     window.__alloLazyMeetingDocs = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MeetingDocs', 'https://alloflow-cdn.pages.dev/meeting_docs_module.js?v=md080302'); }; })();
     window.__alloLazySpedTimelines = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SpedTimelines', 'https://alloflow-cdn.pages.dev/sped_timelines_module.js?v=st080301'); }; })();
     window.__alloLazyFamilyAnnouncements = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FamilyAnnouncements', 'https://alloflow-cdn.pages.dev/family_announcements_module.js?v=fa080301'); }; })();
+    window.__alloLazyMtssTriage = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MtssTriage', 'https://alloflow-cdn.pages.dev/mtss_triage_module.js?v=mt080301'); }; })();
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
@@ -13691,6 +13692,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isMeetingDocsOpen, setIsMeetingDocsOpen] = useState(false);
   const [isSpedTimelinesOpen, setIsSpedTimelinesOpen] = useState(false);
   const [isFamilyAnnouncementsOpen, setIsFamilyAnnouncementsOpen] = useState(false);
+  const [isMtssTriageOpen, setIsMtssTriageOpen] = useState(false);
   useEffect(() => {
     try {
       if (rosterKey) safeSetItem('alloflow_roster_key', JSON.stringify(rosterKey));
@@ -46369,7 +46371,16 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             else if (toolId === 'meetings') { if (typeof window.__alloLazyMeetingDocs === 'function') { try { window.__alloLazyMeetingDocs(); } catch (_) {} } setIsMeetingDocsOpen(true); }
             else if (toolId === 'timelines') { if (typeof window.__alloLazySpedTimelines === 'function') { try { window.__alloLazySpedTimelines(); } catch (_) {} } setIsSpedTimelinesOpen(true); }
             else if (toolId === 'announcements') { if (typeof window.__alloLazyFamilyAnnouncements === 'function') { try { window.__alloLazyFamilyAnnouncements(); } catch (_) {} } setIsFamilyAnnouncementsOpen(true); }
+            else if (toolId === 'mtss') { if (typeof window.__alloLazyMtssTriage === 'function') { try { window.__alloLazyMtssTriage(); } catch (_) {} } setIsMtssTriageOpen(true); }
           },
+        })}
+      </CDNModuleGate>
+      <CDNModuleGate moduleKey="MtssTriage.MtssTriagePanel" isOpen={isMtssTriageOpen} onClose={() => setIsMtssTriageOpen(false)} icon="🧮" displayName="MTSS Triage" t={t}>
+        {(MtssTriagePanel) => React.createElement(MtssTriagePanel, {
+          isOpen: true,
+          onClose: () => setIsMtssTriageOpen(false),
+          t,
+          addToast,
         })}
       </CDNModuleGate>
       <CDNModuleGate moduleKey="FamilyAnnouncements.FamilyAnnouncementsPanel" isOpen={isFamilyAnnouncementsOpen} onClose={() => setIsFamilyAnnouncementsOpen(false)} icon="📣" displayName="Family Announcements" t={t}>

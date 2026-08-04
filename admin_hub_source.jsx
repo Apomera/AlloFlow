@@ -57,6 +57,12 @@ function AdminHubPanel(props) {
 
   const TOOLS = [
     {
+      id: 'mtss', icon: '🧮',
+      title: tt('adminhub.mtss_title', 'MTSS Triage'),
+      desc: tt('adminhub.mtss_desc', 'Screening scores against YOUR benchmark cut points: suggested risk bands for team review (never automatic placement), intervention grouping, and window-over-window progress.'),
+      accent: 'from-violet-50 to-purple-50 border-violet-600', titleCls: 'text-violet-800', descCls: 'text-violet-700',
+    },
+    {
       id: 'announcements', icon: '📣',
       title: tt('adminhub.announcements_title', 'Family Announcements'),
       desc: tt('adminhub.announcements_desc', 'One announcement, every family language: AI-translated with human review, exported as accessible lang-tagged documents with a translation disclosure — the whole-building packet the Bridge’s live messaging doesn’t cover.'),
