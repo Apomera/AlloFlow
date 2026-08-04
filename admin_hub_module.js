@@ -78,6 +78,15 @@ function AdminHubPanel(props) {
   }, [onClose]);
   const TOOLS = [
     {
+      id: "announcements",
+      icon: "📣",
+      title: tt("adminhub.announcements_title", "Family Announcements"),
+      desc: tt("adminhub.announcements_desc", "One announcement, every family language: AI-translated with human review, exported as accessible lang-tagged documents with a translation disclosure — the whole-building packet the Bridge’s live messaging doesn’t cover."),
+      accent: "from-emerald-50 to-lime-50 border-emerald-700",
+      titleCls: "text-emerald-900",
+      descCls: "text-emerald-800"
+    },
+    {
       id: "walkthrough",
       icon: "🚪",
       title: tt("adminhub.walkthrough_title", "UDL Walkthrough"),

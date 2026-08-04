@@ -38,13 +38,15 @@ beforeAll(() => {
   delete window.AlloModules.DisproAnalyzer;
   delete window.AlloModules.MeetingDocs;
   delete window.AlloModules.SpedTimelines;
+  delete window.AlloModules.FamilyAnnouncements;
   loadModule('admin_hub_module.js');
   loadModule('udl_walkthrough_module.js');
   loadModule('dispro_analyzer_module.js');
   loadModule('meeting_docs_module.js');
   loadModule('sped_timelines_module.js');
+  loadModule('family_announcements_module.js');
   Mods = window.AlloModules;
-  for (const k of ['AdminHub', 'UdlWalkthrough', 'DisproAnalyzer', 'MeetingDocs', 'SpedTimelines']) {
+  for (const k of ['AdminHub', 'UdlWalkthrough', 'DisproAnalyzer', 'MeetingDocs', 'SpedTimelines', 'FamilyAnnouncements']) {
     if (!Mods[k]) throw new Error(k + ' did not register');
   }
 });
@@ -81,11 +83,12 @@ describe('AdminHubPanel', () => {
     const c = mount(Mods.AdminHub.AdminHubPanel, { ...baseProps(), openTool: (id) => opened.push(id) });
     expect(c.textContent).toContain('Leadership Hub');
     expect(c.textContent).toContain('never an automated verdict');
+    clickText(c, 'Family Announcements');
     clickText(c, 'UDL Walkthrough');
     clickText(c, 'Disproportionality Analyzer');
     clickText(c, 'SpEd Timelines');
     clickText(c, 'Meeting Documentation');
-    expect(opened).toEqual(['walkthrough', 'dispro', 'timelines', 'meetings']);
+    expect(opened).toEqual(['announcements', 'walkthrough', 'dispro', 'timelines', 'meetings']);
   });
 });
 
@@ -241,6 +244,42 @@ describe('SpedTimelinesPanel', () => {
     act(() => { box.click(); });
     const stored = JSON.parse(localStorage.getItem('allo_sped_cases_v1'));
     expect(stored.find((x) => x.id === 'c1').completedAt).toBeTruthy();
+  });
+});
+
+describe('FamilyAnnouncementsPanel', () => {
+  it('mock-AI translate flow: sequential calls, editable review boxes, packet export path renders', async () => {
+    localStorage.setItem('allo_famann_config_v1', JSON.stringify({ langTags: ['es', 'ar'] }));
+    const calls = [];
+    const fakeGemini = async (prompt) => { calls.push(prompt); return 'Translation: texto traducido'; };
+    const c = mount(Mods.FamilyAnnouncements.FamilyAnnouncementsPanel, { ...baseProps(), callGemini: fakeGemini });
+    expect(c.textContent).toContain('Family Announcements');
+    // Fill the announcement.
+    const ta = c.querySelector('#famann-text');
+    const proto = Object.getPrototypeOf(ta);
+    Object.getOwnPropertyDescriptor(proto, 'value').set.call(ta, 'School ends at 11:30 AM on Friday for staff training.');
+    act(() => { ta.dispatchEvent(new window.Event('input', { bubbles: true })); });
+    // Translate all (async — flush inside act).
+    const btn = Array.from(c.querySelectorAll('button')).find((b) => b.textContent.includes('Translate all'));
+    await act(async () => { btn.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); });
+    expect(calls.length).toBe(2); // es + ar, sequential
+    expect(calls[0]).toContain('Español');
+    // Cleaned translation (label peeled) lands in the editable review box.
+    const esBox = c.querySelector('#famann-tr-es');
+    expect(esBox.value).toBe('texto traducido');
+    expect(esBox.getAttribute('lang')).toBe('es');
+    expect(c.querySelector('#famann-tr-ar').getAttribute('dir')).toBe('rtl');
+    // Save -> lands on the saved view with per-language downloads.
+    clickText(c, 'Save announcement');
+    expect(c.textContent).toContain('Per-language files');
+    expect(c.textContent).toContain('Español');
+  });
+
+  it('without callGemini it is honest and still usable manually', () => {
+    localStorage.setItem('allo_famann_config_v1', JSON.stringify({ langTags: ['es'] }));
+    const c = mount(Mods.FamilyAnnouncements.FamilyAnnouncementsPanel, { ...baseProps(), callGemini: null });
+    expect(c.textContent).toContain('AI translation is unavailable');
+    expect(c.querySelector('#famann-tr-es')).toBeTruthy(); // paste-your-own box still there
   });
 });
 
