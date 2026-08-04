@@ -481,7 +481,9 @@ describe('body 3D — run the call (integrated scenarios)', () => {
 describe('body 3D — menu copy tracks the module', () => {
   it('mentions the scenarios and the real count', () => {
     const CASES = extractArray('CALL_CASES');
-    expect(SRC).toContain("CALL_CASES.length + ' scenarios");
+    // i18n-safe param idiom: literal '{count}' placeholder in the translatable
+    // string, filled from CALL_CASES.length — the count still tracks the module.
+    expect(SRC).toContain(".replace('{count}', CALL_CASES.length)");
     const menu = renderTool(ID, { firstResponse: { consentAccepted: true } });
     expect(menu).toContain(CASES.length + ' scenarios');
   });

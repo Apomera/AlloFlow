@@ -1362,7 +1362,7 @@ window.StemLab = window.StemLab || {
         // gauge beside it read 300% and OVERWHELMED. ──
         var capY = yPos(HOSP_CAPACITY_PCT);
         gridChildren.push(h('line', { key: 'capline', x1: padL, x2: w - padR, y1: capY, y2: capY, stroke: '#ef4444', strokeWidth: 1, strokeDasharray: '2,2', opacity: 0.75 }));
-        gridChildren.push(h('text', { key: 'capt', x: padL + 2, y: capY - 3, textAnchor: 'start', fill: '#ef4444', fontSize: 8, fontWeight: 'bold' }, __alloT('stem.epidemic.healthcare_capacity', '🏥 Hospital capacity (' + HOSP_CAPACITY_PCT + '% infected at once)')));
+        gridChildren.push(h('text', { key: 'capt', x: padL + 2, y: capY - 3, textAnchor: 'start', fill: '#ef4444', fontSize: 8, fontWeight: 'bold' }, __alloT('stem.epidemic.healthcare_capacity', '🏥 Hospital capacity ({pct}% infected at once)').replace('{pct}', HOSP_CAPACITY_PCT)));
 
         // area fills + lines
         var curves = [];

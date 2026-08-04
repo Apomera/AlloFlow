@@ -1070,7 +1070,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         { id: 'recognize', icon: '👁️', label: __alloT('stem.firstresponse.recognize', 'Recognize'), desc: __alloT('stem.firstresponse.visual_signs_of_12_emergencies_quiz_at', 'Visual signs of 12 emergencies. Quiz at the end.'), ready: true },
         { id: 'call', icon: '📞', label: __alloT('stem.firstresponse.call_911_988', 'Call (911 + 988)'), desc: __alloT('stem.firstresponse.what_to_say_text_to_911_when_988_vs_91', 'What to say. Text-to-911. When 988 vs 911.'), ready: true },
         { id: 'cprAed', icon: '❤️', label: __alloT('stem.firstresponse.cpr_aed', 'CPR + AED'), desc: __alloT('stem.firstresponse.hands_only_rhythm_trainer_aed_walkthro', 'Hands-only rhythm trainer. AED walkthrough.'), ready: true },
-        { id: 'body3d', icon: '🫀', label: __alloT('stem.firstresponse.body_position_3d', 'Body position (3D)'), desc: __alloT('stem.firstresponse.body_position_3d_desc', 'Where your hands go — adult, child, infant. Depth and recoil. AED pad placement. The recovery position. Then ' + CALL_CASES.length + ' scenarios that make you combine them.'), ready: true },
+        { id: 'body3d', icon: '🫀', label: __alloT('stem.firstresponse.body_position_3d', 'Body position (3D)'), desc: __alloT('stem.firstresponse.body_position_3d_desc', 'Where your hands go — adult, child, infant. Depth and recoil. AED pad placement. The recovery position. Then {count} scenarios that make you combine them.').replace('{count}', CALL_CASES.length), ready: true },
         { id: 'bleed', icon: '🩸', label: __alloT('stem.firstresponse.stop_the_bleed', 'Stop the Bleed'), desc: __alloT('stem.firstresponse.pressure_packing_tourniquet', 'Pressure → packing → tourniquet.'), ready: true },
         { id: 'choking', icon: '😬', label: __alloT('stem.firstresponse.choking', 'Choking'), desc: __alloT('stem.firstresponse.infant_child_adult_pregnant_alone', 'Infant, child, adult, pregnant, alone.'), ready: true },
         { id: 'disabilityAware', icon: '♾️', label: __alloT('stem.firstresponse.disability_aware_response', 'Disability-aware response'), desc: __alloT('stem.firstresponse.deaf_hoh_autistic_epilepsy_hidden_disa', 'Deaf/HoH, autistic, epilepsy, hidden disability.'), ready: true },
@@ -3995,7 +3995,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                     ? ageInfo.where + ' ' + ageInfo.hands
                     : placedZone.why,
                   placedZone.verdict === 'correct' ? 'ok' : (placedZone.verdict === 'harm' ? 'bad' : 'warn')),
-                note(__alloT('stem.firstresponse.b3d_age_hands', ageInfo.icon + ' ' + ageInfo.label + ' — what changes'),
+                note(__alloT('stem.firstresponse.b3d_age_hands', '{age} — what changes').replace('{age}', ageInfo.icon + ' ' + ageInfo.label),
                   ageInfo.hands, 'ok')
               ),
 

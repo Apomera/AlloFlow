@@ -8,8 +8,10 @@
 //
 // This is the same defect found in Word Sounds (111 keys called but never
 // registered). Measured across stem_lab on 2026-07-28: 13 tools were in this
-// state. areaperimeter has been fixed; the rest are baselined below so the
-// category cannot grow while it is worked through.
+// state. All were fixed by 2026-08-03 (areaperimeter by hand; the remaining
+// 11 tools' 730 keys extracted with their in-code English fallbacks). The
+// baseline is now EMPTY and must stay that way: register keys in ui_strings
+// in the same change that introduces them.
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { createRequire } from 'node:module';
@@ -20,11 +22,7 @@ const require = createRequire(import.meta.url);
 
 // Tools known to call keys that are not yet in ui_strings. Shrink this list as
 // each is extracted; never add to it.
-const BASELINE_UNREGISTERED = new Set([
-  'arithmetic', 'circuitshelf', 'freeforms', 'magnetism',
-  'moleculeshelf', 'ratios', 'simshelf', 'spacestation', 'timeline',
-  'timeschedule', 'zoomgallery',
-]);
+const BASELINE_UNREGISTERED = new Set([]);
 
 let acorn, ui, tools;
 
