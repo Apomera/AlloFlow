@@ -77,4 +77,29 @@ describe('Economics Lab investing deep-dives', () => {
     expect(source).toMatch(/if \(d\.paQuizDone\) econAchievements\.push/);
     expect(source).toMatch(/if \(d\.mcRanRetire\) econAchievements\.push/);
   });
+
+  it('keeps the custom ride mean-preserving: swing is symmetric around +7', () => {
+    // rvMk(7 + rvSwing, 7 - rvSwing) — any asymmetry would break the panel's
+    // "same average" premise the moment the student touches the slider.
+    expect(slice).toContain('rvMk(7 + rvSwing, 7 - rvSwing)');
+  });
+
+  it('derives drift from the shared asset assumptions, not magic numbers', () => {
+    // paDrift must compound each sleeve at ivAsset rates so the drift demo
+    // stays consistent with the stats tiles if the assumptions ever change.
+    const driftStart = slice.indexOf('var paDrift');
+    expect(driftStart).toBeGreaterThan(-1);
+    const driftBody = slice.slice(driftStart, slice.indexOf('};', driftStart));
+    expect(driftBody).toContain('ivAsset.stocks.ret');
+    expect(driftBody).toContain('ivAsset.bonds.ret');
+    expect(driftBody).toContain('ivAsset.cash.ret');
+  });
+
+  it('drift demo re-evaluates risk at drifted weights via the shared stats fn', () => {
+    expect(slice).toContain('ivStatsAt(paD20.s, paD20.b)');
+  });
+
+  it('registers the investor-profile quest hook', () => {
+    expect(source).toMatch(/id: 'investor_profile'/);
+  });
 });

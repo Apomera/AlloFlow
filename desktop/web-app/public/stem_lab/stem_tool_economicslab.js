@@ -119,7 +119,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
     questHooks: [
       { id: 'explore_supply_demand', label: 'Explore supply and demand curves', icon: '\uD83D\uDCC8', check: function(d) { return (d.sdDemandShift || 0) !== 0 || (d.sdSupplyShift || 0) !== 0; }, progress: function(d) { return (d.sdDemandShift || d.sdSupplyShift) ? 'Exploring!' : 'Shift a curve'; } },
       { id: 'set_price_control', label: 'Set a price floor or ceiling', icon: '\uD83D\uDCB0', check: function(d) { return (d.sdPriceFloor || 0) > 0 || (d.sdPriceCeiling || 0) > 0; }, progress: function(d) { return (d.sdPriceFloor || d.sdPriceCeiling) ? 'Set!' : 'Not yet'; } },
-      { id: 'explore_3_tabs', label: 'Explore 3 economics topics', icon: '\uD83C\uDF0D', check: function(d) { return Object.keys(d.tabsViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.tabsViewed || {}).length + '/3 topics'; } }
+      { id: 'explore_3_tabs', label: 'Explore 3 economics topics', icon: '\uD83C\uDF0D', check: function(d) { return Object.keys(d.tabsViewed || {}).length >= 3; }, progress: function(d) { return Object.keys(d.tabsViewed || {}).length + '/3 topics'; } },
+      { id: 'investor_profile', label: 'Discover your investor profile', icon: '\uD83E\uDDED', check: function(d) { return !!d.paQuizDone; }, progress: function(d) { return d.paQuizDone ? 'Profiled!' : 'Take the quiz'; } }
     ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
@@ -4319,11 +4320,17 @@ var d = labToolData || {};
                 var paCash = 100 - paStocks - paBonds;
 
                 var ivAsset = { stocks: { ret: 10, vol: 17 }, bonds: { ret: 4, vol: 6 }, cash: { ret: 1.5, vol: 1 } };
-                var ivMean = (paStocks * ivAsset.stocks.ret + paBonds * ivAsset.bonds.ret + paCash * ivAsset.cash.ret) / 100;
-                var ivWS = paStocks / 100 * ivAsset.stocks.vol;
-                var ivWB = paBonds / 100 * ivAsset.bonds.vol;
-                // Modest stock/bond correlation (0.2); cash treated as ~riskless.
-                var ivVol = Math.sqrt(ivWS * ivWS + ivWB * ivWB + 2 * 0.2 * ivWS * ivWB);
+                // Mean/vol for ANY weight pair — the drift demo re-evaluates these at
+                // future, drifted weights. Modest stock/bond correlation (0.2); cash ~riskless.
+                var ivStatsAt = function (ws, wb) {
+                  var wc = Math.max(0, 100 - ws - wb);
+                  var m = (ws * ivAsset.stocks.ret + wb * ivAsset.bonds.ret + wc * ivAsset.cash.ret) / 100;
+                  var a = ws / 100 * ivAsset.stocks.vol, b = wb / 100 * ivAsset.bonds.vol;
+                  return { mean: m, vol: Math.sqrt(a * a + b * b + 2 * 0.2 * a * b) };
+                };
+                var ivStats = ivStatsAt(paStocks, paBonds);
+                var ivMean = ivStats.mean;
+                var ivVol = ivStats.vol;
 
                 var ivFmt = function (v) { return '$' + Math.round(v).toLocaleString(); };
 
@@ -4363,6 +4370,17 @@ var d = labToolData || {};
                 };
 
                 var paBadYear = 10000 * (1 + (ivMean - 2 * ivVol) / 100);
+
+                // Deterministic allocation drift: each sleeve compounds at its own
+                // expected rate, so the stock share creeps up until rebalanced.
+                var paDrift = function (yrs) {
+                  var vs = paStocks * Math.pow(1 + ivAsset.stocks.ret / 100, yrs);
+                  var vb = paBonds * Math.pow(1 + ivAsset.bonds.ret / 100, yrs);
+                  var vc = paCash * Math.pow(1 + ivAsset.cash.ret / 100, yrs);
+                  var tot = (vs + vb + vc) || 1;
+                  var ds = Math.round(vs / tot * 100), db = Math.round(vb / tot * 100);
+                  return { s: ds, b: db, c: Math.max(0, 100 - ds - db) };
+                };
 
                 var paPanel = React.createElement('div', null,
                   React.createElement('p', { className: 'text-[11px] text-slate-600 mb-2 m-0' }, t('stem.economicslab.iv_pa_intro', 'Real investors don’t just pick stocks — they decide how to split money across asset types. Answer 3 questions to find your risk profile, then build your mix.')),
@@ -4415,15 +4433,40 @@ var d = labToolData || {};
                       React.createElement('div', { className: 'text-[10px] text-slate-600' }, t('stem.economicslab.iv_bad_year', 'Bad year, on $10K')),
                       React.createElement('div', { className: 'text-sm font-bold text-red-500' }, ivFmt(paBadYear)))),
                   paDone && Math.abs(paStocks - paProfile.stocks) > 15 && React.createElement('div', { className: 'mt-2 text-[11px] text-amber-700 bg-amber-50 rounded-lg p-2 border border-amber-100' },
-                    t('stem.economicslab.iv_pa_mismatch', '🧭 Your mix is quite far from your quiz profile. That’s allowed — but know why: more stocks = more growth and bigger drops; fewer = calmer ride, slower growth.')));
+                    t('stem.economicslab.iv_pa_mismatch', '🧭 Your mix is quite far from your quiz profile. That’s allowed — but know why: more stocks = more growth and bigger drops; fewer = calmer ride, slower growth.')),
+                  paStocks > 0 && paStocks < 95 && (function () {
+                    var paD10 = paDrift(10), paD20 = paDrift(20);
+                    var paBadNow = ivMean - 2 * ivVol;
+                    var paStats20 = ivStatsAt(paD20.s, paD20.b);
+                    var paBad20 = paStats20.mean - 2 * paStats20.vol;
+                    var paRow = function (lbl, w) {
+                      return React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
+                        React.createElement('span', { className: 'text-[10px] font-bold text-slate-600 w-14 shrink-0' }, lbl),
+                        React.createElement('div', { className: 'flex h-4 rounded overflow-hidden border border-slate-300 flex-1', role: 'img', 'aria-label': lbl + ': ' + w.s + '% ' + t('stem.economicslab.iv_stocks', 'stocks') + ', ' + w.b + '% ' + t('stem.economicslab.iv_bonds', 'bonds') + ', ' + w.c + '% ' + t('stem.economicslab.iv_cash', 'cash') },
+                          paSeg(w.s, '#9333ea', ''), paSeg(w.b, '#2563eb', ''), paSeg(w.c, '#64748b', '')),
+                        React.createElement('span', { className: 'text-[10px] text-slate-600 w-16 shrink-0 text-right' }, w.s + '/' + w.b + '/' + w.c));
+                    };
+                    return React.createElement('div', { className: 'mt-3 bg-white rounded-lg p-2 border border-slate-200' },
+                      React.createElement('h5', { className: 'text-[11px] font-bold text-slate-700 mb-1 m-0' }, t('stem.economicslab.iv_drift_title', '🔄 If you never rebalance…')),
+                      paRow(t('stem.economicslab.iv_drift_now', 'Now'), { s: paStocks, b: paBonds, c: paCash }),
+                      paRow(t('stem.economicslab.iv_drift_y10', 'Year 10'), paD10),
+                      paRow(t('stem.economicslab.iv_drift_y20', 'Year 20'), paD20),
+                      React.createElement('p', { className: 'text-[11px] text-slate-600 mt-1 m-0' },
+                        t('stem.economicslab.iv_drift_lesson1', 'Stocks outgrow the rest, so your mix quietly drifts stock-heavy: a typical bad year worsens from') + ' ' + paBadNow.toFixed(0) + '% ' + t('stem.economicslab.iv_drift_lesson2', 'today to') + ' ' + paBad20.toFixed(0) + '% ' + t('stem.economicslab.iv_drift_lesson3', 'at year 20. Rebalancing — selling a little of what grew, topping up the rest — keeps the risk you actually chose.')));
+                  })());
 
                 // ── Panel 2: Risk Visualizer (volatility drag, deterministic) ──
                 var rvMk = function (a, b) { var rr = []; for (var ri = 0; ri < 10; ri++) rr.push(ri % 2 === 0 ? a : b); return rr; };
-                var rvSeries = [
+                var rvSwing = d.rvSwing !== undefined ? d.rvSwing : 0;
+                var rvBase = [
                   { name: t('stem.economicslab.iv_rv_steady', 'Steady Eddie'), color: '#059669', rets: rvMk(7, 7) },
                   { name: t('stem.economicslab.iv_rv_wild', 'Wild Ride'), color: '#dc2626', rets: rvMk(32, -18) },
                   { name: t('stem.economicslab.iv_rv_mix', '50/50 mix, rebalanced'), color: '#4f46e5', rets: rvMk(19.5, -5.5) }
-                ].map(function (sr) {
+                ];
+                // Symmetric swing keeps the arithmetic mean pinned at +7% — the point
+                // of the whole demo — while the student dials the variance.
+                if (rvSwing > 0) rvBase.push({ name: t('stem.economicslab.iv_rv_custom', 'Your ride') + ' (±' + rvSwing + ')', color: '#d97706', rets: rvMk(7 + rvSwing, 7 - rvSwing) });
+                var rvSeries = rvBase.map(function (sr) {
                   var v = 10000, peak = 10000, dd = 0, pts = [10000];
                   sr.rets.forEach(function (r) { v *= 1 + r / 100; if (v > peak) peak = v; var drop = (peak - v) / peak; if (drop > dd) dd = drop; pts.push(v); });
                   return { name: sr.name, color: sr.color, pts: pts, end: v, dd: dd };
@@ -4452,6 +4495,10 @@ var d = labToolData || {};
                         React.createElement('span', { className: 'font-bold' }, sr.name),
                         React.createElement('span', null, t('stem.economicslab.iv_rv_ends', 'ends') + ' ' + ivFmt(sr.end) + ' · ' + t('stem.economicslab.iv_rv_worst_drop', 'worst drop') + ' −' + (sr.dd * 100).toFixed(0) + '%'));
                     })),
+                  React.createElement('label', { className: 'text-[11px] text-slate-600 font-bold block mt-2' }, t('stem.economicslab.iv_rv_swing', 'Build your own ride — yearly swing') + ': ±' + rvSwing + '%',
+                    React.createElement('input', { type: 'range', min: 0, max: 25, step: 1, value: rvSwing, 'aria-label': t('stem.economicslab.iv_rv_swing_aria', 'Yearly swing percent for your custom ride'), onChange: function (e) { upd('rvSwing', +e.target.value); }, className: 'w-full' })),
+                  rvSwing > 0 && React.createElement('p', { className: 'text-[11px] text-amber-700 m-0 mt-1' },
+                    t('stem.economicslab.iv_rv_swing_result1', 'Alternating') + ' +' + (7 + rvSwing) + '% / ' + (7 - rvSwing >= 0 ? '+' : '') + (7 - rvSwing) + '% ' + t('stem.economicslab.iv_rv_swing_result2', 'still averages +7% — but the swings cost') + ' ' + ivFmt(rvSeries[0].end - rvSeries[3].end) + ' ' + t('stem.economicslab.iv_rv_swing_result3', 'over 10 years vs the steady line.')),
                   React.createElement('div', { className: 'mt-2 text-[11px] text-indigo-700 bg-indigo-50 rounded-lg p-2 border border-indigo-100' },
                     t('stem.economicslab.iv_rv_lesson', '📚 Same average, different endings: big losses hurt more than equal-sized gains help (volatility drag). Splitting money between the two and rebalancing every year recovers most of the gap — that’s what diversification buys, and why "risk" means more than "some red days."')));
 
