@@ -1905,27 +1905,54 @@ function createVoiceLoop(getCtx) {
       }
     }
   };
-  let speaking = false, speakSerial = 0;
+  let speaking = false, speakSerial = 0, replyAudio = null;
   // Spoken replies close the hands-free loop: across the room a toast is
   // invisible. The mic is stopped for the duration of the utterance so the
   // recognizer never transcribes our own reply back into a command, then
-  // restarted by the utterance's end handler (rec.onend skips its usual
-  // restart while `speaking`). speechSynthesis is on-device — no audio
-  // leaves the machine for replies. Opt-out via the toggle_voice_replies
-  // command (localStorage allo_voice_speak_replies = "off").
+  // restarted by the reply's end handler (rec.onend skips its usual restart
+  // while `speaking`; the whisper engine drops frames). Preference order:
+  // Kokoro (the app's neural voice — on-device once its model is loaded,
+  // speak() hands back a blob URL we play ourselves) → speechSynthesis only
+  // as the until-Kokoro-loads fallback. Both are on-device; no audio leaves
+  // the machine for replies. Opt-out via the toggle_voice_replies command
+  // (localStorage allo_voice_speak_replies = "off").
   const speakReply = (msg, c) => {
     if (!c || c.voiceSpeakReplies === false) return;
+    const my = ++speakSerial;
+    const text = String(msg || "").slice(0, 300);
+    const resume = () => {
+      if (speakSerial !== my || !speaking) return;
+      speaking = false;
+      if (active && rec) { try { rec.start(); } catch (_) {} }
+    };
+    try {
+      if (window._kokoroTTS && window._kokoroTTS.ready && typeof window._kokoroTTS.speak === "function") {
+        const sel = c && c.selectedVoice;
+        const kv = typeof sel === "string" && (sel.indexOf("af_") === 0 || sel.indexOf("am_") === 0) ? sel : "af_heart";
+        if (replyAudio) { try { replyAudio.pause(); } catch (_) {} replyAudio = null; }
+        speaking = true;
+        if (active && rec) { try { rec.stop(); } catch (_) {} }
+        Promise.resolve(window._kokoroTTS.speak(text, kv, 1)).then((url) => {
+          if (speakSerial !== my) return; // superseded while synthesizing
+          if (!url) { resume(); return; }
+          const a = new Audio(url);
+          replyAudio = a;
+          a.onended = resume;
+          a.onerror = resume;
+          Promise.resolve(a.play()).catch(resume);
+        }).catch(resume);
+        // Synthesis + playback ceiling; never leave the mic dead.
+        setTimeout(resume, 30e3);
+        return;
+      }
+    } catch (_) {
+      speaking = false;
+    }
     if (!window.speechSynthesis || typeof SpeechSynthesisUtterance !== "function") return;
     try {
-      const my = ++speakSerial;
       window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(String(msg || "").slice(0, 300));
+      const u = new SpeechSynthesisUtterance(text);
       u.lang = (c && c.voiceLang) || "en-US";
-      const resume = () => {
-        if (speakSerial !== my || !speaking) return;
-        speaking = false;
-        if (active && rec) { try { rec.start(); } catch (_) {} }
-      };
       u.onend = resume;
       u.onerror = resume;
       speaking = true;
@@ -1981,6 +2008,7 @@ function createVoiceLoop(getCtx) {
     standby = false;
     awake = false;
     if (awakeTimer) { clearTimeout(awakeTimer); awakeTimer = null; }
+    if (replyAudio) { try { replyAudio.pause(); } catch (_) {} replyAudio = null; }
     const c = getCtx();
     try {
       if (c && c.setVoiceActive) c.setVoiceActive(false);

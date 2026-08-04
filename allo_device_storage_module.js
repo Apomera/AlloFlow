@@ -659,7 +659,16 @@
               (all.result || []).forEach(function (r) {
                 var b = by[r.ns] = by[r.ns] || { ns: r.ns, count: 0, bytes: 0 };
                 b.count++;
-                try { b.bytes += typeof r.value === 'string' ? r.value.length : JSON.stringify(r.value).length; } catch (_) {}
+                try {
+                  var bv = r.value;
+                  // Binary values (model weights, media) stringify to nothing —
+                  // count their real bytes so the Storage manager stays honest.
+                  if (typeof bv === 'string') b.bytes += bv.length;
+                  else if (bv && bv instanceof ArrayBuffer) b.bytes += bv.byteLength;
+                  else if (bv && ArrayBuffer.isView(bv)) b.bytes += bv.byteLength;
+                  else if (bv && typeof Blob !== 'undefined' && bv instanceof Blob) b.bytes += bv.size || 0;
+                  else b.bytes += JSON.stringify(bv).length;
+                } catch (_) {}
               });
               result = Object.keys(by).sort().map(function (k) { return by[k]; });
             };

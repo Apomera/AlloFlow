@@ -799,6 +799,34 @@ describe('model cache', () => {
     expect(AC.getCommandContract('download_voice_models').demoSafe).toBe(false); // never auto-runs in a demo
   });
 
+  it('replies prefer Kokoro (neural, on-device) and only fall back to speechSynthesis', () => {
+    const mod = readFileSync('allo_commands_module.js', 'utf-8');
+    const speak = mod.slice(mod.indexOf('const speakReply'), mod.indexOf('const announce'));
+    // Kokoro branch comes FIRST and returns; speechSynthesis is the fallback.
+    expect(speak.indexOf('_kokoroTTS')).toBeGreaterThan(-1);
+    expect(speak.indexOf('_kokoroTTS')).toBeLessThan(speak.indexOf('speechSynthesis.cancel'));
+    // Only when the model is actually loaded — a reply must never trigger a download.
+    expect(speak).toContain('window._kokoroTTS.ready');
+    // Mic-mute handshake keys off the Audio element lifecycle + a hard ceiling.
+    expect(speak).toContain('a.onended = resume');
+    expect(speak).toContain('setTimeout(resume, 30e3)');
+    // A superseded reply can never resume the mic mid-new-speech.
+    expect(speak).toContain('if (speakSerial !== my) return; // superseded while synthesizing');
+    // Voice whitelist: Kokoro ids only, af_heart default.
+    expect(speak).toMatch(/indexOf\("af_"\) === 0 \|\| sel\.indexOf\("am_"\) === 0/);
+    // stop() silences a playing reply.
+    expect(mod).toContain('if (replyAudio) { try { replyAudio.pause(); } catch (_) {} replyAudio = null; }');
+  });
+
+  it('storage byte estimator counts binary values in module, mirror, and bridge page', () => {
+    for (const path of ['allo_device_storage_module.js', 'desktop/web-app/public/allo_device_storage_module.js']) {
+      const code = readFileSync(path, 'utf-8');
+      expect(code, path).toContain('bv instanceof ArrayBuffer) b.bytes += bv.byteLength');
+      expect(code, path).toContain('ArrayBuffer.isView(bv)) b.bytes += bv.byteLength');
+    }
+    expect(readFileSync('storage_bridge.html', 'utf-8')).toContain('ArrayBuffer.isView(r.value)) ? r.value.byteLength');
+  });
+
   it('voice loop auto-policy hook exists and stays silent on failure', () => {
     const mod = readFileSync('allo_commands_module.js', 'utf-8');
     const hook = mod.slice(mod.indexOf('Policy \'auto\': first voice use'), mod.indexOf('Policy \'auto\': first voice use') + 900);
