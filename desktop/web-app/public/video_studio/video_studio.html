@@ -491,10 +491,14 @@
       </div>
       <div class="status" id="demoStatus" role="status" aria-live="polite" aria-atomic="true"></div>
     </div>
-    <details id="coachPanel" style="border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:0 0 8px">
+    <details id="coachPanel" open style="border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:0 0 8px">
       <summary style="cursor:pointer;font-weight:700">🧭 Screen Coach (beta) — AI guidance for ANY captured tab</summary>
-      <p class="status" style="margin-top:8px">Capture any tab or window with Start recording (you can discard the take afterward), tell the coach your goal, and it suggests the next step with a highlight drawn on the preview. The coach can only <strong>advise — you do the clicking</strong>; it cannot touch the other page, and highlight positions are AI estimates. Each suggestion sends ONE downscaled frame of the captured surface to Gemini.</p>
+      <p class="status" style="margin-top:8px">Pick any tab or window with <strong>Watch without recording</strong> (nothing is saved) or capture it with Start recording, tell the coach your goal, and it suggests the next step with a highlight drawn on the preview. The coach can only <strong>advise — you do the clicking</strong>; it cannot touch the other page, and highlight positions are AI estimates. Each suggestion sends ONE downscaled frame of the captured surface to Gemini.</p>
       <label class="status" style="display:block;margin:6px 0"><input type="checkbox" id="coachPrivacyAck"> I checked that the captured surface shows no student-identifying information</label>
+      <div class="row" style="margin-top:6px">
+        <button class="quiet" id="coachWatchBtn">👁 Watch without recording</button>
+        <button class="quiet" id="coachPipBtn" title="Floating always-on-top mirror of the coached screen (Chromium only)">🪟 Float on top</button>
+      </div>
       <div class="row" style="margin-top:6px">
         <input type="text" id="coachGoal" maxlength="300" placeholder="What are you trying to do? e.g. export grades as a CSV" aria-label="Screen Coach goal" style="flex-grow:1;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px">
         <button class="action" id="coachSuggestBtn">💡 Suggest next step</button>
@@ -5319,6 +5323,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     $('startBtn').disabled = true;
     setStatus($('recStatus'), 'Choose what to share in the picker…');
     var stream;
+    // A watch-only coach session owns the preview element; recording takes over.
+    try { if (coachWatchStream) stopCoachWatch(); } catch (_) {}
     try {
       stream = await buildStream();
     } catch (e) {
@@ -5416,7 +5422,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   function teardownStreams() {
     cancelAnimationFrame(pipRaf); pipRaf = 0;
     // Capture is gone: the coach has nothing to watch or point at.
-    try { stopCoachAuto(); hideCoachOverlay(); } catch (_) {}
+    try { stopCoachAuto(); hideCoachOverlay(); stopCoachPip(); } catch (_) {}
     recStreams.forEach(function (s) { try { s.getTracks().forEach(function (t) { t.stop(); }); } catch (_) {} });
     recStreams = [];
     activeMicStream = null;
@@ -14179,9 +14185,98 @@ function buildContactSheet(t, count, shouldCancel) {
   var coachAutoTimer = null;
   var coachBusy = false;
   var coachHistory = [];
+  var coachWatchStream = null;
+  var coachPipWin = null, coachPipRaf = 0, coachLastAdvice = null;
   function coachCaptureActive() {
     var v = $('previewVideo');
-    return !!(v && v.srcObject && v.videoWidth > 0 && rec && rec.state !== 'inactive');
+    return !!(v && v.srcObject && v.videoWidth > 0 && (coachWatchStream || (rec && rec.state !== 'inactive')));
+  }
+  // Watch-only mode: a live capture with NO MediaRecorder — nothing is ever
+  // saved, frames leave only when a suggestion is requested. The browser's
+  // "sharing this screen" bar is the always-visible truth signal, and its
+  // Stop-sharing button ends the watch (track.onended).
+  async function startCoachWatch() {
+    if (rec && rec.state !== 'inactive') { setStatus($('coachStatus'), 'Recording is already capturing — the coach is watching that take.', 'ok'); return; }
+    if (coachWatchStream) { stopCoachWatch(); return; }
+    try {
+      var s = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+      coachWatchStream = s;
+      var v = $('previewVideo');
+      v.srcObject = s;
+      v.hidden = false;
+      $('stagePlaceholder').style.display = 'none';
+      var track = s.getVideoTracks()[0];
+      if (track) track.onended = stopCoachWatch;
+      $('coachWatchBtn').textContent = '⏹ Stop watching';
+      setStatus($('coachStatus'), 'Watching (not recording). Nothing is saved; a frame goes to Gemini only when you ask for a suggestion.', 'ok');
+      announce('Screen Coach is watching — nothing is being recorded');
+    } catch (e) {
+      setStatus($('coachStatus'), 'Could not start watching: ' + ((e && e.name) || 'error') + '. Pick a tab or window in the share dialog.', 'warn');
+    }
+  }
+  function stopCoachWatch() {
+    if (!coachWatchStream) return;
+    try { coachWatchStream.getTracks().forEach(function (tr) { tr.stop(); }); } catch (_) {}
+    coachWatchStream = null;
+    stopCoachAuto();
+    hideCoachOverlay();
+    stopCoachPip();
+    var v = $('previewVideo');
+    if (!rec || rec.state === 'inactive') {
+      v.srcObject = null;
+      v.hidden = true;
+      $('stagePlaceholder').style.display = '';
+    }
+    $('coachWatchBtn').textContent = '👁 Watch without recording';
+    setStatus($('coachStatus'), 'Stopped watching — the capture is released.', 'ok');
+  }
+  // Floating always-on-top mirror (Document Picture-in-Picture, Chromium):
+  // the annotated view hovers over the user's real browsing while they act.
+  async function toggleCoachPip() {
+    if (coachPipWin) { stopCoachPip(); return; }
+    if (!window.documentPictureInPicture) { setStatus($('coachStatus'), 'Floating mode needs a Chromium browser with Document Picture-in-Picture.', 'warn'); return; }
+    if (!coachCaptureActive()) { setStatus($('coachStatus'), 'Start watching or recording first — the floating window mirrors the capture.', 'warn'); return; }
+    try {
+      var w = await window.documentPictureInPicture.requestWindow({ width: 480, height: 340 });
+      coachPipWin = w;
+      w.document.body.style.cssText = 'margin:0;background:#000;overflow:hidden;font-family:system-ui,sans-serif';
+      var pc = w.document.createElement('canvas');
+      pc.style.cssText = 'width:100%;display:block';
+      var bar = w.document.createElement('div');
+      bar.style.cssText = 'position:fixed;left:0;right:0;bottom:0;background:rgba(15,23,42,.92);color:#fff;font-size:13px;padding:6px 9px;line-height:1.35';
+      bar.textContent = '🧭 Screen Coach — suggestions appear here.';
+      w.document.body.appendChild(pc);
+      w.document.body.appendChild(bar);
+      coachPipWin.__coachBar = bar;
+      w.addEventListener('pagehide', function () { coachPipWin = null; });
+      var draw = function () {
+        if (!coachPipWin) return;
+        var v = $('previewVideo');
+        if (v && v.videoWidth) {
+          if (pc.width !== v.videoWidth) { pc.width = v.videoWidth; pc.height = v.videoHeight; }
+          var g = pc.getContext('2d');
+          g.drawImage(v, 0, 0, pc.width, pc.height);
+          if (coachLastAdvice && coachLastAdvice.target) {
+            var b = coachLastAdvice.target;
+            g.strokeStyle = '#f59e0b';
+            g.lineWidth = Math.max(3, Math.round(pc.width / 320));
+            g.strokeRect(b.x * pc.width, b.y * pc.height, b.w * pc.width, b.h * pc.height);
+          }
+        }
+        coachPipRaf = requestAnimationFrame(draw);
+      };
+      draw();
+      setStatus($('coachStatus'), 'Floating coach opened — it stays on top while you work in the other tab.', 'ok');
+    } catch (e) {
+      coachPipWin = null;
+      setStatus($('coachStatus'), 'Floating window failed: ' + String((e && e.message) || e).slice(0, 120), 'warn');
+    }
+  }
+  function stopCoachPip() {
+    var w = coachPipWin;
+    coachPipWin = null;
+    cancelAnimationFrame(coachPipRaf);
+    if (w) { try { w.close(); } catch (_) {} }
   }
   function hideCoachOverlay() {
     var o = $('coachOverlay');
@@ -14262,6 +14357,8 @@ function buildContactSheet(t, count, shouldCancel) {
     var guidance = String(resp.guidance || '').slice(0, 400);
     if (!guidance) { setStatus($('coachStatus'), 'The coach had no suggestion for this screen.', 'warn'); return; }
     coachHistory.push(guidance);
+    coachLastAdvice = resp;
+    if (coachPipWin && coachPipWin.__coachBar) coachPipWin.__coachBar.textContent = (resp.done ? '✅ ' : '👉 ') + guidance;
     var li = document.createElement('li');
     li.className = 'status';
     li.textContent = guidance;
@@ -14274,6 +14371,9 @@ function buildContactSheet(t, count, shouldCancel) {
     if (resp.done) stopCoachAuto();
   }
   $('coachSuggestBtn').addEventListener('click', function () { runCoachSuggest(false); });
+  $('coachWatchBtn').addEventListener('click', startCoachWatch);
+  $('coachPipBtn').addEventListener('click', toggleCoachPip);
+  if (!window.documentPictureInPicture) $('coachPipBtn').hidden = true;
   $('coachAutoChk').addEventListener('change', function () {
     if (this.checked) {
       if (!coachCaptureActive()) { this.checked = false; setStatus($('coachStatus'), 'Start a capture first, then turn on auto-coaching.', 'warn'); return; }

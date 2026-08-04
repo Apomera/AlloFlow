@@ -3365,4 +3365,35 @@ describe('screen coach', () => {
     // Overlay never intercepts clicks meant for the popup.
     expect(coachHtml).toContain('id="coachOverlay" hidden aria-hidden="true" style="position:absolute;left:0;top:0;max-width:none;max-height:none;pointer-events:none');
   });
+
+  it('v2: watch-only mode records nothing and dies with the share bar', () => {
+    const watch = coachHtml.slice(coachHtml.indexOf('async function startCoachWatch'), coachHtml.indexOf('async function toggleCoachPip'));
+    expect(watch).toContain('getDisplayMedia({ video: true, audio: false })'); // no mic in watch mode
+    expect(watch).toContain('track.onended = stopCoachWatch'); // browser Stop-sharing ends it
+    expect(watch).toContain('Nothing is saved');
+    expect(watch).not.toContain('MediaRecorder'); // watch mode never records
+    // Recording takes over the preview cleanly.
+    expect(coachHtml).toContain('if (coachWatchStream) stopCoachWatch();');
+    // Releasing the watch stops the tracks (mic-indicator honesty).
+    expect(watch).toContain('coachWatchStream.getTracks().forEach(function (tr) { tr.stop(); })');
+  });
+
+  it('v2: floating PiP mirror is feature-detected and torn down with the capture', () => {
+    expect(coachHtml).toContain("if (!window.documentPictureInPicture) $('coachPipBtn').hidden = true;");
+    const pip = coachHtml.slice(coachHtml.indexOf('async function toggleCoachPip'), coachHtml.indexOf('function stopCoachPip'));
+    expect(pip).toContain('documentPictureInPicture.requestWindow');
+    expect(pip).toContain('coachLastAdvice.target'); // annotations ride the mirror
+    const teardown = coachHtml.slice(coachHtml.indexOf('function teardownStreams'), coachHtml.indexOf('function finalizeTake'));
+    expect(teardown).toContain('stopCoachPip()');
+    // The coach panel is visible by default now — discoverability.
+    expect(coachHtml).toContain('<details id="coachPanel" open');
+  });
+
+  it('v2: open_screen_coach command exists, demo-blocked, routed to the same panel', () => {
+    const cmd = readFileSync(resolve(process.cwd(), 'allo_commands_module.js'), 'utf-8');
+    expect(cmd).toContain('id: "open_screen_coach", opensPanel: "videoStudio"');
+    expect(cmd).toContain('"coach me"');
+    expect(cmd).toMatch(/open_screen_coach: \{\s*demoSafe: false/);
+    expect(readFileSync(resolve(process.cwd(), 'desktop/web-app/public/allo_commands_module.js'), 'utf-8')).toBe(cmd);
+  });
 });

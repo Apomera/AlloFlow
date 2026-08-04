@@ -337,6 +337,10 @@ const PLAN_CONTRACTS = Object.freeze({
     demoSafe: false,
     reason: "Opens the recorder/editor itself; compose and run automatic demos from Video Studio instead."
   },
+  open_screen_coach: {
+    demoSafe: false,
+    reason: "Opens the recorder popup that hosts the coach; a demo cannot meaningfully drive it."
+  },
   generate_quiz: { requires: ["source"], produces: ["quiz"] },
   generate_glossary: { requires: ["source"], produces: ["glossary"] },
   generate_simplified: { requires: ["source"], produces: ["source"], params: ["grade"] },
@@ -831,6 +835,10 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: "open_video_studio", opensPanel: "videoStudio", icon: "\u{1F3A5}", roles: "teacher", label: t("cmd.open_video_studio", "Open Video Studio"), aliases: ["video studio", "screen recorder", "record a demo", "demo recorder", "tutorial recorder"], hint: t("cmd.open_video_studio_hint", "Record, caption, and edit walkthroughs"), run: (c) => {
       c.openVideoStudio();
       return t("cmd.open_video_studio_done", "Video Studio opened.");
+    } },
+    { id: "open_screen_coach", opensPanel: "videoStudio", icon: "\u{1F9ED}", roles: "teacher", when: (c) => typeof c.openVideoStudio === "function", label: t("cmd.open_screen_coach", "Open the Screen Coach"), aliases: ["screen coach", "coach me", "guide me through", "help me use another site", "watch my screen"], hint: t("cmd.open_screen_coach_hint", "AI guidance over any tab you capture — it advises with on-screen highlights; you do the clicking"), run: (c) => {
+      c.openVideoStudio();
+      return t("cmd.open_screen_coach_done", "Opening Video Studio — the Screen Coach panel is at the top of the Record tab. Use “Watch without recording” to coach without saving anything.");
     } },
     { id: "open_cinematic_studio", opensPanel: "cinematicStudio", icon: "\u{1F3AC}", roles: "teacher", label: t("cmd.open_cinematic_studio", "Open Cinematic Studio"), aliases: ["cinematic studio", "cinematic crawl", "title crawl", "intro video", "video opener"], hint: t("cmd.open_cinematic_studio_hint", "Create cinematic intros and explainers"), run: (c) => {
       c.openCinematicStudio();
