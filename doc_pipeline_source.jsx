@@ -2579,6 +2579,444 @@ function _alloJoinOrderedTextItems(items, rtl) {
   return out;
 }
 
+// ── Content-stream text extraction (mechanism 2 fix, 2026-08-04) ────────────
+// pdf.js (3.11 AND 6.x — measured, mcp-testing/tools/pdfjs_probe.mjs) inserts
+// spurious spaces INSIDE the text items it emits for some kerned documents:
+// "legal p ermanent resident of the U nited S tates" arrives as ONE item, so
+// no join logic can repair it. This is a from-the-bytes second extraction —
+// per-font ToUnicode decode, TJ kern threshold, line operators as breaks —
+// whose spacing is trusted only under a provably content-preserving rule (see
+// the reconcile hook in extractPdfTextDeterministic): the two extractions must
+// contain the IDENTICAL character sequence once all whitespace is stripped, so
+// adopting content-stream spacing can only ever move spaces, never add, drop,
+// or alter a character. Any mismatch keeps the pdf.js text unchanged.
+// Algorithm parity: the portable engine's _pdf_extract_text (alloflow_portable
+// .py), corpus-proven against 7 documents; TJ space threshold 150/1000 em.
+
+function _csLatin1(u8) {
+  var s = '';
+  var CH = 0x8000;
+  for (var i = 0; i < u8.length; i += CH) s += String.fromCharCode.apply(null, u8.subarray(i, Math.min(i + CH, u8.length)));
+  return s;
+}
+
+// Tolerant zlib inflate: /Length is often an indirect ref, so stream slices run
+// to `endstream` and carry trailing bytes a strict inflater rejects. Keep every
+// chunk decoded before an error, exactly like Python's decompressobj.
+async function _csInflate(rawU8) {
+  if (typeof DecompressionStream !== 'function') return null;
+  try {
+    var ds = new DecompressionStream('deflate');
+    var writer = ds.writable.getWriter();
+    writer.write(rawU8).catch(function () {});
+    writer.close().catch(function () {});
+    var reader = ds.readable.getReader();
+    var chunks = [];
+    try {
+      for (;;) {
+        var step = await reader.read();
+        if (step.done) break;
+        if (step.value && step.value.length) chunks.push(step.value);
+      }
+    } catch (_) { /* trailing garbage after a complete stream: keep what we have */ }
+    var total = 0;
+    for (var i = 0; i < chunks.length; i++) total += chunks[i].length;
+    if (!total) return null;
+    var out = new Uint8Array(total);
+    var o = 0;
+    for (var j = 0; j < chunks.length; j++) { out.set(chunks[j], o); o += chunks[j].length; }
+    return out;
+  } catch (_) { return null; }
+}
+
+function _csBalancedDict(s, start) {
+  var depth = 0;
+  for (var i = start; i < s.length - 1; i++) {
+    var pair = s.substr(i, 2);
+    if (pair === '<<') { depth++; i++; }
+    else if (pair === '>>') { depth--; i++; if (depth === 0) return s.slice(start, i + 1); }
+  }
+  return null;
+}
+
+// Yield [{num, dict, rawStart, rawEnd|null}] — dict objects and stream extents.
+// ObjStm containers are expanded (dict AND array bodies) in a second pass by
+// the caller, because expansion needs async inflate.
+function _csScanObjects(s) {
+  var out = [];
+  var re = /(\d+)\s+0\s+obj\b/g;
+  var m;
+  while ((m = re.exec(s)) !== null) {
+    var num = parseInt(m[1], 10);
+    var i = re.lastIndex;
+    while (i < s.length && ' \t\r\n\f '.indexOf(s[i]) >= 0) i++;
+    if (s.substr(i, 2) !== '<<') continue;
+    var dict = _csBalancedDict(s, i);
+    if (!dict) continue;
+    var j = i + dict.length;
+    while (j < s.length && ' \t\r\n\f '.indexOf(s[j]) >= 0) j++;
+    if (s.substr(j, 6) === 'stream') {
+      var start = j + 6;
+      if (s[start] === '\r') start++;
+      if (s[start] === '\n') start++;
+      var end = s.indexOf('endstream', start);
+      if (end < 0) { re.lastIndex = j; continue; }
+      var lenM = /\/Length\s+(\d+)(?![\d\s]*0\s+R)/.exec(dict);
+      var rawEnd = end;
+      if (lenM) { var declared = parseInt(lenM[1], 10); if (declared > 0 && start + declared <= end) rawEnd = start + declared; }
+      out.push({ num: num, dict: dict, rawStart: start, rawEnd: rawEnd });
+      re.lastIndex = end;
+    } else {
+      out.push({ num: num, dict: dict, rawStart: -1, rawEnd: -1 });
+    }
+  }
+  return out;
+}
+
+function _csParseToUnicode(cmapStr) {
+  var map = {};
+  var codeLen = 2;
+  var space = /begincodespacerange\s*<([0-9A-Fa-f]+)>/.exec(cmapStr);
+  if (space) codeLen = Math.max(1, Math.floor(space[1].length / 2));
+  var hex2str = function (h) {
+    if (h.length % 2) h += '0';
+    var text = '';
+    for (var i = 0; i + 4 <= h.length; i += 4) text += String.fromCharCode(parseInt(h.substr(i, 4), 16));
+    return text;
+  };
+  var section;
+  var charRe = /beginbfchar([\s\S]*?)endbfchar/g;
+  while ((section = charRe.exec(cmapStr)) !== null) {
+    var pair;
+    var pairRe = /<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>/g;
+    while ((pair = pairRe.exec(section[1])) !== null) map[parseInt(pair[1], 16)] = hex2str(pair[2]);
+  }
+  var rangeRe = /beginbfrange([\s\S]*?)endbfrange/g;
+  while ((section = rangeRe.exec(cmapStr)) !== null) {
+    var body = section[1];
+    var arr;
+    var arrRe = /<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*\[([\s\S]*?)\]/g;
+    while ((arr = arrRe.exec(body)) !== null) {
+      var lo = parseInt(arr[1], 16);
+      var targets = arr[3].match(/<([0-9A-Fa-f]+)>/g) || [];
+      for (var t = 0; t < targets.length; t++) map[lo + t] = hex2str(targets[t].replace(/[<>]/g, ''));
+    }
+    var lin;
+    var linRe = /<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>/g;
+    while ((lin = linRe.exec(body)) !== null) {
+      var lo2 = parseInt(lin[1], 16), hi2 = parseInt(lin[2], 16);
+      var base = hex2str(lin[3]);
+      if (!base) continue;
+      var span = Math.min(hi2 - lo2, 65535);
+      for (var k = 0; k <= span; k++) map[lo2 + k] = base.slice(0, -1) + String.fromCharCode(base.charCodeAt(base.length - 1) + k);
+    }
+  }
+  return { map: map, codeLen: codeLen };
+}
+
+function _csDictValue(index, container, key) {
+  if (!container) return null;
+  var inline = new RegExp('\\/' + key + '\\s*<<').exec(container);
+  if (inline) return _csBalancedDict(container, inline.index + inline[0].length - 2);
+  var ref = new RegExp('\\/' + key + '\\s+(\\d+)\\s+0\\s+R').exec(container);
+  if (ref) { var e = index[parseInt(ref[1], 10)]; return e ? e.dict : null; }
+  return null;
+}
+
+var _CS_LIT_ESC = { n: '\n', r: '\r', t: '\t', b: '\b', f: '\f', '(': '(', ')': ')', '\\': '\\' };
+
+function _csDecodeCodes(codes, font) {
+  var map = font && font.map;
+  if (!map || (font.codeLen || 1) !== 1) {
+    if (map && font.codeLen === 2) {
+      var out2 = '';
+      for (var i2 = 0; i2 + 1 < codes.length; i2 += 2) {
+        var c2 = (codes[i2] << 8) | codes[i2 + 1];
+        out2 += (map[c2] !== undefined ? map[c2] : '');
+      }
+      return out2;
+    }
+    var s = '';
+    for (var j = 0; j < codes.length; j++) s += String.fromCharCode(codes[j]);
+    return s;
+  }
+  var out = '';
+  for (var i = 0; i < codes.length; i++) out += (map[codes[i]] !== undefined ? map[codes[i]] : String.fromCharCode(codes[i]));
+  return out;
+}
+
+function _csLiteralCodes(body) {
+  var codes = [];
+  for (var i = 0; i < body.length; ) {
+    var ch = body[i];
+    if (ch !== '\\') { codes.push(body.charCodeAt(i) & 0xFF); i++; continue; }
+    var nxt = body[i + 1];
+    var oct = /^[0-7]{1,3}/.exec(body.slice(i + 1, i + 4));
+    if (oct) { codes.push(parseInt(oct[0], 8) & 0xFF); i += 1 + oct[0].length; }
+    else if (nxt === '\r' || nxt === '\n') { i += 2; if (nxt === '\r' && body[i] === '\n') i++; }
+    else { var rep = _CS_LIT_ESC[nxt]; codes.push((rep !== undefined ? rep : (nxt || ' ')).charCodeAt(0) & 0xFF); i += 2; }
+  }
+  return codes;
+}
+
+function _csHexCodes(hexStr, font) {
+  var digits = hexStr.replace(/\s+/g, '');
+  if (digits.length % 2) digits += '0';
+  var bytes = [];
+  for (var i = 0; i < digits.length; i += 2) bytes.push(parseInt(digits.substr(i, 2), 16));
+  return _csDecodeCodes(bytes, font);
+}
+
+var _CS_TEXT_OPS = /\/(\w+)\s+[\d.+-]+\s+Tf|\(((?:[^()\\]|\\[\s\S])*)\)\s*(Tj|'|")|<([0-9A-Fa-f\s]+)>\s*Tj|\[((?:[^\]\\]|\\[\s\S])*)\]\s*TJ|\b(ET|T\*)\b/g;
+var _CS_TJ_PIECES = /\(((?:[^()\\]|\\[\s\S])*)\)|<([0-9A-Fa-f\s]+)>|(-?\d+(?:\.\d+)?)/g;
+var _CS_TJ_SPACE = 150; // thousandths of an em; portable-engine parity
+
+function _csPageContentText(content, fonts) {
+  var pieces = [];
+  var current = null;
+  var m;
+  _CS_TEXT_OPS.lastIndex = 0;
+  while ((m = _CS_TEXT_OPS.exec(content)) !== null) {
+    if (m[1] !== undefined) { current = fonts[m[1]] || null; }
+    else if (m[2] !== undefined) {
+      if (m[3] === "'" || m[3] === '"') pieces.push('\n');
+      pieces.push(_csDecodeCodes(_csLiteralCodes(m[2]), current));
+    }
+    else if (m[4] !== undefined) { pieces.push(_csHexCodes(m[4], current)); }
+    else if (m[5] !== undefined) {
+      var piece;
+      _CS_TJ_PIECES.lastIndex = 0;
+      while ((piece = _CS_TJ_PIECES.exec(m[5])) !== null) {
+        if (piece[1] !== undefined) pieces.push(_csDecodeCodes(_csLiteralCodes(piece[1]), current));
+        else if (piece[2] !== undefined) pieces.push(_csHexCodes(piece[2], current));
+        else if (piece[3] !== undefined && Math.abs(parseFloat(piece[3])) >= _CS_TJ_SPACE) pieces.push(' ');
+      }
+      pieces.push('');
+    }
+    else if (m[6] !== undefined) { pieces.push('\n'); }
+  }
+  return pieces.join('');
+}
+
+// Full-file extraction: returns an array of page texts in PAGE TREE order, or
+// null when the file is out of scope (encrypted, no DecompressionStream, no
+// classic page tree reachable). Every failure path returns null — the caller's
+// reconcile gate then simply never fires and pdf.js text ships unchanged.
+async function _alloContentStreamPageTexts(u8) {
+  try {
+    if (!u8 || u8.length < 100 || u8.length > 60 * 1024 * 1024) return null;
+    var s = _csLatin1(u8);
+    if (s.indexOf('/Encrypt') >= 0) return null;
+    var objs = _csScanObjects(s);
+    var index = {};
+    var i;
+    for (i = 0; i < objs.length; i++) index[objs[i].num] = objs[i];
+    // ObjStm expansion (dict + array bodies), async because of inflate
+    for (i = 0; i < objs.length; i++) {
+      var o = objs[i];
+      if (o.rawStart < 0 || !/\/Type\s*\/ObjStm\b/.test(o.dict)) continue;
+      var inflated = await _csInflate(u8.subarray(o.rawStart, o.rawEnd));
+      if (!inflated) continue;
+      var body = _csLatin1(inflated);
+      var nM = /\/N\s+(\d+)/.exec(o.dict);
+      var fM = /\/First\s+(\d+)/.exec(o.dict);
+      if (!nM || !fM) continue;
+      var first = parseInt(fM[1], 10);
+      var header = body.slice(0, first).trim().split(/\s+/);
+      for (var pIdx = 0; pIdx + 1 < header.length && pIdx < parseInt(nM[1], 10) * 2; pIdx += 2) {
+        var eNum = parseInt(header[pIdx], 10);
+        var eOff = parseInt(header[pIdx + 1], 10);
+        var eEnd = (pIdx + 3 < header.length) ? first + parseInt(header[pIdx + 3], 10) : body.length;
+        var eBody = body.slice(first + eOff, eEnd).trim();
+        if (eBody.charAt(0) === '<') index[eNum] = { num: eNum, dict: _csBalancedDict(eBody, 0) || eBody, rawStart: -1, rawEnd: -1 };
+        else if (eBody.charAt(0) === '[') index[eNum] = { num: eNum, dict: eBody, rawStart: -1, rawEnd: -1 };
+      }
+    }
+    // Page tree walk for true page order; fall back to object-number order.
+    var rootM = /\/Root\s+(\d+)\s+0\s+R/.exec(s);
+    var pagesOrder = [];
+    var visit = function (num, depth) {
+      if (depth > 64 || pagesOrder.length > 5000) return;
+      var e = index[num];
+      if (!e) return;
+      if (/\/Type\s*\/Pages\b/.test(e.dict)) {
+        var kidsM = /\/Kids\s*\[([^\]]*)\]/.exec(e.dict);
+        if (!kidsM) {
+          var kidsRef = /\/Kids\s+(\d+)\s+0\s+R/.exec(e.dict);
+          if (kidsRef && index[parseInt(kidsRef[1], 10)]) kidsM = [null, index[parseInt(kidsRef[1], 10)].dict];
+        }
+        if (kidsM) {
+          var refRe = /(\d+)\s+0\s+R/g;
+          var r;
+          while ((r = refRe.exec(kidsM[1])) !== null) visit(parseInt(r[1], 10), depth + 1);
+        }
+      } else if (/\/Type\s*\/Page\b/.test(e.dict)) {
+        pagesOrder.push(e);
+      }
+    };
+    if (rootM && index[parseInt(rootM[1], 10)]) {
+      var catDict = index[parseInt(rootM[1], 10)].dict;
+      var pagesM = /\/Pages\s+(\d+)\s+0\s+R/.exec(catDict);
+      if (pagesM) visit(parseInt(pagesM[1], 10), 0);
+    }
+    if (!pagesOrder.length) {
+      var nums = [];
+      for (var key in index) if (Object.prototype.hasOwnProperty.call(index, key)) nums.push(parseInt(key, 10));
+      nums.sort(function (a, b) { return a - b; });
+      for (i = 0; i < nums.length; i++) {
+        var cand = index[nums[i]];
+        if (/\/Type\s*\/Page\b/.test(cand.dict) && !/\/Type\s*\/Pages\b/.test(cand.dict)) pagesOrder.push(cand);
+      }
+    }
+    if (!pagesOrder.length) return null;
+
+    var fontsFromResources = async function (resources) {
+      var fonts = {};
+      var fontDict = _csDictValue(index, resources, 'Font');
+      if (!fontDict) return fonts;
+      var fRe = /\/(\w+)\s+(\d+)\s+0\s+R/g;
+      var fM2;
+      while ((fM2 = fRe.exec(fontDict)) !== null) {
+        var fe = index[parseInt(fM2[2], 10)];
+        if (!fe) continue;
+        var parsed = { map: null, codeLen: /\/Subtype\s*\/Type0\b/.test(fe.dict) ? 2 : 1 };
+        var uM = /\/ToUnicode\s+(\d+)\s+0\s+R/.exec(fe.dict);
+        if (uM) {
+          var ue = index[parseInt(uM[1], 10)];
+          if (ue && ue.rawStart >= 0) {
+            var cRaw = /\/FlateDecode\b/.test(ue.dict) ? await _csInflate(u8.subarray(ue.rawStart, ue.rawEnd)) : u8.subarray(ue.rawStart, ue.rawEnd);
+            if (cRaw) {
+              var parsedMap = _csParseToUnicode(_csLatin1(cRaw));
+              parsed.map = parsedMap.map;
+              parsed.codeLen = parsedMap.codeLen === 1 && parsed.codeLen === 1 ? 1 : parsed.codeLen;
+            }
+          }
+        }
+        fonts[fM2[1]] = parsed;
+      }
+      return fonts;
+    };
+
+    var pageTexts = [];
+    for (i = 0; i < pagesOrder.length; i++) {
+      var page = pagesOrder[i];
+      var resources = _csDictValue(index, page.dict, 'Resources');
+      var node = page.dict;
+      var hops = 0;
+      while (!resources && hops < 8) {
+        var parentM = /\/Parent\s+(\d+)\s+0\s+R/.exec(node);
+        if (!parentM || !index[parseInt(parentM[1], 10)]) break;
+        node = index[parseInt(parentM[1], 10)].dict;
+        resources = _csDictValue(index, node, 'Resources');
+        hops++;
+      }
+      var fonts = await fontsFromResources(resources);
+      var contentRefs = [];
+      var direct = /\/Contents\s+(\d+)\s+0\s+R/.exec(page.dict);
+      if (direct) {
+        var cNum = parseInt(direct[1], 10);
+        var cEntry = index[cNum];
+        if (cEntry && cEntry.rawStart >= 0) contentRefs.push(cNum);
+        else if (cEntry && cEntry.dict && cEntry.dict.charAt(0) === '[') {
+          var aRe = /(\d+)\s+0\s+R/g; var aM;
+          while ((aM = aRe.exec(cEntry.dict)) !== null) contentRefs.push(parseInt(aM[1], 10));
+        } else {
+          var rawArr = new RegExp('(?:^|[\\r\\n])' + cNum + '\\s+0\\s+obj\\s*\\[([^\\]]*)\\]').exec(s);
+          if (rawArr) { var bRe = /(\d+)\s+0\s+R/g; var bM; while ((bM = bRe.exec(rawArr[1])) !== null) contentRefs.push(parseInt(bM[1], 10)); }
+        }
+      } else {
+        var inlineArr = /\/Contents\s*\[([^\]]*)\]/.exec(page.dict);
+        if (inlineArr) { var iRe = /(\d+)\s+0\s+R/g; var iM; while ((iM = iRe.exec(inlineArr[1])) !== null) contentRefs.push(parseInt(iM[1], 10)); }
+      }
+      // Text layers routinely live inside Form XObjects, not the page's direct
+      // content stream (corpus: the 1913 print-master, the USCIS footnote), so
+      // recurse into /XObject /Form entries with their own fonts merged in.
+      var collected = { text: '' };
+      var collectStream = async function (streamNum, inheritedFonts, parentResources, depth) {
+        if (depth > 3) return;
+        var ce = index[streamNum];
+        if (!ce || ce.rawStart < 0) return;
+        var content = /\/FlateDecode\b/.test(ce.dict) ? await _csInflate(u8.subarray(ce.rawStart, ce.rawEnd)) : (/\/Filter\b/.test(ce.dict) ? null : u8.subarray(ce.rawStart, ce.rawEnd));
+        if (!content) return;
+        var ownResources = _csDictValue(index, ce.dict, 'Resources');
+        var ownFonts = inheritedFonts;
+        if (ownResources) {
+          var extra = await fontsFromResources(ownResources);
+          var merged = {};
+          var key;
+          for (key in inheritedFonts) if (Object.prototype.hasOwnProperty.call(inheritedFonts, key)) merged[key] = inheritedFonts[key];
+          for (key in extra) if (Object.prototype.hasOwnProperty.call(extra, key)) merged[key] = extra[key];
+          ownFonts = merged;
+        }
+        collected.text += _csPageContentText(_csLatin1(content), ownFonts);
+        var resForX = ownResources || parentResources;
+        var xobjects = _csDictValue(index, resForX, 'XObject');
+        if (!xobjects) return;
+        var xRe = /\/\w+\s+(\d+)\s+0\s+R/g;
+        var xM;
+        while ((xM = xRe.exec(xobjects)) !== null) {
+          var xe = index[parseInt(xM[1], 10)];
+          if (xe && /\/Subtype\s*\/Form\b/.test(xe.dict)) await collectStream(parseInt(xM[1], 10), ownFonts, resForX, depth + 1);
+        }
+      };
+      for (var c = 0; c < contentRefs.length; c++) await collectStream(contentRefs[c], fonts, resources, 0);
+      pageTexts.push(collected.text);
+    }
+    return pageTexts;
+  } catch (_) { return null; }
+}
+
+// Per-space repair oracle (mechanism 2, 2026-08-04). Whole-page comparison was
+// the first design and failed on ordering: the content-stream pass reads pages
+// in stream order while pdf.js items are re-sorted, so an identical page can
+// compare unequal because a footer moved. This is order-independent: each
+// SPACE in the pdf.js text is kept or dropped individually. A space is dropped
+// only when the content-stream text contains the junction's surrounding
+// characters CONTIGUOUS AND UNSPACED (up to 4 from each side) and never
+// contains the same junction WITH the space — presence of both readings is
+// ambiguity and keeps the space. Deletion-only by design: inserting spaces is
+// the geometry join's job and mis-insertion would glue real words. Characters
+// are never touched, so this cannot add, drop, or alter content.
+function _alloRepairSpacesWithCs(pageText, csText) {
+  if (!csText || csText.indexOf(' ') < 0 && csText.length < 8) return { text: pageText, repaired: 0 };
+  var out = '';
+  var repaired = 0;
+  var n = pageText.length;
+  for (var i = 0; i < n; i++) {
+    var ch = pageText[i];
+    if (ch !== ' ') { out += ch; continue; }
+    // left token tail (<=4 chars, stopping at the previous space)
+    var l = '';
+    for (var a = out.length - 1; a >= 0 && l.length < 4; a--) {
+      if (out[a] === ' ') break;
+      l = out[a] + l;
+    }
+    // right token head (<=4 chars, stopping at the next space)
+    var r = '';
+    for (var b = i + 1; b < n && r.length < 4; b++) {
+      if (pageText[b] === ' ') break;
+      r += pageText[b];
+    }
+    if (!l || !r || l.length + r.length < 5) { out += ch; continue; }
+    var joined = l + r;
+    var spaced = l + ' ' + r;
+    if (csText.indexOf(joined) >= 0 && csText.indexOf(spaced) < 0) { repaired++; continue; }
+    out += ch;
+  }
+  return { text: out, repaired: repaired };
+}
+
+// Debug/test reach-through for the extraction trio (same idiom as
+// window.__alloSourceLinkCount): lets the driver e2e and probes compare the
+// two extractions without duplicating them. Read-only helpers; no state.
+try {
+  if (typeof window !== 'undefined') {
+    window.__alloCsPageTexts = _alloContentStreamPageTexts;
+    window.__alloOrderTextItems = _alloOrderTextItems;
+    window.__alloJoinOrderedTextItems = _alloJoinOrderedTextItems;
+  }
+} catch (_) {}
+
 // ── Column-aware OCR ground truth (H-5's scanned half, 2026-07-13) ──────────
 // _alloOrderTextItems repairs multi-column reading order on the pdf.js TEXT-LAYER
 // path only; scanned documents relied on Tesseract's internal layout analysis,
@@ -10500,6 +10938,12 @@ var createDocPipeline = function(deps) {
       await ensurePdfJsLoaded();
       if (!window.pdfjsLib) throw new Error('pdf.js unavailable');
       const bytes = _isBytes ? new Uint8Array(base64) : _b64ToBytes(base64); // clone: pdf.js detaches the buffer it is given
+      // Mechanism 2 repair (2026-08-04): our own copy BEFORE getDocument —
+      // pdf.js detaches `bytes`. The content-stream texts are consulted per
+      // page under a strict gate below; every failure here degrades to null
+      // and the pdf.js text ships unchanged.
+      const _csCopy = bytes.slice();
+      const _csPagesPromise = _alloContentStreamPageTexts(_csCopy).catch(function () { return null; });
       pdf = await _withTimeout(window.pdfjsLib.getDocument({ data: bytes }).promise, 60000, 'pdf.js getDocument (text layer)');
       const pages = [];
       // 2026-06-08: per-page try/catch — a single-page parse error previously
@@ -10510,6 +10954,9 @@ var createDocPipeline = function(deps) {
       // trip the isScanned heuristic on a 20-page document.
       const pageErrors = [];
       let _rtlOrderLogged = false; // H12: announce the direction repair ONCE, not per page
+      const _csPages = await _csPagesPromise;
+      let _csRepairedPages = 0;
+      let _csRepairedSpaces = 0;
       // M12 (audit 2026-07-26): the lost-hyperlink fidelity net counted markdown `[text](url)` in
       // the source, which this extractor NEVER produces — it joins raw pdf.js text items. So the
       // net read 0 source links on every born-digital PDF and could not fire, no matter how many
@@ -10557,7 +11004,22 @@ var createDocPipeline = function(deps) {
           // Geometry-aware join (2026-08-04): join(' ') fragmented kerned words —
           // see _alloJoinOrderedTextItems. The trailing whitespace collapse is
           // unchanged, so this can only REMOVE bogus intra-word spaces.
-          const pageText = _alloJoinOrderedTextItems(items, _ordered.rtl).replace(/\s+/g, ' ').trim();
+          let pageText = _alloJoinOrderedTextItems(items, _ordered.rtl).replace(/\s+/g, ' ').trim();
+          // Mechanism 2 repair: pdf.js also inserts spurious spaces INSIDE
+          // items ("legal p ermanent ... U nited S tates"), which no join can
+          // reach. Each pdf.js space is kept or dropped individually against
+          // the content-stream oracle — dropped only when the junction's
+          // characters appear contiguous and unspaced there, and never appear
+          // spaced. See _alloRepairSpacesWithCs; characters are never touched.
+          if (_csPages && _csPages[p - 1]) {
+            const _csCollapsed = _csPages[p - 1].replace(/\s+/g, ' ').trim();
+            const _repair = _alloRepairSpacesWithCs(pageText, _csCollapsed);
+            if (_repair.repaired > 0) {
+              pageText = _repair.text;
+              _csRepairedPages++;
+              _csRepairedSpaces += _repair.repaired;
+            }
+          }
           pages.push({ pageNum: p, text: pageText, columns: _ordered.applied ? _ordered.columns : 1 });
         } catch (pageErr) {
           const _pmsg = (pageErr && pageErr.message) || String(pageErr);
@@ -10581,6 +11043,7 @@ var createDocPipeline = function(deps) {
       // a `pageRange` that does not exist in this scope — three ReferenceErrors in waiting.)
       try { if (typeof window !== 'undefined') window.__alloSourceLinkCount = _srcLinkAnnotations; } catch (_) {}
       if (_srcLinkAnnotations > 0) { try { warnLog('[PDF Det] ' + _srcLinkAnnotations + ' hyperlink annotation(s) in the source — the output is expected to carry them'); } catch (_) {} }
+      if (_csRepairedPages > 0) { try { warnLog('[PDF Det] content-stream spacing repair: removed ' + _csRepairedSpaces + ' spurious space(s) across ' + _csRepairedPages + ' page(s) — characters untouched'); } catch (_) {} }
       const fullText = pages.map(p => p.text).filter(Boolean).join('\n\n');
       // Denominator fix: average against pages that ACTUALLY produced text. A
       // 20-page doc where 1 page failed and 19 produced text shouldn't get

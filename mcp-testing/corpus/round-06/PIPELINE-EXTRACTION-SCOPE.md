@@ -1,4 +1,31 @@
-# Deferred: content-stream text extraction inside the app pipeline
+# IMPLEMENTED (2026-08-04): content-stream text extraction inside the app pipeline
+
+Status update: implemented the same day, in doc_pipeline_source.jsx, as scoped
+below - with one design change discovered during implementation. The original
+plan gated on whole-page character equality; that failed on ordering (the
+content-stream pass reads stream order, pdf.js items are re-sorted, so a moved
+footer made identical pages compare unequal). The shipped design is a
+PER-SPACE ORACLE: each pdf.js space is dropped only when the content-stream
+text contains the junction's surrounding characters (up to 4 per side, min 5
+total) contiguous and unspaced, and never contains the same junction spaced.
+Deletion-only, junction-anchored, order-independent; characters are never
+touched. Form XObjects are recursed (the USCIS footnote lives in one - the
+1913 lesson repeated).
+
+Measured results (MCP connector vs portable referee):
+  uscis-civics  44 -> 11 fragment sites; "permanent resident of the United
+                States" extracts correctly for the first time
+  fda-nexium    20 -> 3
+  1913 master   23 -> 7
+  4 already-perfect documents: unchanged at jaccard 1.000, zero glued words
+  anywhere. Residue = junctions the oracle finds ambiguous or the byte-level
+  pass cannot decode; deletion-only conservatism keeps them spaced.
+
+Regression: tests/e2e/artifacts/kern-split.fixture.pdf (crafted; kern -110
+makes pdf.js read "le gal" in ONE item) + driver e2e asserting repair fires
+and real spaces survive. Original scoping analysis kept below for the record.
+
+# Original scope (superseded): content-stream text extraction inside the app pipeline
 
 ## What remains broken and where
 

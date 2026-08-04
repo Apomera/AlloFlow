@@ -17,7 +17,8 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { createServer } from 'node:http';
 import { createRequire } from 'node:module';
-import { resolve } from 'node:path';
+import { resolve, dirname } from 'node:path';
+import { mkdirSync, writeFileSync } from 'node:fs';
 
 vi.setConfig({ testTimeout: 360000, hookTimeout: 60000 });
 
@@ -175,5 +176,47 @@ describe('driver behavioral e2e (scripted loopback Gemini)', () => {
     expect(text).not.toMatch(/W\s+a\s+t\s+e\s+r/);    // the old failure verbatim
     expect(text).toContain('reading order');           // gluing direction: real spaces survive
     expect(text).not.toMatch(/readingorder|WaterCycle/);
+  }, 120000);
+
+  // Mechanism 2 (2026-08-04): pdf.js inserts a bogus space INSIDE a text item
+  // when a TJ kern crosses its space heuristic (-110/1000 em in this fixture
+  // — pdf.js reads "le gal" in ONE item, so no join logic can reach it). The
+  // content-stream oracle drops that space because the same junction appears
+  // unspaced in the raw content stream; the real space in the second line must
+  // survive because the oracle is deletion-only and junction-anchored.
+  it('content-stream oracle repairs in-item bogus spaces without gluing real ones', async () => {
+    // Generated, not committed (tests/e2e/artifacts is gitignored, same as the
+    // remediation source fixture): a five-object PDF whose kern of -110/1000 em
+    // sits inside pdf.js's space heuristic but under the oracle's 150 threshold.
+    const kern = -110;
+    const content = `BT /F1 12 Tf 72 700 Td [(le) ${kern} (gal)] TJ ET\nBT /F1 12 Tf 72 680 Td (spacing intact here) Tj ET`;
+    const objects = [
+      '<</Type /Catalog /Pages 2 0 R>>',
+      '<</Type /Pages /Kids [3 0 R] /Count 1>>',
+      '<</Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources <</Font <</F1 4 0 R>>>> /Contents 5 0 R>>',
+      '<</Type /Font /Subtype /Type1 /BaseFont /Helvetica>>',
+      `<</Length ${content.length}>>\nstream\n${content}\nendstream`,
+    ];
+    let pdfText = '%PDF-1.4\n';
+    const offsets = [0];
+    for (let i = 0; i < objects.length; i++) {
+      offsets.push(pdfText.length);
+      pdfText += `${i + 1} 0 obj\n${objects[i]}\nendobj\n`;
+    }
+    const xref = pdfText.length;
+    pdfText += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+    for (let i = 1; i <= objects.length; i++) pdfText += String(offsets[i]).padStart(10, '0') + ' 00000 n \n';
+    pdfText += `trailer\n<</Size ${objects.length + 1} /Root 1 0 R>>\nstartxref\n${xref}\n%%EOF\n`;
+    const fixture = resolve(process.cwd(), 'tests/e2e/artifacts/kern-split.fixture.pdf');
+    mkdirSync(dirname(fixture), { recursive: true });
+    writeFileSync(fixture, Buffer.from(pdfText, 'latin1'));
+
+    const out = await driver.extractDocumentText({ filePath: fixture });
+    expect(out.error).toBeFalsy();
+    const text = out.text || '';
+    expect(text).toContain('legal');                    // mech-2 space removed
+    expect(text).not.toContain('le gal');
+    expect(text).toContain('spacing intact here');      // real spaces untouched
+    expect(text).not.toMatch(/spacingintact|intacthere/);
   }, 120000);
 });
