@@ -338,6 +338,80 @@ describe('Law Navigator reading supports', () => {
   });
 });
 
+describe('Law Navigator cross-references, amendments, saved citations', () => {
+  // Lift the SHIPPED linkifier and run it over real corpus paragraphs.
+  const lk = (() => {
+    const a = src.indexOf('var CITE_RE');
+    const b = src.indexOf('var backBtn');
+    expect(a, 'CITE_RE present').toBeGreaterThan(-1);
+    const h = (tag, props, ...kids) => ({ tag, props, kids });
+    const o = {};
+    new Function('box', 'h', 'pal', '__alloT', 'goToSection', 'd', 'activeSlug', 'setLN', 'setOpenDef', 'announceToSR',
+      src.slice(a, b) + '\nbox.linkify = linkifyCitations;'
+    )(o, h, { accent: '#000' }, (k, f) => f, () => {}, {}, 'idea-part-b', () => {}, () => {}, () => {});
+    return o;
+  })();
+  const idea = JSON.parse(read('law_corpus/idea-part-b.json'));
+
+  it('linkifies citations WITHOUT altering a single character', () => {
+    // The cardinal rule reaches presentation too: wrapping a citation in a
+    // button must not add, drop, or reorder any visible text.
+    let checked = 0;
+    for (const s of idea.sections.slice(0, 120)) {
+      for (const p of s.paragraphs) {
+        if (!p.includes('§')) continue;
+        const out = lk.linkify(p, idea, s.number);
+        const rebuilt = out.map((x) => (typeof x === 'string' ? x : x.kids[0])).join('');
+        expect(rebuilt, 'text altered in § ' + s.number).toBe(p);
+        checked++;
+      }
+    }
+    expect(checked, 'should have exercised real citation-bearing text').toBeGreaterThan(50);
+  });
+
+  it('links only to sections that exist, leaving unresolvable ones plain', () => {
+    const have = new Set(idea.sections.map((s) => s.number));
+    let links = 0;
+    for (const s of idea.sections.slice(0, 120)) {
+      for (const p of s.paragraphs) {
+        for (const piece of lk.linkify(p, idea, s.number)) {
+          if (typeof piece === 'string') continue;
+          links++;
+          const target = (piece.kids[0].match(/(\d+\.\d+[a-z]?)/) || [])[1];
+          expect(have.has(target), 'link to missing § ' + target).toBe(true);
+        }
+      }
+    }
+    expect(links).toBeGreaterThan(50);
+    // A citation to a nonexistent section stays text, not a dead button.
+    const mixed = lk.linkify('See § 999.999 and § 300.530.', idea, '300.111');
+    const labels = mixed.filter((x) => typeof x !== 'string').map((x) => x.kids[0]);
+    expect(labels).toEqual(['§ 300.530']);
+  });
+
+  it('unwinds a citation trail instead of dumping the reader at the list', () => {
+    expect(src).toContain('navStack');
+    expect(src).toMatch(/navStack\.slice\(0, -1\)/);   // pop on back
+    expect(src).toContain('Back to § ');
+  });
+
+  it('reports amendment date at the title level and refuses to imply more', () => {
+    expect(src).toContain('latest_amended_on');
+    expect(src).toContain('Title last amended');
+    // The honesty trap named in scoping: no-change-seen is not no-change.
+    expect(src).toMatch(/absence of a change here is not evidence of none/i);
+  });
+
+  it('saves citations to a neutral shared slice, capped, and shows them in Parenting Lab', () => {
+    expect(src).toContain('_alloCitations');
+    expect(src).toMatch(/\.slice\(-12\)/);   // snapshot-weight cap
+    const pl = read('stem_lab/stem_tool_parentinglab.js');
+    expect(pl).toContain('_alloCitations');
+    expect(pl).toContain('Rules I want to ask about');
+    expect(pl).toContain('Bring the citation, not a paraphrase');
+  });
+});
+
 describe('Law Navigator renders without a network', () => {
   beforeEach(() => resetStemLab());
 

@@ -1244,6 +1244,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
             ),
             h('p', { className: 'text-xs mb-3', style: { color: pal.muted } },
               __alloT('stem.parentingLab.prep_sub', 'Check items as you prepare. This list saves with the tool — reset it before each new meeting by unchecking.')),
+            // Citations saved from the Law Navigator. Stored in a NEUTRAL
+            // shared slice (_alloCitations) rather than inside either tool's
+            // own state, so neither tool owns the other's data.
+            (function() {
+              var cites = (labToolData && labToolData._alloCitations) || [];
+              if (!cites.length) return null;
+              return h('div', { className: 'rounded-xl p-3 mb-3', style: { background: pal.panel, border: '1px solid ' + pal.border } },
+                h('div', { className: 'text-xs font-black mb-1', style: { color: pal.text } },
+                  '📌 ' + __alloT('stem.parentingLab.saved_rules', 'Rules I want to ask about')),
+                h('p', { className: 'text-[11px] mb-2', style: { color: pal.muted } },
+                  __alloT('stem.parentingLab.saved_rules_sub', 'Saved from the Education Law Navigator. Bring the citation, not a paraphrase.')),
+                cites.map(function(c, i) {
+                  return h('div', { key: i, className: 'text-[12px] mb-1', style: { color: pal.text } },
+                    h('strong', null, c.citation || (c.short + ' § ' + c.section)),
+                    c.heading ? h('span', { style: { color: pal.muted } }, ' — ' + String(c.heading).replace(/^§\s*[\d.]+\s*/, '').slice(0, 70)) : null);
+                })
+              );
+            })(),
             h('div', { className: 'flex flex-col gap-1.5' },
               M9_CHECKLIST.map(function(item) {
                 var on = !!prepDone[item.id];

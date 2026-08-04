@@ -82,6 +82,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
   var _liveSections = {};      // "part#section" -> { paragraphs, heading, fetchedAt }
   var _liveFailed = {};        // "part#section" -> reason
 
+  // eCFR also reports when the title was last AMENDED, which answers a
+  // different question from "when did we fetch this": is the rule I am reading
+  // stable, or was it rewritten recently?
+  var _liveAmended = null;
+
   function liveDate() {
     if (_liveDate) return Promise.resolve(_liveDate);
     if (_liveDatePending) return _liveDatePending;
@@ -90,6 +95,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
       .then(function(j) {
         var t34 = (j.titles || []).filter(function(t) { return t.number === 34; })[0];
         _liveDate = (t34 && t34.up_to_date_as_of) || null;
+        _liveAmended = (t34 && t34.latest_amended_on) || null;
         if (!_liveDate) throw new Error('no currency date');
         return _liveDate;
       })
@@ -428,8 +434,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
         );
       }
 
+      // ── Cross-references as links ─────────────────────────────────────────
+      // Regulation text is a web of pointers ("in accordance with §§ 300.304
+      // through 300.311"). Today those are dead strings. Wrapping them in
+      // jump buttons is PRESENTATION over unmodified text — the words are
+      // untouched; only their rendering changes.
+      //
+      // A reference becomes a link ONLY if the target section is actually in
+      // the loaded document. An unresolvable citation stays plain text rather
+      // than becoming a button that goes nowhere, and cross-document
+      // references (MUSER quotes federal §§ constantly) are deliberately left
+      // plain in this version rather than silently switching corpora.
+      var CITE_RE = /(§§?)\s*(\d+\.\d+[a-z]?)(\s*(?:through|to|–|—|-)\s*(\d+\.\d+[a-z]?))?/g;
+
+      function goToSection(slug, number, fromSection) {
+        var stack = (d.navStack || []).slice(-8);
+        if (fromSection) stack = stack.concat([{ slug: activeSlug, section: fromSection }]);
+        var v = Object.assign({}, d.viewed || {});
+        v[slug + '#' + number] = true;
+        setLN({ view: 'section', slug: slug, section: number, viewed: v, navStack: stack });
+        setOpenDef(null);
+        announceToSR(__alloT('stem.lawNav.jumped_sr', 'Opened section ') + number);
+      }
+
+      // Returns an array of strings and buttons for React to render.
+      function linkifyCitations(text, doc, fromSection) {
+        if (!doc || !doc.sections) return [text];
+        var have = {};
+        for (var i = 0; i < doc.sections.length; i++) have[doc.sections[i].number] = true;
+        var out = [], last = 0, m, key = 0;
+        CITE_RE.lastIndex = 0;
+        while ((m = CITE_RE.exec(text)) !== null) {
+          var target = m[2];
+          if (!have[target]) continue;               // unresolvable → leave plain
+          if (target === fromSection && !m[4]) continue; // self-reference → plain
+          if (m.index > last) out.push(text.slice(last, m.index));
+          var label = m[0];
+          var isRange = !!m[4];
+          out.push(h('button', {
+            key: 'c' + (key++),
+            onClick: (function(t) { return function() { goToSection(doc.slug, t, fromSection); }; })(target),
+            className: 'underline font-semibold',
+            style: { color: pal.accent, background: 'none', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer' },
+            title: isRange
+              ? __alloT('stem.lawNav.cite_range', 'Opens the first section of this range')
+              : __alloT('stem.lawNav.cite_open', 'Open this section')
+          }, label));
+          last = m.index + m[0].length;
+        }
+        if (!out.length) return [text];
+        if (last < text.length) out.push(text.slice(last));
+        return out;
+      }
+
+      // Following citations builds a trail, so Back must unwind it rather than
+      // dumping the reader at the document list three jumps from where they were.
+      var navStack = d.navStack || [];
       var backBtn = h('button', {
         onClick: function() {
+          if (view === 'section' && navStack.length) {
+            var prev = navStack[navStack.length - 1];
+            setLN({ view: 'section', slug: prev.slug, section: prev.section, navStack: navStack.slice(0, -1) });
+            setOpenDef(null);
+            return;
+          }
           if (view === 'home') { if (typeof setStemLabTool === 'function') setStemLabTool(null); }
           else if (view === 'section') { setLN({ view: 'doc' }); }
           else { setLN({ view: 'home', section: '' }); }
@@ -437,7 +505,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
         className: 'inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold border transition-colors',
         style: { background: pal.panel, borderColor: pal.border, color: pal.text },
         'aria-label': __alloT('stem.lawNav.back', 'Back')
-      }, '← ' + (view === 'home' ? __alloT('stem.lawNav.tools', 'Tools') : __alloT('stem.lawNav.back_short', 'Back')));
+      }, '← ' + (view === 'home' ? __alloT('stem.lawNav.tools', 'Tools')
+        : (view === 'section' && navStack.length ? __alloT('stem.lawNav.back_cite', 'Back to § ') + navStack[navStack.length - 1].section
+          : __alloT('stem.lawNav.back_short', 'Back'))));
 
       // ── Provenance strip: never render regulation text without it ──────────
       function provenance(doc, compact) {
@@ -752,6 +822,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
             style: { background: pal.panel, borderColor: pal.border, color: pal.text }
           }, __alloT('stem.lawNav.recheck', 'Check again'))
         ) : null,
+        // ── Amendment context (title-level) + save-to-meeting-prep ──────────
+        sec ? h('div', { className: 'flex items-center gap-2 flex-wrap mt-2' },
+          canLive && _liveAmended ? h('span', {
+            className: 'text-[11px] rounded-lg px-2 py-1',
+            style: { background: pal.card, border: '1px solid ' + pal.border, color: pal.muted },
+            title: __alloT('stem.lawNav.amended_tip', 'Reported by eCFR for the whole title, not this section alone')
+          }, __alloT('stem.lawNav.amended', 'Title last amended') + ' ' + _liveAmended) : null,
+          // Honesty: we can say when the TITLE changed. We cannot say this
+          // SECTION is unchanged, and must not imply it.
+          canLive && _liveAmended ? h('span', { className: 'text-[10px]', style: { color: pal.muted } },
+            __alloT('stem.lawNav.amended_caveat', '(section-level history is not shown — absence of a change here is not evidence of none)')) : null,
+          (function() {
+            var saved = (ctx.toolData && ctx.toolData._alloCitations) || [];
+            var already = saved.some(function(c) { return c.slug === activeSlug && c.section === activeSection; });
+            return h('button', {
+              onClick: function() {
+                if (already) return;
+                var next = saved.concat([{
+                  slug: activeSlug, short: smeta ? smeta.short : '', section: activeSection,
+                  heading: sec.heading || '', citation: (smeta ? smeta.citation : '') + ' § ' + activeSection
+                }]).slice(-12); // capped: these ride along in workspace snapshots
+                setLabToolData(function(prev) { return Object.assign({}, prev, { _alloCitations: next }); });
+                announceToSR(__alloT('stem.lawNav.saved_sr', 'Saved to your meeting prep list.'));
+              },
+              disabled: already,
+              className: 'ml-auto rounded-lg px-2.5 py-1 text-[11px] font-bold border disabled:opacity-60',
+              style: { background: pal.panel, borderColor: pal.border, color: pal.text }
+            }, already ? '✓ ' + __alloT('stem.lawNav.saved', 'In meeting prep') : '📌 ' + __alloT('stem.lawNav.save', 'Save for my meeting'));
+          })()
+        ) : null,
         sec ? readingControls() : null,
         !sec ? h('p', { className: 'text-sm mt-3', style: { color: pal.muted } }, __alloT('stem.lawNav.loading', 'Loading the official text…')) :
         h('div', { className: 'rounded-2xl p-4 mt-3', style: { background: pal.panel, border: '1px solid ' + pal.border } },
@@ -762,7 +862,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
           // their order, and their paragraphing are exactly as published.
           h('div', { style: readStyle },
             sec.paragraphs.map(function(p, i) {
-              return h('p', { key: i, className: i ? 'mt-3' : '', style: { color: pal.text } }, p);
+              // linkifyCitations returns the SAME characters, some wrapped in
+              // jump buttons. Nothing is added, removed, or reordered.
+              return h('p', { key: i, className: i ? 'mt-3' : '', style: { color: pal.text } },
+                linkifyCitations(p, sdoc2, activeSection));
             })
           )
         ),
