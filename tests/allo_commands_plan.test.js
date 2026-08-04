@@ -668,10 +668,33 @@ describe('coverage batch commands', () => {
     expect(AC.getCommandContract('filter_glossary').params).toEqual(['tier']);
   });
 
+  it('batch 3: read-aloud, quiz answers (teacher-only), presentation, side-by-side', () => {
+    const log = [];
+    const base = {
+      contentLoaded: true, contentIsQuiz: true, contentIsSimplified: true,
+      openReadThisPage: () => log.push('read'),
+      toggleQuizAnswers: () => log.push('answers'),
+      togglePresentationMode: () => log.push('present'),
+      toggleSideBySide: () => log.push('sbs'),
+    };
+    const { ctx } = mkCtx(base);
+    for (const id of ['read_page_aloud', 'toggle_quiz_answers', 'toggle_presentation_mode', 'toggle_side_by_side']) {
+      expect(AC.runCommandById(ctx, id, {}, {}).handled, id).toBe(true);
+    }
+    expect(log).toEqual(['read', 'answers', 'present', 'sbs']);
+    // Answer key never surfaces for a student audience.
+    const student = mkCtx({ ...base, isTeacherMode: false }).ctx;
+    expect(AC.buildAlloCommands(student).find((c) => c.id === 'toggle_quiz_answers')).toBeUndefined();
+    // Wrong content type hides the view-bound toggles.
+    const noQuiz = mkCtx({ ...base, contentIsQuiz: false, contentIsSimplified: false }).ctx;
+    expect(AC.buildAlloCommands(noQuiz).find((c) => c.id === 'toggle_quiz_answers')).toBeUndefined();
+    expect(AC.buildAlloCommands(noQuiz).find((c) => c.id === 'toggle_side_by_side')).toBeUndefined();
+  });
+
   it('both ANTI copies carry the new ctx capabilities', () => {
     for (const path of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt']) {
       const app = readFileSync(path, 'utf-8');
-      for (const cap of ['startMemoryGame:', 'startMatchingGame:', 'startBingoGame:', 'cycleColorOverlay:', 'toggleAnimations:', 'adjustVoiceSpeed:', 'generateNoteTaking:', 'generateAnchorChart:', 'generateConceptSort:', 'startCrosswordGame:', 'startWordScrambleGame:', 'setGlossaryFilterChoice:']) {
+      for (const cap of ['startMemoryGame:', 'startMatchingGame:', 'startBingoGame:', 'cycleColorOverlay:', 'toggleAnimations:', 'adjustVoiceSpeed:', 'generateNoteTaking:', 'generateAnchorChart:', 'generateConceptSort:', 'startCrosswordGame:', 'startWordScrambleGame:', 'setGlossaryFilterChoice:', 'openReadThisPage:', 'toggleQuizAnswers:', 'togglePresentationMode:', 'toggleSideBySide:', 'contentIsQuiz:', 'contentIsSimplified:']) {
         expect(app, path + ' ' + cap).toContain(cap);
       }
       // Generation caps carry the honest-failure contract like their siblings.
