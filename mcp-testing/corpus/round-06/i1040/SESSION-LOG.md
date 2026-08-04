@@ -141,12 +141,61 @@ above three columns → detector says one column → the title interleaves into
 the body). Reading order rebuilt from the render. That is now two of sixteen
 pages; the vertical-segmentation fix is looking more worthwhile.
 
-### Sessions 5+ — REMAINING (suggested boundaries from the printed TOC)
+### Session 5 (2026-08-04) — pages 17-19 · tranche-05 · 50 blocks · VALIDATED (merged)
+
+"Who Qualifies as Your Dependent" — the document's first DECISION FLOWCHART,
+all five steps. `merge-plans t01..t05` → 325 blocks, `ok: true`, pages 1-19
+covered. Recall 0.9812, all shortfall furniture (page markers + the standing
+footer on three pages).
+
+**The flowchart shape to reuse for every later chart:**
+
+* Each step is a level-4 heading carrying its printed step badge —
+  "Step 1. Do You Have a Qualifying Child?" — so the reader always knows
+  where they are.
+* Each numbered question keeps its printed number as a paragraph, followed by
+  a two-item list holding the Yes and No branches with strong labels. That
+  preserves the pairing a sighted reader gets from the two-column layout
+  without inventing a table the source doesn't have, and keeps branch text
+  verbatim.
+* The AND/OR criteria stacks are connector-joined boxes. The connectives are
+  real text, so each criterion is a list item keeping its leading `AND`/`or`
+  and the logic survives linearisation.
+* `STOP` is kept (it is that branch's whole meaning); checkbox glyphs and
+  connector arrows are dropped as decoration.
+
+**One branch is deliberately bare.** Step 4 question 1's No branch is the STOP
+badge ALONE in the source — no sentence, unlike every other STOP in the chart.
+It is authored as "STOP." with nothing added. Filling that gap would mean
+writing tax guidance the IRS did not publish.
+
+Scope stops at the flowchart: pages 20-22 are "Definitions and Special Rules",
+a two-column glossary that is a separate job. Step 5 question 3 begins on
+page 19 and its branches print atop page 20; it is authored whole at page 19,
+so **tranche 6 starts at "Definitions and Special Rules" and must not
+re-author it**.
+
+**New engine finding — repeated Form XObjects are extracted once per page,
+not once per draw.** Chasing an odd recall result (the plan had 8 more
+`STOP` tokens than the source baseline) turned up a real bug: the STOP badge
+is ONE Form XObject stamped four times on page 18 via `Do`, and the
+content-stream extractor walks the page's `/XObject` resource dictionary —
+visiting each XObject once — instead of following the `Do` operators in
+stream order. So every repeated stamp is counted once: 2 `STOP`s recovered
+across pages 17-19 where pdf.js correctly reads 9. Same for the `AND`
+connectors. Two consequences: (1) the CS recall baseline under-counts
+repeated stamped content, so "extra" tokens in a recall check are not
+automatically authoring additions — check for stamps first; (2) following
+`Do` in stream order would also fix XObject text ORDER, which today is
+appended after the page text rather than interleaved. Needs its own measured
+round against the corpus, like the round-7 fixes.
+
+### Sessions 6+ — REMAINING (suggested boundaries from the printed TOC)
 
 | Tranche | Pages | Content | Notes |
 | --- | --- | --- | --- |
-| 05 | 17-22 | Who Qualifies as Your Dependent | DECISION CHARTS (flowcharts with yes/no branches) — the new structure to solve; expect to author each chart as a nested list or a step table, and to disclose the linearisation |
-| 06 | 23-38 | Income, AGI, Tax and Credits | line-instruction structure: `Line N` headings |
+| 06 | 20-22 | Definitions and Special Rules | two-column glossary; extracts INTERLEAVED (author from renders); starts at the "Definitions and Special Rules" heading — Step 5 q3 is already in tranche 5 |
+| 07 | 23-38 | Income, AGI, Tax and Credits | line-instruction structure: `Line N` headings |
 | 07 | 39-60 | Payments (EIC!) | EIC worksheets + tables; heavy geometry work |
 | 08 | 61-67 | Refund, Amount You Owe, Sign, Assemble | |
 | 09 | 68-80 | 2025 Tax Table | MECHANICAL: generate rows from extract-text with a per-tranche generator; thousands of rows; verify row count against page count |

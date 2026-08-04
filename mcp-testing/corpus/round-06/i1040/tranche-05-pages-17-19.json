@@ -1,0 +1,1107 @@
+{
+ "schema_version": "1.0",
+ "document": {
+  "title": "2025 Instructions for Form 1040 (and 1040-SR)",
+  "language": "en",
+  "source_page_count": 126,
+  "source_sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a",
+  "document_type": "booklet",
+  "subject": "Internal Revenue Service instructions for the 2025 Form 1040 and Form 1040-SR, including the instructions for Schedules 1 through 3.",
+  "variant": "original"
+ },
+ "blocks": [
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Who Qualifies as Your Dependent",
+   "source_page": 17
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Dependents, Qualifying Child for Child Tax Credit, and Credit for Other Dependents",
+   "source_page": 17
+  },
+  {
+   "type": "paragraph",
+   "text": "Follow the steps in the following flowchart to find out if a person qualifies as your dependent and to find out if your dependent qualifies you to take the child tax credit or the credit for other dependents. If you have more than four dependents, check the box under Dependents on page 1 of Form 1040 or 1040-SR and include a statement showing the information requested in the Dependents section.",
+   "source_page": 17,
+   "runs": [
+    {
+     "text": "Follow the steps in the following flowchart to find out if a person qualifies as your dependent and to find out if your dependent qualifies you to take the child tax credit or the credit for other dependents. If you have more than four dependents, check the box under ",
+     "style": "normal"
+    },
+    {
+     "text": "Dependents",
+     "style": "emphasis"
+    },
+    {
+     "text": " on page 1 of Form 1040 or 1040-SR and include a statement showing the information requested in the ",
+     "style": "normal"
+    },
+    {
+     "text": "Dependents",
+     "style": "emphasis"
+    },
+    {
+     "text": " section.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "Tip. The dependents you claim are those you list by name and SSN in the Dependents section on Form 1040 or 1040-SR.",
+   "runs": [
+    {
+     "text": "Tip.",
+     "style": "strong"
+    },
+    {
+     "text": " The dependents you claim are those you list by name and SSN in the Dependents section on Form 1040 or 1040-SR.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 17
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Before you begin",
+   "source_page": 17
+  },
+  {
+   "type": "paragraph",
+   "text": "See the definition of Social security number, later. If you want to claim the child tax credit, you must have a valid SSN, which means it must be valid for employment and issued before the due date of your return (including extensions). If you are filing a joint return, only one spouse is required to have a valid SSN to be eligible for the CTC and ACTC. The other spouse must have either an SSN or ITIN, and it must have been issued on or before the due date of the return (including extensions). If you want to claim the credit for other dependents, you, and your spouse if filing jointly, must have either an SSN or ITIN issued on or before the due date of your 2025 return (including extensions).",
+   "source_page": 17,
+   "runs": [
+    {
+     "text": "See the definition of ",
+     "style": "normal"
+    },
+    {
+     "text": "Social security number",
+     "style": "emphasis"
+    },
+    {
+     "text": ", later. If you want to claim the child tax credit, you must have a valid SSN, which means it must be valid for employment and issued before the due date of your return (including extensions). If you are filing a joint return, only one spouse is required to have a valid SSN to be eligible for the CTC and ACTC. The other spouse must have either an SSN or ITIN, and it must have been issued on or before the due date of the return (including extensions). If you want to claim the credit for other dependents, you, and your spouse if filing jointly, must have either an SSN or ITIN issued on or before the due date of your 2025 return (including extensions).",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Step 1. Do You Have a Qualifying Child?",
+   "source_page": 17
+  },
+  {
+   "type": "paragraph",
+   "text": "A qualifying child is your…",
+   "source_page": 17
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Son, daughter, stepchild, foster child, brother, sister, stepbrother, stepsister, half brother, half sister, or a descendant of any of them (for example, your grandchild, niece, or nephew)",
+    "AND was under age 19 at the end of 2025 and younger than you (or your spouse if filing jointly); or under age 24 at the end of 2025, a full-time student (defined later), and younger than you (or your spouse if filing jointly) — if the child is a full-time student, check the “Full-time student” box on row (6) of the Dependents section on page 1 of Form 1040 or 1040-SR; or any age and permanently and totally disabled (defined later) — if the child is permanently and totally disabled, check the “Permanently and totally disabled” box on row (6) of the Dependents section on page 1 of Form 1040 or 1040-SR.",
+    "AND who didn’t provide over half of their own support for 2025 (see Pub. 501)",
+    "AND who isn’t filing a joint return for 2025 or is filing a joint return for 2025 only to claim a refund of withheld income tax or estimated tax paid (see Pub. 501 for details and examples)",
+    "AND who lived with you for more than half of 2025. If the child didn’t live with you for the required time, see Exception to time lived with you, later. If the child lived with you for more than half of 2025, check the “Yes” box (box (a)) on row (5) of the Dependents section on page 1 of Form 1040 or 1040-SR."
+   ],
+   "source_page": 17,
+   "item_runs": [
+    [
+     {
+      "text": "Son, daughter, stepchild, foster child, brother, sister, stepbrother, stepsister, half brother, half sister, or a descendant of any of them (for example, your grandchild, niece, or nephew)",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "AND was under age 19 at the end of 2025 and younger than you (or your spouse if filing jointly); or under age 24 at the end of 2025, a full-time student (defined later), and younger than you (or your spouse if filing jointly) — if the child is a full-time student, check the “Full-time student” box on row (6) of the ",
+      "style": "normal"
+     },
+     {
+      "text": "Dependents",
+      "style": "emphasis"
+     },
+     {
+      "text": " section on page 1 of Form 1040 or 1040-SR; or any age and permanently and totally disabled (defined later) — if the child is permanently and totally disabled, check the “Permanently and totally disabled” box on row (6) of the ",
+      "style": "normal"
+     },
+     {
+      "text": "Dependents",
+      "style": "emphasis"
+     },
+     {
+      "text": " section on page 1 of Form 1040 or 1040-SR.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "AND who didn’t provide over half of their own support for 2025 (see Pub. 501)",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "AND who isn’t filing a joint return for 2025 or is filing a joint return for 2025 only to claim a refund of withheld income tax or estimated tax paid (see Pub. 501 for details and examples)",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "AND who lived with you for more than half of 2025. If the child didn’t live with you for the required time, see ",
+      "style": "normal"
+     },
+     {
+      "text": "Exception to time lived with you",
+      "style": "emphasis"
+     },
+     {
+      "text": ", later. If the child lived with you for more than half of 2025, check the “Yes” box (box (a)) on row (5) of the ",
+      "style": "normal"
+     },
+     {
+      "text": "Dependents",
+      "style": "emphasis"
+     },
+     {
+      "text": " section on page 1 of Form 1040 or 1040-SR.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "Caution. If the child meets the conditions to be a qualifying child of any other person (other than your spouse if filing jointly) for 2025, see Qualifying child of more than one person, later.",
+   "runs": [
+    {
+     "text": "Caution.",
+     "style": "strong"
+    },
+    {
+     "text": " ",
+     "style": "normal"
+    },
+    {
+     "text": "If the child meets the conditions to be a qualifying child of any other person (other than your spouse if filing jointly) for 2025, see ",
+     "style": "normal"
+    },
+    {
+     "text": "Qualifying child of more than one person",
+     "style": "emphasis"
+    },
+    {
+     "text": ", later.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 17
+  },
+  {
+   "type": "paragraph",
+   "text": "1. Do you have a child who meets the conditions to be your qualifying child?",
+   "source_page": 17
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. Go to Step 2.",
+    "No. Go to Step 4."
+   ],
+   "source_page": 17,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " Go to Step 2.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " Go to Step 4.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Step 2. Is Your Qualifying Child Your Dependent?",
+   "source_page": 18
+  },
+  {
+   "type": "paragraph",
+   "text": "1. Was the child a U.S. citizen, U.S. national, U.S. resident alien, or a resident of Canada or Mexico? (See Pub. 519 for the definition of a U.S. national or U.S. resident alien. If the child was adopted, see Exception to citizen test, later.)",
+   "source_page": 18,
+   "runs": [
+    {
+     "text": "1. Was the child a U.S. citizen, U.S. national, U.S. resident alien, or a resident of Canada or Mexico? (See Pub. 519 for the definition of a U.S. national or U.S. resident alien. If the child was adopted, see ",
+     "style": "normal"
+    },
+    {
+     "text": "Exception to citizen test",
+     "style": "emphasis"
+    },
+    {
+     "text": ", later.)",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. Continue.",
+    "No. STOP. You can’t claim this child as a dependent."
+   ],
+   "source_page": 18,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " Continue.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " STOP. You can’t claim this child as a dependent.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "2. Was the child married?",
+   "source_page": 18
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. See Married person, later.",
+    "No. Continue."
+   ],
+   "source_page": 18,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " See ",
+      "style": "normal"
+     },
+     {
+      "text": "Married person",
+      "style": "emphasis"
+     },
+     {
+      "text": ", later.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " Continue.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "3. Are you filing a joint return for 2025?",
+   "source_page": 18
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. You can claim this child as a dependent. Complete rows (1) through (4), (5)(a), and (6) of the Dependents section on page 1 of Form 1040 or 1040-SR for this child. Then, go to Step 3.",
+    "No. Continue."
+   ],
+   "source_page": 18,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " You can claim this child as a dependent. Complete rows (1) through (4), (5)(a), and (6) of the ",
+      "style": "normal"
+     },
+     {
+      "text": "Dependents",
+      "style": "emphasis"
+     },
+     {
+      "text": " section on page 1 of Form 1040 or 1040-SR for this child. Then, go to Step 3.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " Continue.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "4. Could you be claimed as a dependent on someone else’s 2025 tax return? (If the person who could claim you on their 2025 tax return is not required to file, and isn’t filing a 2025 tax return or is filing a 2025 return only to claim a refund of withheld income tax or estimated tax paid, check “No.”)",
+   "source_page": 18
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. STOP. You can’t claim any dependents. Complete the rest of Form 1040 or 1040-SR and any applicable schedules.",
+    "No. You can claim this child as a dependent. Complete rows (1) through (4), (5)(a), and (6) of the Dependents section on page 1 of Form 1040 or 1040-SR for this child. Then, go to Step 3."
+   ],
+   "source_page": 18,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " STOP. You can’t claim any dependents. Complete the rest of Form 1040 or 1040-SR and any applicable schedules.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " You can claim this child as a dependent. Complete rows (1) through (4), (5)(a), and (6) of the ",
+      "style": "normal"
+     },
+     {
+      "text": "Dependents",
+      "style": "emphasis"
+     },
+     {
+      "text": " section on page 1 of Form 1040 or 1040-SR for this child. Then, go to Step 3.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Step 3. Does Your Qualifying Child Qualify You for the Child Tax Credit or Credit for Other Dependents?",
+   "source_page": 18
+  },
+  {
+   "type": "paragraph",
+   "text": "1. Did the child have an SSN, ITIN, or adoption taxpayer identification number (ATIN) issued on or before the due date of your return (including extensions)? (Answer “Yes” if you are applying for an ITIN or ATIN for the child on or before the due date of your return (including extensions).)",
+   "source_page": 18
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. Continue.",
+    "No. STOP. You can’t claim the child tax credit or the credit for other dependents for this child."
+   ],
+   "source_page": 18,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " Continue.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " STOP. You can’t claim the child tax credit or the credit for other dependents for this child.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "2. Was the child a U.S. citizen, U.S. national, or U.S. resident alien? (See Pub. 519 for the definition of a U.S. national or U.S. resident alien. If the child was adopted, see Exception to citizen test, later.)",
+   "source_page": 18,
+   "runs": [
+    {
+     "text": "2. Was the child a U.S. citizen, U.S. national, or U.S. resident alien? (See Pub. 519 for the definition of a U.S. national or U.S. resident alien. If the child was adopted, see ",
+     "style": "normal"
+    },
+    {
+     "text": "Exception to citizen test",
+     "style": "emphasis"
+    },
+    {
+     "text": ", later.)",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. Continue.",
+    "No. STOP. You can’t claim the child tax credit or the credit for other dependents for this child."
+   ],
+   "source_page": 18,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " Continue.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " STOP. You can’t claim the child tax credit or the credit for other dependents for this child.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "3. Was the child under age 17 at the end of 2025?",
+   "source_page": 18
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. Continue.",
+    "No. You can claim the credit for other dependents for this child. Check the “Credit for other dependents” box on row (7) of the Dependents section on page 1 of Form 1040 or 1040-SR for this person."
+   ],
+   "source_page": 18,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " Continue.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " You can claim the credit for other dependents for this child. Check the “Credit for other dependents” box on row (7) of the ",
+      "style": "normal"
+     },
+     {
+      "text": "Dependents",
+      "style": "emphasis"
+     },
+     {
+      "text": " section on page 1 of Form 1040 or 1040-SR for this person.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "4. Did you, or your spouse if filing a joint return, and this child have SSNs valid for employment and issued before the due date of your 2025 return (including extensions)? (See Social Security Number, later.)",
+   "source_page": 18,
+   "runs": [
+    {
+     "text": "4. Did you, or your spouse if filing a joint return, and this child have SSNs valid for employment and issued before the due date of your 2025 return (including extensions)? (See ",
+     "style": "normal"
+    },
+    {
+     "text": "Social Security Number",
+     "style": "emphasis"
+    },
+    {
+     "text": ", later.)",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. You can claim the child tax credit for this person. Check the “Child tax credit” box on row (7) of the Dependents section on page 1 of Form 1040 or 1040-SR for this person.",
+    "No. Go to Step 5."
+   ],
+   "source_page": 18,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " You can claim the child tax credit for this person. Check the “Child tax credit” box on row (7) of the ",
+      "style": "normal"
+     },
+     {
+      "text": "Dependents",
+      "style": "emphasis"
+     },
+     {
+      "text": " section on page 1 of Form 1040 or 1040-SR for this person.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " Go to Step 5.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Step 4. Is Your Qualifying Relative Your Dependent?",
+   "source_page": 19
+  },
+  {
+   "type": "paragraph",
+   "text": "A qualifying relative is your…",
+   "source_page": 19
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Son, daughter, stepchild, foster child, or a descendant of any of them (for example, your grandchild)",
+    "or brother, sister, half brother, half sister, or a son or daughter of any of them (for example, your niece or nephew)",
+    "or father, mother, or an ancestor or sibling of either of them (for example, your grandmother, grandfather, aunt, or uncle)",
+    "or stepbrother, stepsister, stepfather, stepmother, son-in-law, daughter-in-law, father-in-law, mother-in-law, brother-in-law, or sister-in-law",
+    "or any other person (other than your spouse) who lived with you all year as a member of your household if your relationship didn’t violate local law. If the person didn’t live with you for the required time, see Exception to time lived with you, later.",
+    "AND who wasn’t a qualifying child (see Step 1) of any taxpayer for 2025. For this purpose, a person isn’t a taxpayer if the person isn’t required to file a U.S. income tax return and either doesn’t file such a return or files only to get a refund of withheld income tax or estimated tax paid. See Pub. 501 for details and examples.",
+    "AND who had gross income of less than $5,200 in 2025. If the person was permanently and totally disabled, see Exception to gross income test, later.",
+    "AND for whom you provided over half of the person’s support in 2025. But see Children of divorced or separated parents, Multiple support agreements, and Kidnapped child, later."
+   ],
+   "source_page": 19,
+   "item_runs": [
+    [
+     {
+      "text": "Son, daughter, stepchild, foster child, or a descendant of any of them (for example, your grandchild)",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "or brother, sister, half brother, half sister, or a son or daughter of any of them (for example, your niece or nephew)",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "or father, mother, or an ancestor or sibling of either of them (for example, your grandmother, grandfather, aunt, or uncle)",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "or stepbrother, stepsister, stepfather, stepmother, son-in-law, daughter-in-law, father-in-law, mother-in-law, brother-in-law, or sister-in-law",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "or any other person (other than your spouse) who lived with you all year as a member of your household if your relationship didn’t violate local law. If the person didn’t live with you for the required time, see ",
+      "style": "normal"
+     },
+     {
+      "text": "Exception to time lived with you",
+      "style": "emphasis"
+     },
+     {
+      "text": ", later.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "AND who wasn’t a qualifying child (see Step 1) of any taxpayer for 2025. For this purpose, a person isn’t a taxpayer if the person isn’t required to file a U.S. income tax return and either doesn’t file such a return or files only to get a refund of withheld income tax or estimated tax paid. See Pub. 501 for details and examples.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "AND who had gross income of less than $5,200 in 2025. If the person was permanently and totally disabled, see ",
+      "style": "normal"
+     },
+     {
+      "text": "Exception to gross income test",
+      "style": "emphasis"
+     },
+     {
+      "text": ", later.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "AND for whom you provided over half of the person’s support in 2025. But see ",
+      "style": "normal"
+     },
+     {
+      "text": "Children of divorced or separated parents",
+      "style": "emphasis"
+     },
+     {
+      "text": ", ",
+      "style": "normal"
+     },
+     {
+      "text": "Multiple support agreements",
+      "style": "emphasis"
+     },
+     {
+      "text": ", and ",
+      "style": "normal"
+     },
+     {
+      "text": "Kidnapped child",
+      "style": "emphasis"
+     },
+     {
+      "text": ", later.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "1. Does any person meet the conditions to be your qualifying relative?",
+   "source_page": 19
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. Continue.",
+    "No. STOP."
+   ],
+   "source_page": 19,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " Continue.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " STOP.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "2. Was your qualifying relative a U.S. citizen, U.S. national, U.S. resident alien, or a resident of Canada or Mexico? (See Pub. 519 for the definition of a U.S. national or U.S. resident alien. If your qualifying relative was adopted, see Exception to citizen test, later.)",
+   "source_page": 19,
+   "runs": [
+    {
+     "text": "2. Was your qualifying relative a U.S. citizen, U.S. national, U.S. resident alien, or a resident of Canada or Mexico? (See Pub. 519 for the definition of a U.S. national or U.S. resident alien. If your qualifying relative was adopted, see ",
+     "style": "normal"
+    },
+    {
+     "text": "Exception to citizen test",
+     "style": "emphasis"
+    },
+    {
+     "text": ", later.)",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. Continue.",
+    "No. STOP. You can’t claim this person as a dependent."
+   ],
+   "source_page": 19,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " Continue.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " STOP. You can’t claim this person as a dependent.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "3. Was your qualifying relative married?",
+   "source_page": 19
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. See Married person, later.",
+    "No. Continue."
+   ],
+   "source_page": 19,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " See ",
+      "style": "normal"
+     },
+     {
+      "text": "Married person",
+      "style": "emphasis"
+     },
+     {
+      "text": ", later.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " Continue.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "4. Are you filing a joint return for 2025?",
+   "source_page": 19
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. You can claim this person as a dependent. Complete rows (1) through (4), (5)(a), and (6) of the Dependents section on page 1 of Form 1040 or 1040-SR. Then, go to Step 5.",
+    "No. Continue."
+   ],
+   "source_page": 19,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " You can claim this person as a dependent. Complete rows (1) through (4), (5)(a), and (6) of the ",
+      "style": "normal"
+     },
+     {
+      "text": "Dependents",
+      "style": "emphasis"
+     },
+     {
+      "text": " section on page 1 of Form 1040 or 1040-SR. Then, go to Step 5.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " Continue.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "5. Could you be claimed as a dependent on someone else’s 2025 tax return? (If the person who could claim you on their 2025 tax return is not required to file, and isn’t filing a 2025 tax return or is filing a 2025 return only to claim a refund of withheld income tax or estimated tax paid, check “No.”)",
+   "source_page": 19
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. STOP. You can’t claim any dependents. Complete the rest of Form 1040 or 1040-SR and any applicable schedules.",
+    "No. You can claim this person as a dependent. Complete rows (1) through (4), (5)(a), and (6) of the Dependents section on page 1 of Form 1040 or 1040-SR. Then, go to Step 5."
+   ],
+   "source_page": 19,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " STOP. You can’t claim any dependents. Complete the rest of Form 1040 or 1040-SR and any applicable schedules.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " You can claim this person as a dependent. Complete rows (1) through (4), (5)(a), and (6) of the ",
+      "style": "normal"
+     },
+     {
+      "text": "Dependents",
+      "style": "emphasis"
+     },
+     {
+      "text": " section on page 1 of Form 1040 or 1040-SR. Then, go to Step 5.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Step 5. Does Your Qualifying Relative Qualify You for the Credit for Other Dependents?",
+   "source_page": 19
+  },
+  {
+   "type": "paragraph",
+   "text": "1. Did you, and your spouse if filing a joint return, have either an SSN or ITIN issued on or before the due date of your 2025 return (including extensions)? (Answer “Yes” if you are applying for an ITIN on or before the return due date (including extensions).)",
+   "source_page": 19
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. Continue.",
+    "No. STOP. You can’t claim the credit for other dependents."
+   ],
+   "source_page": 19,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " Continue.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " STOP. You can’t claim the credit for other dependents.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "2. Did your qualifying relative have an SSN, ITIN, or ATIN issued on or before the due date of your 2025 return (including extensions)? (Answer “Yes” if you are applying for an ITIN or ATIN for the qualifying relative on or before the return due date (including extensions).)",
+   "source_page": 19
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. Continue.",
+    "No. STOP. You can’t claim the credit for other dependents for this qualifying relative."
+   ],
+   "source_page": 19,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " Continue.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " STOP. You can’t claim the credit for other dependents for this qualifying relative.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "3. Was your qualifying relative a U.S. citizen, U.S. national, or U.S. resident alien? (See Pub. 519 for the definition of a U.S. national or a U.S. resident alien. If your qualifying relative was adopted, see Exception to citizen test, later.)",
+   "source_page": 19,
+   "runs": [
+    {
+     "text": "3. Was your qualifying relative a U.S. citizen, U.S. national, or U.S. resident alien? (See Pub. 519 for the definition of a U.S. national or a U.S. resident alien. If your qualifying relative was adopted, see ",
+     "style": "normal"
+    },
+    {
+     "text": "Exception to citizen test",
+     "style": "emphasis"
+    },
+    {
+     "text": ", later.)",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. You can claim the credit for other dependents for this dependent. Check the “Credit for other dependents” box on row (7) of the Dependents section on page 1 of Form 1040 or 1040-SR for this person.",
+    "No. STOP. You can’t claim the credit for other dependents for this qualifying relative."
+   ],
+   "source_page": 19,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " You can claim the credit for other dependents for this dependent. Check the “Credit for other dependents” box on row (7) of the ",
+      "style": "normal"
+     },
+     {
+      "text": "Dependents",
+      "style": "emphasis"
+     },
+     {
+      "text": " section on page 1 of Form 1040 or 1040-SR for this person.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " STOP. You can’t claim the credit for other dependents for this qualifying relative.",
+      "style": "normal"
+     }
+    ]
+   ]
+  }
+ ],
+ "review_notes": [
+  "TRANCHE 5 OF A MULTI-SESSION REBUILD. This plan covers printed pages 17-19 — “Who Qualifies as Your Dependent”, the five-step decision flowchart. It carries no document title by design: only tranche 1 does, so this file validates through merge-plans rather than standalone. No partial rebuild is delivered.",
+  "FLOWCHART LINEARISED AS STEPS, QUESTIONS, AND LABELLED BRANCHES. This is the document’s first flowchart, and the shape chosen here should be reused for the later ones. Each step is a level-4 heading carrying its printed step badge (“Step 1. Do You Have a Qualifying Child?”), so a reader always knows where they are. Each numbered question keeps its printed number and is followed by a two-item list holding the Yes and No branches with strong labels. That preserves the pairing a sighted reader gets from the two-column layout without inventing a table the source does not have, and it keeps the branch text verbatim.",
+  "AND/OR CRITERIA STACKS KEPT AS TEXT. Steps 1 and 4 open with a stack of criteria boxes joined by AND and or connector arrows. The connectives are real text in the source, so each criterion is a list item that keeps its leading “AND”/“or” and the logic survives in linear order. In Step 1 the three age alternatives are joined into one item with semicolons, and each alternative keeps its own “check the box” sentence beside it rather than being moved to the end.",
+  "STOP KEPT, CHECKBOXES AND ARROWS DROPPED. “STOP” is real text in the source — it is set inside a small octagon drawn as a reusable Form XObject that the page stamps wherever a branch ends — so authoring it as the word “STOP.” at the head of its branch reproduces the document rather than adding to it, and it is that branch’s entire meaning. The empty checkbox glyph printed before every Yes and No, and the connector arrows drawn between criteria boxes, are decoration for a reader working down the page and are dropped. (The same stamping applies to the “AND” connectors, whose text IS kept, as part of the criteria items.)",
+  "ONE BRANCH IS DELIBERATELY BARE. In Step 4, question 1, the source prints the No branch as the STOP badge ALONE, with no sentence explaining what to do — unlike every other STOP in the chart. It is authored as “STOP.” with nothing added. Filling that gap would mean writing tax guidance the IRS did not publish, which this rebuild does not do.",
+  "SCOPE STOPS AT THE FLOWCHART. The session log pencilled tranche 5 as pages 17-22. Pages 20-22 are “Definitions and Special Rules”, a two-column glossary that is a separate job. Step 5’s question 3 begins on page 19 and its Yes/No branches print at the top of page 20; it is authored whole here and attributed to page 19, so the next tranche starts at “Definitions and Special Rules” and must NOT re-author that question.",
+  "STEP HEADINGS AT LEVEL 4. “Who Qualifies as Your Dependent” is set at 18pt, between the 23pt section title and the 16pt parts around it. It is authored at level 3, as a sibling of the “Dependents” section that refers to it, with its subtitle and the five steps at level 4 and “Before you begin” at level 5 — consistent with the level scheme established in tranche 4.",
+  "ITALIC CROSS-REFERENCES MARKED AS EMPHASIS, not linked. As in tranche 4, references such as “Exception to citizen test” and “Married person” are marked emphasis; they are not turned into links because the source has no link annotations for them and their destinations are in later tranches.",
+  "REPEATED BRANCH TEXT KEPT VERBATIM. Several outcomes repeat word for word across steps (the two “Complete rows (1) through (4), (5)(a), and (6)” instructions, and the “You can’t claim any dependents” STOP). Each is kept in full where it appears, because a reader arrives at exactly one of them and must not have to look elsewhere.",
+  "SOFT HYPHENS REMOVED and genuine compounds kept (full-time, son-in-law, half brother, 1040-SR, on-farm). PAGE FURNITURE OMITTED: the printed page numbers, the standing “Need more information or forms?” footer, and the invisible “Fileid: … MUST be removed before printing” production lines."
+ ]
+}
