@@ -382,26 +382,30 @@
     updateServiceControls();
   }
 
+  var THEME_LABELS = { dark: 'Dark', light: 'Light', contrast: 'High contrast' };
+
+  function isKnownTheme(value) {
+    return Object.prototype.hasOwnProperty.call(THEME_LABELS, value);
+  }
+
   function applyInitialTheme() {
     var params = new URLSearchParams(window.location.search);
     var requested = params.get('theme');
-    var theme = requested === 'light' || requested === 'contrast' ? requested : 'dark';
+    var theme = isKnownTheme(requested) ? requested : 'dark';
     try {
       var stored = sessionStorage.getItem('allosheet_theme');
-      if (stored === 'light' || stored === 'dark' || stored === 'contrast') theme = stored;
+      if (isKnownTheme(stored)) theme = stored;
     } catch (_) {}
     document.documentElement.dataset.theme = theme;
-    byId('themeButton').setAttribute('aria-pressed', theme === 'contrast' ? 'true' : 'false');
+    byId('themeSelect').value = theme;
   }
 
-  function toggleContrast() {
-    var current = document.documentElement.dataset.theme || 'dark';
-    var fallback = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-    var next = current === 'contrast' ? fallback : 'contrast';
+  function setTheme(next) {
+    if (!isKnownTheme(next)) return;
     document.documentElement.dataset.theme = next;
-    byId('themeButton').setAttribute('aria-pressed', next === 'contrast' ? 'true' : 'false');
+    byId('themeSelect').value = next;
     try { sessionStorage.setItem('allosheet_theme', next); } catch (_) {}
-    announce(next === 'contrast' ? 'High contrast enabled.' : 'High contrast disabled.');
+    announce(THEME_LABELS[next] + ' theme enabled.');
   }
 
   function postToHost(message) {
@@ -3216,7 +3220,7 @@
   }
 
   function bindEvents() {
-    byId('themeButton').addEventListener('click', toggleContrast);
+    byId('themeSelect').addEventListener('change', function (event) { setTheme(event.target.value); });
     byId('checkServiceButton').addEventListener('click', checkService);
     byId('loadTablesButton').addEventListener('click', loadTables);
     byId('loadRecordsButton').addEventListener('click', loadRecords);

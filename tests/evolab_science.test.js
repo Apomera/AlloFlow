@@ -74,4 +74,40 @@ describe('EvoLab runtime and accessibility', () => {
     expect(source).not.toContain('toolData.evoLab');
     expect(source).not.toContain('setToolData(function(prev)');
   });
+
+  // The pressure-discovery view keeps its state in ctx.toolData, so every
+  // slider step and keystroke re-renders the HOST. Dispatching it through an
+  // anonymous component (`h(function () {...})`) gave that element a fresh
+  // type on each host render, so React unmounted and rebuilt the panel — the
+  // visible symptom was the panel blanking and re-laying out mid-interaction,
+  // with drags and caret position lost. Rendering the tree directly removes
+  // the component boundary. The invariant: no view in this tool may be
+  // dispatched through an inline anonymous component.
+  it('dispatches every view without an inline anonymous component', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_evolab.js', 'utf8');
+    expect(source).not.toMatch(/\bh\(\s*function\s*\(/);
+    expect(source).toContain("if (view === 'pressureHunt') return (function() {");
+  });
+});
+
+describe('EvoLab Predator Vision camouflage palette', () => {
+  // traitColor runs inside the mount-time RAF closure, so it sees the
+  // ENVIRONMENTS object literals from the FIRST render. Comparing the live
+  // envRef against those by identity went false as soon as anything
+  // re-rendered (starting the hunt does), dropping every prey through to the
+  // urban grey ramp regardless of the chosen environment. Compare by id.
+  it('selects the prey color ramp by environment id, not object identity', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_evolab.js', 'utf8');
+    expect(source).not.toMatch(/===\s*ENVIRONMENTS\./);
+    expect(source).toContain('var envIdRef = useRef(envId);');
+    expect(source).toContain("if (e === 'forest') {");
+    expect(source).toContain("if (e === 'sand') {");
+    expect(source).toContain("if (e === 'snow') {");
+  });
+
+  it('seeds the background noise texture from the live environment id', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_evolab.js', 'utf8');
+    expect(source).toContain('var eid = envIdRef.current;');
+    expect(source).not.toContain('envId.charCodeAt(0)');
+  });
 });

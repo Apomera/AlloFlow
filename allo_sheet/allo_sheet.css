@@ -229,6 +229,30 @@ h3 {
   flex-wrap: wrap;
 }
 
+/* Theme picker. This used to be a single "High contrast" toggle, which meant
+ * the control read "High contrast" in every state and dark mode was only
+ * reachable by accident (the toggle fell back to the OS preference, so a
+ * light-mode OS could never get back to dark). A native select exposes all
+ * three themes by name and needs no custom keyboard handling. */
+.theme-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.theme-picker label {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.theme-picker select {
+  width: auto;
+  min-width: 9.5rem;
+  margin-top: 0;
+}
+
 .privacy-banner {
   padding: 0.7rem clamp(1rem, 3vw, 2rem);
   border-bottom: 1px solid #806a23;

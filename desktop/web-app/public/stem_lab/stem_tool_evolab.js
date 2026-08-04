@@ -5224,6 +5224,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         // Live refs
         var envRef = useRef(env);
         envRef.current = env;
+        // Mirror the environment ID too. ENVIRONMENTS is rebuilt on every render,
+        // so anything captured in the long-lived RAF closure holds the MOUNT
+        // render's object literals — comparing envRef.current against them by
+        // identity fails the moment the component re-renders. Compare by id.
+        var envIdRef = useRef(envId);
+        envIdRef.current = envId;
         var phaseRef = useRef(phase);
         phaseRef.current = phase;
 
@@ -5343,22 +5349,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         // The closer to env.idealTrait, the harder to see against the background.
         function traitColor(t) {
           // Convert trait to RGB based on environment hue family.
-          var e = envRef.current;
-          if (e === ENVIRONMENTS.forest) {
+          var e = envIdRef.current;
+          if (e === 'forest') {
             // Greens/browns ramp
             var rr = Math.round(lerp(50, 134, t));
             var gg = Math.round(lerp(80, 142, t));
             var bb = Math.round(lerp(40, 70, t));
             return 'rgb(' + rr + ',' + gg + ',' + bb + ')';
           }
-          if (e === ENVIRONMENTS.sand) {
+          if (e === 'sand') {
             // Brown to pale tan
             var sr = Math.round(lerp(120, 254, t));
             var sg = Math.round(lerp(80, 240, t));
             var sb = Math.round(lerp(40, 200, t));
             return 'rgb(' + sr + ',' + sg + ',' + sb + ')';
           }
-          if (e === ENVIRONMENTS.snow) {
+          if (e === 'snow') {
             // Dark grey → white
             var v = Math.round(lerp(60, 250, t));
             return 'rgb(' + v + ',' + v + ',' + v + ')';
@@ -5380,10 +5386,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           ctx.fillRect(0, 0, W, H);
           // Noise — random small dots in the noiseColor for texture/camouflage feel
           ctx.fillStyle = e.noiseColor;
-          // Use a deterministic seed-ish pattern so it doesn't shimmer per frame
+          // Use a deterministic seed-ish pattern so it doesn't shimmer per frame.
+          // Seed off the ref, not the closure `envId` — drawCanvas is captured by
+          // the mount-time RAF loop, so the closure value never changes and the
+          // texture would stay seeded to whichever environment loaded first.
+          var eid = envIdRef.current;
           for (var ni = 0; ni < 350; ni++) {
-            var nx = (ni * 137 + envId.length * 11) % W;
-            var ny = (ni * 89 + envId.charCodeAt(0)) % H;
+            var nx = (ni * 137 + eid.length * 11) % W;
+            var ny = (ni * 89 + eid.charCodeAt(0)) % H;
             var ns = ((ni * 7) % 4) + 1;
             ctx.fillRect(nx, ny, ns, ns);
           }
@@ -7087,8 +7097,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       if (view === 'curriculumGuide') return h(CurriculumGuide);
       if (view === 'moduleMap') return h(ModuleMap);
       if (view === 'standardsCrosswalk') return h(StandardsCrosswalk);
-      if (view === 'pressureHunt') return h(function() {
-        var iq = d.pressureHunt || { camouflage: 50, vision: 50, harshness: 30, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+      // Rendered as a plain IIFE, NOT wrapped in createElement. An anonymous
+      // component declared at the call site gets a fresh function identity on
+      // every host render, so React tears the subtree down and rebuilds it —
+      // and because this module keeps its state in ctx.toolData (upd), every
+      // keystroke and every slider step triggers exactly that. The result was
+      // a textarea that dropped focus mid-word and sliders that stopped
+      // tracking after one step. It uses no hooks, so inlining the element
+      // tree removes the component boundary and the remount with it.
+      if (view === 'pressureHunt') return (function() {
+        var iq = d.pressureHunt ||{ camouflage: 50, vision: 50, harshness: 30, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
         function setIQ(patch) {
           upd('pressureHunt', Object.assign({}, iq, patch));
         }
@@ -7165,7 +7183,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               'Model limit: three arbitrary weighted sliders produce a conceptual regime label. This is not a population-dynamics or measured-fitness model.')
           )
         );
-      });
+      })();
       return h(MainMenu);
     }
   });

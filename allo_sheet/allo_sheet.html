@@ -21,7 +21,14 @@
     </div>
     <div class="header-actions">
       <span id="bridgeBadge" class="badge warn" role="status">Connecting to AlloFlow…</span>
-      <button id="themeButton" type="button" class="quiet-button" aria-pressed="false">High contrast</button>
+      <div class="theme-picker">
+        <label for="themeSelect">Theme</label>
+        <select id="themeSelect">
+          <option value="dark">Dark</option>
+          <option value="light">Light</option>
+          <option value="contrast">High contrast</option>
+        </select>
+      </div>
     </div>
   </header>
 

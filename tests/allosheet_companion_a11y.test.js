@@ -158,6 +158,39 @@ describe('AlloSheet companion accessibility in a real browser', () => {
     await page.close();
   }, 15000);
 
+  // The header used to carry a single "High contrast" toggle. It read
+  // "High contrast" in every state, and turning contrast back off fell through
+  // to the OS color-scheme preference — so on a light-mode machine there was no
+  // way to reach the dark theme at all. All three themes must be selectable by
+  // name, and choosing one must actually apply it.
+  it('offers all three themes by name and applies the one chosen', async () => {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+    await page.setContent(interactivePage, { waitUntil: 'domcontentloaded' });
+
+    const picker = page.locator('#themeSelect');
+    await expect.poll(() => picker.count()).toBe(1);
+    expect(await picker.locator('option').allTextContents()).toEqual(['Dark', 'Light', 'High contrast']);
+    expect(await page.locator('label[for="themeSelect"]').textContent()).toBe('Theme');
+
+    // setContent serves an opaque origin, so sessionStorage throws here. That is
+    // deliberate coverage of the persistence try/catch: theme switching has to
+    // keep working when storage is unavailable.
+    const applied = [];
+    for (const theme of ['light', 'contrast', 'dark']) {
+      await picker.selectOption(theme);
+      applied.push(await page.evaluate(() => ({
+        dataset: document.documentElement.dataset.theme,
+        value: document.getElementById('themeSelect').value,
+      })));
+    }
+    expect(applied.map((entry) => entry.dataset)).toEqual(['light', 'contrast', 'dark']);
+    expect(applied.map((entry) => entry.value)).toEqual(['light', 'contrast', 'dark']);
+
+    // The switch is announced by name, not as a contrast on/off state.
+    await expect.poll(() => page.locator('#liveStatus').textContent()).toBe('Dark theme enabled.');
+    await page.close();
+  }, 15000);
+
   it('supports keyboard navigation, scrollable plan review, and an unclipped editor focus ring', async () => {
     const page = await browser.newPage({ viewport: { width: 320, height: 800 } });
     await page.route('https://allosheet.test/api/allosheet/**', (route) => route.fulfill({
