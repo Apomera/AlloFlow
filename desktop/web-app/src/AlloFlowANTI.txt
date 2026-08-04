@@ -11733,9 +11733,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       return String(url || '').replace(/^\.\//, '').replace(/^\/+/, '').split('?')[0];
     };
     var moduleFallbackUrl = function(originalUrl, activeUrl) {
+      // Pinned module URLs already carry ?v=<hash>; a second '?v=' makes a
+      // malformed '...?v=hash?v=now' query. Join with '&' when '?' exists.
+      var bust = function(u) { return u + (u.indexOf('?') === -1 ? '?v=' : '&v=') + Date.now(); };
       var path = modulePathFromUrl(originalUrl || activeUrl);
-      if (isDesktopBundledApp && path) return 'https://alloflow-cdn.pages.dev/' + path + '?v=' + Date.now();
-      return String(originalUrl || activeUrl).replace(/https:\/\/(?:cdn\.jsdelivr\.net\/gh\/Apomera\/AlloFlow@[^\/]+|alloflow-cdn\.pages\.dev)\//, 'https://raw.githubusercontent.com/Apomera/AlloFlow/main/') + '?v=' + Date.now();
+      if (isDesktopBundledApp && path) return bust('https://alloflow-cdn.pages.dev/' + path);
+      return bust(String(originalUrl || activeUrl).replace(/https:\/\/(?:cdn\.jsdelivr\.net\/gh\/Apomera\/AlloFlow@[^\/]+|alloflow-cdn\.pages\.dev)\//, 'https://raw.githubusercontent.com/Apomera/AlloFlow/main/'));
     };
     // ── window.AlloFlowConfig — user-overridable runtime config (WCAG 2.2.1) ──
     // Persisted to localStorage so the user can extend API/audio timeouts

@@ -20,4 +20,8 @@
         standardCount: snapshot.standards.length,
         relationshipCount: snapshot.relationships.length
     };
+    // loadModule('StandardsSnapshotMaScienceG5', ...) checks THIS key to declare the load
+    // settled — without it every page load logs a false registration
+    // failure and burns a doomed GitHub-raw fallback request.
+    root.AlloModules.StandardsSnapshotMaScienceG5 = root.AlloModules.LocalStandardsSnapshot;
 })(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null));
