@@ -268,6 +268,76 @@ describe('Law Navigator live mode', () => {
   });
 });
 
+describe('Law Navigator reading supports', () => {
+  // Lift the SHIPPED definition indexer and run it over the real corpora.
+  const box = (() => {
+    const a = src.indexOf('function buildDefIndex');
+    const b = src.indexOf('function srLive');
+    expect(a, 'buildDefIndex present').toBeGreaterThan(-1);
+    const o = { _defIndex: {} };
+    new Function('box', 'var _defIndex = box._defIndex;' + src.slice(a, b) +
+      'box.buildDefIndex = buildDefIndex; box.definedTermsIn = definedTermsIn;')(o);
+    return o;
+  })();
+
+  it('indexes real defined terms from both corpora', () => {
+    for (const slug of ['idea-part-b', 'me-muser']) {
+      const doc = JSON.parse(read('law_corpus/' + slug + '.json'));
+      const defs = box.buildDefIndex(doc);
+      expect(defs.length, slug + ' defined terms').toBeGreaterThan(15);
+      // Every entry must quote real corpus text, never a generated gloss.
+      for (const d of defs.slice(0, 20)) {
+        expect(d.text.length, d.term).toBeGreaterThan(20);
+        expect(d.sectionNumber, d.term).toBeTruthy();
+      }
+    }
+  });
+
+  it('rejects substantive sections that merely contain the word "means"', () => {
+    // The first attempt swept in headings like "Applicability of §§ 300.146
+    // through 300.147". A definition restates its own term before "means".
+    const idea = JSON.parse(read('law_corpus/idea-part-b.json'));
+    const terms = box.buildDefIndex(idea).map((d) => d.term.toLowerCase());
+    for (const noise of ['applicability of', 'use of amounts', 'definition of individualized education program']) {
+      expect(terms.some((t) => t.includes(noise)), 'should not index "' + noise + '"').toBe(false);
+    }
+    // ...while keeping the genuine ones.
+    for (const real of ['free appropriate public education', 'parent', 'evaluation']) {
+      expect(terms.includes(real), 'should index "' + real + '"').toBe(true);
+    }
+  });
+
+  it('surfaces terms used in a section without offering its own definition circularly', () => {
+    const idea = JSON.parse(read('law_corpus/idea-part-b.json'));
+    const parentDef = idea.sections.find((s) => /^§?\s*300\.30\b/.test(s.heading) || s.number === '300.30');
+    if (parentDef) {
+      const inOwn = box.definedTermsIn(idea, parentDef, 12).map((t) => t.sectionNumber);
+      expect(inOwn.includes(parentDef.number), 'a section must not link to itself').toBe(false);
+    }
+    const muser = JSON.parse(read('law_corpus/me-muser.json'));
+    const safeguards = muser.sections.find((s) => s.number === 'XV');
+    expect(box.definedTermsIn(muser, safeguards, 12).length).toBeGreaterThan(0);
+  });
+
+  it('offers reading controls that change presentation only', () => {
+    expect(src).toContain('Reading controls');
+    // Size, spacing, typeface, measure, read-aloud.
+    expect(src).toMatch(/readSize/);
+    expect(src).toMatch(/readSpacing/);
+    expect(src).toMatch(/readSerif/);
+    expect(src).toMatch(/maxWidth: readWide/);
+    expect(src).toContain('ctx.callTTS');
+    // The promise that these never touch the words (comment wraps lines).
+    expect(src).toMatch(/changes size\/spacing\/typeface\/measure only/i);
+    expect(src).toMatch(/exactly as published/i);
+  });
+
+  it('labels quoted definitions as the law\'s own words', () => {
+    expect(src).toContain('Words this law defines for itself');
+    expect(src).toContain('not a plain-language gloss');
+  });
+});
+
 describe('Law Navigator renders without a network', () => {
   beforeEach(() => resetStemLab());
 

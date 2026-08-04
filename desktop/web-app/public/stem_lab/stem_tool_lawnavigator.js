@@ -233,6 +233,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
     return out;
   }
 
+  // ── Defined-term index ───────────────────────────────────────────────────
+  // Regulations define their own vocabulary, and both corpora carry those
+  // definitions as ordinary text: IDEA as sections (§ 300.15 Evaluation), MUSER
+  // as numbered entries in section II. Indexing them lets the tool answer "what
+  // does this word mean here?" by RETRIEVING the regulation's own definition —
+  // never by generating a gloss. Built once per document, cached.
+  var _defIndex = {};   // slug -> [{ term, sectionNumber, text }]
+
+  function buildDefIndex(doc) {
+    if (_defIndex[doc.slug]) return _defIndex[doc.slug];
+    var defs = [];
+    (doc.sections || []).forEach(function(s) {
+      // eCFR style: the section IS the definition and its heading names the
+      // term ("§ 300.15 Evaluation."). Merely containing "means" is far too
+      // loose — it swept in substantive sections like "Applicability of
+      // §§ 300.146 through 300.147". A real definition RESTATES ITS OWN TERM
+      // before saying "means", so require that: term appears near the start of
+      // the first paragraph, ahead of "means".
+      var hm = (s.heading || '').match(/^§?\s*[\d.]+\s+(.+?)\.?\s*$/);
+      if (hm) {
+        // Headings can bundle terms ("Day; business day; school day").
+        var firstTerm = hm[1].split(';')[0].replace(/\.$/, '').trim();
+        var opening = (s.paragraphs[0] || '').slice(0, 220).toLowerCase();
+        var ti = opening.indexOf(firstTerm.toLowerCase());
+        var mi = opening.search(/\b(means|has the meaning)\b/);
+        if (firstTerm.length > 2 && firstTerm.length < 60 && ti !== -1 && mi !== -1 && ti < mi) {
+          defs.push({ term: firstTerm, sectionNumber: s.number, text: s.paragraphs.join(' ') });
+        }
+      }
+      // MUSER style: "12.Accommodations. Accommodations mean changes in ..."
+      if (/DEFINITION/i.test(s.heading || '')) {
+        s.paragraphs.forEach(function(p) {
+          var pm = p.match(/^\d+\s*\.\s*([A-Z][^.–—]{2,58}?)\s*[.–—]\s*(.+)$/);
+          if (pm && /\b(means?|is defined|refers to)\b/i.test(pm[2].slice(0, 220))) {
+            defs.push({ term: pm[1].trim(), sectionNumber: s.number, text: p });
+          }
+        });
+      }
+    });
+    // Longest first so "individualized education program" wins over "program".
+    defs.sort(function(a, b) { return b.term.length - a.term.length; });
+    _defIndex[doc.slug] = defs;
+    return defs;
+  }
+
+  // Which defined terms actually appear in this section's text?
+  function definedTermsIn(doc, section, limit) {
+    if (!doc || !section) return [];
+    var hay = section.paragraphs.join(' ').toLowerCase();
+    var out = [], seen = {};
+    var defs = buildDefIndex(doc);
+    for (var i = 0; i < defs.length && out.length < (limit || 12); i++) {
+      var d0 = defs[i];
+      var t = d0.term.toLowerCase();
+      if (seen[t]) continue;
+      // Skip the term's own defining section — circular and unhelpful.
+      if (d0.sectionNumber === section.number) continue;
+      if (hay.indexOf(t) === -1) continue;
+      seen[t] = true;
+      out.push(d0);
+    }
+    return out;
+  }
+
   function srLive(msg) {
     try {
       var el = document.getElementById('allo-live-lawnav');
@@ -284,6 +348,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
       var query = queryState[0], setQuery = queryState[1];
       var liveState = React.useState({ status: 'idle', section: '', sec: null, err: '' });
       var live = liveState[0], setLive = liveState[1];
+      var defState = React.useState(null);   // the defined term currently open
+      var openDef = defState[0], setOpenDef = defState[1];
 
       React.useEffect(function() {
         if (_manifest) { setManifest(_manifest); return; }
@@ -324,6 +390,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
       var view = d.view || 'home';   // home | doc | section | compare
       var activeSlug = d.slug || '';
       var activeSection = d.section || '';
+
+      // ── Reading supports ──────────────────────────────────────────────────
+      // This is the densest prose in the whole platform and it was the only
+      // place rendering without any of AlloFlow's reading affordances. These
+      // change PRESENTATION only — never a word of the text.
+      var readSize = d.readSize || 15;        // px
+      var readSpacing = d.readSpacing || 1.7; // line-height
+      var readSerif = d.readSerif !== false;  // serif default: long-form legal prose
+      var readWide = !!d.readWide;            // wide vs measure-limited column
+      var readStyle = {
+        fontSize: readSize + 'px',
+        lineHeight: String(readSpacing),
+        fontFamily: readSerif ? 'Georgia, "Iowan Old Style", "Times New Roman", serif' : 'system-ui, -apple-system, "Segoe UI", sans-serif',
+        maxWidth: readWide ? 'none' : '62ch'
+      };
+      function readingControls() {
+        function ctlBtn(label, onClick, pressed, aria) {
+          return h('button', {
+            onClick: onClick, 'aria-label': aria || label, 'aria-pressed': pressed === undefined ? undefined : !!pressed,
+            className: 'rounded-lg px-2 py-1 text-[11px] font-bold border transition-colors',
+            style: pressed ? { background: pal.btn, color: '#fff', borderColor: pal.btn } : { background: pal.panel, color: pal.text, borderColor: pal.border }
+          }, label);
+        }
+        return h('div', { className: 'flex items-center gap-1.5 flex-wrap mt-2', role: 'group', 'aria-label': __alloT('stem.lawNav.reading_controls', 'Reading controls') },
+          h('span', { className: 'text-[10px] font-bold uppercase tracking-wider mr-1', style: { color: pal.muted } }, __alloT('stem.lawNav.reading', 'Reading')),
+          ctlBtn('A−', function() { setLN({ readSize: Math.max(12, readSize - 1) }); }, undefined, __alloT('stem.lawNav.smaller', 'Smaller text')),
+          ctlBtn('A+', function() { setLN({ readSize: Math.min(26, readSize + 1) }); }, undefined, __alloT('stem.lawNav.larger', 'Larger text')),
+          ctlBtn('↕', function() { setLN({ readSpacing: readSpacing >= 2.2 ? 1.4 : Math.round((readSpacing + 0.3) * 10) / 10 }); }, undefined, __alloT('stem.lawNav.spacing', 'Line spacing')),
+          ctlBtn(readSerif ? 'Serif' : 'Sans', function() { setLN({ readSerif: !readSerif }); }, undefined, __alloT('stem.lawNav.typeface', 'Switch typeface')),
+          ctlBtn(readWide ? '↔ Wide' : '↔ Narrow', function() { setLN({ readWide: !readWide }); }, undefined, __alloT('stem.lawNav.measure', 'Column width')),
+          ctx.callTTS ? ctlBtn('🔊 ' + __alloT('stem.lawNav.read_aloud', 'Read aloud'), function() {
+            var s = usingLive ? live.sec : cachedSec;
+            if (!s) return;
+            try { ctx.callTTS((s.heading ? s.heading + '. ' : '') + s.paragraphs.join(' ')); announceToSR(__alloT('stem.lawNav.reading_aloud_sr', 'Reading the section aloud.')); } catch (_) {}
+          }, undefined, __alloT('stem.lawNav.read_aloud', 'Read this section aloud')) : null
+        );
+      }
 
       var backBtn = h('button', {
         onClick: function() {
@@ -649,15 +752,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
             style: { background: pal.panel, borderColor: pal.border, color: pal.text }
           }, __alloT('stem.lawNav.recheck', 'Check again'))
         ) : null,
+        sec ? readingControls() : null,
         !sec ? h('p', { className: 'text-sm mt-3', style: { color: pal.muted } }, __alloT('stem.lawNav.loading', 'Loading the official text…')) :
         h('div', { className: 'rounded-2xl p-4 mt-3', style: { background: pal.panel, border: '1px solid ' + pal.border } },
           h('p', { className: 'text-[10px] font-bold uppercase tracking-wider mb-2', style: { color: pal.muted } },
             usingLive ? __alloT('stem.lawNav.verbatim_live', 'Verbatim text, fetched live from eCFR')
                       : __alloT('stem.lawNav.verbatim', 'Verbatim text as published')),
-          sec.paragraphs.map(function(p, i) {
-            return h('p', { key: i, className: 'text-sm leading-relaxed' + (i ? ' mt-2' : ''), style: { color: pal.text } }, p);
-          })
+          // readStyle changes size/spacing/typeface/measure only. The words,
+          // their order, and their paragraphing are exactly as published.
+          h('div', { style: readStyle },
+            sec.paragraphs.map(function(p, i) {
+              return h('p', { key: i, className: i ? 'mt-3' : '', style: { color: pal.text } }, p);
+            })
+          )
         ),
+
+        // ── Defined terms: the regulation's OWN definitions, retrieved ──────
+        (function() {
+          if (!sec || !sdoc2) return null;
+          var terms = definedTermsIn(sdoc2, sec, 12);
+          if (!terms.length) return null;
+          return h('div', { className: 'rounded-2xl p-3 mt-3', style: { background: pal.card, border: '1px solid ' + pal.border } },
+            h('p', { className: 'text-[10px] font-bold uppercase tracking-wider mb-2', style: { color: pal.muted } },
+              __alloT('stem.lawNav.defined_here', 'Words this law defines for itself')),
+            h('div', { className: 'flex flex-wrap gap-1.5' },
+              terms.map(function(t) {
+                var open = openDef && openDef.term === t.term;
+                return h('button', {
+                  key: t.term,
+                  onClick: function() { setOpenDef(open ? null : t); if (!open) announceToSR(t.term + '. ' + __alloT('stem.lawNav.def_shown', 'Definition shown below.')); },
+                  'aria-expanded': !!open,
+                  className: 'rounded-full px-2.5 py-1 text-[11px] font-bold border transition-colors',
+                  style: open ? { background: pal.btn, color: '#fff', borderColor: pal.btn } : { background: pal.panel, color: pal.text, borderColor: pal.border }
+                }, t.term);
+              })
+            ),
+            openDef ? h('div', { className: 'rounded-xl p-3 mt-2', style: { background: pal.panel, border: '1px solid ' + pal.border } },
+              h('p', { style: Object.assign({}, readStyle, { color: pal.text }) }, openDef.text),
+              h('p', { className: 'text-[10px] mt-2', style: { color: pal.muted } },
+                __alloT('stem.lawNav.def_from', 'Quoted from') + ' ' + (smeta ? smeta.short : '') + ' § ' + openDef.sectionNumber + ' — ' +
+                __alloT('stem.lawNav.def_verbatim', 'the law\'s own words, not a plain-language gloss'))
+            ) : null
+          );
+        })(),
         sec && callGemini ? h('div', { className: 'mt-3' },
           h('button', {
             onClick: explainSection, disabled: ai.busy,
