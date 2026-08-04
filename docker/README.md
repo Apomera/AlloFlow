@@ -27,7 +27,7 @@ open http://localhost:3000
 | **PocketBase** | 8090 | Local database (replaces Firebase) | Yes |
 | **Ollama** | 11434 | LLM text generation | Yes |
 | **Edge TTS** | 5001 | Neural text-to-speech (28 voices) | Recommended |
-| **Piper** | 10200 | Offline TTS fallback (40+ languages) | Optional |
+| **Piper** | 10200 | Offline TTS fallback (35 languages upstream; only en_US-amy-medium ships in docker-compose) | Optional |
 | **SearXNG** | 8888 | Web search for fact-checking | Optional |
 | **Flux** | 7860 | Image generation (GPU required) | Optional |
 

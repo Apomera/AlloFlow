@@ -1,6 +1,32 @@
-# AlloFlow Competitive Rubric — Functional Capability Analysis
+# AlloFlow Internal Roadmap Self-Assessment
 
-**Generated:** 2026-05-17 · Methodology: per-dimension graded rubric across 9 major ed-tech AI competitors
+> ## ⚠️ READ THIS FIRST: THIS IS A SELF-ASSESSMENT, NOT A BENCHMARK
+>
+> **This document is an internal planning tool. It is not a published comparison, not a
+> marketing claim, and not evidence of anything.** Do not quote scores from it, do not
+> cite it externally, and do not repeat any number in it as a factual claim about a
+> competitor.
+>
+> **Why it cannot support a public claim.** The scoring is structurally asymmetric and
+> was never designed to be otherwise:
+>
+> - **AlloFlow was scored by its own maintainer, from its own documentation.** Competitors
+>   were scored from public marketing pages and third-party reviews, **without hands-on
+>   testing of any competitor product**. That asymmetry systematically favors AlloFlow and
+>   cannot be corrected by adjusting weights.
+> - **The dimensions and their weights were chosen by the maintainer.** A different
+>   reasonable person choosing different dimensions would produce a different ranking.
+>   No third party can reproduce these results, which is what "verifiable" would require.
+> - **Cost, distribution, adoption, support, evidence of efficacy, and product maturity are
+>   excluded by design.** Those are the factors that dominate real procurement decisions,
+>   and AlloFlow is weakest on most of them.
+> - **The competitor data is stale.** It reflects a May 2026 reading of public pages.
+>
+> **Standing rule for all public communication:** never state a numeric score, ranking, or
+> head-to-head comparison against a named competitor. State what AlloFlow does, and let
+> readers draw their own comparison. See `GLOBAL_REACH_RESEARCH_2026-08-03.md` §2.1.
+
+**Generated:** 2026-05-17 · Methodology: per-dimension graded rubric, self-scored, for internal roadmap prioritization only
 **July 2026 status note:** This remains the original May scoring frame, not a fresh competitor re-benchmark. Stale AlloFlow-internal language-pack and local-first notes have been updated where they would otherwise mislead.
 **Scope filter:** Functionality only — **price, distribution model, brand recognition, support quality, and polish are explicitly excluded** per request. This is a pure feature/capability scoring exercise.
 **Companion docs:** [COMPETITOR_COMPARISON.md](COMPETITOR_COMPARISON.md) (narrative, includes cost/distribution), [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md) §13 (most recent additions), [STRATEGIC_ROADMAP.md](STRATEGIC_ROADMAP.md) (closing remaining gaps).
@@ -474,7 +500,10 @@ Strong in: AI lesson gen (4), text differentiation (4), assessment (4), help (4)
 19. **Text differentiation** — AlloFlow 5, tied with Diffit. Vs others: 1-3 × 8 = 8-24.
 20. **Live session** — AlloFlow 5, tied with Curipod. Vs others: 1-4 × 5.
 
-**Net "advantage points" over best non-AlloFlow competitor** (Khanmigo at 290): **AlloFlow leads by 200 weighted points (40% of max).** That's a substantial gap even with the user's exclusion of cost/distribution.
+*(Aggregate margin intentionally removed. A self-scored total against products that were
+never hands-on tested is not a measurement, and stating it as one would be a comparative
+advertising claim this document cannot substantiate. Use the per-dimension notes above to
+decide where to spend effort, and nothing else.)*
 
 ---
 
@@ -508,10 +537,15 @@ Two dimensions where AlloFlow scored 4/5 vs perfect:
 
 ## How to use this document
 
-- **For external sharing** (potential collaborators, partners, district CTOs): combined with [COMPETITOR_COMPARISON.md](COMPETITOR_COMPARISON.md), the two paint a complete picture (functional + commercial).
+- **NOT for external sharing.** This document must not be sent to collaborators, partners,
+  district staff, funders, or reviewers, and must not be cited in any public post,
+  application, or proposal. It is a self-scored internal artifact and would not survive
+  scrutiny as a comparative claim.
 - **For roadmap prioritization**: see [STRATEGIC_ROADMAP.md](STRATEGIC_ROADMAP.md). Both 4-score dimensions and any 5-score dimension competitors might catch up on are addressed there.
-- **For self-validation** during product reviews: re-run the rubric annually with updated competitor surveys. Track AlloFlow's score over time to ensure it doesn't slip as competitors close gaps.
+- **For self-validation** during product reviews: re-run the rubric annually with updated competitor surveys, and treat movement as a signal about where to spend effort, not as a measurement of relative quality.
 
 ---
 
-**End of rubric.** In the original May scoring frame, AlloFlow scores 490/500 (98%) on pure functional capability, with a 200-point lead over the best non-AlloFlow competitor (Khanmigo at 290/500). As of July 2026, the language-pack breadth gap has moved from "not shipped" to "shipped with uneven review depth"; the clearer remaining score opportunity is LMS/Clever/ClassLink integration plus stronger language-pack readiness evidence.
+**End of rubric.** No aggregate score, ranking, or margin from this document should be
+quoted anywhere. The remaining roadmap opportunities it points at are LMS/Clever/ClassLink
+integration and stronger language-pack readiness evidence.

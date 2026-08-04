@@ -14,7 +14,8 @@
 
 ## Executive summary
 
-AlloFlow scores **490/500 (98%)** on the [functional capability rubric](COMPETITOR_RUBRIC.md), leading the best non-AlloFlow competitor (Khanmigo at 290/500) by **200 weighted points**. The remaining 10 rubric points are:
+On the [internal self-assessment](COMPETITOR_RUBRIC.md) (self-scored, not a benchmark, not
+for external use), the two dimensions that still score below best-in-class are:
 - **LMS / SIS integration** (currently 4/5) — missing Clever/ClassLink OAuth roster sync (worth 4 weighted points)
 - **Bilingual / multilingual** (currently 4/5) — i18n infrastructure ready but only English language pack shipped (worth 5 weighted points; 4 actual since cap)
 

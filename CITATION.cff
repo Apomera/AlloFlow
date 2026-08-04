@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use AlloFlow in research, teaching, or a published resource, please cite it as below."
+title: "AlloFlow: Adaptive Levels, Layers, and Outputs for Flexible Learning Options"
+abstract: >-
+  AlloFlow is a free, open-source, privacy-oriented instructional differentiation
+  and Universal Design for Learning toolkit for educators, special education teams,
+  and school psychologists. It transforms source material into leveled text,
+  scaffolds, glossaries, assessments, accessible documents, and interactive STEM and
+  SEL activities. AlloFlow can run against a cloud AI provider or against a fully
+  local model, and it operates no server that holds student data.
+type: software
+authors:
+  - family-names: Pomeranz
+    given-names: Aaron
+    name-suffix: PsyD
+repository-code: "https://github.com/Apomera/AlloFlow"
+url: "https://apomera.github.io/AlloFlow/"
+license: AGPL-3.0-or-later
+keywords:
+  - universal design for learning
+  - differentiated instruction
+  - special education
+  - accessibility
+  - school psychology
+  - educational technology
+  - localization
+  - offline-first
+  - open educational resources
