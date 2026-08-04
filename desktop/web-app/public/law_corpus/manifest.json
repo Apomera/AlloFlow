@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "generated": "2026-08-04T03:14:47.838Z",
+  "documents": [
+    {
+      "slug": "idea-part-b",
+      "jurisdiction": "federal",
+      "jurisdictionName": "United States",
+      "display": "IDEA Part B — Assistance to States for the Education of Children with Disabilities",
+      "short": "IDEA Part B",
+      "citation": "34 CFR Part 300",
+      "sourceUrl": "https://www.ecfr.gov/current/title-34/subtitle-B/chapter-III/part-300",
+      "status": "ingested",
+      "currentAsOf": "2026-07-31",
+      "retrievedAt": "2026-08-04",
+      "sectionCount": 272,
+      "bytes": 422375
+    },
+    {
+      "slug": "section-504",
+      "jurisdiction": "federal",
+      "jurisdictionName": "United States",
+      "display": "Section 504 — Nondiscrimination on the Basis of Handicap in Federally Assisted Programs",
+      "short": "Section 504",
+      "citation": "34 CFR Part 104",
+      "sourceUrl": "https://www.ecfr.gov/current/title-34/subtitle-B/chapter-I/part-104",
+      "status": "ingested",
+      "currentAsOf": "2026-07-31",
+      "retrievedAt": "2026-08-04",
+      "sectionCount": 38,
+      "bytes": 65024
+    },
+    {
+      "slug": "me-muser",
+      "jurisdiction": "ME",
+      "jurisdictionName": "Maine",
+      "display": "MUSER — Maine Unified Special Education Regulation (Chapter 101)",
+      "short": "MUSER Ch. 101",
+      "citation": "05-071 C.M.R. ch. 101",
+      "sourceUrl": "https://www.maine.gov/doe/learning/specialed",
+      "status": "pointer",
+      "currentAsOf": null,
+      "retrievedAt": "2026-08-04",
+      "sectionCount": 0,
+      "bytes": 533
+    }
+  ]
+}

@@ -1149,6 +1149,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_heatlab.js',
     'stem_lab/stem_tool_nuclearlab.js',
     'stem_lab/stem_tool_parentinglab.js',
+    'stem_lab/stem_tool_lawnavigator.js',
     'stem_lab/stem_tool_gamestudio.js',
     'stem_lab/stem_tool_geosandbox.js',
     'stem_lab/stem_tool_inequality.js',
