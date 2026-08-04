@@ -121,6 +121,14 @@ describe('Law Navigator no-fabrication contract', () => {
     expect(src).toContain('[END REGULATION PASSAGE]');
     // Low temperature: this is retrieval-shaped work, not creative work.
     expect(src).toMatch(/callGemini\(prompt, false, false, 0\.\d/);
+    // Prompt-injection boundary: a quoted regulation is DATA, never an
+    // instruction to the model.
+    expect(src).toContain('UNTRUSTED SOURCE TEXT');
+    // Verifiability: the model must quote the passage back so a reader can
+    // check the explanation against the text on their own screen.
+    expect(src).toContain('In the text:');
+    // A failed explanation must leave the official text untouched and say so.
+    expect(src).toMatch(/official text above is unchanged/i);
   });
 
   it('an un-ingested state is reported as un-ingested, never as "no rule"', () => {
