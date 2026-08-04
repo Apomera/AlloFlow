@@ -78,7 +78,46 @@ const MANIFEST: ToolEntry[] = [
     preScripts: ['stem_lab/stem_lab_module.js'],
     note: 'Body Plan 3D via StemLab.makeBayViewer; needs the host preloaded',
   },
+  // The rest of the makeBayViewer family, gates found by PROBING each one
+  // (my read-off-the-source guesses were wrong for five of eight).
+  {
+    id: 'autoRepair',
+    file: 'stem_lab/stem_tool_autorepair.js',
+    state: { autoRepair: { view: 'underhood' } },
+    preScripts: ['stem_lab/stem_lab_module.js'],
+    note: 'under-hood tour; opens on a menu, needs view=underhood',
+  },
+  {
+    id: 'heatLab',
+    file: 'stem_lab/stem_tool_heatlab.js',
+    preScripts: ['stem_lab/stem_lab_module.js'],
+    note: 'reaches 3D on a default mount; also mounts 4 2D canvases',
+  },
+  {
+    id: 'nuclearLab',
+    file: 'stem_lab/stem_tool_nuclearlab.js',
+    preScripts: ['stem_lab/stem_lab_module.js'],
+    note: 'reaches 3D on a default mount; also mounts 3 2D canvases',
+  },
 ];
+
+// Still uncovered, with what a probe actually showed — so the next attempt
+// starts past my dead ends rather than repeating them:
+//
+//   firstResponse   `var view = d.view || 'menu'`, but the 3D body sits behind
+//                   a further tab; {tab:'place'} and {section:'cpr'} both
+//                   rendered ZERO canvases. Find the view id that leaves the
+//                   menu, then the tab within it.
+//   weldLab         NOT a bay-viewer tool — it builds its own WebGLRenderer
+//                   (~line 1720); the makeBayViewer mention at ~2805 is a
+//                   comment. Gate is `d.view`, default 'menu'.
+//   opticsLab       `state.diffMode` is a sub-mode, not the 3D gate. Zero
+//                   canvases on default, view:'3d' and tab:'bench'.
+//   consciousnessLab  creates its viewer LAZILY in ensureNetViewer() rather
+//                   than at module load, so preScripts alone is not enough —
+//                   the view that calls it has to be open.
+//   rocks           mounts ONE canvas on default that has no GL context, so
+//                   its 3D is a different surface than the landscape mode.
 
 // NOT in the manifest, and why:
 //
