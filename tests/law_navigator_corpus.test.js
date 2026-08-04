@@ -25,11 +25,14 @@ describe('Law Navigator corpus', () => {
       expect(d.sourceUrl, d.slug + ' sourceUrl').toMatch(/^https:\/\//);
       expect(d.publisher || d.jurisdictionName, d.slug + ' attribution').toBeTruthy();
       expect(d.retrievedAt, d.slug + ' retrievedAt').toMatch(/^\d{4}-\d{2}-\d{2}$/);
-      // Ingested documents must carry real sections AND a currency date;
-      // pointer documents must carry ZERO sections (never invented stubs).
+      // Ingested documents must carry real sections; pointer documents must
+      // carry ZERO sections (never invented stubs). Only eCFR reports its own
+      // currency date — a filed state document carries its effective date in
+      // the text, and inventing one here would be a fabricated fact.
       if (d.status === 'ingested') {
         expect(d.sectionCount, d.slug).toBeGreaterThan(0);
-        expect(d.currentAsOf, d.slug + ' currentAsOf').toMatch(/^\d{4}-\d{2}-\d{2}$/);
+        if (d.cfrPart) expect(d.currentAsOf, d.slug + ' currentAsOf').toMatch(/^\d{4}-\d{2}-\d{2}$/);
+        else expect(d.docUrl, d.slug + ' must name the document it came from').toBeTruthy();
       } else {
         expect(d.sectionCount, d.slug + ' pointer must have no sections').toBe(0);
       }
@@ -79,6 +82,61 @@ describe('Law Navigator corpus', () => {
       .flatMap((m) => [...m[1].matchAll(/'([\d.]+)'/g)].map((x) => x[1]));
     expect(cited.length).toBeGreaterThan(10);
     for (const c of cited) expect(have.has(c), 'topic bridge cites missing § ' + c).toBe(true);
+  });
+});
+
+describe('Maine MUSER corpus', () => {
+  const muser = JSON.parse(read('law_corpus/me-muser.json'));
+
+  it('is fully ingested: all 19 sections, I through XIX, in order', () => {
+    expect(muser.status).toBe('ingested');
+    const ROMAN = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX'];
+    expect(muser.sections.map((s) => s.number)).toEqual(ROMAN);
+    // Sectioning bugs found while building this: an all-caps rule dropped XVI
+    // (mixed-case title) and a digits-suffix rule dropped V ("... 3 - 22").
+    // Both must stay present with real content.
+    const bySec = Object.fromEntries(muser.sections.map((s) => [s.number, s]));
+    expect(bySec.V.heading).toMatch(/EVALUATION AND REEVALUATIONS/i);
+    expect(bySec.V.paragraphs.length).toBeGreaterThan(50);
+    expect(bySec.XVI.heading).toMatch(/DISPUTE RESOLUTION/i);
+    expect(bySec.XVI.paragraphs.length).toBeGreaterThan(50);
+  });
+
+  it('carries substantial verbatim text with no Word markup leakage', () => {
+    const all = muser.sections.flatMap((s) => s.paragraphs);
+    expect(all.length).toBeGreaterThan(2000);
+    const joined = all.join(' ');
+    expect(joined).not.toMatch(/<w:/);          // raw OOXML
+    expect(joined).not.toMatch(/&#x[0-9a-f]+;/i);
+    expect(joined).not.toMatch(/&(amp|lt|gt|quot);/);
+  });
+
+  it('preserves MUSER\'s own state-vs-federal typographic distinction', () => {
+    // MUSER italicizes ITS OWN requirements and leaves adopted federal text
+    // in plain type. That flag is what makes "what does Maine add?" answerable
+    // without anyone paraphrasing the law.
+    for (const s of muser.sections) {
+      expect(Array.isArray(s.stateRule), s.number + ' stateRule array').toBe(true);
+      expect(s.stateRule.length, s.number + ' flags align with paragraphs').toBe(s.paragraphs.length);
+    }
+    const flagged = muser.sections.reduce((n, s) => n + s.stateRule.filter(Boolean).length, 0);
+    const total = muser.sections.reduce((n, s) => n + s.paragraphs.length, 0);
+    // Both kinds must be present — all-or-nothing would mean the flag is broken.
+    expect(flagged).toBeGreaterThan(200);
+    expect(flagged).toBeLessThan(total);
+  });
+
+  it('contains the topics the tool bridges, so state panels are not empty', () => {
+    const hay = muser.sections.map((s) => s.paragraphs.join(' ').toLowerCase());
+    for (const kw of ['manifestation', 'child find', 'prior written notice', 'independent educational evaluation']) {
+      expect(hay.some((h) => h.includes(kw)), 'MUSER should mention ' + kw).toBe(true);
+    }
+  });
+
+  it('records the document it was extracted from, not just a landing page', () => {
+    expect(muser.docUrl).toMatch(/\.docx?$/i);
+    expect(muser.sourceUrl).toMatch(/^https:\/\/www\.maine\.gov\//);
+    expect(muser.note).toMatch(/italic/i);
   });
 });
 
@@ -181,14 +239,15 @@ describe('Law Navigator live mode', () => {
     expect(lifted.parseLiveSection(xml, '300.999')).toBeNull();
   });
 
-  it('carries the CFR part so live lookups know where to fetch', () => {
-    for (const d of manifest.documents) {
-      if (d.status === 'ingested') {
-        expect(d.cfrPart, d.slug + ' cfrPart').toMatch(/^\d+$/);
-      } else {
-        // No endpoint may be guessed for a non-eCFR source.
-        expect(d.cfrPart, d.slug + ' pointer must not claim a CFR part').toBeFalsy();
-      }
+  it('carries the CFR part for eCFR documents and none for other sources', () => {
+    // Live mode is an eCFR capability. A state document ingested from a filed
+    // .docx has no CFR endpoint, so it must NOT claim one — the tool disables
+    // live refresh for it rather than guessing a URL.
+    const federal = manifest.documents.filter((d) => d.jurisdiction === 'federal');
+    expect(federal.length).toBeGreaterThanOrEqual(2);
+    for (const d of federal) expect(d.cfrPart, d.slug + ' cfrPart').toMatch(/^\d+$/);
+    for (const d of manifest.documents.filter((x) => x.jurisdiction !== 'federal')) {
+      expect(d.cfrPart, d.slug + ' must not claim a CFR part').toBeFalsy();
     }
   });
 

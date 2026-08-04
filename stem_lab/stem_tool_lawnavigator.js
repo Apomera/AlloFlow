@@ -192,22 +192,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
   // These are TOPIC ANCHORS ONLY: each entry names a topic and the federal
   // citation(s) that govern it. No entry paraphrases or summarizes law — the
   // tool renders the fetched text of whatever citation is named.
+  // `phrase` is the literal string searched inside a state document. State
+  // codes do not share the CFR's numbering, so the bridge locates state text
+  // by the words the regulation itself uses — still pure retrieval, never a
+  // summary or a claimed equivalence.
   var TOPICS = [
-    { id: 'childfind', label: 'Child Find (the duty to identify)', federal: ['300.111'] },
-    { id: 'eval', label: 'Evaluations and reevaluations', federal: ['300.301', '300.303', '300.304'] },
-    { id: 'iee', label: 'Independent educational evaluation (IEE)', federal: ['300.502'] },
-    { id: 'consent', label: 'Parental consent', federal: ['300.300'] },
-    { id: 'pwn', label: 'Prior written notice', federal: ['300.503'] },
-    { id: 'safeguards', label: 'Procedural safeguards notice', federal: ['300.504'] },
-    { id: 'iep', label: 'What must be in an IEP', federal: ['300.320'] },
-    { id: 'team', label: 'Who is on the IEP team', federal: ['300.321'] },
-    { id: 'parentpart', label: 'Parent participation in meetings', federal: ['300.322', '300.501'] },
-    { id: 'lre', label: 'Least restrictive environment', federal: ['300.114'] },
-    { id: 'transition', label: 'Secondary transition planning', federal: ['300.320'] },
-    { id: 'discipline', label: 'Discipline and manifestation determination', federal: ['300.530', '300.536'] },
-    { id: 'records', label: 'Education records and confidentiality', federal: ['300.613', '300.618'] },
-    { id: 'disputes', label: 'Mediation, complaints, due process', federal: ['300.506', '300.507', '300.151'] }
+    { id: 'childfind', label: 'Child Find (the duty to identify)', federal: ['300.111'], phrase: 'child find' },
+    { id: 'eval', label: 'Evaluations and reevaluations', federal: ['300.301', '300.303', '300.304'], phrase: 'reevaluation' },
+    { id: 'iee', label: 'Independent educational evaluation (IEE)', federal: ['300.502'], phrase: 'independent educational evaluation' },
+    { id: 'consent', label: 'Parental consent', federal: ['300.300'], phrase: 'parental consent' },
+    { id: 'pwn', label: 'Prior written notice', federal: ['300.503'], phrase: 'prior written notice' },
+    { id: 'safeguards', label: 'Procedural safeguards notice', federal: ['300.504'], phrase: 'procedural safeguards' },
+    { id: 'iep', label: 'What must be in an IEP', federal: ['300.320'], phrase: 'content of the iep' },
+    { id: 'team', label: 'Who is on the IEP team', federal: ['300.321'], phrase: 'iep team' },
+    { id: 'parentpart', label: 'Parent participation in meetings', federal: ['300.322', '300.501'], phrase: 'parent participation' },
+    { id: 'lre', label: 'Least restrictive environment', federal: ['300.114'], phrase: 'least restrictive environment' },
+    { id: 'transition', label: 'Secondary transition planning', federal: ['300.320'], phrase: 'transition services' },
+    { id: 'discipline', label: 'Discipline and manifestation determination', federal: ['300.530', '300.536'], phrase: 'manifestation' },
+    { id: 'records', label: 'Education records and confidentiality', federal: ['300.613', '300.618'], phrase: 'education records' },
+    { id: 'disputes', label: 'Mediation, complaints, due process', federal: ['300.506', '300.507', '300.151'], phrase: 'due process hearing' }
   ];
+
+  // Find paragraphs in a state document matching a topic phrase, keeping each
+  // paragraph's own state-vs-federal marking where the source provides one
+  // (MUSER italicizes its own requirements).
+  function stateMatches(doc, phrase, limit) {
+    if (!doc || !doc.sections || !phrase) return [];
+    var q = phrase.toLowerCase(), out = [];
+    for (var i = 0; i < doc.sections.length && out.length < (limit || 6); i++) {
+      var s = doc.sections[i];
+      for (var j = 0; j < s.paragraphs.length; j++) {
+        if (s.paragraphs[j].toLowerCase().indexOf(q) === -1) continue;
+        out.push({
+          section: s.number, heading: s.heading, text: s.paragraphs[j],
+          stateRule: !!(s.stateRule && s.stateRule[j])
+        });
+        break; // one representative paragraph per section
+      }
+    }
+    return out;
+  }
 
   function srLive(msg) {
     try {
@@ -464,13 +488,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
                       __alloT('stem.lawNav.open_state', 'Open the official state source ↗'))
                   );
                 }
-                var picked2 = sdoc ? (sdoc.sections || []).filter(function(s) { return (topic.state || []).indexOf(s.number) !== -1; }) : [];
+                if (!sdoc) { ensureDoc(sm.slug); return h('p', { key: sm.slug, className: 'text-xs', style: { color: pal.muted } }, __alloT('stem.lawNav.loading', 'Loading the official text…')); }
+                var hits = stateMatches(sdoc, topic.phrase, 5);
                 return h('div', { key: sm.slug }, provenance(sm, true),
-                  picked2.length ? picked2.map(function(s) {
-                    return h('div', { key: s.number, className: 'rounded-xl p-3 mt-2', style: { background: pal.panel, border: '1px solid ' + pal.border } },
-                      h('div', { className: 'font-black text-sm mb-1', style: { color: pal.accent } }, s.heading || s.number),
-                      h('p', { className: 'text-[12px] leading-relaxed' }, s.paragraphs.slice(0, 2).join(' ').slice(0, 420)));
-                  }) : h('p', { className: 'text-xs mt-2', style: { color: pal.muted } }, __alloT('stem.lawNav.no_state_map', 'No state section is mapped to this topic yet.'))
+                  hits.length ? hits.map(function(hit, i) {
+                    return h('div', { key: hit.section + '-' + i, className: 'rounded-xl p-3 mt-2', style: { background: pal.panel, border: '1px solid ' + pal.border } },
+                      h('div', { className: 'flex items-center gap-2 flex-wrap mb-1' },
+                        h('span', { className: 'font-black text-sm', style: { color: pal.accent } }, hit.heading.slice(0, 60)),
+                        // MUSER marks its OWN requirements in italics; surface that
+                        // distinction rather than making the reader infer it.
+                        hit.stateRule ? h('span', {
+                          className: 'text-[10px] font-bold rounded-full px-2 py-0.5',
+                          style: { background: 'rgba(180,83,9,0.15)', color: isDark ? '#fbbf24' : '#92400e', border: '1px solid rgba(180,83,9,0.4)' },
+                          title: __alloT('stem.lawNav.state_added_tip', 'Italicized in MUSER, which marks Maine\'s own requirement rather than adopted federal text')
+                        }, __alloT('stem.lawNav.state_added', 'State requirement')) : null),
+                      h('p', { className: 'text-[12px] leading-relaxed', style: { color: pal.text } }, hit.text.slice(0, 420) + (hit.text.length > 420 ? '…' : '')));
+                  }) : h('p', { className: 'text-xs mt-2', style: { color: pal.muted } },
+                    __alloT('stem.lawNav.no_state_hit', 'No paragraph in this state document contains that phrase. That is a search result, not a finding that the state is silent — open the document and read it.'))
                 );
               }) : h('p', { className: 'text-xs', style: { color: pal.muted } }, __alloT('stem.lawNav.no_state', 'No state document is configured.'))
             )

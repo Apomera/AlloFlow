@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated": "2026-08-04T16:28:35.273Z",
+  "generated": "2026-08-04T16:59:44.541Z",
   "documents": [
     {
       "slug": "idea-part-b",
@@ -12,11 +12,12 @@
       "sourceUrl": "https://www.ecfr.gov/current/title-34/subtitle-B/chapter-III/part-300",
       "cfrTitle": 34,
       "cfrPart": "300",
+      "docUrl": null,
       "status": "ingested",
       "currentAsOf": "2026-07-31",
       "retrievedAt": "2026-08-04",
       "sectionCount": 272,
-      "bytes": 422405
+      "bytes": 422419
     },
     {
       "slug": "section-504",
@@ -28,11 +29,12 @@
       "sourceUrl": "https://www.ecfr.gov/current/title-34/subtitle-B/chapter-I/part-104",
       "cfrTitle": 34,
       "cfrPart": "104",
+      "docUrl": null,
       "status": "ingested",
       "currentAsOf": "2026-07-31",
       "retrievedAt": "2026-08-04",
       "sectionCount": 38,
-      "bytes": 65054
+      "bytes": 65068
     },
     {
       "slug": "me-muser",
@@ -41,14 +43,15 @@
       "display": "MUSER — Maine Unified Special Education Regulation (Chapter 101)",
       "short": "MUSER Ch. 101",
       "citation": "05-071 C.M.R. ch. 101",
-      "sourceUrl": "https://www.maine.gov/doe/learning/specialed",
+      "sourceUrl": "https://www.maine.gov/sos/rulemaking/agency-rules/department-education-and-state-board-education-rules",
       "cfrTitle": null,
       "cfrPart": null,
-      "status": "pointer",
+      "docUrl": "https://www.maine.gov/sos/sites/maine.gov.sos/files/inline-files/071c101-2026-129-AMD-EMR.docx",
+      "status": "ingested",
       "currentAsOf": null,
       "retrievedAt": "2026-08-04",
-      "sectionCount": 0,
-      "bytes": 564
+      "sectionCount": 19,
+      "bytes": 537491
     }
   ]
 }
