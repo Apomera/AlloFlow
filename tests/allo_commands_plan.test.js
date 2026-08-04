@@ -651,10 +651,27 @@ describe('coverage batch commands', () => {
     expect(AC.getCommandContract('generate_anchor_chart').demoSafe).not.toBe(false);
   });
 
+  it('batch 2: crossword, scramble, and the glossary filter param contract', () => {
+    const log = [];
+    const { ctx } = mkCtx({
+      contentIsGlossary: true,
+      startCrosswordGame: () => log.push('crossword'),
+      startWordScrambleGame: () => log.push('scramble'),
+      setGlossaryFilterChoice: (tier) => log.push('filter:' + tier),
+    });
+    for (const id of ['start_crossword_game', 'start_word_scramble']) {
+      expect(AC.runCommandById(ctx, id, {}, {}).handled, id).toBe(true);
+    }
+    expect(AC.runCommandById(ctx, 'filter_glossary', { tier: 'academic' }, {}).narration).toContain('academic');
+    expect(AC.runCommandById(ctx, 'filter_glossary', { tier: 'evil' }, {}).narration).toContain('all'); // whitelist fallback
+    expect(log).toEqual(['crossword', 'scramble', 'filter:academic', 'filter:all']);
+    expect(AC.getCommandContract('filter_glossary').params).toEqual(['tier']);
+  });
+
   it('both ANTI copies carry the new ctx capabilities', () => {
     for (const path of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt']) {
       const app = readFileSync(path, 'utf-8');
-      for (const cap of ['startMemoryGame:', 'startMatchingGame:', 'startBingoGame:', 'cycleColorOverlay:', 'toggleAnimations:', 'adjustVoiceSpeed:', 'generateNoteTaking:', 'generateAnchorChart:', 'generateConceptSort:']) {
+      for (const cap of ['startMemoryGame:', 'startMatchingGame:', 'startBingoGame:', 'cycleColorOverlay:', 'toggleAnimations:', 'adjustVoiceSpeed:', 'generateNoteTaking:', 'generateAnchorChart:', 'generateConceptSort:', 'startCrosswordGame:', 'startWordScrambleGame:', 'setGlossaryFilterChoice:']) {
         expect(app, path + ' ' + cap).toContain(cap);
       }
       // Generation caps carry the honest-failure contract like their siblings.

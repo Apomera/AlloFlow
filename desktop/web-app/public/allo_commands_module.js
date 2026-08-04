@@ -361,6 +361,9 @@ const PLAN_CONTRACTS = Object.freeze({
   start_memory_game: { requires: ["glossary"] },
   start_matching_game: { requires: ["glossary"] },
   start_bingo_game: { requires: ["glossary"] },
+  start_crossword_game: { requires: ["glossary"] },
+  start_word_scramble: { requires: ["glossary"] },
+  filter_glossary: { requires: ["glossary"], params: ["tier"] },
   export_pack: {
     demoSafe: false,
     requires: ["source"],
@@ -1119,6 +1122,9 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: "toggle_animations", icon: "\u{1F39E}\ufe0f", roles: "all", when: (c) => typeof c.toggleAnimations === "function", label: t("cmd.toggle_animations", "Toggle animations"), aliases: ["reduce motion", "animations off", "stop animations", "reduce animations"], hint: t("cmd.toggle_animations_hint", "Turns interface animations off or on"), run: (c) => { c.toggleAnimations(); return c.animationsDisabled ? t("cmd.toggle_animations_on", "Animations back on.") : t("cmd.toggle_animations_off", "Animations reduced."); } },
     { id: "voice_speed_up", icon: "\u23e9", roles: "all", when: (c) => typeof c.adjustVoiceSpeed === "function", label: t("cmd.voice_speed_up", "Speak faster"), aliases: ["faster voice", "speed up voice", "read faster"], hint: t("cmd.voice_speed_up_hint", "Raises the read-aloud speed"), run: (c) => { const next = c.adjustVoiceSpeed(0.25); return t("cmd.voice_speed_done", "Read-aloud speed is now ") + next + "x."; } },
     { id: "voice_speed_down", icon: "\u23ea", roles: "all", when: (c) => typeof c.adjustVoiceSpeed === "function", label: t("cmd.voice_speed_down", "Speak slower"), aliases: ["slower voice", "slow down voice", "read slower"], hint: t("cmd.voice_speed_down_hint", "Lowers the read-aloud speed"), run: (c) => { const next = c.adjustVoiceSpeed(-0.25); return t("cmd.voice_speed_done", "Read-aloud speed is now ") + next + "x."; } },
+    { id: "start_crossword_game", icon: "\u{1F4F0}", roles: "all", when: (c) => !!c.contentIsGlossary && typeof c.startCrosswordGame === "function", label: t("cmd.start_crossword_game", "Play the crossword"), aliases: ["crossword", "crossword puzzle"], hint: t("cmd.start_crossword_game_hint", "Turn this glossary into a crossword puzzle"), run: (c) => { c.startCrosswordGame(); return t("cmd.start_crossword_game_done", "Crossword on \u2014 clues come from the definitions."); } },
+    { id: "start_word_scramble", icon: "\u{1F500}", roles: "all", when: (c) => !!c.contentIsGlossary && typeof c.startWordScrambleGame === "function", label: t("cmd.start_word_scramble", "Play word scramble"), aliases: ["word scramble", "scramble game", "unscramble"], hint: t("cmd.start_word_scramble_hint", "Unscramble this glossary's terms"), run: (c) => { c.startWordScrambleGame(); return t("cmd.start_word_scramble_done", "Word scramble on."); } },
+    { id: "filter_glossary", icon: "\u{1F50D}", roles: "all", when: (c) => !!c.contentIsGlossary && typeof c.setGlossaryFilterChoice === "function", label: t("cmd.filter_glossary", "Filter glossary terms"), aliases: ["filter terms", "academic words only", "domain words only", "show all terms"], hint: t("cmd.filter_glossary_hint", "Show all terms, academic (Tier 2) only, or domain (Tier 3) only"), run: (c, p) => { const tier = ["all", "academic", "domain"].includes(p && p.tier) ? p.tier : "all"; c.setGlossaryFilterChoice(tier); return t("cmd.filter_glossary_done", "Glossary filter: ") + tier + "."; } },
     // ── More coverage (2026-06-13, discovery w59vf8skj) — each maps to ONE existing host handler
     //    (verified by symbol in AlloFlowANTI.txt). Grouped via CMD_GROUP / CMD_CONTEXT above. ──
     { id: "stop_reading", icon: "\u23F9\uFE0F", roles: "all", label: t("cmd.stop_reading", "Stop reading aloud"), aliases: ["stop reading", "stop talking", "be quiet", "silence", "stop speech", "stop the voice"], hint: t("cmd.stop_reading_hint", "Interrupt the current text-to-speech"), run: (c) => {
