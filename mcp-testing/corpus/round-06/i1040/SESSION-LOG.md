@@ -60,11 +60,52 @@ bullet spans the 6→7 break and is authored whole at page 6.
 
 `merge-plans t01+t02` → 86 blocks, `ok: true`. Recall 0.9982 (see step 6).
 
-### Sessions 3+ — REMAINING (suggested boundaries from the printed TOC)
+### Session 3 (2026-08-04) — pages 8-11 · tranche-03 · 62 blocks · VALIDATED (merged)
+
+"Filing Requirements" plus Charts A, B, and C. `merge-plans t01+t02+t03` →
+148 blocks, `ok: true`, pages 1-11 fully covered. Recall 0.9887 against a
+content-stream baseline with the print-control layer stripped, and **every**
+remaining shortfall is furniture that was deliberately dropped: the
+"Page N of 126" markers and the page-11 standing footer. Nothing was lost.
+
+Three structures appeared here for the first time, and the handling is worth
+reusing:
+
+* **Icon callouts.** TIP and CAUTION are margin icons, but their LABEL is
+  real text in the content stream, so it lands mid-sentence in any extraction
+  ("Even if you do not otherwise TIP have to file a return"). Each callout is
+  a paragraph opening with a strong `Tip.`/`Caution.` and the sentence
+  restored around it — the icon alone conveys nothing to a screen reader.
+  Set in sentence case, not the printed all-caps, so it isn't spelled out.
+* **Merged-cell table.** Chart A spans one filing status across two or three
+  age rows. Flattened to ten rows with the status repeated; cell values kept
+  exactly as printed, including continuation amounts that omit the dollar
+  sign ("17,750" under "$15,750"). Its caption is the one place in the
+  tranche where wording is ADDED — the printed title says nothing about what
+  the table holds — and that is disclosed in the tranche's notes.
+* **One-level nesting in a flat list schema.** Chart C keeps its printed
+  "a."–"f." markers verbatim inside item 1, so its enumeration is unchanged.
+  Chart B joins the two "larger of—" options into the parent sentence,
+  lowercasing the second option's leading capital where it now sits
+  mid-sentence.
+
+**New engine finding — mixed-layout pages defeat the column detector.**
+Page 9 sets three columns of prose ABOVE a full-width chart. The chart's
+full-width rows fill the gutters the detector looks for, so it reports one
+column and the prose interleaves ("still unable to file your return by the
+end press Worldwide, DHL Express Enve- to IRS.gov/PDS"). Worse for tooling:
+the interleave glues hyphen halves across columns (`enveto`, `overcaution`,
+`mailform`), so a naive recall check reads those as authoring misses. That
+section's reading order was rebuilt from the page image. A fix needs vertical
+segmentation (split the page into y-bands, then detect columns per band)
+before the gutter search runs — its own measured round, not a patch.
+Meanwhile: for any page whose layout changes down the page, author from the
+render, and use the content-stream text as the recall baseline.
+
+### Sessions 4+ — REMAINING (suggested boundaries from the printed TOC)
 
 | Tranche | Pages | Content | Notes |
 | --- | --- | --- | --- |
-| 03 | 8-11 | Filing Requirements, Charts A/B/C | 3-column prose + TIP/CAUTION icon callouts (convey the label in text); charts are drawn tables → geometry method |
 | 04 | 12-22 | Name/SSN, Filing Status, Dependents | includes flowchart-like boxes; expect review notes |
 | 05 | 23-38 | Income, AGI, Tax and Credits | line-instruction structure: `Line N` headings |
 | 06 | 39-60 | Payments (EIC!) | EIC worksheets + tables; heavy geometry work |
