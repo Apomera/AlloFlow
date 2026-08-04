@@ -140,7 +140,7 @@ describe('WCAG 1.4.11 — non-text contrast on the graphics that carry meaning',
     // boundary carries the contrast instead.
     const h = helpers();
     const s = src();
-    const block = s.slice(s.indexOf('const ROCKS = ['), s.indexOf('const MINERALS = ['));
+    const block = s.slice(s.indexOf('var RK_ROCKS = ['), s.indexOf('function rkRockSwatch('));
     const rocks = block.split('\n').filter((l) => /\{ id: '/.test(l) && l.includes('desc:'));
     expect(rocks.length).toBe(20);
     rocks.forEach((l) => {

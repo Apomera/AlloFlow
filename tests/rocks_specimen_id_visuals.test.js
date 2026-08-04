@@ -153,7 +153,7 @@ describe('rock specimen ID visuals', () => {
   it('covers every texture in the ROCKS data with a gloss', () => {
     PATHS.forEach((p) => {
       const src = readFileSync(p, 'utf8');
-      const rocksData = src.slice(src.indexOf('const ROCKS = ['), src.indexOf('const MINERALS = ['));
+      const rocksData = src.slice(src.indexOf('var RK_ROCKS = ['), src.indexOf('function rkRockSwatch('));
       const textures = [...new Set([...rocksData.matchAll(/texture: '([^']+)'/g)].map((m) => m[1]))];
       expect(textures.length).toBeGreaterThan(8);
       const gloss = src.slice(src.indexOf('var RK_TEXTURE_GLOSS'), src.indexOf('var RK_TEXTURE_GLOSS') + 2000);
@@ -340,7 +340,7 @@ describe('specimen art — the picture shows what the words promise', () => {
   function swatches() {
     const { markup } = renderRocks({ mode: 'rocks' });
     const src = readFileSync(ROCKS_FILE, 'utf8');
-    const block = src.slice(src.indexOf('const ROCKS = ['), src.indexOf('const MINERALS = ['));
+    const block = src.slice(src.indexOf('var RK_ROCKS = ['), src.indexOf('function rkRockSwatch('));
     const ids = [...block.matchAll(/\{ id: '(\w+)', type: '/g)]
       .filter((m) => block.slice(m.index, block.indexOf('\n', m.index)).includes('desc:'))
       .map((m) => m[1]);
@@ -454,7 +454,7 @@ describe('specimen art — the picture shows what the words promise', () => {
     };
 
     const s = swatches();
-    const block = src.slice(src.indexOf('const ROCKS = ['), src.indexOf('const MINERALS = ['));
+    const block = src.slice(src.indexOf('var RK_ROCKS = ['), src.indexOf('function rkRockSwatch('));
     ['chalk', 'limestone', 'marble', 'sandstone', 'granite', 'obsidian'].forEach((id) => {
       const body = /<path[^>]*fill="(#[0-9a-fA-F]{6})"/.exec(s[id]);
       expect(body, `${id} has no body fill`).toBeTruthy();
@@ -500,7 +500,7 @@ describe('specimen art — the picture shows what the words promise', () => {
     // on "{ id: x, type: y" and hit a compact id/type lookup list elsewhere in
     // the file, tagging eight unrelated entries one position off.
     const src = readFileSync(ROCKS_FILE, 'utf8');
-    const block = src.slice(src.indexOf('const ROCKS = ['), src.indexOf('const MINERALS = ['));
+    const block = src.slice(src.indexOf('var RK_ROCKS = ['), src.indexOf('function rkRockSwatch('));
     const tagged = {};
     [...block.matchAll(/\{ id: '(\w+)', type: '\w+', art: '(\w+)'/g)].forEach((m) => { tagged[m[1]] = m[2]; });
     expect(tagged).toEqual({
@@ -522,7 +522,7 @@ describe('specimen art — the picture shows what the words promise', () => {
     // an ID tool that renders sandstone in saturated orange and tuff in canary
     // yellow trains the wrong search image.
     const src = readFileSync(ROCKS_FILE, 'utf8');
-    const block = src.slice(src.indexOf('const ROCKS = ['), src.indexOf('const MINERALS = ['));
+    const block = src.slice(src.indexOf('var RK_ROCKS = ['), src.indexOf('function rkRockSwatch('));
     const sat = (hex) => {
       const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
       const mx = Math.max(...c), mn = Math.min(...c);

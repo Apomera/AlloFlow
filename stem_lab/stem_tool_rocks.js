@@ -253,6 +253,57 @@
 
   // Rock specimen swatch. `texture` drives the pattern, `grainColors` the palette,
   // and the texture family also drives the outline and how the light falls.
+  // ── Rock specimens (hoisted to module scope) ──────────────────────────
+  // Was declared inside the `rocks` render, which put the 20-specimen table
+  // out of reach of the sibling rockCycle tool. The rock cycle names eight of
+  // these by name and was drawing each one as a generic family texture while
+  // the real specimen art sat one tab away, unreachable.
+  //
+  // Rows carry `labelKey`; the render localizes them, so the data stays pure.
+  var RK_ROCKS = [
+
+    { id: 'granite', type: 'igneous', labelKey: 'stem.rocks.granite', hardness: 6.5, texture: 'coarse-grained', grainColors: ['#d4d4d8', '#fca5a5', '#1e1e1e', '#fafafa'], desc: 'Intrusive igneous rock with visible quartz, feldspar, and mica crystals. Forms deep underground from slowly cooling magma.', uses: 'Countertops, monuments, building stone' },
+
+    { id: 'basalt', type: 'igneous', labelKey: 'stem.rocks.basalt', hardness: 6, texture: 'fine-grained', grainColors: ['#374151', '#1f2937', '#4b5563', '#111827'], desc: 'Extrusive igneous rock, the most common volcanic rock. Forms when lava cools quickly at the surface.', uses: 'Road aggregate, construction fill' },
+
+    { id: 'obsidian', type: 'igneous', art: 'conchoidal', labelKey: 'stem.rocks.obsidian', hardness: 5.5, texture: 'glassy', grainColors: ['#0f0f0f', '#1a1a2e', '#16213e', '#0a0a0a'], desc: 'Volcanic glass formed when lava cools extremely rapidly. Conchoidal fracture.', uses: 'Surgical scalpels, jewelry, ancient tools' },
+
+    { id: 'pumice', type: 'igneous', labelKey: 'stem.rocks.pumice', hardness: 6, texture: 'vesicular', grainColors: ['#d6d3d1', '#e7e5e4', '#a8a29e', '#f5f5f4'], desc: 'Light, porous volcanic rock full of gas bubbles. So light it can float on water!', uses: 'Abrasive cleaning, lightweight aggregate' },
+
+    { id: 'rhyolite', type: 'igneous', art: 'flowbanded', labelKey: 'stem.rocks.rhyolite', hardness: 6, texture: 'fine-grained', grainColors: ['#fca5a5', '#e5e7eb', '#d1d5db', '#fecaca'], desc: 'Extrusive equivalent of granite. Light-colored fine-grained volcanic rock, often with flow banding. Rich in silica (>69%). Erupts explosively due to high viscosity.', uses: 'Aggregate, decorative stone, gemstone (thundereggs)' },
+
+    { id: 'diorite', type: 'igneous', art: 'saltpepper', labelKey: 'stem.rocks.diorite', hardness: 6, texture: 'coarse-grained', grainColors: ['#1e1e1e', '#fafafa', '#4b5563', '#e5e7eb'], desc: 'Intrusive igneous rock with a "salt and pepper" appearance. Intermediate composition between granite and gabbro. Contains plagioclase feldspar and hornblende.', uses: 'Building stone, cobblestones, ancient sculptures (Inca)' },
+
+    { id: 'andesite', type: 'igneous', labelKey: 'stem.rocks.andesite', hardness: 6, texture: 'fine-grained', grainColors: ['#94a3b8', '#9ca3af', '#4b5563', '#d1d5db'], desc: 'Intermediate volcanic rock named after the Andes Mountains. Common at convergent plate boundaries. Often contains visible phenocrysts in a fine matrix (porphyritic texture).', uses: 'Construction aggregate, monuments' },
+
+    { id: 'tuff', type: 'igneous', art: 'shards', labelKey: 'stem.rocks.tuff', hardness: 4, texture: 'vesicular', grainColors: ['#d9d3c6', '#c0b9a8', '#a39c8c', '#ece7dc'], desc: 'Consolidated volcanic ash. Formed when explosive eruptions blast fine particles into the air, which settle and lithify. Can contain pumice fragments and glass shards.', uses: 'Building stone (ancient Rome), lightweight concrete, water filtration' },
+
+    { id: 'sandstone', type: 'sedimentary', labelKey: 'stem.rocks.sandstone', hardness: 6.5, texture: 'clastic', grainColors: ['#d8c19a', '#c2a878', '#a98f61', '#eee0c6'], desc: 'Made of sand-sized quartz grains cemented together. Often shows cross-bedding from ancient dunes or rivers.', uses: 'Building stone, flagstone, aquifers' },
+
+    { id: 'limestone', type: 'sedimentary', labelKey: 'stem.rocks.limestone', hardness: 3, texture: 'bioclastic', grainColors: ['#e5e7eb', '#d1d5db', '#f3f4f6', '#fef9c3'], desc: 'Composed mainly of calcite (CaCO\u2083). Often contains fossils. Fizzes with acid!', uses: 'Cement, lime, building stone, chalk' },
+
+    { id: 'shale', type: 'sedimentary', labelKey: 'stem.rocks.shale', hardness: 3, texture: 'fine-layered', grainColors: ['#94a3b8', '#4b5563', '#9ca3af', '#374151'], desc: 'Made of compressed clay and silt. Splits into thin layers (fissile). Most common sedimentary rock.', uses: 'Bricks, pottery, oil/gas source rock' },
+
+    { id: 'conglom', type: 'sedimentary', labelKey: 'stem.rocks.conglomerate', hardness: 6, texture: 'clastic-coarse', grainColors: ['#92400e', '#a16207', '#d4d4d8', '#78716c'], desc: 'Contains large rounded pebbles cemented in a fine matrix. Tells us about ancient fast-flowing rivers.', uses: 'Construction aggregate, decorative stone' },
+
+    { id: 'chalk', type: 'sedimentary', labelKey: 'stem.rocks.chalk', hardness: 1, texture: 'bioclastic', grainColors: ['#fafafa', '#f5f5f4', '#e5e7eb', '#ffffff'], desc: 'Soft, white limestone made of microscopic plankton shells (coccoliths). The White Cliffs of Dover are chalk. Extremely fine-grained, each grain is a tiny fossil!', uses: 'Blackboard chalk, whiting, soil amendment, toothpaste' },
+
+    { id: 'travertine', type: 'sedimentary', art: 'bandedporous', labelKey: 'stem.rocks.travertine', hardness: 4, texture: 'crystalline', grainColors: ['#fef3c7', '#fde68a', '#fafaf9', '#e7e5e4'], desc: 'Chemical sedimentary rock deposited from mineral-rich hot springs and cave systems. Often has a banded, porous appearance. Forms stalactites and stalagmites in caves.', uses: 'Flooring, countertops, building facades (Colosseum in Rome)' },
+
+    { id: 'marble', type: 'metamorphic', labelKey: 'stem.rocks.marble', hardness: 3.5, texture: 'crystalline', grainColors: ['#fafafa', '#e5e7eb', '#f3f4f6', '#dbeafe'], desc: 'Metamorphosed limestone. Interlocking calcite crystals give it a sugary texture. Used by sculptors for millennia.', uses: 'Sculpture, flooring, tombstones' },
+
+    { id: 'slate', type: 'metamorphic', art: 'slaty', labelKey: 'stem.rocks.slate', hardness: 5.5, texture: 'foliated', grainColors: ['#374151', '#475569', '#334155', '#1e293b'], desc: 'Metamorphosed shale. Excellent foliation, splits into flat, smooth sheets.', uses: 'Roofing tiles, chalkboards, flooring' },
+
+    { id: 'quartzite', type: 'metamorphic', labelKey: 'stem.rocks.quartzite', hardness: 7, texture: 'non-foliated', grainColors: ['#f5f5f4', '#fafaf9', '#e7e5e4', '#e0f2fe'], desc: 'Metamorphosed sandstone. Extremely hard, even harder than granite. Quartz grains fuse together.', uses: 'Railroad ballast, decorative stone' },
+
+    { id: 'gneiss', type: 'metamorphic', labelKey: 'stem.rocks.gneiss', hardness: 7, texture: 'banded', grainColors: ['#1e1e1e', '#fafafa', '#94a3b8', '#d4d4d8'], desc: 'Shows distinct light and dark mineral banding. Forms under extreme heat and pressure deep in the crust.', uses: 'Decorative stone, construction' },
+
+    { id: 'schist', type: 'metamorphic', art: 'schistose', labelKey: 'stem.rocks.schist', hardness: 5, texture: 'foliated', grainColors: ['#78716c', '#a8a29e', '#57534e', '#d6d3d1'], desc: 'Medium-grade metamorphic rock with visible, aligned mica flakes that give it a sparkly, shiny appearance. Forms from shale under moderate heat and pressure. Named for its tendency to split (Greek "schizein" = to split).', uses: 'Decorative landscaping, flagstone, historical millstones' },
+
+    { id: 'phyllite', type: 'metamorphic', art: 'crenulated', labelKey: 'stem.rocks.phyllite', hardness: 4, texture: 'foliated', grainColors: ['#4b5563', '#94a3b8', '#374151', '#9ca3af'], desc: 'Between slate and schist in metamorphic grade. Has a distinctive silky, satiny sheen from microscopic mica crystals. Crinkled foliation surface (crenulations). The stepping stone between low and medium metamorphism.', uses: 'Decorative stone, garden paths, grave markers' }
+
+  ];
+
   function rkRockSwatch(h, rock, size) {
     var S = size || 40;
     var cols = (rock && rock.grainColors && rock.grainColors.length) ? rock.grainColors : ['#a8a29e', '#78716c'];
@@ -2340,54 +2391,13 @@ const d = labToolData.rocks || {};
 
           // ── Rock specimens ──
 
-          const ROCKS = [
-
-            { id: 'granite', type: 'igneous', label: t('stem.rocks.granite'), hardness: 6.5, texture: 'coarse-grained', grainColors: ['#d4d4d8', '#fca5a5', '#1e1e1e', '#fafafa'], desc: 'Intrusive igneous rock with visible quartz, feldspar, and mica crystals. Forms deep underground from slowly cooling magma.', uses: 'Countertops, monuments, building stone' },
-
-            { id: 'basalt', type: 'igneous', label: t('stem.rocks.basalt'), hardness: 6, texture: 'fine-grained', grainColors: ['#374151', '#1f2937', '#4b5563', '#111827'], desc: 'Extrusive igneous rock, the most common volcanic rock. Forms when lava cools quickly at the surface.', uses: 'Road aggregate, construction fill' },
-
-            { id: 'obsidian', type: 'igneous', art: 'conchoidal', label: t('stem.rocks.obsidian'), hardness: 5.5, texture: 'glassy', grainColors: ['#0f0f0f', '#1a1a2e', '#16213e', '#0a0a0a'], desc: 'Volcanic glass formed when lava cools extremely rapidly. Conchoidal fracture.', uses: 'Surgical scalpels, jewelry, ancient tools' },
-
-            { id: 'pumice', type: 'igneous', label: t('stem.rocks.pumice'), hardness: 6, texture: 'vesicular', grainColors: ['#d6d3d1', '#e7e5e4', '#a8a29e', '#f5f5f4'], desc: 'Light, porous volcanic rock full of gas bubbles. So light it can float on water!', uses: 'Abrasive cleaning, lightweight aggregate' },
-
-            { id: 'rhyolite', type: 'igneous', art: 'flowbanded', label: t('stem.rocks.rhyolite'), hardness: 6, texture: 'fine-grained', grainColors: ['#fca5a5', '#e5e7eb', '#d1d5db', '#fecaca'], desc: 'Extrusive equivalent of granite. Light-colored fine-grained volcanic rock, often with flow banding. Rich in silica (>69%). Erupts explosively due to high viscosity.', uses: 'Aggregate, decorative stone, gemstone (thundereggs)' },
-
-            { id: 'diorite', type: 'igneous', art: 'saltpepper', label: t('stem.rocks.diorite'), hardness: 6, texture: 'coarse-grained', grainColors: ['#1e1e1e', '#fafafa', '#4b5563', '#e5e7eb'], desc: 'Intrusive igneous rock with a "salt and pepper" appearance. Intermediate composition between granite and gabbro. Contains plagioclase feldspar and hornblende.', uses: 'Building stone, cobblestones, ancient sculptures (Inca)' },
-
-            { id: 'andesite', type: 'igneous', label: t('stem.rocks.andesite'), hardness: 6, texture: 'fine-grained', grainColors: ['#94a3b8', '#9ca3af', '#4b5563', '#d1d5db'], desc: 'Intermediate volcanic rock named after the Andes Mountains. Common at convergent plate boundaries. Often contains visible phenocrysts in a fine matrix (porphyritic texture).', uses: 'Construction aggregate, monuments' },
-
-            { id: 'tuff', type: 'igneous', art: 'shards', label: t('stem.rocks.tuff'), hardness: 4, texture: 'vesicular', grainColors: ['#d9d3c6', '#c0b9a8', '#a39c8c', '#ece7dc'], desc: 'Consolidated volcanic ash. Formed when explosive eruptions blast fine particles into the air, which settle and lithify. Can contain pumice fragments and glass shards.', uses: 'Building stone (ancient Rome), lightweight concrete, water filtration' },
-
-            { id: 'sandstone', type: 'sedimentary', label: t('stem.rocks.sandstone'), hardness: 6.5, texture: 'clastic', grainColors: ['#d8c19a', '#c2a878', '#a98f61', '#eee0c6'], desc: 'Made of sand-sized quartz grains cemented together. Often shows cross-bedding from ancient dunes or rivers.', uses: 'Building stone, flagstone, aquifers' },
-
-            { id: 'limestone', type: 'sedimentary', label: t('stem.rocks.limestone'), hardness: 3, texture: 'bioclastic', grainColors: ['#e5e7eb', '#d1d5db', '#f3f4f6', '#fef9c3'], desc: 'Composed mainly of calcite (CaCO\u2083). Often contains fossils. Fizzes with acid!', uses: 'Cement, lime, building stone, chalk' },
-
-            { id: 'shale', type: 'sedimentary', label: t('stem.rocks.shale'), hardness: 3, texture: 'fine-layered', grainColors: ['#94a3b8', '#4b5563', '#9ca3af', '#374151'], desc: 'Made of compressed clay and silt. Splits into thin layers (fissile). Most common sedimentary rock.', uses: 'Bricks, pottery, oil/gas source rock' },
-
-            { id: 'conglom', type: 'sedimentary', label: t('stem.rocks.conglomerate'), hardness: 6, texture: 'clastic-coarse', grainColors: ['#92400e', '#a16207', '#d4d4d8', '#78716c'], desc: 'Contains large rounded pebbles cemented in a fine matrix. Tells us about ancient fast-flowing rivers.', uses: 'Construction aggregate, decorative stone' },
-
-            { id: 'chalk', type: 'sedimentary', label: t('stem.rocks.chalk'), hardness: 1, texture: 'bioclastic', grainColors: ['#fafafa', '#f5f5f4', '#e5e7eb', '#ffffff'], desc: 'Soft, white limestone made of microscopic plankton shells (coccoliths). The White Cliffs of Dover are chalk. Extremely fine-grained, each grain is a tiny fossil!', uses: 'Blackboard chalk, whiting, soil amendment, toothpaste' },
-
-            { id: 'travertine', type: 'sedimentary', art: 'bandedporous', label: t('stem.rocks.travertine'), hardness: 4, texture: 'crystalline', grainColors: ['#fef3c7', '#fde68a', '#fafaf9', '#e7e5e4'], desc: 'Chemical sedimentary rock deposited from mineral-rich hot springs and cave systems. Often has a banded, porous appearance. Forms stalactites and stalagmites in caves.', uses: 'Flooring, countertops, building facades (Colosseum in Rome)' },
-
-            { id: 'marble', type: 'metamorphic', label: t('stem.rocks.marble'), hardness: 3.5, texture: 'crystalline', grainColors: ['#fafafa', '#e5e7eb', '#f3f4f6', '#dbeafe'], desc: 'Metamorphosed limestone. Interlocking calcite crystals give it a sugary texture. Used by sculptors for millennia.', uses: 'Sculpture, flooring, tombstones' },
-
-            { id: 'slate', type: 'metamorphic', art: 'slaty', label: t('stem.rocks.slate'), hardness: 5.5, texture: 'foliated', grainColors: ['#374151', '#475569', '#334155', '#1e293b'], desc: 'Metamorphosed shale. Excellent foliation, splits into flat, smooth sheets.', uses: 'Roofing tiles, chalkboards, flooring' },
-
-            { id: 'quartzite', type: 'metamorphic', label: t('stem.rocks.quartzite'), hardness: 7, texture: 'non-foliated', grainColors: ['#f5f5f4', '#fafaf9', '#e7e5e4', '#e0f2fe'], desc: 'Metamorphosed sandstone. Extremely hard, even harder than granite. Quartz grains fuse together.', uses: 'Railroad ballast, decorative stone' },
-
-            { id: 'gneiss', type: 'metamorphic', label: t('stem.rocks.gneiss'), hardness: 7, texture: 'banded', grainColors: ['#1e1e1e', '#fafafa', '#94a3b8', '#d4d4d8'], desc: 'Shows distinct light and dark mineral banding. Forms under extreme heat and pressure deep in the crust.', uses: 'Decorative stone, construction' },
-
-            { id: 'schist', type: 'metamorphic', art: 'schistose', label: t('stem.rocks.schist'), hardness: 5, texture: 'foliated', grainColors: ['#78716c', '#a8a29e', '#57534e', '#d6d3d1'], desc: 'Medium-grade metamorphic rock with visible, aligned mica flakes that give it a sparkly, shiny appearance. Forms from shale under moderate heat and pressure. Named for its tendency to split (Greek "schizein" = to split).', uses: 'Decorative landscaping, flagstone, historical millstones' },
-
-            { id: 'phyllite', type: 'metamorphic', art: 'crenulated', label: t('stem.rocks.phyllite'), hardness: 4, texture: 'foliated', grainColors: ['#4b5563', '#94a3b8', '#374151', '#9ca3af'], desc: 'Between slate and schist in metamorphic grade. Has a distinctive silky, satiny sheen from microscopic mica crystals. Crinkled foliation surface (crenulations). The stepping stone between low and medium metamorphism.', uses: 'Decorative stone, garden paths, grave markers' }
-
-          ];
 
 
 
           // ── Mineral data ──
 
+          // Localized view of the hoisted RK_ROCKS table (see its note above).
+          const ROCKS = RK_ROCKS.map(function (r) { return Object.assign({}, r, { label: t(r.labelKey) }); });
           const MINERALS = [
 
             { id: 'quartz', label: t('stem.rocks.quartz'), hardness: 7, streak: 'White', luster: 'Vitreous', crystal: 'Hexagonal', color: '#e8edf0', formula: 'SiO\u2082', desc: 'The second most abundant mineral in the crust of Earth. Forms distinctive six-sided prismatic crystals with pointed terminations. Extremely resistant to weathering. Comes in many colored varieties: amethyst (purple), citrine (yellow), rose quartz (pink), smoky quartz (brown).', uses: 'Electronics (oscillators, watches), glassmaking, abrasives, gemstones', funFact: 'Quartz is piezoelectric (when squeezed, it generates an electric charge). This property makes quartz watches accurate to within 15 seconds per month!', occurrence: 'Found in virtually all rock types worldwide. Major deposits in Brazil, Arkansas (USA), Madagascar, and the Alps.' },
@@ -7733,7 +7743,13 @@ const d = labToolData.rockCycle || {};
                   className: 'block w-full h-auto',
                   style: { maxHeight: '190px' }
                 },
-                  // Input specimen
+                  // Input specimen. Deliberately rcSwatch and NOT the sibling's
+                  // rkRockSwatch: the two are not duplicate renderers. rcSwatch
+                  // tiles a fixed box to show grain FABRIC, which is what this
+                  // machine teaches (and what the >90% coverage test pins for the
+                  // "no pore space" claim); rkRockSwatch draws a hand-specimen
+                  // silhouette for identification, which leaves most of the box
+                  // empty. Swapping it dropped grain coverage to 23.6%.
                   rcSwatch(h, 'in', liveSpec.texture, liveSpec.family, inX + 4, swY, swW, swH, inOpacity),
                   h('text', { key: 'inLbl', x: inX + 4 + swW / 2, y: swY + swH + 15, textAnchor: 'middle', fontSize: '10', fontWeight: '700', fill: '#334155' }, liveSpec.label),
                   h('text', { key: 'inFam', x: inX + 4 + swW / 2, y: swY - 10, textAnchor: 'middle', fontSize: '8', fontWeight: '700', fill: '#475569' }, liveSpec.family.toUpperCase()),

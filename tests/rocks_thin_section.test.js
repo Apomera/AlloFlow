@@ -60,7 +60,7 @@ describe('thin section — coverage', () => {
     const src = readFileSync(ROCKS_FILE, 'utf8');
     const keys = [...src.slice(src.indexOf('var RK_THIN_SECTION = {'), src.indexOf('function rkThinSectionSvg'))
       .matchAll(/^\s{4}(\w+):/gm)].map((m) => m[1]);
-    const rocks = [...src.slice(src.indexOf('const ROCKS = ['), src.indexOf('const MINERALS = ['))
+    const rocks = [...src.slice(src.indexOf('var RK_ROCKS = ['), src.indexOf('function rkRockSwatch('))
       .matchAll(/\{ id: '(\w+)'/g)].map((m) => m[1]);
 
     expect(rocks.length).toBe(20);

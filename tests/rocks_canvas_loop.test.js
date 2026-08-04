@@ -172,9 +172,9 @@ describe('rocks canvas animation loops', () => {
     ROCKS_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
 
-      expect(source).toContain('const RC_SPECIMENS = [');
-      expect(source).toContain('const RC_TRANSFORMS = {');
-      expect(source).toContain('const rcSwatch = function (key, texture, family, x, y, w, hgt, opacity)');
+      expect(source).toContain('var RC_SPECIMENS = [');
+      expect(source).toContain('var RC_TRANSFORMS = {');
+      expect(source).toContain('var rcSwatch = function (h, key, texture, family, x, y, w, hgt, opacity)');
 
       // The pairings students are actually asked to know.
       expect(source).toContain("product: 'Quartzite'");
@@ -184,9 +184,11 @@ describe('rocks canvas animation loops', () => {
 
       // Every specimen/agent pair must resolve — no dead cells in the table.
       const specimenIds = ['granite', 'basalt', 'sandstone', 'limestone', 'shale', 'slate', 'marble', 'gneiss'];
-      const table = source.slice(source.indexOf('const RC_TRANSFORMS = {'));
+      const table = source.slice(source.indexOf('var RC_TRANSFORMS = {'));
       specimenIds.forEach((id) => {
-        expect(table).toContain(`\n            ${id}: {`);
+        // Indentation-independent: the table dedented when it was hoisted out of
+        // the render function, and pinning leading spaces made that a failure.
+        expect(table, `${id} has no row in RC_TRANSFORMS`).toMatch(new RegExp('\\n\\s+' + id + ': \\{'));
       });
 
       // Progress bar exposes its value to assistive tech.
