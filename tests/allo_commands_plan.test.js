@@ -691,10 +691,42 @@ describe('coverage batch commands', () => {
     expect(AC.buildAlloCommands(noQuiz).find((c) => c.id === 'toggle_side_by_side')).toBeUndefined();
   });
 
+  it('batch 4: source topic, grade, faq/brainstorm, edit-this, review game, print', async () => {
+    const log = [];
+    const { ctx } = mkCtx({
+      contentLoaded: true, contentIsQuiz: true,
+      generateSourceText: (topic) => { log.push('src:' + topic); return Promise.resolve(); },
+      generateFaq: () => Promise.resolve().then(() => log.push('faq')),
+      generateBrainstorm: () => Promise.resolve().then(() => log.push('brainstorm')),
+      setGradeLevelChoice: (g) => { log.push('grade:' + g); return /^\d/.test(g) || /^k/i.test(g) ? '5th Grade' : ''; },
+      toggleContentEditing: () => { log.push('edit'); return 'quiz'; },
+      toggleReviewGame: () => log.push('review'),
+    });
+    // The volcano case, end to end at the command layer: topic rides the
+    // declared param into the host handler.
+    const pr = await AC.runPlan(ctx, [{ commandId: 'generate_source_text', params: { topic: 'volcanoes' } }]);
+    expect(pr.ok).toBe(true);
+    expect(log).toContain('src:volcanoes');
+    expect(AC.runCommandById(ctx, 'set_grade_level', { grade: '5' }, {}).narration).toContain('5th Grade');
+    const miss = mkCtx({ setGradeLevelChoice: () => '' }).ctx;
+    expect(AC.runCommandById(miss, 'set_grade_level', { grade: 'purple' }, {}).narration).toContain('K to 12');
+    expect(AC.runCommandById(ctx, 'toggle_content_editing', {}, {}).narration).toContain('quiz');
+    expect(AC.runCommandById(ctx, 'start_review_game', {}, {}).handled).toBe(true);
+    const pr2 = await AC.runPlan(ctx, [
+      { commandId: 'generate_faq', params: {} },
+      { commandId: 'generate_brainstorm', params: {} },
+    ]);
+    expect(pr2.ok).toBe(true);
+    expect(log).toContain('faq');
+    expect(log).toContain('brainstorm');
+    expect(AC.getCommandContract('generate_source_text').params).toEqual(['topic']);
+    expect(AC.getCommandContract('print_page').demoSafe).toBe(false);
+  });
+
   it('both ANTI copies carry the new ctx capabilities', () => {
     for (const path of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt']) {
       const app = readFileSync(path, 'utf-8');
-      for (const cap of ['startMemoryGame:', 'startMatchingGame:', 'startBingoGame:', 'cycleColorOverlay:', 'toggleAnimations:', 'adjustVoiceSpeed:', 'generateNoteTaking:', 'generateAnchorChart:', 'generateConceptSort:', 'startCrosswordGame:', 'startWordScrambleGame:', 'setGlossaryFilterChoice:', 'openReadThisPage:', 'toggleQuizAnswers:', 'togglePresentationMode:', 'toggleSideBySide:', 'contentIsQuiz:', 'contentIsSimplified:']) {
+      for (const cap of ['startMemoryGame:', 'startMatchingGame:', 'startBingoGame:', 'cycleColorOverlay:', 'toggleAnimations:', 'adjustVoiceSpeed:', 'generateNoteTaking:', 'generateAnchorChart:', 'generateConceptSort:', 'startCrosswordGame:', 'startWordScrambleGame:', 'setGlossaryFilterChoice:', 'generateSourceText:', 'generateFaq:', 'generateBrainstorm:', 'setGradeLevelChoice:', 'toggleContentEditing:', 'toggleReviewGame:', 'openReadThisPage:', 'toggleQuizAnswers:', 'togglePresentationMode:', 'toggleSideBySide:', 'contentIsQuiz:', 'contentIsSimplified:']) {
         expect(app, path + ' ' + cap).toContain(cap);
       }
       // Generation caps carry the honest-failure contract like their siblings.

@@ -36132,6 +36132,35 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       toggleQuizAnswers: () => { handleToggleShowQuizAnswers(); return true; },
       togglePresentationMode: () => { handleToggleIsPresentationMode(); return true; },
       toggleSideBySide: () => { setIsSideBySide(prev => !prev); return true; },
+      generateSourceText: (topic) => { const tp = String(topic || '').trim(); if (tp) setSourceTopic(tp); return handleGenerateSource(tp ? { topic: tp } : {}); },
+      generateFaq: () => handleGenerate('faq', null, false, null, { rethrowErrors: true }),
+      generateBrainstorm: () => handleGenerate('brainstorm', null, false, null, { rethrowErrors: true }),
+      setGradeLevelChoice: (raw) => {
+        const s = String(raw || '').toLowerCase().trim();
+        if (!s) return '';
+        if (/^k(indergarten)?$/.test(s)) { setGradeLevel('Kindergarten'); return 'Kindergarten'; }
+        const m = s.match(/\d{1,2}/);
+        const n = m ? parseInt(m[0], 10) : NaN;
+        if (!n || n < 1 || n > 12) return '';
+        const label = n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th') + ' Grade';
+        setGradeLevel(label);
+        return label;
+      },
+      // One "edit this" for every view that has an edit mode; returns what it
+      // toggled (or '' when the view has none) so the narration stays honest.
+      toggleContentEditing: () => {
+        const kind = generatedContent && generatedContent.type;
+        if (kind === 'quiz') { handleToggleIsEditingQuiz(); return 'quiz'; }
+        if (kind === 'glossary') { handleToggleIsEditingGlossary(); return 'glossary'; }
+        if (kind === 'outline') { handleToggleIsEditingOutline(); return 'outline'; }
+        if (kind === 'faq') { handleToggleIsEditingFaq(); return 'FAQ list'; }
+        if (kind === 'brainstorm') { handleToggleIsEditingBrainstorm(); return 'brainstorm'; }
+        if (kind === 'analysis') { handleToggleIsEditingAnalysis(); return 'analysis'; }
+        if (kind === 'simplified') { handleToggleIsEditingLeveledText(); return 'leveled text'; }
+        if (kind === 'scaffolds' || kind === 'sentence-frames') { handleToggleIsEditingScaffolds(); return 'scaffolds'; }
+        return '';
+      },
+      toggleReviewGame: () => { handleToggleIsReviewGame(); return true; },
       generateNoteTaking: () => handleGenerate('note-taking', null, false, null, { rethrowErrors: true }),
       generateAnchorChart: () => handleGenerate('anchor-chart', null, false, null, { rethrowErrors: true }),
       generateConceptSort: () => handleGenerate('concept-sort', null, false, null, { rethrowErrors: true }),
