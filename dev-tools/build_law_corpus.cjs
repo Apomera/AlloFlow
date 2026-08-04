@@ -57,6 +57,21 @@ const DOCS = [
     kind: 'ecfr', title: 34, part: 104
   },
   {
+    // Employment side of the transition cliff. IDEA ends at graduation; ADA
+    // Title I is what replaces it, and it works differently — no IEP team, no
+    // automatic identification, and nothing happens unless the worker asks.
+    // Ingested for PaperTrail's work-rights module and to prove the corpus
+    // extends past title 34.
+    slug: 'ada-title-i',
+    jurisdiction: 'federal',
+    display: 'ADA Title I — Regulations to Implement the Equal Employment Provisions of the Americans with Disabilities Act',
+    short: 'ADA Title I',
+    citation: '29 CFR Part 1630',
+    publisher: 'U.S. Government Publishing Office / eCFR',
+    sourceUrl: 'https://www.ecfr.gov/current/title-29/subtitle-B/chapter-XIV/part-1630',
+    kind: 'ecfr', title: 29, part: 1630
+  },
+  {
     slug: 'me-muser',
     jurisdiction: 'ME',
     jurisdictionName: 'Maine',
@@ -313,13 +328,23 @@ async function ingestEcfr(doc, upToDate) {
   }
 
   console.log('Law corpus ingestion — ' + retrievedAt);
-  let titleMeta = null;
+  // Currency is PER TITLE. This used to look up title 34 once and stamp every
+  // eCFR document with that date; the moment a document from another title was
+  // added (29 CFR 1630, ADA Title I) that would have printed a confidently
+  // wrong "current as of" on real legal text. Each title now carries its own.
+  let titlesById = {};
   try {
     const titles = JSON.parse(await fetchText('https://www.ecfr.gov/api/versioner/v1/titles.json'));
-    titleMeta = (titles.titles || []).find((t) => t.number === 34);
+    for (const t of (titles.titles || [])) titlesById[t.number] = t;
   } catch (e) { console.error('  ! could not read eCFR title metadata: ' + e.message); }
-  const upToDate = (titleMeta && titleMeta.up_to_date_as_of) || retrievedAt;
-  if (titleMeta) console.log('  eCFR title 34 current as of ' + upToDate + ' (last amended ' + titleMeta.latest_amended_on + ')');
+  const currencyFor = (titleNum) => {
+    const meta = titlesById[titleNum];
+    return (meta && meta.up_to_date_as_of) || retrievedAt;
+  };
+  for (const n of [...new Set(DOCS.filter((d) => d.kind === 'ecfr').map((d) => d.title))]) {
+    const meta = titlesById[n];
+    if (meta) console.log('  eCFR title ' + n + ' current as of ' + meta.up_to_date_as_of + ' (last amended ' + meta.latest_amended_on + ')');
+  }
 
   const manifest = { version: 1, generated: new Date().toISOString(), documents: [] };
   for (const doc of DOCS) {
@@ -327,7 +352,7 @@ async function ingestEcfr(doc, upToDate) {
     let sections = [];
     let status = 'ingested';
     if (doc.kind === 'ecfr') {
-      try { sections = await ingestEcfr(doc, upToDate); }
+      try { sections = await ingestEcfr(doc, currencyFor(doc.title)); }
       catch (e) { console.error('  ! ' + doc.slug + ': ' + e.message); status = 'failed'; }
     } else if (doc.kind === 'docx') {
       try { sections = await ingestDocx(doc); }
@@ -354,7 +379,7 @@ async function ingestEcfr(doc, upToDate) {
       status: status,
       // eCFR reports its own currency; a filed document carries its effective
       // date in the text, so we do not invent one here.
-      currentAsOf: doc.kind === 'ecfr' ? upToDate : null,
+      currentAsOf: doc.kind === 'ecfr' ? currencyFor(doc.title) : (doc.effectiveDate || null),
       retrievedAt: retrievedAt,
       note: doc.note || null,
       sections: sections

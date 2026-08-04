@@ -173,6 +173,85 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
       why: 'You may take time to read, and asking is normal — the room waiting is social pressure, not a rule. Saying you disagree while signing anyway leaves a signature on the record and your objection nowhere. If you disagree, that belongs in writing.' }
   ];
 
+  // ─────────────────────────────────────────────────────────
+  // Work rights & disclosure — the transition cliff.
+  //
+  // IDEA ends at graduation and ADA Title I replaces it, but the two work
+  // nothing alike: no team identifies you, no plan follows you, and nothing
+  // happens unless you ask. Every citation below is to 29 CFR 1630, which the
+  // Law Navigator carries verbatim — this module teaches the shape, the
+  // Navigator holds the text.
+  //
+  // Aaron's scientific-integrity rule applies with force here: disclosure is
+  // a genuine tradeoff with no universally right answer, so this content
+  // teaches the DECISION, never a recommendation.
+  // ─────────────────────────────────────────────────────────
+  var WORK_CARDS = [
+    {
+      id: 'cliff', title: 'The handoff nobody announces', cite: null,
+      body: 'In school, a team identified you, wrote a plan, and the plan followed you from class to class. At work, none of that happens automatically. The Americans with Disabilities Act protects qualified workers with disabilities — but it is REQUEST-DRIVEN: an employer generally has no obligation until someone asks for what they need. That single difference catches more people at 18 than any other part of the transition, and it is why the skills in this section are worth practicing before you need them.'
+    },
+    {
+      id: 'accommodation', title: 'What a reasonable accommodation actually is', cite: '29 CFR 1630.9',
+      body: 'An adjustment to how a job gets done, so that a qualified person can do it: a written checklist instead of spoken instructions, a modified schedule, noise-cancelling headphones, a job coach during training, more frequent breaks. It is NOT a lowered standard — you still have to do the essential functions of the job. Employers may refuse only if an accommodation causes "undue hardship", a real legal test rather than an inconvenience, and they may pick among effective options rather than granting your exact preference.'
+    },
+    {
+      id: 'timing', title: 'When they may ask, and when they may not', cite: '29 CFR 1630.13, 1630.14',
+      body: 'Before a job offer, an employer generally may NOT ask whether you have a disability or require a medical exam. They MAY ask whether you can perform the job functions, and may ask you to describe or demonstrate how you would do them. After a conditional offer, medical questions are allowed if everyone in that job category gets the same questions. Knowing this changes how an application feels: a pre-offer question about your disability is usually not something you are obligated to answer.'
+    },
+    {
+      id: 'decision', title: 'Disclosure is a decision, not a duty', cite: null,
+      body: 'You are not required to disclose a disability at all — unless you want an accommodation, in which case someone at the employer has to know enough to provide it. Reasons people disclose: they need an adjustment to interview or work, the disability is visible anyway, or they would rather work somewhere that responds well. Reasons people wait: the protection against discrimination is real but proving discrimination is hard, and first impressions are sticky. Timing options are early (application), at interview, after an offer, or once on the job when a need appears. There is no universally right answer here, which is exactly why it should be YOUR answer rather than a default.'
+    },
+    {
+      id: 'how', title: 'How to ask, in three sentences', cite: '29 CFR 1630.9',
+      body: 'You do not need a diagnosis label, a doctor\'s note up front, or the phrase "reasonable accommodation" to start. What works: name the task, name the barrier, propose the adjustment. "I do great with detailed work. Spoken instructions are hard for me to hold onto. Could I get the task list in writing or take a photo of the board?" That is a complete accommodation request. Put it in writing afterward — even a short email — because a paper trail protects both sides.'
+    },
+    {
+      id: 'systems', title: 'The help systems most people never hear about', cite: null,
+      body: 'VOCATIONAL REHABILITATION (VR) is a state agency that helps people with disabilities prepare for and keep work — assessment, training, equipment, sometimes tuition. Every transition IEP is supposed to connect you to it, and you can also apply yourself. A JOB COACH is a person who trains alongside you at a real workplace and fades out as you get fluent. SUPPORTED EMPLOYMENT means a competitive, real-wage job with that ongoing support attached. Ask your transition coordinator or your state VR office; these are underused mostly because nobody mentions them.'
+    },
+    {
+      id: 'subminimum', title: 'A wage rule worth knowing about', cite: null,
+      body: 'A provision of federal labor law, Section 14(c), has historically let certain employers pay workers with disabilities BELOW the minimum wage under special certificates, often in sheltered settings. It is contested and has been narrowing — a number of states have ended the practice outright and federal rulemaking has moved toward phasing it out, with the details still shifting. Competitive integrated employment at full wage is the goal that transition planning is supposed to aim at. If anyone offers you a job paying less than minimum wage because of a disability, that is a moment to ask questions and call your state VR office — not a normal offer.'
+    }
+  ];
+
+  // Disclosure scenarios. Deliberately NOT scored right/wrong: each option is
+  // a defensible choice with a real consequence, which is what makes it a
+  // decision skill instead of a quiz. Only the unlawful-question item has a
+  // clear legal answer, and it is flagged as such.
+  var WORK_SCENARIOS = [
+    { id: 'w1', text: 'An online application asks, before any interview: "Do you have any disabilities or medical conditions?"',
+      options: [
+        { id: 'a', text: 'Answer honestly and in detail.' },
+        { id: 'b', text: 'Leave it blank or select "prefer not to answer".' },
+        { id: 'c', text: 'Answer only about ability to do the job.' }
+      ],
+      why: 'Pre-offer disability questions are generally NOT permitted (29 CFR 1630.13), so B and C are both reasonable and neither is dishonest. One nuance worth knowing: some applications include a SEPARATE voluntary self-identification form used for federal-contractor diversity reporting, which is confidential, kept away from the hiring manager, and genuinely optional. If the question sits in the main application, treating it as optional is well founded.' },
+    { id: 'w2', text: 'You need extra time on a timed skills test that is part of the interview.',
+      options: [
+        { id: 'a', text: 'Ask for the extra time and explain why you need it.' },
+        { id: 'b', text: 'Take the test as-is and hope for the best.' },
+        { id: 'c', text: 'Ask whether the test can be given a different way.' }
+      ],
+      why: 'This is the clearest case for asking: an accommodation in the hiring process is explicitly contemplated, and tests must measure the skill rather than the disability (29 CFR 1630.11). Notice that A and C ask for different things — extra time versus a different format — and C is often easier for an employer to say yes to. Taking it as-is is a legitimate choice too, but it is a choice, not the only option.' },
+    { id: 'w3', text: 'Three months into a job you are doing well at, a new manager changes the routine and you start struggling.',
+      options: [
+        { id: 'a', text: 'Say nothing and try to adapt.' },
+        { id: 'b', text: 'Ask for the specific adjustment you need, in writing.' },
+        { id: 'c', text: 'Disclose the disability and ask for a formal accommodation.' }
+      ],
+      why: 'There is no deadline on asking — the right to request does not expire because you did not disclose at hiring. B and C differ in how much you share: B names a task-level need, C opens a formal process with documentation. Many people start at B and escalate only if it is refused. Saying nothing is what most people do, and it is why good workers quietly lose jobs they could have kept.' },
+    { id: 'w4', text: 'An interviewer asks: "That gap in your school record — was that a medical thing?"',
+      options: [
+        { id: 'a', text: 'Answer the medical question directly.' },
+        { id: 'b', text: 'Redirect to what you can do now.' },
+        { id: 'c', text: 'Say you would rather discuss your qualifications.' }
+      ],
+      why: 'This is the pre-offer line again, and the question is one an employer generally should not be asking. You are not obligated to answer it. A redirect ("I took some time out and I am in a strong place now — can I tell you what I have been doing since?") usually moves the conversation without confrontation, and it is a script worth rehearsing before you are in the chair.' }
+  ];
+
   var HELP_SCRIPTS = [
     'I want to make sure I understand this before I sign. Can I have a few minutes?',
     'Can I take this home and bring it back tomorrow?',
@@ -190,7 +269,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
     category: 'applied',
     questHooks: [
       { id: 'pt_decode', label: 'Decode fields across two different documents', icon: '📄', check: function(d) { return d && d.seenDocs && Object.keys(d.seenDocs).length >= 2; }, progress: function(d) { return ((d && d.seenDocs && Object.keys(d.seenDocs).length) || 0) + '/2 documents'; } },
-      { id: 'pt_judgment', label: 'Work through 4 pressure scenarios', icon: '🛡️', check: function(d) { return d && d.scenDone && Object.keys(d.scenDone).length >= 4; }, progress: function(d) { return ((d && d.scenDone && Object.keys(d.scenDone).length) || 0) + '/4 scenarios'; } }
+      { id: 'pt_judgment', label: 'Work through 4 pressure scenarios', icon: '🛡️', check: function(d) { return d && d.scenDone && Object.keys(d.scenDone).length >= 4; }, progress: function(d) { return ((d && d.scenDone && Object.keys(d.scenDone).length) || 0) + '/4 scenarios'; } },
+      { id: 'pt_work', label: 'Think through the disclosure decisions', icon: '⚖️', check: function(d) { return d && d.workDone && Object.keys(d.workDone).length >= 3; }, progress: function(d) { return ((d && d.workDone && Object.keys(d.workDone).length) || 0) + '/3 decisions'; } }
     ],
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
@@ -278,6 +358,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
             },
               h('div', { className: 'font-black text-sm' }, '💬 ' + __alloT('stem.paperTrail.scripts', 'What to say')),
               h('div', { className: 'text-[11px] mt-0.5', style: { color: pal.muted } }, __alloT('stem.paperTrail.scripts_sub', 'Six sentences that buy you time. Asking is a skill.'))
+            ),
+            h('button', {
+              onClick: function() { setPT({ view: 'work' }); },
+              className: 'text-left rounded-2xl p-3 sm:col-span-2', style: { background: pal.card, border: '2px solid ' + pal.border, color: pal.text }
+            },
+              h('div', { className: 'font-black text-sm' }, '⚖️ ' + __alloT('stem.paperTrail.work_title', 'Work rights & disclosure')),
+              h('div', { className: 'text-[11px] mt-0.5', style: { color: pal.muted } },
+                __alloT('stem.paperTrail.work_sub', 'What replaces your school plan after graduation, how to ask for what you need, and whether to disclose at all.') + ' ' + Object.keys(d.workDone || {}).length + '/' + WORK_SCENARIOS.length)
             )
           )
         );
@@ -379,6 +467,77 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
       }
 
       // ─────────── SCRIPTS ───────────
+      // ─────────── WORK RIGHTS & DISCLOSURE ───────────
+      if (view === 'work') {
+        var wcOpen = d.workOpen || {};
+        var wsDone = d.workDone || {};
+        var wIdx = d.workCurrent || 0;
+        var ws = WORK_SCENARIOS[wIdx];
+        var wsPicked = ws && wsDone[ws.id];
+        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+          h('div', { className: 'flex items-center gap-3 flex-wrap mb-3' },
+            backBtn('home', __alloT('stem.paperTrail.back_home', 'PaperTrail')),
+            h('h2', { className: 'text-lg font-black' }, '⚖️ ' + __alloT('stem.paperTrail.work_title', 'Work rights & disclosure'))
+          ),
+          h('p', { className: 'text-sm mb-3', style: { color: pal.muted } },
+            __alloT('stem.paperTrail.work_intro', 'School protections do not follow you to work. What replaces them is request-driven, which means knowing what to ask for is the whole skill.')),
+          h('div', { className: 'space-y-2 mb-5' },
+            WORK_CARDS.map(function(c) {
+              var open = !!wcOpen[c.id];
+              return h('div', { key: c.id, className: 'rounded-xl overflow-hidden', style: { background: pal.panel, border: '1px solid ' + pal.border } },
+                h('button', {
+                  onClick: function() { var nx = Object.assign({}, wcOpen); nx[c.id] = !open; setPT({ workOpen: nx }); },
+                  'aria-expanded': open,
+                  className: 'w-full text-left px-3 py-2 flex items-center justify-between gap-2 flex-wrap',
+                  style: { color: pal.text }
+                },
+                  h('span', { className: 'font-bold text-sm' }, (open ? '▾ ' : '▸ ') + c.title),
+                  c.cite ? h('span', { className: 'text-[10px] font-black uppercase tracking-wider', style: { color: pal.accent } }, c.cite) : null
+                ),
+                open ? h('div', { className: 'px-3 pb-3' },
+                  h('p', { className: 'text-sm leading-relaxed', style: { color: pal.text } }, c.body),
+                  c.cite ? h('p', { className: 'text-[11px] mt-2', style: { color: pal.muted } },
+                    __alloT('stem.paperTrail.read_law', 'Read the actual text of ') + c.cite + __alloT('stem.paperTrail.read_law2', ' in the Education Law Navigator — nothing there is paraphrased.')) : null
+                ) : null
+              );
+            })
+          ),
+          h('div', { className: 'rounded-2xl p-4', style: { background: pal.card, border: '2px solid ' + pal.border } },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-2' },
+              h('h3', { className: 'text-sm font-black', style: { color: pal.text } }, '🤔 ' + __alloT('stem.paperTrail.disclosure_title', 'Disclosure decisions')),
+              h('span', { className: 'text-[11px] font-bold', style: { color: pal.muted } }, (wIdx + 1) + ' / ' + WORK_SCENARIOS.length)
+            ),
+            h('p', { className: 'text-xs mb-3', style: { color: pal.muted } },
+              __alloT('stem.paperTrail.disclosure_sub', 'These are not scored. Every option below is a real choice someone might make, with a real consequence — pick the one you would actually make, then read what follows from it.')),
+            ws ? h('div', { className: 'rounded-xl p-3 mb-3 text-sm font-semibold', style: { background: pal.panel, border: '1px solid ' + pal.border, color: pal.text } }, ws.text) : null,
+            ws ? h('div', { role: 'group', 'aria-label': __alloT('stem.paperTrail.choose', 'Choose a response'), className: 'flex flex-col gap-2 mb-3' },
+              ws.options.map(function(o) {
+                var picked = wsPicked && wsPicked.pick === o.id;
+                return h('button', {
+                  key: o.id, disabled: !!wsPicked,
+                  onClick: function() {
+                    var nx = Object.assign({}, wsDone); nx[ws.id] = { pick: o.id };
+                    setPT({ workDone: nx });
+                    awardXP(4, 'Disclosure decision considered');
+                    announceToSR(__alloT('stem.paperTrail.considered_sr', 'Choice recorded. What follows from it is shown below.'));
+                  },
+                  className: 'text-left rounded-xl px-3 py-2 text-sm border-2 transition-colors disabled:cursor-default',
+                  style: picked
+                    ? { background: 'rgba(245,158,11,0.14)', borderColor: pal.accent, color: pal.text }
+                    : { background: pal.panel, borderColor: pal.border, color: wsPicked ? pal.muted : pal.text }
+                }, (picked ? '● ' : '') + o.text);
+              })
+            ) : null,
+            ws && wsPicked ? h('div', null,
+              h('div', { className: 'rounded-xl p-3 text-xs leading-relaxed mb-3', style: { background: pal.panel, border: '1px solid ' + pal.border, color: pal.text } }, ws.why),
+              wIdx < WORK_SCENARIOS.length - 1
+                ? h('button', { onClick: function() { setPT({ workCurrent: wIdx + 1 }); }, className: 'rounded-lg px-4 py-2 text-xs font-black text-white', style: { background: pal.btn } }, __alloT('stem.paperTrail.next_case', 'Next situation →'))
+                : h('p', { className: 'text-xs font-bold', style: { color: pal.accent } }, __alloT('stem.paperTrail.work_done', 'All four considered. The through-line: nothing is automatic after school, and asking early is usually cheaper than recovering later.'))
+            ) : null
+          )
+        );
+      }
+
       if (view === 'scripts') {
         return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
           h('div', { className: 'flex items-center gap-3 flex-wrap mb-3' },

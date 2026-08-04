@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated": "2026-08-04T16:59:44.541Z",
+  "generated": "2026-08-04T21:57:13.634Z",
   "documents": [
     {
       "slug": "idea-part-b",
@@ -35,6 +35,23 @@
       "retrievedAt": "2026-08-04",
       "sectionCount": 38,
       "bytes": 65068
+    },
+    {
+      "slug": "ada-title-i",
+      "jurisdiction": "federal",
+      "jurisdictionName": "United States",
+      "display": "ADA Title I — Regulations to Implement the Equal Employment Provisions of the Americans with Disabilities Act",
+      "short": "ADA Title I",
+      "citation": "29 CFR Part 1630",
+      "sourceUrl": "https://www.ecfr.gov/current/title-29/subtitle-B/chapter-XIV/part-1630",
+      "cfrTitle": 29,
+      "cfrPart": "1630",
+      "docUrl": null,
+      "status": "ingested",
+      "currentAsOf": "2026-08-03",
+      "retrievedAt": "2026-08-04",
+      "sectionCount": 16,
+      "bytes": 57577
     },
     {
       "slug": "me-muser",

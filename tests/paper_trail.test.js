@@ -126,6 +126,55 @@ describe('PaperTrail — judgment and self-advocacy', () => {
     expect(html).toMatch(/information about them, not about you/i);
   });
 
+  it('work-rights module teaches the request-driven handoff with real citations', () => {
+    loadTool(FILE, 'paperTrail');
+    const open = {};
+    for (const id of ['cliff', 'accommodation', 'timing', 'decision', 'how', 'systems', 'subminimum']) open[id] = true;
+    const html = renderTool('paperTrail', { paperTrail: { view: 'work', workOpen: open } });
+    // The core asymmetry students are never told.
+    expect(html).toMatch(/REQUEST-DRIVEN/);
+    expect(html).toMatch(/undue hardship/i);
+    // Pre-offer inquiry rules — the part that changes how an application feels.
+    expect(html).toMatch(/Before a job offer/);
+    // The service systems that were entirely absent from the platform.
+    expect(html).toMatch(/VOCATIONAL REHABILITATION/);
+    expect(html).toMatch(/JOB COACH/);
+    expect(html).toMatch(/SUPPORTED EMPLOYMENT/);
+    // Every citation shown must exist in the ingested ADA corpus.
+    const ada = JSON.parse(fs.readFileSync('law_corpus/ada-title-i.json', 'utf8'));
+    const have = new Set(ada.sections.map((s) => s.number));
+    const cited = [...src.matchAll(/cite:\s*'29 CFR ([\d.,\s]+)'/g)]
+      .flatMap((m) => m[1].split(',').map((x) => x.trim()));
+    expect(cited.length).toBeGreaterThan(2);
+    for (const c of cited) expect(have.has(c), 'ADA corpus has § ' + c).toBe(true);
+  });
+
+  it('disclosure is framed as a decision, never a recommendation', () => {
+    loadTool(FILE, 'paperTrail');
+    const html = renderTool('paperTrail', { paperTrail: { view: 'work', workOpen: { decision: true } } });
+    // Scientific-integrity rule: a genuine tradeoff must not be resolved for
+    // the student. Both directions must be represented, and the framing must
+    // say the choice is theirs.
+    expect(html).toMatch(/not required to disclose/i);
+    expect(html).toMatch(/Reasons people disclose/);
+    expect(html).toMatch(/Reasons people wait/);
+    expect(html).toMatch(/no universally right answer/i);
+    // The scenario set must NOT score answers right/wrong.
+    expect(html).toMatch(/These are not scored/);
+    const workBlock = src.slice(src.indexOf('var WORK_SCENARIOS'), src.indexOf('var HELP_SCRIPTS'));
+    expect(workBlock, 'work scenarios carry no ok:true/false grading').not.toMatch(/\bok:\s*(true|false)/);
+  });
+
+  it('subminimum wage is presented as contested and narrowing, not as normal', () => {
+    loadTool(FILE, 'paperTrail');
+    const html = renderTool('paperTrail', { paperTrail: { view: 'work', workOpen: { subminimum: true } } });
+    expect(html).toMatch(/14\(c\)/);
+    expect(html).toMatch(/contested/i);
+    expect(html).toMatch(/competitive integrated employment/i);
+    // Must not state a phase-out as settled fact — the details are shifting.
+    expect(html).toMatch(/still shifting|has been narrowing/i);
+  });
+
   it('the IEP document treats the student as a participant, not a spectator', () => {
     loadTool(FILE, 'paperTrail');
     // Field detail is collapsed until opened, so reveal the rows we assert on.
