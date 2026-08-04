@@ -358,7 +358,7 @@ def validate_plan(plan: Dict[str, Any], plan_dir: Path) -> Dict[str, Any]:
         "paragraph": {"type", "text", "runs", "source_page"},
         "blockquote": {"type", "text", "cite", "runs", "source_page"},
         "list": {"type", "ordered", "items", "item_runs", "source_page"},
-        "table": {"type", "caption", "columns", "rows", "row_headers", "source_page"},
+        "table": {"type", "caption", "columns", "rows", "row_headers", "cell_runs", "source_page"},
         "image": {"type", "alt", "decorative", "path", "caption", "source_page"},
         "link": {"type", "text", "url", "source_page"},
         "page_break": {"type", "page", "label"},
@@ -453,6 +453,36 @@ def validate_plan(plan: Dict[str, Any], plan_dir: Path) -> Dict[str, Any]:
             block["rows"] = normalized_rows
             if "row_headers" in raw and not isinstance(raw.get("row_headers"), bool):
                 errors.append(where + ".row_headers must be boolean.")
+            if "cell_runs" in raw:
+                cell_runs = raw.get("cell_runs")
+                if not isinstance(cell_runs, list) or len(cell_runs) != len(normalized_rows):
+                    errors.append(where + ".cell_runs must have exactly one entry per row.")
+                else:
+                    validated_cell_runs = []
+                    for row_index, row_entry in enumerate(cell_runs):
+                        if row_entry is None:
+                            validated_cell_runs.append(None)
+                            continue
+                        row_cells = normalized_rows[row_index] if row_index < len(normalized_rows) else []
+                        if not isinstance(row_entry, list) or len(row_entry) != len(row_cells):
+                            errors.append(
+                                f"{where}.cell_runs[{row_index}] must be null or have one entry per cell."
+                            )
+                            validated_cell_runs.append(None)
+                            continue
+                        validated_row = []
+                        for cell_index, cell_entry in enumerate(row_entry):
+                            if cell_entry is None:
+                                validated_row.append(None)
+                            else:
+                                validated_row.append(validate_runs(
+                                    cell_entry,
+                                    row_cells[cell_index],
+                                    f"{where}.cell_runs[{row_index}][{cell_index}]",
+                                    errors,
+                                ))
+                        validated_cell_runs.append(validated_row)
+                    block["cell_runs"] = validated_cell_runs
         elif kind == "image":
             image_blocks += 1
             if image_blocks > MAX_IMAGE_BLOCKS:
@@ -617,14 +647,18 @@ def render_html(validated: Dict[str, Any]) -> str:
             parts.append(f"<{tag}{source_attr}>{items}</{tag}>")
         elif kind == "table":
             headers = "".join(f'<th scope="col">{esc(value)}</th>' for value in block["columns"])
+            cell_runs = block.get("cell_runs") or []
             rows = []
-            for row in block["rows"]:
+            for row_index, row in enumerate(block["rows"]):
+                row_runs = cell_runs[row_index] if row_index < len(cell_runs) else None
                 cells = []
                 for index, value in enumerate(row):
+                    runs = row_runs[index] if row_runs and index < len(row_runs) else None
+                    body = render_inline(value, runs)
                     if index == 0 and block.get("row_headers"):
-                        cells.append(f'<th scope="row">{esc_lines(value)}</th>')
+                        cells.append(f'<th scope="row">{body}</th>')
                     else:
-                        cells.append(f"<td>{esc_lines(value)}</td>")
+                        cells.append(f"<td>{body}</td>")
                 rows.append("<tr>" + "".join(cells) + "</tr>")
             parts.append(
                 f"<table{source_attr}><caption>{esc(block['caption'])}</caption>"
@@ -898,6 +932,7 @@ def capabilities() -> Dict[str, Any]:
         "officeTextExtraction": True,
         "officeInput": True,
         "batchRemediation": True,
+        "planMerging": True,
         "planVariants": sorted(PLAN_VARIANTS),
         "taggedPdfGeneration": renderer.get("available") is True,
         "taggedPdfDetail": renderer,
@@ -1542,6 +1577,12 @@ def _pdf_iter_stream_objects(data: bytes):
                     body = expanded[body_start:body_end].strip()
                     if body.startswith(b"<<"):
                         yield embedded_num, _balanced_dict(body, 0) or body, None
+                    elif body.startswith(b"["):
+                        # Array objects (colour spaces like [/ICCBased 675 0 R],
+                        # /Contents arrays) also live inside ObjStm containers;
+                        # dropping them made every ICCBased image unresolvable
+                        # (corpus round 6: 10 Artemis figures).
+                        yield embedded_num, body, None
         position = end
 
 
@@ -1616,8 +1657,9 @@ def _decode_parms(dictionary: bytes) -> Dict[str, int]:
     }
 
 
-def _write_png(path: Path, width: int, height: int, color_type: int, raw: bytes) -> None:
-    """Wrap already-decoded 8-bit scanlines (gray=0 or rgb=2) as a PNG."""
+def _write_png(path: Path, width: int, height: int, color_type: int, raw: bytes,
+               palette: Optional[bytes] = None) -> None:
+    """Wrap already-decoded 8-bit scanlines (gray=0, rgb=2, indexed=3) as a PNG."""
     import struct
     import zlib as _zlib
 
@@ -1630,14 +1672,77 @@ def _write_png(path: Path, width: int, height: int, color_type: int, raw: bytes)
         rows.append(0)
         rows.extend(raw[row * stride:(row + 1) * stride])
     header = struct.pack(">IIBBBBB", width, height, 8, color_type, 0, 0, 0)
+    plte = _png_chunk(b"PLTE", palette) if (color_type == 3 and palette) else b""
     body = (
         b"\x89PNG\r\n\x1a\n"
         + _png_chunk(b"IHDR", header)
+        + plte
         + _png_chunk(b"IDAT", _zlib.compress(bytes(rows), 9))
         + _png_chunk(b"IEND", b"")
     )
     with path.open("xb") as handle:
         handle.write(body)
+
+
+def _resolve_color_space(
+    dictionary: bytes, index: Dict[int, Tuple[bytes, Optional[bytes]]]
+) -> Tuple[Optional[int], str]:
+    """Resolve /ColorSpace to (png_color_type, label, palette), following refs.
+
+    Direct names, indirect refs, and [/ICCBased N 0 R] arrays are handled - an
+    ICC profile's /N gives the component count, and decoding its samples as
+    Device colour is the standard close-enough treatment (the profile is almost
+    always sRGB-like). Indexed/Separation/Lab return (None, label) so the
+    caller can skip with an honest reason instead of mis-decoding.
+    """
+    match = re.search(rb"/ColorSpace\s*(/\w+|\d+\s+0\s+R|\[[^\]]*\])", dictionary)
+    if not match:
+        return None, "no /ColorSpace", None
+    blob = match.group(1)
+    ref = re.match(rb"(\d+)\s+0\s+R", blob)
+    if ref:
+        entry = index.get(int(ref.group(1)))
+        if entry is None:
+            return None, f"unresolvable colour space ref {int(ref.group(1))}", None
+        blob = entry[0]
+    if re.search(rb"/DeviceRGB\b", blob) and b"/Indexed" not in blob:
+        return 2, "DeviceRGB", None
+    if re.search(rb"/DeviceGray\b", blob) and b"/Indexed" not in blob:
+        return 0, "DeviceGray", None
+    indexed = re.search(
+        rb"/Indexed\s*(/\w+|\[[^\]]*\]|\d+\s+0\s+R)\s+(\d+)\s+(\d+\s+0\s+R|\([^)]*\)|<[0-9A-Fa-f\s]*>)",
+        blob,
+    )
+    if indexed:
+        hival = int(indexed.group(2))
+        lookup_blob = indexed.group(3)
+        palette: Optional[bytes] = None
+        lookup_ref = re.match(rb"(\d+)\s+0\s+R", lookup_blob)
+        if lookup_ref:
+            lookup_entry = index.get(int(lookup_ref.group(1)))
+            if lookup_entry is not None and lookup_entry[1] is not None:
+                palette = _decompress_stream(lookup_entry[0], lookup_entry[1])
+        elif lookup_blob.startswith(b"<"):
+            digits = re.sub(rb"[^0-9A-Fa-f]", b"", lookup_blob)
+            palette = bytes.fromhex(digits.decode("ascii"))
+        elif lookup_blob.startswith(b"("):
+            palette = lookup_blob[1:-1]
+        base_rgb = b"/DeviceRGB" in indexed.group(1) or b"/ICCBased" in indexed.group(1)
+        if palette is not None and base_rgb and len(palette) >= 3 * (hival + 1):
+            return 3, f"Indexed RGB ({hival + 1} colours)", palette[: 3 * (hival + 1)]
+        return None, f"Indexed with unresolvable base/lookup (hival={hival})", None
+    icc = re.search(rb"/ICCBased\s+(\d+)\s+0\s+R", blob)
+    if icc:
+        icc_entry = index.get(int(icc.group(1)))
+        if icc_entry is not None:
+            n = re.search(rb"/N\s+(\d+)", icc_entry[0])
+            if n and n.group(1) == b"3":
+                return 2, "ICCBased N=3 (decoded as RGB)", None
+            if n and n.group(1) == b"1":
+                return 0, "ICCBased N=1 (decoded as Gray)", None
+            return None, f"ICCBased N={(n.group(1).decode() if n else '?')}", None
+        return None, "ICCBased profile unresolvable", None
+    return None, "unsupported colour space " + blob[:40].decode("latin1", "replace"), None
 
 
 def extract_images_command(args: argparse.Namespace) -> Dict[str, Any]:
@@ -1649,6 +1754,9 @@ def extract_images_command(args: argparse.Namespace) -> Dict[str, Any]:
     out_dir.mkdir(parents=True, exist_ok=True)
     min_pixels = max(0, int(args.min_pixels))
     data = source.read_bytes()
+    object_index: Dict[int, Tuple[bytes, Optional[bytes]]] = {}
+    for object_number, object_dict, object_raw in _pdf_iter_stream_objects(data):
+        object_index[object_number] = (object_dict, object_raw)
 
     extracted: List[Dict[str, Any]] = []
     skipped: List[Dict[str, Any]] = []
@@ -1697,12 +1805,10 @@ def extract_images_command(args: argparse.Namespace) -> Dict[str, Any]:
                 bits = int(bits_match.group(1)) if bits_match else 8
                 if bits != 8:
                     raise PortableError(f"Unsupported bit depth {bits}.")
-                if re.search(rb"/ColorSpace\s*/DeviceRGB\b", dictionary):
-                    color_type = 2
-                elif re.search(rb"/ColorSpace\s*/DeviceGray\b", dictionary):
-                    color_type = 0
-                else:
-                    raise PortableError("Unsupported color space for deterministic decode.")
+                color_type, cs_label, palette = _resolve_color_space(dictionary, object_index)
+                if color_type is None:
+                    raise PortableError(f"Unsupported colour space for deterministic decode: {cs_label}.")
+                entry["colorSpace"] = cs_label
                 parms = _decode_parms(dictionary)
                 pixels = _zlib.decompress(raw)
                 if parms["predictor"] >= 10:
@@ -1717,7 +1823,7 @@ def extract_images_command(args: argparse.Namespace) -> Dict[str, Any]:
                         f"Unsupported predictor {parms['predictor']} (TIFF prediction)."
                     )
                 target = out_dir / f"{name}.png"
-                _write_png(target, width, height, color_type, pixels)
+                _write_png(target, width, height, color_type, pixels, palette)
                 entry.update({"file": target.name, "format": "png"})
             else:
                 raise PortableError(
@@ -2380,6 +2486,115 @@ def _token_recall(reference: "Counter[str]", candidate: "Counter[str]") -> Optio
 MIN_RECALL_TOKENS = 50
 
 
+def merge_plans_command(args: argparse.Namespace) -> Dict[str, Any]:
+    """Merge tranche plans authored across multiple sessions into one plan.
+
+    Long documents (the corpus has a 126-page instruction book) cannot be read
+    and authored in one sitting. The protocol: each session authors a TRANCHE -
+    a complete plan file covering a contiguous page range - and this command
+    concatenates them with the checks that make the split safe:
+      - every tranche's document header must be IDENTICAL (same source binding,
+        title, language), so tranches cannot silently describe different files;
+      - tranche page ranges must be in order and non-overlapping across
+        boundaries, so a mis-ordered or duplicated tranche is refused;
+      - the merged result must pass FULL plan validation (single h1, heading
+        ladder, budgets) before anything is written;
+      - pages no tranche covered are reported, so partial coverage is visible
+        rather than silent.
+    """
+    paths = [Path(p).resolve() for p in args.tranches]
+    if len(paths) < 2:
+        raise PortableError("merge-plans needs at least two tranche files.", 2)
+    tranches = []
+    for path in paths:
+        if not path.is_file():
+            raise PortableError(f"Tranche not found: {path.name}", 2)
+        if path.stat().st_size > MAX_PLAN_BYTES:
+            raise PortableError(f"Tranche exceeds the plan size limit: {path.name}", 2)
+        try:
+            tranches.append(json.loads(path.read_text(encoding="utf-8")))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise PortableError(f"Could not parse tranche {path.name}: {compact_error(exc)}") from exc
+
+    head = tranches[0].get("document")
+    if not isinstance(head, dict):
+        raise PortableError("Tranche 1 has no document header.", 3)
+    for position, tranche in enumerate(tranches[1:], start=2):
+        if tranche.get("document") != head:
+            raise PortableError(
+                f"Tranche {position} ({paths[position - 1].name}) has a different document "
+                "header than tranche 1. All tranches must bind to the same source with the "
+                "same title/language/type.",
+                3,
+            )
+
+    merged_blocks: List[Any] = []
+    previous_last = 0
+    ranges = []
+    for position, tranche in enumerate(tranches, start=1):
+        blocks = tranche.get("blocks")
+        if not isinstance(blocks, list) or not blocks:
+            raise PortableError(f"Tranche {position} has no blocks.", 3)
+        pages = [b.get("source_page") for b in blocks
+                 if isinstance(b, dict) and isinstance(b.get("source_page"), int)]
+        first, last = (min(pages), max(pages)) if pages else (None, None)
+        if first is not None and first < previous_last:
+            raise PortableError(
+                f"Tranche {position} starts at page {first} but tranche {position - 1} "
+                f"already covered up to page {previous_last}. Tranches must be supplied in "
+                "reading order and may not overlap across their boundary.",
+                3,
+            )
+        previous_last = last if last is not None else previous_last
+        ranges.append({"tranche": paths[position - 1].name, "firstPage": first, "lastPage": last,
+                       "blocks": len(blocks)})
+        merged_blocks.extend(blocks)
+
+    seen_notes = set()
+    merged_notes: List[str] = []
+    for tranche in tranches:
+        for note in tranche.get("review_notes") or []:
+            if isinstance(note, str) and note not in seen_notes:
+                seen_notes.add(note)
+                merged_notes.append(note)
+
+    merged = {
+        "schema_version": "1.0",
+        "document": head,
+        "blocks": merged_blocks,
+        "review_notes": merged_notes,
+    }
+
+    validated = validate_plan(merged, paths[0].parent)
+    if not validated["ok"]:
+        raise PortableError(
+            "Merged plan failed validation:\n- " + "\n- ".join(validated["errors"]), 3
+        )
+
+    covered = {b.get("source_page") for b in merged_blocks
+               if isinstance(b, dict) and isinstance(b.get("source_page"), int)}
+    page_count = head.get("source_page_count") or 0
+    uncovered = sorted(set(range(1, page_count + 1)) - covered)
+
+    out_path = Path(args.out).resolve()
+    if out_path.exists():
+        raise PortableError("Refusing to overwrite an existing merged plan.")
+    write_json_new(out_path, merged)
+    return {
+        "ok": True,
+        "out": out_path.name,
+        "tranches": ranges,
+        "blocks": len(merged_blocks),
+        "reviewNotes": len(merged_notes),
+        "pagesWithoutBlocks": uncovered,
+        "note": (
+            "Pages listed in pagesWithoutBlocks have no block assigned to them. Blank pages "
+            "are fine; content pages there mean a tranche is missing. The merged plan passed "
+            "full validation but has NOT been remediated or verified yet."
+        ),
+    }
+
+
 def extract_text_command(args: argparse.Namespace) -> Dict[str, Any]:
     source = Path(args.source).resolve()
     receipt = ensure_source_pdf(source)
@@ -2446,11 +2661,12 @@ def _worksheet_items(validated: Dict[str, Any]) -> List[Dict[str, Any]]:
     counters = {"heading": 0, "table": 0, "list": 0, "image": 0, "emphasis": 0, "link": 0}
     for block in validated["blocks"]:
         kind = block.get("type")
-        all_runs = [
-            run
-            for group in (block["item_runs"] if block.get("item_runs") else [block.get("runs")])
-            for run in (group or [])
-        ]
+        run_groups = (
+            [cell for row in block["cell_runs"] for cell in (row or [])]
+            if block.get("cell_runs")
+            else (block["item_runs"] if block.get("item_runs") else [block.get("runs")])
+        )
+        all_runs = [run for group in run_groups for run in (group or [])]
         linked = [run for run in all_runs if run.get("href")]
         if linked:
             counters["link"] += 1
@@ -2463,14 +2679,11 @@ def _worksheet_items(validated: Dict[str, Any]) -> List[Dict[str, Any]]:
                 links=[{"text": run["text"][:80], "href": run["href"][:200]} for run in linked[:10]],
                 source_page=block.get("source_page"),
             )
-        styled = block.get("runs") or block.get("item_runs")
+        styled = block.get("runs") or block.get("item_runs") or block.get("cell_runs")
         if styled:
             counters["emphasis"] += 1
             emphasised = [
-                run["text"]
-                for group in (block["item_runs"] if block.get("item_runs") else [block["runs"]])
-                for run in (group or [])
-                if run.get("style") in {"emphasis", "strong"}
+                run["text"] for run in all_runs if run.get("style") in {"emphasis", "strong"}
             ]
             add(
                 f"emphasis-{counters['emphasis']:03d}",
@@ -2798,6 +3011,13 @@ def build_parser() -> argparse.ArgumentParser:
     batch_parser.add_argument("--pdf", choices=("auto", "never", "required"), default="auto")
     batch_parser.add_argument("--verapdf", choices=("auto", "never", "required"), default="auto")
 
+    merge_parser = subparsers.add_parser(
+        "merge-plans",
+        help="Merge tranche plans authored across sessions into one validated plan (long documents).",
+    )
+    merge_parser.add_argument("--tranches", nargs="+", required=True)
+    merge_parser.add_argument("--out", required=True)
+
     text_parser = subparsers.add_parser(
         "extract-text",
         help="Deterministically extract a PDF's text layer (literal strings + ToUnicode CMaps).",
@@ -2857,6 +3077,8 @@ def main() -> int:
             result = batch_remediate_command(args)
             if result.get("ok") is not True:
                 exit_code = 8
+        elif args.command == "merge-plans":
+            result = merge_plans_command(args)
         elif args.command == "extract-text":
             result = extract_text_command(args)
         elif args.command == "verify-init":

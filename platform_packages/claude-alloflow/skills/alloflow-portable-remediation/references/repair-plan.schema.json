@@ -274,6 +274,32 @@
               "source_page": {
                 "type": "integer",
                 "minimum": 1
+              },
+              "cell_runs": {
+                "type": "array",
+                "maxItems": 5000,
+                "description": "Optional inline styling/links for data cells: one entry per row (null to skip a row), each an array with one entry per cell (null to skip a cell).",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "type": "array",
+                      "maxItems": 100,
+                      "items": {
+                        "anyOf": [
+                          {
+                            "type": "null"
+                          },
+                          {
+                            "$ref": "#/$defs/runs"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
               }
             }
           },

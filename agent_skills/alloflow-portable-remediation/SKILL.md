@@ -81,6 +81,20 @@ conversation working directory is the Skill directory.
    link (an annotation or a written-out URL); do not invent destinations, and
    verify link text is meaningful out of context. The tagged PDF carries each
    link as a real Link annotation with an alternate description.
+
+   Table data cells take the same overlay via `cell_runs`: one entry per row
+   (null to skip a row), each an array with one entry per cell (null to skip a
+   cell). The same exact-text rule applies per cell. Column headers stay plain
+   text — header semantics already carry their emphasis.
+
+For a document too long to read and author in one session, author it in
+TRANCHES: each session writes a complete plan file covering the contiguous
+pages it actually read (only the first carries the h1), then
+`merge-plans --tranches t1.json t2.json ... --out plan.json` concatenates them,
+refusing mismatched document headers, out-of-order or overlapping tranches, and
+any merged result that fails full validation, and reporting every page no
+tranche covered. Remediate and verify the MERGED plan only — tranches are an
+authoring format, never an output format.
 6. Run one command:
 
    ```text

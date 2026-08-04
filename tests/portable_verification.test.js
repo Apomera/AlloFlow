@@ -149,6 +149,27 @@ describe('independent verification', () => {
   });
 });
 
+
+// module-scope helpers for the cell_runs / merge-plans suites
+function planWithTable(blocks) {
+  const plan = {
+    schema_version: '1.0',
+    document: {
+      title: 'Cells fixture', language: 'en', source_page_count: 1,
+      source_sha256: SOURCE_SHA256, document_type: 'report',
+    },
+    blocks: [{ type: 'heading', level: 1, text: 'H', source_page: 1 }, ...blocks],
+    review_notes: ['fixture'],
+  };
+  const file = join(scratch, `cells-${Math.random().toString(36).slice(2, 10)}.json`);
+  writeFileSync(file, JSON.stringify(plan));
+  return file;
+}
+function lintTable(planFile) {
+  const out = join(scratch, `cells-out-${Math.random().toString(36).slice(2, 10)}`);
+  return runPortable(['remediate', '--source', SOURCE, '--plan', planFile, '--out-dir', out, '--pdf', 'never']);
+}
+
 describe('inline styling (runs)', () => {
   const planWith = (blocks) => {
     const plan = {
@@ -242,5 +263,75 @@ describe('inline styling (runs)', () => {
     const html = readFileSync(join(output, 'multi-column-scrambled-accessible.html'), 'utf8');
     expect(html).toContain('plain then <strong>loud</strong>');
     expect(html).toContain('<li><strong>a) </strong><em>opt</em></li>');
+  });
+});
+
+describe('table cell styling (cell_runs)', () => {
+  const table = (cellRuns) => [{
+    type: 'table', caption: 'T', columns: ['A', 'B'],
+    rows: [['Deadline: May 31', 'mandatory']], row_headers: true,
+    ...(cellRuns !== undefined ? { cell_runs: cellRuns } : {}),
+    source_page: 1,
+  }];
+
+  it('renders styled cells and refuses bad shapes', () => {
+    const output = join(scratch, 'cells-good');
+    const good = planWithTable(table([[
+      [{ text: 'Deadline: ', style: 'strong' }, { text: 'May 31', style: 'normal' }],
+      [{ text: 'mandatory', style: 'emphasis' }],
+    ]]));
+    const result = runPortable(['remediate', '--source', SOURCE, '--plan', good, '--out-dir', output, '--pdf', 'never']);
+    expect(result.status, result.stderr || result.stdout).toBe(0);
+    const html = readFileSync(join(output, 'multi-column-scrambled-accessible.html'), 'utf8');
+    expect(html).toContain('<th scope="row"><strong>Deadline: </strong>May 31</th>');
+    expect(html).toContain('<td><em>mandatory</em></td>');
+
+    const badRows = lintTable(planWithTable(table([null, null]))); // 2 entries, 1 row
+    expect(badRows.status).not.toBe(0);
+    expect(badRows.json?.error).toMatch(/one entry per row/i);
+
+    const badText = lintTable(planWithTable(table([[[{ text: 'WRONG', style: 'strong' }], null]])));
+    expect(badText.status).not.toBe(0);
+    expect(badText.json?.error).toMatch(/reproduce the block's text exactly/i);
+  });
+});
+
+describe('merge-plans (multi-session tranches)', () => {
+  const doc = {
+    title: 'Merge fixture', language: 'en', source_page_count: 3,
+    source_sha256: SOURCE_SHA256, document_type: 'report',
+  };
+  const tranche = (name, blocks, document = doc) => {
+    const file = join(scratch, name);
+    writeFileSync(file, JSON.stringify({
+      schema_version: '1.0', document, blocks, review_notes: ['n'],
+    }));
+    return file;
+  };
+  const t1 = () => tranche('m-t1.json', [
+    { type: 'heading', level: 1, text: 'Doc', source_page: 1 },
+    { type: 'paragraph', text: 'One.', source_page: 1 },
+  ]);
+  const t2 = () => tranche('m-t2.json', [
+    { type: 'paragraph', text: 'Two.', source_page: 2 },
+  ]);
+
+  it('merges in-order tranches, reports uncovered pages, and refuses violations', () => {
+    const out = join(scratch, 'm-merged.json');
+    const merged = runPortable(['merge-plans', '--tranches', t1(), t2(), '--out', out]);
+    expect(merged.status, merged.stderr || merged.stdout).toBe(0);
+    expect(merged.json.blocks).toBe(3);
+    expect(merged.json.pagesWithoutBlocks).toEqual([3]);
+
+    const reordered = runPortable(['merge-plans', '--tranches', t2(), t1(), '--out', join(scratch, 'm-bad1.json')]);
+    expect(reordered.status).not.toBe(0);
+    expect(reordered.json?.error).toMatch(/reading order|already covered/i);
+
+    const otherDoc = tranche('m-t3.json',
+      [{ type: 'paragraph', text: 'X.', source_page: 3 }],
+      { ...doc, title: 'Different' });
+    const mismatch = runPortable(['merge-plans', '--tranches', t1(), otherDoc, '--out', join(scratch, 'm-bad2.json')]);
+    expect(mismatch.status).not.toBe(0);
+    expect(mismatch.json?.error).toMatch(/different document header/i);
   });
 });
