@@ -5143,6 +5143,17 @@
                 color: 'emerald', ready: true
               },
               {
+                // @tool paperTrail \u2014 field-level document trainer. Complements
+                // the 3-decision Form Navigator in Life Skills Lab rather than
+                // duplicating it; all practice uses a fictional identity.
+                // NOTE: no apostrophes in comments inside this array \u2014
+                // check_stem_tile_catalog scans it string-aware but comment-blind,
+                // so a lone quote in a comment desyncs its bracket matcher.
+                id: 'paperTrail', icon: '\uD83D\uDCC4', label: 'PaperTrail: Official Documents',
+                desc: 'Practice reading and completing the documents adult life runs on \u2014 job applications, W-4s, leases, medical intake, driver permits, and your own IEP meeting invitation. Every field decoded in plain language, the boxes that can cost you flagged, pressure scenarios for when someone wants you to sign now, and scripts for asking for time. All practice uses a made-up person, never your real information.',
+                color: 'amber', ready: true
+              },
+              {
                 id: 'lifeSkills', icon: '\uD83E\uDDED', label: 'Life Skills Lab',
                 desc: 'Tax & paycheck calculator, data literacy, decision matrix, contract reader, records and paperwork, transportation planning, job readiness, resume building, portfolio proof organization, interview practice, communication skills, time management, health insurance, dental care, body care ergonomics, sleep routines, medication labels, appointment prep, home safety, digital safety, food confidence, and applied science for daily life.',
                 color: 'cyan', ready: true
@@ -5229,6 +5240,7 @@
               // existing lesson plan or a teacher's memory still finds them.
               statsLab: 'statistics lab statslab stats lab inferential statistics t test anova chi square correlation regression non parametric power analysis apa write up significance p value hypothesis test',
               dataStudio: 'data studio data plotter dataplot plot plotter chart charts graph graphs bar pie line scatter box plot histogram trendline trend line regression curve fit r squared residuals outliers five number summary csv import spreadsheet',
+              paperTrail: 'papertrail paper trail forms form documents official documents job application w4 w-4 tax withholding lease rental apartment medical intake permit drivers permit iep meeting invitation signature ssn social security identity theft paperwork fill out transition life skills self advocacy',
               lawNavigator: 'law legal education law special education law idea part b section 504 cfr regulation regulations statute muser maine chapter 101 iep 504 plan rights procedural safeguards child find manifestation determination prior written notice iee due process federal state ecfr',
               parentingLab: 'parenting parents family science of parenting warmth structure responsiveness demandingness baumrind authoritative authoritarian permissive attachment discipline positive parenting evidence badges styles child development home behavior tantrum bedtime praise',
               molecule: 'periodic table elements element chemistry chemical 118 elements compound creator bond builder molecular geometry reaction simulator orbital clouds orbitals atoms atom valence covalent ionic bonds',
@@ -6656,7 +6668,7 @@
             // fallback entry are both required for a plugin-only tool to be reachable.
             gisStudio: true,
             // Applied
-            a11yAuditor: true, lifeSkills: true, physics: true, wave: true,
+            a11yAuditor: true, lifeSkills: true, paperTrail: true, physics: true, wave: true,
             worldBuilder: true,
             typingPractice: true,
             flightSim: true,

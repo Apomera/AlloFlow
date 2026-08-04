@@ -12408,6 +12408,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         // Aug 4 2026: Education Law Navigator — verbatim IDEA Part B / Section 504
         // text from law_corpus/ (ingested by dev-tools/build_law_corpus.cjs).
         'stem_lab/stem_tool_lawnavigator.js',
+        // Aug 4 2026: PaperTrail - field-level official-document trainer;
+        // transition-skill companion to the Law Navigator and Parenting Lab M9.
+        'stem_lab/stem_tool_papertrail.js',
         // May 16 2026: FisherLab + AquacultureLab — 3D immersive sims
         // teaching Maine boating navigation alongside fishing + aquaculture
         // fundamentals. Anchor exhibits for the King Middle Spring 2026 pilot.
