@@ -1,0 +1,105 @@
+{
+  "_comment": "Ratchet baseline for severe-answer-length-clue (see dev-tools/non_eppp_warning_checks.cjs). Counts may only go DOWN. Raising a number requires a deliberate edit and a reason - see tests/answer_length_clue_ratchet.test.js.",
+  "_rule": "key length >= longestDistractor + 20 AND >= longestDistractor * 1.75",
+  "_generated_from": "f6e08fe43",
+  "packs": {
+    "audiology_5343": {
+      "severe": 169,
+      "items": 500
+    },
+    "early_childhood_5025": {
+      "severe": 125,
+      "items": 500
+    },
+    "educational_leadership_5412": {
+      "severe": 214,
+      "items": 500
+    },
+    "eppp_2027_preview": {
+      "severe": 0,
+      "items": 20
+    },
+    "eppp_part_one": {
+      "severe": 0,
+      "items": 1500
+    },
+    "esol_5362": {
+      "severe": 197,
+      "items": 500
+    },
+    "parapro": {
+      "severe": 15,
+      "items": 500
+    },
+    "plt_5_9_5623": {
+      "severe": 199,
+      "items": 500
+    },
+    "plt_7_12_5624": {
+      "severe": 199,
+      "items": 500
+    },
+    "plt_early_childhood_5621": {
+      "severe": 199,
+      "items": 500
+    },
+    "plt_k6_5622": {
+      "severe": 200,
+      "items": 500
+    },
+    "praxis_core_5752": {
+      "severe": 50,
+      "items": 500
+    },
+    "reading_specialist_5302": {
+      "severe": 0,
+      "items": 500,
+      "note": "still carries the c0c90a996 padding; expect this to RISE when the padding is removed surgically, then fall as distractors are rewritten"
+    },
+    "school_counselor_5422": {
+      "severe": 144,
+      "items": 500
+    },
+    "school_librarian_5312": {
+      "severe": 192,
+      "items": 500
+    },
+    "school_psychologist_5403": {
+      "severe": 203,
+      "items": 500
+    },
+    "special_education_5355": {
+      "severe": 160,
+      "items": 500
+    },
+    "special_education_behavior_emotional_5372": {
+      "severe": 149,
+      "items": 500
+    },
+    "special_education_early_childhood_5692": {
+      "severe": 146,
+      "items": 500
+    },
+    "special_education_intellectual_disabilities_5322": {
+      "severe": 157,
+      "items": 500
+    },
+    "special_education_learning_disabilities_5383": {
+      "severe": 138,
+      "items": 500
+    },
+    "special_education_severe_profound_5547": {
+      "severe": 160,
+      "items": 500
+    },
+    "speech_language_pathology_5331": {
+      "severe": 0,
+      "items": 500,
+      "note": "still carries the c0c90a996 padding; expect this to RISE when the padding is removed surgically, then fall as distractors are rewritten"
+    },
+    "teaching_reading_5205": {
+      "severe": 172,
+      "items": 500
+    }
+  }
+}
