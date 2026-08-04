@@ -29512,7 +29512,20 @@
       "iv_disclaimer": "Illustrative teaching model: long-run US-style averages (stocks ≈10%/yr, bonds ≈4%, cash ≈1.5%, historical-style volatility), ignoring fees, taxes, and inflation. Not a prediction and not financial advice.",
       "business_idea": "Business idea",
       "policy_outcomes_chart": "Policy outcomes chart for GDP, inflation, and unemployment",
-      "policy_explanation": "Explain your policy prediction"
+      "policy_explanation": "Explain your policy prediction",
+      "iv_drift_title": "🔄 If you never rebalance…",
+      "iv_drift_now": "Now",
+      "iv_drift_y10": "Year 10",
+      "iv_drift_y20": "Year 20",
+      "iv_drift_lesson1": "Stocks outgrow the rest, so your mix quietly drifts stock-heavy: a typical bad year worsens from",
+      "iv_drift_lesson2": "today to",
+      "iv_drift_lesson3": "at year 20. Rebalancing — selling a little of what grew, topping up the rest — keeps the risk you actually chose.",
+      "iv_rv_custom": "Your ride",
+      "iv_rv_swing": "Build your own ride — yearly swing",
+      "iv_rv_swing_aria": "Yearly swing percent for your custom ride",
+      "iv_rv_swing_result1": "Alternating",
+      "iv_rv_swing_result2": "still averages +7% — but the swings cost",
+      "iv_rv_swing_result3": "over 10 years vs the steady line."
     },
     "ecosystem": {
       "prey_birth": "Prey Birth",
