@@ -51,6 +51,13 @@ const KNOWN_GLOBALS = new Set([
   'requestAnimationFrame', 'cancelAnimationFrame', 'queueMicrotask', 'structuredClone',
   'fetch', 'Request', 'Response', 'Headers', 'AbortController', 'AbortSignal', 'FormData', 'Blob', 'File',
   'FileReader', 'URL', 'URLSearchParams', 'TextEncoder', 'TextDecoder', 'atob', 'btoa',
+  // Streams API (2026-08-04): standard platform globals. The PDF content-stream
+  // inflater uses DecompressionStream behind a `typeof ... !== 'function'` guard,
+  // so it cannot throw where the API is absent — but the gate had no entry for it
+  // and reported a phantom rename-dangler. Listing them here (rather than
+  // baselining the file) keeps the signal honest for every file: a real typo of
+  // any OTHER name in the same file still fails.
+  'CompressionStream', 'DecompressionStream', 'ReadableStream', 'WritableStream', 'TransformStream',
   'Uint8Array', 'Uint8ClampedArray', 'Int8Array', 'Uint16Array', 'Int16Array', 'Uint32Array', 'Int32Array',
   'Float32Array', 'Float64Array', 'ArrayBuffer', 'DataView', 'BigInt', 'Intl', 'performance', 'crypto',
   'DOMParser', 'XMLSerializer', 'Node', 'Element', 'HTMLElement', 'Image', 'Audio', 'Event', 'CustomEvent',
