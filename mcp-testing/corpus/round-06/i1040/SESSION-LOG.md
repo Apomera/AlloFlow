@@ -1629,15 +1629,45 @@ finishes on page 102 and the "Occupations that customarily and regularly
 received tips" paragraph is what carries over. **Fourth page in this stretch
 where reading the column to its end changed the answer.**
 
-### NEXT: page 103 onward
+### Session 43 (2026-08-05) - page 103 - tranche-43 - 17 blocks - VALIDATED (merged)
 
-Page 103 lists the tipped occupations by category (beverage and food service,
-entertainment, hospitality, and so on), keyed to Treasury Tipped Occupation
-Codes. **Do not re-author the "Occupations that customarily and regularly
-received tips" paragraph** carried into tranche 42. Page 103 carries two Link
-annotations, both to the same irs.gov occupations page.
+The tipped occupations list and how to determine the amount of qualified tips
+received, as an employee and as a non-employee. `merge-plans t01..t43` ->
+1,593 blocks, `ok: true`, **pages 1-103 covered**, zero heading skips. Recall
+0.9729; **28 shortfall instances = 22 carried + 4 furniture + 2 residual**,
+the residuals being the ordered-list markers "3." and "4." the list structure
+now generates.
 
-Then the rest of Schedule 1-A (104-110), Schedule 2 (111-114) and Schedule 3
+**The eight occupation categories keep their Treasury Tipped Occupation Codes
+inline**, exactly as printed - bartenders (101), wait staff (102), and so on.
+The codes are what a reader matches against the full list, so they are content
+rather than reference clutter. Each category name is bold in the source and is
+marked strong, keeping the categories distinguishable when read aloud.
+
+**A TIP box moved out of the middle of a NUMBERED list**, the same decision as
+tranche 42 but for a stronger reason: splitting a list numbered 1 through 4
+would either break the numbering or produce two lists both claiming to start
+at 1. The railroad/RRTA note names its own subject, so placing it after the
+four methods costs nothing.
+
+**Fourth block to jump a full-page insert** (after tranches 29, 33 and 38):
+the non-employee "Example 1" spans page 103 past page 104's worksheet.
+**Joining the halves needed care** - page 103 ends at "...on its rideshare app
+or website" and the continuation begins mid-word at "...designa-/ted as
+tips", so a first look that started below the worksheet's *visible* bottom
+produced a sentence that did not join up. When recovering a jumped block, find
+where the worksheet's last row actually ends rather than guessing a y cutoff.
+
+### NEXT: page 104 onward
+
+Page 104: the Qualified Tips From More Than One Employer Worksheet (full-page
+top, columns (a) name of employer / (b) W-2 or 4070 amount / ... / (d), rows A
+through E plus a total line - a NEW worksheet shape, more columns than either
+settled form), then Example 2 (self-employed travel guide) and the rest of the
+non-employee discussion. **Do not re-author the rideshare Example 1** carried
+into tranche 43.
+
+Then the rest of Schedule 1-A (105-110), Schedule 2 (111-114) and Schedule 3
 (115-117), each a top-level TOC entry opening at level 2. Then the back
 matter: Tax Topics (118), the Disclosure/Privacy Act notice (120), Major
 Categories of Federal Income and Outlays (122), and the MECHANICAL Index
