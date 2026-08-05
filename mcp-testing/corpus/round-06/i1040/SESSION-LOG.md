@@ -1453,19 +1453,56 @@ before it used, plus nested i./ii. options inside branch arms and two STOP
 conditions. That needs a column shape this rebuild has not used before, so it
 gets its own tranche rather than being appended to a five-block page.
 
-### NEXT: page 97, the IRA Deduction Worksheet
+### Session 37 (2026-08-05) - page 97 - tranche-37 - 3 blocks - VALIDATED (merged)
 
-**Design decision required before authoring:** the settled worksheet shape is
-`[Line, Instruction, Amount]`, and this worksheet needs
-`[Line, Instruction, Your IRA, Spouse's IRA]`. Lines 1a/1b are Yes/No
-checkboxes rather than amounts, lines 2/5/6/7 have per-column entries (2a/2b,
-5a/5b, 6a/6b), and line 6's Yes arm contains a nested i./ii. option list.
-Follow the tranche-30 precedent for branches and STOPs (fold into the line),
-and the tranche-34 precedent for footnotes.
+The IRA Deduction Worksheet for Schedule 1 line 20, lines 1a-6. `merge-plans
+t01..t37` -> 1,481 blocks, `ok: true`, **pages 1-97 covered**, zero heading
+skips. Recall 0.9733.
 
-Then Schedule 1's remaining adjustments (98-100), Schedule 1-A (101-110),
-Schedule 2 (111-114) and Schedule 3 (115-117), each a top-level TOC entry
-opening at level 2. Then the back matter: Tax Topics (118), the
-Disclosure/Privacy Act notice (120), Major Categories of Federal Income and
-Outlays (122), and the MECHANICAL Index (123-126). Do not hand-author the
-Index.
+**The first worksheet with TWO entry columns.** The six before it used
+`[Line, Instruction, Amount]`; this one is filled in separately for your own
+IRA and your spouse's, so it takes
+`[Line, Instruction, Your IRA, Spouse's IRA]`. Everything else about the shape
+is unchanged.
+
+**The columns are not uniform, and the caption says so.** Lines 3 and 4 take a
+single figure covering both IRAs (one entry box spanning the columns in
+print); lines 2, 5 and 6 take a figure in each; lines 1a and 1b are answered
+by checking Yes or No, each with its box under one column only - 1a asks about
+you, 1b about your spouse.
+
+**Row labels changed deliberately, in both directions.** The form sets the
+pair as "1a." then simply "b.", the 1 inherited from the row above - fine when
+both rows are visible, useless when a screen reader announces one alone, so
+the Line column carries "1b.". Conversely the per-column entry labels the form
+prints beside each box (2a/2b, 5a/5b, 6a/6b) are dropped: with the columns
+headed Your IRA and Spouse's IRA and the number in its own cell, repeating the
+suffix inside every entry cell adds nothing. Both show up as small recall
+shortfalls; neither is a loss.
+
+> **The recall check caught a real wording drift.** The first draft rendered
+> "Follow the instructions below that apply to you" as "then follow the
+> instruction below that applies to you" - two sentences joined and a
+> singular/plural change. `apply` and `instructions` appeared in the shortfall
+> and pointed straight at it. Restoring the source wording took recall from
+> 0.9695 to 0.9733. **A shortfall of common words is worth reading; it is
+> usually paraphrase, not furniture.**
+
+### NEXT: page 98, worksheet part 2 plus line 21
+
+Page 98 carries "IRA Deduction Worksheet—Continued" (lines 7-12, same
+four-column shape as this tranche - reuse it), a CAUTION between lines 10 and
+11, then Line 21 Student Loan Interest Deduction opening in three columns.
+
+**The "Qualified student loan" numbered list starting at the foot of page 98
+spans past ANOTHER full-page worksheet** (page 99's Student Loan Interest
+Deduction Worksheet) and finishes below it, with items 2 and 3 plus sub-items
+a/b/c. Third block in the rebuild to jump a full-page insert, after tranches
+29 and 33. Author it whole at page 98 and run `carried_block_check.cjs` on
+page **99**.
+
+Then Schedule 1's last adjustments (99-100), Schedule 1-A (101-110), Schedule
+2 (111-114) and Schedule 3 (115-117), each a top-level TOC entry opening at
+level 2. Then the back matter: Tax Topics (118), the Disclosure/Privacy Act
+notice (120), Major Categories of Federal Income and Outlays (122), and the
+MECHANICAL Index (123-126). Do not hand-author the Index.

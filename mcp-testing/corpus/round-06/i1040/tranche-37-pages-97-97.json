@@ -1,0 +1,206 @@
+{
+ "schema_version": "1.0",
+ "document": {
+  "title": "2025 Instructions for Form 1040 (and 1040-SR)",
+  "language": "en",
+  "source_page_count": 126,
+  "source_sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a",
+  "document_type": "booklet",
+  "subject": "Internal Revenue Service instructions for the 2025 Form 1040 and Form 1040-SR, including the instructions for Schedules 1 through 3.",
+  "variant": "original"
+ },
+ "blocks": [
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "IRA Deduction Worksheet—Schedule 1, Line 20",
+   "source_page": 97
+  },
+  {
+   "type": "paragraph",
+   "text": "Before you begin: Be sure you have read the instructions for this line. You may not be able to use this worksheet. If the instructions for Schedule 1, line 24z, have you enter a write-in adjustment on line 24z, figure that write-in before completing this worksheet (see the instructions for Schedule 1, line 24z). If you are married filing separately and you lived apart from your spouse for all of 2025, check the box on line 20.",
+   "runs": [
+    {
+     "text": "Before you begin:",
+     "style": "strong"
+    },
+    {
+     "text": " Be sure you have read the instructions for this line. You may not be able to use this worksheet. If the instructions for Schedule 1, line 24z, have you enter a write-in adjustment on line 24z, figure that write-in before completing this worksheet (see the instructions for Schedule 1, line 24z). If you are married filing separately and you lived apart from your spouse for all of 2025, check the box on line 20.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 97
+  },
+  {
+   "type": "table",
+   "caption": "IRA Deduction Worksheet for Schedule 1, line 20, part 1 of 2: lines 1a through 6. The worksheet is filled in separately for your own IRA and your spouse's, so the last two columns are the entry spaces for each; they are blank in the printed form. Lines 3 and 4 take a single figure covering both, and the printed form gives them one entry box across the two columns. Lines 1a and 1b are answered by checking Yes or No rather than by entering an amount. Part 2, lines 7 through 12, is on the next page.",
+   "columns": [
+    "Line",
+    "Instruction",
+    "Your IRA",
+    "Spouse’s IRA"
+   ],
+   "rows": [
+    [
+     "1a.",
+     "Were you covered by a retirement plan (see Were You Covered by a Retirement Plan?)?",
+     "Yes or No",
+     ""
+    ],
+    [
+     "1b.",
+     "If married filing jointly, was your spouse covered by a retirement plan? Next. If you checked “No” on line 1a (and “No” on line 1b if married filing jointly), skip lines 2 through 6, enter the applicable amount below on line 7a (and line 7b, if applicable), and go to line 8: $7,000 if under age 50 at the end of 2025; $8,000 if age 50 or older at the end of 2025. Otherwise, go to line 2.",
+     "",
+     "Yes or No"
+    ],
+    [
+     "2.",
+     "Enter the amount shown below that applies to you. Single, head of household, or married filing separately and you lived apart from your spouse for all of 2025, enter $89,000. Qualifying surviving spouse, enter $146,000. Married filing jointly, enter $146,000 in both columns; but if you checked “No” on either line 1a or 1b, enter $246,000 for the person who wasn’t covered by a plan. Married filing separately and you lived with your spouse at any time in 2025, enter $10,000.",
+     "",
+     ""
+    ],
+    [
+     "3.",
+     "Enter the amount from Form 1040 or 1040-SR, line 9.",
+     "",
+     ""
+    ],
+    [
+     "4.",
+     "Enter the total of the amounts from Schedule 1, lines 11 through 19a, plus 23 and 25.",
+     "",
+     ""
+    ],
+    [
+     "5.",
+     "Subtract line 4 from line 3. If married filing jointly, enter the result in both columns.",
+     "",
+     ""
+    ],
+    [
+     "6.",
+     "Is the amount on line 5 less than the amount on line 2? No. STOP. None of your IRA contributions are deductible. For details on nondeductible IRA contributions, see Form 8606. Yes. Subtract line 5 from line 2 in each column. Follow the instructions below that apply to you. If single, head of household, or married filing separately, and the result is $10,000 or more, enter the applicable amount below on line 7 for that column and go to line 8: $7,000 if under age 50 at the end of 2025; $8,000 if age 50 or older at the end of 2025; if the result is less than $10,000, go to line 7. If married filing jointly or qualifying surviving spouse, and the result is $20,000 or more ($10,000 or more in the column for the IRA of a person who wasn’t covered by a retirement plan), enter the applicable amount below on line 7 for that column and go to line 8: $7,000 if under age 50 at the end of 2025; $8,000 if age 50 or older at the end of 2025; otherwise, go to line 7.",
+     "",
+     ""
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 97,
+   "cell_runs": [
+    [
+     null,
+     [
+      {
+       "text": "Were you covered by a retirement plan (see ",
+       "style": "normal"
+      },
+      {
+       "text": "Were You Covered by a Retirement Plan?",
+       "style": "emphasis"
+      },
+      {
+       "text": ")?",
+       "style": "normal"
+      }
+     ],
+     null,
+     null
+    ],
+    [
+     null,
+     [
+      {
+       "text": "If married filing jointly, was your spouse covered by a retirement plan? ",
+       "style": "normal"
+      },
+      {
+       "text": "Next.",
+       "style": "strong"
+      },
+      {
+       "text": " If you checked “No” on line 1a (and “No” on line 1b if married filing jointly), skip lines 2 through 6, enter the applicable amount below on line 7a (and line 7b, if applicable), and go to line 8: $7,000 if under age 50 at the end of 2025; $8,000 if age 50 or older at the end of 2025. Otherwise, go to line 2.",
+       "style": "normal"
+      }
+     ],
+     null,
+     null
+    ],
+    [
+     null,
+     [
+      {
+       "text": "Enter the amount shown below that applies to you. Single, head of household, or married filing separately and you ",
+       "style": "normal"
+      },
+      {
+       "text": "lived apart",
+       "style": "emphasis"
+      },
+      {
+       "text": " from your spouse for all of 2025, enter $89,000. Qualifying surviving spouse, enter $146,000. Married filing jointly, enter $146,000 in both columns; but if you checked “No” on either line 1a or 1b, enter $246,000 for the person who wasn’t covered by a plan. Married filing separately and you lived with your spouse at any time in 2025, enter $10,000.",
+       "style": "normal"
+      }
+     ],
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     [
+      {
+       "text": "Is the amount on line 5 less than the amount on line 2? ",
+       "style": "normal"
+      },
+      {
+       "text": "No.",
+       "style": "strong"
+      },
+      {
+       "text": " STOP. None of your IRA contributions are deductible. For details on nondeductible IRA contributions, see Form 8606. ",
+       "style": "normal"
+      },
+      {
+       "text": "Yes.",
+       "style": "strong"
+      },
+      {
+       "text": " Subtract line 5 from line 2 in each column. Follow the instructions below that apply to you. If single, head of household, or married filing separately, and the result is $10,000 or more, enter the applicable amount below on line 7 for that column and go to line 8: $7,000 if under age 50 at the end of 2025; $8,000 if age 50 or older at the end of 2025; if the result is less than $10,000, go to line 7. If married filing jointly or qualifying surviving spouse, and the result is $20,000 or more ($10,000 or more in the column for the IRA of a person who wasn’t covered by a retirement plan), enter the applicable amount below on line 7 for that column and go to line 8: $7,000 if under age 50 at the end of 2025; $8,000 if age 50 or older at the end of 2025; otherwise, go to line 7.",
+       "style": "normal"
+      }
+     ],
+     null,
+     null
+    ]
+   ]
+  }
+ ],
+ "review_notes": [
+  "TRANCHE 37 OF A MULTI-SESSION REBUILD. This plan covers printed page 97, the IRA Deduction Worksheet for Schedule 1 line 20, lines 1a through 6. It carries no document title by design — only tranche 1 does — so this file validates through merge-plans rather than standalone. No partial rebuild is delivered.",
+  "THE FIRST WORKSHEET IN THIS REBUILD WITH TWO ENTRY COLUMNS. The six before it used [Line, Instruction, Amount]; this one is filled in separately for your own IRA and your spouse's, so it takes [Line, Instruction, Your IRA, Spouse's IRA]. The shape is otherwise unchanged: printed line numbers in the Line column, entry columns blank because they are blank in print, and branches folded into the line they belong to.",
+  "THE COLUMNS ARE NOT UNIFORM, AND THE CAPTION SAYS SO. Lines 3 and 4 take a single figure covering both IRAs and the printed form gives them one entry box spanning the two columns; lines 2, 5 and 6 take a figure in each. Lines 1a and 1b are answered by checking Yes or No rather than by entering an amount, and each has its box under one column only — 1a asks about you, 1b about your spouse. Those two cells therefore read “Yes or No” in the column they belong to, which is what the printed checkboxes offer.",
+  "THE SECOND ROW IS LABELLED “1b.”, NOT “b.” AS PRINTED. The form sets the pair as “1a.” and then simply “b.”, the 1 inherited from the row above — a convention that works when both rows are visible at once and fails when a screen reader announces one row on its own. The Line column carries “1b.” so the row identifies itself. The per-column entry labels the form prints beside each box (2a/2b, 5a/5b, 6a/6b) are dropped for the same reason in reverse: with the columns headed Your IRA and Spouse's IRA and the line number in its own cell, repeating the a/b suffix inside every entry cell adds nothing. Both choices show up in a token-recall check as small shortfalls and neither is a loss.",
+  "THE “Next.” BRANCH IS FOLDED INTO LINE 1b. It is printed as an unnumbered instruction between lines 1b and 2, and it applies to the answers given on BOTH 1a and 1b, so it sits at the end of 1b — the last line it depends on. Giving it a row of its own would put a table row with no line number in the middle of a numbered sequence.",
+  "THE $7,000/$8,000 AGE OPTIONS APPEAR THREE TIMES and are built from one shared string in the generator, so the wording cannot drift between them. The source prints them as a nested i./ii. pair inside each branch arm; they are given inline as a semicolon-separated pair, because a two-item list nested two levels deep inside a table cell is not something a linear reading can convey, and the choice between them is a single either/or.",
+  "THE THREE “Before you begin” SENTENCES ARE ONE CALLOUT. The printed form sets them as three separate lines under one bold label; they are joined into a single paragraph opening with a strong “Before you begin:”, the shape used for this worksheet header since tranche 30.",
+  "THE PAGE CARRIES NO LINK ANNOTATIONS, checked rather than assumed. Its two cross-references — Were You Covered by a Retirement Plan?, lived apart — are italic in the source and marked emphasis only. The first points at the run-in heading authored on page 95.",
+  "PAGE FURNITURE OMITTED: the printed page number. Soft hyphens removed and line-break hyphens closed, while genuine compounds are kept (1040-SR, write-in, nondeductible)."
+ ]
+}
