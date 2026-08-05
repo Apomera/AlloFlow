@@ -1,0 +1,950 @@
+{
+ "schema_version": "1.0",
+ "document": {
+  "title": "2025 Instructions for Form 1040 (and 1040-SR)",
+  "language": "en",
+  "source_page_count": 126,
+  "source_sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a",
+  "document_type": "booklet",
+  "subject": "Internal Revenue Service instructions for the 2025 Form 1040 and Form 1040-SR, including the instructions for Schedules 1 through 3.",
+  "variant": "original"
+ },
+ "blocks": [
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Lines 27a, 27b, and 27c—Earned Income Credit (EIC)",
+   "source_page": 40
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "What Is the EIC?",
+   "source_page": 40
+  },
+  {
+   "type": "paragraph",
+   "text": "The EIC is a credit for certain people who work. The credit may give you a refund even if you don’t owe any tax or didn’t have any tax withheld.",
+   "source_page": 40
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "To Take the EIC:",
+   "source_page": 40
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Follow the steps in the following flowchart.",
+    "Complete the worksheet that applies to you or let the IRS figure the credit for you.",
+    "Review the SSN requirements for claiming the EIC under Social security number (SSN) in the Definitions and Special Rules section, later.",
+    "If you have at least one child who meets the conditions to be your qualifying child for purposes of claiming the EIC, complete and attach Schedule EIC, even if that child doesn’t have a valid SSN. See Schedule EIC for more information, including how to complete Schedule EIC if your qualifying child doesn’t have a valid SSN."
+   ],
+   "source_page": 40,
+   "item_runs": [
+    [
+     {
+      "text": "Follow the steps in the following flowchart.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "Complete the worksheet that applies to you or let the IRS figure the credit for you.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "Review the SSN requirements for claiming the EIC under ",
+      "style": "normal"
+     },
+     {
+      "text": "Social security number (SSN)",
+      "style": "emphasis"
+     },
+     {
+      "text": " in the ",
+      "style": "normal"
+     },
+     {
+      "text": "Definitions and Special Rules",
+      "style": "emphasis"
+     },
+     {
+      "text": " section, later.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "If you have at least one child who meets the conditions to be your qualifying child for purposes of claiming the EIC, complete and attach Schedule EIC, even if that child doesn’t have a valid SSN. See Schedule EIC for more information, including how to complete Schedule EIC if your qualifying child doesn’t have a valid SSN.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "For help in determining if you are eligible for the EIC, go to IRS.gov/EITC and click on “Check if You Qualify.” This service is available in English and Spanish.",
+   "source_page": 40,
+   "runs": [
+    {
+     "text": "For help in determining if you are eligible for the EIC, go to ",
+     "style": "normal"
+    },
+    {
+     "text": "IRS.gov/EITC",
+     "style": "normal",
+     "href": "https://www.irs.gov/eitc"
+    },
+    {
+     "text": " and click on “Check if You Qualify.” This service is available in English and Spanish.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "Caution. If you claim the EIC even though you aren’t eligible and it is determined that your error is due to reckless or intentional disregard of the EIC rules, you won’t be allowed to take the credit for 2 years even if you are otherwise eligible to do so. If you fraudulently claim the EIC, you won’t be allowed to take the credit for 10 years. See Form 8862, who must file, later. You may also have to pay penalties.",
+   "runs": [
+    {
+     "text": "Caution.",
+     "style": "strong"
+    },
+    {
+     "text": " ",
+     "style": "normal"
+    },
+    {
+     "text": "If you claim the EIC even though you aren’t eligible and it is determined that your error is due to reckless or intentional disregard of the EIC rules, you won’t be allowed to take the credit for 2 years even if you are otherwise eligible to do so. If you fraudulently claim the EIC, you won’t be allowed to take the credit for 10 years. See ",
+     "style": "normal"
+    },
+    {
+     "text": "Form 8862, who must file",
+     "style": "emphasis"
+    },
+    {
+     "text": ", later. You may also have to pay penalties.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 40
+  },
+  {
+   "type": "paragraph",
+   "text": "Tip. Refunds for returns claiming the earned income credit can’t be issued before mid-February 2026. This delay applies to the entire refund, not just the portion associated with the earned income credit.",
+   "runs": [
+    {
+     "text": "Tip.",
+     "style": "strong"
+    },
+    {
+     "text": " Refunds for returns claiming the earned income credit can’t be issued before mid-February 2026. This delay applies to the entire refund, not just the portion associated with the earned income credit.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 40
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Step 1. All Filers",
+   "source_page": 40
+  },
+  {
+   "type": "paragraph",
+   "text": "1. If, in 2025:",
+   "source_page": 40
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "3 or more children who have valid SSNs lived with you, is the amount on Form 1040 or 1040-SR, line 11b, less than $61,555 ($68,675 if married filing jointly)?",
+    "2 children who have valid SSNs lived with you, is the amount on Form 1040 or 1040-SR, line 11b, less than $57,310 ($64,430 if married filing jointly)?",
+    "1 child who has a valid SSN lived with you, is the amount on Form 1040 or 1040-SR, line 11b, less than $50,434 ($57,554 if married filing jointly)?",
+    "No children who have valid SSNs lived with you, is the amount on Form 1040 or 1040-SR, line 11b, less than $19,104 ($26,214 if married filing jointly)?"
+   ],
+   "source_page": 40
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. Continue.",
+    "No. STOP. You can’t take the credit."
+   ],
+   "source_page": 40,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " Continue.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " STOP. You can’t take the credit.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "2. Do you, and your spouse if filing a joint return, have a social security number issued on or before the due date of your 2025 return (including extensions) that allows you to work and is valid for EIC purposes (explained later under Definitions and Special Rules)?",
+   "source_page": 40,
+   "runs": [
+    {
+     "text": "2. Do you, and your spouse if filing a joint return, have a social security number issued on or before the due date of your 2025 return (including extensions) that allows you to work and is valid for EIC purposes (explained later under ",
+     "style": "normal"
+    },
+    {
+     "text": "Definitions and Special Rules",
+     "style": "emphasis"
+    },
+    {
+     "text": ")?",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. Continue.",
+    "No. STOP. You can’t take the credit. Check the box on line 27c."
+   ],
+   "source_page": 40,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " Continue.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " STOP. You can’t take the credit. Check the box on line 27c.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "3. Are you filing Form 2555 (relating to foreign earned income)?",
+   "source_page": 40
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. STOP. You can’t take the credit.",
+    "No. Continue."
+   ],
+   "source_page": 40,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " STOP. You can’t take the credit.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " Continue.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "4. Were you or your spouse a nonresident alien for any part of 2025?",
+   "source_page": 40
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. See Nonresident aliens, later, under Definitions and Special Rules.",
+    "No. Go to Step 2."
+   ],
+   "source_page": 40,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " See ",
+      "style": "normal"
+     },
+     {
+      "text": "Nonresident aliens",
+      "style": "emphasis"
+     },
+     {
+      "text": ", later, under ",
+      "style": "normal"
+     },
+     {
+      "text": "Definitions and Special Rules",
+      "style": "emphasis"
+     },
+     {
+      "text": ".",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " Go to Step 2.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Step 2. Investment Income",
+   "source_page": 40
+  },
+  {
+   "type": "paragraph",
+   "text": "1. Add the amounts from Form 1040 or 1040-SR: Line 2a, plus Line 2b, plus Line 3b, plus Line 7a*, to give your Investment Income. *If line 7a is a loss, enter -0-.",
+   "source_page": 40
+  },
+  {
+   "type": "paragraph",
+   "text": "2. Is your investment income more than $11,950?",
+   "source_page": 40
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. Continue.",
+    "No. Skip question 3; go to question 4."
+   ],
+   "source_page": 40,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " Continue.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " Skip question 3; go to question 4.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "3. Are you filing Form 4797 (relating to sales of business property)?",
+   "source_page": 40
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. See Form 4797 filers, later, under Definitions and Special Rules.",
+    "No. STOP. You can’t take the credit."
+   ],
+   "source_page": 40,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " See ",
+      "style": "normal"
+     },
+     {
+      "text": "Form 4797 filers",
+      "style": "emphasis"
+     },
+     {
+      "text": ", later, under ",
+      "style": "normal"
+     },
+     {
+      "text": "Definitions and Special Rules",
+      "style": "emphasis"
+     },
+     {
+      "text": ".",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " STOP. You can’t take the credit.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "4. Do any of the following apply for 2025?",
+   "source_page": 40
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "You are filing Schedule E.",
+    "You are reporting income from the rental of personal property not used in a trade or business.",
+    "You are filing Form 8814 (relating to election to report child’s interest and dividends on your return).",
+    "You have income or loss from a passive activity."
+   ],
+   "source_page": 40
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. Use Worksheet 1 in Pub. 596 to see if you can take the credit.",
+    "No. Go to Step 3."
+   ],
+   "source_page": 40,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " Use Worksheet 1 in Pub. 596 to see if you can take the credit.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " Go to Step 3.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Step 3. Qualifying Child",
+   "source_page": 41
+  },
+  {
+   "type": "paragraph",
+   "text": "A qualifying child for the EIC is your…",
+   "source_page": 41
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Son, daughter, stepchild, foster child, brother, sister, stepbrother, stepsister, half brother, half sister, or a descendant of any of them (for example, your grandchild, niece, or nephew)",
+    "AND was under age 19 at the end of 2025 and younger than you (or your spouse if filing jointly); or under age 24 at the end of 2025, a full-time student (defined later), and younger than you (or your spouse if filing jointly) — if the child is a full-time student, check the “Full-time student” box on row (6) of the Dependents section on page 1 of Form 1040 or 1040-SR; or any age and permanently and totally disabled (defined later) — if the child is permanently and totally disabled, check the “Permanently and totally disabled” box on row (6) of the Dependents section on page 1 of Form 1040 or 1040-SR.",
+    "AND who isn't filing a joint return for 2025 or is filing a joint return for 2025 only to claim a refund of withheld income tax or estimated tax paid (see Pub. 596 for examples).",
+    "AND who lived with you in the United States for more than half of 2025. If the child lived with you in the United States for more than half of 2025, check both boxes (box (a) and box (b)) on row (5) of the Dependents section on page 1 of Form 1040 or 1040-SR. Also, make sure to check the box to the right of the address block on page 1 of Form 1040 or 1040-SR. See Main home and United States, later."
+   ],
+   "source_page": 41,
+   "item_runs": [
+    [
+     {
+      "text": "Son, daughter, stepchild, foster child, brother, sister, stepbrother, stepsister, half brother, half sister, or a descendant of any of them (for example, your grandchild, niece, or nephew)",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "AND was under age 19 at the end of 2025 and younger than you (or your spouse if filing jointly); or under age 24 at the end of 2025, a full-time student (defined later), and younger than you (or your spouse if filing jointly) — if the child is a full-time student, check the “Full-time student” box on row (6) of the Dependents section on page 1 of Form 1040 or 1040-SR; or any age and permanently and totally disabled (defined later) — if the child is permanently and totally disabled, check the “Permanently and totally disabled” box on row (6) of the Dependents section on page 1 of Form 1040 or 1040-SR.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "AND who isn't filing a joint return for 2025 or is filing a joint return for 2025 only to claim a refund of withheld income tax or estimated tax paid (see Pub. 596 for examples).",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "AND who lived with you in the United States for more than half of 2025. If the child lived with you in the United States for more than half of 2025, check both boxes (box (a) and box (b)) on row (5) of the Dependents section on page 1 of Form 1040 or 1040-SR. Also, make sure to check the box to the right of the address block on page 1 of Form 1040 or 1040-SR. See ",
+      "style": "normal"
+     },
+     {
+      "text": "Main home",
+      "style": "emphasis"
+     },
+     {
+      "text": " and ",
+      "style": "normal"
+     },
+     {
+      "text": "United States",
+      "style": "emphasis"
+     },
+     {
+      "text": ", later.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "Caution. You can’t take the credit for a child who didn’t live with you for more than half the year, even if you paid most of the child’s living expenses. The IRS may ask you for documents to show you lived with each qualifying child. Documents you might want to keep for this purpose include school and child care records and other records that show your child’s address.",
+   "runs": [
+    {
+     "text": "Caution.",
+     "style": "strong"
+    },
+    {
+     "text": " You can’t take the credit for a child who didn’t live with you for more than half the year, even if you paid most of the child’s living expenses. The IRS may ask you for documents to show you lived with each qualifying child. Documents you might want to keep for this purpose include school and child care records and other records that show your child’s address.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 41
+  },
+  {
+   "type": "paragraph",
+   "text": "Tip. If the child didn’t live with you for more than half of 2025 because of a temporary absence, birth, death, placement with you for foster or adoption, or kidnapping, see Exception to time lived with you, later.",
+   "runs": [
+    {
+     "text": "Tip.",
+     "style": "strong"
+    },
+    {
+     "text": " ",
+     "style": "normal"
+    },
+    {
+     "text": "If the child didn’t live with you for more than half of 2025 because of a temporary absence, birth, death, placement with you for foster or adoption, or kidnapping, see ",
+     "style": "normal"
+    },
+    {
+     "text": "Exception to time lived with you",
+     "style": "emphasis"
+    },
+    {
+     "text": ", later.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 41
+  },
+  {
+   "type": "paragraph",
+   "text": "Caution. If the child meets the conditions to be a qualifying child of any other person (other than your spouse, if filing a joint return) for 2025, see Qualifying child of more than one person, later. If the child was married, see Married child, later.",
+   "runs": [
+    {
+     "text": "Caution.",
+     "style": "strong"
+    },
+    {
+     "text": " ",
+     "style": "normal"
+    },
+    {
+     "text": "If the child meets the conditions to be a qualifying child of any other person (other than your spouse, if filing a joint return) for 2025, see ",
+     "style": "normal"
+    },
+    {
+     "text": "Qualifying child of more than one person",
+     "style": "emphasis"
+    },
+    {
+     "text": ", later. If the child was married, see ",
+     "style": "normal"
+    },
+    {
+     "text": "Married child",
+     "style": "emphasis"
+    },
+    {
+     "text": ", later.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 41
+  },
+  {
+   "type": "paragraph",
+   "text": "1. Do you have at least one child who meets the conditions to be your qualifying child for the purpose of claiming the EIC?",
+   "source_page": 41
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. Continue.",
+    "No. Skip questions 2 through 6; go to Step 4."
+   ],
+   "source_page": 41,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " Continue.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " Skip questions 2 through 6; go to Step 4.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "2. Are you filing a joint return for 2025?",
+   "source_page": 41
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. Skip questions 3 through 6 and Step 4; go to Step 5.",
+    "No. Continue."
+   ],
+   "source_page": 41,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " Skip questions 3 through 6 and Step 4; go to Step 5.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " Continue.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "3. Are you a married taxpayer whose filing status is married filing separately or head of household?",
+   "source_page": 41
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. Continue.",
+    "No. Skip questions 4 and 5; go to question 6."
+   ],
+   "source_page": 41,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " Continue.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " Skip questions 4 and 5; go to question 6.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "4. Did you and your spouse have the same principal residence for the last 6 months of 2025?",
+   "source_page": 41
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. Continue.",
+    "No. Skip question 5; go to question 6."
+   ],
+   "source_page": 41,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " Continue.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " Skip question 5; go to question 6.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "5. Are you legally separated according to your state law under a written separation agreement or a decree of separate maintenance and you lived apart from your spouse at the end of 2025?",
+   "source_page": 41
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. Continue.",
+    "No. STOP. You can’t take the credit."
+   ],
+   "source_page": 41,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " Continue.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " STOP. You can’t take the credit.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "6. Could you be a qualifying child of another person for 2025? (Check “No” if the other person isn't required to file, and isn’t filing, a 2025 tax return or is filing a 2025 return only to claim a refund of withheld income tax or estimated tax paid (see Pub. 596 for examples).)",
+   "source_page": 41
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. STOP. You can’t take the credit. Check the box on line 27c.",
+    "No. Check the box in the Dependents section that discusses the special rule for separated spouses on page 1 of Form 1040 or 1040-SR. See Special rule for separated spouses, later, under Definitions and Special Rules. Skip Step 4; go to Step 5."
+   ],
+   "source_page": 41,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " STOP. You can’t take the credit. Check the box on line 27c.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " Check the box in the Dependents section that discusses the special rule for separated spouses on page 1 of Form 1040 or 1040-SR. See ",
+      "style": "normal"
+     },
+     {
+      "text": "Special rule for separated spouses",
+      "style": "emphasis"
+     },
+     {
+      "text": ", later, under ",
+      "style": "normal"
+     },
+     {
+      "text": "Definitions and Special Rules",
+      "style": "emphasis"
+     },
+     {
+      "text": ". Skip Step 4; go to Step 5.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Step 4. Filers Without a Qualifying Child",
+   "source_page": 41
+  },
+  {
+   "type": "paragraph",
+   "text": "1. Are you a married taxpayer whose filing status is married filing separately or head of household?",
+   "source_page": 41
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. STOP. You can’t take the credit.",
+    "No. Continue."
+   ],
+   "source_page": 41,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " STOP. You can’t take the credit.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " Continue.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "2. Were you, or your spouse if filing a joint return, at least age 25 but under age 65 at the end of 2025? (Check “Yes” if you, or your spouse if filing a joint return, were born after December 31, 1960, and before January 2, 2001.) If your spouse died in 2025 or if you are preparing a return for someone who died in 2025, see Pub. 596 before you answer.",
+   "source_page": 41
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. Continue.",
+    "No. STOP. You can’t take the credit."
+   ],
+   "source_page": 41,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " Continue.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " STOP. You can’t take the credit.",
+      "style": "normal"
+     }
+    ]
+   ]
+  }
+ ],
+ "review_notes": [
+  "TRANCHE 12 OF A MULTI-SESSION REBUILD. This plan covers printed pages 40-41 — the start of the Earned Income Credit (lines 27a, 27b, 27c) and Steps 1 through 4 of its eligibility flowchart. It carries no document title by design: only tranche 1 does, so this file validates through merge-plans rather than standalone. No partial rebuild is delivered.",
+  "THE EIC FLOWCHART REUSES THE TRANCHE-5 SHAPE with no changes: each Step is a heading carrying its printed badge (“Step 1. All Filers”), each numbered question keeps its printed number, and the Yes/No branches are a two-item list with strong labels. STOP is kept as text; the checkbox glyphs and connector arrows are dropped as decoration. This is the second flowchart in the document and it needed no new decisions.",
+  "TWO QUESTIONS CARRY THEIR CONDITIONS AS A LIST FIRST. Step 1 question 1 and Step 2 question 4 each print a bulleted set of conditions and THEN a single Yes/No pair that applies to the whole set. Those are authored as the numbered question, then the condition list, then the branch list — so the branches still read as belonging to the question, and no condition is folded into the branch text.",
+  "STEP 2 QUESTION 1 IS AN ADDITION GRID IN PRINT. It shows Line 2a, Line 2b, Line 3b and Line 7a stacked with plus signs and an equals sign leading to “Investment Income”. There is one result, not four entries, so it is authored as a sentence naming the same four lines in the same order with the footnote kept — rather than as a worksheet table, which would imply four entry boxes the form does not have.",
+  "BOUNDARY OUT. Step 4’s question 2 begins on page 41 and its Yes/No branches print at the top of page 42. It is authored whole here at page 41, so tranche 13 must start at Step 4 question 3 (“Was your main home…”) and NOT re-author it.",
+  "COLUMN-DETECTOR NOTE, not a defect. Pages 40, 46 and 47 report 5-6 “columns”. That is the round-8 band cut counting REGIONS of a page whose layout changes down the page, not a mis-detection; the reading order on these pages was checked and is correct, which is why they could be authored from the text layer.",
+  "ITALIC CROSS-REFERENCES MARKED AS EMPHASIS, not linked — this section refers constantly to its own Definitions and Special Rules, which are in a later tranche. The one real link on these pages, IRS.gov/EITC, comes from the PDF’s own annotation.",
+  "SOFT HYPHENS REMOVED and genuine compounds kept (full-time, mid-February, 1040-SR, Form 4797, half brother). PAGE FURNITURE OMITTED: printed page numbers, the standing “Need more information or forms?” footer, and the invisible “Fileid: … MUST be removed before printing” production lines."
+ ]
+}

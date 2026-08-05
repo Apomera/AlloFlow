@@ -543,3 +543,37 @@ nothing spans the 39/40 edge.
 **Next up is the EIC**, pages 40-60: the longest and most structurally
 involved section left, with a flowchart, multiple worksheets, and the EIC
 tables. Worth starting fresh rather than at the tail of another session.
+
+### Session 12 (2026-08-04) — pages 40-41 · tranche-12 · 50 blocks · VALIDATED (merged)
+
+The start of the Earned Income Credit (lines 27a, 27b, 27c) and Steps 1-4 of
+its eligibility flowchart. `merge-plans t01..t12` → 767 blocks, `ok: true`,
+pages 1-41 covered.
+
+**Recall 0.9987 — the best of the rebuild. The only missing tokens are the
+two printed page numbers.**
+
+**The EIC flowchart reused the tranche-5 shape with no changes.** Second
+flowchart in the document, zero new decisions: Step headings carry their
+printed badges, questions keep their numbers, Yes/No branches are a two-item
+list with strong labels, STOP kept as text, checkboxes and arrows dropped.
+
+Two print constructs needed judgment rather than a new shape:
+
+* **Conditions-then-branches.** Step 1 q1 and Step 2 q4 print a bulleted set
+  of conditions and *then* one Yes/No pair covering the whole set. Authored as
+  question → condition list → branch list, so the branches still read as the
+  question's, and no condition is folded into branch text.
+* **Step 2 q1 is an addition grid** in print (Line 2a + 2b + 3b + 7a =
+  Investment Income). There is one result, not four entries, so it is a
+  sentence naming the same four lines in order with the footnote kept — NOT a
+  worksheet table, which would imply four entry boxes the form doesn't have.
+
+**Column-detector note, not a defect:** pages 40, 46, 47 report 5-6 "columns".
+That is the round-8 band cut counting REGIONS of a page whose layout changes
+down the page. Reading order was checked and is correct, which is why these
+pages could be authored from the text layer at all.
+
+**Handoff to tranche 13:** Step 4's question 2 begins on page 41 and its
+branches print atop page 42. Authored whole at page 41, so **tranche 13 starts
+at Step 4 question 3 ("Was your main home…") and must not re-author it.**
