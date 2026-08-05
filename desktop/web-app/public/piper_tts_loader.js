@@ -329,6 +329,49 @@
         }
     }
 
+    // ─── Poisoned voice-model cache: detect and self-heal ───────────────
+    // piper-tts-web caches each voice in OPFS (navigator.storage →
+    // "piper"/<file>.onnx). Its download path does NOT check response.ok and
+    // never compares the streamed byte count against Content-Length, so an
+    // interrupted or error-page response is written to that cache as a
+    // truncated file with no complaint. Nothing invalidates it afterwards:
+    // the read path uses the file whenever it EXISTS, so every later attempt
+    // feeds the same bad bytes to onnxruntime and gets
+    //   "Can't create a session ... No graph was found in the protobuf"
+    // forever, with no way out from inside the app.
+    //
+    // The library does export remove()/flush(), so the recovery is available
+    // — it just was never wired up. Evict on that signature and retry once.
+    // Keyed off the ACTUAL failure rather than a guessed size threshold,
+    // because low-quality voices are legitimately small and a threshold
+    // would throw away good models.
+    function _isCorruptModelError(e) {
+        const msg = String((e && (e.message || e.toString && e.toString())) || '');
+        return /no graph was found in the protobuf/i.test(msg)
+            || /can't create a session/i.test(msg)
+            || /failed to load model/i.test(msg)
+            || /protobuf parsing failed/i.test(msg);
+    }
+
+    async function _evictVoice(lib, voiceId, baseLang) {
+        let evicted = false;
+        try {
+            if (lib && typeof lib.remove === 'function') {
+                await lib.remove(voiceId);
+                evicted = true;
+            } else if (lib && typeof lib.flush === 'function') {
+                await lib.flush();
+                evicted = true;
+            }
+        } catch (err) {
+            console.warn('[Piper TTS] Could not evict the cached voice:', err);
+        }
+        // Force the next request to re-run the download path.
+        if (baseLang) _loadedVoices.delete(baseLang);
+        _voiceLoadPromises.delete(baseLang);
+        return evicted;
+    }
+
     // ─── Generate Speech ────────────────────────────────────────────────
     async function speak(text, lang, speed, options) {
         if (!text || typeof text !== 'string' || text.trim().length === 0) return null;
@@ -357,10 +400,30 @@
             if (signal.aborted) throw _signalAbortError(signal);
             // predict() returns neutral-speed WAV bytes. The Audio element owns
             // playbackRate, so speed is not applied a second time here.
-            const blob = await _awaitWithSignal(Promise.resolve(lib.predict({
-                text: text,
-                voiceId: voiceInfo.voiceId
-            })), signal);
+            let blob;
+            try {
+                blob = await _awaitWithSignal(Promise.resolve(lib.predict({
+                    text: text,
+                    voiceId: voiceInfo.voiceId
+                })), signal);
+            } catch (predictErr) {
+                if (predictErr && predictErr.name === 'AbortError') throw predictErr;
+                if (!_isCorruptModelError(predictErr)) throw predictErr;
+                // The cached model is unusable and will stay that way until it
+                // is thrown out. Do that, re-download, and try once.
+                console.warn('[Piper TTS] Cached voice model is unusable — clearing it and re-downloading once.', predictErr);
+                _fireProgress('Repairing the ' + voiceInfo.name + ' voice download', 0.1);
+                await _evictVoice(lib, voiceInfo.voiceId, baseLang);
+                if (signal.aborted) throw _signalAbortError(signal);
+                const reloaded = await _ensureVoice(baseLang, { signal });
+                if (signal.aborted) throw _signalAbortError(signal);
+                if (!reloaded) return null;
+                blob = await _awaitWithSignal(Promise.resolve(lib.predict({
+                    text: text,
+                    voiceId: voiceInfo.voiceId
+                })), signal);
+                console.log('[Piper TTS] Voice model repaired after re-download.');
+            }
             if (signal.aborted) throw _signalAbortError(signal);
 
             if (!blob) {
@@ -439,6 +502,32 @@
         _voiceLoadPromises.clear();
     }
 
+    // Drop every cached voice model so the next request downloads fresh.
+    // Reports what it did rather than failing silently, because the whole
+    // point is to diagnose a download that went wrong once and then stuck.
+    async function repairVoices() {
+        let lib = null;
+        try { lib = await _ensureLibLoaded(); } catch (e) {
+            console.warn('[Piper TTS] repairVoices: library unavailable', e);
+        }
+        let names = [];
+        try {
+            if (lib && typeof lib.stored === 'function') names = (await lib.stored()) || [];
+        } catch (_) {}
+        try {
+            if (lib && typeof lib.flush === 'function') await lib.flush();
+        } catch (e) {
+            console.warn('[Piper TTS] repairVoices: flush failed', e);
+        }
+        _loadedVoices.clear();
+        _voiceLoadPromises.clear();
+        _ready = false;
+        _currentLang = null;
+        clearCache();
+        console.log('[Piper TTS] Cleared ' + names.length + ' cached voice file(s):', names);
+        return names;
+    }
+
     // ─── Expose Global API ──────────────────────────────────────────────
     window._piperTTS = {
         init: init,
@@ -449,6 +538,11 @@
         ownsUrl: ownsUrl,
         invalidateUrl: invalidateUrl,
         clearCache: clearCache,
+        // Throw away the downloaded voice MODELS (OPFS), not just the audio
+        // cache. speak() self-heals on the corrupt-model signature, but a
+        // download can also go bad in ways that surface differently, so keep
+        // a manual escape hatch: window._piperTTS.repairVoices().
+        repairVoices: repairVoices,
         supportsLanguage: supportsLanguage,
         getSupportedLanguages: getSupportedLanguages,
         voiceMap: PIPER_VOICE_MAP,
