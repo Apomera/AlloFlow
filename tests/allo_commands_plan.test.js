@@ -569,7 +569,7 @@ describe('voice loop spoken replies and language', () => {
   });
 
   it('the mic is muted while a reply is spoken, and the utterance restarts it', () => {
-    const mod = readFileSync('allo_commands_module.js', 'utf-8');
+    const mod = readFileSync('allo_commands_source.jsx', 'utf-8');
     // rec.onend must NOT restart during speech; the utterance's end handler owns it.
     expect(mod).toMatch(/if \(active && !speaking\) \{/);
     const speak = mod.slice(mod.indexOf('const speakReply'), mod.indexOf('const announce'));
@@ -579,7 +579,7 @@ describe('voice loop spoken replies and language', () => {
     expect(speak).toContain('c.voiceSpeakReplies === false'); // opt-out respected
     expect(speak).toMatch(/speakSerial !== my/); // a cancelled utterance cannot restart mid-speech
     // Root and desktop copies stay identical.
-    expect(readFileSync('desktop/web-app/public/allo_commands_module.js', 'utf-8')).toBe(mod);
+    expect(readFileSync('desktop/web-app/public/allo_commands_module.js', 'utf-8')).toBe(readFileSync('allo_commands_module.js', 'utf-8'));
   });
 
   it('both ANTI copies derive voiceLang from the UI language with a safe fallback', () => {
@@ -698,7 +698,10 @@ describe('coverage batch commands', () => {
       generateSourceText: (topic) => { log.push('src:' + topic); return Promise.resolve(); },
       generateFaq: () => Promise.resolve().then(() => log.push('faq')),
       generateBrainstorm: () => Promise.resolve().then(() => log.push('brainstorm')),
-      setGradeLevelChoice: (g) => { log.push('grade:' + g); return /^\d/.test(g) || /^k/i.test(g) ? '5th Grade' : ''; },
+      // NOTE: set_grade_level is NOT ours — it pre-existed in the source with
+      // a setSetupGradeLevel contract, and the batch-4 duplicate that briefly
+      // shadowed it was removed when the work was ported into the source.
+      // Its behaviour is the original command's to pin, not this suite's.
       toggleContentEditing: () => { log.push('edit'); return 'quiz'; },
       toggleReviewGame: () => log.push('review'),
     });
@@ -707,9 +710,6 @@ describe('coverage batch commands', () => {
     const pr = await AC.runPlan(ctx, [{ commandId: 'generate_source_text', params: { topic: 'volcanoes' } }]);
     expect(pr.ok).toBe(true);
     expect(log).toContain('src:volcanoes');
-    expect(AC.runCommandById(ctx, 'set_grade_level', { grade: '5' }, {}).narration).toContain('5th Grade');
-    const miss = mkCtx({ setGradeLevelChoice: () => '' }).ctx;
-    expect(AC.runCommandById(miss, 'set_grade_level', { grade: 'purple' }, {}).narration).toContain('K to 12');
     expect(AC.runCommandById(ctx, 'toggle_content_editing', {}, {}).narration).toContain('quiz');
     expect(AC.runCommandById(ctx, 'start_review_game', {}, {}).handled).toBe(true);
     const pr2 = await AC.runPlan(ctx, [
@@ -726,7 +726,7 @@ describe('coverage batch commands', () => {
   it('both ANTI copies carry the new ctx capabilities', () => {
     for (const path of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt']) {
       const app = readFileSync(path, 'utf-8');
-      for (const cap of ['startMemoryGame:', 'startMatchingGame:', 'startBingoGame:', 'cycleColorOverlay:', 'toggleAnimations:', 'adjustVoiceSpeed:', 'generateNoteTaking:', 'generateAnchorChart:', 'generateConceptSort:', 'startCrosswordGame:', 'startWordScrambleGame:', 'setGlossaryFilterChoice:', 'generateSourceText:', 'generateFaq:', 'generateBrainstorm:', 'setGradeLevelChoice:', 'toggleContentEditing:', 'toggleReviewGame:', 'openReadThisPage:', 'toggleQuizAnswers:', 'togglePresentationMode:', 'toggleSideBySide:', 'contentIsQuiz:', 'contentIsSimplified:']) {
+      for (const cap of ['startMemoryGame:', 'startMatchingGame:', 'startBingoGame:', 'cycleColorOverlay:', 'toggleAnimations:', 'adjustVoiceSpeed:', 'generateNoteTaking:', 'generateAnchorChart:', 'generateConceptSort:', 'startCrosswordGame:', 'startWordScrambleGame:', 'setGlossaryFilterChoice:', 'generateSourceText:', 'generateFaq:', 'generateBrainstorm:', 'toggleContentEditing:', 'toggleReviewGame:', 'openReadThisPage:', 'toggleQuizAnswers:', 'togglePresentationMode:', 'toggleSideBySide:', 'contentIsQuiz:', 'contentIsSimplified:']) {
         expect(app, path + ' ' + cap).toContain(cap);
       }
       // Generation caps carry the honest-failure contract like their siblings.
@@ -800,7 +800,7 @@ describe('model cache', () => {
   });
 
   it('replies prefer Kokoro (neural, on-device) and only fall back to speechSynthesis', () => {
-    const mod = readFileSync('allo_commands_module.js', 'utf-8');
+    const mod = readFileSync('allo_commands_source.jsx', 'utf-8');
     const speak = mod.slice(mod.indexOf('const speakReply'), mod.indexOf('const announce'));
     // Kokoro branch comes FIRST and returns; speechSynthesis is the fallback.
     expect(speak.indexOf('_kokoroTTS')).toBeGreaterThan(-1);
@@ -828,12 +828,12 @@ describe('model cache', () => {
   });
 
   it('voice loop auto-policy hook exists and stays silent on failure', () => {
-    const mod = readFileSync('allo_commands_module.js', 'utf-8');
+    const mod = readFileSync('allo_commands_source.jsx', 'utf-8');
     const hook = mod.slice(mod.indexOf('Policy \'auto\': first voice use'), mod.indexOf('Policy \'auto\': first voice use') + 900);
     expect(hook).toContain('_modelPolicy() === "auto"');
     expect(hook).toContain('modelCache.hasWhisper()');
     expect(hook).toMatch(/catch\(function \(_\) \{\}\)/);
-    expect(readFileSync('desktop/web-app/public/allo_commands_module.js', 'utf-8')).toBe(mod);
+    expect(readFileSync('desktop/web-app/public/allo_commands_module.js', 'utf-8')).toBe(readFileSync('allo_commands_module.js', 'utf-8'));
   });
 });
 
@@ -890,7 +890,7 @@ describe('on-device voice engine', () => {
   });
 
   it('privacy invariants are pinned in source, root and mirror identical', () => {
-    const mod = readFileSync('allo_commands_module.js', 'utf-8');
+    const mod = readFileSync('allo_commands_source.jsx', 'utf-8');
     // Standby NEVER runs on Web Speech (its mic streams to a cloud service).
     expect(mod).toMatch(/setStandby: \(on\) => \{\s*if \(on && engineName !== "whisper"\) return false;/);
     expect(mod).toContain('standby = false; // NEVER standby on Web Speech');
@@ -904,7 +904,7 @@ describe('on-device voice engine', () => {
     // Engine choice: cached model → whisper; otherwise fall back, plus a hard override.
     expect(mod).toContain('if (_voiceEnginePref() === "webspeech")');
     expect(mod).toMatch(/hasWhisper\(\)\.then\(function \(has\) \{\s*if \(!active\) return;\s*if \(!has\) \{ beginWebSpeech\(c, standbyWanted\); return; \}/);
-    expect(readFileSync('desktop/web-app/public/allo_commands_module.js', 'utf-8')).toBe(mod);
+    expect(readFileSync('desktop/web-app/public/allo_commands_module.js', 'utf-8')).toBe(readFileSync('allo_commands_module.js', 'utf-8'));
   });
 
   it('toggle_wake_word persists, applies live only when the loop allows it, and is demo-unsafe', () => {
