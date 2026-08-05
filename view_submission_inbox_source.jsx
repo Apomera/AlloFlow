@@ -860,6 +860,28 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
   const [queue, setQueue] = useState([]);
   const [decryptingAll, setDecryptingAll] = useState(false);
   const [expandedRow, setExpandedRow] = useState(null);
+  // Work Story view-models, built asynchronously (chain verification is async)
+  // and keyed by row index. Only rows whose student consented carry one.
+  const [workStoryModels, setWorkStoryModels] = useState({});
+  // React.useEffect, not bare: the builder injects only useState and useRef.
+  React.useEffect(() => {
+    const P = window.AlloModules && window.AlloModules.Provenance;
+    if (!P || typeof P.buildProcessPanelModel !== 'function') return;
+    let cancelled = false;
+    const pending = (queue || []).map((row, idx) =>
+      (row && row.payload && row.payload.provenance)
+        ? Promise.resolve(P.buildProcessPanelModel(row.payload)).then((m) => [idx, m]).catch(() => null)
+        : null
+    ).filter(Boolean);
+    if (!pending.length) return;
+    Promise.all(pending).then((pairs) => {
+      if (cancelled) return;
+      const next = {};
+      pairs.forEach((pair) => { if (pair && pair[1] && pair[1].present) next[pair[0]] = pair[1]; });
+      setWorkStoryModels(next);
+    });
+    return () => { cancelled = true; };
+  }, [queue]);
   // Phase 3 (May 11 2026): per-row rubric state + AI grading results.
   // rubrics[idx] = { rubric: string, context: string, exemplar: string }
   // grades[idx]  = { [responseKey]: { score, status, feedback } }
@@ -3076,6 +3098,12 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                           /*#__PURE__*/React.createElement('div', { style: { fontWeight: 700, color: '#475569', fontSize: '0.8rem', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' } },
                             'Decrypted responses (' + Object.keys(row.payload.responses || {}).length + ')'
                           ),
+                          /* Work Story (process provenance). Renders only when the
+                             student chose to include it; absence is never surfaced
+                             as a fact — no "declined" state exists here. */
+                          workStoryModels[idx] && window.AlloModules && window.AlloModules.ProcessPanel
+                            ? /*#__PURE__*/React.createElement(window.AlloModules.ProcessPanel, { model: workStoryModels[idx] })
+                            : null,
                           Object.keys(row.payload.responses || {}).length === 0
                             ? /*#__PURE__*/React.createElement('div', { style: { fontStyle: 'italic', color: '#475569', fontSize: '0.85rem' } }, tr('No responses captured.'))
                             : Object.entries(row.payload.responses).map(([k, v], i) => {

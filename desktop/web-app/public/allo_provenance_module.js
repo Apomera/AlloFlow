@@ -637,8 +637,49 @@
     );
   }
 
+  // ── P2 (surface): the teacher's Process panel. ───────────────────────────
+  // Renders buildProcessPanelModel. Deliberately spare: the one-line summary
+  // is the DEFAULT view so the first read is "process", not doubt; details
+  // are behind a click; the integrity line is stated with its disclaimer and
+  // NEVER styled as an alarm. No score, no flag, no duration beside anything.
+  function ProcessPanel(props) {
+    var React = GLOBAL.React;
+    if (!React || !React.createElement) return null;
+    var h = React.createElement;
+    var model = props && props.model;
+    var open = React.useState(false);
+    var isOpen = open[0], setOpen = open[1];
+    if (!model || !model.present) return null;
+    var p = model.process || {};
+    var muted = { color: '#475569', fontSize: '0.8rem' };
+    return h('div', { style: { marginTop: 10, padding: '8px 10px', border: '1px solid #e2e8f0', borderRadius: 8, background: '#fff' } },
+      h('div', { style: { fontWeight: 700, color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Work Story'),
+      h('div', { style: { fontSize: '0.85rem', color: '#1e293b', marginTop: 4 } }, model.summaryLine),
+      h('button', {
+        type: 'button',
+        onClick: function () { setOpen(!isOpen); },
+        'aria-expanded': isOpen ? 'true' : 'false',
+        style: { marginTop: 6, fontSize: '0.78rem', textDecoration: 'underline', background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: '#475569' }
+      }, isOpen ? 'Hide details' : 'See how this work came together'),
+      isOpen ? h('div', { style: { marginTop: 6 } },
+        h('div', { style: muted }, 'Sessions: ' + p.sessions + ' · Active time: ' + p.activeMinutes + ' min · Typing bursts: ' + p.editBuckets + ' · AlloFlow AI supports used: ' + p.aiInteractions),
+        (p.pasteEvents && p.pasteEvents.length)
+          ? h('div', { style: { marginTop: 4 } },
+              h('div', { style: muted }, 'Text arrived in ' + p.pasteEvents.length + ' larger insertion' + (p.pasteEvents.length === 1 ? '' : 's') + ':'),
+              h('ul', { style: { margin: '2px 0 0 16px', padding: 0 } }, p.pasteEvents.slice(0, 12).map(function (ev, i) {
+                return h('li', { key: i, style: muted }, Math.round(ev.t / 60000) + ' min in · ~' + ev.chars + ' characters · origin ' +
+                  (ev.sourceHint === 'unknown' ? 'not recorded' : ev.sourceHint) + (ev.assistiveTech ? ' · entered with assistive technology' : ''));
+              })))
+          : h('div', { style: Object.assign({ marginTop: 4 }, muted) }, 'No large insertions recorded.'),
+        h('div', { style: { marginTop: 8, padding: '6px 8px', background: '#f8fafc', borderRadius: 6, fontSize: '0.78rem', color: '#475569' } },
+          model.integrity.line + ' ' + model.integrity.disclaimer)
+      ) : null
+    );
+  }
+
   GLOBAL.AlloModules = GLOBAL.AlloModules || {};
   var PROVENANCE_API = {
+    ProcessPanel: ProcessPanel,
     WorkStoryPanel: WorkStoryPanel,
     buildProcessPanelModel: buildProcessPanelModel,
     buildWorkStoryModel: buildWorkStoryModel,
@@ -682,6 +723,7 @@
     window.AlloModules = window.AlloModules || {};
     window.AlloModules.Provenance = PROVENANCE_API;
     window.AlloModules.WorkStoryPanel = WorkStoryPanel;
+    window.AlloModules.ProcessPanel = ProcessPanel;
   }
   if (typeof module !== 'undefined' && module.exports) module.exports = PROVENANCE_API;
   GLOBAL.AlloModules.ProvenanceModule = true;

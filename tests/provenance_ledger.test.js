@@ -402,6 +402,42 @@ describe('constraints in the module text itself', () => {
     expect(w).toContain("if (typeof fn !== 'function' || fn._alloProvWrapped) return fn;"); // no double-wrap
     expect(w).toMatch(/try \{ if \(window\.__alloNoteAiUse\)/); // recording can never throw into the call
   });
+  // End-to-end usability (P5 + P2): a teacher can turn it on, and a teacher
+  // can read the result. Without both, the ledger is a feature nobody reaches.
+  it('P5: the teacher toggle is opt-IN and rides the same share pipe as the AI policy', () => {
+    for (const f of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt']) {
+      const app = readFileSync(f, 'utf-8');
+      expect(app, f).toContain('workStoryEnabled: false,');                       // default OFF
+      expect(app, f).toContain('workStoryEnabled: source.workStoryEnabled === true,'); // survives normalize
+      // Teacher writes it into all three assignment share transports.
+      expect((app.match(/workStory: studentProjectSettings\.workStoryEnabled === true/g) || []).length, f).toBe(3);
+      // Student reads it on all three matching load paths.
+      expect((app.match(/workStory: packet && packet\.workStory === true/g) || []).length, f).toBe(3);
+      // And collection is gated on it: no teacher opt-in, no ledger at all.
+      expect(app, f).toContain("if (!(window.__alloQrStudentMode && window.__alloQrStudentMode.workStory === true)) return null;");
+    }
+  });
+  it('P2: the teacher panel is mounted and renders only on consented submissions', () => {
+    const inbox = readFileSync('view_submission_inbox_source.jsx', 'utf-8');
+    expect(inbox).toContain('window.AlloModules.ProcessPanel');
+    expect(inbox).toContain('row.payload.provenance');            // only rows carrying a ledger
+    expect(inbox).toContain('React.useEffect');                   // builder injects no bare useEffect
+    expect(inbox).toContain('no "declined" state exists here');   // absence is never a fact
+    // Built module carries it (forgot-to-rebuild guard) and the mirror matches.
+    const built = readFileSync('view_submission_inbox_module.js', 'utf-8');
+    expect(built).toContain('ProcessPanel');
+    expect(readFileSync('desktop/web-app/public/view_submission_inbox_module.js', 'utf-8')).toBe(built);
+  });
+  it('P2: the panel shows observations and never a verdict', () => {
+    const src = readFileSync('allo_provenance_module.js', 'utf-8');
+    const panel = src.slice(src.indexOf('function ProcessPanel'), src.indexOf('GLOBAL.AlloModules = GLOBAL.AlloModules'));
+    expect(panel).toContain('model.summaryLine');                  // one-line default view
+    expect(panel).toContain('model.integrity.disclaimer');         // stated, always
+    expect(panel).toMatch(/origin not recorded|'not recorded'/);   // unknown renders neutrally
+    expect(panel).toContain('entered with assistive technology');  // AT never reads as a paste
+    expect(panel).not.toMatch(/score|flag|percent|%/i);
+    expect(panel).not.toMatch(/durationSec|durationBucket/);       // no duration beside anything
+  });
   it('the module ships in the deploy file list', () => {
     expect(readFileSync('build.js', 'utf-8')).toContain("'allo_provenance_module.js',");
   });

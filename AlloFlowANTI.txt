@@ -7427,6 +7427,8 @@ const ALLO_STORAGE_INVENTORY = (() => {
   return { CATEGORIES, MAX_MANAGED_ENTRIES, isManagedKey, categoryForKey, measureValueBytes, summarizeEntries, mergeSummaries, collectLocalStorage, collectIdbKeyval, collectOriginFacts };
 })();
 const _alloCreateDefaultStudentProjectSettings = () => ({
+  // Process Provenance: off unless the teacher enables it for the assignment.
+  workStoryEnabled: false,
   hideStudentAiFeatures: false,
   allowStudentByokAi: false,
   allowDictation: true,
@@ -7461,6 +7463,7 @@ const _alloNormalizeStudentProjectSettings = (candidate) => {
     return Number.isFinite(number) && number >= 0 ? Math.min(number, 1000000) : fallback;
   };
   return {
+    workStoryEnabled: source.workStoryEnabled === true,
     hideStudentAiFeatures: source.hideStudentAiFeatures === true,
     allowStudentByokAi: source.allowStudentByokAi === true,
     allowDictation: source.allowDictation !== false,
@@ -11264,6 +11267,8 @@ Return ONLY JSON in this shape:
   const _alloProvenanceApi = () => (window.AlloModules && window.AlloModules.Provenance) || null;
   const _alloEnsureLedger = () => {
       if (!isStudentLinkMode) return null;
+      // Teacher opt-in per assignment (rides the share packet). No flag, no ledger.
+      if (!(window.__alloQrStudentMode && window.__alloQrStudentMode.workStory === true)) return null;
       if (_alloLedgerRef.current) return _alloLedgerRef.current;
       const P = _alloProvenanceApi();
       if (!P || typeof P.createLedger !== 'function') {
@@ -20722,6 +20727,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       createdAt: new Date().toISOString(),
       hostId: (user && user.uid) || (_alloMbBridgeState && _alloMbBridgeState.uid) || 'teacher',
       aiPolicy: { studentAi: studentAiPolicyForShare },
+      workStory: studentProjectSettings.workStoryEnabled === true,
       hostPresence: {
           state: 'online',
           heartbeatAt: hostHeartbeatAt,
@@ -21820,6 +21826,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           currentResourceId: resources[0]?.id || null,
           resources,
           aiPolicy: { studentAi: studentAiPolicyForShare, defaultStudentAi: 'off', teacherPrepared: true },
+          workStory: studentProjectSettings.workStoryEnabled === true,
           sharedActivities: sharedActivities.length ? sharedActivities : undefined,
       });
       const encoded = await _alloEncodeAlloPack(JSON.stringify(packet));
@@ -22105,6 +22112,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               resources,
               aiPolicy: {
                   studentAi: studentAiPolicyForShare,
+                  workStory: studentProjectSettings.workStoryEnabled === true,
                   defaultStudentAi: 'off',
                   teacherPrepared: true,
               },
@@ -33440,7 +33448,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                   const snap = await getDoc(assignmentRef);
                   if (!snap.exists()) throw new Error('Assignment not found');
                   const packet = snap.data() || {};
-                  _alloApplyAuthoritativeStudentAiPolicy(packet, { type: 'assignment', assignmentId, hostAppId: hostId });
+                  _alloApplyAuthoritativeStudentAiPolicy(packet, { type: 'assignment', assignmentId, hostAppId: hostId, workStory: packet && packet.workStory === true });
                   if (_alloAssignmentIsExpired(packet)) throw new Error('Assignment expired');
                   const rawResources = Array.isArray(packet.resources) ? packet.resources : [];
                   if (!rawResources.length) throw new Error('Assignment has no resources');
@@ -33507,7 +33515,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           try {
               const text = await _alloDecodeAlloPack(encodedPack);
               const packet = JSON.parse(text || 'null');
-              _alloApplyAuthoritativeStudentAiPolicy(packet, { type: 'assignment-pack' });
+              _alloApplyAuthoritativeStudentAiPolicy(packet, { type: 'assignment-pack', workStory: packet && packet.workStory === true });
               if (_alloAssignmentIsExpired(packet)) throw new Error('Assignment expired');
               const rawResources = Array.isArray(packet?.resources)
                   ? packet.resources.filter(item => item && item.id && item.type && !TEACHER_ONLY_TYPES.includes(item.type))
@@ -33886,7 +33894,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               } while (part <= of && !cancelled);
               if (cancelled) return;
               const packet = JSON.parse(await _alloDecodeAlloPack(assembled) || 'null');
-              _alloApplyAuthoritativeStudentAiPolicy(packet, { type: 'assignment-pack-hosted' });
+              _alloApplyAuthoritativeStudentAiPolicy(packet, { type: 'assignment-pack-hosted', workStory: packet && packet.workStory === true });
               if (_alloAssignmentIsExpired(packet)) throw new Error('Assignment expired');
               const sharedActivity = (Array.isArray(packet?.sharedActivities) ? packet.sharedActivities : []).find(candidate => (
                   candidate
