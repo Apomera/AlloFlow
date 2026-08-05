@@ -1,0 +1,295 @@
+{
+ "schema_version": "1.0",
+ "document": {
+  "title": "2025 Instructions for Form 1040 (and 1040-SR)",
+  "language": "en",
+  "source_page_count": 126,
+  "source_sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a",
+  "document_type": "booklet",
+  "subject": "Internal Revenue Service instructions for the 2025 Form 1040 and Form 1040-SR, including the instructions for Schedules 1 through 3.",
+  "variant": "original"
+ },
+ "blocks": [
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Part III. No Tax on Overtime",
+   "source_page": 106
+  },
+  {
+   "type": "paragraph",
+   "text": "Overtime compensation must be included in your gross income and is subject to income tax and generally social security and Medicare tax.",
+   "source_page": 106
+  },
+  {
+   "type": "paragraph",
+   "text": "If you have net earnings from self-employment, use Schedule SE to figure the tax due on net earnings from self-employment.",
+   "source_page": 106
+  },
+  {
+   "type": "paragraph",
+   "text": "You may be able to claim a deduction for qualified overtime compensation paid to you in 2025 and that is reported on Form W-2, Form 1099-NEC, or Form 1099-MISC. You can claim this deduction whether you claim the standard deduction or itemize deductions on Schedule A or Schedule A (Form 1040-NR).",
+   "source_page": 106
+  },
+  {
+   "type": "paragraph",
+   "text": "Caution. If you are married, you must file a joint return with your spouse to claim this deduction.",
+   "runs": [
+    {
+     "text": "Caution.",
+     "style": "strong"
+    },
+    {
+     "text": " If you are married, you must file a joint return with your spouse to claim this deduction.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 106
+  },
+  {
+   "type": "paragraph",
+   "text": "Caution. For tax year 2025, qualified overtime was not required to be separately accounted for on Form W-2, Form 1099-NEC, or Form 1099-MISC. See the instructions for lines 14a and 14b for more information about how to identify the qualified overtime included in the amounts reported on these forms.",
+   "runs": [
+    {
+     "text": "Caution.",
+     "style": "strong"
+    },
+    {
+     "text": " For tax year 2025, qualified overtime was not required to be separately accounted for on Form W-2, Form 1099-NEC, or Form 1099-MISC. See the instructions for lines 14a and 14b for more information about how to identify the qualified overtime included in the amounts reported on these forms.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 106
+  },
+  {
+   "type": "paragraph",
+   "text": "Fill out Schedule 1-A, Part III, only if:",
+   "source_page": 106
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "You (and/or your spouse if filing a joint return) received qualified overtime compensation in 2025; and",
+    "You have a valid social security number (SSN). If you are married filing jointly, the spouse who received the qualified overtime compensation must have a valid SSN."
+   ],
+   "source_page": 106
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Maximum amount of deduction",
+   "source_page": 106
+  },
+  {
+   "type": "paragraph",
+   "text": "You can’t deduct more than $12,500 ($25,000 if married filing jointly) of qualified overtime compensation.",
+   "source_page": 106
+  },
+  {
+   "type": "paragraph",
+   "text": "Tip. If you are married and filing a joint return, and both you and your spouse have qualified overtime compensation, the $25,000 maximum amount of deduction limit applies to your combined overtime compensation. It is not a per spouse limit.",
+   "runs": [
+    {
+     "text": "Tip.",
+     "style": "strong"
+    },
+    {
+     "text": " If you are married and filing a joint return, and both you and your spouse have qualified overtime compensation, the $25,000 maximum amount of deduction limit applies to your combined overtime compensation. It is not a per spouse limit.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 106
+  },
+  {
+   "type": "paragraph",
+   "text": "The deduction amount (after applying the $12,500 ($25,000 if married filing jointly) limit) is reduced if your MAGI is greater than the amount shown next for your filing status.",
+   "source_page": 106
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Married filing jointly—$300,000.",
+    "Single, Head of household, or Qualifying surviving spouse—$150,000."
+   ],
+   "source_page": 106
+  },
+  {
+   "type": "paragraph",
+   "text": "Your MAGI is the amount on line 3 on Part I of Schedule 1-A.",
+   "source_page": 106
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Qualified overtime compensation",
+   "source_page": 106
+  },
+  {
+   "type": "paragraph",
+   "text": "Qualified overtime compensation means overtime compensation that is paid to you as required under section 7 of the Fair Labor Standards Act of 1938 (FLSA) that is more than the amount of your regular rate of pay. This generally means the “half” portion of “time-and-a-half” compensation that is required by the FLSA. This “half” portion may be described by employers on various forms and statements as “overtime premium” or “FLSA Overtime Premium”.",
+   "source_page": 106
+  },
+  {
+   "type": "paragraph",
+   "text": "In order for overtime to be required to be paid to you under the FLSA, you must (among other requirements) be covered by and not exempt from the FLSA (an FLSA-eligible employee). If you are ineligible for federal overtime, you are an FLSA-ineligible employee and you generally won't be paid overtime.",
+   "source_page": 106
+  },
+  {
+   "type": "paragraph",
+   "text": "If you are an FLSA-eligible employee, you must generally receive overtime pay for hours you work that are more than a 40-hour workweek. Generally, the rate can’t be less than one and a half times your regular rate of pay.",
+   "source_page": 106
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Amounts that are not qualified overtime compensation",
+   "source_page": 106
+  },
+  {
+   "type": "paragraph",
+   "text": "The following amounts are not qualified overtime compensation and can’t be included when figuring your deduction for qualified overtime compensation.",
+   "source_page": 106
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Premium pay. Some employers under a collective bargaining agreement and/or under state law provide more pay than section 7 of the FLSA requires. For example, an employer might choose to pay more than “time-and-a-half.” The amount of overtime paid that is over “time-and-a-half” is not qualified overtime compensation.",
+    "Payment for holidays and weekends. Some employers may pay more for certain weekends or holidays even if the employee doesn’t work more than 40 hours in the workweek. Extra pay for certain weekends or holidays is generally not qualified overtime compensation if the employee doesn’t work more than 40 hours in the workweek.",
+    "Qualified tips. Qualified overtime compensation doesn’t include any amount you receive as a qualified tip.",
+    "Coverage under state rules. Some FLSA-ineligible employees are eligible for overtime under state law or are paid premium rates for certain work for other reasons. Overtime pay that is paid to these FLSA-ineligible employees is not qualified overtime compensation and these amounts can't be included when figuring the deduction for qualified overtime compensation."
+   ],
+   "source_page": 106,
+   "item_runs": [
+    [
+     {
+      "text": "Premium pay.",
+      "style": "strong"
+     },
+     {
+      "text": " Some employers under a collective bargaining agreement and/or under state law provide more pay than section 7 of the FLSA requires. For example, an employer might choose to pay more than “time-and-a-half.” The amount of overtime paid that is over “time-and-a-half” is not qualified overtime compensation.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "Payment for holidays and weekends.",
+      "style": "strong"
+     },
+     {
+      "text": " Some employers may pay more for certain weekends or holidays even if the employee doesn’t work more than 40 hours in the workweek. Extra pay for certain weekends or holidays is generally not qualified overtime compensation if the employee doesn’t work more than 40 hours in the workweek.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "Qualified tips.",
+      "style": "strong"
+     },
+     {
+      "text": " Qualified overtime compensation doesn’t include any amount you receive as a qualified tip.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "Coverage under state rules.",
+      "style": "strong"
+     },
+     {
+      "text": " Some FLSA-ineligible employees are eligible for overtime under state law or are paid premium rates for certain work for other reasons. Overtime pay that is paid to these FLSA-ineligible employees is not qualified overtime compensation and these amounts can't be included when figuring the deduction for qualified overtime compensation.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "Caution. Qualified overtime must be paid to a covered, nonexempt employee under the FLSA (an FLSA-eligible employee). Ask your employer or other service recipients whether you are an FLSA-eligible employee. For more information on coverage and exemption under the FLSA, see WHD Fact Sheets, Overtime Pay, and FLSA Guide.",
+   "runs": [
+    {
+     "text": "Caution.",
+     "style": "strong"
+    },
+    {
+     "text": " ",
+     "style": "normal"
+    },
+    {
+     "text": "Qualified overtime must be paid to a covered, nonexempt employee under the FLSA (an FLSA-eligible employee). Ask your employer or other service recipients whether you are an FLSA-eligible employee. For more information on coverage and exemption under the FLSA, see ",
+     "style": "normal"
+    },
+    {
+     "text": "WHD Fact Sheets",
+     "style": "normal",
+     "href": "https://www.dol.gov/agencies/whd/fact-sheets"
+    },
+    {
+     "text": ", ",
+     "style": "normal"
+    },
+    {
+     "text": "Overtime Pay",
+     "style": "normal",
+     "href": "https://www.dol.gov/agencies/whd/overtime"
+    },
+    {
+     "text": ", and ",
+     "style": "normal"
+    },
+    {
+     "text": "FLSA Guide",
+     "style": "normal",
+     "href": "https://www.dol.gov/agencies/whd/compliance-assistance/handy-reference-guide-flsa"
+    },
+    {
+     "text": ".",
+     "style": "normal"
+    }
+   ],
+   "source_page": 106
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Determining the amount of qualified overtime compensation for 2025",
+   "source_page": 106
+  },
+  {
+   "type": "paragraph",
+   "text": "Because no changes have been made to Form W-2, Form 1099-NEC, or Form 1099-MISC to account for a separate accounting of qualified overtime compensation, a separate accounting may not appear on your Form W-2, Form 1099-NEC, or Form 1099-MISC. Some employers may choose to provide for the amount of qualified overtime compensation using Form W-2, box 14. If your employer does provide a separate accounting of your qualified overtime on Form W-2, box 14, you can generally rely on this amount, and the methods described in paragraphs 1 through 5 don’t apply to you.",
+   "source_page": 106
+  },
+  {
+   "type": "paragraph",
+   "text": "Tip. If you request the amount of your FLSA Overtime Premium from your employer or the service recipient, you can rely on the information that is provided to you to determine the amount of your qualified overtime compensation.",
+   "runs": [
+    {
+     "text": "Tip.",
+     "style": "strong"
+    },
+    {
+     "text": " If you request the amount of your FLSA Overtime Premium from your employer or the service recipient, you can rely on the information that is provided to you to determine the amount of your qualified overtime compensation.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 106
+  },
+  {
+   "type": "paragraph",
+   "text": "If the amount of your qualified overtime compensation isn’t separately identified on your Form W-2, Form 1099-NEC, or Form 1099-MISC, you can figure your qualified overtime compensation using one of the methods described in paragraphs 1 through 5.",
+   "source_page": 106
+  }
+ ],
+ "review_notes": [
+  "TRANCHE 46 OF A MULTI-SESSION REBUILD. This plan covers printed page 106, the opening of Schedule 1-A Part III, No Tax on Overtime. It carries no document title by design — only tranche 1 does — so this file validates through merge-plans rather than standalone. No partial rebuild is delivered.",
+  "NOTHING IS CARRIED IN. Page 105 ends with a completed TIP box, and page 106 opens a new Part, so this tranche starts clean. ONE BLOCK IS CARRIED OUT: the closing paragraph, “If the amount of your qualified overtime compensation isn’t separately identified…”, begins in the last column here and finishes at the top of page 107. It is authored whole at this page and tranche 47 must open at “If your employer is covered by a different overtime rule…”, not repeat it.",
+  "THE THIRD PARAGRAPH IS ONE PARAGRAPH, NOT TWO — AND PAGE 101 IS DIFFERENT. “You can claim this deduction whether you claim the standard deduction…” is NOT indented here (it continues at the column left, x=42), so it belongs to the sentence before it. On page 101 the matching pair is indented twice (both at x=236 against a column left of x=224), which is why tranche 41 authored them separately. Both were checked in the geometry; the source really does set the same two sentences differently on the two pages, and neither tranche is wrong.",
+  "THE SOURCE MIXES STRAIGHT AND CURLY APOSTROPHES AND BOTH ARE REPRODUCED AS PRINTED. Eight contractions on this page use the curly ’ (can’t, doesn’t, don’t, isn’t); TWO use a straight ' — “you generally won't be paid overtime” and “these amounts can't be included”. Normalising them would be silently editing the source, and the recall check could not have caught it either way because its normalisation strips punctuation. Checked character by character in the item dump.",
+  "FOUR BOLD RUN-INS BECOME LEVEL-4 HEADINGS with the trailing period dropped (“Maximum amount of deduction”, “Qualified overtime compensation”, “Amounts that are not qualified overtime compensation”, “Determining the amount of qualified overtime compensation for 2025”). They are children of Part III at level 3, matching how Part II's run-ins sit in tranches 41-44. FOUR MORE BOLD RUN-INS STAY INSIDE THEIR LIST ITEMS (“Premium pay.”, “Payment for holidays and weekends.”, “Qualified tips.”, “Coverage under state rules.”) — they lead bullets in a four-item list introduced by a sentence, exactly the shape tranche 24 settled with “Free File.”, and promoting them would break the list.",
+  "ALL FIVE LINK ANNOTATIONS RESOLVE TO THREE dol.gov TARGETS, read from the annotation rects rather than inferred from the prose: WHD Fact Sheets, Overtime Pay, and FLSA Guide. Two of the three are split across two rects each because the link text breaks across a line. They sit INSIDE the CAUTION box, not in a paragraph after it: the sentence “For more information on coverage and exemption under the FLSA…” continues at the column left below the icon with no indent, which is how an icon callout wraps once it clears the icon.",
+  "PAGE FURNITURE OMITTED: the printed page number. Soft hyphens removed and line-break hyphens closed (“el-igible” → “eligible”, “over- time” → “overtime”, “com-pensation” → “compensation”), while genuine compounds are kept (W-2, 1099-NEC, 1099-MISC, 1040-NR, 1-A, FLSA-eligible, FLSA-ineligible, time-and-a-half, 40-hour, self-employment). The em dashes before the MAGI thresholds are the source's own."
+ ]
+}

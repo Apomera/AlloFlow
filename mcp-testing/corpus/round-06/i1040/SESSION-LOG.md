@@ -1748,11 +1748,59 @@ plus a wider leading gap) rather than the tail of tranche 44's carried
 sentence - the two run together in the column-aware text and would otherwise
 have been guessed.
 
-### NEXT: page 106 onward
+### Session 46 (2026-08-05) - page 106 - tranche-46 - 26 blocks - VALIDATED (merged)
 
-Page 106 opens **Part III, No Tax on Overtime** - checked, not assumed: the
-page begins a new part, so nothing spans the 105-106 break and tranche 46 can
-open cleanly at "Part III". Two CAUTION boxes near the top.
+The opening of Schedule 1-A Part III, No Tax on Overtime: the deduction
+limits, what counts as qualified overtime compensation, what does not, and how
+to determine the amount for 2025. `merge-plans t01..t46` -> 1,653 blocks,
+`ok: true`, **pages 1-106 covered**, zero heading skips.
+
+**Recall 0.9956 with the whole shortfall being page furniture** - the folio
+twice plus the two tokens of the "page 106 of 126" label. Four instances, zero
+content. Nothing is carried IN (page 105 ends on a completed TIP box and this
+page opens a new Part), so the raw number is meaningful here without the
+carried-block accounting.
+
+**One block is carried OUT.** The closing paragraph, "If the amount of your
+qualified overtime compensation isn't separately identified...", begins in the
+last column and finishes at the top of page 107. Authored whole here;
+**tranche 47 must open at "If your employer is covered by a different overtime
+rule..."**.
+
+> **THE SAME TWO SENTENCES ARE SET DIFFERENTLY ON PAGES 101 AND 106.** "You
+> can claim this deduction whether you claim the standard deduction..." is NOT
+> indented on page 106 (it continues at the column left, x=42), so it belongs
+> to the paragraph before it. On page 101 the matching pair IS indented twice
+> (both at x=236 against a column left of x=224), which is why tranche 41
+> authored them as two paragraphs. Page 101's geometry was re-checked rather
+> than assumed when page 106 came out different - **a divergence between two
+> tranches is worth one lookup before it is called an inconsistency.** Neither
+> is wrong; the source really does differ.
+
+**THE SOURCE MIXES STRAIGHT AND CURLY APOSTROPHES.** Eight contractions on
+this page use the curly `’`; **two use a straight `'`** - "you generally won't
+be paid overtime" and "these amounts can't be included". Both are reproduced
+as printed. Worth recording because **the recall check cannot catch this in
+either direction**: its normalisation strips punctuation, so a silent
+normalisation would have scored 1.0000. Fidelity details below the tokeniser's
+resolution have to be checked in the item dump or not at all.
+
+Structure: four bold run-ins become level-4 headings (period dropped) under
+Part III at level 3, and four more stay INSIDE their list items ("Premium
+pay.", "Payment for holidays and weekends.", "Qualified tips.", "Coverage
+under state rules.") - they lead bullets in a list introduced by a sentence,
+the shape tranche 24 settled with "Free File.". All five Link annotations
+resolve to three dol.gov targets (two are split across two rects each because
+the link text breaks across a line), and they sit INSIDE the CAUTION box: the
+"For more information..." sentence continues below the icon at the column left
+with no indent, which is how an icon callout wraps once it clears the icon.
+
+### NEXT: page 107 onward
+
+Page 107 continues Part III with the five methods for figuring qualified
+overtime compensation (paragraphs 1 through 5) and Examples 4 and 5. **Do not
+re-author the paragraph carried out of tranche 46**; open at "If your employer
+is covered by a different overtime rule...".
 
 Then the rest of Schedule 1-A (106-110), Schedule 2 (111-114) and Schedule 3
 (115-117), each a top-level TOC entry opening at level 2. Then the back
