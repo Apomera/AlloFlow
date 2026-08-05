@@ -194,10 +194,18 @@ describe('titration i18n coverage', () => {
     // English fragment ending in a space MUST stay joinable in translation or two
     // tokens fuse into one word.
     //
-    // A trailing space is not the only correct way to satisfy that. Hebrew attaches
-    // the prefixes ב־ / מ־ ("by", "from") directly to the following number — "ב‑0.167"
-    // is right and "ב‑ 0.167" is wrong — so a trailing hyphen/maqaf counts as joined.
-    const JOINABLE = /[\s־‐‑-]$/;
+    // A trailing space is not the only correct way to satisfy that, and demanding one
+    // would force bad typography on several scripts:
+    //   * Hebrew attaches the prefixes ב־ / מ־ ("by", "from") straight to the number —
+    //     "ב‑0.167" is right, "ב‑ 0.167" is wrong.
+    //   * CJK does not space between words at all, so a fragment ending in a Han
+    //     character, kana, hangul or full-width punctuation already joins cleanly.
+    //     The Chinese pack's PRE-EXISTING keys follow exactly this convention, which
+    //     is how the rule was confirmed rather than invented.
+    // Written as escapes, not literal characters: pasting the range delimiters
+    // literally into a character class is fragile across encodings, and a silently
+    // broken range makes this assertion fail on every CJK pack for no visible reason.
+    const JOINABLE = /[\s־‐‑-]$|[　-〿぀-ヿ㐀-䶿一-鿿가-힯＀-￯]$/;
     const offenders = [];
     for (const pack of baseline.complete) {
       const t = packTitration(pack);
