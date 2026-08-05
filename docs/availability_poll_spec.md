@@ -110,9 +110,30 @@ Notes that matter:
   allowMaybe: true,                // three-state vs yes/no
   multiSelect: true,               // false makes it a plain single-choice poll
   minParticipants,                 // reuse
-  expiresAt                        // reuse
+  closesAt,                        // voting ends, results stay readable
+  deleteAt                         // responses are erased (see below)
 }
 ```
+
+**Two dates, not one.** The other activity types carry a single `expiresAt`,
+which conflates "stop collecting" with "stop existing". A scheduling poll needs
+them separate, because the normal shape of the task is: voting closes Friday,
+the organizer reads the grid on Monday, and the names should not sit in Drive
+forever afterwards. One date forces a bad choice between losing the result you
+were collecting and keeping personal availability data indefinitely.
+
+- `closesAt`: further responses are refused, results remain visible to the
+  organizer. Respondents see "this poll has closed".
+- `deleteAt`: the response rows are erased. Suggest defaulting to a set period
+  after `closesAt` rather than an absolute date, so it moves if the poll is
+  extended, and make it clear at creation.
+- `deleteAt` should erase **rows**, keeping the tallies the organizer already
+  exported or pinned, so deleting participant data does not destroy the decision
+  that was made. Whether the tally itself should survive is a real question, and
+  in `real_name` mode a tally is not personal data while a row is.
+
+For back-compatibility with the existing normalizer, an incoming `expiresAt`
+maps to `closesAt`.
 
 Clamps, in the same normalizer that handles the other three types: at least 2
 options, a hard ceiling (suggest 50, well past Doodle's free tier), label length
@@ -196,8 +217,8 @@ two backends that disagree about a poll result is a bug users cannot diagnose.
 2. **Should a respondent be able to change their answer after submitting?** The
    row is overwritten by design, so yes is nearly free, but it changes what
    "final" means when the organizer is watching results arrive.
-3. **Retention.** `expiresAt` exists. What should it default to for a poll, and
-   should expiry delete the responses or just close voting?
+3. ~~Retention.~~ **Answered: two dates.** See §4 for closesAt
+   and deleteAt, and the open sub-question of whether the TALLY outlives the rows.
 5. **Mailbox config portability.** Persistence is already solved (§11.1). Should
    a teacher be able to export or QR their mailbox config to restore it or move
    it to a second device?
@@ -208,9 +229,13 @@ two backends that disagree about a poll result is a bug users cannot diagnose.
 
 ## 11. Identity on the device (investigated 2026-08-05)
 
-### 11.1 Mailbox config persistence: already built
+### 11.1 Mailbox config persistence: implemented, but on the wrong storage
 
-Nothing to do. `mbConfig` initializes directly from localStorage:
+**Corrected 2026-08-05.** An earlier draft of this section said "nothing to do".
+That was an accurate reading of the code and the wrong conclusion, because
+localStorage does not survive AlloFlow's primary surface.
+
+`mbConfig` initializes directly from localStorage:
 
 ```js
 const url   = _alloCleanMailboxUrl(localStorage.getItem(ALLO_MB_URL_KEY) || '');
@@ -222,17 +247,48 @@ Keys: `alloflow_session_mailbox_url`, `alloflow_session_mailbox_admin`, plus the
 deployed script version. So the deployment URL and admin token already survive
 across sessions on that device.
 
-Two caveats worth deciding on rather than discovering:
+Keys: `alloflow_session_mailbox_url`, `alloflow_session_mailbox_admin`, plus the
+deployed script version.
 
-- The **admin token is a credential** sitting in localStorage. It grants admin
-  access to that teacher's mailbox. Acceptable on a personal device, less so on
-  a shared staffroom machine, and it never expires on its own.
-- AlloFlow's primary surface is Gemini Canvas, where the page runs on a
-  blob/usercontent origin. localStorage is origin-scoped, so if that origin
-  changes the config silently disappears and the teacher must re-enter it. The
-  real gap is therefore not persistence but **portability**: an explicit
-  export/import (or QR) of the mailbox config, which also covers moving to a
-  second device. That is open question 5.
+**This is the wrong home for it.** `allo_device_storage_module.js` exists for
+precisely this reason, and says so in its own header: it provides storage "that
+works in the Gemini Canvas iframe, where the app's own origin is ephemeral
+(localStorage/IndexedDB vanish between sessions)". Canvas is AlloFlow's primary
+surface, so a teacher who sets up a mailbox will find the config gone next
+session and have to re-enter a URL and admin token they probably did not keep.
+
+So the mailbox config should live in the **device-storage bridge**, in its own
+namespace beside `model_cache`, which is also what makes it visible and erasable
+in the Storage and recovery manager.
+
+The bridge is not a free win, and the module is honest about why. It picks one
+of four backends:
+
+| backend | where | catch |
+|---|---|---|
+| `direct` | stable origin (desktop, self-hosted shell) | none, own IndexedDB |
+| `bridge-popup` | Canvas | `window.open` to alloflow-cdn.pages.dev; **needs a user gesture** |
+| `bridge-iframe` | Canvas, **experimental** | Chrome partitions storage by (top-level site, frame origin); works without a gesture only **if that partition survives Canvas reloads**, which `probe()` measures rather than assumes |
+| `memory` | fallback | nothing persists |
+
+So on Canvas the durable path may require a gesture, or may not be available at
+all. The design that follows from that is belt and braces:
+
+1. Write the config to the bridge namespace (durable when available).
+2. Keep localStorage as a fast path, treated as a cache and never as the source
+   of truth.
+3. Provide an explicit **export/import**, because when both of the above fail
+   the only remaining recovery is the human one. This is open question 5.
+
+Two further points that do not change with storage:
+
+- The **admin token is a credential**. It grants admin access to that teacher's
+  mailbox and never expires on its own. Wherever it is stored, an export that
+  carries it is a credential you can photograph, so a QR of the raw token is a
+  decision to make deliberately, not a convenience to add casually.
+- On a shared staffroom machine, "persist my mailbox admin token" is a different
+  proposition than on a personal laptop. Worth an explicit opt-in rather than
+  silently remembering.
 
 ### 11.2 Two people on one device: not distinct today
 
