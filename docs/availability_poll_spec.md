@@ -4,7 +4,20 @@ A free, unlimited-slot scheduling poll: propose a set of options, share a link o
 QR, collect availability, see the winner. Doodle's free tier caps how many slots
 you can offer; this has no such cap because there is no vendor in the middle.
 
-**Status: spec only. No code written.**
+**Status (2026-08-05): server half BUILT, client half not started.**
+
+Built in `apps_script/session_mailbox/Code.gs`, pinned by
+`tests/availability_poll_contract.test.js` (26 tests): config normalizer, pick
+validation, tally and winner selection, identity-mode enforcement, closesAt
+refusal, and deleteAt retention.
+
+Not built yet, in the order I would do them:
+1. The two prerequisites in §11 and §12: per-respondent credentials on a shared
+   device, and moving the mailbox config to the device-storage bridge with
+   export/import.
+2. Firestore adapter parity with the mailbox behaviour above.
+3. Client: the create form, the respondent ballot, the organizer grid.
+4. AI authoring of the option list (§7).
 
 ---
 

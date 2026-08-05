@@ -950,6 +950,42 @@ function normalizeAssignmentActivityConfig(value, expiresAt) {
       expiresAt: String(expiresAt || source.expiresAt || '')
     };
   }
+  if (source.type === 'availability') {
+    // Scheduling poll (docs/availability_poll_spec.md). Option labels are the
+    // organizer's OWN text: no date parsing and no timezones by design (spec §8).
+    var idMode = String(source.identityMode || '');
+    // No default. Identity is a privacy decision, and a default is the thing
+    // nobody notices, so an unset or unknown mode is a rejected config.
+    if (idMode !== 'anonymous' && idMode !== 'codename' && idMode !== 'real_name') return null;
+    var rawOptions = Array.isArray(source.options) ? source.options : [];
+    var options = [];
+    for (var oi = 0; oi < rawOptions.length && options.length < MAX_POLL_OPTIONS; oi++) {
+      var optLabel = normalizeAssignmentBoardItemText(rawOptions[oi] && rawOptions[oi].label).slice(0, 80);
+      if (!optLabel) continue;
+      // Ids are GENERATED, never taken from input, so no client can address a
+      // slot that is not on the ballot.
+      options.push({ id: 'o' + (options.length + 1), label: optLabel });
+    }
+    if (options.length < 2) return null;
+    // Two dates (spec §4): closesAt stops collection, deleteAt erases rows.
+    // An incoming expiresAt maps to closesAt for back-compatibility.
+    var closesAt = String(source.closesAt || expiresAt || source.expiresAt || '');
+    return {
+      v: 1,
+      activityId: activityId,
+      type: 'availability',
+      delivery: 'shared_async',
+      prompt: prompt,
+      identityMode: idMode,
+      options: options,
+      allowMaybe: source.allowMaybe !== false,
+      multiSelect: source.multiSelect !== false,
+      minParticipants: minParticipants,
+      closesAt: closesAt,
+      deleteAt: String(source.deleteAt || ''),
+      expiresAt: closesAt
+    };
+  }
   if (source.type === 'question_board') {
     // Driving Questions Board (DRIVING_QUESTIONS_BOARD_SPEC.md §4). Shares the
     // pseudonymous response map and Drive-backed lifecycle with word_cloud, but
@@ -1206,8 +1242,170 @@ function buildBoardSummaryFor(state, uid, isHost) {
   };
 }
 
+// Availability poll helpers (docs/availability_poll_spec.md).
+var MAX_POLL_OPTIONS = 50;
+
+// Marks arrive as a map of optionId -> yes|no|maybe. Unknown ids are DROPPED
+// rather than rejected, so a client holding a stale ballot can still record
+// the slots that do still exist.
+function normalizeAvailabilityPicks(value, config) {
+  var source = value;
+  if (typeof source === 'string') { try { source = JSON.parse(source); } catch (e) { return null; } }
+  if (!source || typeof source !== 'object' || Array.isArray(source)) return null;
+  var allowed = {};
+  for (var ai = 0; ai < config.options.length; ai++) allowed[config.options[ai].id] = true;
+  var picks = {};
+  var yesCount = 0;
+  var keys = Object.keys(source);
+  for (var ki = 0; ki < keys.length; ki++) {
+    var id = keys[ki];
+    if (!allowed[id]) continue;
+    var mark = String(source[id] || '');
+    if (mark === 'maybe' && !config.allowMaybe) mark = 'yes';
+    if (mark !== 'yes' && mark !== 'no' && mark !== 'maybe') continue;
+    picks[id] = mark;
+    if (mark === 'yes') yesCount++;
+  }
+  if (!Object.keys(picks).length) return null;
+  if (!config.multiSelect && yesCount > 1) return null;
+  return picks;
+}
+
+// Per-option counts. Materialised into state.tally at deleteAt so the decision
+// survives the erasure of the rows it came from (spec §4).
+function computeAvailabilityTally(config, responses) {
+  var rows = responses && typeof responses === 'object' ? responses : {};
+  var byId = {};
+  for (var oi = 0; oi < config.options.length; oi++) {
+    byId[config.options[oi].id] = { id: config.options[oi].id, label: config.options[oi].label, yes: 0, maybe: 0, no: 0 };
+  }
+  var uids = Object.keys(rows);
+  var participantCount = 0;
+  for (var ui = 0; ui < uids.length; ui++) {
+    var picks = rows[uids[ui]] && rows[uids[ui]].picks;
+    if (!picks || typeof picks !== 'object') continue;
+    participantCount++;
+    var pk = Object.keys(picks);
+    for (var pi = 0; pi < pk.length; pi++) {
+      var slot = byId[pk[pi]];
+      if (!slot) continue;
+      var mark = picks[pk[pi]];
+      if (mark === 'yes') slot.yes++;
+      else if (mark === 'maybe') slot.maybe++;
+      else if (mark === 'no') slot.no++;
+    }
+  }
+  var options = [];
+  for (var oj = 0; oj < config.options.length; oj++) options.push(byId[config.options[oj].id]);
+  return { options: options, participantCount: participantCount };
+}
+
+// Best option: most yes, with maybe ONLY as a tiebreak. A maybe is never
+// counted as a yes, and a tie is returned as a tie rather than silently
+// resolved to whichever slot happens to be first.
+function availabilityBestOptionIds(tally) {
+  var best = [];
+  var bestYes = -1;
+  var bestMaybe = -1;
+  for (var i = 0; i < tally.options.length; i++) {
+    var opt = tally.options[i];
+    if (opt.yes > bestYes || (opt.yes === bestYes && opt.maybe > bestMaybe)) {
+      bestYes = opt.yes;
+      bestMaybe = opt.maybe;
+      best = [opt.id];
+    } else if (opt.yes === bestYes && opt.maybe === bestMaybe) {
+      best.push(opt.id);
+    }
+  }
+  return bestYes > 0 ? best : [];
+}
+
+// Retention (spec §4). Past deleteAt the rows are erased and the tally is kept.
+// Materialising here is the whole point: after this runs there are no rows left
+// to recompute a tally from.
+function applyAvailabilityRetention(state) {
+  if (!state || !state.config || state.config.type !== 'availability') return false;
+  var deleteAt = Date.parse(state.config.deleteAt);
+  if (!isFinite(deleteAt) || Date.now() < deleteAt) return false;
+  var responses = state.responses && typeof state.responses === 'object' ? state.responses : {};
+  if (!Object.keys(responses).length && state.tally) return false;
+  if (!state.tally) state.tally = computeAvailabilityTally(state.config, responses);
+  state.responses = {};
+  return true;
+}
+
+function availabilityIsClosed(config) {
+  var closesAt = Date.parse(config && config.closesAt);
+  return isFinite(closesAt) && Date.now() >= closesAt;
+}
+
+// Stable per respondent, derived from the uid the deployment already issued, so
+// someone who returns keeps their codename and the tally does not count them
+// twice (spec §3).
+var AVAILABILITY_CODENAME_A = ['Amber', 'Bright', 'Calm', 'Deep', 'Swift', 'Quiet', 'Bold', 'Clear'];
+var AVAILABILITY_CODENAME_B = ['Fox', 'Heron', 'Cedar', 'River', 'Falcon', 'Willow', 'Otter', 'Birch'];
+function availabilityCodename(uid) {
+  var hash = 0;
+  var text = String(uid || '');
+  for (var i = 0; i < text.length; i++) hash = ((hash << 5) - hash + text.charCodeAt(i)) | 0;
+  hash = Math.abs(hash);
+  return AVAILABILITY_CODENAME_A[hash % AVAILABILITY_CODENAME_A.length]
+    + ' ' + AVAILABILITY_CODENAME_B[(hash >> 3) % AVAILABILITY_CODENAME_B.length];
+}
+
+// Identity mode is enforced HERE rather than in the UI. If this function can
+// hand back rows in anonymous mode then the mode is a promise the data does not
+// keep, whatever the screen says (spec §3).
+function buildAvailabilitySummary(state, isHost) {
+  var config = state.config;
+  applyAvailabilityRetention(state);
+  var responses = state.responses && typeof state.responses === 'object' ? state.responses : {};
+  var tally = state.tally || computeAvailabilityTally(config, responses);
+  var participantCount = tally.participantCount;
+  var revealed = participantCount >= (parseInt(config.minParticipants, 10) || 3);
+  // minParticipants guards the TALLY too, and in anonymous mode it guards it
+  // from the organizer as well: with a handful of respondents a bare count can
+  // still identify who said what.
+  var showTally = config.identityMode === 'anonymous' ? revealed : (isHost || revealed);
+  var rows = [];
+  if (isHost && config.identityMode !== 'anonymous') {
+    var uids = Object.keys(responses);
+    for (var i = 0; i < uids.length; i++) {
+      var row = responses[uids[i]];
+      if (!row || !row.picks) continue;
+      rows.push({
+        label: config.identityMode === 'real_name' ? String(row.name || '') : availabilityCodename(uids[i]),
+        picks: row.picks,
+        updatedAt: parseInt(row.updatedAt, 10) || 0
+      });
+    }
+  }
+  return {
+    ok: true,
+    activityId: state.activityId,
+    type: 'availability',
+    prompt: config.prompt,
+    identityMode: config.identityMode,
+    options: config.options,
+    allowMaybe: config.allowMaybe,
+    multiSelect: config.multiSelect,
+    minParticipants: config.minParticipants,
+    closesAt: config.closesAt,
+    deleteAt: config.deleteAt,
+    closed: availabilityIsClosed(config),
+    participantCount: participantCount,
+    revealed: revealed,
+    tally: showTally ? tally.options : [],
+    best: showTally ? availabilityBestOptionIds(tally) : [],
+    rows: rows,
+    version: parseInt(state.version, 10) || 0,
+    updatedAt: parseInt(state.updatedAt, 10) || 0
+  };
+}
+
 function buildAssignmentActivityPublicSummary(state) {
   var responses = state.responses && typeof state.responses === 'object' ? state.responses : {};
+  if (state.config.type === 'availability') return buildAvailabilitySummary(state, false);
   if (state.config.type === 'rating') {
     var counts = {};
     var participantCount = 0;
@@ -1356,9 +1554,14 @@ function upsertAssignmentActivity(cache, p, admin) {
   var term = '';
   var ratingValue = null;
   var boardText = '';
+  var pollPicks = null;
   if (context.config.type === 'question_board') {
     boardText = normalizeAssignmentBoardItemText(p.term);
     if (!boardText) return out({ ok: false, e: 'bad-term' });
+  } else if (context.config.type === 'availability') {
+    if (availabilityIsClosed(context.config)) return out({ ok: false, e: 'poll-closed' });
+    pollPicks = normalizeAvailabilityPicks(p.picks, context.config);
+    if (!pollPicks) return out({ ok: false, e: 'bad-picks' });
   } else if (context.config.type === 'rating') {
     ratingValue = p.value;
     if (typeof ratingValue !== 'number' || !isFinite(ratingValue) || Math.floor(ratingValue) !== ratingValue
@@ -1415,6 +1618,15 @@ function upsertAssignmentActivity(cache, p, admin) {
         row.items.pop();
         return out({ ok: false, e: 'board-bytes' });
       }
+    } else if (context.config.type === 'availability') {
+      var pollRow = { picks: pollPicks, updatedAt: Date.now() };
+      // A name is stored ONLY in real_name mode. If the row carried one in the
+      // other modes the mode would be a lie, whatever the UI shows.
+      if (context.config.identityMode === 'real_name') {
+        var pollName = normalizeAssignmentBoardItemText(p.nm).slice(0, 40);
+        if (pollName) pollRow.name = pollName;
+      }
+      responses[actor.uid] = pollRow;
     } else if (context.config.type === 'rating') {
       // One map row per pseudonymous actor. A retry or deliberate change
       // replaces that row rather than inflating the aggregate.
@@ -1440,6 +1652,11 @@ function upsertAssignmentActivity(cache, p, admin) {
     state.updatedAt = Date.now();
     writeAssignmentActivityState(state);
     cacheAssignmentActivitySummary(cache, state);
+    if (context.config.type === 'availability') {
+      var voted = buildAvailabilitySummary(state, false);
+      voted.own = responses[actor.uid] || null;
+      return out(voted);
+    }
     if (context.config.type === 'question_board') {
       var posted = buildBoardSummaryFor(state, actor.uid, false);
       posted.own = responses[actor.uid];
@@ -1458,6 +1675,11 @@ function getAssignmentActivityAdmin(cache, p) {
     return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
   }
   var state = readAssignmentActivityState(context);
+  if (context.config.type === 'availability') {
+    // The organizer is the audience for a scheduling poll, so rows come back
+    // here. buildAvailabilitySummary still withholds them in anonymous mode.
+    return out(buildAvailabilitySummary(state, true));
+  }
   if (context.config.type === 'question_board') {
     // The host sees every item regardless of status — that is the whole point
     // of a review queue — and moderates per ITEM, so rows are the wrong unit.
