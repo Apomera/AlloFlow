@@ -382,5 +382,166 @@ the same change):
 
 ---
 
+## 15. Support events — the ledger's real unit (scoped 2026-08-05; NOT built)
+
+**Status: design only.** Nothing in this section is implemented. It supersedes the
+*spine* of the attribution work committed 2026-08-05 (`f04974fcb`), which remains
+correct but narrow, for the reasons below.
+
+### 15.1 The mistake this corrects
+
+The ledger records *AI calls*. The thing worth recording is *support received*. Those
+are not the same population, and in AlloFlow they barely overlap.
+
+The evidence is in our own vocabulary. `CHECKPOINT_ALWAYS_ALLOWED` names eight
+supports:
+
+```
+read_aloud, glossary, translate, simplified,
+spellcheck, word_prediction, speech_to_text, magnify
+```
+
+Exactly **one** of those eight (`translate`) travels through `callGemini`. Read-aloud
+is speech synthesis. Magnify is presentation. Spellcheck is the browser. Word
+prediction is the keyboard. We wrote a vocabulary describing scaffolding, then attached
+it to a network boundary that cannot see seven-eighths of it.
+
+This costs each lens differently:
+
+- **Integrity** was over-counting: a translation logged identically to a request to
+  write a paragraph. Fixed within AI calls by `f04974fcb`.
+- **Support-fade (MTSS/RTI)** was near-useless and still is. A fade record that sees
+  only AI is blind to most of what an IEP actually specifies. A team asking "does this
+  student need less scaffolding over time?" gets an answer drawn from a minority of the
+  scaffolding.
+
+Scaffolding is also **per-tool rather than centralized**. Only the tool knows it gave a
+sentence frame. Inferring support at a shared chokepoint is the same category of error
+as inferring paste origin from a length jump: the inference site lacks the information,
+so it guesses, and the guess lands on a child.
+
+### 15.2 The change
+
+**A `support` event any tool can emit.**
+
+```
+support: { kind, level, insertedToWork?, assistiveTech? }
+```
+
+`kind` uses the existing vocabulary, extended as tools are instrumented. `level` reuses
+`PROMPT_LEVELS` (`model | guided | hint | none`), which is the errorless-learning
+hierarchy and was never an AI concept — it describes a word bank or a frame as
+naturally as a chatbot turn.
+
+`noteSupport(kind, level, opts)` on the ledger, exposed on `window` beside the existing
+declaration hook, so loaded modules and STEM tools can emit without importing anything.
+
+`callGemini` becomes one *source* of support events rather than the spine. The
+declare-then-consume mechanism from `f04974fcb` survives for that path only: it exists
+solely because a network wrapper cannot see its caller, and a self-declaring tool has
+no such problem.
+
+### 15.3 What we do NOT record (extends constraint 1 and §5)
+
+The tempting version of this feature logs *what the scaffold said*. It must not.
+
+- **No scaffold content.** Not the frame text, not the glossary definition, not the
+  simplified passage, not the chatbot's reply. Record that a scaffold of a kind was
+  provided at a level. If we ever need to prove *which* frame appeared, hash it.
+- **Reason:** content turns a scaffolding record into a readable transcript of a child
+  struggling, and that document will eventually be read by someone it was not written
+  for. It also breaks the metadata-only spine carrying the FERPA posture (constraint 5).
+- The existing `promptPreview` (120 chars, support lens only, stripped from submission
+  exports) remains the sole exception and does not widen here.
+
+### 15.4 Constraint 8, restated as populations
+
+Hard constraint 8 currently separates the two lenses by **fields**. That is too weak
+once most scaffolds are non-AI. The correct rule separates by **population**:
+
+> **Integrity sees only what went INTO the work.** Support sees everything that helped
+> the student.
+
+The discriminator already exists in the schema: `insertedToWork`.
+
+- A word bank does not make an essay non-original. Nor does read-aloud, magnify, or
+  translating the prompt. These are invisible to the integrity lens entirely.
+- A generative helper whose output the student inserted is visible to both.
+
+Two consequences worth stating plainly:
+
+1. **Broad scaffold logging makes the integrity panel quieter, not noisier.** Almost
+   everything newly recorded routes away from it.
+2. **The near-miss that produced this rule.** During `f04974fcb` a per-support *name*
+   map was briefly placed in the integrity summary. That lists which accommodations a
+   child leans on inside a panel about integrity: "needs help" rendered in the register
+   of "might be cheating", constraint 8's exact failure. Caught before commit. The wall
+   test that should have caught it passed by accident, because the field was named
+   `aiBySupport` and the capital S walked through a `not.toContain('support')` check.
+   That assertion is now case-insensitive. **A substring pin guarding a design
+   constraint is only as strong as its casing.**
+
+### 15.5 Coverage must be stated, never implied
+
+Instrumentation will be partial for a long time, and **two of the eight named supports
+can never be recorded at all** (verified 2026-08-05, zero occurrences in either ANTI
+copy):
+
+- `spellcheck` — not an AlloFlow feature; the browser default on every text field.
+- `word_prediction` — OS keyboard behaviour, same class.
+
+They sit in the vocabulary as though tracked. They are not, and no future work changes
+that.
+
+A record implying completeness while being partial is harmful in **both** directions:
+
+- **Integrity:** absence gets read as evidence. "No supports recorded" must never be
+  available as a claim about a student.
+- **MTSS:** under-counted support makes a student look more independent than they are —
+  a record capable of influencing a fading decision or a service level.
+
+Both summaries must therefore carry an explicit coverage statement naming what is
+observed, what is not yet instrumented, and what is permanently unobservable. Binding
+requirement, not later polish.
+
+### 15.6 Instrumentation map (scouted 2026-08-05)
+
+| Tier | Supports | Seam | Cost |
+|---|---|---|---|
+| Single chokepoint | `read_aloud` | `window.AlloSpeechPlayer` (ANTI ~4721, 6 refs) — a singleton built to replace ~20 scattered `speak()` sites; covers browser TTS, Kokoro, Piper and Gemini TTS at one point | Low |
+| Single chokepoint | `translate` | already labelled at the leveled-text path | Done |
+| Single chokepoint | `speech_to_text` | `SpeechRecognition` (11 refs) | Low |
+| Feature-local | `glossary`, `simplified`, `explain_content`, `allobot` | scattered; one at a time | Medium |
+| Needs checking | `magnify` | `fontSize`/`zoom` has 131 hits, mostly unrelated; an in-app control may or may not exist | Unknown |
+| Never observable | `spellcheck`, `word_prediction` | none exists | Document only |
+
+15.2 through 15.5 are self-contained and require no tool to be instrumented. Tier 1 is
+the proof the shape works.
+
+### 15.7 Open decisions
+
+1. **One ledger or two records?** Putting a word bank in a hash chain built for
+   tamper-evidence is arguably over-engineering, and it grows a payload already living
+   near an 85KB ceiling. The argument for one ledger is that the fade lens wants a
+   single ordered timeline. *Recommendation: one ledger*, with the population rule
+   (15.4) separating at read time rather than storage time.
+2. **Does the consent screen change?** Today's consent covers a Work Story that is
+   mostly AI events. Recording every scaffold is a materially broader thing to agree to,
+   and the consent prompt's "nothing more" phrasing must stay literally true. *Blocking
+   sub-task of the same change, not a follow-up* — constraint 2 says the student owns
+   the log, and consent that has drifted from what is collected is not ownership.
+3. **Do support events belong to a checkpoint window?** §6 checkpoints are answered with
+   generative AI off but access supports on. Recording which accommodations were active
+   is the honest presentation, and also the most accusation-adjacent placement in the
+   design. Deferred until 15.2–15.5 land.
+
+### 15.8 Phase placement
+
+Slots as **P7**, after P6 (MTSS lane), because P6 is the consumer that makes it worth
+having. Nothing in P0–P5 depends on it, and `f04974fcb` stays correct within its
+narrower scope until this supersedes it.
+
+---
+
 *Design principle in one line: make honest work easy to demonstrate and dishonest work
 expensive to hide — and never build the button that accuses a child.*
