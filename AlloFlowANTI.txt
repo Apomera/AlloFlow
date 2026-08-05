@@ -11292,7 +11292,14 @@ Return ONLY JSON in this shape:
           else led.noteEdit(key, delta, len);
       } catch (_) {}
   };
-  useEffect(() => { window.__alloNoteAiUse = (s, lv) => _alloNoteAiUse(s, lv); return () => { try { delete window.__alloNoteAiUse; } catch (_) { window.__alloNoteAiUse = null; } }; }, [isStudentLinkMode]);
+  // Deps are [] deliberately. A dep array is evaluated during render, and this
+  // hook sits ~3.8k lines ABOVE the isStudentLinkMode useState, so naming it
+  // here threw "Cannot access 'isStudentLinkMode' before initialization" and
+  // took the whole tree down through the error boundary. The body never reads
+  // that flag anyway, and the global it installs reads _alloLedgerRef.current,
+  // which is a ref, so it can never go stale. Re-running on mode change bought
+  // nothing.
+  useEffect(() => { window.__alloNoteAiUse = (s, lv) => _alloNoteAiUse(s, lv); return () => { try { delete window.__alloNoteAiUse; } catch (_) { window.__alloNoteAiUse = null; } }; }, []);
   const _alloNoteAiUse = (support, promptLevel) => {
       const led = _alloLedgerRef.current;
       if (!led) return;
