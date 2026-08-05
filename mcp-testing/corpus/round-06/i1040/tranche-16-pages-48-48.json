@@ -1,0 +1,168 @@
+{
+ "schema_version": "1.0",
+ "document": {
+  "title": "2025 Instructions for Form 1040 (and 1040-SR)",
+  "language": "en",
+  "source_page_count": 126,
+  "source_sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a",
+  "document_type": "booklet",
+  "subject": "Internal Revenue Service instructions for the 2025 Form 1040 and Form 1040-SR, including the instructions for Schedules 1 through 3.",
+  "variant": "original"
+ },
+ "blocks": [
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Worksheet B—2025 EIC—Line 27a—Continued",
+   "source_page": 48
+  },
+  {
+   "type": "paragraph",
+   "text": "Keep for Your Records.",
+   "source_page": 48
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Part 5. All Filers Using Worksheet B",
+   "source_page": 48
+  },
+  {
+   "type": "table",
+   "caption": "EIC Worksheet B, Part 5 (All Filers Using Worksheet B): lines 6 to 9. The Amount column is where you write your figures; it is blank in the printed form.",
+   "columns": [
+    "Line",
+    "Instruction",
+    "Amount"
+   ],
+   "rows": [
+    [
+     "6.",
+     "Enter your total earned income from Part 4, line 4b.",
+     ""
+    ],
+    [
+     "7.",
+     "Look up the amount on line 6 above in the EIC Table to find the credit. Be sure you use the correct column for your filing status and the number of qualifying children you have who have valid SSNs. Enter the credit here. STOP. If line 7 is zero, you can’t take the credit. Check the box on Form 1040 or 1040-SR, line 27c.",
+     ""
+    ],
+    [
+     "8.",
+     "Enter the amount from Form 1040 or 1040-SR, line 11b.",
+     ""
+    ],
+    [
+     "9.",
+     "Are the amounts on lines 8 and 6 the same? Yes. Skip line 10; enter the amount from line 7 on line 11. No. Go to line 10.",
+     ""
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 48
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Part 6. Filers Who Answered “No” on Line 9",
+   "source_page": 48
+  },
+  {
+   "type": "table",
+   "caption": "EIC Worksheet B, Part 6 (Filers Who Answered “No” on Line 9): line 10. The Amount column is where you write your figures; it is blank in the printed form.",
+   "columns": [
+    "Line",
+    "Instruction",
+    "Amount"
+   ],
+   "rows": [
+    [
+     "10.",
+     "If you have: no qualifying children who have valid SSNs, is the amount on line 8 less than $10,620 ($17,730 if married filing jointly)?; or 1 or more qualifying children who have valid SSNs, is the amount on line 8 less than $23,350 ($30,470 if married filing jointly)? Yes. Leave line 10 blank; enter the amount from line 7 on line 11. No. Look up the amount on line 8 in the EIC Table to find the credit. Be sure you use the correct column for your filing status and the number of qualifying children you have who have valid SSNs. Enter the credit here.",
+     ""
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 48
+  },
+  {
+   "type": "paragraph",
+   "text": "Look at the amounts on lines 10 and 7. Then, enter the smaller amount on line 11.",
+   "source_page": 48
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Part 7. Your Earned Income Credit",
+   "source_page": 48
+  },
+  {
+   "type": "table",
+   "caption": "EIC Worksheet B, Part 7 (Your Earned Income Credit): line 11. The Amount column is where you write your figures; it is blank in the printed form.",
+   "columns": [
+    "Line",
+    "Instruction",
+    "Amount"
+   ],
+   "rows": [
+    [
+     "11.",
+     "This is your earned income credit. Enter this amount on Form 1040 or 1040-SR, line 27a.",
+     ""
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 48
+  },
+  {
+   "type": "paragraph",
+   "text": "Reminder. If you have a qualifying child, complete and attach Schedule EIC.",
+   "runs": [
+    {
+     "text": "Reminder.",
+     "style": "strong"
+    },
+    {
+     "text": " If you have a qualifying child, complete and attach Schedule EIC.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 48
+  },
+  {
+   "type": "paragraph",
+   "text": "Caution. If your EIC for a year after 1996 was reduced or disallowed, see Form 8862, who must file, earlier, to find out if you must file Form 8862 to take the credit for 2025.",
+   "runs": [
+    {
+     "text": "Caution.",
+     "style": "strong"
+    },
+    {
+     "text": " ",
+     "style": "normal"
+    },
+    {
+     "text": "If your EIC for a year after 1996 was reduced or disallowed, see ",
+     "style": "normal"
+    },
+    {
+     "text": "Form 8862, who must file",
+     "style": "emphasis"
+    },
+    {
+     "text": ", earlier, to find out if you must file Form 8862 to take the credit for 2025.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 48
+  }
+ ],
+ "review_notes": [
+  "TRANCHE 16 OF A MULTI-SESSION REBUILD. This plan covers printed page 48 only — EIC Worksheet B continued, Parts 5 through 7. It carries no document title by design: only tranche 1 does, so this file validates through merge-plans rather than standalone. No partial rebuild is delivered.",
+  "DELIBERATELY A ONE-PAGE TRANCHE. Page 48 completes Worksheet B, and page 49 begins the 2025 Earned Income Credit (EIC) Table — a multi-page lookup table that should be GENERATED with a verification pass rather than hand-authored, exactly as planned for the Tax Table and the Index. Ending the tranche here keeps hand-authored and generated work in separate tranches with a clean seam, so the generator for the table has an unambiguous starting page and neither kind of work has to be reviewed through the other.",
+  "SHAPE IDENTICAL TO TRANCHE 15: one worksheet table per Part, each Part a level-5 heading, printed line numbers in the Line column, entry column blank, and the STOP condition folded into the line it qualifies. Parts 5-7 continue the numbering of Parts 1-4 on page 47, and because the numbers live in the Line column the sequence 1a…5, 6…11 reads continuously across both pages.",
+  "THE PAGE TITLE IS REASSEMBLED. The printed banner reads “Worksheet B—2025 EIC—Line 27a—Continued”, but the page number sits inside it in the content stream, so any extraction returns it broken (“Worksheet B … 48 —2025 EIC—Line 27a—Continued”). The heading is authored as the banner reads on the page.",
+  "THE LOOKUP INSTRUCTION IS REPEATED IN FULL on lines 7 and 10, as the source repeats it, so a reader filling in line 10 does not have to look back at line 7 for the caveat about which column to use.",
+  "ITALIC CROSS-REFERENCES MARKED AS EMPHASIS, not linked. Page 48 carries no link annotations.",
+  "SOFT HYPHENS REMOVED and genuine compounds kept (1040-SR, Form 8862). PAGE FURNITURE OMITTED: the printed page number, the standing “Need more information or forms?” footer, and the invisible “Fileid: … MUST be removed before printing” production lines."
+ ]
+}

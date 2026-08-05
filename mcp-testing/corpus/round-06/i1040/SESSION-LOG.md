@@ -676,3 +676,36 @@ what the source runs together.
 
 For future form-heavy pages: don't read a sub-0.99 raw recall as a defect
 without first checking for glue.
+
+### Session 16 (2026-08-04) — page 48 · tranche-16 · 11 blocks · VALIDATED (merged)
+
+EIC Worksheet B continued, Parts 5-7. `merge-plans t01..t16` → 889 blocks,
+`ok: true`, **pages 1-48 covered**. Shape identical to tranche 15; numbering
+runs continuously 1a…5, 6…11 across pages 47-48 because the printed numbers
+live in the Line column.
+
+**Deliberately a one-page tranche.** Page 49 begins the 2025 EIC Table, which
+should be GENERATED with verification rather than hand-authored. Ending here
+keeps hand-authored and generated work in separate tranches with an
+unambiguous seam.
+
+**Second measurement lesson — the recall normalisation had its own bug.**
+Raw recall read 0.9653 and blamed `2025`, `27a`, `continued` as missing. They
+were not: the normalisation replaced em dashes with hyphens and then closed
+hyphens (the rule that repairs line-broken words), which glued my own heading
+"Worksheet B—2025 EIC—Line 27a—Continued" into a single token. An em
+dash JOINS PHRASES; a hyphen joins a broken WORD. Treating em/en dashes as
+separators instead gives 0.9740, with the remainder being the page number, a
+repeated line number, and source-side glue.
+
+> **For future tranches:** in the recall check, map `—`/`–` to a space and
+> only close `-`. Both this and the session-15 glue caveat mean a raw number
+> below 0.99 on form-heavy pages should be investigated, not assumed to be a
+> defect — and equally, not assumed to be fine.
+
+### NEXT: the EIC Table (pages 49-~60) is a MECHANICAL tranche
+
+Generate rows from extracted text with a per-tranche generator, then verify:
+row count against page count, spot-check rows against the render, and a recall
+pass. Same treatment planned for the Tax Table (~68-80) and the Index
+(~118-126). Do not hand-author it.
