@@ -260,6 +260,53 @@
     return { promptLevelCounts: counts, series: series.slice(0, 2000) };
   }
 
+  // ── P1 (view half): the student-owned "Work Story" view-model. ────────────
+  // Student-facing language throughout. The "what we keep" disclosure is
+  // DERIVED FROM the event schema, so the promise shown to students can never
+  // drift from what the code can actually record; a test pins the mapping
+  // covers every schema type exactly. The "what we never keep" list is the
+  // hard floor from the design doc.
+  var COLLECTION_DESCRIPTIONS = {
+    session: 'When you started, took breaks, and finished working',
+    edit: 'How much you typed and when — never the words themselves',
+    paste: 'When something was pasted in, and how big it was',
+    ai: 'Which AlloFlow helpers you used, and when',
+    checkpoint: 'Your check-in answers (as digital fingerprints) and how long they took',
+    revision: 'How your work grew over time — sizes, not contents'
+  };
+  var NEVER_COLLECTED = [
+    'The words you type (only amounts and timing)',
+    'Screenshots or recordings of your screen',
+    'Anything you do outside AlloFlow',
+    'Your camera or microphone'
+  ];
+  function describeCollection() {
+    return Object.keys(EVENT_FIELDS).map(function (type) {
+      return { type: type, what: COLLECTION_DESCRIPTIONS[type] || type };
+    });
+  }
+  function buildWorkStoryModel(exported) {
+    var evts = (exported && exported.events) || [];
+    var lines = [];
+    for (var i = 0; i < evts.length && lines.length < 400; i++) {
+      var e = evts[i];
+      var min = Math.round(e.t / 60000);
+      var at = min < 1 ? 'right away' : 'at ' + min + ' min';
+      if (e.type === 'session') lines.push(e.action === 'start' ? 'You started working.' : e.action === 'resume' ? 'You came back to it ' + at + '.' : 'You finished this session ' + at + '.');
+      else if (e.type === 'paste') lines.push('You pasted in about ' + e.chars + ' characters ' + at + (e.sourceHint === 'intra-app' ? ' (from your own work in AlloFlow).' : '.'));
+      else if (e.type === 'ai') lines.push('You used the ' + (e.support || 'AI') + ' helper ' + at + '.');
+      else if (e.type === 'checkpoint') lines.push('You answered a check-in ' + at + ' (' + e.durationSec + 's, AI ' + e.aiState + ').');
+    }
+    var s = summarizeProcess(exported || { events: [] });
+    return {
+      summary: 'You worked for about ' + s.activeMinutes + ' minutes across ' + s.sessions + ' session' + (s.sessions === 1 ? '' : 's') + ', typed in ' + s.editBuckets + ' burst' + (s.editBuckets === 1 ? '' : 's') + ', and used AlloFlow helpers ' + s.aiInteractions + ' time' + (s.aiInteractions === 1 ? '' : 's') + '.',
+      lines: lines,
+      collected: describeCollection(),
+      neverCollected: NEVER_COLLECTED.slice(),
+      consentPrompt: 'Include your Work Story with this submission? Your teacher will see the timeline above — nothing more. You can look through every line first.'
+    };
+  }
+
   // ── P2: the teacher process panel's view-model (surface-agnostic). ────────
   // Takes a loaded student project JSON; returns everything a "Process" panel
   // renders: the one-line summary (the teacher's DEFAULT view per resolved
@@ -295,6 +342,8 @@
   GLOBAL.AlloModules = GLOBAL.AlloModules || {};
   GLOBAL.AlloModules.Provenance = {
     buildProcessPanelModel: buildProcessPanelModel,
+    buildWorkStoryModel: buildWorkStoryModel,
+    describeCollection: describeCollection,
     createLedger: createLedger,
     verifyLedger: verifyLedger,
     attachProvenance: attachProvenance,

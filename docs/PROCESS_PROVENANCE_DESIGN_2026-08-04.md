@@ -320,6 +320,35 @@ as a artifact of pride, not a compliance receipt.
    be misread (e.g., speech-to-text users show paste-like bursts)? Likely needs an
    explicit note in the teacher docs — your call on wording.
 
+## 14. P1 wiring map (scouted 2026-08-04; view half already shipped)
+
+Shipped so far: P0 ledger core, P2 teacher panel view-model, and P1's **view half** —
+`buildWorkStoryModel` / `describeCollection` (student-language narration; the "what we
+keep" disclosure is *generated from the event schema*, drift-pinned by test). Remaining
+is the ANTI surgery, which must land as ONE commit so collection never exists without
+the surface (the inertness test flips from "no references" to the full-wiring pins in
+the same change):
+
+1. **Loader**: lazy `__alloLazyProvenance` following the existing `loadModule` pattern;
+   loads only when student mode + a provenance-enabled assignment is active.
+2. **Session lifecycle**: ledger created where the assignment becomes active
+   (`assignmentDirections` adoption); `session start/resume/end` from visibility +
+   load/unload; durable buffer via the storage bridge (`provenance_buffer`).
+3. **Edit/paste hooks**: student response inputs only (the assignment answer surfaces —
+   NOT teacher fields); `noteEdit` on input deltas, paste handler records size +
+   intra-app detection (compare against session-known AI response hashes).
+4. **AI hook**: wrap at the ctx capability layer (where student-facing helpers invoke
+   `localCallGemini` @~3486) — record support name + prompt/response hashes +
+   `promptLevel`; policy comes from the share's `studentAiPolicy` (24 references —
+   already threaded).
+5. **Work Story surface**: renders `buildWorkStoryModel` output; lives beside the
+   student's save/submit controls; consent checkbox default-unchecked; "clear my
+   buffer" control.
+6. **Embed**: `attachProvenance` inside `initiateSaveStudentProject` (@~32947) — ONLY
+   when the consent box is checked at that moment.
+7. **Flip the inertness test** in `tests/provenance_ledger.test.js` to assert the six
+   wiring points instead of absence.
+
 ---
 
 *Design principle in one line: make honest work easy to demonstrate and dishonest work

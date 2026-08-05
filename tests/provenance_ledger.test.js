@@ -172,6 +172,35 @@ describe('P2 — teacher process panel view-model', () => {
   });
 });
 
+describe('P1 (view half) — the student-owned Work Story', () => {
+  it('the collection disclosure is derived from the schema — no drift possible', () => {
+    const described = P.describeCollection().map((d) => d.type).sort();
+    // Every schema type described, nothing described that the schema lacks.
+    const schemaTypes = ['ai', 'checkpoint', 'edit', 'paste', 'revision', 'session'];
+    expect(described).toEqual(schemaTypes);
+    for (const d of P.describeCollection()) expect(d.what.length).toBeGreaterThan(10);
+  });
+  it('narrates in student language with consent framing, never verdicts', async () => {
+    const clock = mkClock();
+    const led = P.createLedger({ now: clock.now });
+    await led.append('session', { action: 'start' });
+    clock.tick(120000);
+    await led.append('paste', { field: 'a', chars: 300, sourceHint: 'external' });
+    await led.append('ai', { support: 'glossary', promptLevel: 'hint' });
+    const m = P.buildWorkStoryModel(await led.export());
+    expect(m.lines[0]).toBe('You started working.');
+    expect(m.lines[1]).toContain('pasted in about 300 characters at 2 min');
+    expect(m.lines[2]).toContain('glossary helper');
+    expect(m.summary).toContain('You worked for about');
+    expect(m.neverCollected.join(' ')).toContain('Screenshots');
+    expect(m.consentPrompt).toContain('nothing more');
+    const flat = JSON.stringify(m).toLowerCase();
+    expect(flat).not.toContain('cheat');
+    expect(flat).not.toContain('suspic');
+    expect(flat).not.toContain('promptlevel'); // support lens stays out of the student view too
+  });
+});
+
 describe('constraints in the module text itself', () => {
   const src = readFileSync('allo_provenance_module.js', 'utf-8');
   it('never scores, flags, or names cheating; says tamper-EVIDENT only', () => {
