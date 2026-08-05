@@ -140,6 +140,38 @@ describe('the two-lens wall (hard constraint 8)', () => {
   });
 });
 
+describe('P2 — teacher process panel view-model', () => {
+  it('builds the one-line default view, verifies the chain, carries the disclaimer', async () => {
+    const clock = mkClock();
+    const led = P.createLedger({ now: clock.now });
+    await led.append('session', { action: 'start' });
+    await led.append('ai', { support: 'glossary', promptLevel: 'hint' });
+    clock.tick(120000);
+    await led.append('checkpoint', { id: 'cp1', aiState: 'off', durationSec: 60 });
+    const project = P.attachProvenance({ title: 'w' }, await led.export());
+    const m = await P.buildProcessPanelModel(JSON.parse(JSON.stringify(project)));
+    expect(m.present).toBe(true);
+    expect(m.summaryLine).toContain('1 AI support');
+    expect(m.summaryLine).toContain('1 checkpoint attached');
+    expect(m.integrity.verified).toBe(true);
+    expect(m.integrity.disclaimer).toContain('tamper-evident, not tamper-proof');
+    // The wall holds here too: no support-lens fields in the panel model.
+    const flat = JSON.stringify(m);
+    expect(flat).not.toContain('promptLevel');
+    // A tampered ledger reads as unverified, never as a verdict about the student.
+    const bad = JSON.parse(JSON.stringify(project));
+    bad.provenance.ledger.events[1].support = 'edited-later';
+    const mb = await P.buildProcessPanelModel(bad);
+    expect(mb.integrity.verified).toBe(false);
+    expect(mb.integrity.line).toContain('could not be verified');
+    expect(JSON.stringify(mb).toLowerCase()).not.toContain('cheat');
+  });
+  it('absent provenance is simply absent — no panel, no implication', async () => {
+    expect(await P.buildProcessPanelModel({ title: 'no ledger' })).toEqual({ present: false });
+    expect(await P.buildProcessPanelModel(null)).toEqual({ present: false });
+  });
+});
+
 describe('constraints in the module text itself', () => {
   const src = readFileSync('allo_provenance_module.js', 'utf-8');
   it('never scores, flags, or names cheating; says tamper-EVIDENT only', () => {

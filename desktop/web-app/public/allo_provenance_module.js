@@ -260,8 +260,41 @@
     return { promptLevelCounts: counts, series: series.slice(0, 2000) };
   }
 
+  // ── P2: the teacher process panel's view-model (surface-agnostic). ────────
+  // Takes a loaded student project JSON; returns everything a "Process" panel
+  // renders: the one-line summary (the teacher's DEFAULT view per resolved
+  // §12.3), expanded observations, and the integrity line with the §7
+  // disclaimer verbatim. Integrity lens only — support/prompt-level data is
+  // structurally absent (constraint 8). No scores, no flags, ever.
+  function buildProcessPanelModel(projectJson) {
+    var prov = projectJson && projectJson.provenance;
+    var exported = prov && prov.ledger;
+    if (!exported || !Array.isArray(exported.events)) {
+      return Promise.resolve({ present: false });
+    }
+    var s = summarizeProcess(exported);
+    return verifyLedger(exported).then(function (v) {
+      return {
+        present: true,
+        summaryLine: s.sessions + ' session' + (s.sessions === 1 ? '' : 's') + ' · ' +
+          s.activeMinutes + ' min · ' + s.aiInteractions + ' AI support' + (s.aiInteractions === 1 ? '' : 's') +
+          (s.checkpoints ? ' · ' + s.checkpoints + ' checkpoint' + (s.checkpoints === 1 ? '' : 's') + ' attached' : ''),
+        process: s,
+        startedWallClock: String(exported.startedWallClock || ''),
+        integrity: {
+          verified: v.ok === true,
+          line: v.ok === true
+            ? 'Chain verified (' + (v.events || 0) + ' events).'
+            : 'This record could not be verified' + (typeof v.brokenAt === 'number' ? ' (breaks at event ' + v.brokenAt + ')' : '') + '.',
+          disclaimer: 'This record is tamper-evident, not tamper-proof. It documents process; it does not convict anyone.'
+        }
+      };
+    });
+  }
+
   GLOBAL.AlloModules = GLOBAL.AlloModules || {};
   GLOBAL.AlloModules.Provenance = {
+    buildProcessPanelModel: buildProcessPanelModel,
     createLedger: createLedger,
     verifyLedger: verifyLedger,
     attachProvenance: attachProvenance,
