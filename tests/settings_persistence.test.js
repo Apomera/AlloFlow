@@ -31,7 +31,7 @@ describe('display + read-aloud settings persist across sessions', () => {
       for (const [key, dep] of [['allo_voice_speed', 'voiceSpeed'], ['allo_voice_volume', 'voiceVolume'],
         ['allo_base_font_size', 'baseFontSize'], ['allo_line_height', 'lineHeight'],
         ['allo_font_theme', 'fontTheme'], ['allo_reading_ruler', 'readingRuler']]) {
-
+        expect(app.includes("safeSetItem('" + key + "'"), f + ' writes ' + key).toBe(true);
         expect(app.includes('}, [' + dep + ']);'), f + ' effect keyed on ' + dep).toBe(true);
       }
     }
@@ -51,29 +51,32 @@ describe('display + read-aloud settings persist across sessions', () => {
       // A deliberate choice is stored; matching the OS clears the override so a
       // stale value can never mask a later system change.
       expect(app, f).toContain("if (stored === '1') return true;");
-      expect(app, f).toContain("_alloClearPref('allo_disable_animations')");
+      expect(app, f).toContain("safeRemoveItem('allo_disable_animations')");
       expect(app, f).toContain("window.matchMedia('(prefers-reduced-motion: reduce)').matches");
     }
   });
 
-  // Canvas localStorage is EPHEMERAL (confirmed 2026-08-05), so a preference
-  // written only there is gone next session — the whole point of routing
-  // through the durable device-storage bridge.
-  it('preferences are mirrored to the durable bridge and hydrated at boot', () => {
+  // Canvas localStorage is EPHEMERAL, but durability is already solved one
+  // layer down: utils_pure mirrors the WHOLE localStorage into the durable
+  // bridge (ls_prefs/all) and hydrates it back before first paint. These pins
+  // guard that mechanism, because every persisted setting depends on it.
+  it('the localStorage-to-bridge mirror that makes these durable still exists', () => {
+    const utils = readFileSync('utils_pure_source.jsx', 'utf-8');
+    expect(utils).toContain("ds.get('ls_prefs', 'all')");   // hydrate
+    expect(utils).toContain("ds.set('ls_prefs', 'all', dump)"); // snapshot
+    expect(utils).toContain('window.__alloPrefsHydrated');       // mount gate holds first paint
+    expect(utils).toContain("window.addEventListener('pagehide', _lsSnapshot)");
+    // Hydration must never clobber a value written earlier this session.
+    expect(utils).toContain('localStorage.getItem(k) === null');
+    // And it must be active on Canvas hosts.
+    expect(utils).toContain("host.includes('googleusercontent')");
+  });
+
+  it('does not add a second durable path that would race the existing one', () => {
     for (const f of COPIES) {
       const app = read(f);
-      expect(app, f).toContain("const ALLO_PREF_NS = 'prefs';");
-      // Writes hit BOTH stores: the synchronous copy React reads during render,
-      // and the durable copy that survives the session.
-      expect(app, f).toMatch(/_alloWritePref = \(key, value\) => \{\s*safeSetItem\(key, value\);/);
-      expect(app, f).toContain('ds.set(ALLO_PREF_NS, key, String(value))');
-      expect(app, f).toContain('_alloHydratePrefsFromDevice');
-      // Hydration refills the volatile copy so later synchronous readers agree.
-      expect(app, f).toContain('safeSetItem(r.key, String(r.value));');
-      // Storage must never block the UI.
-      expect(app, f).toContain('// Fire-and-forget: a preference must never block the UI on storage.');
-      // A value the user changed this session is never clobbered by late hydration.
-      expect(app, f).toContain('_alloPrefsTouchedRef');
+      expect(app, f).not.toContain('_alloHydratePrefsFromDevice');
+      expect(app, f).not.toContain('ALLO_PREF_NS');
     }
   });
 
@@ -95,10 +98,10 @@ describe('display + read-aloud settings persist across sessions', () => {
       ].map(at);
       expect(Math.min(...decls), f + ' all preference states found').toBeGreaterThan(0);
       const lastDecl = Math.max(...decls);
-      const firstEffect = at("_alloWritePref('allo_voice_speed'");
-      const hydration = at('_alloHydratePrefsFromDevice().then');
+      const firstEffect = at("safeSetItem('allo_voice_speed'");
+      const lastEffect = at("safeSetItem('allo_reading_ruler'");
       expect(firstEffect, f + ' persistence effects below declarations').toBeGreaterThan(lastDecl);
-      expect(hydration, f + ' hydration effect below declarations').toBeGreaterThan(lastDecl);
+      expect(lastEffect, f + ' last persistence effect below declarations').toBeGreaterThan(lastDecl);
     }
   });
 });
