@@ -1697,13 +1697,62 @@ under Part II; the definitional run-ins on pages 102-103 sit under "Qualified
 Tips". All are printed identically as bold run-ins at body size, so the
 distinction is meaning, not typography.
 
-### NEXT: page 105 onward
+### Session 45 (2026-08-05) - page 105 - tranche-45 - 13 blocks - VALIDATED (merged)
 
-Page 105: the Multiple Trades or Businesses Worksheet (full-page top, columns
-(a) name of business / (b) net profit / (c) other deductions / (d) subtract -
-likely a FOURTH shape), then the sole-proprietor example and the rest of the
-net income limitation discussion. **Do not re-author the two blocks carried
-into tranche 44.**
+The Multiple Trades or Businesses Worksheet, the sole-proprietor discussion of
+the net income limitation with its three worked examples, and Schedule 1-A
+line 10. `merge-plans t01..t45` -> 1,627 blocks, `ok: true`, **pages 1-105
+covered**, zero heading skips. Recall 0.9686; carried-block check against
+tranche 44: **24 shortfall instances = 19 carried + 5 furniture + 0
+unexplained**.
+
+**NOT a fourth worksheet shape - the third one, widened.** The prediction in
+the previous NEXT section was wrong. This is the shape tranche 44 settled,
+`[Row, (a)...]`, filled ACROSS labelled columns with one row per entity and
+rows lettered A-E; it just runs to column (j) instead of (d). **Three shapes
+still cover ten worksheets**, which is now good evidence the shape vocabulary
+has converged rather than that the next page will bring another.
+
+> **THE DISPLAY-FACE RULE GOES BLIND ON A PAGE WITH A FULL-PAGE TABLE.**
+> "Line 10." is a bold run-in like every other line instruction, and
+> `display` reported **false** for it. The rarity rule calls a face display
+> when it holds under 20% of a page's glyphs; here the bold face `g_d0_f4`
+> carries 102 items, **101 of which are the worksheet's column headers**, and
+> the single one below the worksheet is "Line 10.". A full-page table set in
+> the display face inflates that face past the threshold and the rule is dead
+> for the rest of the page. Settled by checking WHERE a face is used rather
+> than how often - `g_d0_f1` (the body face) has all 146 of its items below
+> the worksheet, `g_d0_f4` has 1. **Face distribution wants measuring per
+> REGION, not per page.** Same lesson as session 18, one level up: that fix
+> replaced a worthless name test with a frequency test, and the frequency test
+> has its own blind spot.
+
+**One deliberate departure from print order.** The worksheet is a full-page
+insert across the top of the page, but the prose beneath it continues the net
+income limitation argument sentence-for-sentence from page 104. The
+sole-proprietor paragraph is therefore authored BEFORE the worksheet: putting
+the insert first would drop a full-page table into the middle of one argument
+and nest a paragraph about sole proprietors inside a heading named for the
+worksheet, where nobody navigating by heading would look for it. The table
+keeps its own heading and caption, so the worksheet loses nothing.
+
+**Every cell in the grid is blank by design** - 5 rows x 10 entry columns.
+This is the exact shape that failed PDF/UA-1 clause 7.2 twenty-two times in
+the end-to-end run earlier the same day. Fixed in the renderer (empty cells
+now emit a zero-width space); the cells stay empty here, because that is what
+the printed worksheet is.
+
+The paragraph starting "For example, a sole proprietor..." was confirmed a NEW
+paragraph from geometry (first-line indent x=54 against a column left of x=42,
+plus a wider leading gap) rather than the tail of tranche 44's carried
+sentence - the two run together in the column-aware text and would otherwise
+have been guessed.
+
+### NEXT: page 106 onward
+
+Page 106 opens **Part III, No Tax on Overtime** - checked, not assumed: the
+page begins a new part, so nothing spans the 105-106 break and tranche 46 can
+open cleanly at "Part III". Two CAUTION boxes near the top.
 
 Then the rest of Schedule 1-A (106-110), Schedule 2 (111-114) and Schedule 3
 (115-117), each a top-level TOC entry opening at level 2. Then the back
