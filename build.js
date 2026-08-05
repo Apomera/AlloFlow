@@ -1050,6 +1050,7 @@ const MODULES = [
 // Plugin files loaded via the setTimeout plugin loader (not loadModule)
 // build.js updates their CDN hash in the pluginCdnBase variable
 const PLUGIN_FILES = [
+    'allo_provenance_module.js',
     'error_reporter_module.js',
     'sped_timelines_module.js',
     'standards_snapshots/ma-science-grade-5.js',

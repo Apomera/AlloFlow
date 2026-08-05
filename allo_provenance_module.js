@@ -339,8 +339,54 @@
     });
   }
 
+  // ── P1 (surface half): the student's Work Story panel. ───────────────────
+  // Rendered by the host beside the student's save/submit controls. Consent
+  // is DEFAULT-UNCHECKED and lives here, so the same component that shows the
+  // student what is recorded is the one that asks to include it. Ships inside
+  // this module (not a separate view module) so collection and surface can
+  // never be deployed apart.
+  function WorkStoryPanel(props) {
+    var React = GLOBAL.React;
+    if (!React || !React.createElement) return null;
+    var h = React.createElement;
+    var t = (props && props.t) || function (k, f) { return f || k; };
+    var model = (props && props.model) || null;
+    var open = React.useState(false);
+    var isOpen = open[0], setOpen = open[1];
+    if (!model) return null;
+    var included = !!(props && props.included);
+    var onToggle = (props && props.onToggle) || function () {};
+    var onClear = props && props.onClear;
+    return h('section', { className: 'rounded-3xl shadow-lg overflow-hidden shrink-0 mb-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700', 'aria-labelledby': 'allo-work-story-title' },
+      h('div', { className: 'p-3' },
+        h('div', { id: 'allo-work-story-title', className: 'text-sm font-bold flex items-center gap-2' }, '📖 ' + t('work_story.title', 'Your Work Story')),
+        h('p', { className: 'text-xs mt-1 opacity-80' }, model.summary),
+        h('label', { className: 'flex items-start gap-2 mt-2 text-xs cursor-pointer' },
+          h('input', { type: 'checkbox', checked: included, onChange: function (e) { onToggle(!!e.target.checked); }, className: 'mt-0.5' }),
+          h('span', null, model.consentPrompt)
+        ),
+        h('button', {
+          type: 'button',
+          onClick: function () { setOpen(!isOpen); },
+          'aria-expanded': isOpen ? 'true' : 'false',
+          className: 'mt-2 text-xs underline'
+        }, isOpen ? t('work_story.hide', 'Hide the details') : t('work_story.show', 'See everything in it')),
+        isOpen ? h('div', { className: 'mt-2 text-xs' },
+          h('ol', { className: 'list-decimal ml-4 space-y-0.5' }, model.lines.map(function (line, i) { return h('li', { key: i }, line); })),
+          h('p', { className: 'mt-2 font-semibold' }, t('work_story.kept', 'What this keeps:')),
+          h('ul', { className: 'list-disc ml-4' }, model.collected.map(function (c) { return h('li', { key: c.type }, c.what); })),
+          h('p', { className: 'mt-2 font-semibold' }, t('work_story.never', 'What it never keeps:')),
+          h('ul', { className: 'list-disc ml-4' }, model.neverCollected.map(function (n, i) { return h('li', { key: i }, n); })),
+          onClear ? h('button', { type: 'button', onClick: onClear, className: 'mt-2 text-xs underline' }, t('work_story.clear', 'Delete what has been recorded so far')) : null
+        ) : null
+      )
+    );
+  }
+
   GLOBAL.AlloModules = GLOBAL.AlloModules || {};
+  GLOBAL.AlloModules.WorkStoryPanel = WorkStoryPanel;
   GLOBAL.AlloModules.Provenance = {
+    WorkStoryPanel: WorkStoryPanel,
     buildProcessPanelModel: buildProcessPanelModel,
     buildWorkStoryModel: buildWorkStoryModel,
     describeCollection: describeCollection,

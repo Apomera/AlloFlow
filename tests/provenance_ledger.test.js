@@ -214,10 +214,42 @@ describe('constraints in the module text itself', () => {
       expect(before, 'un-negated tamper-proof claim at index ' + m.index).toMatch(/not |never claimed /i);
     }
   });
-  it('is inert: nothing in the app references the module yet (P1 gates activation)', () => {
+  // P1 flipped this from "no references anywhere" to the wiring contract.
+  // The point is unchanged: collection may not exist without the student
+  // surface and consent, so these pins fail if any half is removed.
+  it('P1 wiring: collection, surface, and consent all present in both ANTI copies', () => {
     for (const f of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt']) {
-      expect(readFileSync(f, 'utf-8')).not.toContain('allo_provenance_module');
+      const app = readFileSync(f, 'utf-8');
+      // loader + module reachable
+      expect(app, f).toContain("loadModule('Provenance', 'https://alloflow-cdn.pages.dev/allo_provenance_module.js?v=prov-p1')");
+      // collection hooks
+      expect(app, f).toContain('_alloNoteStudentText(resourceId, questionKey, value);');
+      expect(app, f).toContain('_alloWrapCallGeminiForProvenance(api.callGemini)');
+      expect(app, f).toContain('_alloWrapCallGeminiForProvenance(localCallGemini)');
+      // student-mode only
+      expect(app, f).toMatch(/_alloEnsureLedger = \(\) => \{\s*if \(!isStudentLinkMode\) return null;/);
+      // THE SURFACE — must exist wherever collection does
+      expect(app, f).toContain('window.AlloModules.WorkStoryPanel');
+      expect(app, f).toContain('onClear: _alloClearWorkStory');
+      // consent gate on transmission, default unchecked
+      expect(app, f).toContain('const [workStoryIncluded, setWorkStoryIncluded] = useState(false);');
+      expect(app, f).toMatch(/if \(workStoryIncluded && _alloLedgerRef\.current\) \{/);
+      // and the ledger is attached ONLY inside that consent branch
+      const embedIdx = app.indexOf('_P.attachProvenance(submissionData, _exported)');
+      const consentIdx = app.indexOf('if (workStoryIncluded && _alloLedgerRef.current) {');
+      expect(embedIdx, f).toBeGreaterThan(consentIdx);
     }
+  });
+  it('the AI wrapper is transparent — same call through, properties preserved', () => {
+    const app = readFileSync('AlloFlowANTI.txt', 'utf-8');
+    const w = app.slice(app.indexOf('function _alloWrapCallGeminiForProvenance'), app.indexOf('function _isQrStudentAiDisabled'));
+    expect(w).toContain('return fn.apply(this, args);');       // never alters the call
+    expect(w).toContain('_alloflowBackend');                    // local-backend detection survives
+    expect(w).toContain("if (typeof fn !== 'function' || fn._alloProvWrapped) return fn;"); // no double-wrap
+    expect(w).toMatch(/try \{ if \(window\.__alloNoteAiUse\)/); // recording can never throw into the call
+  });
+  it('the module ships in the deploy file list', () => {
+    expect(readFileSync('build.js', 'utf-8')).toContain("'allo_provenance_module.js',");
   });
   it('attach is additive and round-trips through JSON', async () => {
     const led = P.createLedger({ now: mkClock().now });

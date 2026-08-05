@@ -3250,6 +3250,24 @@ function _alloShouldSuppressLearnerDeviceStorage(isTeacher, showingStudentEntry,
         || Boolean(showingStudentEntry)
         || (!isTeacher && (Boolean(sessionCode) || _alloMbBridgeActive()));
 }
+// Provenance observation: the module-level callGemini binding is reassigned
+// at three sites, so a one-shot window monkeypatch would be clobbered. Wrapping
+// the assigned VALUE survives every reassignment. The wrapper is transparent —
+// same arguments, same promise, properties preserved — and records only when a
+// student ledger is active. It must never alter or delay an AI call.
+function _alloWrapCallGeminiForProvenance(fn) {
+    if (typeof fn !== 'function' || fn._alloProvWrapped) return fn;
+    const wrapped = function (...args) {
+        try { if (window.__alloNoteAiUse) window.__alloNoteAiUse('ai-help'); } catch (_) {}
+        return fn.apply(this, args);
+    };
+    try {
+        Object.keys(fn).forEach((k) => { wrapped[k] = fn[k]; });
+        if (fn._alloflowBackend !== undefined) wrapped._alloflowBackend = fn._alloflowBackend;
+    } catch (_) {}
+    wrapped._alloProvWrapped = true;
+    return wrapped;
+}
 function _isQrStudentAiDisabled() {
     if (typeof window === 'undefined') return false;
     try {
@@ -3497,7 +3515,7 @@ function _installLocalTextBridge(aiInstance, aiConfig) {
         }
     };
     localCallGemini._alloflowBackend = backend;
-    callGemini = localCallGemini;
+    callGemini = _alloWrapCallGeminiForProvenance(localCallGemini);
     if (typeof window !== 'undefined') {
         window.callGemini = localCallGemini;
         window.__alloActiveAIBackend = {
@@ -3545,7 +3563,7 @@ function _upgradeGeminiAPI() {
         fetchWithExponentialBackoff, optimizeImage, warnLog, debugLog,
         getAbortSignal: () => (typeof window !== 'undefined' ? window.__alloPdfAbortSignal : null)
     });
-    callGemini = api.callGemini;
+    callGemini = _alloWrapCallGeminiForProvenance(api.callGemini);
     callGeminiVision = api.callGeminiVision;
     callGeminiImageEdit = api.callGeminiImageEdit;
     if (typeof window !== 'undefined') {
@@ -11235,7 +11253,69 @@ Return ONLY JSON in this shape:
       return () => clearTimeout(handler);
   }, [studentResponses, isTeacherMode, showStudentEntry]);
   const [generatedContent, setGeneratedContent] = useState(null);
+  // ── Process Provenance P1 (docs/PROCESS_PROVENANCE_DESIGN_2026-08-04.md) ──
+  // The ledger records ONLY in student-link mode, and NOTHING is transmitted
+  // unless the student ticks consent in the Work Story panel at submit time.
+  // Hard constraint 2 (student owns the log) is why the panel, the consent,
+  // and these hooks all land together.
+  const _alloLedgerRef = useRef(null);
+  const [workStoryIncluded, setWorkStoryIncluded] = useState(false);
+  const [workStoryModel, setWorkStoryModel] = useState(null);
+  const _alloProvenanceApi = () => (window.AlloModules && window.AlloModules.Provenance) || null;
+  const _alloEnsureLedger = () => {
+      if (!isStudentLinkMode) return null;
+      if (_alloLedgerRef.current) return _alloLedgerRef.current;
+      const P = _alloProvenanceApi();
+      if (!P || typeof P.createLedger !== 'function') {
+          try { if (window.__alloLazyProvenance) window.__alloLazyProvenance(); } catch (_) {}
+          return null;
+      }
+      const led = P.createLedger({});
+      _alloLedgerRef.current = led;
+      try { led.append('session', { action: 'start', wallClock: new Date().toISOString(), policy: { studentAi: (window.__alloQrStudentMode && window.__alloQrStudentMode.aiPolicy) || 'off' } }); } catch (_) {}
+      return led;
+  };
+  // Paste inference: no onPaste handler exists anywhere in the app, so a jump
+  // larger than a plausible keystroke burst is recorded as a paste. Sizes and
+  // timing only — never the text (design §5).
+  const _alloLastLenRef = useRef({});
+  const _alloNoteStudentText = (resourceId, questionKey, value) => {
+      const led = _alloEnsureLedger();
+      if (!led) return;
+      const key = String(resourceId || '') + '::' + String(questionKey || '');
+      const len = String(value == null ? '' : value).length;
+      const prevLen = _alloLastLenRef.current[key] || 0;
+      _alloLastLenRef.current[key] = len;
+      const delta = len - prevLen;
+      try {
+          if (delta >= 40) led.append('paste', { field: key, chars: delta, sourceHint: 'external' });
+          else led.noteEdit(key, delta, len);
+      } catch (_) {}
+  };
+  useEffect(() => { window.__alloNoteAiUse = (s, lv) => _alloNoteAiUse(s, lv); return () => { try { delete window.__alloNoteAiUse; } catch (_) { window.__alloNoteAiUse = null; } }; }, [isStudentLinkMode]);
+  const _alloNoteAiUse = (support, promptLevel) => {
+      const led = _alloLedgerRef.current;
+      if (!led) return;
+      try { led.append('ai', { support: String(support || 'ai'), promptLevel: promptLevel || 'none' }); } catch (_) {}
+  };
+  const _alloRefreshWorkStory = () => {
+      const led = _alloLedgerRef.current;
+      const P = _alloProvenanceApi();
+      if (!led || !P) return Promise.resolve(null);
+      return led.flushEdits().then(() => led.export()).then((exported) => {
+          setWorkStoryModel(P.buildWorkStoryModel(exported));
+          return exported;
+      }).catch(() => null);
+  };
+  const _alloClearWorkStory = () => {
+      _alloLedgerRef.current = null;
+      _alloLastLenRef.current = {};
+      setWorkStoryModel(null);
+      setWorkStoryIncluded(false);
+      addToast(t('work_story.cleared') || 'Your Work Story was deleted from this device.', 'info');
+  };
   const handleStudentInput = (resourceId, questionKey, value) => {
+      _alloNoteStudentText(resourceId, questionKey, value);
       setStudentResponses(prev => ({
           ...prev,
           [resourceId]: {
@@ -12123,6 +12203,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // requests off cold boot. The embedded loadModule(...) call still matches
     // build.js's URL rewriter regex, so hashes auto-update on deploy.
     window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=ef3f98784'); }; })();
+    // Process Provenance (Work Story). Stable label pin, like the storage
+    // module: this file is not in build.js MODULES, so a hash pin would freeze.
+    window.__alloLazyProvenance = (function() { var L=false; return function() { if(L)return; L=true; loadModule('Provenance', 'https://alloflow-cdn.pages.dev/allo_provenance_module.js?v=prov-p1'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
     loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=ef3f98784');
     // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
@@ -16688,7 +16771,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const handleSetIsJoinPopoverOpenToFalse = React.useCallback(() => setIsJoinPopoverOpen(false), []);
   const handleSetIsTranslateModalOpenToTrue = React.useCallback(() => setIsTranslateModalOpen(true), []);
   const handleSetShowExportMenuToFalse = React.useCallback(() => setShowExportMenu(false), []);
-  const handleSetShowSubmitModalToTrue = React.useCallback(() => setShowSubmitModal(true), []);
+  const handleSetShowSubmitModalToTrue = React.useCallback(() => { try { _alloRefreshWorkStory(); } catch (_) {} setShowSubmitModal(true); }, [isStudentLinkMode]);
   const handleSetShowInfoModalToFalse = React.useCallback(() => setShowInfoModal(false), []);
   const handleSetInfoModalTabToAbout = React.useCallback(() => setInfoModalTab('about'), []);
   const handleSetInfoModalTabToFeatures = React.useCallback(() => setInfoModalTab('features'), []);
@@ -32892,6 +32975,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           responses: studentResponses,
           gameCompletions: gameCompletions,
       };
+      // Work Story rides ONLY with live consent (constraint 2). No tick, no
+      // ledger in the payload — and the teacher panel simply shows nothing.
+      if (workStoryIncluded && _alloLedgerRef.current) {
+          try {
+              const _P = _alloProvenanceApi();
+              const _exported = await _alloRefreshWorkStory();
+              if (_P && _exported) _P.attachProvenance(submissionData, _exported);
+          } catch (_) {}
+      }
       const safeName = submissionData.studentName.replace(/[^a-z0-9]/gi, '_');
       const dateStr = new Date().toISOString().split('T')[0];
       const filename = `${safeName}_${t('export.filenames.assignment')}_${dateStr}.json`;
@@ -43179,7 +43271,11 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     </div>
                 </div>
             )}
-            {!isTeacherMode && <StudentSaveAdventurePanel activeSessionCode={activeSessionCode} globalPoints={globalPoints} handleResumeAdventure={handleResumeAdventure} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleStartAdventure={handleStartAdventure} hasSavedAdventure={hasSavedAdventure} initiateSaveStudentProject={initiateSaveStudentProject} isResumingAdventure={isResumingAdventure} isSaveActionPulsing={isSaveActionPulsing} projectFileInputRef={projectFileInputRef} sessionData={sessionData} studentProjectSettings={studentProjectSettings} t={t} />}
+            {!isTeacherMode && isStudentLinkMode && workStoryModel && window.AlloModules && window.AlloModules.WorkStoryPanel && React.createElement(window.AlloModules.WorkStoryPanel, {
+              t, model: workStoryModel, included: workStoryIncluded,
+              onToggle: setWorkStoryIncluded, onClear: _alloClearWorkStory
+          })}
+          {!isTeacherMode && <StudentSaveAdventurePanel activeSessionCode={activeSessionCode} globalPoints={globalPoints} handleResumeAdventure={handleResumeAdventure} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleStartAdventure={handleStartAdventure} hasSavedAdventure={hasSavedAdventure} initiateSaveStudentProject={initiateSaveStudentProject} isResumingAdventure={isResumingAdventure} isSaveActionPulsing={isSaveActionPulsing} projectFileInputRef={projectFileInputRef} sessionData={sessionData} studentProjectSettings={studentProjectSettings} t={t} />}
             {isTeacherMode && activeSidebarTab === 'history' && !isIndependentMode && !isParentMode && <TeacherHistoryTab handleApplyRosterGroup={handleApplyRosterGroup} hasSourceOrAnalysis={hasSourceOrAnalysis} rosterKey={rosterKey} setIsRosterKeyOpen={setIsRosterKeyOpen} t={t} />}
             {(!isTeacherMode || activeSidebarTab === 'history') && <HistoryPanel activeSidebarTab={activeSidebarTab} activeStation={activeStation} activeUnitId={activeUnitId} addToast={addToast} cloudSyncStatus={cloudSyncStatus} editTitle={editTitle} editingId={editingId} generatedContent={generatedContent} getDefaultTitle={getDefaultTitle} getFilteredHistory={getFilteredHistory} getIconForType={getIconForType} handleCancelEdit={handleCancelEdit} handleClearHistory={handleClearHistory} handleCreateUnit={handleCreateUnit} handleDeleteHistoryItem={handleDeleteHistoryItem} handleDeleteUnit={handleDeleteUnit} handleDragEnd={handleDragEnd} handleDragEnter={handleDragEnter} handleDragStart={handleDragStart} handleLoadProject={handleLoadProject} handleMoveToUnit={handleMoveToUnit} handleRestoreView={handleRestoreView} handleSaveEdit={handleSaveEdit} handleSetIsProjectSettingsOpenToTrue={handleSetIsProjectSettingsOpenToTrue} handleSetIsUnitModalOpenToFalse={handleSetIsUnitModalOpenToFalse} handleSetIsUnitModalOpenToTrue={handleSetIsUnitModalOpenToTrue} handleSetMovingItemIdToNull={handleSetMovingItemIdToNull} handleStartEdit={handleStartEdit} handleToggleIsHistoryMaximized={handleToggleIsHistoryMaximized} history={history} initiateSaveStudentProject={initiateSaveStudentProject} initiateSaveTeacherProject={initiateSaveTeacherProject} isCloudSyncEnabled={isCloudSyncEnabled} isCanvas={isCanvas} canvasRecoverySaveStatus={canvasRecoverySaveStatus} canvasRecoverySnapshotCount={canvasRecoveryStore.snapshots.length} onOpenDeviceRecovery={openCanvasRecoveryManager} isHistoryMaximized={isHistoryMaximized} isIndependentMode={isIndependentMode} isParentMode={isParentMode} isSaveActionPulsing={isSaveActionPulsing} isStorageDisabled={isStorageDisabled} isSyncMode={isSyncMode} isTeacherMode={isTeacherMode} isUnitModalOpen={isUnitModalOpen} lastSaved={lastSaved} moveItem={moveItem} movingItemId={movingItemId} newUnitName={newUnitName} pendingSync={pendingSync} projectFileInputRef={projectFileInputRef} sanitizeString={sanitizeString} activeSelStation={activeSelStation} setActiveSelStation={setActiveSelStation} setActiveStation={setActiveStation} setActiveUnitId={setActiveUnitId} setEditTitle={setEditTitle} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setMovingItemId={setMovingItemId} setNewUnitName={setNewUnitName} setSelHubTab={setSelHubTab} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTab={setStemLabTab} t={t} onVisualizeUnit={openThroughlineForUnit} units={units} />}
         </aside>
