@@ -158,10 +158,30 @@ function collectProducers(srcRaw, file) {
     return producers;
   }
 
-  // Walk tokens looking for: window . AlloModules . NAME = <RHS>
+  // Walk tokens looking for: <global> . AlloModules . NAME = <RHS>
+  //
+  // The base used to have to be the literal identifier `window`, which made
+  // the check blind to the UMD idiom:
+  //
+  //   (function (root, factory) {
+  //       root.AlloModules = root.AlloModules || {};
+  //       root.AlloModules.QuestionBoardContract = factory();
+  //   })(typeof window !== 'undefined' ? window : globalThis, ...);
+  //
+  // `root` IS window there, and the module registers correctly at runtime -
+  // but the verifier saw no producer and failed the deploy with three
+  // "MISSING PRODUCER" violations against modules that were present, correct
+  // and already committed (question_board_{contract,view,transport}, 2026-08-05).
+  // That is a false alarm blocking a real deploy, which is the worst way for a
+  // gate to be wrong.
+  //
+  // Any identifier is accepted as the base now. `AlloModules` is a distinctive
+  // namespace - an assignment INTO `.AlloModules.<Name>` is a registration
+  // however the global is spelled (window, globalThis, self, root, g). Reads
+  // are still not matched, because the `=` at t[i+5] is required.
   for (let i = 0; i + 5 < tokens.length; i++) {
     const t = tokens;
-    if (t[i].type.label === 'name' && srcRaw.substring(t[i].start, t[i].end) === 'window' &&
+    if (t[i].type.label === 'name' &&
         t[i+1].type.label === '.' &&
         t[i+2].type.label === 'name' && srcRaw.substring(t[i+2].start, t[i+2].end) === 'AlloModules' &&
         t[i+3].type.label === '.' &&
