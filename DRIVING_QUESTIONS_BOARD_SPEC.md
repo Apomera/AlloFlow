@@ -276,21 +276,72 @@ may group and route, not rewrite.
 
 ---
 
-## 8. Decisions needed from Aaron before build
+## 8. Decisions — resolved by inheriting existing infra
 
-1. **Anonymity model.** Recommended: pseudonymous to peers, resolvable to the teacher.
-   Students will not post the question they are embarrassed by if their name is on it,
-   and that is usually the valuable one. But you own this call as a school psych. Note
-   the primitive is already pseudonymous by construction, so *fully* teacher-resolvable
-   identity would be the thing requiring new work, not anonymity.
-2. **Default reveal policy.** `teacher_review` is the safer default and already the
-   server default. Confirm you want it defaulted on for this type.
-3. **Data posture.** Student-authored free text lands in a Drive file under the
-   teacher's own Google account. That is a materially *better* posture than a shared
-   Firebase project, but it is still student-generated content at rest and should be
-   ruled on explicitly rather than inherited.
-4. **Retention.** What happens to a board after the unit — auto-delete at some horizon,
-   or keep as the teacher's record?
+An earlier draft of this section posed four "decisions." Aaron's review collapsed three
+of them into *inherit what already exists*, and corrected the fourth on a factual error.
+Recorded here because the corrections are the design.
+
+### 8.1 Identity — inherit the codename system. Not a decision, and not anonymous.
+
+The board should carry the **same identity model as every other student surface**:
+codename to join, nickname displayed, teacher able to see who wrote what — exactly what
+live sessions already do when a teacher reviews student work (`studentResponses` rolls
+up per student with answered/total progress, `AlloFlowANTI.txt:4244-4252`).
+
+The earlier draft argued for pseudonymity-to-peers on the grounds that students suppress
+the questions they are embarrassed by. That reasoning is **wrong for this artifact**. A
+Driving Questions Board in project-based learning is a *class-owned* document: students
+revisit "my question," claim it when it gets answered, and learn that asking publicly is
+a normal academic act. Anonymity undercuts the pedagogy it was supposed to protect.
+
+The safeguarding concern that motivated pseudonymity (a disclosure arriving inside a
+question) is already handled by teacher-resolvable identity, which the codename system
+provides by construction. Nothing to build, nothing to decide.
+
+### 8.2 Moderation — auto-publish with an AI pre-screen, not a review queue.
+
+"Ugly post" in the earlier draft meant school-inappropriate content. The
+teacher-review-queue default it recommended would impose real workload (4 boards × ~25
+students × many questions) and kill the liveness that made Jamboard work.
+
+Better, and the primitives exist: **auto-publish, screened on the way in, with teacher
+takedown after.** `ai_backend_module.js:1424-1428` already configures Gemini
+`safetySettings` across `HARM_CATEGORY_HARASSMENT`, `HATE_SPEECH`,
+`SEXUALLY_EXPLICIT` and `DANGEROUS_CONTENT`.
+
+**One real caveat for build time:** those thresholds are `BLOCK_ONLY_HIGH` and they
+govern *model output*, which is a different task from judging whether *student input* is
+appropriate for a classroom board. A borderline-but-unkind post about a classmate is not
+`HARM_CATEGORY_HIGH` and would sail through. So the screen needs its own small
+classifier prompt and threshold rather than leaning on the generation safety settings.
+Keep `revealPolicy: 'teacher_review'` available as the per-board escape hatch, plus the
+per-student hold flag, so a class that abuses auto-publish can be tightened without
+punishing everyone.
+
+### 8.3 Data posture — CORRECTED. Canvas provisions the Firebase instance.
+
+The earlier draft claimed student text on the Firebase path would land in "AlloFlow's
+Firestore project," making AlloFlow a vendor holding student data. **That is wrong.**
+Gemini Canvas injects `__firebase_config` and `__app_id` as globals
+(`AlloFlowANTI.txt:3163-3170`); the Firestore instance is Canvas-provisioned per app,
+not an AlloFlow-owned project. Prismflow was extricated precisely to keep it that way.
+
+So there is no AlloFlow-held-student-data problem to rule on. The two transports simply
+sit in different tenants — Canvas-provisioned Firestore, or the teacher's own Drive via
+the mailbox — and both are defensible. Document which holds what; do not gate the build
+on it.
+
+### 8.4 Retention — reuse student-work persistence, do not invent a board policy.
+
+Boards should ride the **existing student work / project persistence** rather than
+carrying a bespoke retention rule: student work already persists (`storageDB.set(
+'allo_student_work', ...)`, `AlloFlowANTI.txt:11250`) and already surfaces to the
+teacher device through the live session feed. A board is student work; treat it as such,
+and it inherits whatever retention, export and sharing behaviour that path already has.
+
+`expiresAt` still governs when a board stops accepting new posts. That is a board
+*state* question, not a data-retention policy.
 
 ---
 
@@ -351,9 +402,10 @@ an acceptable difference.
    unreadable by participants, item writes must be attributable and capped, and status
    transitions must be teacher-only. Until those exist, the Firebase path should be
    treated as unsupported for boards, not as a working alternative.
-4. **Prefer mailbox as the default for this feature** — §8.3 (data posture) points the
-   same direction independently, so the transport with the stronger privacy story is
-   also the one with the working enforcement.
+4. **Prefer mailbox as the default for this feature**, on enforcement grounds alone.
+   (An earlier draft also argued this on privacy grounds; that argument is withdrawn —
+   see §8.3, the Firebase instance is Canvas-provisioned, not AlloFlow-owned. The
+   enforcement gap is independent of that correction and still stands.)
 
 Latency is not a parity concern here. The mailbox's version-delta poll pump plus RTC
 nudge is invisible for async posting; it would only matter for continuous presence,
