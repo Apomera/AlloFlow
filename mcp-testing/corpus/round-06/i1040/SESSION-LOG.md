@@ -1028,10 +1028,48 @@ needs - and another session had work in flight. The structure was confirmed
 from the vendored layout-only render instead (rules and cell boxes are exact
 even where the glyphs are tofu) plus the per-item geometry, which was enough.
 
-### NEXT: pages 81-87, then the schedules
+### Session 23 (2026-08-04) - pages 81-82 - tranche-23 - 32 blocks - VALIDATED (merged)
 
-Pages 81-87: General Information, How To Get Tax Help, and Refund Information -
-all top-level TOC entries, so all level 2. Ordinary prose.
+The opening of General Information. `merge-plans t01..t23` -> 1,191 blocks,
+`ok: true`, **pages 1-82 covered**, zero heading skips. Recall **0.9942**, the
+highest of any multi-page tranche so far: eight instances of page furniture,
+one "of" from "Page N of 126", and `adprovide`/`vance` - the word "advance"
+split across a column break with the full-width IRS Mission box landing
+between its halves.
+
+**Link targets matter more here than anywhere so far.** Page 82 alone carries
+20 Link annotations, and several point nowhere near their visible text:
+`ftc.gov/complaint` goes to reportfraud.ftc.gov, `www.ftc.gov/idtheft` goes to
+a consumer.ftc.gov feature page, `IRS.gov/GetAnIPPIN` goes to irs.gov/ippin.
+**Three have no visible URL at all** and reading the text would have missed
+them entirely: "Tax Withholding Estimator" (irs.gov/w4app), "IRS Impersonation
+Scam Reporting" (tigta.gov) and "FTC Complaint Assistant"
+(reportfraud.ftc.gov). One is a `mailto:`. Every href came from matching the
+annotation rect against the text items inside it.
+
+**A sentence-long bold run-in promoted to a heading.** "Protect yourself from
+suspicious emails, texts, and social media messages, phishing schemes, and
+phone scams." is set in the same bold face as "The IRS Mission." and heads
+seven paragraphs. It is an imperative sentence rather than the noun phrase
+these leads usually are, which makes for a long heading, but leaving it inside
+a paragraph would leave that whole discussion unnavigable.
+
+**The marker-leakage check earned its keep again.** The first draft's review
+note used the generator's own emphasis markers as quotation marks, exactly the
+slip session 5 made. Review notes do not pass through `rich()`, so the markers
+would have shipped literally. Normalised to curly quotes. Worth remembering:
+the leakage check must cover `review_notes`, not just blocks.
+
+### NEXT: pages 83-87, then the schedules
+
+Page 83 finishes the records-retention paragraph (authored whole at page 82 -
+do NOT re-author it) and opens Amended Return, Need a Copy of Your Tax Return
+Information?, and Past Due Returns, then "How To Get Tax Help" begins halfway
+down. That is a top-level TOC entry, so level 2, despite being printed at the
+same 14pt as the level-3 heads around it - the same type-size-versus-TOC
+conflict that "Assemble Your Return" posed in session 20. Pages 84-85 continue
+it, page 86 adds Interest and Penalties, and page 87 is Refund Information,
+also a top-level TOC entry.
 
 Then 88-117, the instructions for Schedules 1, 1-A, 2 and 3, which are the
 largest remaining block. Then the back matter: Tax Topics (118), the
