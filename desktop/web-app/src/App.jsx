@@ -1331,6 +1331,9 @@ var SESSION_READS_PER_MIN = 1800;
 var MAX_PATCH_FIELDS = 60;
 var MAX_JSON_DEPTH = 12;
 var MAX_ACTIVITY_PARTICIPANTS = 250;
+var MAX_BOARD_ITEM_CHARS = 200;            // one question on a board
+var MAX_BOARD_ITEMS_PER_STUDENT = 10;      // hard ceiling; per-board config clamps under it
+var MAX_BOARD_ITEMS = 500;                 // absolute board ceiling; byte guard still applies
 var MAX_ASSIGNMENT_ACTIVITIES = 8;
 var ASYNC_ACTIVITY_CACHE_SEC = 5 * 60;
 var FOLDER_NAME = 'AlloFlow Class Mailbox';
@@ -2235,6 +2238,31 @@ function normalizeAssignmentActivityConfig(value, expiresAt) {
       expiresAt: String(expiresAt || source.expiresAt || '')
     };
   }
+  if (source.type === 'question_board') {
+    // Driving Questions Board (DRIVING_QUESTIONS_BOARD_SPEC.md §4). Shares the
+    // pseudonymous response map and Drive-backed lifecycle with word_cloud, but
+    // a student posts MANY questions across a unit rather than one term, so the
+    // row holds an items array instead of a single text field (spec §2.1).
+    var boardReveal = source.revealPolicy === 'teacher_review' ? 'teacher_review' : 'auto_publish';
+    var perStudent = parseInt(source.itemsPerStudent, 10);
+    if (!isFinite(perStudent)) perStudent = 5;
+    perStudent = Math.max(1, Math.min(MAX_BOARD_ITEMS_PER_STUDENT, perStudent));
+    var boardCap = parseInt(source.boardCap, 10);
+    if (!isFinite(boardCap)) boardCap = 400;
+    boardCap = Math.max(1, Math.min(MAX_BOARD_ITEMS, boardCap));
+    return {
+      v: 1,
+      activityId: activityId,
+      type: 'question_board',
+      delivery: 'shared_async',
+      prompt: prompt,
+      revealPolicy: boardReveal,
+      minParticipants: minParticipants,
+      itemsPerStudent: perStudent,
+      boardCap: boardCap,
+      expiresAt: String(expiresAt || source.expiresAt || '')
+    };
+  }
   if (source.type !== 'word_cloud') return null;
   var revealPolicy = source.revealPolicy === 'auto_publish' ? 'auto_publish' : 'teacher_review';
   return {
@@ -2384,6 +2412,38 @@ function normalizeAssignmentWordCloudTerm(value) {
   return term;
 }
 
+function normalizeAssignmentBoardItemText(value) {
+  return String(value == null ? '' : value)
+    .replace(/[\\u0000-\\u001f\\u007f]/g, ' ')
+    .replace(/\\s+/g, ' ')
+    .trim()
+    .slice(0, MAX_BOARD_ITEM_CHARS);
+}
+
+// Board visibility. This is the server-side half of the parity contract in
+// question_board_contract_module.js: Firestore will reach the same answer by
+// gating whole documents, this reaches it by filtering before sending. The
+// two must agree item-for-item (spec §10.2), which the shared conformance
+// suite in tests/question_board_mailbox_adapter.test.js checks.
+function visibleBoardItemsFor(state, uid, isHost) {
+  var responses = state.responses && typeof state.responses === 'object' ? state.responses : {};
+  var authors = Object.keys(responses).filter(function(k) {
+    var row = responses[k];
+    return row && row.items && row.items.length;
+  });
+  var floorMet = authors.length >= (parseInt(state.config.minParticipants, 10) || 3);
+  var outItems = [];
+  authors.forEach(function(author) {
+    (responses[author].items || []).forEach(function(item) {
+      if (isHost) { outItems.push(item); return; }
+      if (author === uid) { outItems.push(item); return; }
+      if (!floorMet) return;
+      if (item.status === 'approved') outItems.push(item);
+    });
+  });
+  return outItems;
+}
+
 function assignmentTermNeedsReview(term) {
   var lower = String(term || '').toLowerCase();
   // This is intentionally a narrow automatic gate, not a claim of complete
@@ -2395,6 +2455,31 @@ function assignmentTermNeedsReview(term) {
   var blocked = ['fuck', 'shit', 'bitch', 'cunt', 'nigger', 'faggot'];
   for (var i = 0; i < blocked.length; i++) if (compact.indexOf(blocked[i]) !== -1) return true;
   return false;
+}
+
+// Board summary is per-actor, because what a participant may see depends on
+// who they are. word_cloud/rating summaries are actor-independent, so they
+// keep the existing shared path.
+function buildBoardSummaryFor(state, uid, isHost) {
+  var responses = state.responses && typeof state.responses === 'object' ? state.responses : {};
+  var authors = Object.keys(responses).filter(function(k) {
+    var row = responses[k];
+    return row && row.items && row.items.length;
+  });
+  return {
+    ok: true,
+    activityId: state.activityId,
+    type: 'question_board',
+    prompt: state.config.prompt,
+    revealPolicy: state.config.revealPolicy,
+    minParticipants: state.config.minParticipants,
+    itemsPerStudent: state.config.itemsPerStudent,
+    participantCount: authors.length,
+    revealed: authors.length >= (parseInt(state.config.minParticipants, 10) || 3),
+    version: parseInt(state.version, 10) || 0,
+    updatedAt: parseInt(state.updatedAt, 10) || 0,
+    items: visibleBoardItemsFor(state, uid, isHost)
+  };
 }
 
 function buildAssignmentActivityPublicSummary(state) {
@@ -2537,7 +2622,11 @@ function upsertAssignmentActivity(cache, p, admin) {
   }
   var term = '';
   var ratingValue = null;
-  if (context.config.type === 'rating') {
+  var boardText = '';
+  if (context.config.type === 'question_board') {
+    boardText = normalizeAssignmentBoardItemText(p.term);
+    if (!boardText) return out({ ok: false, e: 'bad-term' });
+  } else if (context.config.type === 'rating') {
     ratingValue = p.value;
     if (typeof ratingValue !== 'number' || !isFinite(ratingValue) || Math.floor(ratingValue) !== ratingValue
         || ratingValue < context.config.minValue || ratingValue > context.config.maxValue) {
@@ -2556,7 +2645,36 @@ function upsertAssignmentActivity(cache, p, admin) {
       return out({ ok: false, e: 'activity-full' });
     }
     var previous = responses[actor.uid];
-    if (context.config.type === 'rating') {
+    if (context.config.type === 'question_board') {
+      // A board row ACCUMULATES items; it does not replace like word_cloud.
+      var row = previous && previous.items ? previous : { items: [] };
+      if (row.items.length >= context.config.itemsPerStudent) {
+        return out({ ok: false, e: 'item-cap' });
+      }
+      var totalItems = 0;
+      Object.keys(responses).forEach(function(k) {
+        totalItems += (responses[k] && responses[k].items ? responses[k].items.length : 0);
+      });
+      if (totalItems >= context.config.boardCap) return out({ ok: false, e: 'board-full' });
+      var itemStatus = context.config.revealPolicy === 'auto_publish'
+        && !assignmentTermNeedsReview(boardText) ? 'approved' : 'pending';
+      row.items.push({
+        id: 'Q-' + Date.now().toString(36) + '-' + row.items.length,
+        text: boardText,
+        status: itemStatus,
+        answered: false,
+        createdAt: Date.now()
+      });
+      row.updatedAt = Date.now();
+      responses[actor.uid] = row;
+      // Byte guard BEFORE the write: the 85KB ceiling is the dominant design
+      // constraint (spec §3) and a board must refuse rather than truncate.
+      var probe = JSON.stringify(responses);
+      if (probe.length > MAX_DOC_CHARS) {
+        row.items.pop();
+        return out({ ok: false, e: 'board-bytes' });
+      }
+    } else if (context.config.type === 'rating') {
       // One map row per pseudonymous actor. A retry or deliberate change
       // replaces that row rather than inflating the aggregate.
       responses[actor.uid] = {
@@ -2609,9 +2727,46 @@ function getAssignmentActivityAdmin(cache, p) {
   return out(summary);
 }
 
+// Per-ITEM moderation for boards, and the teacher-only 'answered' mark that a
+// sticky note cannot do (spec §2.3). Host-only by construction: this is only
+// reachable from the admin-authenticated moderate endpoint.
+function moderateAssignmentBoardItem(cache, p, context) {
+  var uid = String(p.uid || '');
+  var itemId = String(p.itemId || '');
+  var status = String(p.status || '');
+  var wantsAnswered = (p.answered === true || p.answered === false);
+  if (!/^ma-[A-Za-z0-9_-]{8,48}$/.test(uid) || !itemId) return out({ ok: false, e: 'bad-request' });
+  if (!wantsAnswered && status !== 'pending' && status !== 'approved' && status !== 'hidden') {
+    return out({ ok: false, e: 'bad-request' });
+  }
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) return out({ ok: false, e: 'busy' });
+  try {
+    var state = readAssignmentActivityState(context);
+    var row = state.responses && state.responses[uid];
+    if (!row || !row.items) return out({ ok: false, e: 'no-response' });
+    var target = null;
+    row.items.forEach(function(item) { if (item.id === itemId) target = item; });
+    if (!target) return out({ ok: false, e: 'no-response' });
+    if (wantsAnswered) {
+      target.answered = p.answered === true
+        ? { at: Date.now(), note: normalizeAssignmentBoardItemText(p.note) }
+        : false;
+    } else {
+      target.status = status;
+    }
+    row.updatedAt = Date.now();
+    state.version = (parseInt(state.version, 10) || 0) + 1;
+    state.updatedAt = Date.now();
+    writeAssignmentActivityState(state);
+    return out({ ok: true, version: state.version, t: state.updatedAt });
+  } finally { lock.releaseLock(); }
+}
+
 function moderateAssignmentActivity(cache, p) {
   var context = assignmentActivityContext(p, false);
   if (context.error) return out({ ok: false, e: context.error });
+  if (context.config.type === 'question_board') return moderateAssignmentBoardItem(cache, p, context);
   if (context.config.type !== 'word_cloud') return out({ ok: false, e: 'no-moderation' });
   var uid = String(p.uid || '');
   var status = String(p.status || '');
