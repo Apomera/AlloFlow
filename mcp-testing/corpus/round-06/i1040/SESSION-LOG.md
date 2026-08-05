@@ -1488,21 +1488,48 @@ shortfalls; neither is a loss.
 > 0.9695 to 0.9733. **A shortfall of common words is worth reading; it is
 > usually paraphrase, not furniture.**
 
-### NEXT: page 98, worksheet part 2 plus line 21
+### Session 38 (2026-08-05) - page 98 - tranche-38 - 12 blocks - VALIDATED (merged)
 
-Page 98 carries "IRA Deduction Worksheet—Continued" (lines 7-12, same
-four-column shape as this tranche - reuse it), a CAUTION between lines 10 and
-11, then Line 21 Student Loan Interest Deduction opening in three columns.
+The IRA Deduction Worksheet part 2 (lines 7-12) and Schedule 1 line 21.
+`merge-plans t01..t38` -> 1,493 blocks, `ok: true`, **pages 1-98 covered**,
+zero heading skips. Recall 0.9876; the nine remaining shortfall instances are
+page furniture plus the six per-column entry labels (7a/7b, 11a/11b, 12a/12b),
+dropped for the reason tranche 37 gives.
 
-**The "Qualified student loan" numbered list starting at the foot of page 98
-spans past ANOTHER full-page worksheet** (page 99's Student Loan Interest
-Deduction Worksheet) and finishes below it, with items 2 and 3 plus sub-items
-a/b/c. Third block in the rebuild to jump a full-page insert, after tranches
-29 and 33. Author it whole at page 98 and run `carried_block_check.cjs` on
-page **99**.
+**The four-column worksheet shape from tranche 37 was reused unchanged.** The
+CAUTION printed between rows 10 and 11 is folded into line 10, the line it
+tests - placed between two table rows it would be unreachable to a reader
+navigating by row.
 
-Then Schedule 1's last adjustments (99-100), Schedule 1-A (101-110), Schedule
-2 (111-114) and Schedule 3 (115-117), each a top-level TOC entry opening at
+**The "Qualified student loan" list spans from page 98 past a full-page
+worksheet.** Item 1 is at the foot of this page; items 2 and 3, with sub-items
+a/b/c, appear below the Student Loan Interest Deduction Worksheet filling the
+top of page 99. Authored whole here. **Third block in the rebuild to jump a
+full-page insert**, after tranches 29 and 33.
+
+> **The recall check caught a second paraphrase in as many tranches.** The
+> source reads "Nontaxable combat pay. This amount should be reported in box
+> 12..."; the draft had "and nontaxable combat pay, which should be reported
+> in box 12...". The single token `this` in the shortfall pointed at it.
+> Restoring took recall 0.9863 -> 0.9876. Together with tranche 37's
+> `apply`/`instructions`, this establishes the habit: **when an ordinary
+> common word shows up short, it is almost always a paraphrase in the
+> authoring, not furniture in the source.** Inlining bulleted material into a
+> table cell is where the drift creeps in, because joining fragments invites
+> rewriting the joins.
+
+### NEXT: page 99
+
+Page 99: the Student Loan Interest Deduction Worksheet (full page top,
+single-Amount-column shape), then below it the tail of the qualified-student-
+loan discussion, "Qualified higher education expenses", Line 22 (reserved for
+future use), Line 23 Archer MSA Deduction, and Lines 24a through 24e.
+
+**Do not re-author items 2 and 3 of the qualified-student-loan list** - run
+`carried_block_check.cjs` on page 99 against tranche 38.
+
+Then Schedule 1's last adjustments (100), Schedule 1-A (101-110), Schedule 2
+(111-114) and Schedule 3 (115-117), each a top-level TOC entry opening at
 level 2. Then the back matter: Tax Topics (118), the Disclosure/Privacy Act
 notice (120), Major Categories of Federal Income and Outlays (122), and the
 MECHANICAL Index (123-126). Do not hand-author the Index.
