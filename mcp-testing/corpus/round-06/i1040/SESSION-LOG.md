@@ -703,9 +703,88 @@ repeated line number, and source-side glue.
 > below 0.99 on form-heavy pages should be investigated, not assumed to be a
 > defect — and equally, not assumed to be fine.
 
-### NEXT: the EIC Table (pages 49-~60) is a MECHANICAL tranche
+### Session 17 (2026-08-04) — pages 49-60 · tranche-17 · 57 blocks · VALIDATED (merged)
 
-Generate rows from extracted text with a per-tranche generator, then verify:
-row count against page count, spot-check rows against the render, and a recall
-pass. Same treatment planned for the Tax Table (~68-80) and the Index
-(~118-126). Do not hand-author it.
+The 2025 EIC Table, and **the first mechanical tranche**. `merge-plans
+t01..t17` → 946 blocks, `ok: true`, **pages 1-60 covered**. 1,374 lookup rows,
+13,740 cells, none of them transcribed.
+
+**The generator refuses to write a plan unless six checks pass.** The
+load-bearing one is CONTIGUITY: every bracket's "But less than" must equal the
+next bracket's "At least", unbroken from the first row on page 49 to the last
+on page 60. A dropped cell, a misassigned column or a panel read out of order
+all break it. It came out clean at 1,374 rows spanning $1 to $68,700.
+
+Contiguity proves the two bracket columns and says *nothing* about the eight
+credit columns, so three more checks pin those: each column is single-peaked
+across all 1,374 rows; credit never falls as the number of qualifying children
+rises (0 violations in 8,244 comparisons); and the joint credit is never below
+the single-group credit at the same income (0 in 5,496). The eight column
+maxima come out at 649 / 4,328 / 7,152 / 8,046 in both status groups, which
+are the published 2025 maximum EIC amounts. A sixth check ties each of the
+eight `*`/`**`/`***` cells to its own footnote: the column a marker sits in
+must match the number of children its note names, and the note must name the
+bracket the marker sits in. All eight agree.
+
+**Two panels per page, merged.** Each printed page sets two 10-column panels
+side by side; left panel top to bottom then right gives one ascending run that
+continues across page breaks. Stream-order text is useless here — it
+interleaves a left-panel row and a right-panel row on every visual line — so
+rows are rebuilt from geometry, as the protocol requires for drawn tables.
+
+**One table per printed page, not one table of 1,374 rows.** The logical table
+is continuous, but every page must carry blocks or `merge-plans` reports it
+uncovered. Twelve tables, each repeating the full column header, each with a
+level-5 heading and caption naming its range and part number so a reader can
+jump to the right part instead of scanning twelve tables.
+
+**Two new checked-in tools**, both of which the remaining mechanical spans need:
+
+* `mcp-testing/tools/page_items.cjs` — per-item x/y/size/bold geometry as JSON.
+  The protocol has called for a per-item dump since session 1; sessions were
+  doing it with throwaway shell snippets.
+* `mcp-testing/tools/tranche_recall.cjs` — the per-tranche recall check, with
+  session 16's normalisation rule (em/en dash is a SEPARATOR, only the hyphen
+  closes) written into the code and its reasoning in the header comment, so it
+  cannot be re-derived wrongly next time. `--source cs|pdfjs|union` switches
+  the baseline; `--segment` marks shortfall tokens that decompose into plan
+  vocabulary, which is the session-15 glue caveat made mechanical.
+
+**The recall check earned its keep by finding a real defect.** First run: 0.9597.
+Tracing the largest shortfall showed the flattened column names never said the
+word *credit* — the printed header carries "Your credit is—" on a row of its
+own, and flattening had dropped it. A cell announced on its own would have
+given a filing status, a child count and a bare number, and never said the
+number was a credit. Putting it back into all eight column names took recall to
+**0.9713**. The fix was to change the plan, not to explain the shortfall away.
+
+**The remaining 466 token instances are fully accounted for, with none left
+over:** 131 page furniture (the standing footer, page numbers, "(Continued)"),
+324 the duplicated panel header, 5 the resolved "Use this column" deixis, and 6
+source-side glue. The header claim was tested rather than asserted — counting
+the header PHRASES per page shows "And your filing status is" exactly twice on
+every page in *both* extractors, so the duplication is in the PDF and
+collapsing it is the correct treatment, not a loss.
+
+**Three independent confirmations, on three different paths.** (1) All 13,740
+cell values re-derived from the byte-level content-stream reader, which shares
+no code with the pdf.js geometry that built them — every value backed. (2) Six
+rows read by eye off the rendered page images against the plan — 6/6. (3) Pages
+49 and 60, the two irregular ones, checked visually: page 60's tail is 8 left
+rows plus 6 right, ending on the `*` cell, exactly as parsed.
+
+**`render_pages.cjs` is now usable on this document.** Session 1 recorded that
+page images were useless here because the embedded fonts paint as tofu. With
+`pdfjs-dist` present, the round-7 renderer path produces fully legible pages,
+so the render is a real check again rather than a layout sketch.
+
+### NEXT: pages 61-67, then the Tax Table (68-80) is the next MECHANICAL span
+
+Pages 61-67 (additional child tax credit, refund, amount you owe, sign,
+assemble) are ordinary hand-authored prose. Then the Tax Table gets the
+tranche-17 treatment: `page_items.cjs` for geometry, a generator that parses
+and verifies before it writes, `tranche_recall.cjs` for recall, and a render
+spot-check. Its shape differs — income brackets against filing-status columns,
+no phase-out — so the invariants have to be re-derived for it rather than
+copied; contiguity of the bracket sequence should carry over directly. Same
+again for the Index (~118-126). Do not hand-author either.
