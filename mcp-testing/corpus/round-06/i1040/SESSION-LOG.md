@@ -1658,16 +1658,54 @@ tips", so a first look that started below the worksheet's *visible* bottom
 produced a sentence that did not join up. When recovering a jumped block, find
 where the worksheet's last row actually ends rather than guessing a y cutoff.
 
-### NEXT: page 104 onward
+### Session 44 (2026-08-05) - page 104 - tranche-44 - 21 blocks - VALIDATED (merged)
 
-Page 104: the Qualified Tips From More Than One Employer Worksheet (full-page
-top, columns (a) name of employer / (b) W-2 or 4070 amount / ... / (d), rows A
-through E plus a total line - a NEW worksheet shape, more columns than either
-settled form), then Example 2 (self-employed travel guide) and the rest of the
-non-employee discussion. **Do not re-author the rideshare Example 1** carried
-into tranche 43.
+The Qualified Tips From More Than One Employer Worksheet, the SSN
+requirement, and the line instructions for Schedule 1-A lines 4a-5.
+`merge-plans t01..t44` -> 1,614 blocks, `ok: true`, **pages 1-104 covered**,
+zero heading skips. Carried-block check: **35 = 31 carried + 4 furniture + 0
+unexplained**.
 
-Then the rest of Schedule 1-A (105-110), Schedule 2 (111-114) and Schedule 3
+> **THE RECALL CHECK CAUGHT ITS FIRST OUTRIGHT DROPPED SENTENCE.** Previous
+> catches were paraphrases (t37, t38). This time the first pass simply omitted
+> a whole paragraph - "The net income limitation applies to each separate
+> trade or business in which you received qualified tips..." - because it
+> begins at the very foot of page 104 and finishes BELOW the full-page
+> worksheet on page 105, so neither the column dump nor the page-105 opening
+> showed it. The shortfall reported seven ordinary words short (`applies`,
+> `business`, `each`, `limitation`, `net`, `trade`, `which`). **Seven common
+> words with no furniture among them is the signature of a dropped sentence**,
+> not of a formatting choice. Fifth block in the rebuild to jump a full-page
+> insert.
+
+**A third worksheet shape.** Seven earlier worksheets took
+`[Line, Instruction, Amount]`; pages 97-98 took
+`[Line, Instruction, Your IRA, Spouse's IRA]`. This one is a five-row grid
+filled ACROSS four labelled columns, one row per employer:
+`[Row, (a) Name of employer, (b), (c), (d)]`. Three distinct shapes across
+nine worksheets, each chosen by what the form asks a filer to do.
+
+**The total is a paragraph, not a table row.** Line 2 is an instruction about
+the table with no cells under (a)-(d); forcing it into the grid would give it
+four empty entry spaces a filer must not use. **"Keep for Your Records" is
+folded into the caption** - it sits in the worksheet frame, belongs to no row,
+and is exactly what a caption carries.
+
+**Line instructions are level 4, definitions level 5.** "Valid SSN", "Line
+4a"-"Line 5" and "Net income limitation" are siblings of "Qualified Tips"
+under Part II; the definitional run-ins on pages 102-103 sit under "Qualified
+Tips". All are printed identically as bold run-ins at body size, so the
+distinction is meaning, not typography.
+
+### NEXT: page 105 onward
+
+Page 105: the Multiple Trades or Businesses Worksheet (full-page top, columns
+(a) name of business / (b) net profit / (c) other deductions / (d) subtract -
+likely a FOURTH shape), then the sole-proprietor example and the rest of the
+net income limitation discussion. **Do not re-author the two blocks carried
+into tranche 44.**
+
+Then the rest of Schedule 1-A (106-110), Schedule 2 (111-114) and Schedule 3
 (115-117), each a top-level TOC entry opening at level 2. Then the back
 matter: Tax Topics (118), the Disclosure/Privacy Act notice (120), Major
 Categories of Federal Income and Outlays (122), and the MECHANICAL Index
