@@ -1,0 +1,219 @@
+{
+ "schema_version": "1.0",
+ "document": {
+  "title": "2025 Instructions for Form 1040 (and 1040-SR)",
+  "language": "en",
+  "source_page_count": 126,
+  "source_sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a",
+  "document_type": "booklet",
+  "subject": "Internal Revenue Service instructions for the 2025 Form 1040 and Form 1040-SR, including the instructions for Schedules 1 through 3.",
+  "variant": "original"
+ },
+ "blocks": [
+  {
+   "type": "list",
+   "ordered": true,
+   "items": [
+    "You received a refund in 2025 that is for a tax year other than 2024.",
+    "You received a refund other than an income tax refund, such as a general sales tax or real property tax refund, in 2025 of an amount deducted or credit claimed in an earlier year.",
+    "You had taxable income on your 2024 Form 1040 or 1040-SR, line 15, but no tax on your Form 1040 or 1040-SR, line 16, because of the 0% tax rate on net capital gain and qualified dividends in certain situations.",
+    "Your 2024 state and local income tax refund is more than your 2024 state and local income tax deduction minus the amount you could have deducted as your 2024 state and local general sales taxes.",
+    "You made your last payment of 2024 estimated state or local income tax in 2025.",
+    "You owed alternative minimum tax in 2024.",
+    "You couldn’t use the full amount of credits you were entitled to in 2024 because the total credits were more than the amount shown on your 2024 Form 1040 or 1040-SR, line 18.",
+    "You could be claimed as a dependent by someone else in 2024.",
+    "You received a refund because of a jointly filed state or local income tax return, but you aren’t filing a joint 2025 Form 1040 or 1040-SR with the same person."
+   ],
+   "source_page": 89
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Lines 2a and 2b. Alimony Received",
+   "source_page": 89
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 2a",
+   "source_page": 89
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter amounts received as alimony or separate maintenance pursuant to a divorce or separation agreement entered into on or before December 31, 2018, unless that agreement was changed after December 31, 2018, to expressly provide that alimony received isn’t included in your income. Alimony received is not included in your income if you entered into a divorce or separation agreement after December 31, 2018. If you are including alimony in your income, you must let the person who made the payments know your social security number. If you don’t, you may have to pay a penalty. For more details, see Pub. 504.",
+   "source_page": 89
+  },
+  {
+   "type": "paragraph",
+   "text": "If you are including alimony payments from more than one divorce or separation agreement in your income, enter the total of all alimony received on line 2a.",
+   "source_page": 89
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 2b",
+   "source_page": 89
+  },
+  {
+   "type": "paragraph",
+   "text": "On line 2b, enter the month and year of your original divorce or separation agreement that relates to the alimony payment, if any, reported on line 2a.",
+   "source_page": 89
+  },
+  {
+   "type": "paragraph",
+   "text": "If you have alimony payments from more than one divorce or separation agreement, on line 2b enter the month and year of the divorce or separation agreement for which you received the most income. Attach a statement listing the month and year of the other agreements.",
+   "source_page": 89
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 3. Business Income or (Loss)",
+   "source_page": 89
+  },
+  {
+   "type": "paragraph",
+   "text": "If you operated a business or practiced your profession as a sole proprietor, report your income and expenses on Schedule C.",
+   "source_page": 89
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 4. Other Gains or (Losses)",
+   "source_page": 89
+  },
+  {
+   "type": "paragraph",
+   "text": "If you sold or exchanged assets used in a trade or business, and are filing Form 4797, include the amount from Form 4797, line 18b, on line 4 and check the “4797” box. For more information, see the Instructions for Form 4797.",
+   "source_page": 89
+  },
+  {
+   "type": "paragraph",
+   "text": "If Form 4797 isn’t otherwise required, include the amount from Form 4684, line 31, on line 4 and check the “4684” box. For more information, see the Instructions for Form 4684.",
+   "source_page": 89
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 7. Unemployment Compensation",
+   "source_page": 89
+  },
+  {
+   "type": "paragraph",
+   "text": "You should receive a Form 1099-G showing in box 1 the total unemployment compensation paid to you in 2025. Report this amount on line 7.",
+   "source_page": 89
+  },
+  {
+   "type": "paragraph",
+   "text": "Caution. If the amount reported in box 1 of your Form(s) 1099-G is incorrect, report on line 7 only the actual amount of unemployment compensation paid to you in 2025.",
+   "runs": [
+    {
+     "text": "Caution.",
+     "style": "strong"
+    },
+    {
+     "text": " If the amount reported in box 1 of your Form(s) 1099-G is incorrect, report on line 7 only the actual amount of unemployment compensation paid to you in 2025.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 89
+  },
+  {
+   "type": "paragraph",
+   "text": "If you made contributions to a governmental unemployment compensation program and you aren't itemizing deductions, reduce the amount you report on line 7 by those contributions. If you are itemizing deductions, see the instructions on Form 1099-G.",
+   "source_page": 89
+  },
+  {
+   "type": "paragraph",
+   "text": "If you received an overpayment of unemployment compensation in 2025, subtract the amount you repaid from the total amount you received. Enter the result on line 7. Also, check the box on line 7 and enter the amount you repaid in the entry space. If, in 2025, you repaid more than $3,000 of unemployment compensation that you included in gross income in an earlier year, see Repayments in Pub. 525 for details on how to report the payment.",
+   "source_page": 89,
+   "runs": [
+    {
+     "text": "If you received an overpayment of unemployment compensation in 2025, subtract the amount you repaid from the total amount you received. Enter the result on line 7. Also, check the box on line 7 and enter the amount you repaid in the entry space. If, in 2025, you repaid more than $3,000 of unemployment compensation that you included in gross income in an earlier year, see ",
+     "style": "normal"
+    },
+    {
+     "text": "Repayments",
+     "style": "emphasis"
+    },
+    {
+     "text": " in Pub. 525 for details on how to report the payment.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "Tip. Beginning in 2025, if you made contributions to a governmental paid family leave program, you will now include the full amount of those contributions in your income. If you itemize your deductions on Schedule A, you can include the amounts contributed as part of the state and local taxes that you paid.",
+   "runs": [
+    {
+     "text": "Tip.",
+     "style": "strong"
+    },
+    {
+     "text": " Beginning in 2025, if you made contributions to a governmental paid family leave program, you will now include the full amount of those contributions in your income. If you itemize your deductions on Schedule A, you can include the amounts contributed as part of the state and local taxes that you paid.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 89
+  },
+  {
+   "type": "paragraph",
+   "text": "Tip. If you received unemployment compensation in 2025, your state may issue an electronic Form 1099-G instead of it being mailed to you. Check your state’s unemployment compensation website for more information.",
+   "runs": [
+    {
+     "text": "Tip.",
+     "style": "strong"
+    },
+    {
+     "text": " If you received unemployment compensation in 2025, your state may issue an electronic Form 1099-G instead of it being mailed to you. Check your state’s unemployment compensation website for more information.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 89
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Lines 8a Through 8z. Other Income",
+   "source_page": 89
+  },
+  {
+   "type": "paragraph",
+   "text": "Caution. Do not report on lines 8a through 8z any income from self-employment or fees received as a notary public. Instead, you must use Schedule C, even if you don’t have any business expenses. Also don’t report on lines 8a through 8z any nonemployee compensation shown on Form 1099-MISC, 1099-NEC, or 1099-K (unless it isn’t self-employment income, such as income from a hobby or a sporadic activity). Instead, see the Instructions for Recipient included on Form 1099-MISC, or 1099-NEC, to find out where to report that income. For more information about what is being reported on Form 1099-K, see the Instructions for Payee included on that form and visit IRS.gov/1099K.",
+   "runs": [
+    {
+     "text": "Caution.",
+     "style": "strong"
+    },
+    {
+     "text": " ",
+     "style": "normal"
+    },
+    {
+     "text": "Do not report on lines 8a through 8z any income from self-employment or fees received as a notary public. Instead, you must use Schedule C, even if you don’t have any business expenses. Also don’t report on lines 8a through 8z any nonemployee compensation shown on Form 1099-MISC, 1099-NEC, or 1099-K (unless it isn’t self-employment income, such as income from a hobby or a sporadic activity). Instead, see the Instructions for Recipient included on Form 1099-MISC, or 1099-NEC, to find out where to report that income. For more information about what is being reported on Form 1099-K, see the Instructions for Payee included on that form and visit ",
+     "style": "normal"
+    },
+    {
+     "text": "IRS.gov/1099K",
+     "style": "normal",
+     "href": "https://www.irs.gov/businesses/understanding-your-form-1099-k"
+    },
+    {
+     "text": ".",
+     "style": "normal"
+    }
+   ],
+   "source_page": 89
+  }
+ ],
+ "review_notes": [
+  "TRANCHE 29 OF A MULTI-SESSION REBUILD. This plan covers printed page 89: Schedule 1 lines 2a and 2b, 3, 4, 7, and the opening of lines 8a through 8z. It carries no document title by design — only tranche 1 does — so this file validates through merge-plans rather than standalone. No partial rebuild is delivered.",
+  "THE READING ORDER WAS REBUILT FROM GEOMETRY PER COLUMN, as for page 88. These schedule pages set three columns with icon boxes the body wraps around, and the column detector interleaves them; each column is banded independently and read top to bottom instead.",
+  "THE PAGE OPENS WITH A LIST THAT BELONGS TO THE PREVIOUS PAGE'S HEADING. The nine numbered conditions are the “if any of the following applies” of the “Exception” paragraph authored at page 88 in tranche 28. The paragraph ended on page 88 and the list is printed wholly here, so nothing had to be carried in either direction — the list is authored on its own page and stays attached to that heading in the merged reading order. It is an ORDERED list because the source numbers the conditions 1 through 9.",
+  "A CAUTION BOX RUNS FROM PAGE 89 TO PAGE 91, SKIPPING PAGE 90 ENTIRELY. The full-page State and Local Income Tax Refund Worksheet is printed on page 90 and interrupts the lines 8a-8z caution mid-sentence (“…income from a hobby or a” / “sporadic activity)…”). It is authored whole here, so neither the page-90 nor the page-91 tranche may re-author it. This is the first block in the rebuild that spans a NON-ADJACENT page pair, and the carried-block check has to be run on page 91, not page 90.",
+  "ONE LINK, AND ITS TARGET IS NOTHING LIKE ITS TEXT. Pages 89 and 90 carry no Link annotations at all; the only one in this stretch sits on page 91, inside the caution carried from here — “IRS.gov/1099K” resolves to irs.gov/businesses/understanding-your-form-1099-k. Taken from the annotation, as always.",
+  "“LINE NN” AND ITS TITLE ARE ONE HEADING, as established in tranche 11 and used throughout: “Line 3. Business Income or (Loss)”, “Line 7. Unemployment Compensation”. Where a pair of lines shares a title the pair is named (“Lines 2a and 2b. Alimony Received”) and the individual lines become level-5 headings beneath it, since each carries its own instruction.",
+  "ICON CALLOUTS as established in tranche 3: two CAUTION boxes and two TIP boxes become paragraphs opening with a strong label in sentence case. All four interrupt their surrounding prose in print and are placed after the content they qualify.",
+  "PAGE FURNITURE OMITTED as in every earlier tranche: the printed page number and the standing “Need more information or forms? Visit IRS.gov.” footer. Soft hyphens removed and justified line-break hyphens closed, while genuine compounds are kept (1040-SR, 1099-G, 1099-MISC, 1099-NEC, 1099-K, self-employment, nonemployee)."
+ ]
+}

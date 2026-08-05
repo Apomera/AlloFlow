@@ -1241,17 +1241,48 @@ with "...if any of the following applies.", and the list it introduces is
 printed wholly on page 89. The page-89 tranche opens with that list and should
 keep it attached to this Exception heading.
 
-### NEXT: page 89 onward
+### Session 29 (2026-08-04) - page 89 - tranche-29 - 22 blocks - VALIDATED (merged)
 
-Page 89: the list belonging to page 88's "Exception", then Lines 2a and 2b
-(Alimony Received), Line 3, Line 4, Line 7, and Lines 8a Through 8z. Page 90
-is the State and Local Income Tax Refund Worksheet - a worksheet page with
-"Before you begin:" and STOP markers, so the tranche-15/16 worksheet shape
-applies. Pages 91-92 are the Line 8a through 8z run-in topics, which are dense
-and numerous.
+Schedule 1 lines 2a/2b, 3, 4, 7, and the opening of lines 8a through 8z.
+`merge-plans t01..t29` -> 1,350 blocks, `ok: true`, **pages 1-89 covered**,
+zero heading skips. Recall 0.9842, with the whole shortfall accounted for:
+page furniture plus the nine digits 1-9, which are the ordered-list markers
+the list structure now generates rather than carrying as literal text.
 
-Then Schedule 1-A (101-110), Schedule 2 (111-114) and Schedule 3 (115-117),
-each a top-level TOC entry opening at level 2. Then the back matter: Tax
-Topics (118), the Disclosure/Privacy Act notice (120), Major Categories of
-Federal Income and Outlays (122), and the MECHANICAL Index (123-126). Do not
-hand-author the Index.
+**A CAUTION box runs from page 89 to page 91, SKIPPING page 90 entirely.** The
+full-page State and Local Income Tax Refund Worksheet is printed on page 90
+and interrupts the lines 8a-8z caution mid-sentence ("...income from a hobby
+or a" / "sporadic activity)..."). It is authored whole at page 89, so neither
+the page-90 nor the page-91 tranche may re-author it.
+
+> **This is the first block in the rebuild that spans a NON-ADJACENT page
+> pair.** Every earlier spanning block ran N to N+1. Run
+> `carried_block_check.cjs` on page **91** against tranche 29, not on page 90 -
+> page 90 is a self-contained worksheet and carries nothing.
+
+**The page opens with a list belonging to the previous page's heading.** The
+nine numbered conditions complete the "Exception" paragraph authored at page
+88. The paragraph ended on 88 and the list is printed wholly on 89, so nothing
+had to be carried in either direction; the list is authored on its own page
+and stays attached to that heading in the merged reading order.
+
+**Pages 89 and 90 carry no Link annotations at all.** The only link in this
+stretch sits on page 91, inside the caution carried from here, and its target
+is nothing like its text: "IRS.gov/1099K" resolves to
+`irs.gov/businesses/understanding-your-form-1099-k`.
+
+### NEXT: page 90, the State and Local Income Tax Refund Worksheet
+
+A full-page worksheet with "Before you begin:", two STOP markers, a
+filing-status amount list, a footnote keyed with an asterisk, and dot-leader
+rows. The tranche-15/16 worksheet shape applies: one table, printed line
+numbers in the Line column, entry column blank, STOP folded into the line it
+qualifies. It carries no links and nothing spans into or out of it.
+
+Then page 91 onward: the Line 8a through 8z run-in topics, which are dense and
+numerous, and Schedule 1's Part II adjustments. Then Schedule 1-A (101-110),
+Schedule 2 (111-114) and Schedule 3 (115-117), each a top-level TOC entry
+opening at level 2. Then the back matter: Tax Topics (118), the
+Disclosure/Privacy Act notice (120), Major Categories of Federal Income and
+Outlays (122), and the MECHANICAL Index (123-126). Do not hand-author the
+Index.
