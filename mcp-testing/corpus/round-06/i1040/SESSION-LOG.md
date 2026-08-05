@@ -924,12 +924,72 @@ tranche.
 page 64 targets `irs.gov/your-account`. Take every href from that page's own
 annotation, never from a document-wide table.
 
-### NEXT: the Tax Table (68-80) is the second MECHANICAL span
+### Session 21 (2026-08-04) - pages 68-79 - tranche-21 - 41 blocks - VALIDATED (merged)
 
-It gets the tranche-17 treatment: `page_items.cjs` for
-geometry, a generator that parses and verifies before it writes,
-`tranche_recall.cjs` for recall, and a render spot-check. Its shape differs —
-income brackets against filing-status columns, no phase-out — so the
-invariants must be re-derived rather than copied; bracket contiguity should
-carry over directly. Same again for the Index (~118-126). Do not hand-author
-either.
+The 2025 Tax Table, and the second mechanical span. `merge-plans t01..t21` ->
+1,148 blocks, `ok: true`, **pages 1-79 covered**, zero heading skips. 2,062
+lookup rows, 12,372 cells, none transcribed.
+
+**Verified before a plan was written.** Contiguity holds unbroken from $0 on
+page 68 to $100,000 on page 79. The row count is checked against what the
+printed bracket scheme requires - 6 rows below $100, 116 rows of $25 steps to
+$3,000, then 1,940 rows of $50 steps - and comes out at exactly 2,062. Three
+further checks pin which column is which, and one of them is unusually sharp:
+**the Single and Married-filing-separately columns are identical in all 2,062
+rows**, because the 2025 brackets for the two coincide below $100,000. A
+column read into the wrong slot breaks that immediately. Plus married filing
+jointly <= head of household <= single row by row, and all four columns
+non-decreasing as income rises.
+
+**Both identical columns are kept.** One of them is strictly redundant as
+data, but a reader looking up "married filing separately" has to find that
+column; collapsing them would make them hunt for their status under someone
+else's name. The identity is a verification result, not a licence to merge.
+
+**Panels are read independently here, which the EIC Table did not need.** Each
+page sets three 6-column panels, but unlike the EIC Table they are NOT aligned
+by y: page 68's first panel carries 42 rows because income under $100 is
+bracketed in finer steps, while panels 2 and 3 carry 40 rows plus a section
+heading. Banding across the full page would pair a row from one panel with an
+unrelated row from another.
+
+**Nothing inside a panel is dropped silently.** The parser collects every band
+in a panel's x-range that is not a six-cell numeric row and asserts the
+collection is exactly one known item - the note in page 79's third panel
+sending filers at or above $100,000 to the Tax Computation Worksheet. Any
+other stray content aborts the run rather than vanishing.
+
+**Recall reads 0.9060, and that is the metric measuring the source's
+typography rather than the plan.** The whole shortfall is accounted for: 131
+page furniture, 411 words of the column header that each page prints THREE
+times (once per panel) against one header row per table, 492 single-character
+tokens because the header sets "Married" in letter-spaced type so it extracts
+as m,a,r,r,i,e,d, 144 header words split across lines inside their cells, 78
+glued header fragments, 12 instances of "this" from resolving "* This column"
+into "The married filing jointly column", and ~99 dropped $1,000 section
+headings (each appears 3x in source, 2x in plan - the two bracket boundaries
+survive, the block label does not). Zero genuinely unexplained.
+
+> **Lesson: on a page that is mostly repeated table header, token recall is
+> the wrong instrument.** The real check is the cell-level cross-check, and it
+> is unambiguous: all 12,372 values re-derived from the byte-level
+> content-stream reader, which shares no code with the pdf.js geometry that
+> built them, and every one is backed. `tranche_recall.cjs` now reports the
+> single-character share on its own line so a low score on a table-heavy
+> tranche is legible at a glance.
+
+Eight rows read by eye off the rendered page 68 match the plan, including both
+panel seams; the sample table carries the 2,562 its worked example arrives at.
+
+### NEXT: page 80 (Tax Computation Worksheet), then 81-87
+
+Page 80 is the 2025 Tax Computation Worksheet: four sections (A-D by filing
+status), each a small table of rate bands with columns (a) amount from line
+15, (b) multiplication amount, (c) multiply, (d) subtraction amount, and the
+resulting tax. Different structure from the Tax Table and small enough to
+hand-author, so it gets its own tranche rather than being tacked onto this
+one - the same seam discipline used at page 48/49.
+
+Then 81-87 (General Information, How To Get Tax Help, Refund Information),
+88-117 (the schedules), and the back matter, including the MECHANICAL Index
+(~123-126). Do not hand-author the Index.
