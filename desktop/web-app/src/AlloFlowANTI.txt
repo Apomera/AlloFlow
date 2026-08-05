@@ -14485,18 +14485,44 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const handleManualScore = (teamId, delta) => {
       setGameTeams(prev => prev.map(t => t.id === teamId ? { ...t, score: Math.max(0, t.score + delta) } : t));
   };
-  const [voiceSpeed, setVoiceSpeed] = useState(1);
-  const [voiceVolume, setVoiceVolume] = useState(1);
+  const [voiceSpeed, setVoiceSpeed] = useState(() => { try { const v = parseFloat(safeGetItem('allo_voice_speed')); return Number.isFinite(v) && v >= 0.5 && v <= 2 ? v : 1; } catch (_) { return 1; } });
+  const [voiceVolume, setVoiceVolume] = useState(() => { try { const v = parseFloat(safeGetItem('allo_voice_volume')); return Number.isFinite(v) && v >= 0 && v <= 1 ? v : 1; } catch (_) { return 1; } });
   const [disableAnimations, setDisableAnimations] = useState(() => {
+    try {
+      const stored = safeGetItem('allo_disable_animations');
+      if (stored === '1') return true;
+      if (stored === '0') return false;
+    } catch (_) {}
     try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(e) { return false; }
   });
   const [colorOverlay, _setColorOverlay] = useState(() => {
       try { const v = safeGetItem('allo_color_overlay'); return ['none','blue','peach','yellow'].includes(v) ? v : 'none'; } catch { return 'none'; }
   });
   const setColorOverlay = (v) => { try { safeSetItem('allo_color_overlay', v); } catch {} _setColorOverlay(v); };
-  const [readingRuler, setReadingRuler] = useState(false);
+  const [readingRuler, setReadingRuler] = useState(() => { try { return safeGetItem('allo_reading_ruler') === '1'; } catch (_) { return false; } });
   const [rulerY, setRulerY] = useState(0);
-  const [fontTheme, setFontTheme] = useState('Default');
+  // Persist display + read-aloud preferences across sessions. These are
+  // accessibility settings: resetting them each visit silently undoes a
+  // student's setup. Stored per device with the same safeSetItem pattern the
+  // font picker and colour overlay already use.
+  useEffect(() => { safeSetItem('allo_voice_speed', String(voiceSpeed)); }, [voiceSpeed]);
+  useEffect(() => { safeSetItem('allo_voice_volume', String(voiceVolume)); }, [voiceVolume]);
+  useEffect(() => { safeSetItem('allo_base_font_size', String(baseFontSize)); }, [baseFontSize]);
+  useEffect(() => { safeSetItem('allo_line_height', String(lineHeight)); }, [lineHeight]);
+  useEffect(() => { safeSetItem('allo_font_theme', String(fontTheme || 'Default')); }, [fontTheme]);
+  useEffect(() => { safeSetItem('allo_reading_ruler', readingRuler ? '1' : '0'); }, [readingRuler]);
+  // Reduced motion: only a deliberate user choice is stored. With nothing
+  // stored the OS preference still wins, so we never override the system
+  // setting with a stale value.
+  useEffect(() => {
+    try {
+      let osPref = false;
+      try { osPref = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) {}
+      if (disableAnimations === osPref) safeRemoveItem('allo_disable_animations');
+      else safeSetItem('allo_disable_animations', disableAnimations ? '1' : '0');
+    } catch (_) {}
+  }, [disableAnimations]);
+  const [fontTheme, setFontTheme] = useState(() => { try { return safeGetItem('allo_font_theme') || 'Default'; } catch (_) { return 'Default'; } });
   // Persisted (was session-only — the one reading-support preference that
   // reset on every reload while readingTheme/colorOverlay survived).
   const [selectedFont, _setSelectedFont] = useState(() => { try { return safeGetItem('allo_selected_font') || 'default'; } catch { return 'default'; } });
@@ -14504,9 +14530,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [focusMode, setFocusMode] = useState(false);
   const [isLineFocusMode, setIsLineFocusMode] = useState(false);
   const [focusedParagraphIndex, setFocusedParagraphIndex] = useState(null);
-  const [baseFontSize, setBaseFontSize] = useState(16);
+  const [baseFontSize, setBaseFontSize] = useState(() => { try { const v = parseFloat(safeGetItem('allo_base_font_size')); return Number.isFinite(v) && v >= 10 && v <= 48 ? v : 16; } catch (_) { return 16; } });
   const [sliderFontSize, setSliderFontSize] = useState(16);
-  const [lineHeight, setLineHeight] = useState(1.6);
+  const [lineHeight, setLineHeight] = useState(() => { try { const v = parseFloat(safeGetItem('allo_line_height')); return Number.isFinite(v) && v >= 1 && v <= 3 ? v : 1.6; } catch (_) { return 1.6; } });
   const [letterSpacing, setLetterSpacing] = useState(0);
   const [isCheckingLevel, setIsCheckingLevel] = useState(false);
   const [isCheckingAlignment, setIsCheckingAlignment] = useState(false);
