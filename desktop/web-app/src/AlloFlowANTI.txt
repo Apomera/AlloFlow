@@ -10510,8 +10510,20 @@ const AlloFlowContent = () => {
               const saved = safeGetItem('allo_voice_preference');
               if (saved) {
                   if (AVAILABLE_VOICES.length === 0 && KOKORO_VOICES.length === 0) return saved;
+                  // A Kokoro voice is ALWAYS valid: the engine is local and
+                  // needs no backend or key (same reasoning as the desktop
+                  // branch below). Checking the CATALOG here was the bug —
+                  // KOKORO_VOICES fills from a CDN module, so during the window
+                  // where the Gemini list has loaded and the Kokoro list has
+                  // not, a saved af_/am_ voice matched neither test and was
+                  // silently reset to Kore on every refresh.
+                  if (/^(af_|am_)/.test(saved)) return saved;
                   if (AVAILABLE_VOICES.map(v => v.toLowerCase()).includes(saved.toLowerCase())) return saved;
                   if (KOKORO_VOICES.some(v => v.id === saved)) return saved;
+                  // Catalogs are still loading and the id is not Kokoro-shaped:
+                  // keep the saved value rather than overwriting a real
+                  // preference with a default we cannot yet validate.
+                  if (AVAILABLE_VOICES.length === 0 || KOKORO_VOICES.length === 0) return saved;
               }
               return 'Kore'; // Gemini TTS default — bright, clear female voice
           }
@@ -10544,6 +10556,13 @@ const AlloFlowContent = () => {
       return 'Kore';
   });
   useEffect(() => {
+      // Never let a transient default overwrite a stored preference. If the
+      // catalogs have not loaded yet, a validator fallback can equal 'Kore'
+      // while storage holds the user's real pick; writing here would make that
+      // reset permanent instead of recoverable on the next load.
+      const storedVoice = safeGetItem('allo_voice_preference');
+      const catalogsReady = (AVAILABLE_VOICES.length > 0 || KOKORO_VOICES.length > 0);
+      if (storedVoice && storedVoice !== selectedVoice && !catalogsReady) return;
       safeSetItem('allo_voice_preference', selectedVoice);
   }, [selectedVoice]);
   useEffect(() => {
@@ -13289,6 +13308,15 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       window.__kokoroTTSScriptInjected = true;
       window.__loadKokoroTTS = async (onProgress) => {
         if (window._kokoroTTS?.ready) return true;
+        // A refresh clears window._kokoroTTS, so the model is re-read from the
+        // durable cache and loaded into WASM — a real wait, but NOT a
+        // download. Saying "Downloading (~88MB)" there is what makes an
+        // already-cached model look like it is fetching again.
+        let _kokoroCached = false;
+        try {
+          const _mc = window.AlloModules && window.AlloModules.AlloCommands && window.AlloModules.AlloCommands.modelCache;
+          if (_mc && typeof _mc.hasKokoro === 'function') _kokoroCached = await _mc.hasKokoro();
+        } catch (_) {}
         const loadTTSScript = (url) => new Promise((resolve) => {
           if (document.querySelector(`script[src="${url}"]`)) { resolve(true); return; }
           const s = document.createElement('script');
@@ -13302,6 +13330,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           try {
             await window._kokoroTTS.init((progress) => {
               if (onProgress) onProgress(progress);
+              if (_kokoroCached && progress && typeof progress.stage === 'string' && /download/i.test(progress.stage)) {
+                progress = Object.assign({}, progress, { stage: t('voice_engine.preparing_saved_model') || 'Preparing the saved voice model' });
+              }
               setKokoroLoadState({ loading: true, stage: progress.stage || (progress.pct < 0.95 ? (t('voice_engine.downloading_model') || 'Downloading voice model') : (t('voice_engine.loading_memory') || 'Loading into memory')), pct: progress.pct });
             });
             setKokoroLoadState(null);
