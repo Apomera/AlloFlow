@@ -1271,18 +1271,48 @@ stretch sits on page 91, inside the caution carried from here, and its target
 is nothing like its text: "IRS.gov/1099K" resolves to
 `irs.gov/businesses/understanding-your-form-1099-k`.
 
-### NEXT: page 90, the State and Local Income Tax Refund Worksheet
+### Session 30 (2026-08-05) - page 90 - tranche-30 - 3 blocks - VALIDATED (merged)
 
-A full-page worksheet with "Before you begin:", two STOP markers, a
-filing-status amount list, a footnote keyed with an asterisk, and dot-leader
-rows. The tranche-15/16 worksheet shape applies: one table, printed line
-numbers in the Line column, entry column blank, STOP folded into the line it
-qualifies. It carries no links and nothing spans into or out of it.
+The State and Local Income Tax Refund Worksheet for Schedule 1, line 1.
+`merge-plans t01..t30` -> 1,353 blocks, `ok: true`, **pages 1-90 covered**,
+zero heading skips. Recall 0.9746, all of it explained: page furniture plus
+seven single digits, because this worksheet prints each line number TWICE -
+once as the line label and once again beside the entry box - and the Line
+column makes the repeat redundant.
 
-Then page 91 onward: the Line 8a through 8z run-in topics, which are dense and
-numerous, and Schedule 1's Part II adjustments. Then Schedule 1-A (101-110),
-Schedule 2 (111-114) and Schedule 3 (115-117), each a top-level TOC entry
-opening at level 2. Then the back matter: Tax Topics (118), the
-Disclosure/Privacy Act notice (120), Major Categories of Federal Income and
-Outlays (122), and the MECHANICAL Index (123-126). Do not hand-author the
-Index.
+**Three blocks for a whole page, and that is the right answer.** Heading,
+"Before you begin" callout, one nine-row table. The worksheet shape settled in
+tranches 15 and 16 is reused completely unchanged; this is the fifth worksheet
+to take it without alteration, which is the clearest sign yet that the
+structural vocabulary for this document is closed.
+
+**The checkbox grid on line 6 is linearised.** The source prints four
+checkboxes in a two-by-two grid (born before January 2 1960, blind, and the
+same pair for a spouse) - a layout a linear reading cannot convey. They are
+given as one list within the line, in printed order, so the count a filer has
+to make survives. The asterisked footnote qualifying the spouse boxes is
+folded into the same line rather than left at the foot of the worksheet, where
+the asterisk would send a reader with nothing to return to.
+
+**A self-contained page, unusually.** No Link annotations, nothing spans
+either edge, and it INTERRUPTS rather than continues its neighbours: the lines
+8a-8z caution runs from page 89 straight past this worksheet to page 91.
+
+### NEXT: page 91 onward
+
+Page 91 opens with the tail of the caution carried from page 89 - **do not
+re-author it** - and then runs Line 8a through Line 8o as bold run-in topics
+(net operating loss, gambling, cancellation of debt, foreign earned income,
+jury duty pay, prizes and awards, stock options, and so on). Page 92 continues
+the same series. Both are dense lists of short topics; expect the
+tranche-25 pattern, where promoting every run-in lead to a heading is what
+makes the page usable.
+
+Run `carried_block_check.cjs` on page **91** against tranche 29 (not page 90,
+which carries nothing).
+
+Then Schedule 1's Part II adjustments, Schedule 1-A (101-110), Schedule 2
+(111-114) and Schedule 3 (115-117), each a top-level TOC entry opening at
+level 2. Then the back matter: Tax Topics (118), the Disclosure/Privacy Act
+notice (120), Major Categories of Federal Income and Outlays (122), and the
+MECHANICAL Index (123-126). Do not hand-author the Index.
