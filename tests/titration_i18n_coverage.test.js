@@ -206,11 +206,16 @@ describe('titration i18n coverage', () => {
     // literally into a character class is fragile across encodings, and a silently
     // broken range makes this assertion fail on every CJK pack for no visible reason.
     const JOINABLE = /[\s־‐‑-]$|[　-〿぀-ヿ㐀-䶿一-鿿가-힯＀-￯]$/;
+    // A handful of joins are correct for reasons no character test can infer — the
+    // NEXT fragment supplies the space, or the string ends on an opening bracket.
+    // Each one is listed in the baseline with its reason, so it is a reviewed decision
+    // rather than a rule quietly widened until nothing fails.
+    const EXCEPT = new Set(Object.keys(baseline.join_exceptions || {}));
     const offenders = [];
     for (const pack of baseline.complete) {
       const t = packTitration(pack);
       for (const [k, en] of Object.entries(englishSource)) {
-        if (!t[k]) continue;
+        if (!t[k] || EXCEPT.has(`${pack}.${k}`)) continue;
         if (/\s$/.test(en) && !JOINABLE.test(t[k])) offenders.push(`${pack}.${k}`);
         if (!/\s$/.test(en) && /\s$/.test(t[k])) offenders.push(`${pack}.${k} (unexpected trailing space)`);
       }

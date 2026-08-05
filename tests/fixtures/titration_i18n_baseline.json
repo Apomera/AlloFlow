@@ -22,6 +22,8 @@
     "haitian_creole",
     "hebrew",
     "italian",
+    "japanese",
+    "korean",
     "polish",
     "portuguese_angola",
     "portuguese_brazil",
@@ -60,12 +62,12 @@
     "igbo": 145,
     "indonesian": 145,
     "italian": 0,
-    "japanese": 145,
+    "japanese": 0,
     "kannada": 145,
     "khmer": 145,
     "kinyarwanda": 145,
     "kirundi": 145,
-    "korean": 145,
+    "korean": 0,
     "latin": 145,
     "lingala": 145,
     "malayalam": 145,
@@ -93,5 +95,10 @@
     "urdu": 145,
     "vietnamese": 0,
     "yoruba": 145
+  },
+  "join_exceptions": {
+    "japanese.sr_cm": "Japanese does not space before the following particle: \"10.0 cm上\".",
+    "korean.sr_cm": "The next fragment (sr_above/sr_below) carries the leading space: \"10.0 cm 위\".",
+    "korean.bench_punchline_a": "Ends with an opening parenthesis; the vessel name follows directly."
   }
 }
