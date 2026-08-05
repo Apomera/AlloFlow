@@ -45,6 +45,23 @@
     if (CHECKPOINT_GATED_SUPPORTS.indexOf(s) >= 0) return false;
     return false; // unclassified generative support: gated, never guessed open
   }
+  // Which KIND of help was this? Read-aloud and a request to write a paragraph
+  // are not the same event, and a record that counts them together tells the
+  // teacher something false about both. 'unattributed' is a real answer, not a
+  // failure: it means the calling feature did not declare itself, and it must
+  // never be presented as though it were the generative case.
+  var SUPPORT_KINDS = ['access', 'generative', 'unattributed'];
+  function classifySupport(support) {
+    var v = String(support || '').toLowerCase();
+    if (CHECKPOINT_ALWAYS_ALLOWED.indexOf(v) >= 0) return 'access';
+    if (CHECKPOINT_GATED_SUPPORTS.indexOf(v) >= 0) return 'generative';
+    return 'unattributed';
+  }
+  // Deliberately NOT the same function as isAllowedDuringCheckpoint. That one
+  // gates a checkpoint and must fail CLOSED (unknown => denied). This one
+  // describes a past event and must fail HONEST (unknown => 'we do not know'),
+  // because reporting an unlabelled call as generative would invent a claim.
+
   function bucketDuration(sec) {
     var n = Number(sec);
     if (!isFinite(n) || n < 0) return 'unknown';
@@ -344,10 +361,14 @@
   function summarizeProcess(exported) {
     var evts = (exported && exported.events) || [];
     var sessions = 0, activeMs = 0, lastT = null, aiCount = 0, pasteEvents = [], checkpoints = 0, edits = 0;
+    var kinds = { access: 0, generative: 0, unattributed: 0 };
     for (var i = 0; i < evts.length; i++) {
       var e = evts[i];
       if (e.type === 'session' && (e.action === 'start' || e.action === 'resume')) sessions++;
-      if (e.type === 'ai') aiCount++;
+      if (e.type === 'ai') {
+        aiCount++;
+        kinds[classifySupport(e.support)]++;
+      }
       if (e.type === 'checkpoint') checkpoints++;
       if (e.type === 'edit') edits++;
       if (e.type === 'paste') pasteEvents.push({ t: e.t, chars: e.chars, sourceHint: e.sourceHint });
@@ -359,25 +380,50 @@
       activeMinutes: Math.round(activeMs / 60000),
       editBuckets: edits,
       aiInteractions: aiCount,
+      // KIND counts only. Which particular helper a student leaned on is
+      // support-lens data (summarizeSupport) and must not appear here: an
+      // integrity view listing a child's accommodations puts the accommodation
+      // itself under question. Kinds give the teacher what they need — that
+      // most of this was access, not generation — without naming any of it.
+      aiKinds: kinds,
       pasteEvents: pasteEvents.slice(0, 200),
       checkpoints: checkpoints
     };
   }
+  // Render the breakdown as plain language. Accommodations are named as
+  // accommodations; unlabelled calls are named as unknown rather than folded
+  // into either side. No adjectives, no totals-as-judgement.
+  function describeAiUse(s) {
+    var k = (s && s.aiKinds) || { access: 0, generative: 0, unattributed: 0 };
+    var total = (s && s.aiInteractions) || 0;
+    if (!total) return 'no AlloFlow helpers';
+    var parts = [];
+    if (k.access) parts.push(k.access + ' access support' + (k.access === 1 ? '' : 's'));
+    if (k.generative) parts.push(k.generative + ' writing or explanation helper' + (k.generative === 1 ? '' : 's'));
+    if (k.unattributed) parts.push(k.unattributed + ' helper' + (k.unattributed === 1 ? '' : 's') + ' not identified');
+    return parts.join(', ');
+  }
+
   // Support-fade lens: prompt-level series over time for MTSS/RTI progress
   // views (Leadership Hub). Consumed by team-facing surfaces ONLY — never
   // rendered beside the integrity summary.
   function summarizeSupport(exported) {
     var evts = (exported && exported.events) || [];
     var series = [];
+    var bySupport = {};
     var counts = { model: 0, guided: 0, hint: 0, none: 0 };
     for (var i = 0; i < evts.length; i++) {
       var e = evts[i];
       if (e.type !== 'ai') continue;
       var level = PROMPT_LEVELS.indexOf(e.promptLevel) >= 0 ? e.promptLevel : 'none';
       counts[level]++;
+      var name = String(e.support || '') || 'unspecified';
+      bySupport[name] = (bySupport[name] || 0) + 1;
       series.push({ t: e.t, promptLevel: level, support: e.support });
     }
-    return { promptLevelCounts: counts, series: series.slice(0, 2000) };
+    // bySupport lives HERE, in the fade lens, where naming a scaffold is the
+    // point: a team watching support fade needs to know which scaffold faded.
+    return { promptLevelCounts: counts, bySupport: bySupport, series: series.slice(0, 2000) };
   }
 
   // ── P3: comprehension checkpoints ────────────────────────────────────────
@@ -570,7 +616,7 @@
     }
     var s = summarizeProcess(exported || { events: [] });
     return {
-      summary: 'You worked for about ' + s.activeMinutes + ' minutes across ' + s.sessions + ' session' + (s.sessions === 1 ? '' : 's') + ', typed in ' + s.editBuckets + ' burst' + (s.editBuckets === 1 ? '' : 's') + ', and used AlloFlow helpers ' + s.aiInteractions + ' time' + (s.aiInteractions === 1 ? '' : 's') + '.',
+      summary: 'You worked for about ' + s.activeMinutes + ' minutes across ' + s.sessions + ' session' + (s.sessions === 1 ? '' : 's') + ', typed in ' + s.editBuckets + ' burst' + (s.editBuckets === 1 ? '' : 's') + ', and used ' + describeAiUse(s) + '.',
       lines: lines,
       collected: describeCollection(),
       neverCollected: NEVER_COLLECTED.slice(),
@@ -595,7 +641,7 @@
       return {
         present: true,
         summaryLine: s.sessions + ' session' + (s.sessions === 1 ? '' : 's') + ' · ' +
-          s.activeMinutes + ' min · ' + s.aiInteractions + ' AI support' + (s.aiInteractions === 1 ? '' : 's') +
+          s.activeMinutes + ' min · ' + describeAiUse(s) +
           (s.checkpoints ? ' · ' + s.checkpoints + ' checkpoint' + (s.checkpoints === 1 ? '' : 's') + ' attached' : ''),
         process: s,
         startedWallClock: String(exported.startedWallClock || ''),
@@ -786,7 +832,7 @@
         style: { marginTop: 6, fontSize: '0.78rem', textDecoration: 'underline', background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: '#475569' }
       }, isOpen ? 'Hide details' : 'See how this work came together'),
       isOpen ? h('div', { style: { marginTop: 6 } },
-        h('div', { style: muted }, 'Sessions: ' + p.sessions + ' · Active time: ' + p.activeMinutes + ' min · Typing bursts: ' + p.editBuckets + ' · AlloFlow AI supports used: ' + p.aiInteractions),
+        h('div', { style: muted }, 'Sessions: ' + p.sessions + ' · Active time: ' + p.activeMinutes + ' min · Typing bursts: ' + p.editBuckets + ' · Helpers used: ' + describeAiUse(p)),
         (p.pasteEvents && p.pasteEvents.length)
           ? h('div', { style: { marginTop: 4 } },
               h('div', { style: muted }, 'Text arrived in ' + p.pasteEvents.length + ' larger insertion' + (p.pasteEvents.length === 1 ? '' : 's') + ':'),
@@ -846,6 +892,9 @@
     makeCheckpointSalt: makeCheckpointSalt,
     hashCheckpointAnswer: hashCheckpointAnswer,
     isAllowedDuringCheckpoint: isAllowedDuringCheckpoint,
+    classifySupport: classifySupport,
+    SUPPORT_KINDS: SUPPORT_KINDS.slice(),
+    describeAiUse: describeAiUse,
     isStudentAuthoredSpan: isStudentAuthoredSpan,
     bucketDuration: bucketDuration,
     CHECKPOINT_ALWAYS_ALLOWED: CHECKPOINT_ALWAYS_ALLOWED.slice(),
