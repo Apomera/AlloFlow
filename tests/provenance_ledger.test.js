@@ -178,7 +178,12 @@ describe('constraints in the module text itself', () => {
     expect(src.toLowerCase()).not.toContain('cheat');
     expect(src).not.toMatch(/integrity ?score|suspicio|flagged/i);
     expect(src).toContain('Tamper-EVIDENT, never claimed tamper-proof');
-    expect(src).not.toMatch(/tamper-proof(?!:)/i); // the phrase appears only in the negation
+    // "tamper-proof" may appear ONLY when negated — every occurrence must be
+    // preceded by "not" or "never claimed".
+    for (const m of src.matchAll(/tamper-proof/gi)) {
+      const before = src.slice(Math.max(0, m.index - 30), m.index);
+      expect(before, 'un-negated tamper-proof claim at index ' + m.index).toMatch(/not |never claimed /i);
+    }
   });
   it('is inert: nothing in the app references the module yet (P1 gates activation)', () => {
     for (const f of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt']) {
