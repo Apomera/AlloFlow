@@ -1899,6 +1899,25 @@ function _getWhisperPipeline() {
 function _voiceStandbyPref() { try { return localStorage.getItem("allo_voice_standby") === "on"; } catch (_) { return false; } }
 function _voiceEnginePref() { try { return localStorage.getItem("allo_voice_engine") === "webspeech" ? "webspeech" : "auto"; } catch (_) { return "auto"; } }
 
+// ── P-1 intent router, navigation lane (provenance design §13.1) ───────────
+// "Where is X?" is a TOOL question, not a lesson question — answered
+// directly for every audience, because spotlighting is local DOM work with
+// no AI involved ("Socratic about the lesson, direct about the tool").
+// Deliberately CONSERVATIVE: bare "find/locate" is excluded here (unlike the
+// voice loop's router) so content asks like "find me a book about volcanoes"
+// can never be hijacked into UI pointing inside the chat.
+var NAV_READING_RE = /\b(?:book|books|reading|readings|story|stories|article|articles|source|sources|text|texts|passage|poem|video)s?\b/i;
+var NAV_INTENT_RE = /^(?:where(?:'s| is| are| do i find| can i find)?|show me where|how do i (?:find|open|get to))\s+(?:the\s+|my\s+|a\s+|is\s+|are\s+)?(.{2,60}?)[?.!\s]*$/i;
+function detectNavigationIntent(text) {
+  var s = String(text || '').trim();
+  if (!s) return { isNav: false, target: '' };
+  var m = NAV_INTENT_RE.exec(s);
+  if (!m) return { isNav: false, target: '' };
+  var target = m[1].trim();
+  if (!target || NAV_READING_RE.test(target)) return { isNav: false, target: '' };
+  return { isNav: true, target: target };
+}
+
 function createVoiceLoop(getCtx) {
   let rec = null, active = false, errStreak = 0, routeController = null, routeSerial = 0, pageHideHandler = null;
   let whisperState = null, engineName = "webspeech", standby = false, awake = false, awakeTimer = null;
@@ -2983,6 +3002,6 @@ const AlloCommandProgress = ({ ctx }) => {
 };
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.AlloCommands = { modelCache: modelCache, _voicePure: { downsampleAudio: downsampleAudio, detectWakeCommand: detectWakeCommand, createVadSegmenter: createVadSegmenter }, AlloCommandPalette: AlloCommandPalette, AlloCommandProgress: AlloCommandProgress, buildAlloCommands: buildAlloCommands, getCommandAudience: getCommandAudience, getCommandAvailability: getCommandAvailability, getLocalCommandInsights: getLocalCommandInsights, mergeCommandProgressItems: mergeCommandProgressItems, scoreCommand: scoreCommand, routeUtterance: routeUtterance, executeCommand: executeCommand, cancelCommand, runCommandById: runCommandById, findReadingMatches: findReadingMatches, normalizeReadingRequest: normalizeReadingRequest, readingMatchReasons: readingMatchReasons, readingMatchWhyText: readingMatchWhyText, createVoiceLoop: createVoiceLoop, looksMultiStep: looksMultiStep, getCommandContract: getCommandContract, sanitizeCommandParams: sanitizeCommandParams, validatePlan: validatePlan, planUtterance: planUtterance, runPlan: runPlan };
+  window.AlloModules.AlloCommands = { modelCache: modelCache, detectNavigationIntent: detectNavigationIntent, _voicePure: { downsampleAudio: downsampleAudio, detectWakeCommand: detectWakeCommand, createVadSegmenter: createVadSegmenter }, AlloCommandPalette: AlloCommandPalette, AlloCommandProgress: AlloCommandProgress, buildAlloCommands: buildAlloCommands, getCommandAudience: getCommandAudience, getCommandAvailability: getCommandAvailability, getLocalCommandInsights: getLocalCommandInsights, mergeCommandProgressItems: mergeCommandProgressItems, scoreCommand: scoreCommand, routeUtterance: routeUtterance, executeCommand: executeCommand, cancelCommand, runCommandById: runCommandById, findReadingMatches: findReadingMatches, normalizeReadingRequest: normalizeReadingRequest, readingMatchReasons: readingMatchReasons, readingMatchWhyText: readingMatchWhyText, createVoiceLoop: createVoiceLoop, looksMultiStep: looksMultiStep, getCommandContract: getCommandContract, sanitizeCommandParams: sanitizeCommandParams, validatePlan: validatePlan, planUtterance: planUtterance, runPlan: runPlan };
   console.log('[CDN] AlloCommands loaded');
 })();

@@ -1834,6 +1834,29 @@ async function planAndSendUdlMessage(manualText, deps) {
         }
       };
       try {
+        // P-1 intent router, navigation lane (docs/PROCESS_PROVENANCE_DESIGN
+        // §13.1): "where is X?" gets a DIRECT answer + spotlight for every
+        // audience — it is local DOM pointing with no AI call, so it runs even
+        // when the assignment's student AI policy is off, and it skips the
+        // confirm-chip ceremony (non-destructive, instantly reversible).
+        // routeUtterance's own where-is lane is preview-gated and never fires
+        // from chat; this is the chat's counterpart.
+        if (_AC && typeof _AC.detectNavigationIntent === 'function') {
+          const _nav = _AC.detectNavigationIntent(_rawUtter);
+          if (_nav && _nav.isNav) {
+            const _navCtx = _alloCmdCtx();
+            if (typeof _navCtx.whereIs === 'function') {
+              const _navAnswer = _navCtx.whereIs(_nav.target);
+              if (_navAnswer) {
+                _releaseBotCommandPlanning();
+                if (!manualText) setUdlInput('');
+                setUdlMessages(prev => [...prev, { role: 'user', text: _rawUtter }, { role: 'model', text: '📍 ' + _navAnswer }]);
+                try { if (window.alloAnnounce) window.alloAnnounce(_navAnswer); } catch (_) {}
+                return;
+              }
+            }
+          }
+        }
         if (_AC && typeof _AC.routeUtterance === 'function' && _rawUtter.trim()) {
           const _match = await _AC.routeUtterance(_alloCmdCtx(), _rawUtter, { allowAi: true, preview: true, signal: _botPlanningSignal });
           if (!_isCurrentBotCommandPlanning()) return;

@@ -925,6 +925,37 @@ describe('on-device voice engine', () => {
   });
 });
 
+// P-1 intent router, navigation lane (2026-08-04): "Socratic about the
+// lesson, direct about the tool." Design doc §13.1.
+describe('navigation intent lane', () => {
+  it('detects clear navigation phrasings and extracts the target', () => {
+    const d = AC.detectNavigationIntent;
+    expect(d('where is the export button?')).toEqual({ isNav: true, target: 'export button' });
+    expect(d("Where's my glossary")).toEqual({ isNav: true, target: 'glossary' });
+    expect(d('show me where the settings are')).toEqual({ isNav: true, target: 'settings are' });
+    expect(d('how do i open the learning hub')).toEqual({ isNav: true, target: 'learning hub' });
+    expect(d('where do I find the quiz maker?')).toEqual({ isNav: true, target: 'quiz maker' });
+  });
+  it('never hijacks content questions — reading asks and bare find/locate stay with chat', () => {
+    const d = AC.detectNavigationIntent;
+    expect(d('find me a book about volcanoes').isNav).toBe(false); // bare "find" excluded by design
+    expect(d('where is the best reading about erosion').isNav).toBe(false); // reading-word guard
+    expect(d('locate the export button').isNav).toBe(false); // bare "locate" excluded (voice loop keeps its own lane)
+    expect(d('what makes volcanoes erupt').isNav).toBe(false);
+    expect(d('').isNav).toBe(false);
+  });
+  it('the chat fast path runs BEFORE the preview router, uses whereIs, and calls no AI', () => {
+    const src = readFileSync('udl_chat_source.jsx', 'utf-8');
+    const lane = src.slice(src.indexOf('detectNavigationIntent'), src.indexOf('routeUtterance(_alloCmdCtx(), _rawUtter'));
+    expect(lane.length).toBeGreaterThan(0); // nav lane sits above the preview router
+    expect(lane).toContain('_navCtx.whereIs(_nav.target)');
+    expect(lane).not.toContain('callGemini'); // pure local DOM pointing — works with student AI off
+    expect(lane).toContain('window.alloAnnounce'); // screen-reader parity
+    // And the compiled module carries it (forgot-to-rebuild guard).
+    expect(readFileSync('udl_chat_module.js', 'utf-8')).toContain('detectNavigationIntent');
+  });
+});
+
 describe('runCommandById awaitCompletion isolation', () => {
   it('keeps the sync path synchronous for existing surfaces', () => {
     const { ctx } = mkCtx();
