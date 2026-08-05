@@ -3444,6 +3444,31 @@ function _alloShouldSuppressLearnerDeviceStorage(isTeacher, showingStudentEntry,
         || Boolean(showingStudentEntry)
         || (!isTeacher && (Boolean(sessionCode) || _alloMbBridgeActive()));
 }
+// Provenance attribution: a feature names itself immediately before calling
+// the AI, and the wrapper below consumes that name at the moment of the call.
+// One-shot and short-lived by design — a stale declaration must decay to the
+// unattributed default rather than mislabel someone else's call. Erring toward
+// 'ai-help' understates; erring toward a generative label would invent a claim
+// about a student, which is the failure this whole design refuses.
+let _alloPendingAiSupport = null;
+function _alloDeclareAiSupport(support, promptLevel) {
+    const name = String(support || '').slice(0, 60);
+    if (!name) { _alloPendingAiSupport = null; return; }
+    _alloPendingAiSupport = { support: name, promptLevel: promptLevel || 'none', at: Date.now() };
+}
+function _alloConsumeAiSupport() {
+    const pending = _alloPendingAiSupport;
+    _alloPendingAiSupport = null;
+    if (!pending) return { support: 'ai-help', promptLevel: 'none' };
+    // 3s is far longer than the gap between declaring and calling (they are
+    // adjacent statements) and far shorter than any plausible user pause.
+    if (Date.now() - pending.at > 3000) return { support: 'ai-help', promptLevel: 'none' };
+    return pending;
+}
+// Exposed so loaded modules (chat, STEM tools, view modules) can name
+// themselves without importing anything. Undeclared calls stay 'ai-help',
+// which is honest: AI was used, and we do not know which feature asked.
+if (typeof window !== 'undefined') window.__alloDeclareAiSupport = _alloDeclareAiSupport;
 // Provenance observation: the module-level callGemini binding is reassigned
 // at three sites, so a one-shot window monkeypatch would be clobbered. Wrapping
 // the assigned VALUE survives every reassignment. The wrapper is transparent —
@@ -3452,7 +3477,10 @@ function _alloShouldSuppressLearnerDeviceStorage(isTeacher, showingStudentEntry,
 function _alloWrapCallGeminiForProvenance(fn) {
     if (typeof fn !== 'function' || fn._alloProvWrapped) return fn;
     const wrapped = function (...args) {
-        try { if (window.__alloNoteAiUse) window.__alloNoteAiUse('ai-help'); } catch (_) {}
+        try {
+            const declared = _alloConsumeAiSupport();
+            if (window.__alloNoteAiUse) window.__alloNoteAiUse(declared.support, declared.promptLevel);
+        } catch (_) {}
         return fn.apply(this, args);
     };
     try {
@@ -19403,6 +19431,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                             const prompt = bp.mode === 'translate'
                               ? `Translate the following text to ${targetLang}. Keep it at ${gradeLevel} reading level. Return ONLY the translation, nothing else:\n\n${bp.text}`
                               : `Explain the following concept at ${gradeLevel} reading level. Also provide a translation in ${targetLang}. Format your response as JSON: {"english": "explanation in English", "translated": "explanation in ${targetLang}", "terms": ["key", "vocabulary", "terms"]}\n\nConcept: ${bp.text}`;
+                            // Named so a translation is recorded as the access
+                            // support it is, not as generic 'AI help'.
+                            _alloDeclareAiSupport(bp.mode === 'translate' ? 'translate' : 'explain_content', 'none');
                             const response = await callGemini(prompt, false, false, 0.3);
                             let parsed;
                             try {

@@ -129,8 +129,11 @@ describe('the two-lens wall (hard constraint 8)', () => {
     expect(s.aiInteractions).toBe(2);
     expect(s.pasteEvents[0]).toEqual({ t: 60000, chars: 40, sourceHint: 'intra-app' });
     expect(s.checkpoints).toBe(1);
-    const flat = JSON.stringify(s);
-    expect(flat).not.toContain('promptLevel');
+    // Case-INSENSITIVE on purpose. This assertion once passed only because a
+    // field was named `aiBySupport`: the capital S slipped a per-accommodation
+    // breakdown past a wall test that was meant to stop exactly that.
+    const flat = JSON.stringify(s).toLowerCase();
+    expect(flat).not.toContain('promptlevel');
     expect(flat).not.toContain('support');
   });
   it('support summary carries the fade series and stays out of the other lens', async () => {
@@ -151,7 +154,11 @@ describe('P2 — teacher process panel view-model', () => {
     const project = P.attachProvenance({ title: 'w' }, await led.exportForSubmission());
     const m = await P.buildProcessPanelModel(JSON.parse(JSON.stringify(project)));
     expect(m.present).toBe(true);
-    expect(m.summaryLine).toContain('1 AI support');
+    // 'glossary' is an access support, and the line now says so. The old
+    // wording ('1 AI support') counted it identically to a request to write a
+    // paragraph, which is the flattening this pass exists to remove.
+    expect(m.summaryLine).toContain('1 access support');
+    expect(m.summaryLine).not.toContain('writing or explanation');
     expect(m.summaryLine).toContain('1 checkpoint attached');
     expect(m.integrity.verified).toBe(true);
     expect(m.integrity.disclaimer).toContain('tamper-evident, not tamper-proof');
@@ -400,7 +407,10 @@ describe('constraints in the module text itself', () => {
     expect(w).toContain('return fn.apply(this, args);');       // never alters the call
     expect(w).toContain('_alloflowBackend');                    // local-backend detection survives
     expect(w).toContain("if (typeof fn !== 'function' || fn._alloProvWrapped) return fn;"); // no double-wrap
-    expect(w).toMatch(/try \{ if \(window\.__alloNoteAiUse\)/); // recording can never throw into the call
+    expect(w).toContain('try {');   // recording can never throw into the call
+    // The label is no longer hard-coded; it is whatever the calling feature
+    // declared, defaulting to the unattributed 'ai-help'.
+    expect(w).toContain('window.__alloNoteAiUse(declared.support, declared.promptLevel)');
   });
   // End-to-end usability (P5 + P2): a teacher can turn it on, and a teacher
   // can read the result. Without both, the ledger is a feature nobody reaches.
@@ -516,3 +526,116 @@ describe('constraints in the module text itself', () => {
     expect((await P.verifyLedger(back.provenance.ledger)).ok).toBe(true);
   });
 });
+
+describe('AI attribution — which helper, not just how many', () => {
+  it('classifies access supports apart from generative ones', () => {
+    expect(P.classifySupport('read_aloud')).toBe('access');
+    expect(P.classifySupport('translate')).toBe('access');
+    expect(P.classifySupport('speech_to_text')).toBe('access');
+    expect(P.classifySupport('compose')).toBe('generative');
+    expect(P.classifySupport('allobot')).toBe('generative');
+  });
+
+  it('calls an unknown support UNATTRIBUTED, never generative', () => {
+    // The direction matters. Guessing 'generative' for an unlabelled call
+    // manufactures a claim about a student; guessing 'access' would hide one.
+    // 'unattributed' is the only honest answer and the only safe one.
+    expect(P.classifySupport('ai-help')).toBe('unattributed');
+    expect(P.classifySupport('some_future_feature')).toBe('unattributed');
+    expect(P.classifySupport('')).toBe('unattributed');
+    expect(P.classifySupport(undefined)).toBe('unattributed');
+  });
+
+  it('is NOT the checkpoint gate, which must fail the other way', () => {
+    // isAllowedDuringCheckpoint denies the unknown (fail closed); this
+    // describes a past event and must not invent one (fail honest). If these
+    // two ever collapse into one function, one of the behaviours is wrong.
+    expect(P.isAllowedDuringCheckpoint('some_future_feature')).toBe(false);
+    expect(P.classifySupport('some_future_feature')).toBe('unattributed');
+  });
+
+  it('counts by name so accommodations stop inflating an integrity number', async () => {
+    const clock = mkClock();
+    const led = P.createLedger({ now: clock.now });
+    await led.append('session', { action: 'start' });
+    await led.append('ai', { support: 'read_aloud', promptLevel: 'none' });
+    await led.append('ai', { support: 'read_aloud', promptLevel: 'none' });
+    await led.append('ai', { support: 'translate', promptLevel: 'none' });
+    await led.append('ai', { support: 'compose', promptLevel: 'model' });
+    await led.append('ai', { support: 'ai-help', promptLevel: 'none' });
+    const s = P.summarizeProcess(await led.exportForSubmission());
+    expect(s.aiInteractions).toBe(5);
+    expect(s.aiKinds).toEqual({ access: 3, generative: 1, unattributed: 1 });
+    // The NAMES are deliberately absent from the integrity lens: telling a
+    // teacher WHICH accommodations a student leaned on, inside a panel about
+    // integrity, is the "needs help reads as might be cheating" failure.
+    expect(JSON.stringify(s)).not.toContain('read_aloud');
+    // They live in the fade lens, where naming a scaffold is the whole point.
+    const fade = P.summarizeSupport(await led.exportForSupport());
+    expect(fade.bySupport).toEqual({ read_aloud: 2, translate: 1, compose: 1, 'ai-help': 1 });
+  });
+
+  it('describes the mix in words without grading it', () => {
+    const line = P.describeAiUse({ aiInteractions: 5, aiKinds: { access: 3, generative: 1, unattributed: 1 } });
+    expect(line).toContain('3 access supports');
+    expect(line).toContain('1 writing or explanation helper');
+    expect(line).toContain('1 helper not identified');
+    for (const word of ['cheat', 'suspicio', 'violation', 'misconduct', 'excessive', 'too many']) {
+      expect(line.toLowerCase()).not.toContain(word);
+    }
+  });
+
+  it('says nothing rather than zero when no helper was used', () => {
+    expect(P.describeAiUse({ aiInteractions: 0, aiKinds: { access: 0, generative: 0, unattributed: 0 } }))
+      .toBe('no AlloFlow helpers');
+  });
+
+  it('keeps the two-lens wall: the breakdown carries no promptLevel', async () => {
+    const clock = mkClock();
+    const led = P.createLedger({ now: clock.now });
+    await led.append('ai', { support: 'compose', promptLevel: 'model' });
+    const s = P.summarizeProcess(await led.exportForSubmission());
+    // Support level is the OTHER lens. It may never ride along with the
+    // integrity summary, however convenient the join would be.
+    expect(JSON.stringify(s)).not.toContain('promptLevel');
+    expect(JSON.stringify(s)).not.toContain('model');
+  });
+});
+
+describe('AI attribution — the host declares the calling feature', () => {
+  const anti = (p) => readFileSync(new URL('../' + p, import.meta.url), 'utf8');
+  const COPIES = ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt'];
+
+  it('replaces the hard-coded label with a consumed declaration, in BOTH copies', () => {
+    for (const p of COPIES) {
+      const src = anti(p);
+      expect(src, p).toContain('function _alloDeclareAiSupport(');
+      expect(src, p).toContain('const declared = _alloConsumeAiSupport();');
+      // The old blanket label must be gone from the wrapper.
+      expect(src, p).not.toContain("window.__alloNoteAiUse('ai-help')");
+    }
+  });
+
+  it('decays an unconsumed declaration instead of mislabelling a later call', () => {
+    for (const p of COPIES) {
+      const src = anti(p);
+      // One-shot: consuming clears it.
+      expect(src, p).toContain('_alloPendingAiSupport = null;');
+      // And expiring: a stale declaration falls back rather than sticking.
+      expect(src, p).toMatch(/Date\.now\(\) - pending\.at > \d+/);
+    }
+  });
+
+  it('labels the student translate/explain path', () => {
+    for (const p of COPIES) {
+      expect(anti(p), p).toContain("_alloDeclareAiSupport(bp.mode === 'translate' ? 'translate' : 'explain_content'");
+    }
+  });
+
+  it('exposes the declaration to loaded modules', () => {
+    for (const p of COPIES) {
+      expect(anti(p), p).toContain('window.__alloDeclareAiSupport = _alloDeclareAiSupport;');
+    }
+  });
+});
+
