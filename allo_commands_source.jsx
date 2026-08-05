@@ -1072,11 +1072,18 @@ async function routeUtterance(ctx, rawText, opts = {}) {
     const m = text.match(g.re);
     if (m) {
       const cmd = commands.find((c) => c.id === g.id);
+      // The create_lesson grammar fires before the scorer, so a goal-shaped ask
+      // would short-circuit to the seed command and never reach the planner.
+      if (opts.preview && cmd && _deferToPlanner(cmd, text)) return null;
       if (cmd) return _runCmd(cmd, 'grammar', g.params(m));
     }
   }
   let best = null, bestScore = 0;
   for (const c of commands) { const s = scoreCommand(c, text); if (s > bestScore) { bestScore = s; best = c; } }
+  // In the chat, a goal-shaped ask that merely matched a seed command is worth
+  // more than the seed. Returning null lets the caller's planner branch expand
+  // it. Voice and the palette are untouched: they run the match as before.
+  if (opts.preview && bestScore >= 60 && _deferToPlanner(best, text)) return null;
   // Palette/voice accept 60+; the bot CHAT (preview) demands 80+ on a >=3 char
   // utterance so a stray short opener can't be read as a command.
   if (bestScore >= 60 && (!opts.preview || (bestScore >= 80 && text.length >= 3))) return _runCmd(best, 'deterministic');
@@ -1091,12 +1098,13 @@ async function routeUtterance(ctx, rawText, opts = {}) {
       const notes = contract.params.length ? (' [params ' + contract.params.join(', ') + ']') : '';
       return c.id + ': ' + c.label + (c.aliases && c.aliases.length ? (' (' + c.aliases.slice(0, 3).join(', ') + ')') : '') + notes;
     }).join('\n');
-    const out = await ctx.callGemini('A user typed a request to an education app\'s assistant. If it clearly maps to ONE of these app commands, return it; otherwise commandId must be null. Commands:\n' + menu + '\n\nUser: "' + text.replace(/"/g, '\'') + '"\n\nReturn ONLY JSON: {"commandId": string | null, "params": object, "confidence": number between 0 and 1}. params carries values the user stated (e.g. {"topic": "photosynthesis", "grade": "5"} or {"size": "20"} or {"language": "Vietnamese"}) — empty object if none. Use null commandId unless you are confident they want the APP ACTION (not a content question).', false, false, null, null, opts.signal || null);
+    const out = await ctx.callGemini(_intentContextBrief(ctx) + 'A user typed a request to an education app\'s assistant. If it clearly maps to ONE of these app commands, return it; otherwise commandId must be null. Commands:\n' + menu + '\n\nUser: "' + text.replace(/"/g, '\'') + '"\n\nReturn ONLY JSON: {"commandId": string | null, "params": object, "confidence": number between 0 and 1}. params carries values the user stated (e.g. {"topic": "photosynthesis", "grade": "5"} or {"size": "20"} or {"language": "Vietnamese"}) — empty object if none. Use null commandId unless you are confident they want the APP ACTION (not a content question).', false, false, null, null, opts.signal || null);
     _throwIfCommandPlanningAborted(opts.signal);
     const m = String(out || '').match(/\{[\s\S]*\}/);
     const j = JSON.parse(m ? m[0] : String(out));
     if (j && j.commandId && typeof j.confidence === 'number' && j.confidence >= 0.7) {
       const cmd = commands.find((c) => c.id === j.commandId);
+      if (opts.preview && cmd && _deferToPlanner(cmd, text)) return null;
       if (cmd) return _runCmd(cmd, 'ai', j.params || {});
     }
   } catch (error) { if (error && error.name === 'AbortError') throw error; }
@@ -1274,9 +1282,72 @@ function cancelCommand(ctx, commandOrId, opts = {}) {
   return executeCommand(ctx, id, params, opts);
 }
 
+// ── Intent resolution ───────────────────────────────────────────────────────
+// Both the single-command router and the planner used to send the model a flat
+// command menu and the raw utterance, and nothing else. So "make this easier"
+// or "do that here" had no referent, and the one part of the system that
+// reasons was the only part flying blind: these signals already existed on the
+// command context, and were being spent solely on ranking the Ctrl+K palette.
+// Bounded on purpose -- a brief, not a state dump.
+function _intentRecentCommandIds(limit) {
+  try {
+    const usage = _readCommandUsage();
+    return Object.keys(usage)
+      .sort((a, b) => (Number(usage[b] && usage[b].lastUsed) || 0) - (Number(usage[a] && usage[a].lastUsed) || 0))
+      .slice(0, limit || 4);
+  } catch (_) { return []; }
+}
+function _intentContextBrief(ctx) {
+  if (!ctx) return "";
+  const lines = [];
+  const add = (label, value) => { if (value) lines.push(label + ": " + String(value).slice(0, 120)); };
+  try {
+    add("Audience", getCommandAudience(ctx));
+    const surfaces = [];
+    if (ctx.educatorHubOpen) surfaces.push("Educator Hub");
+    if (ctx.learningHubOpen) surfaces.push("Learning Hub");
+    if (ctx.stemLabOpen) surfaces.push("STEM Lab" + (ctx.stemLabTool ? " (" + ctx.stemLabTool + ")" : ""));
+    if (ctx.symbolStudioOpen) surfaces.push("Symbol Studio");
+    if (ctx.behaviorLensOpen) surfaces.push("Behavior Lens");
+    if (ctx.pipelineOpen) surfaces.push(ctx.pipelineFixRunning ? "PDF remediation (fixing now)" : "PDF remediation");
+    add("Open right now", surfaces.join(", "));
+    add("Content loaded", ctx.contentLoaded ? (ctx.contentIsGlossary ? "a glossary" : "yes") : "none yet");
+    if (ctx.zenActive) add("Display", "zen mode");
+    if (ctx.focusActive) add("Display", "focus mode");
+    add("Recently ran", _intentRecentCommandIds(4).join(", "));
+  } catch (_) {}
+  if (!lines.length) return "";
+  return "Here is what the user is doing right now. Prefer commands that fit this state, and read vague references like \"this\" or \"here\" against it.\n" + lines.join("\n") + "\n\n";
+}
+// A single high-level goal deserves expansion into a full plan even though it
+// contains no "and"/"then" chain. "Make a lesson on volcanoes" should produce
+// the pack a teacher actually wants, not one lonely command.
+function _looksLikeGoal(rawText) {
+  const text = String(rawText || "").trim().toLowerCase();
+  if (text.length < 10) return false;
+  if (!/\b(make|create|build|plan|prepare|prep|design|put together|set up|generate|get me ready)\b/.test(text)) return false;
+  // "Create a lesson about volcanoes for grade 5" must KEEP its precise
+  // single-command match: that grammar extracts topic and grade, which a plan
+  // would lose. Only an explicit breadth signal, or a noun that is inherently
+  // more than one artifact, is worth expanding into a full plan.
+  if (/\b(comprehensive|complete|full|whole|entire|thorough|everything)\b/.test(text)) return true;
+  return /\b(unit|materials|resources|pack|packet|activity set|lesson plans)\b/.test(text);
+}
+// Commands that are a reasonable literal reading of a goal-shaped ask but that
+// deliver far less than the ask implies. When the utterance reads as a goal,
+// hand these to the planner instead of settling for the seed.
+const _INTENT_SEED_COMMANDS = ["create_lesson", "generate_source_text", "generate_outline", "generate_analysis"];
+function _deferToPlanner(cmd, text) {
+  if (!cmd || !cmd.id) return false;
+  if (_INTENT_SEED_COMMANDS.indexOf(cmd.id) < 0) return false;
+  return _looksLikeGoal(text);
+}
 function looksMultiStep(rawText) {
   const text = String(rawText || '').trim();
   if (text.length < 12) return false;
+  // A goal-shaped ask ("make a complete lesson on X") is multi-step in effect
+  // even without a conjunction, so the planner gets a chance at it.
+  if (_looksLikeGoal(text)) return true;
   if (/\b(then|after that|and then|followed by|once (?:that|it)'?s? done|next,)\b/i.test(text)) return true;
   if (/^\s*1[.)]/.test(text) && /\n\s*2[.)]/.test(text)) return true; // pasted numbered list
   // and-chains without "then": a conjunction plus ≥2 command-ish verbs
@@ -1334,7 +1405,7 @@ async function planUtterance(ctx, rawText, opts = {}) {
   }).join('\n');
   try {
     _throwIfCommandPlanningAborted(opts.signal);
-    const out = await ctx.callGemini('A teacher asked an education app\'s assistant to do a multi-step task. Break it into an ORDERED list of app commands chosen ONLY from this menu:\n' + menu + '\n\nTask: "' + text.replace(/"/g, '\'') + '"\n\nReturn ONLY JSON: {"steps": [{"commandId": string, "params": object, "why": string}], "confidence": number between 0 and 1}. Use 2 to 6 steps. A command with requirements may appear only when the current app state already satisfies them or an EARLIER command explicitly says it produces them. Navigation and guided wizards do not produce content unless their contract says so. A command marked [must be final] cannot have later steps. params carries only values the user stated, using the named params in the menu; use {} if none. "why" is a short phrase. Return {"steps": [], "confidence": 0} unless the task CLEARLY maps to a sequence of these app actions (not a content question).', false, false, null, null, opts.signal || null);
+    const out = await ctx.callGemini(_intentContextBrief(ctx) + 'A teacher asked an education app\'s assistant to do a multi-step task. Break it into an ORDERED list of app commands chosen ONLY from this menu:\n' + menu + '\n\nTask: "' + text.replace(/"/g, '\'') + '"\n\nReturn ONLY JSON: {"steps": [{"commandId": string, "params": object, "why": string}], "confidence": number between 0 and 1}. Use 2 to 6 steps. A command with requirements may appear only when the current app state already satisfies them or an EARLIER command explicitly says it produces them. Navigation and guided wizards do not produce content unless their contract says so. A command marked [must be final] cannot have later steps. params carries only values the user stated, using the named params in the menu; use {} if none. "why" is a short phrase. Return {"steps": [], "confidence": 0} unless the task CLEARLY maps to a sequence of these app actions (not a content question).', false, false, null, null, opts.signal || null);
     _throwIfCommandPlanningAborted(opts.signal);
     const m = String(out || '').match(/\{[\s\S]*\}/);
     const j = JSON.parse(m ? m[0] : String(out));
@@ -1368,6 +1439,17 @@ async function runPlan(ctxOrGet, steps, opts = {}) {
   const t = _mkT((getCtx() || {}).t);
   const list = (Array.isArray(steps) ? steps : []).slice(0, 6);
   const results = [];
+  // Get modals out of the way before the agent starts working. Without this a
+  // hub or export sheet left open sits over the whole run, and the plan looks
+  // broken because nothing visible happens. closeOtherPanels with no argument
+  // closes them all; steps that open their own panel still do so as they run.
+  // opts.keepPanels is the escape hatch for callers that own the surface.
+  if (!opts.keepPanels) {
+    try {
+      const _stageCtx = getCtx();
+      if (_stageCtx && typeof _stageCtx.closeOtherPanels === "function") _stageCtx.closeOtherPanels(opts.keepPanel || null);
+    } catch (_) {}
+  }
   // Accept both the legacy polling callback and an AbortSignal so every plan
   // caller can use the same cancellation primitive as routeUtterance. Keep
   // the callback polling at the command boundary: providers receive the
