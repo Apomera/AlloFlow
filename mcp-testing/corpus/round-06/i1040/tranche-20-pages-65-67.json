@@ -1,0 +1,528 @@
+{
+ "schema_version": "1.0",
+ "document": {
+  "title": "2025 Instructions for Form 1040 (and 1040-SR)",
+  "language": "en",
+  "source_page_count": 126,
+  "source_sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a",
+  "document_type": "booklet",
+  "subject": "Internal Revenue Service instructions for the 2025 Form 1040 and Form 1040-SR, including the instructions for Schedules 1 through 3.",
+  "variant": "original"
+ },
+ "blocks": [
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 38. Estimated Tax Penalty",
+   "source_page": 65
+  },
+  {
+   "type": "paragraph",
+   "text": "You may owe this penalty if:",
+   "source_page": 65
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Line 37 is at least $1,000 and it is more than 10% of the tax shown on your return, or",
+    "You didn’t pay enough estimated tax by any of the due dates. This is true even if you are due a refund."
+   ],
+   "source_page": 65
+  },
+  {
+   "type": "paragraph",
+   "text": "For most people, the “tax shown on your return” is the amount on your 2025 Form 1040 or 1040-SR, line 24, minus the total of any amounts shown on lines 27a, 28, 29, and 30; Schedule 3, lines 9 and 12; and Forms 8828, 4137, 5329 (Parts III through IX only), and 8919. Also subtract from line 24 any:",
+   "source_page": 65
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Tax on an excess parachute payment,",
+    "Excise tax on insider stock compensation of an expatriated corporation,",
+    "Uncollected social security and Medicare or RRTA tax on tips or group-term life insurance,",
+    "Look-back interest due under section 167(g) or 460(b)."
+   ],
+   "source_page": 65
+  },
+  {
+   "type": "paragraph",
+   "text": "When figuring the amount on line 24, include household employment taxes only if line 25d is more than zero or you would owe the penalty even if you didn’t include those taxes.",
+   "source_page": 65
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Exception",
+   "source_page": 65
+  },
+  {
+   "type": "paragraph",
+   "text": "You won’t owe the penalty if your 2024 tax return was for a tax year of 12 full months and either of the following applies.",
+   "source_page": 65
+  },
+  {
+   "type": "list",
+   "ordered": true,
+   "items": [
+    "You had no tax shown on your 2024 return and you were a U.S. citizen or resident for all of 2024.",
+    "The total of lines 25d, 26, and Schedule 3, line 11, on your 2025 return is at least 100% of the tax shown on your 2024 return (110% of that amount if you aren’t in the business of farming or fishing, and your adjusted gross income (AGI) shown on your 2024 return was more than $150,000 (more than $75,000 if married filing separately for 2025)). Your estimated tax payments for 2025 must have been made on time and for the required amount."
+   ],
+   "source_page": 65
+  },
+  {
+   "type": "paragraph",
+   "text": "For most people, the “tax shown on your 2024 return” is the amount on your 2024 Form 1040 or 1040-SR, line 24, minus the total of any amounts shown on lines 27, 28, and 29; Schedule 3, lines 9 and 12; and Forms 8828, 4137, 5329 (Parts III through IX only), and 8919. Also subtract from line 24 any:",
+   "source_page": 65
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Tax on an excess parachute payment,",
+    "Excise tax on insider stock compensation of an expatriated corporation,",
+    "Uncollected social security and Medicare or RRTA tax on tips or group-term life insurance, and",
+    "Look-back interest due under section 167(g) or 460(b)."
+   ],
+   "source_page": 65
+  },
+  {
+   "type": "paragraph",
+   "text": "When figuring the amount on line 24, include household employment taxes only if line 25d is more than zero or you would have owed the estimated tax penalty for 2024 even if you didn't include those taxes.",
+   "source_page": 65
+  },
+  {
+   "type": "paragraph",
+   "text": "If the Exception just described doesn’t apply, see the Instructions for Form 2210 for other situations in which you may be able to lower your penalty by filing Form 2210.",
+   "source_page": 65,
+   "runs": [
+    {
+     "text": "If the ",
+     "style": "normal"
+    },
+    {
+     "text": "Exception",
+     "style": "emphasis"
+    },
+    {
+     "text": " just described doesn’t apply, see the Instructions for Form 2210 for other situations in which you may be able to lower your penalty by filing Form 2210.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Figuring the Penalty",
+   "source_page": 65
+  },
+  {
+   "type": "paragraph",
+   "text": "If you choose to figure the penalty yourself, use Form 2210 (or 2210-F for farmers and fishers).",
+   "source_page": 65
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter any penalty on line 38. Add the penalty to any tax due and enter the total on line 37.",
+   "source_page": 65
+  },
+  {
+   "type": "paragraph",
+   "text": "However, if you have an overpayment on line 34, subtract the penalty from the amount you would otherwise enter on line 35a or line 36. Lines 35a, 36, and 38 must equal line 34.",
+   "source_page": 65
+  },
+  {
+   "type": "paragraph",
+   "text": "If the penalty is more than the overpayment on line 34, enter -0- on lines 35a and 36. Then, subtract line 34 from line 38 and enter the result on line 37.",
+   "source_page": 65
+  },
+  {
+   "type": "paragraph",
+   "text": "Don’t file Form 2210 with your return unless Form 2210 indicates that you must do so. Instead, keep it for your records.",
+   "source_page": 65
+  },
+  {
+   "type": "paragraph",
+   "text": "Tip. Because Form 2210 is complicated, you can leave line 38 blank and the IRS will figure the penalty and send you a bill. We won’t charge you interest on the penalty if you pay by the date specified on the bill. There are situations where the IRS can’t figure your penalty for you and you must file Form 2210. See Form 2210 for details.",
+   "runs": [
+    {
+     "text": "Tip.",
+     "style": "strong"
+    },
+    {
+     "text": " Because Form 2210 is complicated, you can leave line 38 blank and the IRS will figure the penalty and send you a bill. We won’t charge you interest on the penalty if you pay by the date specified on the bill. There are situations where the IRS can’t figure your penalty for you and you must file Form 2210. See Form 2210 for details.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 65
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Third Party Designee",
+   "source_page": 65
+  },
+  {
+   "type": "paragraph",
+   "text": "If you want to allow your preparer, a friend, a family member, or any other person you choose to discuss your 2025 tax return with the IRS, check the “Yes” box in the “Third Party Designee” area of your return. Also enter the designee’s name, phone number, and any five digits the designee chooses as their personal identification number (PIN).",
+   "source_page": 65
+  },
+  {
+   "type": "paragraph",
+   "text": "If you check the “Yes” box, you, and your spouse if filing a joint return, are authorizing the IRS to call the designee to answer any questions that may arise during the processing of your return. You are also authorizing the designee to:",
+   "source_page": 65
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Give the IRS any information that is missing from your return;",
+    "Call the IRS for information about the processing of your return or the status of your refund or payment(s);",
+    "Receive copies of notices or transcripts related to your return, upon request; and",
+    "Respond to certain IRS notices about math errors, offsets, and return preparation."
+   ],
+   "source_page": 65
+  },
+  {
+   "type": "paragraph",
+   "text": "You aren’t authorizing the designee to receive any refund check, bind you to anything (including any additional tax liability), or otherwise represent you before the IRS. If you want to expand the designee’s authorization, see Pub. 947.",
+   "source_page": 65
+  },
+  {
+   "type": "paragraph",
+   "text": "This authorization will automatically end no later than the due date (not counting extensions) for filing your 2026 tax return. This is April 15, 2027, for most people.",
+   "source_page": 65
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Sign Your Return",
+   "source_page": 65
+  },
+  {
+   "type": "paragraph",
+   "text": "Form 1040 or 1040-SR isn’t considered a valid return unless you sign it in accordance with the requirements in these instructions. If you are filing a joint return, your spouse must also sign. If your spouse can’t sign the return, see Pub. 501. Be sure to date your return and enter your occupation(s). If you have someone prepare your return, you are still responsible for the correctness of the return. If your return is signed by a representative for you, you must have a power of attorney attached that specifically authorizes the representative to sign your return. To do this, you can use Form 2848. If you are filing a joint return with your spouse who died in 2025, see Death of a Taxpayer, earlier.",
+   "source_page": 65,
+   "runs": [
+    {
+     "text": "Form 1040 or 1040-SR isn’t considered a valid return unless you sign it in accordance with the requirements in these instructions. If you are filing a joint return, your spouse must also sign. If your spouse can’t sign the return, see Pub. 501. Be sure to date your return and enter your occupation(s). If you have someone prepare your return, you are still responsible for the correctness of the return. If your return is signed by a representative for you, you must have a power of attorney attached that specifically authorizes the representative to sign your return. To do this, you can use Form 2848. If you are filing a joint return with your spouse who died in 2025, see ",
+     "style": "normal"
+    },
+    {
+     "text": "Death of a Taxpayer",
+     "style": "emphasis"
+    },
+    {
+     "text": ", earlier.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Court-Appointed Conservator, Guardian, or Other Fiduciary",
+   "source_page": 66
+  },
+  {
+   "type": "paragraph",
+   "text": "If you are a court-appointed conservator, guardian, or other fiduciary for a mentally or physically incompetent individual who has to file Form 1040 or 1040-SR, sign your name for the individual and file Form 56.",
+   "source_page": 66
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Child’s Return",
+   "source_page": 66
+  },
+  {
+   "type": "paragraph",
+   "text": "If your child can’t sign their return, either parent can sign the child’s name in the space provided. Then, enter “By (your signature), parent for minor child.”",
+   "source_page": 66
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Requirements for a Paper Return",
+   "source_page": 66
+  },
+  {
+   "type": "paragraph",
+   "text": "You must handwrite your signature on your return if you file it on paper. Digital, electronic, or typed-font signatures are not valid signatures for Form 1040 or 1040-SR filed on paper.",
+   "source_page": 66
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Requirements for an Electronic Return",
+   "source_page": 66
+  },
+  {
+   "type": "paragraph",
+   "text": "The requirements for signing an electronic return will be different depending on whether you use tax software or a tax practitioner. To file your return electronically, you must sign the return electronically using a personal identification number (PIN) and provide the information described below. If you are filing online using software, you must use a Self-Select PIN. If you are filing electronically using a tax practitioner, you can use a Self-Select PIN or a Practitioner PIN.",
+   "source_page": 66
+  },
+  {
+   "type": "paragraph",
+   "text": "If we issued you an identity protection personal identification number (IP PIN) (as described in more detail next), all six digits of your IP PIN must appear in the IP PIN spaces provided next to the space for your occupation for your electronic signature to be complete. Failure to include an issued IP PIN on the electronic return will result in an invalid signature and a rejected return. If you are filing a joint return and both taxpayers were issued an IP PIN, enter both IP PINs in the spaces provided.",
+   "source_page": 66
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Self-Select PIN",
+   "source_page": 66
+  },
+  {
+   "type": "paragraph",
+   "text": "The Self-Select PIN method allows you to create your own PIN. If you are married filing jointly, you and your spouse will each need to create a PIN and enter these PINs as your electronic signatures.",
+   "source_page": 66
+  },
+  {
+   "type": "paragraph",
+   "text": "A PIN is any combination of five digits you choose except five zeros. If you use a PIN, there are no papers to sign and nothing to mail—not even your Form(s) W-2.",
+   "source_page": 66
+  },
+  {
+   "type": "paragraph",
+   "text": "Your electronic return signed with a Self-Select PIN is considered a validly signed return only when it includes your PIN, last name, date of birth, IP PIN, if applicable, and your adjusted gross income (AGI) from your originally filed 2024 federal income tax return, if applicable. If you’re filing jointly, your electronic return must also include your spouse’s PIN, last name, date of birth, IP PIN, if applicable, and AGI, if applicable, in order to be considered validly signed. (You, and your spouse if filing jointly, may each use your own prior-year PIN to verify your identity if you filed electronically last year. If you use your prior-year PIN or enter your IP PIN, you are not required to enter your prior-year AGI. The prior-year PIN is the five-digit PIN you used to electronically sign your 2024 return.)",
+   "source_page": 66
+  },
+  {
+   "type": "paragraph",
+   "text": "If you need your AGI from your originally filed 2024 federal income tax return, and you don’t have your 2024 income tax return, you can access your transcript through your online account at IRS.gov/Account. You can also go to IRS.gov/Transcript or call the IRS at 800-908-9946 to get a free transcript of your return. Don’t use your AGI from an amended return (Form 1040-X) or a math error correction made by the IRS. AGI is the amount shown on your 2024 Form 1040 or 1040-SR, line 11.",
+   "source_page": 66,
+   "runs": [
+    {
+     "text": "If you need your AGI from your originally filed 2024 federal income tax return, and you don’t have your 2024 income tax return, you can access your transcript through your online account at ",
+     "style": "normal"
+    },
+    {
+     "text": "IRS.gov/Account",
+     "style": "normal",
+     "href": "https://www.irs.gov/account"
+    },
+    {
+     "text": ". You can also go to ",
+     "style": "normal"
+    },
+    {
+     "text": "IRS.gov/Transcript",
+     "style": "normal",
+     "href": "https://www.irs.gov/transcript"
+    },
+    {
+     "text": " or call the IRS at 800-908-9946 to get a free transcript of your return. Don’t use your AGI from an amended return (Form 1040-X) or a math error correction made by the IRS. AGI is the amount shown on your 2024 Form 1040 or 1040-SR, line 11.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "For more information, go to IRS.gov/Efile.",
+   "source_page": 66,
+   "runs": [
+    {
+     "text": "For more information, go to ",
+     "style": "normal"
+    },
+    {
+     "text": "IRS.gov/Efile",
+     "style": "normal",
+     "href": "https://www.irs.gov/efile"
+    },
+    {
+     "text": ".",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "Caution. You can’t use the Self-Select PIN method if you are a first-time filer under age 16 at the end of 2025.",
+   "runs": [
+    {
+     "text": "Caution.",
+     "style": "strong"
+    },
+    {
+     "text": " You can’t use the Self-Select PIN method if you are a first-time filer under age 16 at the end of 2025.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 66
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Practitioner PIN",
+   "source_page": 66
+  },
+  {
+   "type": "paragraph",
+   "text": "The Practitioner PIN method allows you to authorize your tax practitioner to enter or generate your PIN. Your electronic return is considered a validly signed return only when it includes your PIN, last name, date of birth, and IP PIN, if applicable. If you’re filing jointly, your electronic return must also include your spouse's PIN, last name, date of birth, and IP PIN, if applicable, in order to be considered validly signed. The practitioner can provide you with details.",
+   "source_page": 66
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Form 8453",
+   "source_page": 66
+  },
+  {
+   "type": "paragraph",
+   "text": "You must send in a paper Form 8453 if you have to attach certain forms or other documents that can't be electronically filed. See Form 8453.",
+   "source_page": 66
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Identity Protection PIN",
+   "source_page": 66
+  },
+  {
+   "type": "paragraph",
+   "text": "Tip. All taxpayers are now eligible for an Identity Protection Personal Identification Number (IP PIN). For more information, see Pub. 5477. To apply for an IP PIN, go to IRS.gov/IPPIN and use the Get an IP PIN tool.",
+   "runs": [
+    {
+     "text": "Tip.",
+     "style": "strong"
+    },
+    {
+     "text": " ",
+     "style": "normal"
+    },
+    {
+     "text": "All taxpayers are now eligible for an Identity Protection Personal Identification Number (IP PIN). For more information, see Pub. 5477. To apply for an IP PIN, go to ",
+     "style": "normal"
+    },
+    {
+     "text": "IRS.gov/IPPIN",
+     "style": "normal",
+     "href": "https://www.irs.gov/ippin"
+    },
+    {
+     "text": " and use the Get an IP PIN tool.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 66
+  },
+  {
+   "type": "paragraph",
+   "text": "If you received an IP PIN from the IRS, enter it in the IP PIN spaces provided next to the space for your occupation. You must correctly enter all six numbers of your IP PIN. If you didn’t receive an IP PIN, leave these spaces blank.",
+   "source_page": 66
+  },
+  {
+   "type": "paragraph",
+   "text": "Caution. New IP PINs are generated every year. They will generally be sent out by mid-January 2026. Use this IP PIN on your 2025 return as well as any prior-year returns you file in 2026.",
+   "runs": [
+    {
+     "text": "Caution.",
+     "style": "strong"
+    },
+    {
+     "text": " New IP PINs are generated every year. They will generally be sent out by mid-January 2026. Use this IP PIN on your 2025 return as well as any prior-year returns you file in 2026.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 66
+  },
+  {
+   "type": "paragraph",
+   "text": "If you are filing a joint return and both taxpayers receive an IP PIN, enter both IP PINs in the spaces provided.",
+   "source_page": 66
+  },
+  {
+   "type": "paragraph",
+   "text": "If you need more information, including how to retrieve your IP PIN online, go to IRS.gov/IPPIN. If you’re unable to retrieve your IP PIN online, you can call 800-908-4490.",
+   "source_page": 66,
+   "runs": [
+    {
+     "text": "If you need more information, including how to retrieve your IP PIN online, go to ",
+     "style": "normal"
+    },
+    {
+     "text": "IRS.gov/IPPIN",
+     "style": "normal",
+     "href": "https://www.irs.gov/ippin"
+    },
+    {
+     "text": ". If you’re unable to retrieve your IP PIN online, you can call 800-908-4490.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Phone Number and Email Address",
+   "source_page": 66
+  },
+  {
+   "type": "paragraph",
+   "text": "You have the option of entering your phone number and email address in the spaces provided. There will be no effect on the processing of your return if you choose not to enter this information. Note that the IRS initiates most contacts through regular mail delivered by the United States Postal Service.",
+   "source_page": 66
+  },
+  {
+   "type": "paragraph",
+   "text": "For information on how to report phone scams or unsolicited emails claiming to be from the IRS, see Secure Your Tax Records From Identity Theft, later.",
+   "source_page": 66,
+   "runs": [
+    {
+     "text": "For information on how to report phone scams or unsolicited emails claiming to be from the IRS, see ",
+     "style": "normal"
+    },
+    {
+     "text": "Secure Your Tax Records From Identity Theft",
+     "style": "emphasis"
+    },
+    {
+     "text": ", later.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Paid Preparer Must Sign Your Return",
+   "source_page": 67
+  },
+  {
+   "type": "paragraph",
+   "text": "Generally, anyone you pay to prepare your return must sign it and include their Preparer Tax Identification Number (PTIN) in the space provided. The preparer must give you a copy of the return for your records. Someone who prepares your return but doesn’t charge you shouldn’t sign your return.",
+   "source_page": 67
+  },
+  {
+   "type": "paragraph",
+   "text": "If your paid preparer is self-employed, then they should check the “self-employed” checkbox.",
+   "source_page": 67
+  },
+  {
+   "type": "heading",
+   "level": 2,
+   "text": "Assemble Your Return",
+   "source_page": 67
+  },
+  {
+   "type": "paragraph",
+   "text": "Assemble any schedules and forms behind Form 1040 or 1040-SR in order of the “Attachment Sequence No.” shown in the upper-right corner of the schedule or form. If you have supporting statements, arrange them in the same order as the schedules or forms they support and attach them last. File your return, schedules, and other attachments on standard size paper. Cutting the paper may cause problems in processing your return. Don’t attach correspondence or other items unless required to do so. Attach Forms W-2 and 2439 to Form 1040 or 1040-SR. If you received a Form W-2c (a corrected Form W-2), attach your original Forms W-2 and any Forms W-2c. Attach Forms W-2G and 1099-R to Form 1040 or 1040-SR if tax was withheld.",
+   "source_page": 67
+  }
+ ],
+ "review_notes": [
+  "TRANCHE 20 OF A MULTI-SESSION REBUILD. This plan covers printed pages 65-67 and completes the Line Instructions section: the estimated tax penalty, Third Party Designee, Sign Your Return, Identity Protection PIN, Paid Preparer Must Sign Your Return, and Assemble Your Return. It carries no document title by design — only tranche 1 does — so this file validates through merge-plans rather than standalone. No partial rebuild is delivered.",
+  "THE HEADING LEVELS COULD NOT BE READ OFF THE TYPE SIZES, and the document's own table of contents is what settled them. Two sizes of section banner are printed here: 16pt over a thick rule and 14pt over a thin one. That distinguishes “Sign Your Return” (16pt) from “Line 38” and “Third Party Designee” (14pt) cleanly enough. But “Assemble Your Return” is ALSO 16pt over a thick rule, and is nevertheless a different depth: the TOC on page 2 lists it as a top-level entry alongside “What's New”, “Filing Requirements” and “Line Instructions for Forms 1040 and 1040-SR”, while “Sign Your Return” appears there nested UNDER Line Instructions. So “Assemble Your Return” is authored at level 2 and “Sign Your Return” at level 3, though they are typographically identical. Type size states prominence; the TOC states structure, and where they disagree the TOC is the better evidence.",
+  "“THIRD PARTY DESIGNEE” IS NESTED UNDER “AMOUNT YOU OWE”, WHICH IS THE SOURCE'S DOING. It is printed at 14pt over a thin rule, the same treatment as “Line 37” and “Line 38”, and it falls inside the run of those headings that follows the “Amount You Owe” banner on page 63. It is not in the TOC, so there is no independent evidence to promote it. Reading it as a subsection of Amount You Owe is a poor fit for what it says, but re-parenting it would mean overriding the document's own structure on a judgment call, so the printed hierarchy is followed and the oddity noted here instead.",
+  "“PHONE NUMBER AND EMAIL ADDRESS” LIKEWISE SITS UNDER “IDENTITY PROTECTION PIN”. It is a 12pt subhead that follows the Identity Protection PIN banner with no new banner between, so by the page's own typography it is a child of that section, even though it is about the phone and email fields rather than about IP PINs. Same reasoning as above: followed, and disclosed.",
+  "THE SAME VISIBLE LINK TEXT RESOLVES TO DIFFERENT TARGETS ON DIFFERENT PAGES, so every href is taken from that page's own annotation rather than from a document-wide table. “IRS.gov/Account” on page 66 targets irs.gov/account, but the identical text on page 64 (tranche 19) targets irs.gov/your-account. Each rect was matched against the text items falling inside it. Pages 65 and 67 carry no Link annotations at all, so their cross-references are marked emphasis only.",
+  "THE FOUR-ITEM “ALSO SUBTRACT FROM LINE 24 ANY” LIST IS PRINTED TWICE, once for the 2025 return and once for the 2024 return, and both copies are reproduced. They are not quite identical — the second adds “and” to the third item — and each governs a different tax year, so collapsing them would force a reader working through the 2024 test to look back at the 2025 one. The generator builds both from one shared list so the wording cannot drift between them.",
+  "THE EXCEPTION'S TWO CONDITIONS ARE AN ORDERED LIST, because the source numbers them 1. and 2. and the surrounding sentence says “either of the following applies” — the numbering is referred to, not decorative.",
+  "ICON CALLOUTS AND RUN-IN LEADS follow the conventions already settled: CAUTION and TIP become paragraphs opening with a strong “Caution.”/“Tip.” in sentence case, and bold run-in leads (Exception, Self-Select PIN, Practitioner PIN, Form 8453) become headings with the trailing period dropped.",
+  "PARAGRAPH BREAKS COME FROM THE FIRST-LINE INDENT, not from where a sentence sounds like it ends. “Assemble Your Return” reads as four separate instructions — assemble in sequence order, use standard size paper, don't attach correspondence, attach the W-2s — and was first authored as four paragraphs. The rendered page has no indent anywhere in the block, and “attach them last.” and “File your return,” fall on the same line, so it is ONE paragraph and is authored as one. This document indents every genuine new paragraph, which makes the render the deciding evidence; extraction alone cannot show it.",
+  "TWO PARAGRAPHS SPAN A PAGE BREAK and are authored whole at their starting page, as this rebuild's handoff convention requires: the “Sign Your Return” opening paragraph runs from 65 to 66, and the phone-scams paragraph runs from 66 to 67.",
+  "PAGE FURNITURE OMITTED as in every earlier tranche: printed page numbers and the standing “Need more information or forms? Visit IRS.gov.” footer. Soft hyphens removed and justified line-break hyphens closed, while genuine compounds (1040-SR, prior-year, court-appointed, typed-font, group-term, Look-back, self-employed) and the source's own em dash in “nothing to mail—not even your Form(s) W-2” are kept. The literal “-0-” on line 35a is kept as printed."
+ ]
+}

@@ -879,13 +879,54 @@ banner with no "Line NN" heading between, so the outline skipped h3 to h5 and
 are direct children of the section. Printed weight and structural depth are
 not the same thing, and only the merge step catches the difference.
 
-### NEXT: pages 65-67, then the Tax Table (68-80) is the next MECHANICAL span
+### Session 20 (2026-08-04) - pages 65-67 - tranche-20 - 62 blocks - VALIDATED (merged)
 
-Pages 65-67: line 38 (estimated tax penalty), Third Party Designee, Sign Your
-Return, and Assemble Your Return. Ordinary prose, with the identity-protection
-and court-appointed-fiduciary subsections on page 66.
+Line 38, Third Party Designee, Sign Your Return, Identity Protection PIN, Paid
+Preparer Must Sign Your Return, and Assemble Your Return. **This completes the
+Line Instructions section.** `merge-plans t01..t20` -> 1,107 blocks, `ok:
+true`, **pages 1-67 covered**, zero heading skips. Recall 0.9830, shortfall
+entirely the standing footer and "Page N of 126" over three pages, plus the
+two ordered-list markers "1." and "2." that the list structure now generates
+instead of carrying as literal text.
 
-Then the Tax Table gets the tranche-17 treatment: `page_items.cjs` for
+**The type sizes were not enough to fix the heading levels, and the TOC was.**
+Two banner sizes are printed here, 16pt over a thick rule and 14pt over a thin
+one, which separates "Sign Your Return" from "Line 38" and "Third Party
+Designee" cleanly. But "Assemble Your Return" is ALSO 16pt over a thick rule
+and is nevertheless a different depth: the page-2 TOC lists it as a top-level
+entry beside "What's New", "Filing Requirements" and "Line Instructions",
+while "Sign Your Return" appears there nested UNDER Line Instructions. So
+"Assemble Your Return" is level 2 and "Sign Your Return" level 3, though they
+are typographically identical. Type size states prominence; the TOC states
+structure, and where they disagree the TOC wins.
+
+**Two headings nest where the source puts them, not where they belong.**
+"Third Party Designee" is 14pt over a thin rule inside the run of headings
+following the "Amount You Owe" banner, so it lands as a subsection of Amount
+You Owe - a poor fit for what it says. "Phone Number and Email Address" is a
+12pt subhead after the Identity Protection PIN banner, so it lands under IP
+PINs though it is about the phone and email fields. Neither is in the TOC, so
+there is no independent evidence to promote either. Re-parenting would mean
+overriding the document's own structure on a judgment call; both are followed
+and disclosed instead.
+
+**Paragraph breaks come from the first-line indent, not from where a sentence
+sounds like it ends.** "Assemble Your Return" reads as four separate
+instructions and was first authored as four paragraphs. The rendered page has
+no indent anywhere in the block, and "attach them last." and "File your
+return," fall on the same line - it is ONE paragraph. This document indents
+every genuine new paragraph, which makes the render the deciding evidence;
+extraction alone cannot show it. Worth carrying into every remaining prose
+tranche.
+
+**The same visible link text resolves differently on different pages.**
+"IRS.gov/Account" on page 66 targets `irs.gov/account`; the identical text on
+page 64 targets `irs.gov/your-account`. Take every href from that page's own
+annotation, never from a document-wide table.
+
+### NEXT: the Tax Table (68-80) is the second MECHANICAL span
+
+It gets the tranche-17 treatment: `page_items.cjs` for
 geometry, a generator that parses and verifies before it writes,
 `tranche_recall.cjs` for recall, and a render spot-check. Its shape differs —
 income brackets against filing-status columns, no phase-out — so the
