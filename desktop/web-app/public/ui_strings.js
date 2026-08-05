@@ -42456,8 +42456,8 @@
       "design_note_discrete_3_state_mastery_m": "Design note: discrete 3-state mastery marker; no raw score; no reveal — by design.",
       "resume_speed_run": "Resume Speed Run",
       "pause_speed_run": "Pause Speed Run",
-      "resume": "â–¶ Resume",
-      "pause": "â¸ Pause",
+      "resume": "▶ Resume",
+      "pause": "⏸ Pause",
       "answer": "Multiplication or division answer",
       "mastery_hypothesis": "Mastery threshold hypothesis",
       "mastery_explanation": "Explain mastery learning thresholds"

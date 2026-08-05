@@ -2111,8 +2111,43 @@ function createVoiceLoop(getCtx) {
     }
   };
   let speaking = false, speakSerial = 0, replyAudio = null;
+  // Do not talk over the user. The recognizer reported FINAL results only, so
+  // nothing in this loop knew a sentence was in progress, and a reply would
+  // land on top of whoever was mid-thought. Interim results plus
+  // speechstart/speechend give an early "still talking" signal that speakReply
+  // waits on.
+  let lastSpeechAt = 0, userSpeaking = false, pendingReply = null, pendingTimer = null;
+  const QUIET_MS = 800;       // silence required before a held reply is let out
+  const HOLD_MAX_MS = 8000;   // past this the reply is stale, so drop it: the toast already said it
+  const noteUserSpeech = (talking) => { lastSpeechAt = Date.now(); userSpeaking = !!talking; };
+  // A final transcript hands the floor back: answer it immediately rather than
+  // making the user wait out a pause they already finished.
+  const noteUserTurnEnd = () => { userSpeaking = false; lastSpeechAt = 0; };
+  const userIsBusy = () => userSpeaking || (lastSpeechAt > 0 && (Date.now() - lastSpeechAt) < QUIET_MS);
+  const clearPendingReply = () => {
+    pendingReply = null;
+    if (pendingTimer) { try { clearInterval(pendingTimer); } catch (_) {} pendingTimer = null; }
+  };
   const speakReply = (msg, c) => {
     if (!c || c.voiceSpeakReplies === false) return;
+    // Newest wins: a held reply is REPLACED, never queued behind, so the room
+    // going quiet does not trigger a backlog of stale narration.
+    if (userIsBusy()) {
+      pendingReply = { msg, c, queuedAt: Date.now() };
+      if (!pendingTimer) pendingTimer = setInterval(flushPendingReply, 250);
+      return;
+    }
+    speakNow(msg, c);
+  };
+  const flushPendingReply = () => {
+    if (!pendingReply || !active) { clearPendingReply(); return; }
+    if (Date.now() - pendingReply.queuedAt >= HOLD_MAX_MS) { clearPendingReply(); return; }
+    if (userIsBusy()) return;
+    const held = pendingReply;
+    clearPendingReply();
+    speakNow(held.msg, held.c);
+  };
+  const speakNow = (msg, c) => {
     const my = ++speakSerial;
     const text = String(msg || "").slice(0, 300);
     const resume = () => {
@@ -2153,6 +2188,13 @@ function createVoiceLoop(getCtx) {
           replyAudio = a;
           a.onended = resume;
           a.onerror = resume;
+          // The flat 30s ceiling below is a backstop; a dropped end event used
+          // to leave the mic dead that long. Once the clip's real duration is
+          // known, resume when it should actually be finished.
+          a.onloadedmetadata = () => {
+            const ms = (isFinite(a.duration) && a.duration > 0) ? (a.duration * 1000 + 1500) : 0;
+            if (ms) setTimeout(resume, ms);
+          };
           Promise.resolve(a.play()).catch(resume);
         }).catch(resume);
         setTimeout(resume, 3e4);
@@ -2195,6 +2237,7 @@ function createVoiceLoop(getCtx) {
   };
   const stop = (reason) => {
     cancelRoute();
+    clearPendingReply();
     if (pageHideHandler) {
       try {
         window.removeEventListener("pagehide", pageHideHandler);
@@ -2366,13 +2409,18 @@ function createVoiceLoop(getCtx) {
       if (standbyWanted) announce("\u201CHey Allo\u201D standby needs the on-device speech model \u2014 say \u201Cdownload voice models\u201D first. Tap-to-talk listening is on instead.");
       rec = new SR();
       rec.continuous = true;
-      rec.interimResults = false;
+      // Interim results exist ONLY to detect that a sentence is in progress.
+      // Routing still waits for the final transcript in onresult below.
+      rec.interimResults = true;
       rec.lang = c && c.voiceLang || "en-US";
       rec.onresult = (ev) => {
         const last = ev.results[ev.results.length - 1];
-        if (!last || !last.isFinal) return;
+        if (!last || !last.isFinal) { noteUserSpeech(true); return; }
+        noteUserTurnEnd();
         handleUtterance(String(last[0] && last[0].transcript || ""));
       };
+      rec.onspeechstart = () => noteUserSpeech(true);
+      rec.onspeechend = () => noteUserSpeech(false);
       rec.onerror = (ev) => {
         errStreak++;
         if (ev && (ev.error === "not-allowed" || ev.error === "service-not-allowed")) {
@@ -3223,7 +3271,7 @@ const AlloCommandProgress = ({ ctx }) => {
         "aria-atomic": "true",
         className: `rounded-xl border p-3 shadow-xl ${failed ? "border-rose-300 bg-rose-50 text-rose-950" : cancelled ? "border-amber-300 bg-amber-50 text-amber-950" : item.status === "success" ? "border-emerald-300 bg-emerald-50 text-emerald-950" : "border-indigo-300 bg-white text-slate-900"}`
       },
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("span", { className: `mt-0.5 text-lg ${pending ? "animate-pulse" : ""}`, "aria-hidden": "true" }, pending ? "\xE2\x8F\xB3" : failed ? "\xE2\u0161\xA0\xEF\xB8\x8F" : cancelled ? "\xE2\x8F\xB9\xEF\xB8\x8F" : "\xE2\u0153\u2026"), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-bold" }, item.label || item.commandId), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-xs leading-5" }, item.narration || (pending ? t("cmd.working", "Working...") : cancelled ? t("cmd.cancelled", "Cancellation requested.") : t("router.done", "Done."))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, pending && item.cancellable && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => cancel(item), "aria-label": cancelLabel, className: "min-h-9 rounded-lg border border-amber-500 bg-amber-50 px-3 text-xs font-bold text-amber-900 hover:bg-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700" }, "Cancel"), failed && item.retryable && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => retry(item), "aria-label": retryLabel, className: "min-h-9 rounded-lg bg-rose-700 px-3 text-xs font-bold text-white hover:bg-rose-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-700" }, "Retry"))), !pending && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => dismiss(item.progressKey), "aria-label": "Dismiss progress for " + (item.label || item.commandId), className: "inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg text-lg hover:bg-black/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\xC3\u2014")))
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("span", { className: `mt-0.5 text-lg ${pending ? "animate-pulse" : ""}`, "aria-hidden": "true" }, pending ? "\u23F3" : failed ? "\u26A0\uFE0F" : cancelled ? "\u23F9\uFE0F" : "\u2705"), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-bold" }, item.label || item.commandId), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-xs leading-5" }, item.narration || (pending ? t("cmd.working", "Working...") : cancelled ? t("cmd.cancelled", "Cancellation requested.") : t("router.done", "Done."))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, pending && item.cancellable && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => cancel(item), "aria-label": cancelLabel, className: "min-h-9 rounded-lg border border-amber-500 bg-amber-50 px-3 text-xs font-bold text-amber-900 hover:bg-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700" }, "Cancel"), failed && item.retryable && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => retry(item), "aria-label": retryLabel, className: "min-h-9 rounded-lg bg-rose-700 px-3 text-xs font-bold text-white hover:bg-rose-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-700" }, "Retry"))), !pending && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => dismiss(item.progressKey), "aria-label": "Dismiss progress for " + (item.label || item.commandId), className: "inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg text-lg hover:bg-black/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\xD7")))
     );
   }));
 };
