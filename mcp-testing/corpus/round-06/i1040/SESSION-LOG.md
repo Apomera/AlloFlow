@@ -1571,22 +1571,43 @@ the two would be editing tax instructions, which is not this project's job.
 **Schedule 1 ends at line 24z.** There are no printed instructions for lines
 25 or 26, and none were dropped.
 
-### NEXT: page 101, the Instructions for Schedule 1-A
+### Session 41 (2026-08-05) - page 101 - tranche-41 - 26 blocks - VALIDATED (merged)
 
-A new top-level TOC entry, so it opens at level 2. Expect the same shapes:
-"Line NN. Title" headings, bold run-in leads merged into them where present,
-icon callouts, and probably worksheets - decide the Amount-column shape per
-worksheet (tranche 39's note).
+The opening of the Instructions for Schedule 1-A, Additional Deductions:
+General Instructions, Part I (MAGI), and the start of Part II (No Tax on
+Tips). `merge-plans t01..t41` -> 1,554 blocks, `ok: true`, **pages 1-101
+covered**, zero heading skips. **Recall 0.9936, and all five shortfall
+instances are page furniture** - no paraphrase, no content.
 
-Then Schedule 2 (111-114) and Schedule 3 (115-117), also level-2 entries. Then
-the back matter: Tax Topics (118), the Disclosure/Privacy Act notice (120),
-Major Categories of Federal Income and Outlays (122), and the MECHANICAL Index
+> **The first page whose Link annotations have NO URL.** Both of page 101's
+> annotations are INTERNAL GoTo destinations (named destination
+> `en_US_2025_publink1000168847`), making "Net income limitation, later"
+> clickable *within* the PDF. The plan schema's `href` takes a URL, and
+> inventing an anchor that does not exist in the plan would be worse than
+> leaving the reference plain, so both are marked emphasis as the italic
+> already indicates. **The source is slightly richer than the rebuild here**,
+> and the tranche says so rather than leaving it to be discovered. Expect more
+> of these in the schedules - check `dest` as well as `url` when a link map
+> comes back with `undefined`.
+
+**Part headings keep number and title together** - "Part I. Modified Adjusted
+Gross Income (MAGI) Amount", "Part II. No Tax on Tips" - for the same reason
+"Line NN. Title" pairs are merged everywhere else.
+
+**"Maximum amount of deduction" and "Qualified Tips" are both level 4**,
+though one is a bold run-in and the other a 12pt heading. Both are direct
+children of Part II with nothing between, and the validator rejects the
+h3-to-h5 skip that treating the run-in as level 5 would create. Same lesson as
+tranche 24.
+
+### NEXT: page 102 onward
+
+Page 102 continues Part II: "Cash tips", and the run-in topics defining
+qualified tips. **Do not re-author "Determined by the customer/payor."** - it
+closes the list authored whole at page 101.
+
+Then the rest of Schedule 1-A (103-110), Schedule 2 (111-114) and Schedule 3
+(115-117), each a top-level TOC entry opening at level 2. Then the back
+matter: Tax Topics (118), the Disclosure/Privacy Act notice (120), Major
+Categories of Federal Income and Outlays (122), and the MECHANICAL Index
 (123-126). Do not hand-author the Index.
-
-**Standing reminders**, all earned the hard way: read each column to its END
-before authoring; never infer a continuation from a truncated dump - check the
-next page, and check BELOW any full-page worksheet; run
-`carried_block_check.cjs` on every receiving page; take every link target from
-the page's own annotations; and read the recall shortfall for ordinary common
-words, which signal paraphrase in the authoring rather than furniture in the
-source.
