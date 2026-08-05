@@ -1327,16 +1327,37 @@ runs 8a-8f then 8h, with no gap in the text. Nothing was dropped.
 > authoring. **Never infer a continuation from a truncated dump - check the
 > next page and re-read the column tail.**
 
-### NEXT: page 92 onward
+### Session 32 (2026-08-05) - page 92 - tranche-32 - 21 blocks - VALIDATED (merged)
 
-Page 92 continues the series at line 8p (461(l) excess business loss
-adjustment, ABLE account distributions, scholarship and fellowship grants,
-Medicaid waiver payments, nonqualified deferred compensation) and on through
-8z. Same merged-heading treatment. **Nothing is carried into page 92** - line
-8o completes on 91.
+Schedule 1 lines 8p through 8z, completing the Other Income series.
+`merge-plans t01..t32` -> 1,408 blocks, `ok: true`, **pages 1-92 covered**,
+zero heading skips. Recall **0.9947, the highest of any prose tranche in the
+rebuild**: five shortfall instances, three page furniture and two the
+mid-word break `nontaxa`/`nontaxa92` that the whole-word authoring resolves.
 
-Then Schedule 1's Part II adjustments, Schedule 1-A (101-110), Schedule 2
-(111-114) and Schedule 3 (115-117), each a top-level TOC entry opening at
-level 2. Then the back matter: Tax Topics (118), the Disclosure/Privacy Act
-notice (120), Major Categories of Federal Income and Outlays (122), and the
-MECHANICAL Index (123-126). Do not hand-author the Index.
+**Nothing was carried in, and that was checked rather than inferred** - line
+8o completes on page 91, verified against page 92's opening, which is the
+mistake session 31 nearly made in the other direction.
+
+**The line 8z examples list spans the 92-93 break and is authored whole
+here.** Its eighth and last item breaks mid-word at the foot of page 92
+("Nontaxa-" / "ble distributions from these accounts...") and finishes at the
+top of 93. The page-93 tranche must NOT re-author that item; it opens instead
+with the CAUTION that follows it.
+
+**The series skips from 8v to 8z**, as page 91 skipped 8g. Both are the
+source's own numbering with no gap in the text.
+
+### NEXT: page 93 onward
+
+Page 93 opens with the CAUTION following the Coverdell/QTP bullet carried into
+tranche 32, then "Nontaxable income" (a run-in topic with its own bulleted
+list, including a nested ordered list about Form 3520 reporting thresholds),
+and continues into Schedule 1 Part II, Adjustments to Income. Run
+`carried_block_check.cjs` on page 93 against tranche 32.
+
+Then Schedule 1-A (101-110), Schedule 2 (111-114) and Schedule 3 (115-117),
+each a top-level TOC entry opening at level 2. Then the back matter: Tax
+Topics (118), the Disclosure/Privacy Act notice (120), Major Categories of
+Federal Income and Outlays (122), and the MECHANICAL Index (123-126). Do not
+hand-author the Index.
