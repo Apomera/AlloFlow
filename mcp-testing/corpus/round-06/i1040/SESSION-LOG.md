@@ -1376,16 +1376,45 @@ inside their bullet.** The schema takes flat lists only and this is a list
 inside a list item, so the markers stay verbatim inside the parent - the
 treatment Chart C got in tranche 3.
 
-### NEXT: page 94 onward
+### Session 34 (2026-08-05) - page 94 - tranche-34 - 13 blocks - VALIDATED (merged)
 
-Page 94: the Self-Employed Health Insurance Deduction Worksheet (full-page,
-"Before you begin:", dot-leader rows, an asterisked footnote - the tranche-30
-worksheet shape applies), then Line 17 itself. **Do not re-author the two-line
-Line 16 fragment** below the worksheet; it was carried into tranche 33.
+The Self-Employed Health Insurance Deduction Worksheet and Schedule 1 line 17.
+`merge-plans t01..t34` -> 1,450 blocks, `ok: true`, **pages 1-94 covered**,
+zero heading skips. Recall 0.9814; carried-block check against tranche 33:
+**16 shortfall instances = 11 carried + 4 furniture + 1 residual**, the
+residual being `tion`, the front half of "deduc-tion" - the carried Line 16
+block was authored with the word whole, so the source's split fragment cannot
+match. Same class as `ble` in tranche 33.
 
-Then Schedule 1's remaining adjustments (95-100), Schedule 1-A (101-110),
-Schedule 2 (111-114) and Schedule 3 (115-117), each a top-level TOC entry
-opening at level 2. Then the back matter: Tax Topics (118), the
+**The worksheet shape is now used six times without alteration.**
+
+**Both asterisked footnotes are folded into the line they qualify.** Line 2
+carries a `*` on "net profit" and a `**` on "other earned income", with the
+notes printed below the table. An asterisk a reader cannot see is a dead end,
+so each note moves inside line 2 at the point it applies and the markers are
+dropped - the treatment the line 6 footnote got in tranche 30.
+
+**The worksheet is placed before the line 17 prose, as printed.** It occupies
+the full page width at the top and the prose runs beneath it in three columns,
+so the printed reading order puts the worksheet first even though the prose is
+what introduces it. Kept rather than reordered: the "Before you begin" note
+already sends a reader to the Exceptions in the line instructions, so the
+worksheet points at its own context.
+
+### NEXT: page 95 onward
+
+Schedule 1's remaining adjustments (lines 18 through 26), then Schedule 1-A
+(101-110), Schedule 2 (111-114) and Schedule 3 (115-117), each a top-level TOC
+entry opening at level 2. Then the back matter: Tax Topics (118), the
 Disclosure/Privacy Act notice (120), Major Categories of Federal Income and
 Outlays (122), and the MECHANICAL Index (123-126). Do not hand-author the
 Index.
+
+**Standing reminders for the schedule pages.** Read each column to its END
+before authoring - three blocks so far have run past a full-page insert or
+finished in a fragment that a truncated dump hides (tranches 29, 31, 33).
+Never infer a continuation; check the next page. Run `carried_block_check.cjs`
+on every page that receives a spanning block, against the tranche that carried
+it. And take every link target from the page's own annotations - roughly a
+third of them in this document resolve somewhere the visible text does not
+suggest.
