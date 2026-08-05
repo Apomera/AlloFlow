@@ -364,6 +364,7 @@ const PLAN_CONTRACTS = Object.freeze({
   generate_analysis: { requires: ['source'], produces: ['analysis'] },
   generate_outline: { requires: ['source'], produces: ['outline'] },
   find_reading: { params: ['topic', 'grade', 'language', 'source', 'format', 'raw'] },
+  open_stem_tool: { params: ['tool', 'query', 'raw'] },
   send_teacher_signal: {
     demoSafe: false,
     interaction: 'external',
@@ -440,6 +441,102 @@ const DEMO_BLOCKED_COMMANDS = new Set([
   'report_problem',
   'clear_my_answers'
 ]);
+
+// ── Generic STEM tool launcher ──────────────────────────────────────────────
+// 55 hand-written open_* commands name exactly three STEM tools (lab, Lumen,
+// Free Forms), so the agent could not launch the other 136. Adding 136 more
+// commands would bloat every prompt that lists the palette, so instead this
+// resolves free text against the capability index the STEM search already
+// loads, and opens whatever it matches.
+function _stemToolCatalog() {
+  try {
+    const idx = (typeof window !== 'undefined' && window.ALLO_TOOL_INDEX) || null;
+    if (idx && Array.isArray(idx.tools) && idx.tools.length) {
+      return idx.tools.map((tool) => ({
+        id: tool.id,
+        label: tool.label || tool.id,
+        hay: [tool.label, tool.section, tool.desc, (tool.topics || []).join(' '), (tool.keywords || []).join(' ')].join(' ').toLowerCase()
+      }));
+    }
+  } catch (_) {}
+  // The index is fetched at boot, so it can be absent on an older build or a
+  // failed fetch. The live registry only holds tools whose plugin has already
+  // loaded on demand, which is usually a small subset, but it beats nothing.
+  try {
+    if (typeof window !== 'undefined' && Array.isArray(window.STEM_TOOL_REGISTRY)) {
+      return window.STEM_TOOL_REGISTRY.map((tool) => ({
+        id: tool.id,
+        label: tool.name || tool.label || tool.id,
+        hay: [tool.name, tool.label, (tool.subjects || []).join(' '), (tool.tags || []).join(' ')].join(' ').toLowerCase()
+      }));
+    }
+  } catch (_) {}
+  return [];
+}
+
+function resolveStemTool(query) {
+  const raw = String(query == null ? '' : query).trim();
+  if (!raw) return { matches: [] };
+  const catalog = _stemToolCatalog();
+  if (!catalog.length) return { matches: [], noCatalog: true };
+  const q = raw.toLowerCase();
+  // An exact id or label is unambiguous by construction, and is what the agent
+  // passes when it has already seen the tool in a catalog payload.
+  const exact = catalog.find((tool) => tool.id.toLowerCase() === q || tool.label.toLowerCase() === q);
+  if (exact) return { matches: [exact], exact: true };
+  const terms = q.match(/[a-z0-9][a-z0-9'-]*/g) || [];
+  const scored = [];
+  for (const tool of catalog) {
+    const label = tool.label.toLowerCase();
+    let score = 0;
+    if (label.includes(q)) score += 12;
+    if (tool.id.toLowerCase().includes(q)) score += 10;
+    // A full multi-word phrase found in the tool's own indexed text is a
+    // stronger signal than one generic word hitting a label: "periodic table"
+    // belongs to the molecule tool, not to Multiplication Table.
+    if (terms.length > 1 && tool.hay.includes(q)) score += 6;
+    for (const w of terms) {
+      if (w.length < 3) continue;          // "a"/"of" would match everything
+      if (label.includes(w)) score += 4;
+      else if (tool.hay.includes(w)) score += 1;
+    }
+    if (score > 0) scored.push({ id: tool.id, label: tool.label, score });
+  }
+  scored.sort((a, b) => b.score - a.score || a.label.localeCompare(b.label));
+  return { matches: scored.slice(0, 5) };
+}
+
+function runOpenStemToolCommand(c, params, t) {
+  const query = String((params && (params.tool || params.query || params.raw)) || '').trim();
+  const openLab = () => { try { c.openStemLab(); } catch (_) {} };
+  if (typeof c.openStemTool !== 'function') {
+    openLab();
+    return t('cmd.open_stem_tool_unsupported', 'STEM Lab opened. This build cannot jump straight to a named tool.');
+  }
+  if (!query) {
+    openLab();
+    return t('cmd.open_stem_tool_none', 'STEM Lab opened. Name a tool and I can go straight to it.');
+  }
+  const res = resolveStemTool(query);
+  if (res.noCatalog) {
+    openLab();
+    return t('cmd.open_stem_tool_no_index', 'STEM Lab opened. The tool catalog was not available, so browse the list.');
+  }
+  const best = res.matches[0];
+  if (!best) {
+    openLab();
+    return t('cmd.open_stem_tool_miss', 'No STEM tool matched ') + JSON.stringify(query) + t('cmd.open_stem_tool_miss_tail', '. STEM Lab opened so you can browse.');
+  }
+  // On a near-tie, open nothing and ask. Silently opening the wrong tool is a
+  // worse failure than one extra turn, especially for the agent, which cannot
+  // see what appeared on screen.
+  const runnerUp = res.matches[1];
+  if (!res.exact && runnerUp && runnerUp.score >= best.score) {
+    return t('cmd.open_stem_tool_ambiguous', 'More than one tool matches that: ') + res.matches.slice(0, 4).map((m) => m.label).join(', ') + '.';
+  }
+  c.openStemTool(best.id);
+  return t('cmd.open_stem_tool_done', 'Opened ') + best.label + '.';
+}
 
 function getCommandContract(commandOrId) {
   const cmd = commandOrId && typeof commandOrId === 'object' ? commandOrId : null;
@@ -716,6 +813,7 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: 'open_accessibility_lab', opensPanel: 'accessibilityLab', icon: '♿', roles: 'teacher', label: t('cmd.open_accessibility_lab', 'Open the Accessibility Lab'), aliases: ['accessibility lab', 'a11y lab', 'accessibility checker', 'wcag', 'contrast checker'], hint: t('cmd.open_accessibility_lab_hint', 'Check & improve accessibility'), run: (c) => { c.openAccessibilityLab(); return t('cmd.open_accessibility_lab_done', 'Accessibility Lab opened.'); } },
     { id: 'open_lumen', opensPanel: 'stemLab', icon: '💡', roles: 'teacher', label: t('cmd.open_lumen', 'Open Lumen (data canvas)'), aliases: ['lumen', 'data canvas', 'chart data', 'graph data', 'progress charts', 'visualize data'], hint: t('cmd.open_lumen_hint', 'Turn assessment data into charts'), run: (c) => { c.openLumen(); return t('cmd.open_lumen_done', 'Lumen opened in the STEM Lab.'); } },
     { id: 'open_free_forms', opensPanel: 'stemLab', icon: '🏛️', roles: 'all', label: t('cmd.open_free_forms', 'Open Free Forms'), aliases: ['free forms', 'world of forms', 'forms', 'build a venn', 'story mountain', '3d organizer', 'build my own organizer'], hint: t('cmd.open_free_forms_hint', 'Build your own 3D World of Forms'), run: (c) => { c.openFreeForms(); return t('cmd.open_free_forms_done', 'Free Forms opened.'); } },
+    { id: 'open_stem_tool', opensPanel: 'stemLab', icon: '🧪', roles: 'all', label: t('cmd.open_stem_tool', 'Open a specific STEM tool'), aliases: ['open stem tool', 'launch stem tool', 'open simulation', 'open simulator', 'start stem tool', 'open lab tool', 'jump to tool'], hint: t('cmd.open_stem_tool_hint', 'Name any STEM Lab tool and go straight to it'), run: (c, params) => runOpenStemToolCommand(c, params || {}, t) },
     { id: 'open_community_catalog', opensPanel: 'communityCatalog', icon: '🗂️', roles: 'teacher', label: t('cmd.open_community_catalog', 'Open the Community Catalog'), aliases: ['community catalog', 'catalog', 'shared lessons', 'browse lessons', 'community'], hint: t('cmd.open_community_catalog_hint', 'Browse shared community lessons'), run: (c) => { c.openCommunityCatalog(); return t('cmd.open_community_catalog_done', 'Community Catalog opened.'); } },
     { id: 'open_dynamic_assessment', opensPanel: 'dynamicAssessment', icon: '📊', roles: 'teacher', label: t('cmd.open_dynamic_assessment', 'Open Dynamic Assessment'), aliases: ['dynamic assessment', 'progress monitoring', 'probe', 'cbm', 'assessment'], hint: t('cmd.open_dynamic_assessment_hint', 'Run a dynamic assessment'), run: (c) => { c.openDynamicAssessment(); return t('cmd.open_dynamic_assessment_done', 'Dynamic Assessment opened.'); } },
     { id: 'open_reading_library', opensPanel: 'readingLibrary', icon: '📚', roles: 'all', label: t('cmd.open_reading_library', 'Open the Reading Library'), aliases: ['reading library', 'library', 'books', 'picture books', 'storyweaver', 'read a book'], hint: t('cmd.open_reading_library_hint', 'Browse open picture books in 10 languages'), run: (c) => { c.openReadingLibrary(); return t('cmd.open_reading_library_done', 'Reading Library opened.'); } },
@@ -1365,7 +1463,7 @@ const CMD_GROUP = {
   pipeline_score:'pipeline', pipeline_issues:'pipeline', pipeline_downloads:'pipeline', pipeline_verification:'pipeline', translate_document:'pipeline',
   app_tour:'help', pipeline_tour:'help', report_problem:'help',
   voice_start:'voice', voice_stop:'voice',
-  open_stem_lab:'tools', open_storyforge:'tools', open_allohaven:'tools', open_behavior_lens:'tools', open_report_writer:'tools',
+  open_stem_lab:'tools', open_stem_tool:'tools', open_storyforge:'tools', open_allohaven:'tools', open_behavior_lens:'tools', open_report_writer:'tools',
   open_symbol_studio:'tools', open_video_studio:'tools', open_cinematic_studio:'tools', open_allo_studio:'tools',
   open_accessibility_lab:'tools', open_lumen:'tools', open_free_forms:'tools', open_community_catalog:'tools', open_dynamic_assessment:'tools', open_reading_library:'tools',
   open_open_groove:'tools', open_timeline_studio:'tools', open_lingua_practice:'tools', open_test_prep_hub:'tools', open_research_hub:'tools', open_lit_lab:'tools', open_mind_map:'tools', open_poet_tree:'tools', find_reading:'tools',

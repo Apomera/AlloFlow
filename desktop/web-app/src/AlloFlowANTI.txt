@@ -36178,6 +36178,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       openAccessibilityLab: () => setIsAccessibilityLabOpen(true),
       openLumen: () => { setStemLabTool('lumen'); setShowStemLab(true); },
       openFreeForms: () => { setStemLabTool('freeForms'); setShowStemLab(true); },
+      // Generic launcher behind the open_stem_tool command. The id is resolved
+      // from the capability index up in the command layer, so the host just
+      // honours it. Setting the tab matters: the lab renders the active tool
+      // only while the Explore tab is showing.
+      openStemTool: (id) => { if (!id) return false; setStemLabTool(String(id)); setStemLabTab('explore'); setShowStemLab(true); return true; },
       openCommunityCatalog: () => setIsCommunityCatalogOpen(true),
       readingLibraryIndex: readingLibraryIndexForBot,
       openReadingBook: (slug) => {
