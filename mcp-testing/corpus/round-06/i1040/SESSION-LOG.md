@@ -328,11 +328,52 @@ online, tax forms and publications in a variety of formats…") completes at
 the top of page 34. It is authored whole at page 33, so **tranche 10 starts at
 "Line 12e" and must not re-author it.**
 
-### Sessions 10+ — REMAINING (suggested boundaries from the printed TOC)
+## GOAL: finish all 126 pages, at the rigor established above
+
+Set by Aaron on 2026-08-04: complete the whole document, doing more per
+session where possible, but **without reducing per-page scrutiny**. That trade
+was offered and declined, so do not re-propose it.
+
+What makes "more per session" achievable honestly:
+
+* **The structural shapes are settled** — flowchart (t5), glossary (t6), line
+  instructions (t7), worksheet (t8), merged-cell table (t3). New pages of
+  those kinds cost authoring time, not design time. A tranche only needs fresh
+  design when it shows a shape not in that list.
+* **Two spans are MECHANICAL and must not be hand-authored.** The 2025 Tax
+  Table (~pages 68-80) and the Index (~118-126) are thousands of short,
+  regular rows. Generate them from extracted text with a per-tranche
+  generator, then VERIFY: row count against page count, spot-check rows
+  against the render, and a recall pass. Hand-authoring them would be slower
+  and less accurate, not more careful.
+* **The limit is context per session, not willingness.** A validated 4-6 page
+  tranche that is committed beats an ambitious one that runs out of context
+  half-authored. Prefer several tranches per session over one oversized one.
+
+Per-session checklist (unchanged): read the handoff note for the tranche
+BEFORE authoring; author from the text layer where the columns are detected
+correctly, from the render where they are not; `merge-plans` all tranches;
+recall check with print-control stripped and any cross-tranche overlap
+credited; verify no marker leakage; commit with the decisions written down.
+
+### Sessions 10+ — REMAINING
 
 | Tranche | Pages | Content | Notes |
 | --- | --- | --- | --- |
-| 10 | 34-38 | Line 12e standard deduction, lines 13-15 | starts at "Line 12e" — see handoff above; more worksheets, reuse the session-8 shape; p35/37/38 are full-width |
+| ~~10~~ | ~~34-37~~ | DONE — see session 10 below | |
+| 11 | 38-47 | Qualified Dividends worksheet, lines 16-26, credits | starts at page 38's "Qualified Dividends and Capital Gain Tax Worksheet"; expect more worksheets |
+| 12 | 48-60 | Line 27a EIC and its worksheets/tables | heaviest remaining hand-authoring; EIC tables may be partly mechanical |
+| 13 | 61-67 | Refund, Amount You Owe, Sign, Assemble | |
+| 14 | 68-80 | **2025 Tax Table** | ★ MECHANICAL — generator + verification, not hand-authored |
+| 15 | 81-87 | General Info, Tax Help, Refund Info | |
+| 16 | 88-110 | Schedule 1 + 1-A instructions | long; may split |
+| 17 | 111-117 | Schedules 2-3 instructions | |
+| 18 | 118-126 | Tax Topics, Disclosure, Outlays, **Index** | ★ Index MECHANICAL (list per letter) |
+
+After the last tranche: `merge-plans` all of them (expect `pagesWithoutBlocks`
+empty but for genuinely blank pages) → `remediate` → recall channels →
+`verify-init` → independent verifier → `verify-check`. Only then is a rebuild
+delivered.
 | 07 | 39-60 | Payments (EIC!) | EIC worksheets + tables; heavy geometry work |
 | 08 | 61-67 | Refund, Amount You Owe, Sign, Assemble | |
 | 09 | 68-80 | 2025 Tax Table | MECHANICAL: generate rows from extract-text with a per-tranche generator; thousands of rows; verify row count against page count |
@@ -443,3 +484,34 @@ above a full-width block; a full-width block above columns; a single column
 with a big blank gap is NOT carved into bands; stamp read once per draw and in
 place) and in `portable_verification` (same fixture through the real CLI),
 sharing `tests/helpers/stamped_xobject_fixture.js`. Portable engine 0.2.2.
+
+### Session 10 (2026-08-04) — pages 34-37 · tranche-10 · 67 blocks · VALIDATED (merged)
+
+Standard deduction (line 12e) with its worksheet and chart, qualified business
+income deduction, and line 16 Tax with the Foreign Earned Income Tax
+Worksheet. `merge-plans t01..t10` → 688 blocks, `ok: true`, pages 1-37
+covered.
+
+**Recall 0.9935** once furniture is removed and tranche 9's page-33 blocks are
+credited (page 33's last bullet finishes on page 34). Raw it reads 0.9701; the
+difference is entirely that cross-tranche overlap, the same accounting first
+needed in session 6. Remaining shortfall is only the worksheet sub-line labels
+the source prints twice ("2a." at the start of the line, "a." again beside the
+entry box).
+
+**No new shapes were needed** — the first session where that is true of a
+structurally busy span. Both worksheets reuse the tranche-8 shape and the
+Standard Deduction Chart reuses the tranche-3 merged-cell flatten. Two small
+decisions worth recording:
+
+* **Sub-numbered worksheet lines are their own ROWS**, not folds (4a/4b/4c on
+  page 35, 2a/2b/2c on page 37). The source numbers them as separate entry
+  lines and later lines reference them individually, so they need their own
+  row headers.
+* **The chart's checkbox block became a sentence.** Four checkboxes and an
+  arrow lead to a "total number of boxes checked" blank. The boxes and arrow
+  are paper-form furniture, but their labels tell you what to count, so the
+  labels are kept as a sentence and the blank is not reproduced.
+
+**Line 16's list spans the page-35 insert** (begins page 34, finishes page 36),
+authored whole at page 34, so merged order runs 34 → 35 → 36 as printed.
