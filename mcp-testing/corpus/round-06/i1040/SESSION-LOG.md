@@ -778,13 +778,70 @@ page images were useless here because the embedded fonts paint as tofu. With
 `pdfjs-dist` present, the round-7 renderer path produces fully legible pages,
 so the render is a real check again rather than a layout sketch.
 
-### NEXT: pages 61-67, then the Tax Table (68-80) is the next MECHANICAL span
+### Session 18 (2026-08-04) — pages 61-62 · tranche-18 · 47 blocks · VALIDATED (merged)
 
-Pages 61-67 (additional child tax credit, refund, amount you owe, sign,
-assemble) are ordinary hand-authored prose. Then the Tax Table gets the
-tranche-17 treatment: `page_items.cjs` for geometry, a generator that parses
-and verifies before it writes, `tranche_recall.cjs` for recall, and a render
-spot-check. Its shape differs — income brackets against filing-status columns,
-no phase-out — so the invariants have to be re-derived for it rather than
-copied; contiguity of the bracket sequence should carry over directly. Same
-again for the Index (~118-126). Do not hand-author either.
+Lines 28, 29 and 30 (the last refundable credits) and the opening of the
+Refund section. `merge-plans t01..t18` → 993 blocks, `ok: true`, **pages 1-62
+covered**. Recall **0.9865**, with the whole shortfall accounted for: the
+standing footer and "Page N of 126" twice over, the glued `DIRECTDEPOSIT`
+logotype, and `nu62`/`trition` — the printed page number sitting inside a
+hyphen-split word at the column break, the same artifact session 2 found.
+
+**A tool defect that had been live since session 1.** pdf.js reports this
+document's fonts as synthetic ids (`g_d0_f1`..`g_d0_f17`) with generic
+`serif`/`sans-serif` families. There is no font NAME to test, so
+`page_outline.cjs`'s "does the font name contain bold" check was false for
+**every item on every page of this PDF**, and its heading detection had
+silently degraded to size-only for seventeen sessions. Subheads set at body
+size were invisible to it: "Refund Offset", "Injured Spouse", "Benefits of
+Direct Deposit", "Account must be in your name". `page_items.cjs` shipped the
+same misleading `bold` field in session 17.
+
+Both tools now classify by how RARELY a page uses a face: body copy is set in
+one or two faces covering most of the page, while subheads and run-in leads
+use faces that appear a handful of times. The threshold is 20%, and both
+bounds were measured, not guessed — page 6's run-in lead face sets 10% of that
+page (so a tighter threshold misses it), and page 61 sets its CAUTION-box copy
+in a second roman face at 35% (so a looser one swallows body text). It is a
+CANDIDATE generator, not a classifier: it cannot tell a second body face from
+a heavily used display face, so the header comment now says to confirm against
+a rendered page, which is what this tranche did.
+
+**Two authoring decisions the fix made possible.** The italic face does double
+duty — it sets both the CAUTION/TIP box bodies and the cross-references in
+running text. The cross-references are marked emphasis; the callout bodies are
+not, because there the italic marks the box (which the callout already
+conveys) and emphasising a whole paragraph tells a screen-reader user nothing.
+And "do not" on page 61 turns out to be bold, not italic.
+
+**A review note that was wrong, caught by checking it.** The first draft
+asserted these pages carry no Link annotations, so the addresses were left as
+emphasis. The rendered page showed them underlined; page 62 in fact carries
+five Link annotations for three logical links (two report twice because they
+wrap across a line). Targets now come from the annotations, as in tranche 2,
+so no URL is guessed from visible text. Page 61 genuinely has none — the
+render distinguishes them, underlined versus merely italic.
+
+**The recall check gained one narrow rule.** A margin icon's LABEL is real
+text in the content stream, so it lands wherever the icon sits — including
+inside a word broken across lines: page 61 reads "you must have a val- !
+CAUTION id SSN". An interposed label is now dropped before the hyphen is
+closed, or the halves survive as `val` and `id` and read as dropped content.
+That the icon sits *inside* the word is also the clearest evidence yet that
+restoring the sentence around it (the tranche-3 convention) is right.
+
+### NEXT: pages 63-67, then the Tax Table (68-80) is the next MECHANICAL span
+
+Page 63 opens the direct-deposit mechanics: Form 8888, the **sample-check
+figure** (this part's first real figure — it needs alt text and a decision
+about how much of a cheque to describe), the line 35b/35c/35d field
+instructions, and the rejection reasons. Then 64-67: amount you owe, estimated
+tax penalty, third party designee, signing, assembling.
+
+Then the Tax Table gets the tranche-17 treatment: `page_items.cjs` for
+geometry, a generator that parses and verifies before it writes,
+`tranche_recall.cjs` for recall, and a render spot-check. Its shape differs —
+income brackets against filing-status columns, no phase-out — so the
+invariants must be re-derived rather than copied; bracket contiguity should
+carry over directly. Same again for the Index (~118-126). Do not hand-author
+either.

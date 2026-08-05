@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Per-ITEM geometry dump: every pdf.js textContent item with its x/y/width,
-// font size and bold flag, as JSON. This is the input for reconstructing DRAWN
+// font size and display-face flag, as JSON. This is the input for reconstructing DRAWN
 // tables, where stream order is useless: a two-panel lookup table interleaves
 // the left and right panels on every visual line, so pairing cells from
 // ordered text produces nonsense. Band the items by y, split by x, and the
@@ -10,7 +10,8 @@
 //   node mcp-testing/tools/page_items.cjs <file.pdf> <first> <last> [--out FILE]
 //
 // Output: {"pages":[{"page":49,"width":612,"height":792,"items":[
-//   {"x":48.2,"y":701.5,"w":23.1,"size":6.5,"bold":false,"text":"2,400"}, ...]}]}
+//   {"x":48.2,"y":701.5,"w":23.1,"size":6.5,"face":"g_d0_f1","fam":"serif",
+//    "display":false,"text":"2,400"}, ...]}]}
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -48,16 +49,28 @@ const last = Number(lastArg || first);
       const vp = pg.getViewport({ scale: 1 });
       const tc = await pg.getTextContent();
       const styles = tc.styles || {};
+      const glyphs = tc.items.filter((it) => it.str && it.str.trim());
+      // Font NAMES are useless for detecting bold on documents pdf.js reports
+      // with synthetic ids ("g_d0_f1"); see the long note in page_outline.cjs.
+      // A face used for under 20% of a page's glyphs is a display face.
+      const faceCount = new Map();
+      for (const it of glyphs) faceCount.set(it.fontName, (faceCount.get(it.fontName) || 0) + 1);
+      const RARE = Math.max(1, glyphs.length * 0.20);
+      // Keep the NAME test too, OR'd in: on documents where pdf.js does report
+      // real PostScript names it is exact, and the frequency rule is not.
+      const named = (f) => /bold|black|heavy/i.test((styles[f] && styles[f].fontFamily) || '')
+        || /(^|[+,])B[do]/.test(f || '');
+      const isDisplay = (f) => (faceCount.get(f) || 0) < RARE || named(f);
       const items = [];
-      for (const it of tc.items) {
-        if (!it.str || !it.str.trim()) continue;
-        const fname = (styles[it.fontName] && styles[it.fontName].fontFamily) || it.fontName || '';
+      for (const it of glyphs) {
         items.push({
           x: round(it.transform[4]),
           y: round(it.transform[5]),
           w: round(it.width || 0),
           size: round(Math.hypot(it.transform[0], it.transform[1])),
-          bold: /bold|black|heavy/i.test(fname) || /(^|[+,])B[do]/.test(it.fontName || ''),
+          face: it.fontName,
+          fam: ((styles[it.fontName] && styles[it.fontName].fontFamily) || '').slice(0, 10),
+          display: isDisplay(it.fontName),
           text: it.str,
         });
       }
