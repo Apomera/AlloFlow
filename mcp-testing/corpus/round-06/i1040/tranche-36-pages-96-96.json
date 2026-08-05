@@ -1,0 +1,64 @@
+{
+ "schema_version": "1.0",
+ "document": {
+  "title": "2025 Instructions for Form 1040 (and 1040-SR)",
+  "language": "en",
+  "source_page_count": 126,
+  "source_sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a",
+  "document_type": "booklet",
+  "subject": "Internal Revenue Service instructions for the 2025 Form 1040 and Form 1040-SR, including the instructions for Schedules 1 through 3.",
+  "variant": "original"
+ },
+ "blocks": [
+  {
+   "type": "paragraph",
+   "text": "The “Retirement plan” box in box 13 of your Form W-2 should be checked if you were covered by a plan at work even if you weren’t vested in the plan. You are also covered by a plan if you were self-employed and had a SEP, SIMPLE, or qualified retirement plan.",
+   "source_page": 96
+  },
+  {
+   "type": "paragraph",
+   "text": "If you were covered by a retirement plan and you file Form 2555 or 8815, or you exclude employer-provided adoption benefits, see Pub. 590-A to figure the amount, if any, of your IRA deduction.",
+   "source_page": 96
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Married persons filing separately",
+   "source_page": 96
+  },
+  {
+   "type": "paragraph",
+   "text": "If you weren’t covered by a retirement plan but your spouse was, you are considered covered by a plan unless you lived apart from your spouse for all of 2025.",
+   "source_page": 96
+  },
+  {
+   "type": "paragraph",
+   "text": "If you are married filing separately and you lived apart from your spouse for all of 2025, check the box on line 20. If you don’t check the box on line 20, you may get a math error notice from the IRS.",
+   "source_page": 96
+  },
+  {
+   "type": "paragraph",
+   "text": "Tip. You may be able to take the retirement savings contributions credit. See the Schedule 3, line 4, instructions.",
+   "runs": [
+    {
+     "text": "Tip.",
+     "style": "strong"
+    },
+    {
+     "text": " You may be able to take the retirement savings contributions credit. See the Schedule 3, line 4, instructions.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 96
+  }
+ ],
+ "review_notes": [
+  "TRANCHE 36 OF A MULTI-SESSION REBUILD. This plan covers printed page 96, the rest of the retirement-plan coverage discussion under Schedule 1 line 20. It carries no document title by design — only tranche 1 does — so this file validates through merge-plans rather than standalone. No partial rebuild is delivered.",
+  "THE PARAGRAPH AT THE TOP OF THIS PAGE IS NOT REPEATED. “Were You Covered by a Retirement Plan?” was authored whole at page 95 in tranche 35, so this tranche opens at the “Retirement plan” box sentence. Check this page's shortfall with mcp-testing/tools/carried_block_check.cjs against tranche 35.",
+  "A SHORT TRANCHE ON PURPOSE. Page 96 carries only five blocks, and page 97 is the IRA Deduction Worksheet — the most complex worksheet in the document so far, with TWO entry columns (Your IRA, Spouse's IRA) rather than the single Amount column the six worksheets before it used, plus nested i./ii. options inside branch arms and two STOP conditions. That needs a column shape this rebuild has not used before, so it gets its own tranche rather than being appended here.",
+  "“Married persons filing separately” IS A BOLD RUN-IN LEAD, confirmed from the face data rather than from its position: it is the page's only item in the bold serif face. Promoted to a level-5 heading with the trailing period dropped, under line 20 where it belongs.",
+  "THE PAGE CARRIES NO LINK ANNOTATIONS, checked rather than assumed. Its one cross-reference, to the Schedule 3 line 4 instructions, sits inside the TIP and is plain text in the source.",
+  "ICON CALLOUT as established in tranche 3: the TIP becomes a paragraph opening with a strong “Tip.” in sentence case.",
+  "PAGE FURNITURE OMITTED: the printed page number and the standing “Need more information or forms? Visit IRS.gov.” footer. Soft hyphens removed and line-break hyphens closed, while genuine compounds are kept (W-2, employer-provided, self-employed)."
+ ]
+}

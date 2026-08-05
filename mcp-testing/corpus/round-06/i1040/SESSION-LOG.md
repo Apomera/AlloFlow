@@ -1431,14 +1431,37 @@ SSN field and the printed instructions say nothing about it.
 resolves to irs.gov/taxtopics/tc452.html. Reading the text alone leaves a dead
 cross-reference every time.
 
-### NEXT: page 96 onward
+### Session 36 (2026-08-05) - page 96 - tranche-36 - 6 blocks - VALIDATED (merged)
 
-Page 96 is short (64 items): the rest of the retirement-plan coverage
-discussion, "Married persons filing separately", and a TIP about the saver's
-credit. **Do not re-author the "Were You Covered by a Retirement Plan?"
-paragraph**; open at "The 'Retirement plan' box in box 13...". Page 97 looks
-like a worksheet (bulleted, 97 items) - likely the IRA Deduction Worksheet, so
-the tranche-30/34 shape should apply.
+The rest of the retirement-plan coverage discussion under Schedule 1 line 20.
+`merge-plans t01..t36` -> 1,478 blocks, `ok: true`, **pages 1-96 covered**,
+zero heading skips.
+
+> **Recall reads 0.7531, the lowest of the whole rebuild, and nothing is
+> missing.** The carried-block check settles it exactly: **59 shortfall
+> instances = 55 carried + 4 furniture + 0 unexplained.** Page 96 has only 239
+> source tokens and the "Were You Covered by a Retirement Plan?" paragraph
+> carried from page 95 accounts for 55 of them, so raw recall is
+> arithmetically meaningless here. **On a short page receiving a large carried
+> block, the raw number says nothing; run `carried_block_check.cjs`.** This is
+> the clearest demonstration yet of why that tool exists.
+
+**A short tranche on purpose.** Page 97 is the IRA Deduction Worksheet - the
+most complex worksheet in the document so far, with TWO entry columns (Your
+IRA, Spouse's IRA) rather than the single Amount column the six worksheets
+before it used, plus nested i./ii. options inside branch arms and two STOP
+conditions. That needs a column shape this rebuild has not used before, so it
+gets its own tranche rather than being appended to a five-block page.
+
+### NEXT: page 97, the IRA Deduction Worksheet
+
+**Design decision required before authoring:** the settled worksheet shape is
+`[Line, Instruction, Amount]`, and this worksheet needs
+`[Line, Instruction, Your IRA, Spouse's IRA]`. Lines 1a/1b are Yes/No
+checkboxes rather than amounts, lines 2/5/6/7 have per-column entries (2a/2b,
+5a/5b, 6a/6b), and line 6's Yes arm contains a nested i./ii. option list.
+Follow the tranche-30 precedent for branches and STOPs (fold into the line),
+and the tranche-34 precedent for footnotes.
 
 Then Schedule 1's remaining adjustments (98-100), Schedule 1-A (101-110),
 Schedule 2 (111-114) and Schedule 3 (115-117), each a top-level TOC entry
