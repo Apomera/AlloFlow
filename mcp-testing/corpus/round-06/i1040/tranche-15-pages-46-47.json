@@ -1,0 +1,388 @@
+{
+ "schema_version": "1.0",
+ "document": {
+  "title": "2025 Instructions for Form 1040 (and 1040-SR)",
+  "language": "en",
+  "source_page_count": 126,
+  "source_sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a",
+  "document_type": "booklet",
+  "subject": "Internal Revenue Service instructions for the 2025 Form 1040 and Form 1040-SR, including the instructions for Schedules 1 through 3.",
+  "variant": "original"
+ },
+ "blocks": [
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Worksheet A—2025 EIC—Line 27a",
+   "source_page": 46
+  },
+  {
+   "type": "paragraph",
+   "text": "Keep for Your Records.",
+   "source_page": 46
+  },
+  {
+   "type": "paragraph",
+   "text": "Before you begin. Be sure you are using the correct worksheet. Use this worksheet only if you answered “No” to Step 5, question 2. Otherwise, use Worksheet B.",
+   "runs": [
+    {
+     "text": "Before you begin.",
+     "style": "strong"
+    },
+    {
+     "text": " ",
+     "style": "normal"
+    },
+    {
+     "text": "Be sure you are using the correct worksheet. Use this worksheet only if you answered “No” to Step 5, question 2. Otherwise, use ",
+     "style": "normal"
+    },
+    {
+     "text": "Worksheet B",
+     "style": "emphasis"
+    },
+    {
+     "text": ".",
+     "style": "normal"
+    }
+   ],
+   "source_page": 46
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Part 1. All Filers Using Worksheet A",
+   "source_page": 46
+  },
+  {
+   "type": "table",
+   "caption": "EIC Worksheet A, Part 1 (All Filers Using Worksheet A): lines 1 to 4. The Amount column is where you write your figures; it is blank in the printed form.",
+   "columns": [
+    "Line",
+    "Instruction",
+    "Amount"
+   ],
+   "rows": [
+    [
+     "1.",
+     "Enter your earned income from Step 5.",
+     ""
+    ],
+    [
+     "2.",
+     "Look up the amount on line 1 above in the EIC Table (right after Worksheet B) to find the credit. Be sure you use the correct column for your filing status and the number of qualifying children you have who have valid SSNs as defined earlier. Enter the credit here. STOP. If line 2 is zero, you can’t take the credit. Check the box on Form 1040 or 1040-SR, line 27c.",
+     ""
+    ],
+    [
+     "3.",
+     "Enter the amount from Form 1040 or 1040-SR, line 11b.",
+     ""
+    ],
+    [
+     "4.",
+     "Are the amounts on lines 3 and 1 the same? Yes. Skip line 5; enter the amount from line 2 on line 6. No. Go to line 5.",
+     ""
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 46
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Part 2. Filers Who Answered “No” on Line 4",
+   "source_page": 46
+  },
+  {
+   "type": "table",
+   "caption": "EIC Worksheet A, Part 2 (Filers Who Answered “No” on Line 4): line 5. The Amount column is where you write your figures; it is blank in the printed form.",
+   "columns": [
+    "Line",
+    "Instruction",
+    "Amount"
+   ],
+   "rows": [
+    [
+     "5.",
+     "If you have: no qualifying children who have valid SSNs, is the amount on line 3 less than $10,620 ($17,730 if married filing jointly)?; or 1 or more qualifying children who have valid SSNs, is the amount on line 3 less than $23,350 ($30,470 if married filing jointly)? Yes. Leave line 5 blank; enter the amount from line 2 on line 6. No. Look up the amount on line 3 in the EIC Table to find the credit. Be sure you use the correct column for your filing status and the number of qualifying children you have who have valid SSNs. Enter the credit here.",
+     ""
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 46
+  },
+  {
+   "type": "paragraph",
+   "text": "Look at the amounts on lines 5 and 2. Then, enter the smaller amount on line 6.",
+   "source_page": 46
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Part 3. Your Earned Income Credit",
+   "source_page": 46
+  },
+  {
+   "type": "table",
+   "caption": "EIC Worksheet A, Part 3 (Your Earned Income Credit): line 6. The Amount column is where you write your figures; it is blank in the printed form.",
+   "columns": [
+    "Line",
+    "Instruction",
+    "Amount"
+   ],
+   "rows": [
+    [
+     "6.",
+     "This is your earned income credit. Enter this amount on Form 1040 or 1040-SR, line 27a.",
+     ""
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 46
+  },
+  {
+   "type": "paragraph",
+   "text": "Reminder. If you have a qualifying child, complete and attach Schedule EIC.",
+   "runs": [
+    {
+     "text": "Reminder.",
+     "style": "strong"
+    },
+    {
+     "text": " If you have a qualifying child, complete and attach Schedule EIC.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 46
+  },
+  {
+   "type": "paragraph",
+   "text": "Caution. If your EIC for a year after 1996 was reduced or disallowed, see Form 8862, who must file, earlier, to find out if you must file Form 8862 to take the credit for 2025.",
+   "runs": [
+    {
+     "text": "Caution.",
+     "style": "strong"
+    },
+    {
+     "text": " ",
+     "style": "normal"
+    },
+    {
+     "text": "If your EIC for a year after 1996 was reduced or disallowed, see ",
+     "style": "normal"
+    },
+    {
+     "text": "Form 8862, who must file",
+     "style": "emphasis"
+    },
+    {
+     "text": ", earlier, to find out if you must file Form 8862 to take the credit for 2025.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 46
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Worksheet B—2025 EIC—Line 27a",
+   "source_page": 47
+  },
+  {
+   "type": "paragraph",
+   "text": "Keep for Your Records.",
+   "source_page": 47
+  },
+  {
+   "type": "paragraph",
+   "text": "Before you begin. Use this worksheet if you answered “Yes” to Step 5, question 2. Complete the parts below (Parts 1 through 3) that apply to you. Then, continue to Part 4. If you are married filing a joint return, include your spouse’s amounts, if any, with yours to figure the amounts to enter in Parts 1 through 3.",
+   "runs": [
+    {
+     "text": "Before you begin.",
+     "style": "strong"
+    },
+    {
+     "text": " Use this worksheet if you answered “Yes” to Step 5, question 2. Complete the parts below (Parts 1 through 3) that apply to you. Then, continue to Part 4. If you are married filing a joint return, include your spouse’s amounts, if any, with yours to figure the amounts to enter in Parts 1 through 3.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 47
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Part 1. Self-Employed, Members of the Clergy, and People With Church Employee Income Filing Schedule SE",
+   "source_page": 47
+  },
+  {
+   "type": "table",
+   "caption": "EIC Worksheet B, Part 1 (Self-Employed, Members of the Clergy, and People With Church Employee Income Filing Schedule SE): lines 1a to 1e. The printed form stacks these with plus, minus and equals signs down the entry column; each line’s own instruction says which operation to perform. The Amount column is blank in the printed form.",
+   "columns": [
+    "Line",
+    "Instruction",
+    "Amount"
+   ],
+   "rows": [
+    [
+     "1a.",
+     "Enter the amount from Schedule SE, Part I, line 3.",
+     ""
+    ],
+    [
+     "1b.",
+     "Enter any amount from Schedule SE, Part I, line 4b and line 5a.",
+     ""
+    ],
+    [
+     "1c.",
+     "Combine lines 1a and 1b.",
+     ""
+    ],
+    [
+     "1d.",
+     "Enter the amount from Schedule SE, Part I, line 13.",
+     ""
+    ],
+    [
+     "1e.",
+     "Subtract line 1d from line 1c.",
+     ""
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 47
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Part 2. Self-Employed NOT Required To File Schedule SE",
+   "source_page": 47
+  },
+  {
+   "type": "paragraph",
+   "text": "For example, your net earnings from self-employment were less than $400.",
+   "source_page": 47
+  },
+  {
+   "type": "paragraph",
+   "text": "2. Don’t include on these lines any statutory employee income, any net profit from services performed as a notary public, any amount exempt from self-employment tax as the result of the filing and approval of Form 4029 or Form 4361, or any other amounts exempt from self-employment tax.",
+   "source_page": 47
+  },
+  {
+   "type": "table",
+   "caption": "EIC Worksheet B, Part 2 (Self-Employed NOT Required To File Schedule SE): lines 2a to 2c. The Amount column is blank in the printed form.",
+   "columns": [
+    "Line",
+    "Instruction",
+    "Amount"
+   ],
+   "rows": [
+    [
+     "2a.",
+     "Enter any net farm profit or (loss) from Schedule F, line 34; and from farm partnerships, Schedule K-1 (Form 1065), box 14, code A*.",
+     ""
+    ],
+    [
+     "2b.",
+     "Enter any net profit or (loss) from Schedule C, line 31; and Schedule K-1 (Form 1065), box 14, code A (other than farming)*.",
+     ""
+    ],
+    [
+     "2c.",
+     "Combine lines 2a and 2b.",
+     ""
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 47
+  },
+  {
+   "type": "paragraph",
+   "text": "* If you have any Schedule K-1 amounts, complete the appropriate line(s) of Schedule SE, Part I. Reduce the Schedule K-1 amounts as described in the Partner’s Instructions for Schedule K-1. Enter your name and social security number on Schedule SE and attach it to your return.",
+   "source_page": 47
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Part 3. Statutory Employees Filing Schedule C",
+   "source_page": 47
+  },
+  {
+   "type": "table",
+   "caption": "EIC Worksheet B, Part 3 (Statutory Employees Filing Schedule C): line 3. The Amount column is blank in the printed form.",
+   "columns": [
+    "Line",
+    "Instruction",
+    "Amount"
+   ],
+   "rows": [
+    [
+     "3.",
+     "Enter the amount from Schedule C, line 1, that you are filing as a statutory employee.",
+     ""
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 47
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Part 4. All Filers Using Worksheet B",
+   "source_page": 47
+  },
+  {
+   "type": "paragraph",
+   "text": "Note. If line 4b includes income on which you should have paid self-employment tax but didn’t, we may reduce your credit by the amount of self-employment tax not paid.",
+   "runs": [
+    {
+     "text": "Note.",
+     "style": "strong"
+    },
+    {
+     "text": " If line 4b includes income on which you should have paid self-employment tax but didn’t, we may reduce your credit by the amount of self-employment tax not paid.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 47
+  },
+  {
+   "type": "table",
+   "caption": "EIC Worksheet B, Part 4 (All Filers Using Worksheet B): lines 4a to 5. The Amount column is blank in the printed form.",
+   "columns": [
+    "Line",
+    "Instruction",
+    "Amount"
+   ],
+   "rows": [
+    [
+     "4a.",
+     "Enter your earned income from Step 5.",
+     ""
+    ],
+    [
+     "4b.",
+     "Combine lines 1e, 2c, 3, and 4a. This is your total earned income. STOP. If line 4b is zero or less, you can’t take the credit. Check the box on Form 1040 or 1040-SR, line 27c.",
+     ""
+    ],
+    [
+     "5.",
+     "If you have: 3 or more qualifying children who have valid SSNs, is line 4b less than $61,555 ($68,675 if married filing jointly)?; 2 qualifying children who have valid SSNs, is line 4b less than $57,310 ($64,430 if married filing jointly)?; 1 qualifying child who has a valid SSN, is line 4b less than $50,434 ($57,554 if married filing jointly)?; no qualifying children who have valid SSNs, is line 4b less than $19,104 ($26,214 if married filing jointly)? Yes. If you want the IRS to figure your credit, see Credit figured by the IRS, earlier. If you want to figure the credit yourself, enter the amount from line 4b on line 6 of this worksheet. No. STOP. You can’t take the credit. Check the box on Form 1040 or 1040-SR, line 27c.",
+     ""
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 47
+  }
+ ],
+ "review_notes": [
+  "TRANCHE 15 OF A MULTI-SESSION REBUILD. This plan covers printed pages 46-47 — EIC Worksheet A and Worksheet B. It carries no document title by design: only tranche 1 does, so this file validates through merge-plans rather than standalone. No partial rebuild is delivered.",
+  "ONE TABLE PER PART, not one table per worksheet. Each worksheet is divided into numbered Parts whose titles are load-bearing — “Filers Who Answered “No” on Line 4” tells a reader whether to fill that Part in at all, and “Self-Employed NOT Required To File Schedule SE” is a precondition, not a label. Each Part is a level-5 heading followed by a worksheet table of its own lines, so the title stays attached to the lines it governs. Line numbering is unaffected: the printed numbers are carried in the Line column, so 1a-1e, 2a-2c, 3 and 4a-5 read continuously across the four tables of Worksheet B.",
+  "THE ARITHMETIC COLUMN IS NOT REPRODUCED. Worksheet B’s Parts 1 and 2 print +, − and = signs down the entry column to show how the sub-lines combine. Those symbols are a visual aid beside the boxes; each line’s own instruction already states the operation (“Combine lines 1a and 1b”, “Subtract line 1d from line 1c”), so the symbols are dropped and nothing is lost. This is disclosed in the table captions.",
+  "STOP FOLDS INTO ITS LINE, as in earlier worksheets. Worksheet A line 2 and Worksheet B line 4b each carry a STOP condition printed beside the entry box; both fold into their line’s instruction cell with STOP kept as text, since it is the whole meaning of that outcome.",
+  "THE LOOKUP INSTRUCTION IS REPEATED, NOT CROSS-REFERENCED. Worksheet A lines 2 and 5 both tell the reader to use the correct EIC Table column for filing status and number of qualifying children. The source repeats it in full on both lines and so does this plan: a reader filling in line 5 should not have to look back at line 2 for the caveat.",
+  "PART 2’S PREAMBLE IS KEPT AS PROSE. The sentence numbered “2.” in Worksheet B Part 2 (“Don’t include on these lines any statutory employee income…”) governs lines 2a-2c rather than being an entry line — it has no entry box. It is authored as a paragraph before the table, keeping its printed “2.”, rather than as a row that would imply an amount to enter.",
+  "ITALIC CROSS-REFERENCES MARKED AS EMPHASIS, not linked. Pages 46 and 47 carry no link annotations.",
+  "SOFT HYPHENS REMOVED and genuine compounds kept (self-employment, self-employed, 1040-SR, Schedule K-1, Form 1065). PAGE FURNITURE OMITTED: printed page numbers, the standing “Need more information or forms?” footer, and the invisible “Fileid: … MUST be removed before printing” production lines."
+ ]
+}

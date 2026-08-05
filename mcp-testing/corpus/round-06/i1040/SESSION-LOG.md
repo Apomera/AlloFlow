@@ -642,3 +642,37 @@ uses is settled and has now been reused at least twice without change.
 Remaining: EIC worksheets and tables (46-60), refund/sign/assemble (61-67),
 the MECHANICAL Tax Table (68-80), general info (81-87), the schedules
 (88-117), and the back matter including the MECHANICAL Index (118-126).
+
+### Session 15 (2026-08-04) — pages 46-47 · tranche-15 · 27 blocks · VALIDATED (merged)
+
+EIC Worksheet A and Worksheet B — the most form-like pages so far.
+`merge-plans t01..t15` → 878 blocks, `ok: true`, pages 1-47 covered.
+
+**ONE TABLE PER PART, not per worksheet.** Each worksheet divides into
+numbered Parts whose titles are load-bearing: "Filers Who Answered 'No' on
+Line 4" tells you whether to fill that Part in at all, and "Self-Employed NOT
+Required To File Schedule SE" is a precondition, not a label. Each Part is a
+level-5 heading followed by its own worksheet table, so the title stays
+attached to the lines it governs. Numbering is unaffected — the printed
+numbers live in the Line column, so 1a-1e, 2a-2c, 3, 4a-5 read continuously
+across Worksheet B's four tables.
+
+**The arithmetic column is not reproduced.** Worksheet B Parts 1-2 print +, −
+and = down the entry column. Each line's instruction already states the
+operation ("Combine lines 1a and 1b", "Subtract line 1d from line 1c"), so the
+symbols are dropped and nothing is lost. Disclosed in the captions.
+
+**A measurement caveat worth reusing — token recall under-reports on
+form pages.** Raw recall here reads 0.9698, but the *source* baseline is
+degraded: on tightly-packed form layouts adjacent text runs abut with no space
+in the content stream, so the extraction produces glued tokens
+(`recordsbefore`, `1aenter`, `27a10401040sror`). BOTH extractors do this, so
+it is a property of the PDF, not of one reader. Verification used instead:
+segment each shortfall token against the plan's vocabulary — 15 of 27 fully
+decompose into words the plan contains, and the rest are the same glue class
+plus page numbers and sub-line letters. **No content is missing.** Authored
+token count (1158) exceeds source (927) precisely because the plan separates
+what the source runs together.
+
+For future form-heavy pages: don't read a sub-0.99 raw recall as a defect
+without first checking for glue.
