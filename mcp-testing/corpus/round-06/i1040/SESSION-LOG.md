@@ -1518,18 +1518,41 @@ full-page insert**, after tranches 29 and 33.
 > table cell is where the drift creeps in, because joining fragments invites
 > rewriting the joins.
 
-### NEXT: page 99
+### Session 39 (2026-08-05) - page 99 - tranche-39 - 21 blocks - VALIDATED (merged)
 
-Page 99: the Student Loan Interest Deduction Worksheet (full page top,
-single-Amount-column shape), then below it the tail of the qualified-student-
-loan discussion, "Qualified higher education expenses", Line 22 (reserved for
-future use), Line 23 Archer MSA Deduction, and Lines 24a through 24e.
+The Student Loan Interest Deduction Worksheet, the rest of the line 21
+discussion, and Schedule 1 lines 22, 23 and 24a-24e. `merge-plans t01..t39` ->
+1,514 blocks, `ok: true`, **pages 1-99 covered**, zero heading skips.
 
-**Do not re-author items 2 and 3 of the qualified-student-loan list** - run
-`carried_block_check.cjs` on page 99 against tranche 38.
+Recall 0.8673, low for the same structural reason as session 36: **82
+shortfall instances = 74 carried + 5 furniture + 3 residual**, the residuals
+being the worksheet's doubled line numbers (each printed once as the label and
+once beside the entry box) plus the carried list item's own marker. Nothing
+unexplained.
 
-Then Schedule 1's last adjustments (100), Schedule 1-A (101-110), Schedule 2
-(111-114) and Schedule 3 (115-117), each a top-level TOC entry opening at
-level 2. Then the back matter: Tax Topics (118), the Disclosure/Privacy Act
-notice (120), Major Categories of Federal Income and Outlays (122), and the
-MECHANICAL Index (123-126). Do not hand-author the Index.
+**The single-Amount worksheet shape is back.** Pages 97-98 needed two entry
+columns because that worksheet is filled in per spouse; this one takes one
+figure per line, so it uses the shape settled in tranches 15 and 16 - the
+seventh worksheet on it. **Choosing between the two shapes is a per-worksheet
+decision, not a document-wide one.**
+
+**"Line 22 has been reserved for future use" is kept, heading and all.** It is
+tempting to drop a line that does nothing, but a reader working down the
+schedule needs to know 22 is absent by design rather than missing from this
+rebuild.
+
+**Line 24a keeps a run-in title and 24b-24e do not**, because the source
+prints a bold "Jury duty pay." after "Line 24a" and nothing after the others.
+The inconsistency is the document's, not the authoring's.
+
+### NEXT: page 100
+
+Page 100 completes Schedule 1: the rest of lines 24f through 24z and line 25
+(Other Adjustments), and probably the Part II total at line 26. Nothing is
+carried into it - the line 24e paragraph completes on page 99.
+
+Then Schedule 1-A (101-110), Schedule 2 (111-114) and Schedule 3 (115-117),
+each a top-level TOC entry opening at level 2. Then the back matter: Tax
+Topics (118), the Disclosure/Privacy Act notice (120), Major Categories of
+Federal Income and Outlays (122), and the MECHANICAL Index (123-126). Do not
+hand-author the Index.
