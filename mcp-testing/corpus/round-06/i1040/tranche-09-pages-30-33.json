@@ -1,0 +1,946 @@
+{
+ "schema_version": "1.0",
+ "document": {
+  "title": "2025 Instructions for Form 1040 (and 1040-SR)",
+  "language": "en",
+  "source_page_count": 126,
+  "source_sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a",
+  "document_type": "booklet",
+  "subject": "Internal Revenue Service instructions for the 2025 Form 1040 and Form 1040-SR, including the instructions for Schedules 1 through 3.",
+  "variant": "original"
+ },
+ "blocks": [
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Payments when you are disabled",
+   "source_page": 30
+  },
+  {
+   "type": "paragraph",
+   "text": "If you receive payments from a retirement or profit-sharing plan that does not provide for disability retirement, do not treat those payments as disability payments. The payments must be reported as a pension or annuity.",
+   "source_page": 30
+  },
+  {
+   "type": "paragraph",
+   "text": "You must include in your income any amounts that you received that you would have received in retirement had you not become disabled as a result of a terrorist attack. Include in your income any payments you receive from a 401(k), pension, or other retirement plan to the extent that you would have received the amount at the same or later time regardless of whether you had become disabled.",
+   "source_page": 30
+  },
+  {
+   "type": "heading",
+   "level": 6,
+   "text": "Example",
+   "source_page": 30
+  },
+  {
+   "type": "paragraph",
+   "text": "You were a contractor who was disabled as a direct result of participating in efforts to clean up the World Trade Center and you are eligible for compensation by the September 11 Victim Compensation Fund. You began receiving a disability pension at age 55 when you could no longer work due to your disability. Under your pension plan, you are entitled to an early retirement benefit of $2,500 a month at age 55. If you wait until age 62, the normal retirement age under the plan, you would be entitled to a normal retirement benefit of $3,000 a month. The pension plan provides that a participant who retires early on account of disability is entitled to receive the participant’s normal retirement benefit, which in your case equals $3,000 a month. Until you turn age 62, you can exclude $500 of your monthly retirement benefit from income (the difference between the early retirement benefit and the normal retirement benefit, $3,000 − $2,500) received on account of disability. You must report the remaining $2,500 of monthly pension benefit as taxable. For each month after you turn age 62, you must report the full amount of the monthly pension benefit ($3,000 a month) as taxable.",
+   "source_page": 30
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Simplified Method",
+   "source_page": 30
+  },
+  {
+   "type": "paragraph",
+   "text": "You must use the Simplified Method if either of the following applies.",
+   "source_page": 30
+  },
+  {
+   "type": "list",
+   "ordered": true,
+   "items": [
+    "Your annuity starting date was after July 1, 1986, and you used this method last year to figure the taxable part.",
+    "Your annuity starting date was after November 18, 1996, and both of the following apply. a. The payments are from a qualified employee plan, a qualified employee annuity, or a tax-sheltered annuity. b. On your annuity starting date, either you were under age 75 or the number of years of guaranteed payments was fewer than 5. See Pub. 575 for the definition of guaranteed payments."
+   ],
+   "source_page": 30
+  },
+  {
+   "type": "paragraph",
+   "text": "If you must use the Simplified Method, complete the Simplified Method Worksheet in these instructions to figure the taxable part of your pension or annuity. For more details on the Simplified Method, see Pub. 575 (or Pub. 721 for U.S. Civil Service retirement benefits).",
+   "source_page": 30,
+   "runs": [
+    {
+     "text": "If you must use the Simplified Method, complete the ",
+     "style": "normal"
+    },
+    {
+     "text": "Simplified Method Worksheet",
+     "style": "emphasis"
+    },
+    {
+     "text": " in these instructions to figure the taxable part of your pension or annuity. For more details on the Simplified Method, see Pub. 575 (or Pub. 721 for U.S. Civil Service retirement benefits).",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "Caution. If you received U.S. Civil Service retirement benefits and you chose the alternative annuity option, see Pub. 721 to figure the taxable part of your annuity. Do not use the Simplified Method Worksheet in these instructions.",
+   "runs": [
+    {
+     "text": "Caution.",
+     "style": "strong"
+    },
+    {
+     "text": " ",
+     "style": "normal"
+    },
+    {
+     "text": "If you received U.S. Civil Service retirement benefits and you chose the alternative annuity option, see Pub. 721 to figure the taxable part of your annuity. Do not use the ",
+     "style": "normal"
+    },
+    {
+     "text": "Simplified Method Worksheet",
+     "style": "emphasis"
+    },
+    {
+     "text": " in these instructions.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 30
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Annuity Starting Date",
+   "source_page": 30
+  },
+  {
+   "type": "paragraph",
+   "text": "Your annuity starting date is the later of the first day of the first period for which you received a payment or the date the plan’s obligations became fixed.",
+   "source_page": 30
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Age (or Combined Ages) at Annuity Starting Date",
+   "source_page": 30
+  },
+  {
+   "type": "paragraph",
+   "text": "If you are the retiree, use your age on the annuity starting date. If you are the survivor of a retiree, use the retiree’s age on their annuity starting date. But if your annuity starting date was after 1997 and the payments are for your life and that of your beneficiary, use your combined ages on the annuity starting date.",
+   "source_page": 30
+  },
+  {
+   "type": "paragraph",
+   "text": "If you are the beneficiary of an employee who died, see Pub. 575. If there is more than one beneficiary, see Pub. 575 or Pub. 721 to figure each beneficiary’s taxable amount.",
+   "source_page": 30
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Cost",
+   "source_page": 30
+  },
+  {
+   "type": "paragraph",
+   "text": "Your cost is generally your net investment in the plan as of the annuity starting date. It doesn’t include pre-tax contributions. Your net investment may be shown in box 9b of Form 1099-R.",
+   "source_page": 30
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Rollovers",
+   "source_page": 30
+  },
+  {
+   "type": "paragraph",
+   "text": "Generally, a rollover is a tax-free distribution of cash or other assets from one retirement plan that is contributed to another plan within 60 days of receiving the distribution. However, a rollover to a Roth IRA or a designated Roth account is generally not a tax-free distribution. Use lines 5a and 5b to report a rollover, including a direct rollover, from one qualified employer’s plan to another or to an IRA.",
+   "source_page": 30
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter on line 5a the distribution from Form 1099-R, box 1. From this amount, subtract any contributions (usually shown in box 5) that were taxable to you when made. From that result, subtract the amount of the rollover. Enter the remaining amount on line 5b. If the remaining amount is zero and you have no other distribution to report on line 5b, enter -0- on line 5b. Also check box 1 on line 5c.",
+   "source_page": 30
+  },
+  {
+   "type": "paragraph",
+   "text": "See Pub. 575 for more details on rollovers, including special rules that apply to rollovers from designated Roth accounts, partial rollovers of property, and distributions under qualified domestic relations orders.",
+   "source_page": 30
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Lump-Sum Distributions",
+   "source_page": 30
+  },
+  {
+   "type": "paragraph",
+   "text": "If you received a lump-sum distribution from a profit-sharing or retirement plan, your Form 1099-R should have the “Total distribution” box in box 2b checked. You may owe an additional tax if you received an early distribution from a qualified retirement plan and the total amount wasn’t rolled over. For details, see the instructions for Schedule 2, line 8.",
+   "source_page": 30
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter the total distribution on line 5a and the taxable part on line 5b. For details, see Pub. 575.",
+   "source_page": 30
+  },
+  {
+   "type": "paragraph",
+   "text": "Tip. If you or the plan participant was born before January 2, 1936, you could pay less tax on the distribution. See Form 4972.",
+   "runs": [
+    {
+     "text": "Tip.",
+     "style": "strong"
+    },
+    {
+     "text": " If you or the plan participant was born before January 2, 1936, you could pay less tax on the distribution. See Form 4972.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 30
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 5c",
+   "source_page": 30
+  },
+  {
+   "type": "paragraph",
+   "text": "If you have a rollover, including a direct rollover, from one qualified employer’s plan to another or to an IRA, check box 1 on line 5c. See Rollovers, earlier, for more information.",
+   "source_page": 30,
+   "runs": [
+    {
+     "text": "If you have a rollover, including a direct rollover, from one qualified employer’s plan to another or to an IRA, check box 1 on line 5c. See ",
+     "style": "normal"
+    },
+    {
+     "text": "Rollovers",
+     "style": "emphasis"
+    },
+    {
+     "text": ", earlier, for more information.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "If you are making the election to exclude from your income distributions made from your eligible retirement plan to pay premiums for coverage by an accident or health plan or a long-term care contract, check box 2 on line 5c. See Insurance Premiums for Retired Public Safety Officers, earlier, for more information.",
+   "source_page": 31,
+   "runs": [
+    {
+     "text": "If you are making the election to exclude from your income distributions made from your eligible retirement plan to pay premiums for coverage by an accident or health plan or a long-term care contract, check box 2 on line 5c. See ",
+     "style": "normal"
+    },
+    {
+     "text": "Insurance Premiums for Retired Public Safety Officers",
+     "style": "emphasis"
+    },
+    {
+     "text": ", earlier, for more information.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "If another publication or instruction tells you to write a word or a code next to line 5b, check box 3 on line 5c and enter that word or code on the entry space next to box 3.",
+   "source_page": 31
+  },
+  {
+   "type": "paragraph",
+   "text": "Check each box that applies to you.",
+   "source_page": 31
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Lines 6a, 6b, 6c, and 6d",
+   "source_page": 31
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Lines 6a and 6b. Social Security Benefits",
+   "source_page": 31
+  },
+  {
+   "type": "paragraph",
+   "text": "You should receive a Form SSA-1099 showing in box 3 the total social security benefits paid to you. Box 4 will show the amount of any benefits you repaid in 2025. If you received railroad retirement benefits treated as social security, you should receive a Form RRB-1099. Use the Social Security Benefits Worksheet in these instructions to see if any of your benefits are taxable.",
+   "source_page": 31,
+   "runs": [
+    {
+     "text": "You should receive a Form SSA-1099 showing in box 3 the total social security benefits paid to you. Box 4 will show the amount of any benefits you repaid in 2025. If you received railroad retirement benefits treated as social security, you should receive a Form RRB-1099. Use the ",
+     "style": "normal"
+    },
+    {
+     "text": "Social Security Benefits Worksheet",
+     "style": "emphasis"
+    },
+    {
+     "text": " in these instructions to see if any of your benefits are taxable.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 6,
+   "text": "Exception",
+   "source_page": 31
+  },
+  {
+   "type": "paragraph",
+   "text": "Do not use the Social Security Benefits Worksheet in these instructions if any of the following applies.",
+   "source_page": 31,
+   "runs": [
+    {
+     "text": "Do not use the ",
+     "style": "normal"
+    },
+    {
+     "text": "Social Security Benefits Worksheet",
+     "style": "emphasis"
+    },
+    {
+     "text": " in these instructions if any of the following applies.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "You made contributions to a traditional IRA for 2025 and you or your spouse were covered by a retirement plan at work or through self-employment. Instead, use the worksheets in Pub. 590-A to see if any of your social security benefits are taxable and to figure your IRA deduction.",
+    "You repaid any benefits in 2025 and your total repayments (box 4) were more than your total benefits for 2025 (box 3). None of your benefits are taxable for 2025. Also, if your total repayments in 2025 exceed your total benefits received in 2025 by more than $3,000, you may be able to take an itemized deduction or a credit for part of the excess repayments if they were for benefits you included in income in an earlier year. For more details, see Pub. 915.",
+    "You file Form 2555, 4563, or 8815, or you exclude employer-provided adoption benefits or income from sources within Puerto Rico. Instead, use the worksheet in Pub. 915."
+   ],
+   "source_page": 31
+  },
+  {
+   "type": "paragraph",
+   "text": "Tip. Social security information. Social security beneficiaries can now get a variety of information from the SSA website with a my Social Security account, including getting a replacement Form SSA-1099 if needed. For more information and to set up an account, go to SSA.gov/myaccount.",
+   "runs": [
+    {
+     "text": "Tip.",
+     "style": "strong"
+    },
+    {
+     "text": " ",
+     "style": "normal"
+    },
+    {
+     "text": "Social security information.",
+     "style": "strong"
+    },
+    {
+     "text": " Social security beneficiaries can now get a variety of information from the SSA website with a my Social Security account, including getting a replacement Form SSA-1099 if needed. For more information and to set up an account, go to ",
+     "style": "normal"
+    },
+    {
+     "text": "SSA.gov/myaccount",
+     "style": "normal",
+     "href": "https://www.ssa.gov/myaccount/"
+    },
+    {
+     "text": ".",
+     "style": "normal"
+    }
+   ],
+   "source_page": 31
+  },
+  {
+   "type": "heading",
+   "level": 6,
+   "text": "Disability payments",
+   "source_page": 31
+  },
+  {
+   "type": "paragraph",
+   "text": "Don’t include in your income any disability payments (including Social Security Disability Insurance (SSDI) payments) you receive for injuries incurred as a direct result of a terrorist attack directed against the United States (or its allies), whether outside or within the United States. In the case of the September 11 attacks, injuries eligible for coverage by the September 11 Victim Compensation Fund are treated as incurred as a direct result of the attack. If these payments are incorrectly reported as taxable on Form SSA-1099, don’t include the nontaxable portion of income on your tax return. You may receive a notice from the IRS regarding the omitted payments. Follow the instructions in the notice to explain that the excluded payments aren’t taxable. For more information about these payments, see Pub. 3920.",
+   "source_page": 31
+  },
+  {
+   "type": "heading",
+   "level": 6,
+   "text": "Example",
+   "source_page": 31
+  },
+  {
+   "type": "paragraph",
+   "text": "You were a firefighter who was disabled as a direct result of the September 11 terrorist attack on the World Trade Center. You began receiving SSDI benefits at age 54. Your full retirement age for social security retirement benefits is age 66. Your birthday is April 25. In the year you turned age 66, you received $1,500 per month in benefits from the SSA (for a total of $18,000 for the year). Because you became eligible for a full retirement benefit in May, the month after you turned age 66, you can exclude only 4 months (January through April) of your annual benefit from income ($6,000). You must report the remaining $12,000 on line 6a. You must also complete the Social Security Benefits Worksheet to find out if any part of the $12,000 is taxable.",
+   "source_page": 31,
+   "runs": [
+    {
+     "text": "You were a firefighter who was disabled as a direct result of the September 11 terrorist attack on the World Trade Center. You began receiving SSDI benefits at age 54. Your full retirement age for social security retirement benefits is age 66. Your birthday is April 25. In the year you turned age 66, you received $1,500 per month in benefits from the SSA (for a total of $18,000 for the year). Because you became eligible for a full retirement benefit in May, the month after you turned age 66, you can exclude only 4 months (January through April) of your annual benefit from income ($6,000). You must report the remaining $12,000 on line 6a. You must also complete the ",
+     "style": "normal"
+    },
+    {
+     "text": "Social Security Benefits Worksheet",
+     "style": "emphasis"
+    },
+    {
+     "text": " to find out if any part of the $12,000 is taxable.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "Tip. Form RRB-1099. If you need a replacement Form RRB-1099, call the Railroad Retirement Board at 877-772-5772 or go to www.rrb.gov.",
+   "runs": [
+    {
+     "text": "Tip.",
+     "style": "strong"
+    },
+    {
+     "text": " ",
+     "style": "normal"
+    },
+    {
+     "text": "Form RRB-1099.",
+     "style": "strong"
+    },
+    {
+     "text": " If you need a replacement Form RRB-1099, call the Railroad Retirement Board at 877-772-5772 or go to ",
+     "style": "normal"
+    },
+    {
+     "text": "www.rrb.gov",
+     "style": "normal",
+     "href": "https://rrb.gov/"
+    },
+    {
+     "text": ".",
+     "style": "normal"
+    }
+   ],
+   "source_page": 31
+  },
+  {
+   "type": "heading",
+   "level": 6,
+   "text": "Accrued leave payment",
+   "source_page": 31
+  },
+  {
+   "type": "paragraph",
+   "text": "If you retire on disability, any lump-sum payment you receive for accrued annual leave is a salary payment. The payment is not a disability payment. Include it in your income in the tax year you receive it.",
+   "source_page": 31
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 6c",
+   "source_page": 31
+  },
+  {
+   "type": "paragraph",
+   "text": "Check the box on line 6c if you elect to use the lump-sum election method for your benefits. If any of your benefits are taxable for 2025 and they include a lump-sum benefit payment that was for an earlier year, you may be able to reduce the taxable amount with the lump-sum election. See Lump-Sum Election in Pub. 915 for details.",
+   "source_page": 31,
+   "runs": [
+    {
+     "text": "Check the box on line 6c if you elect to use the lump-sum election method for your benefits. If any of your benefits are taxable for 2025 and they include a lump-sum benefit payment that was for an earlier year, you may be able to reduce the taxable amount with the lump-sum election. See ",
+     "style": "normal"
+    },
+    {
+     "text": "Lump-Sum Election",
+     "style": "emphasis"
+    },
+    {
+     "text": " in Pub. 915 for details.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 6d",
+   "source_page": 31
+  },
+  {
+   "type": "paragraph",
+   "text": "If you are married filing separately and you lived apart from your spouse for all of 2025, check the box on line 6d. If you don’t check the box on line 6d, you may get a math error notice from the IRS.",
+   "source_page": 31
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 7a. Capital Gain or (Loss)",
+   "source_page": 31
+  },
+  {
+   "type": "paragraph",
+   "text": "If you sold a capital asset, such as a stock, bond, or digital asset, you must complete and attach Form 8949 and Schedule D.",
+   "source_page": 31
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Exception 1",
+   "source_page": 31
+  },
+  {
+   "type": "paragraph",
+   "text": "You don’t have to file Form 8949 or Schedule D if you aren’t deferring any capital gain by investing in a qualified opportunity fund and both of the following apply.",
+   "source_page": 31
+  },
+  {
+   "type": "list",
+   "ordered": true,
+   "items": [
+    "You have no capital losses, and your only capital gains are capital gain distributions from Form(s) 1099-DIV, box 2a (or substitute statements); and",
+    "None of the Form(s) 1099-DIV (or substitute statements) have an amount in box 2b (unrecaptured section 1250 gain), box 2c (section 1202 gain), or box 2d (collectibles (28%) gain)."
+   ],
+   "source_page": 31
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Exception 2",
+   "source_page": 31
+  },
+  {
+   "type": "paragraph",
+   "text": "You must file Schedule D but generally don’t have to file Form 8949 if Exception 1 doesn’t apply, you aren’t deferring any capital gain by investing in a qualified opportunity fund or terminating deferral from an investment in a qualified opportunity fund, and your only capital gains and losses are:",
+   "source_page": 31,
+   "runs": [
+    {
+     "text": "You must file Schedule D but generally don’t have to file Form 8949 if ",
+     "style": "normal"
+    },
+    {
+     "text": "Exception 1",
+     "style": "emphasis"
+    },
+    {
+     "text": " doesn’t apply, you aren’t deferring any capital gain by investing in a qualified opportunity fund or terminating deferral from an investment in a qualified opportunity fund, and your only capital gains and losses are:",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Capital gain distributions;",
+    "A capital loss carryover from 2024;",
+    "A gain from Form 2439 or 6252 or Part I of Form 4797;",
+    "A gain or loss from Form 4684, 6781, or 8824;",
+    "A gain or loss from a partnership, S corporation, estate, or trust; or",
+    "Gains and losses from transactions for which you received a Form 1099-B or 1099-DA (or substitute statement) that shows basis was reported to the IRS, the QOF box in box 3 of Form 1099-B or box 3b of Form 1099-DA isn’t checked, and you don’t need to make any adjustments in column (g) of Form 8949 or enter any codes in column (f) of Form 8949."
+   ],
+   "source_page": 31
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Social Security Benefits Worksheet—Lines 6a and 6b",
+   "source_page": 32
+  },
+  {
+   "type": "paragraph",
+   "text": "Keep for Your Records.",
+   "source_page": 32
+  },
+  {
+   "type": "paragraph",
+   "text": "Before you begin. If the instructions for Schedule 1, line 24z, have you enter a write-in adjustment on line 24z, figure that write-in before completing this worksheet (see the instructions for Schedule 1, line 24z). If you are married filing separately and you lived apart from your spouse for all of 2025, check the box on line 6d. Be sure you have read the Exception in the line 6a and 6b instructions to see if you can use this worksheet instead of a publication to find out if any of your benefits are taxable.",
+   "runs": [
+    {
+     "text": "Before you begin.",
+     "style": "strong"
+    },
+    {
+     "text": " ",
+     "style": "normal"
+    },
+    {
+     "text": "If the instructions for Schedule 1, line 24z, have you enter a write-in adjustment on line 24z, figure that write-in before completing this worksheet (see the instructions for Schedule 1, line 24z). If you are married filing separately and you lived apart from your spouse for all of 2025, check the box on line 6d. Be sure you have read the ",
+     "style": "normal"
+    },
+    {
+     "text": "Exception",
+     "style": "emphasis"
+    },
+    {
+     "text": " in the line 6a and 6b instructions to see if you can use this worksheet instead of a publication to find out if any of your benefits are taxable.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 32
+  },
+  {
+   "type": "table",
+   "caption": "Social Security Benefits Worksheet for lines 6a and 6b: eighteen numbered steps for figuring how much of your social security benefits is taxable. The Amount column is where you write your figures; it is blank in the printed form.",
+   "columns": [
+    "Line",
+    "Instruction",
+    "Amount"
+   ],
+   "rows": [
+    [
+     "1.",
+     "Enter the total amount from box 5 of all your Forms SSA-1099 and RRB-1099. Also enter this amount on Form 1040 or 1040-SR, line 6a",
+     ""
+    ],
+    [
+     "2.",
+     "Multiply line 1 by 50% (0.50)",
+     ""
+    ],
+    [
+     "3.",
+     "Combine the amounts from Form 1040 or 1040-SR, lines 1z, 2b, 3b, 4b, 5b, 7a, and 8",
+     ""
+    ],
+    [
+     "4.",
+     "Enter the amount, if any, from Form 1040 or 1040-SR, line 2a",
+     ""
+    ],
+    [
+     "5.",
+     "Combine lines 2, 3, and 4",
+     ""
+    ],
+    [
+     "6.",
+     "Enter the total of the amounts from Schedule 1, lines 11 through 20, and 23 and 25",
+     ""
+    ],
+    [
+     "7.",
+     "Is the amount on line 6 less than the amount on line 5? No. STOP. None of your social security benefits are taxable. Enter -0- on Form 1040 or 1040-SR, line 6b. Yes. Subtract line 6 from line 5",
+     ""
+    ],
+    [
+     "8.",
+     "If you are: Married filing jointly, enter $32,000. Single, head of household, qualifying surviving spouse, or married filing separately and you lived apart from your spouse for all of 2025, enter $25,000. Married filing separately and you lived with your spouse at any time in 2025, skip lines 8 through 15; multiply line 7 by 85% (0.85) and enter the result on line 16. Then, go to line 17",
+     ""
+    ],
+    [
+     "9.",
+     "Is the amount on line 8 less than the amount on line 7? No. STOP. None of your social security benefits are taxable. Enter -0- on Form 1040 or 1040-SR, line 6b. If you are married filing separately and you lived apart from your spouse for all of 2025, be sure you checked the box on line 6d. Yes. Subtract line 8 from line 7",
+     ""
+    ],
+    [
+     "10.",
+     "Enter $12,000 if married filing jointly; $9,000 if single, head of household, qualifying surviving spouse, or married filing separately and you lived apart from your spouse for all of 2025",
+     ""
+    ],
+    [
+     "11.",
+     "Subtract line 10 from line 9. If zero or less, enter -0-",
+     ""
+    ],
+    [
+     "12.",
+     "Enter the smaller of line 9 or line 10",
+     ""
+    ],
+    [
+     "13.",
+     "Enter one-half of line 12",
+     ""
+    ],
+    [
+     "14.",
+     "Enter the smaller of line 2 or line 13",
+     ""
+    ],
+    [
+     "15.",
+     "Multiply line 11 by 85% (0.85). If line 11 is zero, enter -0-",
+     ""
+    ],
+    [
+     "16.",
+     "Add lines 14 and 15",
+     ""
+    ],
+    [
+     "17.",
+     "Multiply line 1 by 85% (0.85)",
+     ""
+    ],
+    [
+     "18.",
+     "Taxable social security benefits. Enter the smaller of line 16 or line 17. Also enter this amount on Form 1040 or 1040-SR, line 6b",
+     ""
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 32
+  },
+  {
+   "type": "paragraph",
+   "text": "Tip. If any of your benefits are taxable for 2025 and they include a lump-sum benefit payment that was for an earlier year, you may be able to reduce the taxable amount. See Lump-Sum Election in Pub. 915 for details.",
+   "runs": [
+    {
+     "text": "Tip.",
+     "style": "strong"
+    },
+    {
+     "text": " ",
+     "style": "normal"
+    },
+    {
+     "text": "If any of your benefits are taxable for 2025 and they include a lump-sum benefit payment that was for an earlier year, you may be able to reduce the taxable amount. See ",
+     "style": "normal"
+    },
+    {
+     "text": "Lump-Sum Election",
+     "style": "emphasis"
+    },
+    {
+     "text": " in Pub. 915 for details.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 32
+  },
+  {
+   "type": "paragraph",
+   "text": "If Exception 1 applies, enter your total capital gain distributions (from box 2a of Form(s) 1099-DIV) on line 7a and check the box “Schedule D not required” on line 7b. If you received capital gain distributions as a nominee (that is, they were paid to you but actually belong to someone else), report on line 7a only the amount that belongs to you. Include a statement showing the full amount you received and the amount you received as a nominee. See the Schedule B instructions for filing requirements for Forms 1099-DIV and 1096.",
+   "source_page": 33,
+   "runs": [
+    {
+     "text": "If ",
+     "style": "normal"
+    },
+    {
+     "text": "Exception 1",
+     "style": "emphasis"
+    },
+    {
+     "text": " applies, enter your total capital gain distributions (from box 2a of Form(s) 1099-DIV) on line 7a and check the box “Schedule D not required” on line 7b. If you received capital gain distributions as a nominee (that is, they were paid to you but actually belong to someone else), report on line 7a only the amount that belongs to you. Include a statement showing the full amount you received and the amount you received as a nominee. See the Schedule B instructions for filing requirements for Forms 1099-DIV and 1096.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "Tip. If you don’t have to file Schedule D, use the Qualified Dividends and Capital Gain Tax Worksheet in the line 16 instructions to figure your tax.",
+   "runs": [
+    {
+     "text": "Tip.",
+     "style": "strong"
+    },
+    {
+     "text": " ",
+     "style": "normal"
+    },
+    {
+     "text": "If you don’t have to file Schedule D, use the ",
+     "style": "normal"
+    },
+    {
+     "text": "Qualified Dividends and Capital Gain Tax Worksheet",
+     "style": "emphasis"
+    },
+    {
+     "text": " in the line 16 instructions to figure your tax.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 33
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 7b",
+   "source_page": 33
+  },
+  {
+   "type": "paragraph",
+   "text": "If Exception 1 applies, check the “Schedule D not required” box on line 7b.",
+   "source_page": 33,
+   "runs": [
+    {
+     "text": "If ",
+     "style": "normal"
+    },
+    {
+     "text": "Exception 1",
+     "style": "emphasis"
+    },
+    {
+     "text": " applies, check the “Schedule D not required” box on line 7b.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "If you are including your child’s capital gain or (loss) in the total on line 7a, check the “includes child’s capital gain or (loss)” box on line 7b and enter the amount from Form 8814, line 10, in the entry space. For more information, see the Instructions for Form 8814.",
+   "source_page": 33
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Total Income and Adjusted Gross Income",
+   "source_page": 33
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 10",
+   "source_page": 33
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter any adjustments to income from Schedule 1, line 26, on line 10.",
+   "source_page": 33
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Tax and Credits",
+   "source_page": 33
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 12a",
+   "source_page": 33
+  },
+  {
+   "type": "paragraph",
+   "text": "If you or your spouse (if you are married and filing a joint return) can be claimed as a dependent on someone else’s return, check the appropriate box(es) on line 12a. If you are married and filing a joint return, you can be claimed on someone else’s return if you file the joint return only to claim a refund of withheld income tax or estimated tax paid.",
+   "source_page": 33
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 12b",
+   "source_page": 33
+  },
+  {
+   "type": "paragraph",
+   "text": "If your filing status is married filing separately and your spouse itemizes deductions on their return, check the box on line 12b.",
+   "source_page": 33
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 12c",
+   "source_page": 33
+  },
+  {
+   "type": "paragraph",
+   "text": "If you were a dual-status alien, check the box on line 12c. If you were a dual-status alien and you file a joint return with your spouse who was a U.S. citizen or resident alien at the end of 2025 and you and your spouse agree to be taxed on your combined worldwide income, don’t check the box. See Nonresident aliens and dual-status aliens, earlier, for more information on making the election for you and your spouse to be taxed on your combined worldwide income.",
+   "source_page": 33,
+   "runs": [
+    {
+     "text": "If you were a dual-status alien, check the box on line 12c. If you were a dual-status alien and you file a joint return with your spouse who was a U.S. citizen or resident alien at the end of 2025 and you and your spouse agree to be taxed on your combined worldwide income, don’t check the box. See ",
+     "style": "normal"
+    },
+    {
+     "text": "Nonresident aliens and dual-status aliens",
+     "style": "emphasis"
+    },
+    {
+     "text": ", earlier, for more information on making the election for you and your spouse to be taxed on your combined worldwide income.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 12d",
+   "source_page": 33
+  },
+  {
+   "type": "paragraph",
+   "text": "If you or your spouse (if you are married and filing a joint return) were born before January 2, 1961, or were blind at the end of 2025, check the appropriate box(es) on line 12d. Don’t check any boxes for your spouse if your filing status is head of household.",
+   "source_page": 33
+  },
+  {
+   "type": "paragraph",
+   "text": "If your filing status is married filing separately and your spouse was born before January 2, 1961, or was blind at the end of 2025, you can check the appropriate box(es) on line 12d if your spouse had no income, isn’t filing a return, and can’t be claimed as a dependent on another person’s return.",
+   "source_page": 33
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Death of spouse in 2025",
+   "source_page": 33
+  },
+  {
+   "type": "paragraph",
+   "text": "If your spouse was born before January 2, 1961, but died in 2025 before reaching age 65, don’t check the box that says “Spouse was born before January 2, 1961.” A person is considered to reach age 65 on the day before the person’s 65th birthday.",
+   "source_page": 33
+  },
+  {
+   "type": "heading",
+   "level": 6,
+   "text": "Example",
+   "source_page": 33
+  },
+  {
+   "type": "paragraph",
+   "text": "Your spouse was born on February 14, 1960, and died on February 13, 2025. Your spouse is considered age 65 at the time of death. Check the appropriate box for your spouse. However, if your spouse died on February 12, 2025, your spouse isn’t considered age 65. Don’t check the box.",
+   "source_page": 33
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Death of taxpayer in 2025",
+   "source_page": 33
+  },
+  {
+   "type": "paragraph",
+   "text": "If you are preparing a return for someone who died in 2025, see Pub. 501 before completing the standard deduction information.",
+   "source_page": 33
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Blindness",
+   "source_page": 33
+  },
+  {
+   "type": "paragraph",
+   "text": "If you weren’t totally blind as of December 31, 2025, you must get a statement certified by your eye doctor (ophthalmologist or optometrist) that:",
+   "source_page": 33
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "You can't see better than 20/200 in your better eye with glasses or contact lenses, or",
+    "Your field of vision is 20 degrees or less."
+   ],
+   "source_page": 33
+  },
+  {
+   "type": "paragraph",
+   "text": "If your eye condition isn’t likely to improve beyond the conditions listed above, you can get a statement certified by your eye doctor (ophthalmologist or optometrist) to this effect instead. You must keep the statement for your records.",
+   "source_page": 33
+  },
+  {
+   "type": "paragraph",
+   "text": "If you receive a notice or letter but you would prefer to have it in Braille-ready or large print, you can use Form 9000, Alternative Media Preference, to request notices in an alternative format including Braille-ready, large print, audio, or electronic. You can attach Form 9000 to your return or mail it separately.",
+   "source_page": 33
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "You can download, or view online, tax forms and publications in a variety of formats, including text-only, Braille-ready files, browser-friendly HTML (other than tax forms), accessible PDF, and large print."
+   ],
+   "source_page": 33
+  }
+ ],
+ "review_notes": [
+  "TRANCHE 9 OF A MULTI-SESSION REBUILD. This plan covers printed pages 30-33 — the rest of the pension and annuity rules, social security benefits (with the second worksheet), capital gain or loss, and the start of Tax and Credits. It carries no document title by design: only tranche 1 does, so this file validates through merge-plans rather than standalone. No partial rebuild is delivered.",
+  "BOUNDARY IN. Tranche 8 authored page 28’s closing paragraph whole, because it runs past the full-page worksheet on page 29 and finishes at the top of page 30. This tranche therefore starts at “Payments when you are disabled” and does not repeat it.",
+  "BOUNDARY OUT. Page 33’s final bullet (“You can download, or view online, tax forms and publications in a variety of formats…”) completes at the top of page 34. It is authored whole here at page 33, so tranche 10 must start at “Line 12e” and NOT re-author it.",
+  "THE SECOND WORKSHEET REUSES THE TRANCHE-8 SHAPE. The Social Security Benefits Worksheet is a table of Line / Instruction / Amount with row headers on, dot leaders dropped, the Amount column left blank because that is where the reader writes, and material nested inside a numbered line folded into that line’s cell. Lines 7 and 9 fold in their No/Yes branches (keeping STOP, which is the branch’s whole meaning) and line 8 folds in its three filing-status options.",
+  "PAGE 32 IS A FULL-PAGE INSERT. The worksheet interrupts the line 7a instructions: “Exception 2” begins on page 31 and its consequences resume on page 33. Each block is authored at the page where it begins, so the merged reading order runs 31 → 32 (worksheet) → 33, which is the printed order.",
+  "WORKED EXAMPLES AS LEVEL-6 HEADINGS. Three “Example.” run-ins appear here, each inside a level-5 topic (Payments when you are disabled, Disability payments, Death of spouse in 2025). They are headings, as settled in tranche 7, but at level 6 because their parent topics sit at level 5 — this is the deepest the document goes.",
+  "BARE LINE HEADINGS. Several lines (5c, 6c, 6d, 7b, 10, 12a-12d) print only “Line 5c” with no description, unlike lines 1a-4c which carry one. Those are authored as “Line 5c” alone rather than inventing a description for them.",
+  "LINK TARGETS FROM ANNOTATIONS: SSA.gov/myaccount (two rectangles, one logical link, wrapping across lines) and www.rrb.gov on page 31, which resolves to rrb.gov. Pages 30, 32, and 33 carry no link annotations.",
+  "TIP AND CAUTION CALLOUTS as established in tranche 3. Two of them open with a bold run-in phrase of their own (“Social security information.”, “Form RRB-1099.”); that phrase is kept and marked strong inside the callout rather than being promoted, so the callout stays one block.",
+  "SOFT HYPHENS REMOVED and genuine compounds kept (lump-sum, tax-free, tax-sheltered, pre-tax, long-term, self-employment, Braille-ready, browser-friendly, 20/200, SSA-1099, RRB-1099). PAGE FURNITURE OMITTED: printed page numbers, the standing “Need more information or forms?” footer, and the invisible “Fileid: … MUST be removed before printing” production lines."
+ ]
+}

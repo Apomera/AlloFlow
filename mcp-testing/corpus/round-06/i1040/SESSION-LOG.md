@@ -295,12 +295,44 @@ worksheet insert and finishes at the top of page 30. It is authored whole at
 page 28, so **tranche 9 starts at "Payments when you are disabled" and must
 not re-author it.**
 
-### Sessions 9+ — REMAINING (suggested boundaries from the printed TOC)
+### Session 9 (2026-08-04) — pages 30-33 · tranche-09 · 91 blocks · VALIDATED (merged)
+
+Rest of the pension/annuity rules, social security benefits (with the second
+worksheet), capital gain or loss, and the start of Tax and Credits.
+`merge-plans t01..t09` → 621 blocks, `ok: true`, pages 1-33 covered. Recall
+0.9772, shortfall all furniture plus worksheet repeated line numbers.
+
+**The tranche-8 worksheet shape carried over with no changes needed** — the
+Social Security Benefits Worksheet (18 lines) is a table of
+`Line / Instruction / Amount` with row headers, dot leaders dropped, entry
+column blank. Lines 7 and 9 fold in their No/Yes branches (keeping STOP) and
+line 8 folds in its three filing-status options, exactly as the shape
+prescribes. That is the design paying off: a new worksheet cost no new
+decisions.
+
+**Page 32 is a full-page insert** that interrupts the line 7a instructions:
+"Exception 2" begins on page 31 and its consequences resume on page 33. Each
+block is authored where it begins, so the merged reading order runs
+31 → 32 → 33, the printed order.
+
+**Level 6 reached.** Three worked examples sit inside level-5 topics, so they
+are level-6 headings — the deepest this document goes, and the floor for the
+heading scheme.
+
+**Bare line headings.** Lines 5c, 6c, 6d, 7b, 10 and 12a-12d print only
+"Line 5c" with no description, unlike 1a-4c. Authored bare rather than
+inventing descriptions.
+
+**Handoff to tranche 10:** page 33's final bullet ("You can download, or view
+online, tax forms and publications in a variety of formats…") completes at
+the top of page 34. It is authored whole at page 33, so **tranche 10 starts at
+"Line 12e" and must not re-author it.**
+
+### Sessions 10+ — REMAINING (suggested boundaries from the printed TOC)
 
 | Tranche | Pages | Content | Notes |
 | --- | --- | --- | --- |
-| 09 | 30-33 | Lines 5-6 rest, social security | starts at "Payments when you are disabled" — see handoff above; more worksheets, reuse the session-8 shape |
-| 10 | 34-38 | Lines 7-15, standard deduction, tax | more worksheets; p35/37/38 are full-width |
+| 10 | 34-38 | Line 12e standard deduction, lines 13-15 | starts at "Line 12e" — see handoff above; more worksheets, reuse the session-8 shape; p35/37/38 are full-width |
 | 07 | 39-60 | Payments (EIC!) | EIC worksheets + tables; heavy geometry work |
 | 08 | 61-67 | Refund, Amount You Owe, Sign, Assemble | |
 | 09 | 68-80 | 2025 Tax Table | MECHANICAL: generate rows from extract-text with a per-tranche generator; thousands of rows; verify row count against page count |
