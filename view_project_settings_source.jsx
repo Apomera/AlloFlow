@@ -80,7 +80,7 @@ function ProjectSettingsView(props) {
 
   var presetMatches = function(name) {
     var preset = presets[name];
-    var settingKeys = ['hideStudentAiFeatures', 'allowDictation', 'allowSocraticTutor', 'allowFreeResponse', 'allowPersonaFreeResponse'];
+    var settingKeys = ['hideStudentAiFeatures', 'allowDictation', 'allowSocraticTutor', 'allowFreeResponse', 'allowPersonaFreeResponse', 'workStoryEnabled'];
     var permissionKeys = Object.keys(preset.adventurePermissions);
     return settingKeys.every(function(key) {
       return studentProjectSettings[key] === preset[key];
@@ -232,6 +232,12 @@ function ProjectSettingsView(props) {
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 {renderFeatureToggle('proj-hide-student-ai', 'hideStudentAiFeatures', tx('project_settings.hide_student_ai', 'Hide student AI tools'), tx('project_settings.hide_student_ai_desc', 'Remove student-facing AI controls from this project. Teacher authoring tools remain available.'), false)}
+              </div>
+              <div className="sm:col-span-2">
+                {/* Process Provenance opt-in. Without this the ledger is never
+                    created at all — the student-side collection gate reads it
+                    off the assignment packet. */}
+                {renderFeatureToggle('proj-work-story', 'workStoryEnabled', tx('project_settings.work_story', 'Include a Work Story with student submissions'), tx('project_settings.work_story_desc', 'Students see a plain-language record of how their work came together and choose whether to send it. You see time, revision pattern and which AlloFlow supports were used — never a score, and never what they typed.'), false)}
               </div>
               <div className='sm:col-span-2'>
                 {renderFeatureToggle(

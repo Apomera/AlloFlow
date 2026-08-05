@@ -110,7 +110,7 @@
   };
   var presetMatches = function (name) {
     var preset = presets[name];
-    var settingKeys = ['hideStudentAiFeatures', 'allowDictation', 'allowSocraticTutor', 'allowFreeResponse', 'allowPersonaFreeResponse'];
+    var settingKeys = ['hideStudentAiFeatures', 'allowDictation', 'allowSocraticTutor', 'allowFreeResponse', 'allowPersonaFreeResponse', 'workStoryEnabled'];
     var permissionKeys = Object.keys(preset.adventurePermissions);
     return settingKeys.every(function (key) {
       return studentProjectSettings[key] === preset[key];
@@ -258,6 +258,8 @@
   }, /*#__PURE__*/React.createElement("div", {
     className: "sm:col-span-2"
   }, renderFeatureToggle('proj-hide-student-ai', 'hideStudentAiFeatures', tx('project_settings.hide_student_ai', 'Hide student AI tools'), tx('project_settings.hide_student_ai_desc', 'Remove student-facing AI controls from this project. Teacher authoring tools remain available.'), false)), /*#__PURE__*/React.createElement("div", {
+    className: "sm:col-span-2"
+  }, renderFeatureToggle('proj-work-story', 'workStoryEnabled', tx('project_settings.work_story', 'Include a Work Story with student submissions'), tx('project_settings.work_story_desc', 'Students see a plain-language record of how their work came together and choose whether to send it. You see time, revision pattern and which AlloFlow supports were used — never a score, and never what they typed.'), false)), /*#__PURE__*/React.createElement("div", {
     className: "sm:col-span-2"
   }, renderFeatureToggle('proj-allow-student-byok-ai', 'allowStudentByokAi', tx('project_settings.allow_student_byok_ai', 'Allow students to connect their own AI provider'), tx('project_settings.allow_student_byok_ai_desc', 'QR and Class Mailbox links stay AI-off by default. Enable only when school or district policy permits student-managed provider accounts and charges. Students must verify their own session-only key; your API key is never shared.'), false)), renderFeatureToggle('proj-dictation', 'allowDictation', t('project_settings.enable_dictation'), t('project_settings.dictation_desc'), true), renderFeatureToggle('proj-socratic', 'allowSocraticTutor', t('project_settings.enable_socratic'), t('project_settings.socratic_desc'), true), renderFeatureToggle('proj-free-response', 'allowFreeResponse', t('project_settings.enable_free_response'), t('project_settings.free_response_desc'), true), renderFeatureToggle('proj-persona-free', 'allowPersonaFreeResponse', t('project_settings.enable_persona_free'), t('project_settings.persona_free_desc'), true))), /*#__PURE__*/React.createElement("details", {
     className: "group rounded-xl border border-slate-200 bg-slate-50"

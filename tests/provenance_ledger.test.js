@@ -416,6 +416,27 @@ describe('constraints in the module text itself', () => {
       // And collection is gated on it: no teacher opt-in, no ledger at all.
       expect(app, f).toContain("if (!(window.__alloQrStudentMode && window.__alloQrStudentMode.workStory === true)) return null;");
     }
+    // ★ A WRITER must exist. The earlier version of this test pinned only the
+    // default and the readers, so it passed happily while the flag had no UI
+    // and the whole feature was unreachable — a test that proved nothing.
+    const settings = readFileSync('view_project_settings_source.jsx', 'utf-8');
+    expect(settings).toContain("'workStoryEnabled'");                       // in settingKeys
+    expect(settings).toContain("renderFeatureToggle('proj-work-story', 'workStoryEnabled'");
+    expect(readFileSync('view_project_settings_module.js', 'utf-8')).toContain('workStoryEnabled'); // rebuilt
+  });
+
+  it('paste origin is never fabricated by the wiring (assistive tech must not read as a paste)', () => {
+    // ★ The wiring hard-coded sourceHint:'external' on every inferred paste,
+    // overriding the sanitizer's 'unknown' default and turning a dictation
+    // flush into a teacher-visible "external paste" — the exact
+    // accusation-shaped artifact this design exists to prevent.
+    for (const f of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt']) {
+      const app = readFileSync(f, 'utf-8');
+      expect(app, f).not.toContain("sourceHint: 'external'");
+      expect(app, f).toContain("led.append('paste', { field: key, chars: delta });");
+    }
+    // The sanitizer's neutral default is what therefore lands.
+    expect(P.sanitizeEvent('paste', { field: 'a', chars: 99 }).sourceHint).toBe('unknown');
   });
   it('P2: the teacher panel is mounted and renders only on consented submissions', () => {
     const inbox = readFileSync('view_submission_inbox_source.jsx', 'utf-8');

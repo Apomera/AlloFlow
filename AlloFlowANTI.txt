@@ -11293,7 +11293,13 @@ Return ONLY JSON in this shape:
       _alloLastLenRef.current[key] = len;
       const delta = len - prevLen;
       try {
-          if (delta >= 40) led.append('paste', { field: key, chars: delta, sourceHint: 'external' });
+          // Origin is DELIBERATELY not asserted. A dictation flush, an AAC
+          // device, an IME composition, a word-prediction commit and an
+          // autocorrect replacement all arrive as the same unattributable
+          // jump; stamping them 'external' manufactures the accusation-shaped
+          // signal this design exists to prevent, and hits assistive-tech
+          // users hardest. The sanitizer records 'unknown'.
+          if (delta >= 40) led.append('paste', { field: key, chars: delta });
           else led.noteEdit(key, delta, len);
       } catch (_) {}
   };
