@@ -612,3 +612,33 @@ it were new. It is not. The source comment now carries the attribution so
 anyone extending it reads the existing work — including its known weaknesses
 on non-Manhattan layouts — instead of re-deriving it. The measurements stand;
 only the novelty claim was wrong.
+
+### Session 14 (2026-08-04) — pages 44-45 · tranche-14 · 32 blocks · VALIDATED (merged)
+
+The rest of the EIC's Definitions and Special Rules. `merge-plans t01..t14` →
+851 blocks, `ok: true`, pages 1-45 covered. **Recall 0.9986 — only the two
+printed page numbers missing.**
+
+No new shapes; glossary entries as level-5 headings exactly as tranches 6
+and 13. Clean boundaries both sides — nothing spans 43/44 or 45/46, so no
+handoff note.
+
+**Duplicated definitions, kept deliberately (again).** "Full-time student",
+"Permanently and totally disabled" and "Qualifying child of more than one
+person" all appear in the tranche-6 glossary too, with *different* wording:
+the EIC versions cite Pub. 596 and EIC line numbers, and the "more than one
+person" list differs in its first item. Both kept in full — a reader working
+the EIC must not have to consult another section for a rule stated
+differently there.
+
+The worked example even uses a named child ("Lee") where the tranche-6 one
+said "your child". Each is kept exactly as printed rather than harmonised;
+both are the IRS's own text.
+
+### Where the rebuild stands at session 14
+
+45 of 126 pages, 851 blocks, 14 tranches. Every structural shape the document
+uses is settled and has now been reused at least twice without change.
+Remaining: EIC worksheets and tables (46-60), refund/sign/assemble (61-67),
+the MECHANICAL Tax Table (68-80), general info (81-87), the schedules
+(88-117), and the back matter including the MECHANICAL Index (118-126).
