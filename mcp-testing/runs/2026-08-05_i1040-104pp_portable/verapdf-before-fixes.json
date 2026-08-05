@@ -1,0 +1,23 @@
+{
+  "compliant": false,
+  "failedRuleCount": 2,
+  "failedRules": [
+    {
+      "clause": "5",
+      "description": "The PDF/UA version and conformance level of a file shall be specified using the PDF/UA Identification extension schema",
+      "failedChecks": 1,
+      "testNumber": 1
+    },
+    {
+      "clause": "7.2",
+      "description": "Table rows shall have the same number of columns (taking into account column spans)",
+      "failedChecks": 22,
+      "testNumber": 43
+    }
+  ],
+  "ok": false,
+  "processExitCode": 1,
+  "standard": "PDF/UA-1",
+  "status": "completed",
+  "validator": "veraPDF"
+}

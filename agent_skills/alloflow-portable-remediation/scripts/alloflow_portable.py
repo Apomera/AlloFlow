@@ -655,6 +655,25 @@ def render_html(validated: Dict[str, Any]) -> str:
                 for index, value in enumerate(row):
                     runs = row_runs[index] if row_runs and index < len(row_runs) else None
                     body = render_inline(value, runs)
+                    # An EMPTY cell needs something to draw, or it does not
+                    # survive into the tagged PDF at all. Chromium's export
+                    # builds structure elements from MARKED CONTENT, and a cell
+                    # with nothing in it paints nothing, so no /TD is emitted
+                    # and the row reaches veraPDF one column short:
+                    # "Table rows shall have the same number of columns"
+                    # (PDF/UA-1 clause 7.2). It cost 22 failed checks on the
+                    # i1040 rebuild, one for every worksheet whose Amount
+                    # column is blank because that is where a filer writes.
+                    #
+                    # A ZERO-WIDTH SPACE fixes it and changes nothing else: it
+                    # paints no ink, adds no width, and carries no text for a
+                    # screen reader to announce, so the cell is still reported
+                    # as blank. Padding with a visible character or a non-
+                    # breaking space would put content into a cell the printed
+                    # form deliberately leaves empty, which is a worse lie than
+                    # the validation failure.
+                    if not body:
+                        body = "&#8203;"
                     if index == 0 and block.get("row_headers"):
                         cells.append(f'<th scope="row">{body}</th>')
                     else:
@@ -739,6 +758,15 @@ a {{ color: #0645ad; text-decoration: underline; text-underline-offset: .12em; }
 blockquote {{ border-left: .3rem solid #475569; margin-left: 0; padding-left: 1rem; }}
 table {{ border-collapse: collapse; width: 100%; margin: 1rem 0; break-inside: avoid; }}
 caption {{ font-weight: 700; text-align: left; margin-bottom: .35rem; }}
+/* A ROW must not straddle a page break: `break-inside: avoid` on the table
+   cannot help a table taller than a page (the i1040 tax tables run to 180
+   rows), so without this a tall row can split and its two halves carry
+   different cell counts.
+   HONEST SCOPE: this is good practice for tagged output, but it did NOT
+   resolve the one remaining PDF/UA-1 clause 7.2 failure on the i1040 rebuild
+   - that count was 1 both before and after. Kept because it is correct, not
+   because it was shown to fix that case. */
+tr, th, td {{ break-inside: avoid; }}
 th, td {{ border: 1px solid #4b5563; padding: .45rem; text-align: left; vertical-align: top; }}
 th {{ background: #e5e7eb; color: #111827; }}
 img {{ display: block; height: auto; max-width: 100%; }}
