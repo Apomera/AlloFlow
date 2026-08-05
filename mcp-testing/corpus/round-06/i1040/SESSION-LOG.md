@@ -1164,19 +1164,52 @@ investigating. On this page: recall 0.9366, **60 shortfall instances = 54
 carried + 6 furniture + 0 unexplained**. Run it on any page that receives a
 spanning block instead of eyeballing the token list.
 
-### NEXT: pages 86-87, then the schedules
+### Session 27 (2026-08-04) - pages 86-87 - tranche-27 - 25 blocks - VALIDATED (merged)
 
-Page 86: Interest and Penalties, with Interest and Penalties as 12pt subheads
-and four run-in leads (Late filing, Late payment of tax, Frivolous return,
-Other). It is a 14pt head that nests under How To Get Tax Help by the
-document's own structure, like Third Party Designee in session 20. **Do not
-re-author the "Contacting your local TAC" paragraph carried into tranche 26** -
-run `carried_block_check.cjs` on page 86 against tranche 26 to confirm the
-shortfall. Page 87 is Refund Information, an 18pt top-level TOC entry, so
-level 2; it carries two links (IRS.gov/Refunds, IRS.gov/Spanish) and a TIP.
+Interest and Penalties, and Refund Information. **This completes everything
+before the schedule instructions.** `merge-plans t01..t27` -> 1,303 blocks,
+`ok: true`, **pages 1-87 covered**, zero heading skips.
 
-Then 88-117, the instructions for Schedules 1, 1-A, 2 and 3, the largest
-remaining block. Then the back matter: Tax Topics (118), the
-Disclosure/Privacy Act notice (120), Major Categories of Federal Income and
-Outlays (122), and the MECHANICAL Index (123-126). Do not hand-author the
-Index.
+**A stacked fraction reassembled.** The late-payment penalty is printed as a
+raised "1" over "/2" - three separate glyphs at three positions - and the
+raised numerator sits high enough that the reading order delivers it several
+words early: *"If you pay your 1 taxes late, the penalty is usually /2 of
+1%"*. Authored as "½ of 1%" with U+00BD, which screen readers announce as "one
+half". Reading the extraction alone would have produced a sentence with a
+stray 1 and a penalty rate of "/2 of 1%".
+
+**Page 87's three graphics are not reproduced, and that is a decision.** A
+"where's my refund?" logotype, a computer icon and a telephone icon mark the
+online and by-phone routes, and the body text wraps around all three - which
+is why the extraction shows those paragraphs' first lines indented. None
+carries information the adjacent sentence does not already state. They are
+decorative, so the rebuild carries their meaning in the prose rather than
+emitting image blocks a screen reader would skip. The TIP icon is different:
+its label is real text, so it becomes a callout as everywhere else.
+
+> **The first-line-indent rule from session 20 does not apply mechanically on
+> a page with text wrapping around graphics.** The wrap puts a large left
+> indent on lines that are not paragraph starts. Page 87's real breaks were
+> read off the render, including the one before "The IRS can't issue refunds
+> before mid-February 2026", which the indent test alone would have missed.
+
+**`carried_block_check.cjs` now derives the page numbers from the receiving
+tranche** instead of taking one as an argument, so a multi-page tranche no
+longer under-counts its own page numbers as furniture. On this tranche: 59
+shortfall instances = 46 carried + 10 furniture + 3 residual, and all three
+residuals are documented artifacts (the fraction's raised numerator, and
+`im86`/`posed` where "imposed" is split by the page number at a column break -
+the same artifact tranches 2 and 4 found).
+
+### NEXT: pages 88-117, the schedule instructions
+
+The largest remaining block: Instructions for Schedule 1 (88-100), Schedule
+1-A (101-110), Schedule 2 (111-114) and Schedule 3 (115-117). Each is a
+top-level TOC entry, so each opens at level 2. Expect the same shapes already
+settled - line-numbered instruction heads, run-in leads, worksheets, icon
+callouts - so these should be steady prose tranches rather than new design
+work.
+
+Then the back matter: Tax Topics (118), the Disclosure/Privacy Act notice
+(120), Major Categories of Federal Income and Outlays (122), and the
+MECHANICAL Index (123-126). Do not hand-author the Index.

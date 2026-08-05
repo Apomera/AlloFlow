@@ -1,0 +1,273 @@
+{
+ "schema_version": "1.0",
+ "document": {
+  "title": "2025 Instructions for Form 1040 (and 1040-SR)",
+  "language": "en",
+  "source_page_count": 126,
+  "source_sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a",
+  "document_type": "booklet",
+  "subject": "Internal Revenue Service instructions for the 2025 Form 1040 and Form 1040-SR, including the instructions for Schedules 1 through 3.",
+  "variant": "original"
+ },
+ "blocks": [
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Interest and Penalties",
+   "source_page": 86
+  },
+  {
+   "type": "paragraph",
+   "text": "You don’t have to figure the amount of any interest or penalties you may owe. We will send you a bill for any amount due. If you choose to include interest or penalties (other than the estimated tax penalty) with your payment, identify and enter the amount in the bottom margin of Form 1040 or 1040-SR, page 2. Don’t include interest or penalties (other than the estimated tax penalty) in the amount you owe on line 37. For more information on the estimated tax penalty, see Line 38, earlier.",
+   "source_page": 86,
+   "runs": [
+    {
+     "text": "You don’t have to figure the amount of any interest or penalties you may owe. We will send you a bill for any amount due. If you choose to include interest or penalties (other than the estimated tax penalty) with your payment, identify and enter the amount in the bottom margin of Form 1040 or 1040-SR, page 2. Don’t include interest or penalties (other than the estimated tax penalty) in the amount you owe on line 37. For more information on the estimated tax penalty, see ",
+     "style": "normal"
+    },
+    {
+     "text": "Line 38",
+     "style": "emphasis"
+    },
+    {
+     "text": ", earlier.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Interest",
+   "source_page": 86
+  },
+  {
+   "type": "paragraph",
+   "text": "We will charge you interest on taxes not paid by their due date, even if an extension of time to file is granted. We will also charge you interest on penalties imposed for failure to file, negligence, fraud, substantial or gross valuation misstatements, substantial understatements of tax, and reportable transaction understatements. Interest is charged on the penalty from the due date of the return (including extensions).",
+   "source_page": 86
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Penalties",
+   "source_page": 86
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Late filing",
+   "source_page": 86
+  },
+  {
+   "type": "paragraph",
+   "text": "If you don’t file your return by the due date (including extensions), the penalty is usually 5% of the amount due for each month or part of a month your return is late, unless you have a reasonable explanation. If you have a reasonable explanation for filing late, include it with your return. The penalty can be as much as 25% of the tax due. The penalty is 15% per month, up to a maximum of 75%, if the failure to file is fraudulent. If your return is more than 60 days late, the minimum penalty will be $525 or the amount of any tax you owe, whichever is smaller.",
+   "source_page": 86
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Late payment of tax",
+   "source_page": 86
+  },
+  {
+   "type": "paragraph",
+   "text": "If you pay your taxes late, the penalty is usually ½ of 1% of the unpaid amount for each month or part of a month the tax isn’t paid. The penalty can be as much as 25% of the unpaid amount. It applies to any unpaid tax on the return. This penalty is in addition to interest charges on late payments.",
+   "source_page": 86
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Frivolous return",
+   "source_page": 86
+  },
+  {
+   "type": "paragraph",
+   "text": "In addition to any other penalties, the law imposes a penalty of $5,000 for filing a frivolous return. A frivolous return is one that doesn’t contain information needed to figure the correct tax or shows a substantially incorrect tax because you take a frivolous position or desire to delay or interfere with the tax laws. This includes altering or striking out the preprinted language above the space where you sign. For a list of positions identified as frivolous, see Notice 2010-33, 2010-17 I.R.B. 609, available at IRS.gov/irb/2010-17_IRB#NOT-2010-33.",
+   "source_page": 86,
+   "runs": [
+    {
+     "text": "In addition to any other penalties, the law imposes a penalty of $5,000 for filing a frivolous return. A frivolous return is one that doesn’t contain information needed to figure the correct tax or shows a substantially incorrect tax because you take a frivolous position or desire to delay or interfere with the tax laws. This includes altering or striking out the preprinted language above the space where you sign. For a list of positions identified as frivolous, see Notice 2010-33, 2010-17 I.R.B. 609, available at ",
+     "style": "normal"
+    },
+    {
+     "text": "IRS.gov/irb/2010-17_IRB#NOT-2010-33",
+     "style": "normal",
+     "href": "https://www.irs.gov/irb/2010-17_IRB#NOT-2010-33"
+    },
+    {
+     "text": ".",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Other",
+   "source_page": 86
+  },
+  {
+   "type": "paragraph",
+   "text": "Other penalties can be imposed for, among other things, negligence, substantial understatement of tax, reportable transaction understatements, filing an erroneous refund claim, and fraud. Criminal penalties may be imposed for willful failure to file, tax evasion, making a false statement, or identity theft. See Pub. 17 for details on some of these penalties.",
+   "source_page": 86
+  },
+  {
+   "type": "heading",
+   "level": 2,
+   "text": "Refund Information",
+   "source_page": 87
+  },
+  {
+   "type": "paragraph",
+   "text": "To check the status of your refund, go to IRS.gov/Refunds or use the free IRS2Go app, 24 hours a day, 7 days a week. Information about your refund will generally be available within 24 hours after the IRS receives your e-filed return or 4 weeks after you mail a paper return. But if you filed Form 8379 with your return, allow 14 weeks (11 weeks if you filed electronically) before checking your refund status.",
+   "source_page": 87,
+   "runs": [
+    {
+     "text": "To check the status of your refund, go to ",
+     "style": "normal"
+    },
+    {
+     "text": "IRS.gov/Refunds",
+     "style": "normal",
+     "href": "https://www.irs.gov/refunds"
+    },
+    {
+     "text": " or use the free IRS2Go app, 24 hours a day, 7 days a week. Information about your refund will generally be available within 24 hours after the IRS receives your ",
+     "style": "normal"
+    },
+    {
+     "text": "e-filed",
+     "style": "emphasis"
+    },
+    {
+     "text": " return or 4 weeks after you mail a paper return. But if you filed Form 8379 with your return, allow 14 weeks (11 weeks if you filed electronically) before checking your refund status.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "The IRS can’t issue refunds before mid-February 2026 for returns that claim the earned income credit or the additional child tax credit. This delay applies to the entire refund, not just the portion associated with these credits.",
+   "source_page": 87
+  },
+  {
+   "type": "paragraph",
+   "text": "To use Where’s My Refund, have a copy of your tax return handy. You will need to enter the following information from your return.",
+   "source_page": 87,
+   "runs": [
+    {
+     "text": "To use ",
+     "style": "normal"
+    },
+    {
+     "text": "Where’s My Refund",
+     "style": "emphasis"
+    },
+    {
+     "text": ", have a copy of your tax return handy. You will need to enter the following information from your return.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Your social security number (or individual taxpayer identification number).",
+    "Your filing status.",
+    "The exact whole dollar amount of your refund."
+   ],
+   "source_page": 87
+  },
+  {
+   "type": "paragraph",
+   "text": "Where’s My Refund will provide an actual personalized refund date as soon as the IRS processes your tax return and approves your refund.",
+   "source_page": 87,
+   "runs": [
+    {
+     "text": "Where’s My Refund",
+     "style": "emphasis"
+    },
+    {
+     "text": " will provide an actual personalized refund date as soon as the IRS processes your tax return and approves your refund.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "Tip. Updates to refund status are made once a day—usually at night.",
+   "runs": [
+    {
+     "text": "Tip.",
+     "style": "strong"
+    },
+    {
+     "text": " Updates to refund status are made once a day—usually at night.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 87
+  },
+  {
+   "type": "paragraph",
+   "text": "If you don’t have Internet access, you can call 800-829-1954, 24 hours a day, 7 days a week, for automated refund information. Our phone and walk-in assistors can research the status of your refund only if it's been 21 days or more since you filed electronically or more than 6 weeks since you mailed your paper return.",
+   "source_page": 87
+  },
+  {
+   "type": "paragraph",
+   "text": "Don’t send in a copy of your return unless asked to do so.",
+   "source_page": 87
+  },
+  {
+   "type": "paragraph",
+   "text": "To get a refund, you must generally file your return within 3 years from the date the return was due (including extensions).",
+   "source_page": 87
+  },
+  {
+   "type": "paragraph",
+   "text": "Where’s My Refund doesn’t track refunds that are claimed on an amended tax return.",
+   "source_page": 87,
+   "runs": [
+    {
+     "text": "Where’s My Refund",
+     "style": "emphasis"
+    },
+    {
+     "text": " doesn’t track refunds that are claimed on an amended tax return.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "Refund information is also available in Spanish at IRS.gov/Spanish and by calling 800-829-1954.",
+   "source_page": 87,
+   "runs": [
+    {
+     "text": "Refund information is also available in Spanish at ",
+     "style": "normal"
+    },
+    {
+     "text": "IRS.gov/Spanish",
+     "style": "normal",
+     "href": "https://www.irs.gov/es"
+    },
+    {
+     "text": " and by calling 800-829-1954.",
+     "style": "normal"
+    }
+   ]
+  }
+ ],
+ "review_notes": [
+  "TRANCHE 27 OF A MULTI-SESSION REBUILD. This plan covers printed pages 86-87: Interest and Penalties, and Refund Information. It completes everything before the schedule instructions. It carries no document title by design — only tranche 1 does — so this file validates through merge-plans rather than standalone. No partial rebuild is delivered.",
+  "THE “CONTACTING YOUR LOCAL TAC” PARAGRAPH AT THE TOP OF PAGE 86 IS NOT REPEATED. It was authored whole at page 85 in tranche 26. Check the page-86 shortfall with mcp-testing/tools/carried_block_check.cjs against tranche 26 rather than reading it as loss.",
+  "A STACKED FRACTION IS REASSEMBLED. The late-payment penalty is printed as a raised “1” over “/2”, set as three separate glyphs at three positions, and the raised numerator sits high enough that the reading order delivers it several words early: “If you pay your 1 taxes late, the penalty is usually /2 of 1%”. It is authored as “½ of 1%” using the single character U+00BD, which screen readers announce as “one half”. Reading the extraction alone would have produced a sentence with a stray 1 in it and a penalty rate of “/2 of 1%”.",
+  "“INTEREST AND PENALTIES” NESTS UNDER “HOW TO GET TAX HELP”, which fits poorly with what it says. It is printed at 14pt with no TOC entry, following the level-2 “How To Get Tax Help” banner, so by the document's own structure it is a subsection of it. Same situation as “Third Party Designee” in session 20, and followed for the same reason: re-parenting would mean overriding the source on a judgment call. Its own subheads Interest and Penalties are level 4, and the four run-in leads under Penalties are level 5.",
+  "“REFUND INFORMATION” IS LEVEL 2. It is printed at 18pt — larger than every other head in this stretch — AND the page-2 table of contents lists it as a top-level entry. Type size and TOC agree here, which they did not for “How To Get Tax Help”.",
+  "PAGE 87'S THREE GRAPHICS ARE NOT REPRODUCED, and that is a decision rather than an omission. A “where's my refund?” logotype sits at the top left, and a computer icon and a telephone icon mark the online and by-phone routes; the body text wraps around all three, which is why the extraction shows the first lines of those paragraphs indented. None carries information the adjacent sentence does not already state — the text names Where's My Refund, says to go to IRS.gov/Refunds, and says “if you don't have Internet access, you can call”. They are decorative, so this rebuild carries their meaning in the prose and does not emit image blocks that a screen reader would skip anyway. The TIP icon is different: its label is real text in the content stream and it becomes a callout, as everywhere else.",
+  "PARAGRAPH BREAKS ON PAGE 87 WERE READ OFF THE RENDER, not the indents. The text wrapping around those three graphics puts a large left indent on several lines that have nothing to do with paragraph starts, so the first-line-indent rule from session 20 cannot be applied mechanically here. The rendered page shows the real breaks, including the one before “The IRS can't issue refunds before mid-February 2026”, which the indent test alone would have missed.",
+  "PAGE FURNITURE OMITTED as in every earlier tranche: printed page numbers and the standing “Need more information or forms? Visit IRS.gov.” footer. Soft hyphens removed and justified line-break hyphens closed, while genuine compounds are kept (1040-SR, mid-February, walk-in, e-filed, 2010-33, 2010-17). The em dash in “once a day—usually at night” is the source's own and is kept."
+ ]
+}

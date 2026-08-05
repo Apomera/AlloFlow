@@ -10,7 +10,7 @@
 // So: check the shortfall against WHAT THE PREVIOUS TRANCHE CARRIED, not
 // against zero.
 //
-//   node mcp-testing/tools/carried_block_check.cjs //     <receiving-tranche.json> <carrying-tranche.json> <receiving page number>
+//   node mcp-testing/tools/carried_block_check.cjs //     <receiving-tranche.json> <carrying-tranche.json>
 //
 // Reports the shortfall split three ways - words that appear in the carrying
 // tranche, page furniture, and anything left over. Left over is the only part
@@ -19,7 +19,9 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 const REPO = 'C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated';
-const [recvPath, carryPath, pageArg] = process.argv.slice(2);
+const [recvPath, carryPath] = process.argv.slice(2);
+// Page numbers come from the receiving tranche itself, so a multi-page
+// tranche does not silently under-count its own page numbers as furniture.
 
 const out = execSync(
   `node "${REPO}/mcp-testing/tools/tranche_recall.cjs" ` +
@@ -43,7 +45,10 @@ for (const b of carry.blocks) {
   for (const t of tokens(parts)) carried.add(t);
 }
 
-const FURNITURE = new Set(['need', 'more', 'information', 'forms', 'visit', 'irs.gov', 'page', '126', String(pageArg)]);
+const recvPages = [...new Set(JSON.parse(fs.readFileSync(recvPath, 'utf8'))
+  .blocks.map((b) => b.source_page).filter(Boolean))].map(String);
+const FURNITURE = new Set(['need', 'more', 'information', 'forms', 'visit',
+  'irs.gov', 'page', '126', ...recvPages]);
 let inCarried = 0, furniture = 0;
 const leftover = [];
 for (const r of rows) {
