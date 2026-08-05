@@ -577,3 +577,38 @@ pages could be authored from the text layer at all.
 **Handoff to tranche 13:** Step 4's question 2 begins on page 41 and its
 branches print atop page 42. Authored whole at page 41, so **tranche 13 starts
 at Step 4 question 3 ("Was your main home…") and must not re-author it.**
+
+### Session 13 (2026-08-04) — pages 42-43 · tranche-13 · 52 blocks · VALIDATED (merged)
+
+Rest of EIC Steps 4-6, lines 27b/27c, and the start of the EIC's own
+Definitions and Special Rules. `merge-plans t01..t13` → 819 blocks,
+`ok: true`, pages 1-43 covered. **Recall 0.9989** once tranche 12's page-41
+blocks are credited (Step 4 q2 spans 41→42); only the two page numbers remain.
+
+**A worksheet inside a flowchart branch** — a new *combination*, not a new
+shape. Step 5 q1's No branch says "Complete the following worksheet" and a
+five-line worksheet follows; it uses the tranche-8 shape unchanged.
+
+**Callouts attached to worksheet lines fold into those lines.** The worksheet
+prints a Tip after line 2 and a Caution after line 4, each about the line
+above. Both fold into their line's cell with the label kept, so the numbering
+a reader must add up stays continuous. (Contrast tranche 7, where a callout
+*between* list items split the list in two — there the callout belonged to
+neither item.)
+
+**The EIC has its own Definitions section**, separate from the tranche-6
+glossary, and several terms appear in both with *different* wording (the EIC
+versions cite Pub. 596 and EIC-specific rules). Both kept in full, per the
+tranche-6 rule.
+
+### Correction: the band cut is recursive X-Y cut
+
+Recorded 2026-08-04. The round-8 "band cut", combined with the vertical gutter
+search it falls back from, is the classic **recursive X-Y cut** page
+segmentation algorithm (Nagy, Seth & Viswanathan, ~1992): alternate cutting on
+vertical and horizontal whitespace, recurse. It was arrived at here by
+measurement, not from the literature, and the earlier notes described it as if
+it were new. It is not. The source comment now carries the attribution so
+anyone extending it reads the existing work — including its known weaknesses
+on non-Manhattan layouts — instead of re-deriving it. The measurements stand;
+only the novelty claim was wrong.

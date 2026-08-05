@@ -2491,8 +2491,15 @@ function _alloOrderTextItems(items, opts) {
   };
   var MAX_DEPTH = 4; // deeper than the old 2: a band cut may sit above a column cut
   var MIN_GUTTER_PT = 8; // measured: real gutters here are 10-12pt (see below)
-  // Horizontal band cut (corpus round 8). Used ONLY when no vertical gutter was
-  // found, which is the signature of a page whose layout CHANGES down the page:
+  // Horizontal band cut (corpus round 8). Together with the vertical gutter
+  // search above, this is the classic RECURSIVE X-Y CUT page-segmentation
+  // algorithm (Nagy, Seth & Viswanathan, ~1992) — alternate cutting on
+  // vertical and horizontal whitespace and recurse. It was arrived at here by
+  // measurement rather than from the literature, so the name is worth
+  // recording: anyone extending this should read the X-Y cut work (and its
+  // known weaknesses on non-Manhattan layouts) rather than re-deriving it.
+  // Used ONLY when no vertical gutter was found, which is the signature of a
+  // page whose layout CHANGES down the page:
   // the i1040 sets three columns of prose above a full-width chart (p9) and a
   // full-width title block above three columns (p12), and the full-width part
   // fills the gutters the vertical search looks for, so the whole page read as

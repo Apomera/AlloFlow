@@ -1,0 +1,729 @@
+{
+ "schema_version": "1.0",
+ "document": {
+  "title": "2025 Instructions for Form 1040 (and 1040-SR)",
+  "language": "en",
+  "source_page_count": 126,
+  "source_sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a",
+  "document_type": "booklet",
+  "subject": "Internal Revenue Service instructions for the 2025 Form 1040 and Form 1040-SR, including the instructions for Schedules 1 through 3.",
+  "variant": "original"
+ },
+ "blocks": [
+  {
+   "type": "paragraph",
+   "text": "3. Was your main home, and your spouse’s if filing a joint return, in the United States for more than half of 2025? Your main home can be any location where you regularly live. If your main home (and spouse’s if filing a joint return) was in the United States for more than half of 2025, check the box to the right of the address block on page 1 of Form 1040 or 1040–SR. See Main home and United States, later. Members of the military stationed outside the United States, see Members of the military, later, before you answer.",
+   "source_page": 42,
+   "runs": [
+    {
+     "text": "3. Was your main home, and your spouse’s if filing a joint return, in the United States for more than half of 2025? Your main home can be any location where you regularly live. If your main home (and spouse’s if filing a joint return) was in the United States for more than half of 2025, check the box to the right of the address block on page 1 of Form 1040 or 1040–SR. See ",
+     "style": "normal"
+    },
+    {
+     "text": "Main home",
+     "style": "emphasis"
+    },
+    {
+     "text": " and ",
+     "style": "normal"
+    },
+    {
+     "text": "United States",
+     "style": "emphasis"
+    },
+    {
+     "text": ", later. Members of the military stationed outside the United States, see ",
+     "style": "normal"
+    },
+    {
+     "text": "Members of the military",
+     "style": "emphasis"
+    },
+    {
+     "text": ", later, before you answer.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. Continue.",
+    "No. STOP. You can’t take the credit. Check the box on line 27c."
+   ],
+   "source_page": 42,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " Continue.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " STOP. You can’t take the credit. Check the box on line 27c.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "4. Are you filing a joint return for 2025?",
+   "source_page": 42
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. Skip questions 5 and 6; go to Step 5.",
+    "No. Continue."
+   ],
+   "source_page": 42,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " Skip questions 5 and 6; go to Step 5.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " Continue.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "5. Could you be a qualifying child of another person for 2025? (Check “No” if the other person isn’t required to file, and isn’t filing, a 2025 tax return or is filing a 2025 return only to claim a refund of withheld income tax or estimated tax paid (see Pub. 596 for examples).)",
+   "source_page": 42
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. STOP. You can’t take the credit. Check the box on line 27c.",
+    "No. Continue."
+   ],
+   "source_page": 42,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " STOP. You can’t take the credit. Check the box on line 27c.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " Continue.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "6. Can you be claimed as a dependent on someone else’s 2025 tax return? (If the person who could claim you on their 2025 tax return is not required to file, and isn’t filing a 2025 tax return or is filing a 2025 return only to claim a refund of withheld income tax or estimated tax paid, check “No.”)",
+   "source_page": 42
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. STOP. You can’t take the credit.",
+    "No. Go to Step 5."
+   ],
+   "source_page": 42,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " STOP. You can’t take the credit.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " Go to Step 5.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Step 5. Earned Income",
+   "source_page": 42
+  },
+  {
+   "type": "paragraph",
+   "text": "1. Are you filing Schedule SE because you were a member of the clergy or you had church employee income of $108.28 or more?",
+   "source_page": 42
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. See Clergy or Church employees, whichever applies.",
+    "No. Complete the following worksheet."
+   ],
+   "source_page": 42,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " See ",
+      "style": "normal"
+     },
+     {
+      "text": "Clergy",
+      "style": "emphasis"
+     },
+     {
+      "text": " or ",
+      "style": "normal"
+     },
+     {
+      "text": "Church employees",
+      "style": "emphasis"
+     },
+     {
+      "text": ", whichever applies.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " Complete the following worksheet.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "table",
+   "caption": "EIC Step 5 earned income worksheet: five numbered steps for figuring your earned income for the EIC. The Amount column is where you write your figures; it is blank in the printed form.",
+   "columns": [
+    "Line",
+    "Instruction",
+    "Amount"
+   ],
+   "rows": [
+    [
+     "1.",
+     "Enter the amount from Form 1040 or 1040-SR, line 1z",
+     ""
+    ],
+    [
+     "2.",
+     "Enter the Medicaid waiver payment amounts excluded from income on Schedule 1, line 8s, unless you choose to include these amounts in earned income, in which case enter -0-. See the instructions for Schedule 1, line 8s. Tip. If you and your spouse both received Medicaid waiver payments during the year, you and your spouse can make different choices about including the full amount of your payments in earned income. Enter only the amount of Medicaid waiver payments that you or your spouse, if filing a joint return, do not want to include in earned income. To include all nontaxable Medicaid waiver payment amounts in earned income, enter -0-.",
+     ""
+    ],
+    [
+     "3.",
+     "Subtract line 2 from line 1",
+     ""
+    ],
+    [
+     "4.",
+     "Enter all of your nontaxable combat pay if you elect to include it in earned income. Also enter the amount of your nontaxable combat pay on line 1i of Form 1040 or 1040-SR. See Combat pay, nontaxable, later. Caution. Electing to include nontaxable combat pay may increase or decrease your EIC. Figure the credit with and without your nontaxable combat pay before making the election.",
+     ""
+    ],
+    [
+     "5.",
+     "Add lines 3 and 4. This is your earned income",
+     ""
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 42
+  },
+  {
+   "type": "paragraph",
+   "text": "2. Were you self-employed at any time in 2025, or are you filing Schedule SE because you were a member of the clergy or you had church employee income, or are you filing Schedule C as a statutory employee?",
+   "source_page": 42
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. Skip question 3 and Step 6; go to Worksheet B.",
+    "No. Continue."
+   ],
+   "source_page": 42,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " Skip question 3 and Step 6; go to Worksheet B.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " Continue.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "3. If you have:",
+   "source_page": 42
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "3 or more qualifying children who have valid SSNs, is your earned income less than $61,555 ($68,675 if married filing jointly)?",
+    "2 qualifying children who have valid SSNs, is your earned income less than $57,310 ($64,430 if married filing jointly)?",
+    "1 qualifying child who has a valid SSN, is your earned income less than $50,434 ($57,554 if married filing jointly)?",
+    "No qualifying children who have valid SSNs, is your earned income less than $19,104 ($26,214 if married filing jointly)?"
+   ],
+   "source_page": 42
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. Go to Step 6.",
+    "No. STOP. You can’t take the credit."
+   ],
+   "source_page": 42,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " Go to Step 6.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " STOP. You can’t take the credit.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Step 6. How To Figure the Credit",
+   "source_page": 43
+  },
+  {
+   "type": "paragraph",
+   "text": "1. Do you want the IRS to figure the credit for you?",
+   "source_page": 43
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Yes. See Credit figured by the IRS, later.",
+    "No. Go to Worksheet A."
+   ],
+   "source_page": 43,
+   "item_runs": [
+    [
+     {
+      "text": "Yes.",
+      "style": "strong"
+     },
+     {
+      "text": " See ",
+      "style": "normal"
+     },
+     {
+      "text": "Credit figured by the IRS",
+      "style": "emphasis"
+     },
+     {
+      "text": ", later.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "No.",
+      "style": "strong"
+     },
+     {
+      "text": " Go to Worksheet A.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 27b",
+   "source_page": 43
+  },
+  {
+   "type": "paragraph",
+   "text": "Check the box on line 27b if you are (1) a minister, member of a religious order who has not taken a vow of poverty, or a Christian Science practitioner; and (2) filing Schedule SE and the amount on line 2 of that schedule includes an amount that was also reported on Form 1040 or 1040-SR, line 1z. See the instructions under Clergy, later, for how to determine the amount of your earned income.",
+   "source_page": 43,
+   "runs": [
+    {
+     "text": "Check the box on line 27b if you are (1) a minister, member of a religious order who has not taken a vow of poverty, or a Christian Science practitioner; and (2) filing Schedule SE and the amount on line 2 of that schedule includes an amount that was also reported on Form 1040 or 1040-SR, line 1z. See the instructions under ",
+     "style": "normal"
+    },
+    {
+     "text": "Clergy",
+     "style": "emphasis"
+    },
+    {
+     "text": ", later, for how to determine the amount of your earned income.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 27c",
+   "source_page": 43
+  },
+  {
+   "type": "paragraph",
+   "text": "Check the box on line 27c if you do not want to claim the earned income credit or if you have been instructed to check the box in the instructions for line 27a.",
+   "source_page": 43
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Definitions and Special Rules",
+   "source_page": 43
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Adopted child",
+   "source_page": 43
+  },
+  {
+   "type": "paragraph",
+   "text": "An adopted child is always treated as your own child. An adopted child includes a child lawfully placed with you for legal adoption.",
+   "source_page": 43
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Church employees",
+   "source_page": 43
+  },
+  {
+   "type": "paragraph",
+   "text": "Determine how much of the amount on Form 1040 or 1040-SR, line 1a, was also reported on Schedule SE, Part I, line 5a. Subtract that amount from the amount on Form 1040 or 1040-SR, line 1a, and enter the result on line 1 of the worksheet in Step 5 (instead of entering the actual amount from Form 1040 or 1040-SR, line 1a). Be sure to answer “Yes” to question 2 in Step 5.",
+   "source_page": 43
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Clergy",
+   "source_page": 43
+  },
+  {
+   "type": "paragraph",
+   "text": "The following instructions apply to ministers, members of religious orders who have not taken a vow of poverty, and Christian Science practitioners. If you are filing Schedule SE and the amount on line 2 of that schedule includes an amount that was also reported on Form 1040 or 1040-SR, line 1z, do the following.",
+   "source_page": 43
+  },
+  {
+   "type": "list",
+   "ordered": true,
+   "items": [
+    "Check the box on line 27b.",
+    "Determine how much of the amount on Form 1040 or 1040-SR, line 1z, was also reported on Schedule SE, Part I, line 2.",
+    "Subtract that amount from the amount on Form 1040 or 1040-SR, line 1z. Enter the result on line 1 of the worksheet in Step 5 (instead of entering the actual amount from Form 1040 or 1040-SR, line 1z).",
+    "Be sure to answer “Yes” to question 2 in Step 5."
+   ],
+   "source_page": 43
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Combat pay, nontaxable",
+   "source_page": 43
+  },
+  {
+   "type": "paragraph",
+   "text": "If you were a member of the U.S. Armed Forces who served in a combat zone, certain pay is excluded from your income. See Combat Zone Exclusion in Pub. 3. You can elect to include this pay in your earned income when figuring the EIC. The amount of your nontaxable combat pay should be shown in box 12 of Form(s) W-2 with code Q.",
+   "source_page": 43,
+   "runs": [
+    {
+     "text": "If you were a member of the U.S. Armed Forces who served in a combat zone, certain pay is excluded from your income. See ",
+     "style": "normal"
+    },
+    {
+     "text": "Combat Zone Exclusion",
+     "style": "emphasis"
+    },
+    {
+     "text": " in Pub. 3. You can elect to include this pay in your earned income when figuring the EIC. The amount of your nontaxable combat pay should be shown in box 12 of Form(s) W-2 with code Q.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "If you are filing a joint return and both you and your spouse received nontaxable combat pay, you can each make your own election. In other words, if one of you makes the election, the other one can also make it but doesn’t have to.",
+   "source_page": 43
+  },
+  {
+   "type": "paragraph",
+   "text": "Caution. If you elect to use your nontaxable combat pay in figuring your EIC, enter that amount on line 1i.",
+   "runs": [
+    {
+     "text": "Caution.",
+     "style": "strong"
+    },
+    {
+     "text": " If you elect to use your nontaxable combat pay in figuring your EIC, enter that amount on line 1i.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 43
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Credit figured by the IRS",
+   "source_page": 43
+  },
+  {
+   "type": "paragraph",
+   "text": "To have the IRS figure your EIC, do the following.",
+   "source_page": 43
+  },
+  {
+   "type": "list",
+   "ordered": true,
+   "items": [
+    "Enter “EIC” on the dotted line next to line 27a.",
+    "Be sure you enter the nontaxable combat pay you elect to include in earned income by entering that amount on line 1i. See Combat pay, nontaxable, earlier.",
+    "If you have a qualifying child, complete and attach Schedule EIC."
+   ],
+   "source_page": 43,
+   "item_runs": [
+    [
+     {
+      "text": "Enter “EIC” on the dotted line next to line 27a.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "Be sure you enter the nontaxable combat pay you elect to include in earned income by entering that amount on line 1i. See ",
+      "style": "normal"
+     },
+     {
+      "text": "Combat pay, nontaxable",
+      "style": "emphasis"
+     },
+     {
+      "text": ", earlier.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "If you have a qualifying child, complete and attach Schedule EIC.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "If your EIC for a year after 1996 was reduced or disallowed, see Form 8862, who must file, later.",
+   "source_page": 43,
+   "runs": [
+    {
+     "text": "If your EIC for a year after 1996 was reduced or disallowed, see ",
+     "style": "normal"
+    },
+    {
+     "text": "Form 8862, who must file",
+     "style": "emphasis"
+    },
+    {
+     "text": ", later.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Exception to time lived with you",
+   "source_page": 43
+  },
+  {
+   "type": "paragraph",
+   "text": "Temporary absences by you or the child for special circumstances, such as school, vacation, business, medical care, military service, or detention in a juvenile facility, count as time the child lived with you. Also see Kidnapped child under Who Qualifies as Your Dependent, earlier, and Members of the military, later.",
+   "source_page": 43,
+   "runs": [
+    {
+     "text": "Temporary absences by you or the child for special circumstances, such as school, vacation, business, medical care, military service, or detention in a juvenile facility, count as time the child lived with you. Also see ",
+     "style": "normal"
+    },
+    {
+     "text": "Kidnapped child",
+     "style": "emphasis"
+    },
+    {
+     "text": " under ",
+     "style": "normal"
+    },
+    {
+     "text": "Who Qualifies as Your Dependent",
+     "style": "emphasis"
+    },
+    {
+     "text": ", earlier, and ",
+     "style": "normal"
+    },
+    {
+     "text": "Members of the military",
+     "style": "emphasis"
+    },
+    {
+     "text": ", later.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "A child is considered to have lived with you for more than half of 2025 if the child was born or died in 2025 and your home was this child’s home for more than half the time the child was alive in 2025 or, if you adopted the child in 2025, the child was lawfully placed with you for legal adoption by you in 2025, or if the child was an eligible foster child placed with you during 2025 and your main home was the child’s main home for more than half the time since the child was adopted or placed with you in 2025.",
+   "source_page": 43
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Form 4797 filers",
+   "source_page": 43
+  },
+  {
+   "type": "paragraph",
+   "text": "If the amount on Form 1040 or 1040-SR, line 7a, includes an amount from Form 4797, you must use Worksheet 1 in Pub. 596 to see if you can take the EIC. Otherwise, stop; you can’t take the EIC.",
+   "source_page": 43
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Form 8862, who must file",
+   "source_page": 43
+  },
+  {
+   "type": "paragraph",
+   "text": "You must file Form 8862 if your EIC for a year after 1996 was reduced or disallowed for any reason other than a math or clerical error. But don’t file Form 8862 if either of the following applies.",
+   "source_page": 43
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "You filed Form 8862 for another year, the EIC was allowed for that year, and your EIC hasn’t been reduced or disallowed again for any reason other than a math or clerical error.",
+    "You are taking the EIC without a qualifying child and the only reason your EIC was reduced or disallowed in the other year was because it was determined that a child listed on Schedule EIC wasn’t your qualifying child."
+   ],
+   "source_page": 43
+  },
+  {
+   "type": "paragraph",
+   "text": "Also, don’t file Form 8862 or take the credit for the:",
+   "source_page": 43
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "2 years after the most recent tax year for which there was a final determination that your EIC claim was due to reckless or intentional disregard of the EIC rules, or",
+    "10 years after the most recent tax year for which there was a final determination that your EIC claim was due to fraud."
+   ],
+   "source_page": 43
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Foster child",
+   "source_page": 43
+  },
+  {
+   "type": "paragraph",
+   "text": "A foster child is any child placed with you by an authorized placement agency or by judgment, decree, or other order of any court of competent jurisdiction. For more details on authorized placement agencies, see Pub. 596.",
+   "source_page": 43
+  }
+ ],
+ "review_notes": [
+  "TRANCHE 13 OF A MULTI-SESSION REBUILD. This plan covers printed pages 42-43 — the rest of EIC Steps 4, 5 and 6, lines 27b and 27c, and the start of the EIC’s own Definitions and Special Rules. It carries no document title by design: only tranche 1 does, so this file validates through merge-plans rather than standalone. No partial rebuild is delivered.",
+  "BOUNDARY IN. Tranche 12 authored Step 4’s question 2 whole because its Yes/No branches print at the top of page 42, so this tranche starts at Step 4 question 3. BOUNDARY OUT: page 43 ends on a complete definition (“Foster child”), so nothing spans the 43/44 edge and there is no handoff note.",
+  "A WORKSHEET INSIDE A FLOWCHART BRANCH — a new COMBINATION, not a new shape. Step 5 question 1’s No branch says “Complete the following worksheet”, and a five-line worksheet follows. It uses the tranche-8 worksheet shape unchanged, sitting between the question and the next question, which is where the source prints it.",
+  "CALLOUTS ATTACHED TO WORKSHEET LINES ARE FOLDED INTO THOSE LINES. The worksheet prints a Tip after line 2 and a Caution after line 4, each about the line above it. Both fold into their line’s instruction cell with the label kept, so the line numbering stays continuous and each note stays with the line it qualifies. This follows the tranche-8 rule for material nested inside a numbered line; splitting the worksheet into three tables would have broken the numbering a reader is asked to add up.",
+  "CONDITIONS-THEN-BRANCHES again, as in tranche 12: Step 5 question 3 prints a bulleted set of income thresholds and then one Yes/No pair covering the whole set. Authored as question → condition list → branch list.",
+  "THE EIC HAS ITS OWN DEFINITIONS SECTION, separate from the one in tranches 6 and 20-22’s glossary. Several terms appear in both (“Adopted child”, “Foster child”, “Exception to time lived with you”) with DIFFERENT wording — the EIC versions refer to Pub. 596 and to EIC-specific rules. Both are kept in full, as tranche 6 decided for the earlier duplicates: each belongs to the section a reader is working through.",
+  "GLOSSARY ENTRIES AS LEVEL-5 HEADINGS, matching the tranche-6 treatment of the earlier Definitions and Special Rules, under the level-4 section heading that sits beside the EIC’s Steps.",
+  "ITALIC CROSS-REFERENCES MARKED AS EMPHASIS, not linked. Pages 42 and 43 carry no link annotations.",
+  "SOFT HYPHENS REMOVED and genuine compounds kept (self-employed, nontaxable, 1040-SR, Form 4797, Schedule SE). PAGE FURNITURE OMITTED: printed page numbers, the standing “Need more information or forms?” footer, and the invisible “Fileid: … MUST be removed before printing” production lines."
+ ]
+}
