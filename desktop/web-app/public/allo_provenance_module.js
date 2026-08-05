@@ -638,8 +638,7 @@
   }
 
   GLOBAL.AlloModules = GLOBAL.AlloModules || {};
-  GLOBAL.AlloModules.WorkStoryPanel = WorkStoryPanel;
-  GLOBAL.AlloModules.Provenance = {
+  var PROVENANCE_API = {
     WorkStoryPanel: WorkStoryPanel,
     buildProcessPanelModel: buildProcessPanelModel,
     buildWorkStoryModel: buildWorkStoryModel,
@@ -672,7 +671,19 @@
     CHECKPOINT_VERDICTS: CHECKPOINT_VERDICTS.slice(),
     DURATION_BUCKETS: DURATION_BUCKETS.slice()
   };
-  if (typeof module !== 'undefined' && module.exports) module.exports = GLOBAL.AlloModules.Provenance;
+  // Registered against `window` LITERALLY, not via the GLOBAL alias: the
+  // repo's registry gate and the loadModule contract both scan for
+  // `window.AlloModules.<Name>` as text, so an aliased assignment registers
+  // nothing they can see — and loadModule would false-alarm on every load.
+  // The GLOBAL alias stays for the Node/test path below.
+  GLOBAL.AlloModules.Provenance = PROVENANCE_API;
+  GLOBAL.AlloModules.WorkStoryPanel = WorkStoryPanel;
+  if (typeof window !== 'undefined') {
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.Provenance = PROVENANCE_API;
+    window.AlloModules.WorkStoryPanel = WorkStoryPanel;
+  }
+  if (typeof module !== 'undefined' && module.exports) module.exports = PROVENANCE_API;
   GLOBAL.AlloModules.ProvenanceModule = true;
   try { console.log('[Provenance] ledger core registered (inert until the Work Story surface ships)'); } catch (_) {}
 })();
