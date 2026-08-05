@@ -1804,6 +1804,34 @@ function detectWakeCommand(text) {
 // RMS-gated segmenter: buffers speech, closes a segment after sustained
 // silence (or a hard cap), keeps a short pre-roll so the first syllable
 // isn't clipped, and drops segments shorter than plausible speech.
+// Barge-in detector: decision logic only, no audio plumbing, so it can be
+// unit tested directly the way createVadSegmenter is.
+function createBargeDetector(opts) {
+  opts = opts || {};
+  var rmsThreshold = opts.rmsThreshold == null ? 0.045 : opts.rmsThreshold;
+  var sustainMs = opts.sustainMs == null ? 260 : opts.sustainMs;
+  var graceMs = opts.graceMs == null ? 350 : opts.graceMs;
+  var voicedMs = 0, elapsedMs = 0, fired = false;
+  return {
+    reset: function () { voicedMs = 0; elapsedMs = 0; fired = false; },
+    elapsed: function () { return elapsedMs; },
+    // True exactly ONCE, when speech-level energy has been sustained past the
+    // grace window. Grace exists because the tail of the user's OWN sentence
+    // is often still in the room as the reply begins, and cutting on that
+    // would make the bot look broken. Sustain exists so a cough, a door, or a
+    // keyboard clack cannot chop a reply in half.
+    push: function (rms, dtMs) {
+      var dt = Math.max(0, Number(dtMs) || 0);
+      elapsedMs += dt;
+      if (fired || elapsedMs <= graceMs) return false;
+      if (!(Number(rms) >= rmsThreshold)) { voicedMs = 0; return false; }
+      voicedMs += dt;
+      if (voicedMs < sustainMs) return false;
+      fired = true;
+      return true;
+    }
+  };
+}
 function createVadSegmenter(opts) {
   opts = opts || {};
   var sampleRate = opts.sampleRate || 48000;
@@ -1926,6 +1954,55 @@ function createVoiceLoop(getCtx) {
   // as the until-Kokoro-loads fallback. Both are on-device; no audio leaves
   // the machine for replies. Opt-out via the toggle_voice_replies command
   // (localStorage allo_voice_speak_replies = "off").
+  // Barge-in plumbing. The watcher runs ONLY while a reply is playing, and
+  // its stream is torn down the moment speaking ends, so no capture outlives
+  // the utterance it was guarding.
+  let bargeStream = null, bargeAudioCtx = null, bargeTimer = null, activeResume = null;
+  const stopBargeWatch = () => {
+    if (bargeTimer) { try { clearTimeout(bargeTimer); } catch (_) {} bargeTimer = null; }
+    if (bargeStream) { try { bargeStream.getTracks().forEach((tr) => tr.stop()); } catch (_) {} bargeStream = null; }
+    if (bargeAudioCtx) { try { bargeAudioCtx.close(); } catch (_) {} bargeAudioCtx = null; }
+  };
+  // Stop the audio AND hand the floor straight back, so the words the user is
+  // already saying are heard instead of landing in the gap.
+  const cutReply = () => {
+    if (!speaking) return;
+    try { if (replyAudio) replyAudio.pause(); } catch (_) {}
+    try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (_) {}
+    noteUserSpeech(true);
+    const resumeNow = activeResume;
+    stopBargeWatch();
+    if (resumeNow) resumeNow();
+  };
+  const startBargeWatch = () => {
+    stopBargeWatch();
+    const nav = typeof navigator !== "undefined" ? navigator : null;
+    const Ctx = typeof window !== "undefined" ? (window.AudioContext || window.webkitAudioContext) : null;
+    if (!nav || !nav.mediaDevices || typeof nav.mediaDevices.getUserMedia !== "function" || !Ctx) return;
+    const detector = createBargeDetector({});
+    nav.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }).then(function (stream) {
+      if (!speaking) { try { stream.getTracks().forEach((tr) => tr.stop()); } catch (_) {} return; }
+      bargeStream = stream;
+      bargeAudioCtx = new Ctx();
+      const analyser = bargeAudioCtx.createAnalyser();
+      analyser.fftSize = 1024;
+      bargeAudioCtx.createMediaStreamSource(stream).connect(analyser);
+      const buf = new Float32Array(analyser.fftSize);
+      let last = Date.now();
+      const tick = function () {
+        if (!speaking) { stopBargeWatch(); return; }
+        analyser.getFloatTimeDomainData(buf);
+        let sum = 0;
+        for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
+        const now = Date.now();
+        const hit = detector.push(Math.sqrt(sum / buf.length), now - last);
+        last = now;
+        if (hit) { cutReply(); return; }
+        bargeTimer = setTimeout(tick, 50);
+      };
+      bargeTimer = setTimeout(tick, 50);
+    }).catch(function () {});
+  };
   const speakReply = (msg, c) => {
     if (!c || c.voiceSpeakReplies === false) return;
     // Newest wins: a held reply is REPLACED, never queued behind, so the room
@@ -1951,6 +2028,7 @@ function createVoiceLoop(getCtx) {
     const resume = () => {
       if (speakSerial !== my || !speaking) return;
       speaking = false;
+      stopBargeWatch();
       if (active && rec) { try { rec.start(); } catch (_) {} }
     };
     try {
@@ -1959,6 +2037,8 @@ function createVoiceLoop(getCtx) {
         const kv = typeof sel === "string" && (sel.indexOf("af_") === 0 || sel.indexOf("am_") === 0) ? sel : "af_heart";
         if (replyAudio) { try { replyAudio.pause(); } catch (_) {} replyAudio = null; }
         speaking = true;
+        activeResume = resume;
+        startBargeWatch();
         if (active && rec) { try { rec.stop(); } catch (_) {} }
         Promise.resolve(window._kokoroTTS.speak(text, kv, 1)).then((url) => {
           if (speakSerial !== my) return; // superseded while synthesizing
@@ -1991,6 +2071,8 @@ function createVoiceLoop(getCtx) {
       u.onend = resume;
       u.onerror = resume;
       speaking = true;
+      activeResume = resume;
+      startBargeWatch();
       if (active && rec) { try { rec.stop(); } catch (_) {} }
       window.speechSynthesis.speak(u);
       // Some engines drop end events; never leave the mic dead.

@@ -573,7 +573,12 @@ describe('voice loop spoken replies and language', () => {
     // rec.onend must NOT restart during speech; the utterance's end handler owns it.
     expect(mod).toMatch(/if \(active && !speaking\) \{/);
     const speak = mod.slice(mod.indexOf('const speakReply'), mod.indexOf('const announce'));
-    expect(speak).toMatch(/speaking = true;\s*if \(active && rec\) \{ try \{ rec\.stop\(\); \} catch \(_\) \{\} \}/);
+    // Starting a reply must still mute the recognizer. Barge-in arms its
+    // watcher in between, so pin the MAPPING rather than the adjacency.
+    expect(mod).toMatch(/speaking = true;[\s\S]{0,200}?if \(active && rec\) \{ try \{ rec\.stop\(\); \} catch \(_\) \{\} \}/);
+    // ...and the watcher that makes the reply interruptible is armed at the
+    // same point, so a future edit cannot quietly drop barge-in.
+    expect(mod).toMatch(/speaking = true;[\s\S]{0,120}?startBargeWatch\(\);/);
     expect(speak).toContain('u.onend = resume');
     expect(speak).toContain('setTimeout(resume, 15e3)'); // mic never left dead
     expect(speak).toContain('c.voiceSpeakReplies === false'); // opt-out respected
