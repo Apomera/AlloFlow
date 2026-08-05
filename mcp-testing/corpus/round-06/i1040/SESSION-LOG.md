@@ -1201,15 +1201,57 @@ residuals are documented artifacts (the fraction's raised numerator, and
 `im86`/`posed` where "imposed" is split by the page number at a column break -
 the same artifact tranches 2 and 4 found).
 
-### NEXT: pages 88-117, the schedule instructions
+### Session 28 (2026-08-04) - page 88 - tranche-28 - 25 blocks - VALIDATED (merged)
 
-The largest remaining block: Instructions for Schedule 1 (88-100), Schedule
-1-A (101-110), Schedule 2 (111-114) and Schedule 3 (115-117). Each is a
-top-level TOC entry, so each opens at level 2. Expect the same shapes already
-settled - line-numbered instruction heads, run-in leads, worksheets, icon
-callouts - so these should be steady prose tranches rather than new design
-work.
+The opening of the Instructions for Schedule 1: General Instructions, Form(s)
+1099-K with its four worked examples, and the start of Additional Income at
+line 1. `merge-plans t01..t28` -> 1,328 blocks, `ok: true`, **pages 1-88
+covered**, zero heading skips. Recall 0.9758.
 
-Then the back matter: Tax Topics (118), the Disclosure/Privacy Act notice
-(120), Major Categories of Federal Income and Outlays (122), and the
-MECHANICAL Index (123-126). Do not hand-author the Index.
+**The reading order was rebuilt from geometry, not taken from the
+column-aware text.** This page changes layout down the page - a full-width
+subtitle banner over three columns, then two TIP boxes the body wraps around -
+and the column detector loses the thread partway, interleaving sentences from
+different columns:
+
+> "The remaining amounts reported to you on Form(s) 1099-K in 88 Additional
+> Income and Adjustments to Income box 1(a) should be reported elsewhere would
+> enter $1,500 in the entry space at..."
+
+Each column was banded independently and read top to bottom instead, which is
+what session 3 prescribed for pages whose layout changes down the page.
+
+**The recall shortfall is degraded SOURCE, not lost content**, and this is the
+clearest example the rebuild has produced. The missing tokens are
+`comtaxable`, `detransactions`, `elec$700`, `incorstate`, `onoffsets` - words
+from DIFFERENT COLUMNS glued together by the failing detector - plus `ceive`,
+`coveries`, `ductions`, `fund`, which are hyphen halves whose partners landed
+in another column so the hyphen-close could not reach them. None of these
+strings exists in the printed document. The plan contains the correct forms
+(`receive Form 1099-G`, `Itemized Deduction Recoveries`, `itemize deductions`,
+`taxable refund`), verified explicitly.
+
+> **When the column detector fails on a page, the recall baseline is damaged
+> in the same way the reading order is.** Check the shortfall for cross-column
+> glue before treating it as loss - session 3 said this and it is worth
+> repeating now that the schedules bring more mixed-layout pages.
+
+**Nothing spans the 88-89 break.** The "Exception" paragraph ends on page 88
+with "...if any of the following applies.", and the list it introduces is
+printed wholly on page 89. The page-89 tranche opens with that list and should
+keep it attached to this Exception heading.
+
+### NEXT: page 89 onward
+
+Page 89: the list belonging to page 88's "Exception", then Lines 2a and 2b
+(Alimony Received), Line 3, Line 4, Line 7, and Lines 8a Through 8z. Page 90
+is the State and Local Income Tax Refund Worksheet - a worksheet page with
+"Before you begin:" and STOP markers, so the tranche-15/16 worksheet shape
+applies. Pages 91-92 are the Line 8a through 8z run-in topics, which are dense
+and numerous.
+
+Then Schedule 1-A (101-110), Schedule 2 (111-114) and Schedule 3 (115-117),
+each a top-level TOC entry opening at level 2. Then the back matter: Tax
+Topics (118), the Disclosure/Privacy Act notice (120), Major Categories of
+Federal Income and Outlays (122), and the MECHANICAL Index (123-126). Do not
+hand-author the Index.
