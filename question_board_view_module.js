@@ -101,6 +101,7 @@
         const peers = visible.filter(function (i) { return i.uid !== (actor && actor.uid); });
         const perStudent = config.itemsPerStudent || 0;
         const expired = contract.isExpired(board);
+        const capacity = boardCapacity(contract, board);
 
         const allItems = (board && board.items) || [];
         const authors = {};
@@ -112,7 +113,7 @@
             prompt: config.prompt || '',
             isHost: !!isHost,
             expired: expired,
-            canPost: !expired && !isHost && mine.length < perStudent,
+            canPost: !expired && !isHost && mine.length < perStudent && !capacity.full,
             remaining: Math.max(0, perStudent - mine.length),
             myItems: mine,
             peerItems: peers,
@@ -122,6 +123,9 @@
             // rather than letting the board look mysteriously empty.
             floorPending: !isHost && authorCount < floor,
             floorNeeds: Math.max(0, floor - authorCount),
+            capacity: capacity,
+            // A disabled composer with no explanation reads as a broken app.
+            blockReason: postingBlockReason(contract, board, actor, capacity),
             moderation: moderationNotice(config, opts.transport)
         };
     }
@@ -204,7 +208,11 @@
                     h('span', { key: 'left', className: 'text-xs opacity-70' },
                         vm.canPost
                             ? tr('question_board.remaining', 'Questions you can still add') + ': ' + vm.remaining
-                            : tr('question_board.cap', 'You have added all your questions for this board.')),
+                            : (vm.blockReason === 'board-full'
+                                ? tr('question_board.board_full', 'This board is full. Ask your teacher to start a new one.')
+                                : vm.blockReason === 'closed'
+                                    ? tr('question_board.closed_short', 'This board is closed.')
+                                    : tr('question_board.cap', 'You have added all your questions for this board.'))),
                     h('button', {
                         key: 'post', type: 'button', onClick: submit, disabled: !vm.canPost || !String(draft).trim(),
                         className: 'rounded bg-indigo-700 px-3 py-1 text-sm font-bold text-white disabled:opacity-50'
@@ -230,6 +238,99 @@
     }
 
 
+    // ── Phase 4: capacity, expiry, export ───────────────────────────────────
+
+    /**
+     * How full is this board? Two independent ceilings — the item count the
+     * teacher chose, and the 85KB document limit that is the dominant design
+     * constraint (spec §3). The byte one is the one that surprises people, so
+     * it is reported rather than left to fail at submit time.
+     */
+    function boardCapacity(contract, board) {
+        const items = (board && board.items) || [];
+        const cap = ((board && board.config) || {}).boardCap || 0;
+        const bytes = contract.estimateBoardBytes(board);
+        const byteCap = contract.LIMITS.DOC_BYTES;
+        const byCount = cap ? items.length / cap : 0;
+        const byBytes = byteCap ? bytes / byteCap : 0;
+        const worst = Math.max(byCount, byBytes);
+        return {
+            used: items.length,
+            cap: cap,
+            bytes: bytes,
+            byteCap: byteCap,
+            fraction: worst,
+            // "Full" means the NEXT post would be refused, by either ceiling.
+            full: (cap > 0 && items.length >= cap) || bytes >= byteCap,
+            nearFull: worst >= 0.85 && worst < 1,
+            limitedBy: byBytes >= byCount ? 'bytes' : 'count'
+        };
+    }
+
+    /**
+     * The export a teacher actually wants: what the class asked, and what the
+     * unit never got to. The unanswered list is the point — it is the only
+     * artifact here a physical board cannot produce.
+     *
+     * Names are INCLUDED by default. The board is not anonymous (spec §8.1),
+     * the teacher already sees who asked what, and a planning record without
+     * names loses the ability to follow up with a particular student. Pass
+     * includeNames:false when the record is leaving the classroom.
+     */
+    function exportBoardRecord(contract, board, options) {
+        const opts = options || {};
+        const includeNames = opts.includeNames !== false;
+        const config = (board && board.config) || {};
+        const items = ((board && board.items) || []).filter(function (i) { return i && i.status === 'approved'; });
+        const answered = items.filter(function (i) { return !!i.answered; });
+        const open = items.filter(function (i) { return !i.answered; });
+        const who = function (i) { return (includeNames && i.displayName) ? ' — ' + i.displayName : ''; };
+
+        const lines = [];
+        lines.push('# ' + (config.prompt || 'Driving questions board'));
+        lines.push('');
+        lines.push(String(items.length) + ' questions from ' + countAuthors(items) + ' students · '
+            + String(answered.length) + ' answered · ' + String(open.length) + ' still open');
+        if (config.expiresAt) lines.push('Board closed: ' + config.expiresAt);
+        lines.push('');
+        lines.push('## Still open');
+        if (!open.length) lines.push('_None — every question was answered._');
+        open.forEach(function (i) { lines.push('- ' + i.text + who(i)); });
+        lines.push('');
+        lines.push('## Answered');
+        if (!answered.length) lines.push('_None yet._');
+        answered.forEach(function (i) {
+            lines.push('- ' + i.text + who(i));
+            if (i.answered && i.answered.note) lines.push('  - ' + i.answered.note);
+        });
+
+        return {
+            markdown: lines.join('\n') + '\n',
+            stats: {
+                total: items.length,
+                answered: answered.length,
+                open: open.length,
+                students: countAuthors(items),
+                includedNames: includeNames
+            }
+        };
+    }
+
+    function countAuthors(items) {
+        const seen = {};
+        (items || []).forEach(function (i) { if (i && i.uid) seen[i.uid] = true; });
+        return Object.keys(seen).length;
+    }
+
+    /** What to tell a student who cannot post right now, and why. */
+    function postingBlockReason(contract, board, actor, capacity) {
+        if (contract.isExpired(board)) return 'closed';
+        if (capacity && capacity.full) return 'board-full';
+        const config = (board && board.config) || {};
+        const mine = ((board && board.items) || []).filter(function (i) { return i && i.uid === (actor && actor.uid); });
+        if (mine.length >= (config.itemsPerStudent || 0)) return 'own-cap';
+        return null;
+    }
     // ── Phase 3: teacher surface ────────────────────────────────────────────
 
     /**
@@ -294,6 +395,7 @@
             participantCount: Object.keys(authors).length,
             // The number a teacher actually acts on at the end of a unit.
             unansweredCount: open.length,
+            capacity: boardCapacity(contract, board),
             moderation: moderationNotice(config, opts.transport),
             reviewMode: config.revealPolicy === 'teacher_review'
         };
@@ -376,6 +478,20 @@
                     : 'rounded border border-slate-300 bg-slate-50 p-2 text-xs text-slate-700'
             }, vm.moderation.text) : null,
 
+            vm.expired ? h('p', {
+                key: 'closed', role: 'status',
+                className: 'rounded border border-slate-300 bg-slate-50 p-2 text-xs text-slate-700'
+            }, tr('question_board.closed_teacher', 'This board is closed. It is a record now — students cannot add to it.')) : null,
+
+            (vm.capacity.full || vm.capacity.nearFull) ? h('p', {
+                key: 'capacity', role: 'status',
+                className: vm.capacity.full
+                    ? 'rounded border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900'
+                    : 'rounded border border-slate-300 bg-slate-50 p-2 text-xs text-slate-700'
+            }, vm.capacity.full
+                ? tr('question_board.full_teacher', 'This board is full — students cannot add more. Mark questions answered or start a board for the next unit.')
+                : tr('question_board.nearly_full', 'This board is nearly full.')) : null,
+
             // The headline number: what the unit has NOT answered yet.
             h('p', { key: 'counts', role: 'status', className: 'text-sm' },
                 vm.unansweredCount + ' ' + tr('question_board.still_open', 'still open') + ' · '
@@ -416,6 +532,9 @@
         buildBoardViewModel,
         QuestionCard,
         QuestionBoardStudent,
+        boardCapacity,
+        exportBoardRecord,
+        postingBlockReason,
         validateNewBoard,
         buildTeacherViewModel,
         ReviewRow,
