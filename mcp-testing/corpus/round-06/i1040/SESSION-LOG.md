@@ -2133,15 +2133,53 @@ lists so the numbers could sit between them - would announce "list of 1 item"
 twice and read far worse. Neither bullet has a bold lead; both are body face,
 checked rather than assumed.
 
-### NEXT: page 115 onward
+### Session 55 (2026-08-05) - page 115 - tranche-55 - 27 blocks - VALIDATED (merged)
 
-**Schedule 2 is done.** Page 115 opens the **Instructions for Schedule 3,
-Additional Credits and Payments** - a new top-level TOC entry, so its heading
-opens at level 2 as Schedules 1, 1-A, and 2 did. Nothing is carried into it.
+The opening of the Instructions for Schedule 3, Additional Credits and
+Payments: General Instructions and lines 1 through 4. `merge-plans t01..t55`
+-> 1,893 blocks, `ok: true`, **pages 1-115 covered**, zero heading skips.
+**Recall 0.9923 against pdf.js with ZERO content missing** - six tokens, being
+the five ordered-list markers and the folio.
 
-Note that Schedule 3's line 6l instructions contain the OTHER Negative Form
-8978 Adjustment Worksheet, which this page's worksheet and bullet both refer
-to by name; keep the two distinguishable when page 116 or 117 authors it.
+> **A NEW INLINE SHAPE: LINKS THAT ARE ALSO ITALIC.** "Tax Topic 602" and
+> "IRS.gov/EdCredit" are set in the italic face `g_d0_f2` AND carry Link
+> annotations. The plan schema says outright that **"style and href may
+> combine"**, so both are authored as emphasis runs carrying an href, and the
+> generator's `rich()` helper gained a `[[«text»|url]]` form for it. Every
+> earlier tranche's helper would have marked them plain links and **silently
+> dropped the italics the source uses for every other cross-reference on the
+> same page**. Verified in the output: 2 runs with both `style: emphasis` and
+> `href`, and merge-plans accepts them.
+
+**And the link text is again not the link target.** "IRS.gov/EdCredit"
+resolves to `.../help/ita/am-i-eligible-to-claim-an-education-credit` and "Tax
+Topic 602" to `.../taxtopics/tc602.html`. Second page running - see session 52
+- where constructing an href from the visible text would have produced a
+plausible, wrong link.
+
+**The source mixes apostrophes for the third time** (with pages 106 and 110):
+nine curly, two straight ("wasn't more than $300" in requirement 2, "you
+couldn't claim as a dependent" in the line 2 bullets). Reproduced as printed.
+
+**Nothing is carried in or out, but the 115-116 break needs care.** The last
+paragraph ends "...if either of the following applies." and the numbered list
+it introduces is printed WHOLLY on page 116 - the same handoff the Exception
+paragraph made across the 88-89 break in tranche 28. Requirement 5's "a." and
+"b." are folded into it with markers verbatim (Chart C); the source prints
+them at the SAME indent as the numbered items, so it does not step them in
+either.
+
+### NEXT: page 116 onward
+
+**Tranche 56 must OPEN with the numbered list** ("1. The amount on Form 1040,
+1040-SR, or 1040-NR, line 11b, is more than $39,500...") and keep it attached
+to the Line 4 heading from tranche 55. Page 116 reads as **4 columns**, so
+check its geometry first - on page 114 that meant a genuine full-width
+worksheet band, on page 108 it meant the detector had failed.
+
+Schedule 3's line 6l instructions carry the OTHER Negative Form 8978
+Adjustment Worksheet, which tranche 54's worksheet and bullet both name; keep
+the two distinguishable.
 
 Then the back matter: Tax Topics (118), the Disclosure/Privacy Act notice
 (120), Major Categories of Federal Income and Outlays (122), and the MECHANICAL
