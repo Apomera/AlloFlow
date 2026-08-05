@@ -107,6 +107,49 @@ describe('titration i18n coverage', () => {
         : '').toEqual([]);
   });
 
+  // A prose literal concatenated straight onto a translated fragment produces a
+  // half-translated sentence: "…lu depuis 10.0 cm above le ménisque…". It renders in
+  // every non-English pack, a screen reader reads it aloud verbatim, and no gate,
+  // snapshot or render test notices. This is the same failure class the repo already
+  // guards for alerts.*/confirms.* — the guard just never covered composed UI strings.
+  it('splices no raw English into a translated sentence', () => {
+    // Only prose counts. Units, symbols, formulae, punctuation and separators are
+    // language-neutral and are concatenated on purpose.
+    // Adjacency alone is too narrow: the original bug was a ternary
+    // (cond ? 'above' : 'below') sitting BETWEEN two __alloT calls, so nothing was
+    // directly next to a `+`. Instead, take any line that builds a translated string,
+    // remove the __alloT(...) calls (their English fallbacks are legitimate), and
+    // flag whatever prose literals are left over.
+    const PROSE = /[A-Za-z]{3,}/;
+    const NEUTRAL = /^[\s\d.,:;()\[\]+\-×·—–%/]*$|^ ?(mL|mm|cm|V|M|pH|mol\/L|N|s)\.? ?$/;
+    // Contexts where an English literal is correct: CSS, DOM plumbing, and the AI
+    // tutor's prompt, which is written FOR the model and must stay English.
+    const EXEMPT = /className|classname|class:|aria-controls|aria-pressed|data-|role:|style|key:|\bid:|getElementById|querySelector|Explain this titration|REDOX titration followed with a platinum/;
+    // JSX prop NAMES are string literals too, and are not prose.
+    const PROP_NAME = /^(aria-[a-z]+|data-[a-z-]+|className|htmlFor|role|tabIndex|scope|type|href|title)$/;
+    const offenders = [];
+    src.split('\n').forEach((ln, i) => {
+      if (!ln.includes('__alloT(') || EXEMPT.test(ln)) return;
+      const stripped = ln.replace(/__alloT\((?:[^()]|\([^()]*\))*\)/g, '@');
+      // Concatenation is the risk, and it has to be detected as SYNTAX. Testing the
+      // raw line for '+' matched string CONTENT instead — "…for 15+ min" in the
+      // question bank — and dragged in every data object. A translated call is only
+      // building a sentence if the stripped line joins it with an operator.
+      if (!/@\s*\+|\+\s*@/.test(stripped)) return;
+      const lits = stripped.match(/'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"/g) || [];
+      for (const raw of lits) {
+        const lit = raw.slice(1, -1);
+        if (NEUTRAL.test(lit) || PROP_NAME.test(lit) || !PROSE.test(lit)) continue;
+        offenders.push(`${i + 1}: ${JSON.stringify(lit.slice(0, 60))}`);
+      }
+    });
+    expect(offenders,
+      offenders.length
+        ? 'English spliced into translated sentences — give each clause its own key:\n  '
+          + offenders.join('\n  ')
+        : '').toEqual([]);
+  });
+
   it('coverage never regresses in any pack', () => {
     const requested = requestedKeys();
     const worse = [];

@@ -2630,7 +2630,7 @@ if (!safetyChecked) {
           },
             React.createElement("svg", {
               viewBox:"0 0 100 100", role:"img",
-              "aria-label": __alloT('stem.titration.safety_drill_countdown', "Safety drill countdown") + ': ' + drillTimeLeft + ' seconds remaining',
+              "aria-label": __alloT('stem.titration.safety_drill_countdown', "Safety drill countdown") + ': ' + drillTimeLeft + __alloT('stem.titration.sr_seconds_remaining', ' seconds remaining'),
               style: { transform:'rotate(-90deg)', width:'100%', height:'100%' }
             },
               React.createElement("circle", { cx:50, cy:50, r:45, fill:'none', stroke:'rgba(255,255,255,0.1)', strokeWidth:6 }),
@@ -3439,7 +3439,11 @@ return React.createElement("div", {
 
         role: "img",
 
-        'aria-label': 'Titration curve for ' + preset.label + '. Currently ' + volumeAdded.toFixed(1) + ' mL of titrant added at ' + yAxis.speech(currentY) + '. Equivalence point near ' + Veq.toFixed(1) + ' mL at ' + yAxis.speech(equivY) + '.',
+        'aria-label': __alloT('stem.titration.sr_curve_for', 'Titration curve for ') + preset.label +
+          __alloT('stem.titration.sr_currently', '. Currently ') + volumeAdded.toFixed(1) +
+          __alloT('stem.titration.sr_ml_added_at', ' mL of titrant added at ') + yAxis.speech(currentY) +
+          __alloT('stem.titration.sr_equiv_near', '. Equivalence point near ') + Veq.toFixed(1) +
+          __alloT('stem.titration.sr_ml_at', ' mL at ') + yAxis.speech(equivY) + '.',
 
         style: { maxHeight: '340px' }
 
@@ -3958,7 +3962,8 @@ return React.createElement("div", {
             return React.createElement("button", {
               key: L.id,
               onClick: function () { upd('aiLevel', L.id); },
-              "aria-label": "Reading level: " + L.label + (active ? " (selected)" : ""),
+              "aria-label": __alloT('stem.titration.sr_reading_level', 'Reading level: ') + L.label +
+                (active ? __alloT('stem.titration.sr_selected', ' (selected)') : ''),
               "aria-pressed": active,
               className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'transition-colors bg-slate-800 text-slate-300 hover:bg-purple-900/50 active:scale-[0.97]')
             }, L.label);
@@ -3967,7 +3972,9 @@ return React.createElement("div", {
         React.createElement("button", {
           onClick: explain,
           disabled: aiLoading,
-          "aria-label": "Generate AI explanation at " + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + " level",
+          "aria-label": __alloT('stem.titration.sr_generate_at', 'Generate AI explanation at ') +
+            ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') +
+            __alloT('stem.titration.sr_level_suffix', ' level'),
           className: "transition-colors px-3 py-1 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 active:scale-[0.97]"
         }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
       ),
@@ -4063,11 +4070,17 @@ return React.createElement("div", {
       var crossY = my + (eyeY - my) * ((scaleX - mx) / (eyeX - mx));
       return React.createElement("svg", {
         viewBox: '0 0 ' + W + ' ' + H, className: "w-full", style: { maxHeight: '160px' },
-        role: "img", "aria-label": 'Side view: eye ' + Math.abs(gEyeCm).toFixed(0) + ' cm ' +
-          (eyeLevel ? 'level with' : gEyeCm > 0 ? 'above' : 'below') +
-          ' the meniscus. The sight line crosses the scale ' +
-          (eyeLevel ? 'exactly at the meniscus.' : (gEyeCm > 0 ? 'above' : 'below') + ' the true level, so the reading is ' +
-            (gEyeCm > 0 ? 'too low' : 'too high') + ' by ' + Math.abs(parErr).toFixed(3) + ' millilitres.')
+        // Every clause is a key. Splicing a raw 'above'/'below' into an otherwise
+        // translated sentence is the half-translated failure this repo guards against
+        // elsewhere, and a screen reader reads the result aloud verbatim.
+        role: "img", "aria-label": __alloT('stem.titration.sr_side_view', 'Side view: eye ') + Math.abs(gEyeCm).toFixed(0) + __alloT('stem.titration.sr_cm', ' cm ') +
+          (eyeLevel ? __alloT('stem.titration.sr_level_with', 'level with') : gEyeCm > 0 ? __alloT('stem.titration.sr_above', 'above') : __alloT('stem.titration.sr_below', 'below')) +
+          __alloT('stem.titration.sr_meniscus_crosses', ' the meniscus. The sight line crosses the scale ') +
+          (eyeLevel ? __alloT('stem.titration.sr_exactly_at', 'exactly at the meniscus.')
+            : (gEyeCm > 0 ? __alloT('stem.titration.sr_above', 'above') : __alloT('stem.titration.sr_below', 'below')) +
+              __alloT('stem.titration.sr_true_level_so', ' the true level, so the reading is ') +
+              (gEyeCm > 0 ? __alloT('stem.titration.sr_too_low', 'too low') : __alloT('stem.titration.sr_too_high', 'too high')) +
+              __alloT('stem.titration.sr_by', ' by ') + Math.abs(parErr).toFixed(3) + __alloT('stem.titration.sr_millilitres', ' millilitres.'))
       },
         React.createElement("rect", { x: mx - 22, y: 8, width: 48, height: H - 16, fill: 'rgba(147,197,253,0.10)', stroke: 'rgba(147,197,253,0.45)' }),
         React.createElement("line", { x1: scaleX, y1: 8, x2: scaleX, y2: H - 8, stroke: '#cbd5e1', strokeWidth: 1.5 }),
@@ -4193,10 +4206,11 @@ return React.createElement("div", {
                 "aria-label": !glReady ? undefined : 'Burette parallax diagram, ' + BUR3D.EXAGGERATION.toFixed(1) +
                   ' times life size. ' +
                   (eyeLevel
-                    ? 'The eye is level with the meniscus and the sight line meets the scale at the true reading of ' + gVb.toFixed(2) + ' millilitres.'
-                    : 'The eye is ' + Math.abs(gEyeCm).toFixed(0) + ' centimetres ' + (gEyeCm > 0 ? 'above' : 'below') +
-                      ' the meniscus, so the sight line crosses the scale at ' + gRecordedVb.toFixed(2) +
-                      ' millilitres instead of the true ' + gVb.toFixed(2) + '.') +
+                    ? __alloT('stem.titration.sr_eye_level_meets', 'The eye is level with the meniscus and the sight line meets the scale at the true reading of ') + gVb.toFixed(2) + __alloT('stem.titration.sr_millilitres', ' millilitres.')
+                    : __alloT('stem.titration.sr_the_eye_is', 'The eye is ') + Math.abs(gEyeCm).toFixed(0) + __alloT('stem.titration.sr_centimetres', ' centimetres ') +
+                      (gEyeCm > 0 ? __alloT('stem.titration.sr_above', 'above') : __alloT('stem.titration.sr_below', 'below')) +
+                      __alloT('stem.titration.sr_meniscus_so_crosses', ' the meniscus, so the sight line crosses the scale at ') + gRecordedVb.toFixed(2) +
+                      __alloT('stem.titration.sr_ml_instead_of_true', ' millilitres instead of the true ') + gVb.toFixed(2) + '.') +
                   ' Arrow keys orbit, plus and minus zoom, 0 resets.',
                 onPointerDown: function (ev) {
                   buretteDrag.current = { x: ev.clientX, y: ev.clientY, rotY: gRot.rotY, rotX: gRot.rotX };
@@ -4256,9 +4270,11 @@ return React.createElement("div", {
               id: "titr-eye", type: "range", min: -BURETTE.MAX_EYE_CM, max: BURETTE.MAX_EYE_CM, step: 0.5,
               value: gEyeCm, disabled: !!gResult,
               onChange: function (e) { upd('gEyeCm', parseFloat(e.target.value)); },
-              "aria-valuetext": (eyeLevel ? 'Level with the meniscus' :
-                Math.abs(gEyeCm).toFixed(1) + ' centimetres ' + (gEyeCm > 0 ? 'above' : 'below')) +
-                '. Reading error ' + (parErr >= 0 ? 'plus ' : 'minus ') + Math.abs(parErr).toFixed(3) + ' millilitres.',
+              "aria-valuetext": (eyeLevel ? __alloT('stem.titration.sr_level_with_meniscus', 'Level with the meniscus') :
+                Math.abs(gEyeCm).toFixed(1) + __alloT('stem.titration.sr_centimetres', ' centimetres ') + (gEyeCm > 0 ? __alloT('stem.titration.sr_above', 'above') : __alloT('stem.titration.sr_below', 'below'))) +
+                __alloT('stem.titration.sr_reading_error', '. Reading error ') +
+                (parErr >= 0 ? __alloT('stem.titration.sr_plus', 'plus ') : __alloT('stem.titration.sr_minus', 'minus ')) +
+                Math.abs(parErr).toFixed(3) + __alloT('stem.titration.sr_millilitres', ' millilitres.'),
               className: "w-full accent-amber-400"
             }),
             React.createElement("div", { className: "flex items-center justify-between text-[10px] text-slate-400" },
@@ -4302,7 +4318,8 @@ return React.createElement("div", {
                 // with real text — an empty <th> gives screen-reader users an unnamed
                 // column — so it is named and hidden visually rather than left blank.
                 React.createElement("thead", null, React.createElement("tr", { className: "text-slate-400" },
-                  ['Trial', 'Reading', 'Eye', 'Actions'].map(function (hh, hi) {
+                  [__alloT('stem.titration.th_trial', 'Trial'), __alloT('stem.titration.th_reading', 'Reading'),
+                   __alloT('stem.titration.th_eye', 'Eye'), __alloT('stem.titration.th_actions', 'Actions')].map(function (hh, hi) {
                     return React.createElement("th", {
                       key: hi, scope: 'col',
                       className: "px-2 py-1 text-left font-bold",
@@ -4314,8 +4331,8 @@ return React.createElement("div", {
                   return React.createElement("tr", { key: i, className: "text-slate-300 border-t border-slate-700/40" },
                     React.createElement("td", { className: "px-2 py-1" }, '#' + (i + 1)),
                     React.createElement("td", { className: "px-2 py-1 tabular-nums font-bold" }, t.recorded.toFixed(2) + ' mL'),
-                    React.createElement("td", { className: "px-2 py-1" }, Math.abs(t.eyeCm) < 0.25 ? 'level' :
-                      Math.abs(t.eyeCm).toFixed(0) + ' cm ' + (t.eyeCm > 0 ? 'above' : 'below')),
+                    React.createElement("td", { className: "px-2 py-1" }, Math.abs(t.eyeCm) < 0.25 ? __alloT('stem.titration.eye_col_level', 'level') :
+                      Math.abs(t.eyeCm).toFixed(0) + __alloT('stem.titration.sr_cm', ' cm ') + (t.eyeCm > 0 ? __alloT('stem.titration.sr_above', 'above') : __alloT('stem.titration.sr_below', 'below'))),
                     React.createElement("td", { className: "px-2 py-1 text-right" },
                       React.createElement("button", {
                         onClick: function () {
@@ -4338,8 +4355,9 @@ return React.createElement("div", {
                 var t = { vb: gVb, eyeCm: gEyeCm, recorded: gRecordedVb };
                 updMulti({ gTrials: gTrials.concat([t]), gVb: 0, gStartMs: gStartMs || Date.now() });
                 if (typeof sfxTitrClick === 'function') sfxTitrClick();
-                if (announceToSR) announceToSR('Trial ' + (gTrials.length + 1) + ' recorded at ' +
-                  gRecordedVb.toFixed(2) + ' millilitres. Fresh aliquot in the flask.');
+                if (announceToSR) announceToSR(__alloT('stem.titration.sr_trial_word', 'Trial ') + (gTrials.length + 1) +
+                  __alloT('stem.titration.sr_recorded_at', ' recorded at ') + gRecordedVb.toFixed(2) +
+                  __alloT('stem.titration.sr_ml_fresh_aliquot', ' millilitres. Fresh aliquot in the flask.'));
               },
               disabled: gVb <= 0,
               className: "px-4 py-2 rounded-xl text-[12px] font-black transition-all " +
@@ -4363,8 +4381,10 @@ return React.createElement("div", {
                 });
                 if (res.withinTolerance && typeof awardStemXP === 'function') awardStemXP('titr-graded-' + gRun, 25, 'Graded titration within tolerance');
                 if (typeof sfxTitrSuccess === 'function' && res.withinTolerance) sfxTitrSuccess();
-                if (announceToSR) announceToSR('Reported. ' + res.measuredConc.toPrecision(3) + ' molar from ' +
-                  st.n + ' trials. ' + (res.withinTolerance ? 'Within tolerance.' : 'Outside the 0.05 millilitre tolerance.'));
+                if (announceToSR) announceToSR(__alloT('stem.titration.sr_reported', 'Reported. ') + res.measuredConc.toPrecision(3) +
+                  __alloT('stem.titration.sr_molar_from', ' molar from ') + st.n + __alloT('stem.titration.sr_trials_dot', ' trials. ') +
+                  (res.withinTolerance ? __alloT('stem.titration.sr_within_tol', 'Within tolerance.')
+                                       : __alloT('stem.titration.sr_outside_tol', 'Outside the 0.05 millilitre tolerance.')));
               },
               disabled: gTrials.length < 2,
               className: "px-4 py-2 rounded-xl text-[12px] font-black transition-all " +
@@ -4402,7 +4422,8 @@ return React.createElement("div", {
           // the panel say precise-but-wrong out loud when that is what happened.
           r.pa && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
             [[r.pa.precise, __alloT('stem.titration.precision', 'Precision'),
-              __alloT('stem.titration.spread_label', 'spread ') + r.stats.spread.toFixed(3) + ' mL over ' + r.stats.n + ' trials',
+              __alloT('stem.titration.spread_label', 'spread ') + r.stats.spread.toFixed(3) +
+                __alloT('stem.titration.ml_over', ' mL over ') + r.stats.n + __alloT('stem.titration.trials_suffix', ' trials'),
               r.pa.precise ? __alloT('stem.titration.replicates_agree', 'Replicates agree') : __alloT('stem.titration.replicates_scatter', 'Replicates scatter')],
              [r.pa.accurate, __alloT('stem.titration.accuracy', 'Accuracy'),
               __alloT('stem.titration.mean_is_off_by', 'mean off by ') + Math.abs(r.pa.biasMl).toFixed(3) + ' mL',
@@ -4428,8 +4449,9 @@ return React.createElement("div", {
             __alloT('stem.titration.ml_yet_sit', ' mL, yet their mean sits ') + Math.abs(r.pa.biasMl).toFixed(3) +
             __alloT('stem.titration.ml_from_truth', ' mL from the true value. Repeating a measurement cannot reveal an error that repeats with it \u2014 that is a SYSTEMATIC error, and no number of extra trials will average it away.') +
             (r.diag
-              ? __alloT('stem.titration.diag_parallax', ' Here it is parallax: every trial was read from ') + Math.abs(r.diag.eyeCm).toFixed(1) + ' cm ' +
-                (r.diag.eyeCm > 0 ? 'above' : 'below') + __alloT('stem.titration.diag_predicts', ' the meniscus, which predicts a bias of ') +
+              ? __alloT('stem.titration.diag_parallax', ' Here it is parallax: every trial was read from ') + Math.abs(r.diag.eyeCm).toFixed(1) +
+                __alloT('stem.titration.sr_cm', ' cm ') + (r.diag.eyeCm > 0 ? __alloT('stem.titration.sr_above', 'above') : __alloT('stem.titration.sr_below', 'below')) +
+                __alloT('stem.titration.diag_predicts', ' the meniscus, which predicts a bias of ') +
                 (r.diag.predictedMl >= 0 ? '+' : '') + r.diag.predictedMl.toFixed(3) + __alloT('stem.titration.diag_observed', ' mL \u2014 and you measured ') +
                 (r.pa.biasMl >= 0 ? '+' : '') + r.pa.biasMl.toFixed(3) + ' mL.'
               : '')
