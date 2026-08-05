@@ -85,13 +85,33 @@ absent. There is already a notion of *held* vs *approved* responses (`Code.gs:11
 word-cloud responses are mapped out. Students see their own row via `summary.own`
 (`Code.gs:1211`).
 
-### 1.4 What does *not* exist
+### 1.4 A sticky-note *component* already exists (worth reusing)
 
-- No sticky-note board, question board, or parking lot anywhere in the tree.
+`annotation_suite_source.jsx` implements sticky notes for annotating a document:
+an editable bubble that expands on click and collapses on blur (`:344`), an
+AA-contrast pastel colour palette (`:108`), drag support with **keyboard
+equivalents** already wired (`:388` — "Use arrow keys to move; hold Shift for a
+larger step"), proper `aria-label`s, and a toolbar affordance (`:1186`).
+
+It is **not** collaborative: zero occurrences of `onSnapshot`, `sessionRef`,
+`activeSessionCode` or `updateDoc` in the file, and the comments are explicit that
+rendering is "purely local", media is "local-only, never network", and persistence is
+"no cloud round-trip" (`:38`, `:463-464`).
+
+So the transport is missing, not the note. **Phase 2 should evaluate lifting this
+component rather than authoring a note UI from scratch** — the accessibility work
+(keyboard drag, labelled bubbles, contrast-checked palette) is the expensive part and
+it is already done and shipped.
+
+### 1.5 What does *not* exist
+
+- No communal or shared board of any kind, and nothing student-postable.
 - `whiteboard/whiteboard.html` is a **single-user** drawing surface bridged by
   `postMessage` for the AI-drawing-video feature. No shared state, not a candidate.
 - `BrainstormPanel` is an AI *generator* producing ideas for the teacher. Students do
   not post to it.
+- Other `sticky note` hits in the tree (`sel_hub/sel_tool_advocacy.js`,
+  `allobot_source.jsx`) are instructional copy, not components.
 
 ---
 
@@ -280,7 +300,9 @@ may group and route, not rewrite.
   items array with server-side size clamping against `MAX_DOC_CHARS`, per-item status
   write. Testable without any UI.
 - **Phase 2 — student surface.** Join by code, read prompt, post, see own items, see
-  approved items.
+  approved items. **Start by evaluating the annotation-suite sticky-note component
+  (§1.4) for reuse** — its keyboard-accessible drag, contrast-checked palette and
+  labelled bubbles are the costly parts and already exist.
 - **Phase 3 — teacher surface.** Create board, moderation queue, answered marking,
   open/answered split.
 - **Phase 4 — polish.** Export, board-full handling, expiry read-only state.
