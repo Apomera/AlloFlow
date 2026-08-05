@@ -2057,15 +2057,52 @@ the same word one sentence later. The first is left as printed (same call as
 line 24z in tranche 40); the second is closed, because keeping the hyphen
 would have invented a spelling the source contradicts in the same paragraph.
 
-### NEXT: page 113 onward
+### Session 53 (2026-08-05) - page 113 - tranche-53 - 40 blocks - VALIDATED (merged)
 
-Page 113 opens at **Line 9, Household Employment Taxes**, with a numbered list
-of conditions. Nothing is carried into it from tranche 52.
+Schedule 2 lines 9 through 16 and the opening of lines 17a through 17z.
+`merge-plans t01..t53` -> 1,836 blocks, `ok: true`, **pages 1-113 covered**,
+zero heading skips. **Recall 0.9887 against pdf.js with the shortfall
+accounting exactly**: nine tokens, of which eight are the ordered-list markers
+of the page's TWO lists (1-3 under line 9, 1-5 under line 17a) and one is the
+folio. Zero content missing.
 
-Then the rest of Schedule 2 (113-114) and Schedule 3 (115-117). Then the back
-matter: Tax Topics (118), the Disclosure/Privacy Act notice (120), Major
-Categories of Federal Income and Outlays (122), and the MECHANICAL Index
-(123-126). Do not hand-author the Index.
+**Line 13 is set differently from every other line on the page**, and is
+merged anyway. Lines 9-16 each get a 12pt number over a 10pt DISPLAY title in
+face `g_d0_f3`. Line 13 gets the number but no display title: its name is a
+bold RUN-IN in `g_d0_f4` - the same face as the "Line 17a."-"Line 17g."
+run-ins - leading straight into its paragraph. It is still the line's name and
+a heading list containing a bare "Line 13" would tell a reader nothing, so it
+is merged like the others. Its sentence case, against Title Case everywhere
+else on the page, is the source's own and is kept.
+
+**The Line 17x headings are bare line numbers**, checked rather than assumed:
+"Recapture of the following credits." after "Line 17a." is body face
+`g_d0_f1`, not part of the run-in, so the run-in is the number alone. Same
+shape as lines 24f-24z in tranche 40.
+
+> **TEXT RESUMING AFTER A BULLET LIST IS NOT RE-INDENTED ON THIS PAGE**, so
+> indentation cannot mark those paragraph breaks and they had to be taken from
+> sense instead. Lines 11 and 12 both do it: "Also see Form 8959 if you had
+> railroad retirement..." and "If you file Form 2555, see Form 8960..." each
+> start FLUSH at the column left yet plainly begin new paragraphs - the second
+> introduces an entire second bullet list. **Every other paragraph break in
+> this rebuild has been read off a 12pt first-line indent**, so this is worth
+> knowing before the indent rule is trusted blindly on a page with lists.
+
+One block is carried out: line 17g's instruction finishes at the top of page
+114, so **tranche 54 must open at "Line 17h"**.
+
+### NEXT: page 114 onward
+
+Page 114 continues lines 17h onward and reads as **4 columns** in the
+column-aware dump, so check its geometry before authoring - a 4-column report
+on a 3-column page usually means an insert or a detector wobble. **Do not
+re-author line 17g**, which finishes at the top of the page.
+
+Then Schedule 3 (115-117). Then the back matter: Tax Topics (118), the
+Disclosure/Privacy Act notice (120), Major Categories of Federal Income and
+Outlays (122), and the MECHANICAL Index (123-126). Do not hand-author the
+Index.
 
 ## Run-in level audit (2026-08-05) - the session-49 concern, checked and CLOSED
 
