@@ -1710,3 +1710,92 @@ Then the rest of Schedule 1-A (106-110), Schedule 2 (111-114) and Schedule 3
 matter: Tax Topics (118), the Disclosure/Privacy Act notice (120), Major
 Categories of Federal Income and Outlays (122), and the MECHANICAL Index
 (123-126). Do not hand-author the Index.
+
+## Round 9 (2026-08-05) - a vertical cut must not be CROSSED
+
+Measured like rounds 7 and 8: change the engine, sweep the whole corpus, let
+the content-stream text referee the reading order. **The sweep harness is now
+a kept tool** (`tools/order_sweep.cjs` + `tools/order_sweep_diff.cjs`) rather
+than something each round re-derives, which is why this entry can quote
+per-page numbers for the rejected variants as well as the shipped one.
+
+### The defect
+
+The gutter search calls a channel empty when it holds no more than 2% of the
+region's items, so that one stray glyph cannot veto a real gutter. That same
+tolerance let a FULL-WIDTH item lie across every candidate gutter on a page -
+and because the item's box also sets the region's x-extent, the blank space
+BESIDE it became a channel of its own.
+
+i1040 p88 is the worked example. A full-width subtitle over three columns
+produced a **180pt phantom channel** (the emptiness to the right of the
+subtitle, in a region that only reached x=42 because of the subtitle) that beat
+the real **16pt** gutter on width, then lost the balance guard with 0 items on
+one side. The page settled for two columns on a three-column layout, and
+columns 2 and 3 interleaved for a third of a page.
+
+This is the session-3 finding, and it was NOT fixed by round 8. Round 8 fixed
+pages whose vertical search *found nothing*; this one finds a gutter, so the
+band cut never ran. Sessions 28 onward worked around it by reconstructing
+reading order per column from geometry.
+
+**Fix: when EVERY candidate channel is crossed, peel the full-width furniture
+off an edge first.** Walk the y levels inward from the top (then the bottom)
+while every item on the level crosses some candidate, and cut below the last
+such level - a whole edge at a time, since a title over a subtitle is two
+levels and peeling them one at a time would burn two levels of MAX_DEPTH
+before reaching the columns. Crossers stranded in the MIDDLE of a region are
+left alone and the crossed cut is taken anyway: a crossed gutter is worse than
+a clean one, not worthless.
+
+**Corpus: 1068 pages, 39 changed, 3 better, 1 worse.** p88 0.8785 -> 0.9575,
+p120 0.8816 -> 0.9687, NIST SP800-63-3 p76 0.9057 -> 0.9434. The one loss is
+nsf-science-indicators p13 at -0.0062, a hair over the 0.005 noise floor.
+
+### Two richer policies were measured and REJECTED
+
+Both are recorded in the code so they are not re-derived:
+
+1. **Prefer clean channels over crossed ones.** Costs i1040 p87 (-0.138, three
+   columns collapsing to one): its clean 2|3 gutter splits 88 items from 6 and
+   loses the balance guard, while the crossed 1|2 gutter is the right cut.
+2. **Keep trying candidates after a gate rejects one.** Wins i1040 p68 and
+   p124 (+0.027, **+0.228**) and p119/p79/nces p16 - but loses usgs-water-cycle
+   p14, irs-f1040 p2 and nsf p13 (-0.052, -0.035, -0.006). Net 8 better /
+   3 worse against the shipped 3/1.
+
+The reason (2) fails is worth keeping. A gutter the BALANCE guard rejects
+leaves the region free to match some narrower channel, and on a form or a
+figure page nothing stops it: **when the two sides' baselines do not align,
+the table discriminator returns "not a table" and NO structural gate applies
+at all.** The old code was accidentally shielded because it only ever tested
+one candidate. Measured lines / median fill / median chars / balance ratio /
+vertical cover across all eight improved and all three regressed pages: **no
+feature separates them.** The index page p124 (a correct split) has lower fill
+than the usgs figure page (an incorrect one); irs-f1040 p2 (incorrect) has
+full vertical cover on both sides while sp800-63 p76 (correct) has none on one.
+That search wants a real region classifier, not another constant - so the
+conservative policy ships and the aggressive one waits for one.
+
+**Finding worth keeping from the rejected variant:** under (2) the Tax Table
+p68 splits into its three panels and scores BETTER (+0.027), reading
+`0 5 0 0 0 0` / `5 15 1 1 1 1` panel by panel. That matches what tranche 21
+had to do by hand - the three panels are not y-aligned and must be read
+independently by x-range. Round 8's note that "tax tables p68/p70 correctly
+stay unsplit" is therefore too confident. **Under the shipped policy p68 still
+stays unsplit**, so the tranche-21 hand reconstruction remains necessary; but
+the assumption behind it should not be inherited unexamined.
+
+### Tests
+
+`R9` in `remediation_pipeline_audit_fixes`: a banner across three columns is
+read first and all three columns are found; a crossing item that no band
+isolates still leaves the gutter usable. The first fixture was checked against
+the PRE-round-9 module and reproduces the defect exactly - `HBCBCBCBCB...`,
+columns interleaved and the banner buried a third of the way down - so the test
+pins the fix rather than merely passing.
+
+**Fixture note:** the banner is ONE line, not two. The channel tolerance is 2%
+of the region's items, so on a 61-item fixture a two-line banner exceeds it and
+no candidate is found at all - a different, already-handled path. The real page
+had 216 items.

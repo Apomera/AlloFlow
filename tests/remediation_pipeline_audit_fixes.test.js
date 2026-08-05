@@ -1664,6 +1664,89 @@ describe('R8 — narrow gutters and layouts that change down the page', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Corpus round 9 — a vertical cut must not be CROSSED.
+//
+// The gutter search tolerates a couple of items inside a channel so one stray
+// glyph cannot veto a real gutter. That tolerance let a FULL-WIDTH item lie
+// across every candidate gutter on the page, and because its box set the
+// region's x-extent, the blank space beside it became a channel of its own.
+// On i1040 p88 that phantom channel was 180pt wide against a real 16pt gutter,
+// won widest-takes-all, lost the balance guard (0 items on one side), and the
+// page settled for two columns on a three-column layout — columns 2 and 3
+// interleaved for a third of a page, gluing words from different columns
+// together ('comtaxable', 'onoffsets').
+// ─────────────────────────────────────────────────────────────────────────────
+describe('R9 — full-width furniture is peeled off before columns are found', () => {
+  let orderTextItems;
+  beforeAll(() => {
+    loadAlloModule('doc_pipeline_module.js');
+    orderTextItems = window.AlloModules.createDocPipeline.orderTextItems;
+  });
+
+  const LONG = 'a line of prose long enough to look like a real column of text';
+  const item = (str, x, y, w) => ({ str, width: w, transform: [9, 0, 0, 9, x, y] });
+
+  const threeColumns = (lines, yTop) => {
+    const items = [];
+    for (let i = 0; i < lines; i++) {
+      const y = yTop - i * 14;
+      items.push(item(`A${i} ${LONG}`, 42, y, 158));
+      items.push(item(`B${i} ${LONG}`, 222, y, 158));
+      items.push(item(`C${i} ${LONG}`, 402, y, 158));
+    }
+    return items;
+  };
+
+  it('a banner across three columns is read first, and all three are found', () => {
+    // ONE banner line, because the channel tolerance is 2% of the page's items:
+    // the banner has to be rare enough for the gutters it lies across to still
+    // read as empty, which is precisely the case that used to break. A page
+    // whose furniture is thick enough to exceed the tolerance never finds the
+    // candidates at all and is a different (already handled) path.
+    const items = [
+      item('HEAD Instructions for Schedule 1', 42, 720, 460),
+      ...threeColumns(20, 690),
+    ];
+    const ord = orderTextItems(items, {});
+    expect(ord.applied).toBe(true);
+    expect(ord.columns).toBe(4); // the peeled banner band + three columns
+    const tags = ord.items.map((i) => i.str[0]);
+    const firstA = tags.indexOf('A'), lastA = tags.lastIndexOf('A');
+    const firstB = tags.indexOf('B'), lastB = tags.lastIndexOf('B');
+    const firstC = tags.indexOf('C');
+    expect(tags.indexOf('H')).toBeLessThan(firstA); // banner leads
+    // Each column runs to its end before the next starts. The defect interleaved
+    // B and C from a third of the way down the page.
+    expect(lastA).toBeLessThan(firstB);
+    expect(lastB).toBeLessThan(firstC);
+  });
+
+  it('a crossing item that no band isolates still leaves the gutter usable', () => {
+    // The crosser sits in the MIDDLE of the region, so there is no edge to peel.
+    // The cut is taken anyway: a crossed gutter is worse than a clean one, not
+    // worthless, and refusing it would collapse the page to one column.
+    const items = [];
+    for (let i = 0; i < 12; i++) {
+      const y = 700 - i * 14;
+      items.push(item(`L${i} ${LONG}`, 42, y, 250));
+      items.push(item(`R${i} ${LONG}`, 302, y, 250));
+    }
+    items.push(item('MIDRULE spanning both columns of the page', 42, 700 - 6 * 14 - 7, 510));
+    for (let i = 12; i < 24; i++) {
+      const y = 700 - i * 14 - 14;
+      items.push(item(`L${i} ${LONG}`, 42, y, 250));
+      items.push(item(`R${i} ${LONG}`, 302, y, 250));
+    }
+    const ord = orderTextItems(items, {});
+    expect(ord.applied).toBe(true);
+    const strs = ord.items.map((i) => i.str);
+    const lastLeft = strs.map((s) => s.startsWith('L')).lastIndexOf(true);
+    const firstRight = strs.map((s) => s.startsWith('R')).indexOf(true);
+    expect(lastLeft).toBeLessThan(firstRight);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Corpus round 8 — Form XObjects are extracted per DRAW, in stream order.
 //
 // The content-stream extractor walked the page's /XObject resource dictionary,

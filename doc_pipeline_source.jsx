@@ -2564,17 +2564,109 @@ function _alloOrderTextItems(items, opts) {
     // MIN_GUTTER_PT wide, whose center lies in the middle 70% of the text extent.
     var thresh = Math.max(1, Math.floor(arr.length * 0.02));
     var minRun = Math.max(2, Math.ceil(MIN_GUTTER_PT / binPt));
-    var best = null, runStart = -1;
+    var cands = [], runStart = -1;
     for (var b1 = 0; b1 <= BINS; b1++) {
       var empty = b1 < BINS && cov[b1] <= thresh;
       if (empty && runStart < 0) runStart = b1;
       if (!empty && runStart >= 0) {
         var runLen = b1 - runStart, center = (runStart + b1) / 2 / BINS;
         if (runLen >= minRun && center > 0.15 && center < 0.85) {
-          if (!best || runLen > best.len) best = { len: runLen, xCut: minX + ((runStart + b1) / 2 / BINS) * span };
+          cands.push({
+            len: runLen,
+            xCut: minX + ((runStart + b1) / 2 / BINS) * span,
+            x0: minX + (runStart / BINS) * span,
+            x1: minX + (b1 / BINS) * span,
+          });
         }
         runStart = -1;
       }
+    }
+    // A vertical cut must not be CROSSED (corpus round 9). The coverage
+    // threshold above tolerates a couple of items inside a channel so one
+    // stray glyph cannot veto a real gutter — but that same tolerance lets a
+    // FULL-WIDTH item (a banner, a running head, a rule) lie ACROSS the
+    // candidate gutters. Such an item belongs to no column, and worse, its box
+    // drags the region's x-extent over the whole page, so the blank space
+    // BESIDE it reads as a channel of its own.
+    //
+    // i1040 p88 is the worked example: a full-width subtitle over three
+    // columns put a 180pt phantom channel (the empty space to the right of the
+    // subtitle, inside a region that only reached x=42 because of the subtitle)
+    // ahead of the real 16pt gutter. Widest-wins picked the phantom, the
+    // balance guard vetoed it (0 items on one side), and the page gave up at
+    // two columns for three — columns 2 and 3 interleaved for a third of a
+    // page. So: prefer a channel nothing crosses, and when EVERY candidate is
+    // crossed, the page is asking for a horizontal cut first.
+    var crossesAny = function (it) {
+      var ax = _x(it), bx = ax + _w(it);
+      for (var iA = 0; iA < cands.length; iA++) if (ax < cands[iA].x1 && bx > cands[iA].x0) return true;
+      return false;
+    };
+    var byLen = function (p, q) { return q.len - p.len; };
+    var clean = [], crossed = [];
+    for (var iC2 = 0; iC2 < cands.length; iC2++) {
+      var anyCross = false;
+      for (var iX = 0; iX < arr.length && !anyCross; iX++) {
+        var axx = _x(arr[iX]);
+        if (axx < cands[iC2].x1 && axx + _w(arr[iX]) > cands[iC2].x0) anyCross = true;
+      }
+      (anyCross ? crossed : clean).push(cands[iC2]);
+    }
+    clean.sort(byLen);
+    crossed.sort(byLen);
+    // Peel full-width furniture off an EDGE of the region in one cut: walk the
+    // y levels inward from the top (then from the bottom) while every item on
+    // the level crosses a candidate gutter, and cut below the last such level.
+    // Doing it a whole edge at a time rather than one item at a time matters —
+    // a title over a subtitle is two levels, and peeling them separately would
+    // burn two levels of MAX_DEPTH before the columns are ever reached.
+    // Crossers stranded in the MIDDLE of a region are left alone: no horizontal
+    // band isolates them, and the caller then falls back to the crossed cut.
+    var peelFurniture = function () {
+      var lv = {}, kL;
+      for (var iL = 0; iL < arr.length; iL++) lv[Math.round(_y(arr[iL]) / 3) * 3] = true;
+      var ys = [];
+      for (kL in lv) if (Object.prototype.hasOwnProperty.call(lv, kL)) ys.push(parseFloat(kL));
+      if (ys.length < 3) return null;
+      ys.sort(function (p, q) { return q - p; });
+      var levelAllCrosses = function (yLevel) {
+        var seenAny = false;
+        for (var iM = 0; iM < arr.length; iM++) {
+          if (Math.round(_y(arr[iM]) / 3) * 3 !== yLevel) continue;
+          seenAny = true;
+          if (!crossesAny(arr[iM])) return false;
+        }
+        return seenAny;
+      };
+      var cutAt = function (yCut) {
+        var top = [], bottom = [];
+        for (var iS = 0; iS < arr.length; iS++) (_y(arr[iS]) > yCut ? top : bottom).push(arr[iS]);
+        return top.length && bottom.length ? { top: top, bottom: bottom } : null;
+      };
+      var kTop = -1;
+      for (var iT = 0; iT < ys.length - 1; iT++) { if (levelAllCrosses(ys[iT])) kTop = iT; else break; }
+      if (kTop >= 0) return cutAt((ys[kTop] + ys[kTop + 1]) / 2);
+      var kBot = -1;
+      for (var iB2 = ys.length - 1; iB2 > 0; iB2--) { if (levelAllCrosses(ys[iB2])) kBot = iB2; else break; }
+      if (kBot > 0) return cutAt((ys[kBot - 1] + ys[kBot]) / 2);
+      return null;
+    };
+    var best = null;
+    // Peel only when NO channel on this region is clean. One crossed gutter
+    // beside a clean one is an ordinary heading spanning two of three columns;
+    // every gutter being crossed is the signature of full-width furniture.
+    if (!clean.length && crossed.length) {
+      var peeled = peelFurniture();
+      if (peeled) {
+        var PT = split(peeled.top, depth + 1), PB = split(peeled.bottom, depth + 1);
+        // Same guard the band cut uses: keep the horizontal cut only if it let
+        // some part of the page find real columns.
+        if (PT.gutters.length + PB.gutters.length > 0) {
+          return { cols: PT.cols.concat(PB.cols), gutters: PT.gutters.concat(PB.gutters) };
+        }
+      }
+      // Nothing isolates the crossers: fall through and let the ordered search
+      // below try the crossed channels on their own merits.
     }
     // Every way of REJECTING a vertical split falls through to here, not just
     // "no gutter found": a page whose layout changes down the page can present
@@ -2592,39 +2684,76 @@ function _alloOrderTextItems(items, opts) {
       if (T.gutters.length + B.gutters.length === 0) return { cols: [arr], gutters: [] };
       return { cols: T.cols.concat(B.cols), gutters: T.gutters.concat(B.gutters) };
     };
-    if (!best) return noVertical();
-    var left = [], right = [];
-    for (var i4 = 0; i4 < arr.length; i4++) { (( _x(arr[i4]) + _w(arr[i4]) / 2 ) < best.xCut ? left : right).push(arr[i4]); }
-    // Balance guard: a stray margin note isn't a column.
-    if (left.length < 5 || right.length < 5 || left.length / right.length > 8 || right.length / left.length > 8) return noVertical();
-    // Table discriminator: fraction of left baselines (3pt buckets) that also appear on the right.
-    var leftY = Object.create(null), matches = 0, lY = 0;
-    for (var i5 = 0; i5 < left.length; i5++) leftY[Math.round(_y(left[i5]) / 3)] = true;
-    for (var kY in leftY) lY++;
-    var rightSeen = Object.create(null);
-    for (var i6 = 0; i6 < right.length; i6++) {
-      var ky = Math.round(_y(right[i6]) / 3);
-      if (leftY[ky] && !rightSeen[ky]) { rightSeen[ky] = true; matches++; }
-    }
-    if (lY > 0 && matches / lY >= 0.55) {
-      // Aligned baselines usually mean a table/grid, where row-major reading is correct —
-      // that veto stands. But dense prose columns share a baseline grid too: the i1040's
-      // justified 3-column "What's New" matches at 0.67-0.89 and was read as one
-      // interleaved column (corpus round 7). The measured separation (i1040 p6/p7/p100
-      // vs its p68 tax table): a prose column's lines each FILL the column — left median
-      // fill 0.89-0.95 with 1-2.2 items per line — while a table's baselines are rows of
-      // many short cells (left fill 0.72, right 8.1 items/line). Split only when both
-      // sides read as prose columns; every threshold has daylight to both measured sides.
-      // medianChars separates a prose column (lines of ~35+ characters) from a
-      // TABLE column that also fills its narrow width — NIST HB44's device-code
-      // cross-reference column ('VTM-21.1', ~9 chars/line) passed the fill and
-      // items-per-line gates and was peeled away from its row labels.
-      var LS = _sideLines(left, minX, best.xCut), RS = _sideLines(right, best.xCut, maxX);
-      var proseColumns = LS.lines >= 8 && RS.lines >= 8 &&
+    // Try candidates in order — clean before crossed, widest first — and keep
+    // the first that survives the gates below (corpus round 9). This used to
+    // test the widest channel ALONE and fall straight through to the band cut
+    // when it failed, which threw away every other gutter on the page: i1040
+    // p87 sets a heading across columns 1-2, so the 1|2 gutter is crossed and
+    // the 2|3 gutter is clean but splits 88 items from 6 — the balance guard
+    // vetoes it, and the page collapsed to a single interleaved column even
+    // though the crossed 1|2 gutter would have split it correctly. A gate
+    // rejecting one channel says nothing about the next one.
+    // Table discriminator: fraction of left baselines (3pt buckets) that also
+    // appear on the right. Aligned baselines usually mean a table/grid, where
+    // row-major reading is correct — that veto stands. But dense prose columns
+    // share a baseline grid too: the i1040's justified 3-column "What's New"
+    // matches at 0.67-0.89 and was read as one interleaved column (corpus
+    // round 7). The measured separation (i1040 p6/p7/p100 vs its p68 tax
+    // table): a prose column's lines each FILL the column — left median fill
+    // 0.89-0.95 with 1-2.2 items per line — while a table's baselines are rows
+    // of many short cells (left fill 0.72, right 8.1 items/line). Split only
+    // when both sides read as prose columns; every threshold has daylight to
+    // both measured sides. medianChars separates a prose column (lines of ~35+
+    // characters) from a TABLE column that also fills its narrow width — NIST
+    // HB44's device-code cross-reference column ('VTM-21.1', ~9 chars/line)
+    // passed the fill and items-per-line gates and was peeled away from its
+    // row labels.
+    var notATable = function (lSide, rSide, xCut) {
+      var leftY = Object.create(null), matches = 0, lY = 0, kY;
+      for (var i5 = 0; i5 < lSide.length; i5++) leftY[Math.round(_y(lSide[i5]) / 3)] = true;
+      for (kY in leftY) lY++;
+      var rightSeen = Object.create(null);
+      for (var i6 = 0; i6 < rSide.length; i6++) {
+        var ky = Math.round(_y(rSide[i6]) / 3);
+        if (leftY[ky] && !rightSeen[ky]) { rightSeen[ky] = true; matches++; }
+      }
+      if (!(lY > 0 && matches / lY >= 0.55)) return true;
+      var LS = _sideLines(lSide, minX, xCut), RS = _sideLines(rSide, xCut, maxX);
+      return LS.lines >= 8 && RS.lines >= 8 &&
         LS.medianFill >= 0.8 && LS.itemsPerLine <= 2.5 && RS.itemsPerLine <= 4.5 &&
         LS.medianChars >= 18 && RS.medianChars >= 18;
-      if (!proseColumns) return noVertical();
+    };
+    var accepted = null, left = null, right = null;
+    // ORDER OF CANDIDATES. Widest-first over every eligible channel, which is
+    // what this has always done. Two richer policies were measured against the
+    // corpus and BOTH were rejected, so the alternatives are recorded here
+    // rather than re-derived:
+    //
+    //   * prefer clean channels over crossed ones - costs i1040 p87, where the
+    //     clean 2|3 gutter splits 88 items from 6 and the crossed 1|2 gutter is
+    //     the right cut (-0.138 agreement, 3 columns collapsing to 1);
+    //   * keep trying candidates after a gate rejects one - wins i1040 p68 and
+    //     p124 (+0.027, +0.228) but loses usgs-water-cycle p14, irs-f1040 p2
+    //     and nsf p13 (-0.052, -0.035, -0.006), because a gutter that the
+    //     BALANCE guard rejects leaves the region free to match some narrower
+    //     channel, and on a form or a figure page the table gate never fires to
+    //     stop it: when the two sides' baselines do not align, no structural
+    //     gate applies at all. Measured lines/fill/chars/balance/vertical-cover
+    //     on all eight improved and all three regressed pages: no feature
+    //     separates them, so there is nothing honest to threshold on. That
+    //     search wants a real region classifier, not another constant.
+    var order = cands.slice().sort(function (p, q) { return q.len - p.len; }).slice(0, 1);
+    for (var iQ = 0; iQ < order.length; iQ++) {
+      var cand = order[iQ], cl = [], cr2 = [];
+      for (var i4 = 0; i4 < arr.length; i4++) { (( _x(arr[i4]) + _w(arr[i4]) / 2 ) < cand.xCut ? cl : cr2).push(arr[i4]); }
+      // Balance guard: a stray margin note isn't a column.
+      if (cl.length < 5 || cr2.length < 5 || cl.length / cr2.length > 8 || cr2.length / cl.length > 8) continue;
+      if (!notATable(cl, cr2, cand.xCut)) continue;
+      accepted = cand; left = cl; right = cr2;
+      break;
     }
+    if (!accepted) return noVertical();
+    best = accepted;
     var L = split(left, depth + 1), R = split(right, depth + 1);
     // Emit in reading order HERE (right side first for RTL) rather than sorting
     // the finished column list by x. Once a region can also be cut into

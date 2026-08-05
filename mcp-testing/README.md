@@ -72,6 +72,43 @@ node mcp-testing/tools/mcp_call.cjs call   <server.cjs> <tool> [args.json] [--ti
 `--stderr` echoes the server's telemetry. That is where throttle waits, auth failures, and OCR
 progress appear — it is the difference between "slow" and "stuck".
 
+## Reading-order sweep — `tools/order_sweep.cjs`, `tools/order_sweep_diff.cjs`
+
+The gate for any change to the column splitter. Rounds 7 and 8 were both measured this way, but
+the script was never kept and each round re-derived it; this is that harness made permanent.
+
+```bash
+node mcp-testing/tools/order_sweep.cjs <module.js> <out.json> [--only <name>] [--max-pages N]
+node mcp-testing/tools/order_sweep_diff.cjs <before.json> <after.json> [--eps 0.005]
+```
+
+Get the "before" module from git (`git show HEAD:doc_pipeline_module.js > /tmp/before.js`), sweep
+with it and with the working copy, then diff. Each page is scored by BIGRAM AGREEMENT between the
+column-aware text layer and the content-stream text, which is extracted by walking the page's own
+drawing operators and knows nothing about the splitter. Bigrams because a reading-order defect does
+not change which words a page has, only which words end up adjacent.
+
+**Read the scores as deltas, never as grades.** Content-stream order is the order the page was
+DRAWN — usually reading order, not guaranteed to be — so a low absolute score can mean the referee
+is wrong rather than the splitter. Three corpus documents return no content-stream text at all
+(`nist-hb44-excerpt`, 23 pages of `nasa-artemis-plan`, `irs-f1040-1954-scan`); the diff reports
+those on their own line rather than counting them as unchanged.
+
+## Optional: `pdfjs-dist` for full-fidelity renders
+
+`tools/render_pages.cjs` prefers a modern `pdfjs-dist` if it can resolve one, because Chromium's
+OpenType Sanitizer rejects some of the embedded fonts the vendored pdf.js ships cmaps for, and the
+rejected glyphs paint as tofu boxes. It is **not** declared in `package.json` and is not expected
+to be: it is a diagnostic convenience, the tool falls back to the vendored pdf.js with a printed
+warning, and adding it would put an npm install between a fresh clone and a working build.
+
+```bash
+npm i pdfjs-dist --no-save    # --no-save on purpose; it must not persist
+```
+
+Do not run a bare `npm i`/`npm ci` in this tree to get it — that drops `@babel/core`, which is only
+a peer dependency here, and the next deploy aborts on "JSX compilation".
+
 ## `runs/`
 
 One directory per real remediation, holding the inputs and every artifact produced, so the output
