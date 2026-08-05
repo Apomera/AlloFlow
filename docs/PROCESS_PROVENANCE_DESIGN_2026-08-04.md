@@ -672,7 +672,9 @@ Queued for Dr. Howorth as §12.11.
 Recorded here because the commit carrying this explanation was swept into a concurrent
 commit and its message never landed in history.
 
-**The defect.**  averaged ALL supports. Access supports carry  and therefore weight 0, so every read-aloud added 1 to the denominator and 0 to
+**The defect.** `intensity` averaged ALL supports. Access supports carry
+`promptLevel: 'none'` and therefore weight 0, so every read-aloud added 1 to the
+denominator and 0 to
 the numerator. Heavier accommodation use dragged the mean down.
 
 Reproduced on a realistic six-week arc: a student with **identical** generative
@@ -685,11 +687,12 @@ output could contribute to withdrawing it.
 
 **The fix.** Access supports have no intensity dimension — they are binary, used or not —
 so they are counted, never scored. Intensity covers scaffolds only; periods report
- and  separately and the panel shows them as separate columns,
+ `accessUses` and `scaffoldUses` separately and the panel shows them as separate
+columns,
 so it is visible that access is not part of the fade read. Two periods of pure access
 support now report 'no fade to read' rather than a misleading steady 0 to 0.
 
-**Why it matters beyond this bug.** Same root cause as the  near-miss (§15.4)
+**Why it matters beyond this bug.** Same root cause as the `aiBySupport` near-miss (§15.4)
 and the ai-vs-support population split: averaging across two populations that do not
 belong in one statistic. Three times in one day, each a layer further up. Any new number
 in this system should be asked, first, *whose population is this over?*
