@@ -1,0 +1,218 @@
+{
+ "schema_version": "1.0",
+ "document": {
+  "title": "2025 Instructions for Form 1040 (and 1040-SR)",
+  "language": "en",
+  "source_page_count": 126,
+  "source_sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a",
+  "document_type": "booklet",
+  "subject": "Internal Revenue Service instructions for the 2025 Form 1040 and Form 1040-SR, including the instructions for Schedules 1 through 3.",
+  "variant": "original"
+ },
+ "blocks": [
+  {
+   "type": "paragraph",
+   "text": "Tip. For more information about elective pay and credit transferability, go to IRS.gov/Credits-Deductions/Elective-Pay-and-Transferability-Frequently-Asked-Questions-Transferability.",
+   "runs": [
+    {
+     "text": "Tip.",
+     "style": "strong"
+    },
+    {
+     "text": " ",
+     "style": "normal"
+    },
+    {
+     "text": "For more information about elective pay and credit transferability, go to ",
+     "style": "normal"
+    },
+    {
+     "text": "IRS.gov/Credits-Deductions/Elective-Pay-and-Transferability-Frequently-Asked-Questions-Transferability",
+     "style": "normal",
+     "href": "https://www.irs.gov/credits-deductions/elective-pay-and-transferability-frequently-asked-questions-transferability"
+    },
+    {
+     "text": ".",
+     "style": "normal"
+    }
+   ],
+   "source_page": 112
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 2. Alternative Minimum Tax (AMT)",
+   "source_page": 112
+  },
+  {
+   "type": "paragraph",
+   "text": "The AMT exemption amount is increased to $88,100 ($137,000 if married filing jointly or qualifying surviving spouse; $68,500 if married filing separately). The income levels at which the AMT exemption begins to phase out has increased to $626,350 ($1,252,700 if married filing jointly or qualifying surviving spouse).",
+   "source_page": 112
+  },
+  {
+   "type": "paragraph",
+   "text": "See the Instructions for Form 6251 to see if you must file the form and then use Form 6251 to figure the amount, if any, of your AMT. Enter the amount from Form 6251, line 11, on line 2.",
+   "source_page": 112
+  },
+  {
+   "type": "paragraph",
+   "text": "For help with the alternative minimum tax, go to IRS.gov/AMT.",
+   "source_page": 112,
+   "runs": [
+    {
+     "text": "For help with the alternative minimum tax, go to ",
+     "style": "normal"
+    },
+    {
+     "text": "IRS.gov/AMT",
+     "style": "normal",
+     "href": "https://www.irs.gov/taxtopics/tc556.html"
+    },
+    {
+     "text": ".",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 4. Self-employment Tax",
+   "source_page": 112
+  },
+  {
+   "type": "paragraph",
+   "text": "On line 4, enter the amount of the tax due on net earning from self-employment from Schedule SE, line 12.",
+   "source_page": 112
+  },
+  {
+   "type": "paragraph",
+   "text": "If you filed Form 4361, received IRS approval, and had no other income subject to self-employment tax, check box 1 on line 4.",
+   "source_page": 112
+  },
+  {
+   "type": "paragraph",
+   "text": "If you filed Form 4029 and received IRS approval, check box 2 on line 4. See Pub. 517 for details.",
+   "source_page": 112
+  },
+  {
+   "type": "paragraph",
+   "text": "If you are a U.S. citizen or resident alien living outside the United States and your self-employment income is exempt from self-employment tax, you should get a statement from the appropriate agency of the foreign country verifying that your self-employment income is subject to social security in that country. Attach a copy of the statement, check box 3, and enter “EAS” on the entry space next to box 3.",
+   "source_page": 112
+  },
+  {
+   "type": "paragraph",
+   "text": "If you have income from a business (including farming) and the income is community income, but you aren’t the spouse who carried on the business and you had no other income subject to self-employment tax, check box 3 and enter “ECI” on the entry space next to box 3.",
+   "source_page": 112
+  },
+  {
+   "type": "paragraph",
+   "text": "If you received fees for services performed as a notary public and you had no other income subject to self-employment tax, check box 3 and enter “EN” on the entry space next to box 3. If you did have other earnings of $400 or more subject to self-employment tax, check box 3 and enter “EN” and the amount of your net profit as a notary public from Schedule C on the entry space next to box 3.",
+   "source_page": 112
+  },
+  {
+   "type": "paragraph",
+   "text": "For more information, see the Instructions for Schedule SE.",
+   "source_page": 112
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 5. Unreported Social Security and Medicare Tax From Form 4137",
+   "source_page": 112
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter the total of any taxes from Form 4137.",
+   "source_page": 112
+  },
+  {
+   "type": "paragraph",
+   "text": "If you received tips of $20 or more in any month and you didn’t report the full amount to your employer, you must pay the social security and Medicare or railroad retirement (RRTA) tax on the unreported tips.",
+   "source_page": 112
+  },
+  {
+   "type": "paragraph",
+   "text": "Don’t include the value of any noncash tips, such as tickets or passes. You don’t pay social security and Medicare taxes or RRTA tax on these noncash tips.",
+   "source_page": 112
+  },
+  {
+   "type": "paragraph",
+   "text": "To figure the social security and Medicare tax, use Form 4137. If you owe RRTA tax, contact your employer. Your employer will figure and collect the RRTA tax.",
+   "source_page": 112
+  },
+  {
+   "type": "paragraph",
+   "text": "Caution. You may be charged a penalty equal to 50% of the social security and Medicare or RRTA tax due on tips you received but didn’t report to your employer.",
+   "runs": [
+    {
+     "text": "Caution.",
+     "style": "strong"
+    },
+    {
+     "text": " You may be charged a penalty equal to 50% of the social security and Medicare or RRTA tax due on tips you received but didn’t report to your employer.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 112
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 6. Uncollected Social Security and Medicare Tax From Form 8919",
+   "source_page": 112
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter the total of any taxes from Form 8919.",
+   "source_page": 112
+  },
+  {
+   "type": "paragraph",
+   "text": "If you are an employee who received wages from an employer who didn’t withhold social security and Medicare tax from your wages, use Form 8919 to figure your share of the unreported tax. Include on line 6 the amount from line 13 of Form 8919. Include the amount from line 6 of Form 8919 on Form 1040 or 1040-SR, line 1g.",
+   "source_page": 112
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 8. Additional Tax on IRAs, Other Qualified Retirement Plans, etc.",
+   "source_page": 112
+  },
+  {
+   "type": "paragraph",
+   "text": "If any of the following apply, see Form 5329 and its instructions to find out if you owe this tax and if you must file Form 5329. Also see Form 5329 and its instructions for definitions of the terms used here.",
+   "source_page": 112
+  },
+  {
+   "type": "list",
+   "ordered": true,
+   "items": [
+    "You received an early distribution from (a) an IRA or other qualified retirement plan, (b) an annuity, or (c) a modified endowment contract entered into after June 20, 1988, and the total distribution wasn’t rolled over.",
+    "Excess contributions were made to your IRA, Coverdell education savings account (ESA), Archer MSA, health savings account (HSA), or ABLE account.",
+    "You received a taxable distribution from a Coverdell ESA, qualified tuition program, or ABLE account.",
+    "You didn’t take the minimum required distribution from your IRA or other qualified retirement plan by April 1 of the year following the year you reached age 73."
+   ],
+   "source_page": 112
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Exception",
+   "source_page": 112
+  },
+  {
+   "type": "paragraph",
+   "text": "If only item (1) applies and distribution code 1 is correctly shown in box 7 of all your Forms 1099-R, you don’t have to file Form 5329. Instead, multiply the taxable amount of the distribution by 10% (0.10) and enter the result on line 8. The taxable amount of the distribution is the part of the distribution you reported on Form 1040, 1040-SR, or 1040-NR, line 4b or 5b, or on Form 4972. Also check the box on line 8 to indicate that you don’t have to file Form 5329. But you must file Form 5329 if distribution code 1 is incorrectly shown in box 7 of Form 1099-R or you qualify for an exception, such as the exceptions for qualified medical expenses, qualified higher education expenses, qualified first-time homebuyer distributions, or a qualified reservist distribution.",
+   "source_page": 112
+  }
+ ],
+ "review_notes": [
+  "TRANCHE 52 OF A MULTI-SESSION REBUILD. This plan covers printed page 112: Schedule 2 lines 2, 4, 5, 6, and 8. It carries no document title by design — only tranche 1 does — so this file validates through merge-plans rather than standalone. No partial rebuild is delivered.",
+  "NOTHING IS CARRIED IN OR OUT, checked both ways. The line 1y list completed on page 111 and this page opens with the TIP box that closes line 1y; the Exception paragraph completes here and page 113 opens at “Line 9 Household Employment Taxes”.",
+  "THE LINK TEXT IS NOT THE LINK TARGET, and this page is the reason to keep reading annotation rects rather than constructing hrefs from prose. “IRS.gov/AMT” resolves to https://www.irs.gov/taxtopics/tc556.html — a Tax Topic page, not the address the text spells. Building the href from the visible text would have produced a plausible, wrong link that nothing downstream would flag. The elective-pay URL is split across FOUR annotation rects because the address breaks over four lines; all four carry the same target.",
+  "THE HYPHENS IN THAT URL ARE REAL AND ARE KEPT. The address breaks at its own hyphens (“IRS.gov/Credits-” / “Deductions/Elective-Pay-and-” / “Transferability-Frequently-Asked-” / “Questions-Transferability.”), so the usual line-break-hyphen close would have silently deleted five characters from a URL. Checked against the annotation target, which matches the reassembled text exactly.",
+  "“non-” IS A LINE-BREAK HYPHEN AND CLOSES TO “noncash”. It sits at the end of its line, and the source spells the same word unhyphenated one sentence later (“these noncash tips”), so closing it is right and keeping it would have invented a spelling the source does not use in the same paragraph.",
+  "“net earning” IS SINGULAR IN THE SOURCE and is reproduced as printed. Line 4 reads “the tax due on net earning from self-employment”. The surrounding instructions all say “net earnings”, so this looks like a typo, but correcting it would be editing tax instructions — the same call made for line 24z in tranche 40 and the two Line 2 worksheet instructions in tranche 48.",
+  "FIVE LINE HEADINGS MERGE NUMBER AND TITLE at level 4 (“Line 2. Alternative Minimum Tax (AMT)” and so on), siblings of tranche 51's “Lines 1a Through 1z. Additions to Tax”. “Exception” is level 5 under line 8, matching how tranche 28 placed the Exception under “Line 1. Taxable Refunds…”; it is set in its own face, distinct from the line headings, although on this page it is flush rather than indented. PAGE FURNITURE OMITTED: the printed page number. All ten contractions on the page are curly."
+ ]
+}

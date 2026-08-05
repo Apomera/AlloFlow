@@ -2020,14 +2020,49 @@ them into prose would bury a conjunction a filer has to satisfy. Tranche 47's
 fold was forced by an ordered list whose numbering the prose referenced;
 nothing here is numbered.
 
-### NEXT: page 112 onward
+### Session 52 (2026-08-05) - page 112 - tranche-52 - 27 blocks - VALIDATED (merged)
 
-Page 112 opens with a **TIP box** about elective pay and credit transferability
-(carrying a long IRS.gov URL that will need checking against its Link
-annotation), then **Line 2, Alternative Minimum Tax (AMT)**. Nothing is carried
-into it from tranche 51.
+Schedule 2 lines 2, 4, 5, 6, and 8. `merge-plans t01..t52` -> 1,796 blocks,
+`ok: true`, **pages 1-112 covered**, zero heading skips. Recall 0.9901 union,
+**0.9945 against pdf.js alone with ZERO content missing** - the five remaining
+tokens are the four ordered-list markers and the folio.
 
-Then the rest of Schedule 2 (112-114) and Schedule 3 (115-117). Then the back
+**The `of` phantom, a third time.** Same token, same CS-only origin, same
+resolution in under a minute. Three occurrences of the identical token across
+three unrelated pages settles it as a content-stream extraction quirk, not
+page-specific noise. `--source pdfjs` is now the routine first move on any
+one- or two-word union shortfall.
+
+> **THE LINK TEXT IS NOT THE LINK TARGET.** "IRS.gov/AMT" resolves to
+> `https://www.irs.gov/taxtopics/tc556.html` - a Tax Topic page, not the
+> address the text spells. **Building the href from the visible text would
+> have produced a plausible, wrong link that nothing downstream could flag**:
+> it would resolve, it would look right in review, and it would be someone
+> else's page. This is the strongest argument yet for the rule adopted in
+> tranche 18 - derive every target from the annotation rect, never from the
+> prose.
+
+**The hyphens in the elective-pay URL are real and are kept.** The address
+breaks over four lines AT ITS OWN HYPHENS ("IRS.gov/Credits-" /
+"Deductions/Elective-Pay-and-" / "Transferability-Frequently-Asked-" /
+"Questions-Transferability."), so the usual line-break-hyphen close would have
+silently deleted five characters from a URL. Verified against the annotation
+target, which matches the reassembled text exactly. All four rects carry the
+same href.
+
+**Two source oddities reproduced rather than corrected.** "net earning" is
+singular in line 4 where every surrounding instruction says "net earnings";
+and "non-" at a line end closes to "noncash", which is how the source spells
+the same word one sentence later. The first is left as printed (same call as
+line 24z in tranche 40); the second is closed, because keeping the hyphen
+would have invented a spelling the source contradicts in the same paragraph.
+
+### NEXT: page 113 onward
+
+Page 113 opens at **Line 9, Household Employment Taxes**, with a numbered list
+of conditions. Nothing is carried into it from tranche 52.
+
+Then the rest of Schedule 2 (113-114) and Schedule 3 (115-117). Then the back
 matter: Tax Topics (118), the Disclosure/Privacy Act notice (120), Major
 Categories of Federal Income and Outlays (122), and the MECHANICAL Index
 (123-126). Do not hand-author the Index.
