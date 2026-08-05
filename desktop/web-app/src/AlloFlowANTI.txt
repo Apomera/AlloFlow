@@ -2433,12 +2433,20 @@ function visibleBoardItemsFor(state, uid, isHost) {
   });
   var floorMet = authors.length >= (parseInt(state.config.minParticipants, 10) || 3);
   var outItems = [];
+  var stamp = function(author, item) {
+    var row = responses[author] || {};
+    var copy = { uid: author };
+    Object.keys(item).forEach(function(k) { copy[k] = item[k]; });
+    copy.uid = author;
+    if (row.name) copy.displayName = row.name;
+    return copy;
+  };
   authors.forEach(function(author) {
     (responses[author].items || []).forEach(function(item) {
-      if (isHost) { outItems.push(item); return; }
-      if (author === uid) { outItems.push(item); return; }
+      if (isHost) { outItems.push(stamp(author, item)); return; }
+      if (author === uid) { outItems.push(stamp(author, item)); return; }
       if (!floorMet) return;
-      if (item.status === 'approved') outItems.push(item);
+      if (item.status === 'approved') outItems.push(stamp(author, item));
     });
   });
   return outItems;
@@ -2474,6 +2482,10 @@ function buildBoardSummaryFor(state, uid, isHost) {
     revealPolicy: state.config.revealPolicy,
     minParticipants: state.config.minParticipants,
     itemsPerStudent: state.config.itemsPerStudent,
+    // The client needs both ceilings and the close date to explain a refusal
+    // BEFORE a student writes a question they cannot post.
+    boardCap: state.config.boardCap,
+    expiresAt: state.config.expiresAt,
     participantCount: authors.length,
     revealed: authors.length >= (parseInt(state.config.minParticipants, 10) || 3),
     version: parseInt(state.version, 10) || 0,
@@ -2568,6 +2580,15 @@ function cacheAssignmentActivitySummary(cache, state) {
 }
 
 function assignmentActivitySummaryFor(cache, context, uid) {
+  if (context.config.type === 'question_board') {
+    // A board summary depends on WHO is asking, so it cannot come from the
+    // shared public-summary cache — that cache is actor-independent and would
+    // hand one student another student's view of the board.
+    var boardState = readAssignmentActivityState(context);
+    var boardSummary = buildBoardSummaryFor(boardState, uid, false);
+    boardSummary.own = boardState.responses[uid] || null;
+    return boardSummary;
+  }
   var publicKey = 'as:' + context.packId.slice(-12) + ':' + context.activityId.slice(-12);
   var publicRaw = cache.get(publicKey);
   var ownRaw = cache.get(publicKey + ':o:' + uid.slice(-24));
@@ -2665,6 +2686,8 @@ function upsertAssignmentActivity(cache, p, admin) {
         answered: false,
         createdAt: Date.now()
       });
+      var claimedName = normalizeAssignmentBoardItemText(p.nm).slice(0, 40);
+      if (claimedName) row.name = claimedName;
       row.updatedAt = Date.now();
       responses[actor.uid] = row;
       // Byte guard BEFORE the write: the 85KB ceiling is the dominant design
@@ -2699,6 +2722,11 @@ function upsertAssignmentActivity(cache, p, admin) {
     state.updatedAt = Date.now();
     writeAssignmentActivityState(state);
     cacheAssignmentActivitySummary(cache, state);
+    if (context.config.type === 'question_board') {
+      var posted = buildBoardSummaryFor(state, actor.uid, false);
+      posted.own = responses[actor.uid];
+      return out(posted);
+    }
     var summary = buildAssignmentActivityPublicSummary(state);
     summary.own = responses[actor.uid];
     return out(summary);
@@ -2712,6 +2740,11 @@ function getAssignmentActivityAdmin(cache, p) {
     return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
   }
   var state = readAssignmentActivityState(context);
+  if (context.config.type === 'question_board') {
+    // The host sees every item regardless of status — that is the whole point
+    // of a review queue — and moderates per ITEM, so rows are the wrong unit.
+    return out(buildBoardSummaryFor(state, '', true));
+  }
   var summary = buildAssignmentActivityPublicSummary(state);
   // Ratings are aggregate-only: even the teacher endpoint does not enumerate
   // pseudonymous actors or expose an individual rating.
@@ -18249,14 +18282,25 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     const AC = window.AlloModules && window.AlloModules.AlloCommands;
     return (AC && AC.modelCache) || null;
   };
+  // Call a model-cache method BY NAME, tolerating a module older than this
+  // monolith. The two version independently (the module loads from the CDN
+  // under its own ?v= pin), so a missing method is a normal skew condition,
+  // not a bug to crash on. A plain .catch() cannot help here: the call throws
+  // synchronously before any promise exists.
+  const _mcCall = (mc, name, fallback) => {
+    try {
+      if (!mc || typeof mc[name] !== 'function') return Promise.resolve(fallback);
+      return Promise.resolve(mc[name]()).catch(() => fallback);
+    } catch (_) { return Promise.resolve(fallback); }
+  };
   const refreshAlloModelStatus = React.useCallback(() => {
     const mc = _alloModelCache();
     if (!mc) { setAlloModelStatus(prev => ({ ...prev, loading: false })); return; }
     setAlloModelStatus(prev => ({ ...prev, loading: true }));
     Promise.all([
-      Promise.resolve(mc.hasWhisper()).catch(() => false),
-      Promise.resolve(mc.hasKokoro()).catch(() => false),
-      Promise.resolve(mc.cachedBytes()).catch(() => 0),
+      _mcCall(mc, 'hasWhisper', false),
+      _mcCall(mc, 'hasKokoro', false),
+      _mcCall(mc, 'cachedBytes', 0),
     ]).then(([whisper, kokoro, bytes]) => {
       setAlloModelStatus({ loading: false, whisper: !!whisper, kokoro: !!kokoro, bytes: Number(bytes) || 0, busy: '' });
     }).catch(() => setAlloModelStatus(prev => ({ ...prev, loading: false })));
@@ -18264,6 +18308,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const downloadWhisperModel = React.useCallback(() => {
     const mc = _alloModelCache();
     if (!mc) return;
+    if (typeof mc.prefetchWhisper !== 'function') {
+      addToast('This page is running an older copy of the voice modules. Reload to pick up the latest, then try again.', 'info');
+      return;
+    }
     setAlloModelStatus(prev => ({ ...prev, busy: 'whisper' }));
     Promise.resolve(mc.prefetchWhisper()).then(() => {
       addToast('Speech recognition model saved on this device.', 'success');
