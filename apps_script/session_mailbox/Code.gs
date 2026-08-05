@@ -1145,12 +1145,20 @@ function visibleBoardItemsFor(state, uid, isHost) {
   });
   var floorMet = authors.length >= (parseInt(state.config.minParticipants, 10) || 3);
   var outItems = [];
+  var stamp = function(author, item) {
+    var row = responses[author] || {};
+    var copy = { uid: author };
+    Object.keys(item).forEach(function(k) { copy[k] = item[k]; });
+    copy.uid = author;
+    if (row.name) copy.displayName = row.name;
+    return copy;
+  };
   authors.forEach(function(author) {
     (responses[author].items || []).forEach(function(item) {
-      if (isHost) { outItems.push(item); return; }
-      if (author === uid) { outItems.push(item); return; }
+      if (isHost) { outItems.push(stamp(author, item)); return; }
+      if (author === uid) { outItems.push(stamp(author, item)); return; }
       if (!floorMet) return;
-      if (item.status === 'approved') outItems.push(item);
+      if (item.status === 'approved') outItems.push(stamp(author, item));
     });
   });
   return outItems;
@@ -1186,6 +1194,10 @@ function buildBoardSummaryFor(state, uid, isHost) {
     revealPolicy: state.config.revealPolicy,
     minParticipants: state.config.minParticipants,
     itemsPerStudent: state.config.itemsPerStudent,
+    // The client needs both ceilings and the close date to explain a refusal
+    // BEFORE a student writes a question they cannot post.
+    boardCap: state.config.boardCap,
+    expiresAt: state.config.expiresAt,
     participantCount: authors.length,
     revealed: authors.length >= (parseInt(state.config.minParticipants, 10) || 3),
     version: parseInt(state.version, 10) || 0,
@@ -1280,6 +1292,15 @@ function cacheAssignmentActivitySummary(cache, state) {
 }
 
 function assignmentActivitySummaryFor(cache, context, uid) {
+  if (context.config.type === 'question_board') {
+    // A board summary depends on WHO is asking, so it cannot come from the
+    // shared public-summary cache — that cache is actor-independent and would
+    // hand one student another student's view of the board.
+    var boardState = readAssignmentActivityState(context);
+    var boardSummary = buildBoardSummaryFor(boardState, uid, false);
+    boardSummary.own = boardState.responses[uid] || null;
+    return boardSummary;
+  }
   var publicKey = 'as:' + context.packId.slice(-12) + ':' + context.activityId.slice(-12);
   var publicRaw = cache.get(publicKey);
   var ownRaw = cache.get(publicKey + ':o:' + uid.slice(-24));
@@ -1371,12 +1392,20 @@ function upsertAssignmentActivity(cache, p, admin) {
       var itemStatus = context.config.revealPolicy === 'auto_publish'
         && !assignmentTermNeedsReview(boardText) ? 'approved' : 'pending';
       row.items.push({
-        id: 'Q-' + Date.now().toString(36) + '-' + row.items.length,
+        // The author's uid is part of the id because the timestamp is not
+        // enough: two students posting their first question in the same
+        // millisecond produced the SAME id, which collides as a React key and
+        // makes two questions indistinguishable to anything that looks items up
+        // by id alone. uid is unique per participant and the index is unique
+        // within a row, so the pair is unique across the board.
+        id: 'Q-' + actor.uid.slice(-8) + '-' + Date.now().toString(36) + '-' + row.items.length,
         text: boardText,
         status: itemStatus,
         answered: false,
         createdAt: Date.now()
       });
+      var claimedName = normalizeAssignmentBoardItemText(p.nm).slice(0, 40);
+      if (claimedName) row.name = claimedName;
       row.updatedAt = Date.now();
       responses[actor.uid] = row;
       // Byte guard BEFORE the write: the 85KB ceiling is the dominant design
@@ -1411,6 +1440,11 @@ function upsertAssignmentActivity(cache, p, admin) {
     state.updatedAt = Date.now();
     writeAssignmentActivityState(state);
     cacheAssignmentActivitySummary(cache, state);
+    if (context.config.type === 'question_board') {
+      var posted = buildBoardSummaryFor(state, actor.uid, false);
+      posted.own = responses[actor.uid];
+      return out(posted);
+    }
     var summary = buildAssignmentActivityPublicSummary(state);
     summary.own = responses[actor.uid];
     return out(summary);
@@ -1424,6 +1458,11 @@ function getAssignmentActivityAdmin(cache, p) {
     return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
   }
   var state = readAssignmentActivityState(context);
+  if (context.config.type === 'question_board') {
+    // The host sees every item regardless of status — that is the whole point
+    // of a review queue — and moderates per ITEM, so rows are the wrong unit.
+    return out(buildBoardSummaryFor(state, '', true));
+  }
   var summary = buildAssignmentActivityPublicSummary(state);
   // Ratings are aggregate-only: even the teacher endpoint does not enumerate
   // pseudonymous actors or expose an individual rating.

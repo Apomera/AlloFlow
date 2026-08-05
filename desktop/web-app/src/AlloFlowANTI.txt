@@ -2680,7 +2680,13 @@ function upsertAssignmentActivity(cache, p, admin) {
       var itemStatus = context.config.revealPolicy === 'auto_publish'
         && !assignmentTermNeedsReview(boardText) ? 'approved' : 'pending';
       row.items.push({
-        id: 'Q-' + Date.now().toString(36) + '-' + row.items.length,
+        // The author's uid is part of the id because the timestamp is not
+        // enough: two students posting their first question in the same
+        // millisecond produced the SAME id, which collides as a React key and
+        // makes two questions indistinguishable to anything that looks items up
+        // by id alone. uid is unique per participant and the index is unique
+        // within a row, so the pair is unique across the board.
+        id: 'Q-' + actor.uid.slice(-8) + '-' + Date.now().toString(36) + '-' + row.items.length,
         text: boardText,
         status: itemStatus,
         answered: false,
@@ -4821,6 +4827,192 @@ if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
         getState: () => ({ ..._state }),
     };
 }
+/**
+ * Driving Questions Board — the host wiring for question_board activities.
+ *
+ * This component deliberately holds NO board logic. Visibility, caps, the
+ * k-anonymity floor and every refusal reason come from the contract and the
+ * server; what lives here is React state, a poll, and error reporting. That
+ * split is what lets the same board surface run over a different transport
+ * later without touching the UI (spec §10.3).
+ */
+const AlloQuestionBoardPanel = React.memo(function AlloQuestionBoardPanel({
+    activity,
+    mailbox,
+    admin = '',
+    mode = 'student',
+    addToast = () => {},
+}) {
+    const isTeacher = mode === 'teacher';
+    const Transport = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.QuestionBoardTransport;
+    const Contract = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.QuestionBoardContract;
+    const Views = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.QuestionBoardView;
+
+    const packId = String(mailbox?.id || '');
+    const activityId = String(activity?.activityId || '');
+    const scope = `${packId}:${activityId}`;
+
+    const [board, setBoard] = React.useState(null);
+    const [draft, setDraft] = React.useState('');
+    const [error, setError] = React.useState('');
+    const [busy, setBusy] = React.useState(false);
+
+    // Rebuilt whenever the board identity changes, so switching activities can
+    // never post one board's question onto another.
+    const transport = React.useMemo(() => {
+        if (!Transport || !packId || !activityId) return null;
+        return Transport.createMailboxTransport({
+            call: _alloMailboxCallWithRetry,
+            url: String(mailbox?.url || ''),
+            packId,
+            activityId,
+            admin: isTeacher ? String(admin || '') : '',
+            packSecret: String(mailbox?.secret || ''),
+            isTeacher,
+            storage: (() => { try { return window.localStorage; } catch (_) { return null; } })(),
+        });
+    }, [Transport, packId, activityId, admin, isTeacher, mailbox?.url, mailbox?.secret]);
+
+    // The student's own name travels with their questions. It is display only —
+    // the server never uses it for authorization, uid does. There is nothing to
+    // inherit it from: codenames live on the live-session roster and hosted
+    // assignments are pseudonymous, so the board asks once and remembers.
+    const [displayName, setDisplayName] = React.useState(() => {
+        try { return String(localStorage.getItem('allo_display_name') || '').trim().slice(0, 40); }
+        catch (_) { return ''; }
+    });
+
+    React.useEffect(() => {
+        if (!transport || isTeacher) return;
+        transport.setDisplayName(displayName);
+    }, [transport, isTeacher, displayName]);
+
+    const rememberName = React.useCallback((next) => {
+        const clean = String(next || '').slice(0, 40);
+        setDisplayName(clean);
+        try { localStorage.setItem('allo_display_name', clean); } catch (_) {}
+    }, []);
+
+    React.useEffect(() => { setBoard(null); setDraft(''); setError(''); }, [scope]);
+
+    const report = React.useCallback((result) => {
+        if (!result || result.ok) return false;
+        // A refusal and a dead connection need different words. Guessing wrong
+        // sends a student looking for a problem that is not theirs.
+        const messages = {
+            'item-cap': 'You have added all your questions for this board.',
+            'board-full': 'This board is full. Ask your teacher to start a new one.',
+            'expired': 'This board is closed.',
+            'empty-text': 'Type a question first.',
+            'participant-cap': 'This board already has as many students as it can hold.',
+            'rate-limited': 'That was a lot of requests at once. Try again in a moment.',
+            'host-only': 'Only the teacher can do that.',
+            'denied': 'This board did not recognise you. Reopen the assignment link.',
+            'no-board': 'That board is no longer available.',
+        };
+        setError(result.transport
+            ? 'The board could not reach the class mailbox. Check the connection and try again.'
+            : (messages[result.reason] || 'That could not be saved. Try again.'));
+        return true;
+    }, []);
+
+    const refresh = React.useCallback(async () => {
+        if (!transport) return;
+        const result = await transport.load();
+        if (result.ok) { setBoard(result.board); setError(''); return; }
+        report(result);
+    }, [transport, report]);
+
+    // Poll cadence matches the other durable sidecars: responsive while the tab
+    // is visible, parked when it is not, so a forgotten tab does not burn the
+    // teacher's Apps Script quota all afternoon.
+    React.useEffect(() => {
+        if (!transport) return undefined;
+        let cancelled = false;
+        let timer = null;
+        const tick = async () => {
+            if (cancelled) return;
+            await refresh();
+            if (cancelled) return;
+            const hidden = typeof document !== 'undefined' && document.hidden;
+            timer = setTimeout(tick, hidden ? 60000 : 15000);
+        };
+        tick();
+        return () => { cancelled = true; if (timer) clearTimeout(timer); };
+    }, [transport, refresh]);
+
+    const post = React.useCallback(async (text) => {
+        if (!transport || busy) return;
+        setBusy(true);
+        try {
+            const result = await transport.addItem(text);
+            if (result.ok) {
+                setBoard(result.board);
+                setDraft('');
+                setError('');
+                addToast('Question posted', 'success');
+            } else if (report(result)) {
+                addToast('That question was not posted', 'error');
+            }
+        } finally { setBusy(false); }
+    }, [transport, busy, addToast, report]);
+
+    const moderate = React.useCallback(async (item, status) => {
+        if (!transport) return;
+        const result = await transport.setStatus(item.uid, item.id, status);
+        if (result.ok) { refresh(); return; }
+        if (report(result)) addToast('That change was not saved', 'error');
+    }, [transport, refresh, addToast, report]);
+
+    const toggleAnswered = React.useCallback(async (item, next) => {
+        if (!transport) return;
+        const result = await transport.setAnswered(item.uid, item.id, next === true, '');
+        if (result.ok) { refresh(); return; }
+        if (report(result)) addToast('That change was not saved', 'error');
+    }, [transport, refresh, addToast, report]);
+
+    if (!Transport || !Contract || !Views) {
+        return <p className="rounded border border-slate-300 bg-slate-50 p-3 text-xs text-slate-700">The questions board is still loading. Give it a moment, then reopen this panel.</p>;
+    }
+    if (!board) {
+        return <p className="p-3 text-xs text-slate-600" role="status">{error || 'Loading the board...'}</p>;
+    }
+
+    const actor = transport.actor();
+    const Surface = isTeacher ? Views.QuestionBoardTeacher : Views.QuestionBoardStudent;
+
+    return (
+        <div className="space-y-2">
+            {error && <p role="alert" className="rounded border border-rose-300 bg-rose-50 p-2 text-xs text-rose-900">{error}</p>}
+            {!isTeacher && (
+                <label className="block text-xs font-bold text-slate-700">
+                    Your name
+                    <input
+                        type="text"
+                        value={displayName}
+                        onChange={event => rememberName(event.target.value)}
+                        maxLength={40}
+                        placeholder="So your teacher knows who asked"
+                        className="mt-1 w-full rounded border border-slate-300 p-2 text-sm font-normal"
+                    />
+                </label>
+            )}
+            {Surface({
+                contract: Contract,
+                board,
+                actor,
+                transport: 'mailbox',
+                draft,
+                onDraft: setDraft,
+                onPost: post,
+                onApprove: item => moderate(item, 'approved'),
+                onHide: item => moderate(item, 'hidden'),
+                onToggleAnswered: toggleAnswered,
+            })}
+        </div>
+    );
+});
+
 function _alloNormalizeSharedRatingActivity(value) {
     if (!value || value.type !== 'rating') return null;
     const minCandidate = Number(value.minValue);
@@ -4838,6 +5030,12 @@ function _alloNormalizeSharedRatingActivity(value) {
 }
 
 function _alloSharedActivityUiMeta(activity) {
+    // A Driving Questions Board is a third activity type on the same durable
+    // sidecar, so it needs its own label, short badge and dialog id here or it
+    // would open under the word-cloud heading.
+    if (activity?.type === 'question_board') {
+        return { isRating: false, isBoard: true, shortLabel: 'QB', title: 'Driving questions board', dialogId: 'shared-assignment-question-board-title' };
+    }
     const isRating = activity?.type === 'rating';
     return isRating
         ? { isRating: true, shortLabel: 'RT', title: 'Class rating', dialogId: 'shared-assignment-rating-title' }
@@ -4949,6 +5147,7 @@ function _alloNextSharedActivitySummaryOrder(currentValue, result, requestSequen
     };
 }
 
+
 const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivityPanel({
     activity,
     mailbox,
@@ -4957,6 +5156,10 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     addToast = () => {},
 }) {
     const isTeacher = mode === 'teacher';
+    // A question_board is a different surface on the same sidecar. Branching
+    // here rather than at the call sites means both places that already open
+    // this panel support boards without either being touched.
+    const isQuestionBoard = activity?.type === 'question_board';
     const ratingActivity = _alloNormalizeSharedRatingActivity(activity);
     const effectiveActivity = ratingActivity || activity;
     const activityMeta = _alloSharedActivityUiMeta(effectiveActivity);
@@ -5225,6 +5428,15 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
         ? Array.from({ length: ratingActivity.maxValue - ratingActivity.minValue + 1 }, (_, index) => ratingActivity.minValue + index)
         : [];
     const threshold = summary?.minParticipants || effectiveActivity?.minParticipants || 3;
+
+    // Deliberately placed AFTER every hook in this component. An early return
+    // higher up would change hook order when the activity type changes and
+    // crash the panel - the render-crash class this repo has been bitten by.
+    if (isQuestionBoard) {
+        return (
+            <AlloQuestionBoardPanel activity={activity} mailbox={mailbox} admin={admin} mode={mode} addToast={addToast} />
+        );
+    }
 
     return (
       <section className="rounded-2xl border border-sky-200 bg-gradient-to-b from-sky-50 to-white p-4 text-left" aria-label={`Shared ${activityMeta.title.toLowerCase()}`}>
@@ -12531,6 +12743,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // transports enforce; the view module is inert until a surface mounts it.
     loadModule('QuestionBoardContract', 'https://alloflow-cdn.pages.dev/question_board_contract_module.js?v=e8b8d986d');
     loadModule('QuestionBoardView', 'https://alloflow-cdn.pages.dev/question_board_view_module.js?v=e8b8d986d');
+    loadModule('QuestionBoardTransport', 'https://alloflow-cdn.pages.dev/question_board_transport_module.js?v=e8b8d986d');
 
     // Reviewed local standards snapshots (Learning Commons v1.11.0, CC BY 4.0).
     // DELIBERATE enablement per LEARNING_COMMONS_SNAPSHOT_IMPORT.md: publishing a
