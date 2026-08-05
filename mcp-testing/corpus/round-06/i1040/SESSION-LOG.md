@@ -1900,12 +1900,62 @@ employer worksheet reads "...column (b), and enter..." and the payor worksheet
 period**. Checked in the item dump and reproduced as printed, the same call
 made for line 24z in tranche 40.
 
-### NEXT: page 109 onward
+### Session 49 (2026-08-05) - page 109 - tranche-49 - 31 blocks - VALIDATED (merged)
 
-Page 109 continues Schedule 1-A: Part IV (No Tax on Car Loan Interest) is
-expected next. Nothing is carried out of tranche 48 - line 18's TIP closes the
-page - but **check the 108-109 break before authoring**, since the last three
-pages have each carried a block across.
+Schedule 1-A Part IV, No Tax on Car Loan Interest: the VIN requirement, the
+deduction limits, what qualifies as QPVLI, and what counts as an applicable
+passenger vehicle and personal use. `merge-plans t01..t49` -> 1,715 blocks,
+`ok: true`, **pages 1-109 covered**, zero heading skips. Recall 0.9901 against
+the union baseline, **0.9940 against pdf.js alone with ZERO content missing**
+- the six remaining tokens are the five ordered-list markers and the folio.
+
+> **A UNION-BASELINE SHORTFALL CAN BE A PHANTOM.** The union run reported one
+> missing `of` (src=30, plan=29), which is exactly the signature that caught
+> the paraphrases in sessions 37 and 38, so it was chased rather than waved
+> away. Aligning every `of` context between the source text and the plan gave
+> 29 against 29 - no gap. Re-running per channel settled it: the extra `of`
+> exists in the CONTENT-STREAM channel only and not in pdf.js. The union
+> baseline takes the higher count per token across channels, so a single
+> content-stream artifact inflates the source count and manufactures a
+> shortfall neither channel alone supports. **When the union shortfall is one
+> or two ordinary words, run `--source pdfjs` and `--source cs` before
+> treating it as loss.**
+
+> **THE SOURCE MARKS TWO LEVELS OF RUN-IN HEADING, and this is the first page
+> where the distinction is unambiguous.** Six run-ins are set in face
+> `g_d0_f4` and start FLUSH at the column left ("VIN required on your
+> return.", "Maximum amount of deduction.", "Qualified passenger vehicle loan
+> interest.", "Applicable passenger vehicle.", "Final assembly in the United
+> States.", "Personal use."). Four are set in a DIFFERENT face, `g_d0_f5`, and
+> are INDENTED 12pt ("Change in obligor by reason of previous obligor's
+> death.", "Loan amount.", "Refinanced loan.", "Example."). Face and
+> indentation agree, and so does the meaning - the indented four are
+> subordinate to the flush ones above them. Authored level 4 and level 5,
+> giving 3 -> 4 -> 5 with no skips. **Worth re-checking on earlier pages: a
+> rebuild that flattened both into level 4 would have lost a real hierarchy
+> the source draws twice over.**
+
+**"Example." is a heading here, unlike tranche 6.** That one stayed a strong
+run-in because it illustrated a glossary entry rather than defining a term. On
+this page the source sets "Example." identically to "Loan amount." and
+"Refinanced loan." - same face, same indent - and those are unambiguous
+section run-ins, so the typography decides it. The difference is the source's,
+not the rebuild's.
+
+One block is carried OUT: the closing Example, whose last sentence is printed
+at the top of page 110. One link annotation ("VIN Decoder"); the two Proposed
+Regulations references carry no annotation and are left plain rather than
+having URLs invented for them.
+
+### NEXT: page 110 onward
+
+**Tranche 50 must open at "Interest deducted elsewhere on your return instead
+of on Schedule 1-A"** - do not re-author the Example carried out of tranche
+49. Page 110 then runs to line 22 (Enter the VIN) and onward. After that:
+Schedule 2 (111-114) and Schedule 3 (115-117), then the back matter - Tax
+Topics (118), the Disclosure/Privacy Act notice (120), Major Categories of
+Federal Income and Outlays (122), and the MECHANICAL Index (123-126). Do not
+hand-author the Index.
 
 Then the rest of Schedule 1-A (106-110), Schedule 2 (111-114) and Schedule 3
 (115-117), each a top-level TOC entry opening at level 2. Then the back
