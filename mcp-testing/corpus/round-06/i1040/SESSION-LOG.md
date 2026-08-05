@@ -252,12 +252,55 @@ Also settled here: numbered worked examples (`Example 1/2/3` under line 3a)
 ARE headings, unlike the single run-in "Example." in tranche 6 — these are
 parallel, self-contained scenarios a reader may jump between.
 
-### Sessions 8+ — REMAINING (suggested boundaries from the printed TOC)
+### Session 8 (2026-08-04) — pages 27-29 · tranche-08 · 55 blocks · VALIDATED (merged)
+
+IRA distribution exceptions, pensions and annuities, and **the document's
+first fill-in worksheet**. `merge-plans t01..t08` → 530 blocks, `ok: true`,
+pages 1-29 covered. Recall 0.9757; shortfall is furniture plus the worksheet's
+repeated line numbers (the source prints each number twice — once at the start
+of the line, once again beside the entry box — and the plan keeps one, in the
+Line column).
+
+**THE WORKSHEET SHAPE — decided here, reuse it for every later worksheet:**
+
+A worksheet is a **table** with columns `Line / Instruction / Amount` and
+`row_headers` on.
+
+* The line **number is a real column**, not list numbering, because the
+  instructions reference it constantly ("Subtract line 6 from line 2"). With
+  row headers on it renders `<th scope="row">1.</th>`, so each row announces
+  which line it is.
+* The **Amount column is deliberately empty**. It is where the reader writes;
+  a blank cell says that honestly. A placeholder would add content the IRS
+  never printed, which this rebuild does not do to a tax document.
+* **Dot leaders are dropped** — they lead the eye to the entry box on paper
+  and carry no meaning in linear reading.
+* Material the source nests **inside** a numbered line (the Note under line 2,
+  the Yes/No branches with STOP under line 10) is folded into that line's
+  instruction cell, since a table cell cannot hold a sub-block.
+
+Verified by rendering the merged checkpoint to a temp directory (deleted
+after; no partial rebuild delivered): the worksheet emits `<th scope="col">`
+headers, `<th scope="row">` line numbers, and well-formed empty `<td></td>`
+entry cells.
+
+**Spanning headers had to be written out.** Table 1 prints one header spanning
+two date-range columns; a flat header row cannot span, so each column header
+carries the full phrase ("AND your annuity starting date was before
+November 19, 1996, enter on line 3…"), which is what a screen reader
+announces with each cell.
+
+**Handoff to tranche 9:** page 28's closing paragraph runs *past* the
+worksheet insert and finishes at the top of page 30. It is authored whole at
+page 28, so **tranche 9 starts at "Payments when you are disabled" and must
+not re-author it.**
+
+### Sessions 9+ — REMAINING (suggested boundaries from the printed TOC)
 
 | Tranche | Pages | Content | Notes |
 | --- | --- | --- | --- |
-| 08 | 27-31 | Lines 4c-6, pensions/annuities/social security | ★ introduces the WORKSHEET structure (p29 Simplified Method, dot leaders + numbered entry lines) — decide the shape once and reuse it for every later worksheet |
-| 09 | 32-38 | Lines 7-15, standard deduction, tax | more worksheets; p32/35/37/38 are full-width |
+| 09 | 30-33 | Lines 5-6 rest, social security | starts at "Payments when you are disabled" — see handoff above; more worksheets, reuse the session-8 shape |
+| 10 | 34-38 | Lines 7-15, standard deduction, tax | more worksheets; p35/37/38 are full-width |
 | 07 | 39-60 | Payments (EIC!) | EIC worksheets + tables; heavy geometry work |
 | 08 | 61-67 | Refund, Amount You Owe, Sign, Assemble | |
 | 09 | 68-80 | 2025 Tax Table | MECHANICAL: generate rows from extract-text with a per-tranche generator; thousands of rows; verify row count against page count |
