@@ -2092,17 +2092,60 @@ shape as lines 24f-24z in tranche 40.
 One block is carried out: line 17g's instruction finishes at the top of page
 114, so **tranche 54 must open at "Line 17h"**.
 
-### NEXT: page 114 onward
+### Session 54 (2026-08-05) - page 114 - tranche-54 - 30 blocks - VALIDATED (merged)
 
-Page 114 continues lines 17h onward and reads as **4 columns** in the
-column-aware dump, so check its geometry before authoring - a 4-column report
-on a 3-column page usually means an insert or a detector wobble. **Do not
-re-author line 17g**, which finishes at the top of the page.
+Schedule 2 lines 17h through 17z, the Negative Form 8978 Adjustment Worksheet,
+and line 19. **This completes the Instructions for Schedule 2** (pages
+111-114). `merge-plans t01..t54` -> 1,866 blocks, `ok: true`, **pages 1-114
+covered**, zero heading skips. Recall 0.9818; carried-block check against
+tranche 53: **15 shortfall instances = 8 carried + 6 furniture + 1
+"unexplained"**, and that one is accounted for below.
 
-Then Schedule 3 (115-117). Then the back matter: Tax Topics (118), the
-Disclosure/Privacy Act notice (120), Major Categories of Federal Income and
-Outlays (122), and the MECHANICAL Index (123-126). Do not hand-author the
-Index.
+**The single unexplained token is a bare `1`, and it is the worksheet's
+DUPLICATED ENTRY-SPACE LABEL.** The form prints each row number twice - "1."
+at x=46 in the Line column and "1." again at x=507 beside the entry box - so
+the source carries one more `1` and one more `2` than the plan does. Only the
+`1` surfaces, because the plan has plenty of other `2`s ("Schedule 2"). Same
+phenomenon tranche 34 recorded for the "2a."/"a." sub-line labels. **There is
+no ordered list on this page**, so a bare digit here could not have been a
+generated marker - worth checking which explanation applies before reaching
+for the usual one.
+
+**The column-aware text read this page correctly, unlike page 108.** It
+reports 4 columns because the page really is three columns of prose above a
+FULL-WIDTH worksheet, and the splitter separated the worksheet band properly -
+the round-9 peel doing its job on furniture at a region EDGE rather than
+stranded mid-region. The geometry was checked before authoring anyway, because
+a 4-column report on a 3-column page is exactly what a detector wobble looks
+like.
+
+**The worksheet is moved ahead of line 19**, the one departure from print
+order. It is printed full width BELOW all three columns, so print order would
+place it after line 19 and nest it under that heading, where nobody would look
+for it. Same test as tranche 45: an insert moves only when print order would
+file it under a heading it does not belong to. It belongs to line 17z, whose
+second bullet names it.
+
+**The three PWA sub-items are folded into their parent bullet** with their
+printed "1."-"3." markers kept verbatim, as Chart C was handled in tranche 4.
+The alternative - splitting the two top-level bullets into separate one-item
+lists so the numbers could sit between them - would announce "list of 1 item"
+twice and read far worse. Neither bullet has a bold lead; both are body face,
+checked rather than assumed.
+
+### NEXT: page 115 onward
+
+**Schedule 2 is done.** Page 115 opens the **Instructions for Schedule 3,
+Additional Credits and Payments** - a new top-level TOC entry, so its heading
+opens at level 2 as Schedules 1, 1-A, and 2 did. Nothing is carried into it.
+
+Note that Schedule 3's line 6l instructions contain the OTHER Negative Form
+8978 Adjustment Worksheet, which this page's worksheet and bullet both refer
+to by name; keep the two distinguishable when page 116 or 117 authors it.
+
+Then the back matter: Tax Topics (118), the Disclosure/Privacy Act notice
+(120), Major Categories of Federal Income and Outlays (122), and the MECHANICAL
+Index (123-126). Do not hand-author the Index.
 
 ## Run-in level audit (2026-08-05) - the session-49 concern, checked and CLOSED
 
