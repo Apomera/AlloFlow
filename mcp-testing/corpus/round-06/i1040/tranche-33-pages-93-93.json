@@ -1,0 +1,247 @@
+{
+ "schema_version": "1.0",
+ "document": {
+  "title": "2025 Instructions for Form 1040 (and 1040-SR)",
+  "language": "en",
+  "source_page_count": 126,
+  "source_sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a",
+  "document_type": "booklet",
+  "subject": "Internal Revenue Service instructions for the 2025 Form 1040 and Form 1040-SR, including the instructions for Schedules 1 through 3.",
+  "variant": "original"
+ },
+ "blocks": [
+  {
+   "type": "paragraph",
+   "text": "Caution. You may have to pay an additional tax if you received a taxable distribution from a Coverdell ESA or a QTP. See the Instructions for Form 5329.",
+   "runs": [
+    {
+     "text": "Caution.",
+     "style": "strong"
+    },
+    {
+     "text": " You may have to pay an additional tax if you received a taxable distribution from a Coverdell ESA or a QTP. See the Instructions for Form 5329.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 93
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Nontaxable income",
+   "source_page": 93
+  },
+  {
+   "type": "paragraph",
+   "text": "Don’t report any nontaxable income on line 8z. Examples of nontaxable income include the following.",
+   "source_page": 93
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Child support.",
+    "Life insurance proceeds received because of someone’s death (with some exceptions; any taxable amounts will generally be reported to you on Form 1099-R).",
+    "Gifts and bequests. You may have to report information on your gifts or bequests on Form 3520, Part IV, if you received: 1. A gift or bequest from a foreign individual or foreign estate (including foreign persons related to that foreign individual or foreign estate) totaling more than $100,000; or 2. Amounts totaling more than $20,116 from a foreign corporation or foreign partnership (including foreign persons related to such foreign corporations or foreign partnerships) that you treated as gifts."
+   ],
+   "source_page": 93
+  },
+  {
+   "type": "paragraph",
+   "text": "See the Instructions for Form 3520.",
+   "source_page": 93
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Adjustments to Income",
+   "source_page": 93
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 11. Educator Expenses",
+   "source_page": 93
+  },
+  {
+   "type": "paragraph",
+   "text": "If you were an eligible educator in 2025, you can deduct on line 11 up to $300 of qualified expenses you paid in 2025. If you and your spouse are filing jointly and both of you were eligible educators, the maximum deduction is $600. However, neither spouse can deduct more than $300 of their qualified expenses on line 11. An eligible educator is a kindergarten through grade 12 teacher, instructor, counselor, principal, or aide who worked in a school for at least 900 hours during a school year.",
+   "source_page": 93
+  },
+  {
+   "type": "paragraph",
+   "text": "Qualified expenses include ordinary and necessary expenses paid:",
+   "source_page": 93
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "For professional development courses you have taken related to the curriculum you teach or to the students you teach; or",
+    "In connection with books, supplies, equipment (including computer equipment, software, and services), and other materials used in the classroom."
+   ],
+   "source_page": 93
+  },
+  {
+   "type": "paragraph",
+   "text": "An ordinary expense is one that is common and accepted in your educational field. A necessary expense is one that is helpful and appropriate for your profession as an educator. An expense doesn’t have to be required to be considered necessary.",
+   "source_page": 93
+  },
+  {
+   "type": "paragraph",
+   "text": "Tip. Qualified expenses include amounts paid or incurred in 2025 for personal protective equipment, disinfectant, and other supplies used for the prevention of the spread of coronavirus.",
+   "runs": [
+    {
+     "text": "Tip.",
+     "style": "strong"
+    },
+    {
+     "text": " Qualified expenses include amounts paid or incurred in 2025 for personal protective equipment, disinfectant, and other supplies used for the prevention of the spread of coronavirus.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 93
+  },
+  {
+   "type": "paragraph",
+   "text": "Qualified expenses don’t include expenses for home schooling or for nonathletic supplies for courses in health or physical education.",
+   "source_page": 93
+  },
+  {
+   "type": "paragraph",
+   "text": "You must reduce your qualified expenses by the following amounts.",
+   "source_page": 93
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Excludable U.S. series EE and I savings bond interest from Form 8815.",
+    "Nontaxable qualified tuition program earnings or distributions.",
+    "Any nontaxable distribution of Coverdell education savings account earnings.",
+    "Any reimbursements you received for these expenses that weren’t reported to you in box 1 of your Form W-2."
+   ],
+   "source_page": 93
+  },
+  {
+   "type": "paragraph",
+   "text": "For more details, use Tax Topic 458 or see Pub. 529.",
+   "source_page": 93,
+   "runs": [
+    {
+     "text": "For more details, use ",
+     "style": "normal"
+    },
+    {
+     "text": "Tax Topic 458",
+     "style": "normal",
+     "href": "https://www.irs.gov/taxtopics/tc458.html"
+    },
+    {
+     "text": " or see Pub. 529.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 12. Certain Business Expenses of Reservists, Performing Artists, and Fee-Basis Government Officials",
+   "source_page": 93
+  },
+  {
+   "type": "paragraph",
+   "text": "Include the following deductions on line 12.",
+   "source_page": 93
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Certain business expenses of National Guard and reserve members who traveled more than 100 miles from home to perform services as a National Guard or reserve member.",
+    "Performing-arts-related expenses as a qualified performing artist.",
+    "Business expenses of fee-basis state or local government officials."
+   ],
+   "source_page": 93
+  },
+  {
+   "type": "paragraph",
+   "text": "For more details, see Form 2106.",
+   "source_page": 93
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 13. Health Savings Account (HSA) Deduction",
+   "source_page": 93
+  },
+  {
+   "type": "paragraph",
+   "text": "You may be able to take this deduction if contributions (other than employer contributions, rollovers, and qualified HSA funding distributions from an IRA) were made to your HSA for 2025. See Form 8889.",
+   "source_page": 93
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 14. Moving Expenses",
+   "source_page": 93
+  },
+  {
+   "type": "paragraph",
+   "text": "You can deduct moving expenses if you are a member of the Armed Forces on active duty and due to a military order you move because of a permanent change of station. Use Tax Topic 455 or see Form 3903.",
+   "source_page": 93,
+   "runs": [
+    {
+     "text": "You can deduct moving expenses if you are a member of the Armed Forces on active duty and due to a military order you move because of a permanent change of station. Use ",
+     "style": "normal"
+    },
+    {
+     "text": "Tax Topic 455",
+     "style": "normal",
+     "href": "https://www.irs.gov/taxtopics/tc455.html"
+    },
+    {
+     "text": " or see Form 3903.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "If you are claiming only storage fees during your absence from the United States, check the box on line 14. For more information, see the Instructions for Form 3903.",
+   "source_page": 93
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 15. Deductible Part of Self-Employment Tax",
+   "source_page": 93
+  },
+  {
+   "type": "paragraph",
+   "text": "If you were self-employed and owe self-employment tax, fill in Schedule SE to figure the amount of your deduction. The deductible part of your self-employment tax is on line 13 of Schedule SE.",
+   "source_page": 93
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 16. Self-Employed SEP, SIMPLE, and Qualified Plans",
+   "source_page": 93
+  },
+  {
+   "type": "paragraph",
+   "text": "If you were self-employed or a partner, you may be able to take this deduction. See Pub. 560 or, if you were a minister, Pub. 517.",
+   "source_page": 93
+  }
+ ],
+ "review_notes": [
+  "TRANCHE 33 OF A MULTI-SESSION REBUILD. This plan covers printed page 93: the end of Schedule 1 Part I and the opening of Part II, Adjustments to Income, lines 11 through 16. It carries no document title by design — only tranche 1 does — so this file validates through merge-plans rather than standalone. No partial rebuild is delivered.",
+  "THE COVERDELL/QTP BULLET AT THE TOP OF THIS PAGE IS NOT REPEATED. It closes the line 8z examples list, authored whole at page 92 in tranche 32. The CAUTION that follows it IS authored here, because it is a separate block rather than part of the bullet. Check this page's shortfall with mcp-testing/tools/carried_block_check.cjs against tranche 32.",
+  "LINE 16 SPANS THE 93-94 BREAK PAST A FULL-PAGE WORKSHEET, and finding its ending took looking. Page 93 stops mid-word at “you may be able to take this deduc-”, and page 94 opens with the Self-Employed Health Insurance Deduction Worksheet running the full width of the page; below that, the next heading is Line 17. The continuation is not missing — it sits in a two-line fragment between the foot of the worksheet and the Line 17 heading (“tion. See Pub. 560 or, if you were a minister, Pub. 517.”). It is authored whole here. This is the second block in the rebuild to jump a full-page insert, after the lines 8a-8z caution in tranche 29.",
+  "THE NESTED FORM 3520 CONDITIONS KEEP THEIR PRINTED “1.” AND “2.” MARKERS INSIDE THEIR BULLET. The plan schema takes flat lists only, and this is a list inside a list item: the gifts-and-bequests bullet is qualified by two numbered reporting thresholds. Keeping the markers verbatim inside the parent item preserves the enumeration a reader is meant to choose between, which is the treatment Chart C got in tranche 3.",
+  "“Adjustments to Income” IS LEVEL 3, matching “Additional Income” on page 88 — both are 16pt section banners within the schedule, and the “Line NN” headings beneath them are level 4. “Nontaxable income” stays at level 5, since it is one more run-in topic under “Lines 8a Through 8z. Other Income”, which is where Part I ends.",
+  "BOTH LINK TARGETS COME FROM THE ANNOTATIONS: Tax Topic 458 resolves to irs.gov/taxtopics/tc458.html and Tax Topic 455 to tc455.html. Both are phrase links with no visible URL, so reading the text alone would have produced two dead cross-references.",
+  "ICON CALLOUTS as established in tranche 3: one CAUTION and one TIP, each a paragraph opening with a strong label in sentence case, placed after the content it qualifies.",
+  "PAGE FURNITURE OMITTED: the printed page number and the standing “Need more information or forms? Visit IRS.gov.” footer. Soft hyphens removed and justified line-break hyphens closed, while genuine compounds are kept (1099-R, W-2, Fee-Basis, Performing-arts-related, fee-basis, self-employment, long-term)."
+ ]
+}

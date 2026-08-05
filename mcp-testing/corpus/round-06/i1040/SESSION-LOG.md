@@ -1348,16 +1348,44 @@ with the CAUTION that follows it.
 **The series skips from 8v to 8z**, as page 91 skipped 8g. Both are the
 source's own numbering with no gap in the text.
 
-### NEXT: page 93 onward
+### Session 33 (2026-08-05) - page 93 - tranche-33 - 29 blocks - VALIDATED (merged)
 
-Page 93 opens with the CAUTION following the Coverdell/QTP bullet carried into
-tranche 32, then "Nontaxable income" (a run-in topic with its own bulleted
-list, including a nested ordered list about Form 3520 reporting thresholds),
-and continues into Schedule 1 Part II, Adjustments to Income. Run
-`carried_block_check.cjs` on page 93 against tranche 32.
+The end of Schedule 1 Part I and the opening of Part II, Adjustments to
+Income, lines 11-16. `merge-plans t01..t33` -> 1,437 blocks, `ok: true`,
+**pages 1-93 covered**, zero heading skips. Carried-block check against
+tranche 32: **55 shortfall instances = 48 carried + 3 furniture + 4 residual**,
+all four residuals documented artifact classes (`ble` from the Nontaxa-
+mid-word break, `decaution` where the CAUTION label lands inside a split word,
+`deduc93` where the page number does, and `duct`).
 
-Then Schedule 1-A (101-110), Schedule 2 (111-114) and Schedule 3 (115-117),
-each a top-level TOC entry opening at level 2. Then the back matter: Tax
-Topics (118), the Disclosure/Privacy Act notice (120), Major Categories of
-Federal Income and Outlays (122), and the MECHANICAL Index (123-126). Do not
-hand-author the Index.
+**Line 16 spans the 93-94 break past a full-page worksheet, and finding its
+ending took looking.** Page 93 stops mid-word at "you may be able to take this
+deduc-"; page 94 opens with the Self-Employed Health Insurance Deduction
+Worksheet running the full page width, and the next heading below it is Line
+17. The continuation is not missing - it sits in a two-line fragment between
+the foot of the worksheet and the Line 17 heading ("tion. See Pub. 560 or, if
+you were a minister, Pub. 517."). Authored whole at page 93.
+
+> **Second block in the rebuild to jump a full-page insert**, after the lines
+> 8a-8z caution in tranche 29. When a page ends mid-word and the next page
+> opens with a worksheet, look BELOW the worksheet before concluding anything -
+> three separate looks were needed here before the fragment turned up.
+
+**The nested Form 3520 conditions keep their printed "1." and "2." markers
+inside their bullet.** The schema takes flat lists only and this is a list
+inside a list item, so the markers stay verbatim inside the parent - the
+treatment Chart C got in tranche 3.
+
+### NEXT: page 94 onward
+
+Page 94: the Self-Employed Health Insurance Deduction Worksheet (full-page,
+"Before you begin:", dot-leader rows, an asterisked footnote - the tranche-30
+worksheet shape applies), then Line 17 itself. **Do not re-author the two-line
+Line 16 fragment** below the worksheet; it was carried into tranche 33.
+
+Then Schedule 1's remaining adjustments (95-100), Schedule 1-A (101-110),
+Schedule 2 (111-114) and Schedule 3 (115-117), each a top-level TOC entry
+opening at level 2. Then the back matter: Tax Topics (118), the
+Disclosure/Privacy Act notice (120), Major Categories of Federal Income and
+Outlays (122), and the MECHANICAL Index (123-126). Do not hand-author the
+Index.
