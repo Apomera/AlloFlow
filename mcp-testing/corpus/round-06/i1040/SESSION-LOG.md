@@ -1099,15 +1099,49 @@ sets "The Earned Income Tax Credit Assistant (IRS.gov/EITCAssistant)" with the
 name and the parenthetical both carrying the same target. Collapsing them
 would mean choosing which half to drop and rewriting the sentence.
 
-### NEXT: page 84 onward
+### Session 25 (2026-08-04) - page 84 - tranche-25 - 36 blocks - VALIDATED (merged)
 
-Page 84 continues How To Get Tax Help (Need someone to prepare your tax
-return?, Business Services Online, ordering forms, IRS eBooks, your online
-account). **Do not re-author the two list items carried into tranche 24.**
-Then 85 (identity theft, refund status, payments, amended returns, TAS), 86
-(Interest and Penalties - a 14pt head that nests under How To Get Tax Help by
-the document's own structure, like Third Party Designee in session 20), and 87
-(Refund Information, an 18pt top-level TOC entry, so level 2).
+How To Get Tax Help continued, from choosing a preparer through the
+online-account tools. `merge-plans t01..t25` -> 1,253 blocks, `ok: true`,
+**pages 1-84 covered**, zero heading skips. Recall 0.9642.
+
+**Fifteen run-in leads become level-3 headings** on this one page. It is
+essentially a directory of IRS services, and it is unusable without them:
+fifteen topics buried inside paragraphs cannot be skimmed or jumped between.
+Level 3 and not 4 for the reason tranche 24's validator failure established -
+"How To Get Tax Help" is level 2, so these are its direct children.
+
+**The recall number is low and entirely predicted.** The two list items at the
+top of page 84 close the "Getting answers to your tax questions" list, which
+tranche 24 authored WHOLE at page 83 rather than splitting across the page
+break. So a page-84 recall reports their every word as uncovered: `find`,
+`forms`, `instructions`, `interactive`, `links`, `answers`, `efiling`,
+`software` and the rest. Everything else is page furniture. **A per-page
+recall score is structurally unable to see content the previous tranche
+carried** - when a block deliberately spans a page break, expect the receiving
+page to score low and check the shortfall against what was carried, not
+against zero.
+
+**The CAUTION box runs longer than it looks.** Its italic body continues past
+the sentence about the preparer signing, through "Anyone paid to prepare tax
+returns for others should have a thorough understanding of tax matters" and
+the pointer to Tips for Choosing a Tax Preparer. The face data settles where
+it ends; splitting it into a callout plus a loose paragraph would have been
+the natural guess from reading alone, and would have been wrong.
+
+**"Using direct deposit" spans the 84-85 break** and is authored whole here.
+Its link target had to come from page 85's annotations, since that is where
+the second half of the paragraph is printed. The page-85 tranche must NOT
+re-author it.
+
+### NEXT: page 85 onward
+
+Page 85: identity theft reporting, checking refund status, making payments,
+"What if I can't pay now?", filing an amended return, and TAS. **Do not
+re-author the "Using direct deposit" paragraph carried into tranche 25.** Then
+86 (Interest and Penalties - a 14pt head that nests under How To Get Tax Help
+by the document's own structure, like Third Party Designee in session 20) and
+87 (Refund Information, an 18pt top-level TOC entry, so level 2).
 
 Then 88-117, the instructions for Schedules 1, 1-A, 2 and 3, the largest
 remaining block. Then the back matter: Tax Topics (118), the
