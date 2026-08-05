@@ -830,13 +830,60 @@ closed, or the halves survive as `val` and `id` and read as dropped content.
 That the icon sits *inside* the word is also the clearest evidence yet that
 restoring the sentence around it (the tranche-3 convention) is right.
 
-### NEXT: pages 63-67, then the Tax Table (68-80) is the next MECHANICAL span
+### Session 19 (2026-08-04) - pages 63-64 - tranche-19 - 52 blocks - VALIDATED (merged)
 
-Page 63 opens the direct-deposit mechanics: Form 8888, the **sample-check
-figure** (this part's first real figure — it needs alt text and a decision
-about how much of a cheque to describe), the line 35b/35c/35d field
-instructions, and the rejection reasons. Then 64-67: amount you owe, estimated
-tax penalty, third party designee, signing, assembling.
+The direct-deposit mechanics, line 36, and the whole Amount You Owe payment
+section. `merge-plans t01..t19` -> 1,045 blocks, `ok: true`, **pages 1-64
+covered**, zero heading skips across the merged outline. Recall 0.9689, with
+every shortfall token accounted for.
+
+**The first image block in this rebuild.** Page 63 carries the sample-check
+illustration, and its whole purpose is to answer one question: which number on
+a cheque goes on which line. So the alt text carries the instruction, not the
+appearance. It names the three groups of digits along the bottom edge in
+order, says which label points at which group, and spells out that the third
+group repeats the check number that must NOT be entered.
+
+The cheque's generic boilerplate is deliberately left out - "PAY TO THE ORDER
+OF", "DOLLARS", the dollar sign, "For", the fractional routing code. None of
+it bears on the instruction, and reciting it would bury the part that does.
+The alt opens by saying the image is a personal check, which is what that
+furniture signals to someone who can see it. **Consequence worth remembering:
+a token-recall check will always report cheque boilerplate as uncovered on
+this page.** That is expected, and the note in the tranche says so.
+
+**The figure is moved to a sentence boundary.** In print the check sits at the
+top of column 2, which drops it into the MIDDLE of the line 35d paragraph -
+the column-aware reading order splits "On the sample check shown later," from
+"the account number is 20202086." The paragraph is authored whole and the
+figure placed straight after it, which is also where the text's own "shown
+later" points.
+
+**The first table built from non-tabular print.** The two card-payment
+providers are set as indented address blocks with no rules, but the content is
+strictly parallel (provider, phone, website), so it is authored as a table -
+otherwise a reader has to infer the structure from indentation they cannot
+see. Disclosed in the caption.
+
+**Link targets derived by position, not guessed.** Page 64 carries 19 Link
+annotations covering 11 distinct URLs; each rect was matched against the text
+items falling inside it. Two would have been wrong from a guess:
+`IRS.gov/Account` resolves to `irs.gov/your-account`, and `IRS.gov/OPA` to
+`irs.gov/paymentplans`. Page 63 has no annotations at all.
+
+**The validator settled a heading level, and it was right to.** "Insufficient
+funds" has the same modest print weight as "Installment agreement", so it was
+first authored at level 5 - but it sits directly under the "Amount You Owe"
+banner with no "Line NN" heading between, so the outline skipped h3 to h5 and
+`merge-plans` rejected the plan. It is in fact a SIBLING of "Line 37": both
+are direct children of the section. Printed weight and structural depth are
+not the same thing, and only the merge step catches the difference.
+
+### NEXT: pages 65-67, then the Tax Table (68-80) is the next MECHANICAL span
+
+Pages 65-67: line 38 (estimated tax penalty), Third Party Designee, Sign Your
+Return, and Assemble Your Return. Ordinary prose, with the identity-protection
+and court-appointed-fiduciary subsections on page 66.
 
 Then the Tax Table gets the tranche-17 treatment: `page_items.cjs` for
 geometry, a generator that parses and verifies before it writes,
