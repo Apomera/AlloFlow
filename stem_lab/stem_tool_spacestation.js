@@ -217,13 +217,19 @@
     { q: 'How does the station get its oxygen mainly?', o: ['Tanks from Earth', 'Splitting water with electricity', 'Plants aboard', 'Compressing outside air'], a: 1, x: 'Electrolysis splits recycled water into O₂ and H₂; the H₂ feeds a Sabatier reactor to reclaim even more water.' },
     { q: 'What keeps the station pointed correctly WITHOUT burning fuel?', o: ['Solar wind sails', 'Spinning control moment gyroscopes', 'Magnets in the hull', 'The robotic arm'], a: 1, x: 'Four large spinning flywheels twist the station by exchanging angular momentum — no propellant needed until they saturate.' },
     { q: 'Why does the station need regular reboosts?', o: ['Thin atmosphere drags it ~50-100 m lower per day', 'The Moon pulls it away', 'The crew requests them', 'Solar pressure pushes it down'], a: 0, x: 'Even at ~400 km, wisps of atmosphere slowly sap orbital energy; engines on Zvezda and cargo ships push it back up.' },
+    { q: 'The station orbits at an inclination of 51.6°. What does that number tell you?', o: ['How high above Earth it flies', 'The highest latitude it ever passes over', 'How fast it is travelling', 'How often it is resupplied'], a: 1, x: 'Inclination is the tilt of the orbit against the equator, so the station passes over everywhere between 51.6°N and 51.6°S — and never directly over the poles. 51.6° was chosen so that launches from Baikonur, at about 46°N, could reach it: a rocket can always aim for an inclination higher than its launch latitude, never lower.' },
     { q: 'Which is the LARGEST module?', o: ['Zarya', 'Destiny', 'Kibo (Japan)', 'Columbus'], a: 2, x: 'JAXA’s Kibo — a big pressurized lab plus an exposed "back porch" and its own robotic arm.' },
     { q: 'Salt and pepper aboard are used as…', o: ['Powders in shakers', 'Liquids in dropper bottles', 'Pills', 'They’re banned'], a: 1, x: 'Floating grains would drift into eyes, vents, and experiments — so seasonings are dissolved liquids.' },
     { q: 'What is a Whipple shield?', o: ['A sun shade', 'A spaced two-wall bumper that vaporizes debris', 'A radiation blanket', 'The airlock hatch'], a: 1, x: 'A thin standoff bumper shocks a hypervelocity particle into vapor and spray before it reaches the pressure hull.' },
     { q: 'What is planned for the station around 2030-31?', o: ['Boost to the Moon', 'Sale to a museum', 'Controlled deorbit over the remote ocean', 'Left empty in orbit'], a: 2, x: 'Current plans call for a SpaceX-built deorbit vehicle to steer it into a controlled reentry over the South Pacific; commercial stations take over research in low Earth orbit.' }
   ];
 
-  var QUIZ_TOPIC_LABELS = ['Velocity', 'Water', 'Human body', 'Oxygen', 'Attitude', 'Orbital drag', 'Modules', 'Crew life', 'Shielding', 'Future'];
+  var QUIZ_TOPIC_LABELS = ['Velocity', 'Water', 'Human body', 'Oxygen', 'Attitude', 'Orbital drag', 'Inclination', 'Modules', 'Crew life', 'Shielding', 'Future'];
+  // Derived, not written out four times. The pass mark used to be a literal 7
+  // in the quest hook, the quest label, the debrief message and the toast, so
+  // adding a question silently lowered the bar in three of the four and left
+  // the label lying about it.
+  var QUIZ_PASS = Math.ceil(QUIZ.length * 0.7);
 
   var FAST_FACTS = [
     ['Altitude', '~400-420 km'], ['Speed', '7.66 km/s'], ['Orbit period', '~92 min'],
@@ -231,6 +237,362 @@
     ['Pressurized volume', '~916 m³'], ['Usual crew', '7'], ['Crewed since', 'Nov 2, 2000'],
     ['Partner nations', '15'], ['Visitors so far', '280+ from 20+ countries'], ['Solar array area', '~2,500 m²']
   ];
+
+  // ── The planet under the station ──────────────────────────────────────
+  // The COASTLINES are real: a 0.5° land/water mask downsampled from the
+  // public-domain Natural Earth 50m land layer this Lab already ships inside
+  // stem_tool_flightsim.js, kept in the same base36 per-row RLE (runs alternate
+  // starting with water, one row per line of latitude from 90°N down).
+  // Everything painted ON those coastlines — biome tint, sea ice, cloud bands —
+  // is SCHEMATIC, and the tab copy says so out loud rather than letting a
+  // student read invented deserts as data. The night lights are the exception:
+  // they are drawn at the real coordinates of major metropolitan areas, so the
+  // terminator sweeping across them shows something true.
+  var ISS_LAND_W = 720, ISS_LAND_H = 360;
+  var ISS_LAND_RLE = 'k0;k0;k0;k0;k0;k0;k0;k0;k0;k0;k0;k0;k0;7j,6,1,w,be;5h,10,x,1f,b7;58,6,1,16,7,9,1,2,2,1m,b8;4x,1k,5,28,3,1,5,9,ao;4s,4,4,1e,4,2,1,2r,3h,1,a,5,c,1,1o,3,4n;4o,b,3,17,3,2v,3c,4,1,1,1,5,5,a,1,5,2,4,s,2,p,a,4l;4n,i,2,6,1,q,6,2u,1w,i,14,4,1,1,5,2,5,5,1,1,1s,d,4k;4h,1,5,j,1,v,c,2j,1,3,1k,6,1,2,2,4,1,h,3l,h,4g;45,5,f,2,1,i,1,k,h,2m,1o,i,5,6,3t,c,2,4,4a;3t,4,9,1,1,8,4,3,5,13,7,2u,1p,1,1,k,48,4,2,a,45;3q,7,9,c,2,6,5,8,2,o,5,2w,3,1,1p,1,1,4,1,8,3,5,49,b,46;3m,2,1,7,8,1,6,3,1,3,4,7,5,1,5,4,1,f,d,2w,1v,9,5,7,4e,3,46;3d,8,6,1,d,2,r,3,3,j,c,1,2,2x,1t,7,a,1,42,1,a,9,44;3a,a,3,2,8,2,8,1,6,1,3,1,3,8,2,2,1,p,f,2r,3,2,1w,3,2q,6,1s,d,1,7,3t;37,8,1,2,1,8,5,4,7,4,1,9,4,c,7,3,7,4,j,2r,2,1,4f,f,1h,3,3,v,1e,1,2a;3b,1,2,2,2,c,3,8,5,b,5,1,4,7,8,8,3,1,13,28,4b,f,1g,19,17,1,2,g,1y;3h,o,1,3,6,6,2,6,2,q,16,26,1,3,43,c,1e,1h,1b,g,2,9,1n;3o,8,s,5,3,p,19,23,46,a,1f,1h,1f,3,6,1,a,5,1n;33,f,1b,1,20,23,45,7,1k,1b,3,4,1h,2,26;34,h,i,3,8,8,3,a,5,6,3,4,1,3,1,2,18,1z,45,8,1b,1i,2,8,3,4,d,3,v,5,22;32,m,c,7,6,8,4,9,4,6,1,i,16,1v,47,7,q,3,i,25,9,b,p,4,21;32,r,2,3,2,6,5,c,2,7,5,6,2,a,1,8,14,1w,45,7,q,8,4,1,6,2,2,2p,o,7,1z;31,c,2,k,1,6,6,b,2,4,7,8,1,l,13,1v,44,7,q,9,4,1,3,7,2,2o,j,k,1q;32,9,3,t,9,7,2,4,7,w,2,1,y,1v,43,8,p,9,2,4,1,2z,5,2,d,l,1o;0,5,15,3,1s,3,8,r,b,1,4,7,7,11,y,1,1,1j,1,7,q,1,3d,8,l,b,2,35,4,14,1i,2;14,g,1w,t,e,8,6,16,s,5,1,1g,3,5,2f,2,2,3,1,1,1,6,1b,8,i,d,2,i,1,48,15;10,x,z,2,k,v,a,a,7,15,p,1t,2g,j,1j,3,e,b,3,4s,14;y,18,d,1,3,c,2,3,2,4,8,w,5,3,2,8,d,7,1,1,1,2,4,l,o,6,1,1l,2a,u,1h,8,6,c,2,4v,3,4,6,4,2,d,6;x,1f,4,z,4,j,1,9,6,6,3,8,2,1,7,8,5,1,2,1,2,i,q,2,4,1h,28,1,2,12,o,4,l,a,5,9,3,5a,4,h,1;0,3,o,2w,2,g,1,1,1,3,7,7,2,8,1,4,5,8,a,h,u,2,1,1f,29,1b,l,2,6,3,7,4,1,f,3,9,2,5,1,5p;0,6,l,2x,b,8,c,5,3,d,2,1,1,8,a,4,2,g,p,1d,2d,1,1,1e,9,5,7,1b,2,5v;0,9,l,34,2,o,1,f,2,b,8,5,1,2,1,i,l,16,2n,1g,6,5,3,1e,3,5v;0,a,m,34,1,1g,9,3,6,j,i,15,2o,1i,5,3,4,1e,3,5w;0,b,1,6,h,2b,2,24,h,5,1,i,g,13,2n,1j,7,1i,2,5z;0,k,7,6,3,25,1,3,3,3,1,1s,2,2,j,f,1,a,g,11,n,4,5,1,3,4,1k,17,3,9,2,7p;0,1,1,h,5,2j,5,1v,1,3,l,d,4,6,i,y,p,5,2,d,1h,19,a,7s;0,1,7,8,a,2g,3,1x,1,6,c,l,4,3,m,q,y,i,1f,j,7,j,5,1,5,7s;9,6,c,4e,2,9,7,q,r,n,x,k,1e,l,6,l,3,7y,1;d,1,o,42,3,a,8,3,5,h,q,n,11,e,1e,n,4,p,4,7t,3;i,2,i,3y,6,7,2,4,g,g,q,m,10,1,2,9,1e,1,1,m,4,8p,2;j,3,9,2,1,3f,1,l,a,2,c,2,c,7,1,6,r,k,2p,o,4,8s,1;u,44,f,3,m,8,3,1,t,i,2o,o,5,8t,1;t,2t,1,5,1,12,h,3,5,2,2,a,8,6,w,g,1y,1,n,p,7,7x,1,p,7;s,2u,4,13,q,2,3,c,d,2,u,f,2m,p,8,r,2,6u,1,7,2,l,b;s,2s,5,13,w,d,19,d,2n,p,8,i,3,7,1,6p,7,4,3,j,e;u,y,3,2w,x,h,17,b,2n,p,8,i,4,6v,8,2,3,j,g;q,3,1,p,2,7,1,1,4,2t,y,g,2,1,6,1,12,5,2b,1,c,r,2,1,4,8,5,5,1,6v,d,b,5,2,j;r,1,4,2,2,i,2,5,h,2l,y,g,8,3,3u,s,i,71,d,5,x;10,g,4,2,n,1n,2,t,x,h,8,4,3t,r,a,6o,4,2,1,2,1,1,5,7,a,7,1,1,v;10,2,2,d,v,2i,t,k,4,7,3b,1,h,8,3,3,2,8,9,2,1,7,1,6d,z,6,2,2,v;19,7,2,2,u,1v,1,k,u,v,33,2,1,5,i,5,6,b,a,2,2,6i,z,7,10;18,6,2,3,w,1w,1,j,v,u,35,7,o,1,2,a,3,2,6,1,3,6h,x,c,y;17,4,4,3,y,4,1,1q,1,j,2,2,s,u,32,9,m,3,3,9,3,2,5,4,1,6f,y,d,y;15,5,17,2m,o,u,33,7,l,5,4,9,8,6j,z,e,y;13,4,1b,2n,f,2,5,v,32,6,m,6,3,7,a,6i,z,g,x;z,6,1g,2n,i,x,30,a,j,4,2,3,1,3,d,6g,11,d,10;y,2,1l,2u,9,12,2u,4,2,7,k,8,4,1,c,6e,3,1,z,d,8,1,r;u,3,1p,2,2,2q,5,18,2q,6,1,8,j,3,2,2,a,3,3,4y,1,1g,4,1,z,d,10;2r,2p,5,18,2n,9,4,7,h,5,2,4,2,57,2,1k,2,3,5,1,p,a,13;q,1,1v,3,2,2p,6,19,2l,8,6,6,e,2,1,5j,1,1s,4,1,q,8,14;m,2,1z,2,3,1n,1,2,3,x,4,1a,2k,8,3,a,a,5o,2,1y,p,8,14;2o,1,4,1q,2,y,3,1a,2l,7,3,c,6,5o,2,20,p,5,s,1,e;b,1,2d,1,5,1p,2,v,6,1a,2i,8,4,c,6,7q,q,4,17;6,1,2p,2n,3,1a,2j,5,6,c,6,7r,q,3,18;2w,3w,2,3,2v,b,2,7p,2,3,q,2,19;2v,3,1,1n,1,23,3,3,2u,b,2,7q,3,4,o,1,1b;2w,3s,5,2,2u,4,a,52,1,2n,3,4,m,2,1c;2y,4,1,37,5,4,9,5,2z,1,3,7t,3,4,20;30,4,1,34,2,4,2,3,7,a,2v,7x,3,5,1z;32,3,1,30,2,8,a,b,2q,4,1,7x,3,2,22;32,21,5,17,b,c,2p,81,4,2,22;33,1x,a,15,a,d,2p,80,5,1,23;33,1v,4,2,6,14,j,1,2,3,2s,7v,6,2,22;34,21,2,3,1,15,6,1,e,1,2u,26,2,p,5,4r,7,3,21;34,3g,1,3,39,1t,2,7,5,n,7,16,1,e,1,34,8,1,23;34,23,3,2,3,2,2,15,3a,1q,6,4,5,m,9,15,1,3j,o,1,1o;34,22,3,4,7,t,1,8,3b,s,2,x,6,t,7,4s,9,2,a,1,1s;34,22,1,7,3,2,1,q,2,7,3e,s,3,1,1,t,8,3,5,j,8,4r,a,3,8,1,1t;34,21,2,6,4,p,5,4,3i,k,1,7,5,s,j,i,6,4r,b,5,4,1,1v;33,22,2,8,1,6,5,d,8,2,36,2,b,j,4,7,4,q,m,g,7,4p,c,8,1x;33,21,3,8,1,n,3f,p,3,4,7,7,5,n,o,f,8,4n,b,a,1x;33,22,2,w,3f,o,c,1,3,6,7,l,q,e,8,4f,2,3,c,8,20;33,22,2,9,4,j,3f,p,a,2,4,6,8,j,r,e,8,4c,j,1,4,2,21;33,2b,3,n,3e,o,b,2,5,8,7,h,8,8,b,f,7,1,2,48,k,2,26;34,2x,3h,m,e,1,7,8,5,m,1,d,6,h,b,47,l,2,25;33,2w,3j,k,e,4,8,8,3,b,1,4,3,16,5,3t,1,g,l,3,25;33,2t,3m,j,g,3,a,4,1,2,2,6,1,2,4,1c,5,3s,3,e,m,4,24;34,2s,3m,i,5,2,a,3,b,2,6,7,6,1b,8,3o,4,5,1,7,o,4,24;34,2r,3m,j,h,2,d,2,7,5,6,1b,7,3o,5,2,5,5,p,4,24;35,2p,3n,j,w,2,8,6,5,19,a,3j,7,1,7,7,m,4,25;36,2o,3o,h,r,1,2,4,8,8,3,1a,9,3m,d,7,m,3,26;37,2m,3p,h,q,6,b,5,7,18,9,3n,3,1,8,1,1,6,j,5,26;37,2l,3q,f,l,2,7,4,c,3,8,1b,7,3t,8,6,e,1,2,6,26;38,2k,3v,9,9,h,7,1,e,2,a,1b,1,3v,9,7,e,9,26;38,2k,3w,2,b,k,y,1,2,3,3,4,3,4r,b,6,d,9,27;39,2k,3v,2,8,o,1d,4p,d,6,a,1,2,a,26;3a,2h,3w,8,1,q,p,5,d,3,4,4n,e,6,6,g,27;3b,2g,3w,z,17,2,5,4n,d,4,7,f,2a;3d,2c,3x,z,1e,4q,l,c,2e;3f,28,3y,11,1d,4q,k,1,3,4,1,2,2g;3h,25,3x,14,1b,4s,a,2,5,5,1,2,2l;3h,24,3x,1b,d,4,o,4s,h,5,1,1,2m;3i,21,3y,1e,9,8,l,4u,h,3,2p;3i,20,3y,1f,9,a,j,4v,g,3,2p;3j,3,3,1s,3z,1i,6,g,4,5,2,4x,h,1,2q;3k,3,3,1r,3z,1l,3,5n,39;3k,3,3,1c,2,1,3,a,3y,7b,39;3k,4,3,1a,8,2,2,5,3y,39,3,40,38;3m,3,2,z,8,4,c,4,3x,39,5,3z,38;3n,3,2,x,p,5,3v,3b,5,3x,39;3o,3,2,u,r,5,3j,2,8,3d,5,3x,39;3m,5,3,s,s,5,3r,2l,1,1,2,r,5,3v,3a;3n,5,3,q,u,5,3p,2n,3,s,6,3s,3b;3p,4,3,p,u,5,3o,2o,4,s,7,5,2,3i,3c;3r,3,3,p,u,4,3n,2q,4,s,b,1,1,3i,3c;3r,3,3,p,v,3,3n,2q,4,s,1,1,8,2,2,3g,3d;3r,3,5,m,x,1,3n,2s,4,t,7,3,7,b,2,2y,4,1,38;3s,3,5,l,12,2,3h,2s,4,t,6,4,l,2w,3,3,38;3t,3,5,k,13,1,3g,2u,4,t,1,1,2,6,k,2u,5,3,38;3u,3,5,j,13,1,3f,2v,6,14,i,2s,5,3,39;3v,2,6,i,u,2,3n,2v,6,15,j,2p,6,3,39;44,h,r,9,3i,2x,6,15,j,2m,8,2,3a;44,h,q,3,2,8,3e,30,4,16,i,18,1,18,e,1,3a;45,g,q,1,2,1,5,6,3c,30,4,15,k,14,5,16,3q;45,g,f,7,g,5,5,1,34,31,3,14,m,4,1,t,a,v,4,3,3u;1b,1,2t,h,d,7,h,7,38,31,4,13,n,2,3,s,a,u,5,2,3v;1c,1,2s,i,c,6,k,7,37,30,5,10,t,t,b,s,7,1,3v;1c,2,2r,i,b,7,s,7,2z,30,6,z,t,r,f,p,6,4,3u;1c,2,2s,i,a,7,t,7,2y,30,7,y,t,p,h,p,5,4,3v;48,i,5,1,1,8,t,9,2w,31,6,w,w,n,j,o,5,4,3v;49,v,j,4,4,9,2,1,2,4,2r,31,6,u,x,m,l,o,5,2,l,4,37;4c,s,l,1,b,1,32,32,6,r,z,l,m,o,s,4,37;4e,q,3z,33,6,r,z,k,n,p,r,4,37;4g,o,3z,34,6,n,12,j,o,q,p,5,37;4j,k,1h,1,2i,34,6,k,16,h,o,4,3,l,o,4,38;4m,2,5,j,3r,34,6,k,16,f,s,1,4,m,n,3,39;4u,j,3p,36,5,i,19,c,z,n,m,3,39;4v,j,3n,39,4,e,1c,c,z,n,m,4,38;4w,i,3o,39,3,c,1f,c,z,n,m,5,36;4z,e,3p,3a,2,9,1i,c,z,n,n,1,1,5,33;52,b,3p,3b,1,6,1l,c,10,3,2,h,m,2,3,2,34;55,8,3p,3c,1,3,h,2,15,b,o,1,b,3,2,h,m,2,4,1,34;56,7,n,2,31,3c,k,1,16,a,p,1,b,3,4,f,n,1,3,2,1,2,31;57,1,1,4,l,3,2,2,2z,3a,f,2,1c,9,p,1,b,3,6,d,p,1,4,2,31;58,5,j,5,1,5,2y,3a,9,6,1d,9,11,2,7,c,q,2,3,2,31;58,5,g,f,8,3,2,1,2k,3a,3,b,1e,8,11,2,8,9,m,2,4,4,1,1,32;58,6,f,k,1,5,2,1,2l,3n,1e,7,12,2,a,5,o,1,6,3,1,2,31;59,6,e,7,2,k,2m,3m,1e,6,2,1,10,2,b,3,o,1,7,4,33;5c,4,3,5,4,u,2n,3l,1f,5,2,2,z,3,9,3,o,1,8,2,4,1,30;5c,9,1,3,1,w,2n,3k,1g,4,3,2,y,4,9,2,o,1,d,4,2z;5e,6,3,12,2l,3j,1h,2,3,4,x,5,19,7,2z;5h,3,3,14,2j,3i,1n,5,y,3,17,9,2z;5i,1,5,13,2k,3g,1o,5,z,2,17,1,3,5,2z;5p,13,2l,3e,1p,4,z,4,u,2,d,3,1,1,2z;5p,15,2k,r,4,2h,1q,3,11,5,r,4,c,4,30;5p,1c,2f,m,8,2g,2v,5,q,5,d,1,31;5p,1e,2e,i,c,2e,2l,5,6,6,o,8,3d;5p,1f,2e,5,8,1,f,2d,2n,5,5,6,m,8,3f;5p,1g,37,2,4,26,2o,5,4,6,l,9,3f;5p,1h,3b,1,1,24,2q,5,4,5,9,1,a,8,3h;5p,1h,3b,1,1,23,2s,6,2,5,j,9,3h;5o,1j,3c,22,2u,5,3,4,g,d,3g;5n,1k,3c,21,2w,7,1,4,e,e,k,1,2v;5m,1m,3b,1z,2z,7,1,4,9,3,1,e,j,1,2w;5m,1m,3b,1y,2x,2,1,8,2,2,9,k,4,1,6,1,5,3,2u;5k,1o,3b,1w,30,1,2,8,c,i,1,1,2,a,5,2,2v;5k,1p,3a,1v,34,a,a,h,4,2,5,2,7,1,2w;4x,1,l,1s,37,1a,4,h,36,8,2,1,8,h,4,1,e,2,5,2,2p;4x,1,1,1,j,1s,1,3,33,1a,4,h,37,7,b,h,4,2,3,3,8,1,5,1,1,5,3,1,2g;5i,1z,31,1a,4,g,35,1,3,8,a,f,4,9,e,8,2j;5i,21,2z,1a,3,g,37,1,2,8,1,2,8,d,5,6,5,1,5,1,4,1,3,4,4,1,1,3,2b;5i,21,30,19,3,f,3c,b,7,d,5,6,k,5,4,7,d,1,1u;5j,26,1,2,2s,1p,3b,1,1,c,1,2,3,d,5,6,d,2,5,6,2,b,25;5j,2b,2r,1n,3f,9,b,a,4,4,1,3,7,2,2,6,3,5,1,f,h,1,1k;5i,2d,2r,1m,3g,8,h,4,6,2,1,3,8,1,7,1,3,2,1,l,1z;5h,2f,2r,1k,3i,7,r,2,2,3,n,l,d,3,1i;5h,2h,2p,z,1,k,3j,6,r,2,2,3,q,k,b,3,1i;5i,2j,2n,1i,1,1,3k,4,r,2,3,2,t,h,a,2,1k;5i,2k,2m,z,1,i,3n,1,1,1,r,1,s,2,6,i,2,7,6,2,1d;5i,2k,2n,1i,3o,6,1f,2,7,j,3,2,9,2,1c;5k,2i,2n,y,2,i,3o,8,2,3,18,1,8,j,f,1,1,1,1a;5k,2j,2n,y,1,i,3q,e,10,1,d,h,k,1,19;5l,2i,2n,1h,3s,e,n,1,9,1,d,k,l,1,16;5m,2g,2o,z,1,h,3y,a,1,1,2,3,2,2,3,2,1,2,p,4,1,7,5,5,h,2,2,2,14;5m,2g,2o,1h,47,1,1,6,1,6,5,4,r,6,6,4,o,1,12;5n,2f,2o,1h,4p,4,u,4,8,5,1,1,i,2,1,1,11;5n,2e,2p,1i,4e,3,6,3,19,5,1,1,h,3,12;5o,2c,2r,1i,4f,1,6,2,1b,5,m,1,10;5o,2b,2s,1i,4l,1,24,2,z;5p,29,2t,1i,50,2,1,1,j,2,22;5p,28,2u,16,1,b,5,1,4t,3,2,3,g,2,22;5q,27,2u,15,1,c,h,1,4j,c,9,4,21;5r,25,2u,1j,h,2,4h,d,9,4,21;5r,24,2u,1k,g,3,4g,d,a,4,21;f,2,5a,23,2v,18,1,b,f,4,4f,d,1,1,9,4,21;5r,23,2u,1m,d,6,47,4,3,d,1,1,9,6,1z;5s,22,2u,1m,d,6,45,8,1,c,c,7,17,1,q;5t,21,2u,1m,b,8,44,n,b,8,16,2,p;5v,9,2,1o,2u,1l,a,a,44,p,9,8,1x;5w,1y,2t,1l,9,b,43,t,6,9,17,2,n,1;5z,1v,2t,1k,9,c,41,1,1,v,4,a,1t,3;60,1u,2t,1i,b,b,41,z,3,a,1w;61,1t,2t,1g,d,b,41,1c,1r,2,3;63,1q,2v,1e,e,b,41,1d,1q,2,3;63,1q,2v,1d,f,b,40,1e,19,1,l;63,1q,2w,1a,h,a,41,1f,1u;63,1p,2y,18,j,9,3z,1j,1s;63,1p,2y,18,i,a,h,1,3c,1q,u,1,v;63,1o,30,17,i,9,3s,1t,v,2,3,1,p;64,1m,31,17,h,a,d,2,3b,1w,v,2,s;63,1n,32,17,g,a,3o,1y,w,2,r;63,1m,33,17,f,a,3n,22,w,1,q;63,1l,35,16,f,a,3n,23,1m;63,1g,3a,16,g,9,3n,23,1m;63,1f,3b,16,g,8,3o,24,1l;63,1c,3e,16,g,8,3o,25,1k;63,1a,3g,15,i,7,3o,26,1j;63,19,3h,12,l,5,3q,28,1h;62,19,3j,10,4i,26,1i;62,19,3j,10,4g,28,1i;62,19,3j,10,4h,27,1i;62,19,3j,10,4i,27,1h;62,19,3k,y,4j,27,1h;61,1a,3l,x,4j,1a,1,w,1h;61,19,3n,w,4k,19,1,w,1h;61,18,3p,t,4n,25,1h;61,17,3q,s,4o,25,1h;61,17,3q,s,4o,25,1h;60,15,1,1,3s,q,4p,1d,1,q,1i;60,16,3t,p,4r,23,1i;61,13,3w,n,4s,s,4,17,1i;61,13,3w,m,4t,p,a,13,1j;61,12,3x,l,4u,k,h,11,1j;60,13,3x,j,4w,h,l,6,1,r,1l;60,12,3z,h,4w,i,m,4,1,s,1l;60,11,40,7,5,1,50,9,v,3,2,r,1m;60,s,2,6,43,2,5b,5,y,1,3,1,1,p,18,1,d;5z,v,as,1,2,o,19,3,b;5y,w,ar,3,2,n,1a,2,b;5y,w,ax,l,1c,2,a;5y,x,aw,l,1d,1,1,1,8;5x,x,ax,l,1d,3,8;5x,w,az,j,1e,5,1,2,3;5x,w,b1,7,1,5,1i,8,3;5x,t,b8,2,3,3,1j,7,4;5x,n,d3,8,5;5x,n,d5,5,6;5w,n,bp,1,1h,4,6;5w,o,bh,2,4,1,1c,2,4,3,7;5w,i,2,2,bj,8,1b,5,1,2,8;5w,i,bo,7,1a,6,b;5v,2,1,j,bl,6,1a,6,c;5v,2,1,j,bm,5,1a,5,d;5v,2,1,h,bo,4,19,6,e;5y,g,d0,8,e;5v,j,cy,7,h;5v,i,cy,8,h;5v,g,cz,8,i;5u,f,d0,9,i;5t,g,d1,6,k;5u,g,d1,1,o;5v,i,cy,1,o;5v,i,dn;5t,j,do;5t,h,dq;5t,g,7k,4,63;5t,g,dr;5t,1,1,c,dt;5u,c,du;5u,c,k,1,d9;5u,1,1,a,h,5,d8;5u,1,1,b,f,1,2,1,da;5w,b,dt;5w,6,1,5,ds;5x,6,1,5,dr;60,b,1m,3,c0;61,d,1l,1,c0;64,6,dq;k0;k0;k0;k0;k0;k0;k0;k0;k0;k0;k0;k0;k0;k0;6m,1,dd;6s,2,1,2,d3;6o,5,d7;6j,1,2,8,d6;6g,7,dd;6g,5,df;6c,1,2,5,91,1,n,2,3p;6c,a,67,c,28,1,8,a,9,8,v,8,1,4,1,1,2d;67,2,2,5,6d,d,1l,1,3,17,1,c,d,a,5,p,24;66,8,67,1,3,l,1d,3e,1z;66,1,2,4,64,1b,2,1,n,3n,1v;6a,4,5z,1j,h,3t,1u;62,1,6,8,5c,3,c,1o,g,4a,1e;60,5,4,9,1,1,59,5,9,1o,e,4l,16;5t,2,4,7,1,d,4b,2,x,a,2,1o,9,2,2,4p,14;5t,2,6,5,1,d,39,1,8,1,5,1,9,2,5,9,3,1,5,1,8,2,5,25,9,4x,2,2,y;5s,5,5,5,1,d,1,1,2x,5,5,1,a,y,3,8,5,2b,5,50,1,b,p;5x,b,1,d,2q,1,2,3,2,8,1,3,1,1,2,3t,6,5f,m;4f,1,2,2,2,1,16,f,1,d,2q,4g,5,5l,i;4c,d,16,1,2,9,3,d,2q,4e,4,5l,k;49,2,m,2,2,2,q,1,5,1,8,f,2g,1,4,4i,2,5o,k;2x,3,1a,w,1,2,8,5,6,3,1,1,4,n,2g,a7,3,1,l;2y,6,2,5,2,1,w,2c,28,1,8,a5,s;2o,1,7,1,4,3,2,4,7,2,3,3,3,3,i,29,28,1,6,3,1,a1,u;2g,4,1,6,2,w,2,4,k,25,2g,a2,1,1,w;28,26,2,22,2h,a2,z;1w,4j,27,ag,y;1q,4j,25,ao,y;1n,1,1,2,2,3x,5,9,26,as,y;17,a,9,5,1,3w,2c,az,6,2,p;17,4r,1e,5,l,b2,5,2,1,2,m;19,4f,5,2,e,1,z,b,g,b9,r;x,3,b,44,2,8,e,6,y,e,e,b6,4,1,q;v,9,f,3z,1,8,9,6,1,3,x,f,e,2,1,6,2,an,12;z,7,k,42,9,3,6,3,9,2,h,h,l,6,2,ai,13;1n,45,j,1,8,5,b,l,p,an,13;1p,45,1,2,2,5,a,2,2,6,b,b,q,ay,12;x,3,b,50,1e,b9,12;1f,52,15,bf,z;1g,4y,1,5,1,1,c,i,3,bk,x;1e,56,9,ch,q;g,f,2,2,a,5d,4,cn,n;n,j3,a;0,4,r,j5;0,t,5,3,1,iy;0,k0;0,k0;0,k0;0,k0;0,k0;0,k0;0,k0;0,k0;0,k0;0,k0';
+  var _issLandMask = null;
+  function issLandMask() {
+    if (_issLandMask) return _issLandMask;
+    var bits = new Uint8Array(ISS_LAND_W * ISS_LAND_H);
+    var rows = ISS_LAND_RLE.split(';');
+    for (var r = 0; r < ISS_LAND_H; r++) {
+      var c = 0, v = 0, runs = rows[r].split(',');
+      for (var k = 0; k < runs.length; k++) {
+        var n = parseInt(runs[k], 36);
+        if (v) bits.fill(1, r * ISS_LAND_W + c, r * ISS_LAND_W + c + n);
+        c += n; v = 1 - v;
+      }
+    }
+    _issLandMask = bits;
+    return bits;
+  }
+  function issIsLand(lat, lon) {
+    var mask = issLandMask();
+    var row = Math.floor((90 - lat) / 180 * ISS_LAND_H);
+    if (row < 0) row = 0; else if (row > ISS_LAND_H - 1) row = ISS_LAND_H - 1;
+    var col = Math.floor(((lon + 180) % 360 + 360) % 360 / 360 * ISS_LAND_W);
+    if (col > ISS_LAND_W - 1) col = ISS_LAND_W - 1;
+    return mask[row * ISS_LAND_W + col] === 1;
+  }
+
+  // The same land mask, downsampled into horizontal runs so a flat map can be
+  // drawn as a few hundred SVG rects. No canvas involved, so this works in
+  // jsdom and in the Orbit Lab's static SVG, and the coastlines under the
+  // ground track are the same real ones the 3-D globe uses.
+  var _issLandRuns = {};
+  function issLandRuns(cols, rows) {
+    var key = cols + 'x' + rows;
+    if (_issLandRuns[key]) return _issLandRuns[key];
+    var mask = issLandMask();
+    var fx = ISS_LAND_W / cols, fy = ISS_LAND_H / rows;
+    var runs = [];
+    for (var y = 0; y < rows; y++) {
+      var open = -1;
+      for (var x = 0; x < cols; x++) {
+        // A cell counts as land if any of the finer cells under it are land, so
+        // islands survive the downsample instead of being averaged away.
+        var land = 0;
+        for (var sy = Math.floor(y * fy); sy < Math.floor((y + 1) * fy) && !land; sy++) {
+          for (var sx = Math.floor(x * fx); sx < Math.floor((x + 1) * fx); sx++) {
+            if (mask[sy * ISS_LAND_W + sx]) { land = 1; break; }
+          }
+        }
+        if (land && open < 0) open = x;
+        else if (!land && open >= 0) { runs.push([open, y, x - open]); open = -1; }
+      }
+      if (open >= 0) runs.push([open, y, cols - open]);
+    }
+    _issLandRuns[key] = runs;
+    return runs;
+  }
+
+  // The runs collapsed into a single SVG path, cached by geometry. Built once
+  // per layout and reused across renders, so dragging a slider re-uses the
+  // string instead of rebuilding a few hundred subpaths.
+  var _issLandPath = {};
+  function issLandPath(cols, rows, x0, y0, cellW, cellH) {
+    var key = [cols, rows, x0, y0, cellW.toFixed(3), cellH.toFixed(3)].join('|');
+    if (_issLandPath[key]) return _issLandPath[key];
+    var runs = issLandRuns(cols, rows);
+    var w2 = (cellH + 0.4).toFixed(2);
+    var parts = [];
+    for (var i = 0; i < runs.length; i++) {
+      var run = runs[i];
+      var x = (x0 + run[0] * cellW).toFixed(2);
+      var y = (y0 + run[1] * cellH).toFixed(2);
+      var w = (run[2] * cellW + 0.4).toFixed(2);
+      parts.push('M' + x + ' ' + y + 'h' + w + 'v' + w2 + 'h-' + w + 'z');
+    }
+    var d = parts.join('');
+    _issLandPath[key] = d;
+    return d;
+  }
+
+  // What share of Earth's LAND lies inside a given band of latitude. Computed
+  // from the mask rather than quoted, with each row weighted by cos(lat)
+  // because equal-angle rows are not equal-area on a sphere.
+  //
+  // The per-row areas are built ONCE. The obvious version rescanned all 259,200
+  // mask cells on every call, and the inclination slider steps every 0.1° — a
+  // drag from 0 to 90 would have rescanned the planet 900 times, which is a
+  // quarter of a billion iterations in front of a student on a Chromebook.
+  // Row areas do not depend on the query, so the band sum is a prefix lookup.
+  var _issRowArea = null, _issRowPrefix = null, _issLandTotal = 0;
+  function issLandRowAreas() {
+    if (_issRowArea) return;
+    var mask = issLandMask();
+    _issRowArea = new Float64Array(ISS_LAND_H);
+    _issRowPrefix = new Float64Array(ISS_LAND_H + 1);
+    for (var row = 0; row < ISS_LAND_H; row++) {
+      var lat = 90 - 180 * (row + 0.5) / ISS_LAND_H;
+      var count = 0;
+      for (var col = 0; col < ISS_LAND_W; col++) if (mask[row * ISS_LAND_W + col]) count++;
+      _issRowArea[row] = count * Math.cos(lat * Math.PI / 180);
+      _issRowPrefix[row + 1] = _issRowPrefix[row] + _issRowArea[row];
+    }
+    _issLandTotal = _issRowPrefix[ISS_LAND_H];
+  }
+  function issLandShareWithin(absLat) {
+    issLandRowAreas();
+    if (_issLandTotal <= 0) return 0;
+    // Rows run north to south, so the band |lat| <= absLat is one contiguous
+    // slice and its area is the difference of two prefix sums. The -0.5 is the
+    // row CENTRE, matching the per-row latitude used to build the areas — drop
+    // it and the band gains or loses a row at each edge.
+    var first = Math.ceil((90 - absLat) / 180 * ISS_LAND_H - 0.5);
+    var lastExclusive = Math.floor((90 + absLat) / 180 * ISS_LAND_H - 0.5) + 1;
+    if (first < 0) first = 0;
+    if (lastExclusive > ISS_LAND_H) lastExclusive = ISS_LAND_H;
+    if (lastExclusive <= first) return 0;
+    return (_issRowPrefix[lastExclusive] - _issRowPrefix[first]) / _issLandTotal;
+  }
+
+  // Deterministic value noise. NOT Math.random: the 3-D view is covered by a
+  // WebGL smoke test that compares two mounts pixel-for-pixel, and a texture
+  // that differs per mount would either fail that test or (worse) hide a real
+  // regression behind noise. `period` wraps the integer lattice in x so the
+  // pattern joins seamlessly at the ±180° seam instead of showing a Pacific
+  // scar down the middle of the globe.
+  function issNoise2(x, y, period) {
+    var xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+    function hash(a, b) {
+      if (period) a = ((a % period) + period) % period;
+      var n = Math.sin(a * 127.1 + b * 311.7) * 43758.5453;
+      return n - Math.floor(n);
+    }
+    var u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+    var a0 = hash(xi, yi), a1 = hash(xi + 1, yi), b0 = hash(xi, yi + 1), b1 = hash(xi + 1, yi + 1);
+    return (a0 * (1 - u) + a1 * u) * (1 - v) + (b0 * (1 - u) + b1 * u) * v;
+  }
+  function issFbm(x, y, period, octaves) {
+    var sum = 0, amp = 0.5, freq = 1, norm = 0;
+    for (var i = 0; i < octaves; i++) {
+      sum += amp * issNoise2(x * freq, y * freq, period ? period * freq : 0);
+      norm += amp; freq *= 2; amp *= 0.5;
+    }
+    return sum / norm;
+  }
+
+  // Real metro coordinates. The 46 with populations come from this Lab's own
+  // curated world database in stem_tool_flightsim.js; the rest are large metros
+  // added for coverage so whole continents are not dark. [lat, lon, millions]
+  var ISS_CITY_LIGHTS = [
+    [38.9, -77.0, 0.7], [45.4, -75.7, 1.0], [19.4, -99.1, 21.8], [40.7, -74.0, 8.3],
+    [34.1, -118.2, 3.9], [41.9, -87.6, 2.7], [43.7, -79.4, 2.9], [23.1, -82.4, 2.1],
+    [-15.8, -47.9, 3.0], [-34.6, -58.4, 15.2], [-12.0, -77.0, 10.7], [4.7, -74.1, 7.4],
+    [51.5, -0.1, 8.9], [48.9, 2.4, 2.2], [52.5, 13.4, 3.6], [41.9, 12.5, 2.9],
+    [40.4, -3.7, 3.2], [55.8, 37.6, 12.5], [38.0, 23.7, 0.7], [64.1, -21.9, 0.1],
+    [30.0, 31.2, 20.9], [-1.3, 36.8, 4.4], [6.5, 3.4, 15.4], [-33.9, 18.4, 4.6],
+    [9.0, 38.7, 3.4], [35.7, 139.7, 13.9], [39.9, 116.4, 21.5], [28.6, 77.2, 16.8],
+    [37.6, 127.0, 9.7], [13.8, 100.5, 10.5], [25.2, 55.3, 3.4], [31.8, 35.2, 0.9],
+    [-35.3, 149.1, 0.5], [-41.3, 174.8, 0.2], [-33.9, 151.2, 5.3], [37.8, -122.4, 0.9],
+    [43.7, -70.3, 0.1], [39.7, -105.0, 0.7], [21.3, -157.9, 0.4], [61.2, -149.9, 0.3],
+    [38.7, -9.1, 0.5], [59.3, 18.1, 1.0], [1.4, 103.8, 5.5], [19.1, 72.9, 20.7],
+    [31.2, 121.5, 24.9], [-22.9, -43.2, 6.7],
+    [-6.2, 106.8, 10.6], [14.6, 121.0, 13.5], [24.9, 67.0, 16.1], [23.8, 90.4, 10.2],
+    [41.0, 28.9, 15.5], [35.7, 51.4, 9.0], [-4.4, 15.3, 15.0], [-26.2, 28.0, 5.6],
+    [-33.4, -70.7, 6.8], [12.97, 77.6, 13.2], [23.1, 113.3, 18.7], [34.7, 135.5, 2.7],
+    [22.3, 114.2, 7.5], [3.1, 101.7, 8.0], [24.7, 46.7, 7.6], [33.3, 44.4, 7.5],
+    [33.6, -7.6, 3.7], [29.8, -95.4, 2.3], [25.8, -80.2, 0.4], [47.6, -122.3, 0.8],
+    [45.5, -73.6, 1.8], [49.3, -123.1, 0.7], [50.4, 30.5, 3.0], [52.2, 21.0, 1.8],
+    [48.2, 16.4, 2.0], [52.4, 4.9, 0.9], [41.4, 2.2, 1.6], [53.5, -2.2, 0.6],
+    [53.3, -6.3, 0.6], [59.9, 10.8, 0.7], [60.2, 24.9, 0.7], [-31.95, 115.9, 2.1],
+    [-36.85, 174.8, 1.7], [-23.55, -46.6, 22.4], [10.5, -66.9, 2.9], [6.8, -58.2, 0.2],
+    [-16.5, -68.1, 0.9], [15.6, 32.5, 5.8], [36.8, 3.1, 3.4], [14.7, -17.5, 3.1],
+    [-8.8, 13.2, 8.3], [-25.9, 32.6, 1.1], [5.6, -0.2, 2.5], [-6.8, 39.3, 7.0],
+    [43.1, 131.9, 0.6], [55.0, 82.9, 1.6], [56.8, 60.6, 1.5], [69.7, 18.9, 0.08],
+    [64.8, -147.7, 0.03], [-54.8, -68.3, 0.08]
+  ];
+
+  // Painted once per quality tier and reused across mounts: the pixel loops are
+  // the most expensive thing in the whole tool's startup, and remounting a tab
+  // must not pay for them twice.
+  var _issEarthCanvases = {};
+  function issEarthCanvases(size) {
+    var key = String(size);
+    if (_issEarthCanvases[key]) return _issEarthCanvases[key];
+    var W = size, H = size / 2;
+    function make(w, h) {
+      var cvs = document.createElement('canvas');
+      cvs.width = w; cvs.height = h;
+      return cvs;
+    }
+    var dayC = make(W, H), specC = make(W, H), cloudC = make(W, H), nightC = make(W, H);
+    var dayCtx = dayC.getContext && dayC.getContext('2d');
+    var specCtx = specC.getContext && specC.getContext('2d');
+    var cloudCtx = cloudC.getContext && cloudC.getContext('2d');
+    var nightCtx = nightC.getContext && nightC.getContext('2d');
+    if (!dayCtx || !specCtx || !cloudCtx || !nightCtx) return null;
+
+    var mask = issLandMask();
+    function landAt(mx, my) {
+      if (my < 0 || my > ISS_LAND_H - 1) return 0;
+      var col = ((mx % ISS_LAND_W) + ISS_LAND_W) % ISS_LAND_W;
+      return mask[my * ISS_LAND_W + col];
+    }
+    var dayImg = dayCtx.createImageData(W, H), dayPix = dayImg.data;
+    var specImg = specCtx.createImageData(W, H), specPix = specImg.data;
+    var cloudImg = cloudCtx.createImageData(W, H), cloudPix = cloudImg.data;
+    for (var y = 0; y < H; y++) {
+      var lat = 90 - 180 * (y + 0.5) / H;
+      var absLat = Math.abs(lat);
+      var my = Math.floor((90 - lat) / 180 * ISS_LAND_H);
+      // Cloud climatology, as bands rather than blobs: a wet band on the
+      // equator (the ITCZ), the dry subtropical highs either side of it, and
+      // the mid-latitude storm tracks. Real, first-order, and the reason the
+      // Sahara and the Amazon sit at the latitudes they do.
+      var itcz = Math.exp(-Math.pow((lat - 4) / 8, 2)) * 0.42;
+      var storm = Math.exp(-Math.pow((absLat - 54) / 16, 2)) * 0.38;
+      var dry = -Math.exp(-Math.pow((absLat - 25) / 10, 2)) * 0.3;
+      for (var x = 0; x < W; x++) {
+        var lon = -180 + 360 * (x + 0.5) / W;
+        var mx = Math.floor((lon + 180) / 360 * ISS_LAND_W);
+        var isLand = landAt(mx, my) === 1;
+        var i4 = (y * W + x) * 4;
+        var r, g, b, spec;
+        // Grain fields sampled in degrees so they stay the same size whichever
+        // texture tier is being painted.
+        var grain = issFbm(lon / 6, lat / 6, 60, 4);
+        var broad = issFbm(lon / 26, lat / 26, 14, 3);
+        if (isLand) {
+          // Coast test: a cell touching water gets a lighter, sandier edge.
+          var coast = (landAt(mx - 1, my) && landAt(mx + 1, my) && landAt(mx, my - 1) && landAt(mx, my + 1)) ? 0 : 1;
+          var green = [62, 88, 54], arid = [176, 152, 100], boreal = [86, 100, 78], ice = [232, 240, 246];
+          // Aridity: the subtropical belt, blotched by the broad noise field so
+          // it reads as terrain rather than as a painted stripe.
+          var aridW = Math.max(0, Math.min(1, (Math.exp(-Math.pow((absLat - 24) / 11, 2)) * 1.5 + broad - 0.72) * 2.6));
+          var borealW = Math.max(0, Math.min(1, (absLat - 48) / 14));
+          var iceW = 0;
+          if (lat < -63) iceW = 1;                                             // Antarctic ice sheet
+          else if (lat > 60 && lon > -58 && lon < -20) iceW = 1;               // Greenland ice sheet
+          else if (absLat > 74) iceW = 0.8;
+          r = green[0]; g = green[1]; b = green[2];
+          r += (arid[0] - r) * aridW; g += (arid[1] - g) * aridW; b += (arid[2] - b) * aridW;
+          r += (boreal[0] - r) * borealW; g += (boreal[1] - g) * borealW; b += (boreal[2] - b) * borealW;
+          r += (ice[0] - r) * iceW; g += (ice[1] - g) * iceW; b += (ice[2] - b) * iceW;
+          var relief = 0.82 + 0.36 * grain;
+          r *= relief; g *= relief; b *= relief;
+          if (coast) { r = r * 0.72 + 196 * 0.28; g = g * 0.72 + 180 * 0.28; b = b * 0.72 + 140 * 0.28; }
+          spec = 14 + 26 * iceW;                                               // land is matte; ice is not
+        } else {
+          // Shelf water is lighter than deep ocean — the two-ring test is a
+          // cheap stand-in for depth and it is what makes coastlines read.
+          var near = 0;
+          if (landAt(mx - 1, my) || landAt(mx + 1, my) || landAt(mx, my - 1) || landAt(mx, my + 1)) near = 1;
+          else if (landAt(mx - 3, my) || landAt(mx + 3, my) || landAt(mx, my - 3) || landAt(mx, my + 3)) near = 0.5;
+          var deep = [4, 30, 96], shelf = [16, 92, 176];
+          r = deep[0] + (shelf[0] - deep[0]) * near;
+          g = deep[1] + (shelf[1] - deep[1]) * near;
+          b = deep[2] + (shelf[2] - deep[2]) * near;
+          var swirl = 0.9 + 0.2 * broad;
+          r *= swirl; g *= swirl; b *= swirl;
+          // Sea ice: the Arctic Ocean cap and the Antarctic pack.
+          var seaIce = Math.max(0, Math.min(1, (absLat - (lat > 0 ? 72 : 62)) / 6));
+          r += (226 - r) * seaIce; g += (238 - g) * seaIce; b += (246 - b) * seaIce;
+          spec = 80 - 48 * seaIce;                                           // open water carries the sun-glint
+        }
+        // ALBEDO, not screen colour. The scene stacks a 1.65 sun on a hemisphere
+        // light, an ambient and a rim light, so anything painted at full value
+        // here comes back off the GPU as pure white and every coastline is lost.
+        // The planet is painted dark and lit bright, which is also the physically
+        // sensible way round: Earth's real albedo is about 0.3.
+        dayPix[i4] = Math.max(0, Math.min(255, r * 0.30));
+        dayPix[i4 + 1] = Math.max(0, Math.min(255, g * 0.30));
+        dayPix[i4 + 2] = Math.max(0, Math.min(255, b * 0.30));
+        dayPix[i4 + 3] = 255;
+        specPix[i4] = specPix[i4 + 1] = specPix[i4 + 2] = spec; specPix[i4 + 3] = 255;
+        // Clouds are stretched east-west because the winds that shape them are
+        // zonal: the x sample runs at a third of the y frequency.
+        var cloudN = issFbm(lon / 15, lat / 5, 24, 5);
+        var cover = Math.max(0, Math.min(1, (cloudN + itcz + storm + dry - 0.66) * 2.3));
+        var cloudV = Math.round(255 * cover * cover * (3 - 2 * cover));
+        cloudPix[i4] = cloudPix[i4 + 1] = cloudPix[i4 + 2] = cloudV; cloudPix[i4 + 3] = 255;
+      }
+    }
+    dayCtx.putImageData(dayImg, 0, 0);
+    specCtx.putImageData(specImg, 0, 0);
+    cloudCtx.putImageData(cloudImg, 0, 0);
+
+    // Night lights: real coordinates, radius and brightness from metro size.
+    // Stamped straight into an ImageData rather than drawn with radial
+    // gradients under 'lighter' compositing. The gradient version painted a
+    // canvas that looked right to getImageData and toDataURL and still uploaded
+    // as an all-black texture — one putImageData, like the other three maps,
+    // removes the whole question.
+    var nightImg = nightCtx.createImageData(W, H), nightPix = nightImg.data;
+    for (var np = 0; np < nightPix.length; np += 4) { nightPix[np + 3] = 255; }
+    for (var ci = 0; ci < ISS_CITY_LIGHTS.length; ci++) {
+      var city = ISS_CITY_LIGHTS[ci];
+      var cx = (city[1] + 180) / 360 * W;
+      var cy = (90 - city[0]) / 180 * H;
+      var pop = city[2];
+      var rad = Math.max(3, Math.min(34, (3.6 + Math.log(1 + pop) * 4.8) * (W / 1024)));
+      var peak = Math.max(0.45, Math.min(1, 0.4 + Math.log(1 + pop) * 0.24));
+      var x0 = Math.floor(cx - rad), x1 = Math.ceil(cx + rad);
+      var y0 = Math.max(0, Math.floor(cy - rad)), y1 = Math.min(H - 1, Math.ceil(cy + rad));
+      for (var ly = y0; ly <= y1; ly++) {
+        for (var lx = x0; lx <= x1; lx++) {
+          var dx = lx - cx, dy = ly - cy;
+          var dist = Math.sqrt(dx * dx + dy * dy) / rad;
+          if (dist >= 1) continue;
+          // Bright core, fast falloff: a metro is a small blaze in a wide glow.
+          var fall = (1 - dist) * (1 - dist);
+          var v = peak * (fall * 0.55 + Math.pow(1 - dist, 7) * 0.85);
+          // Wrap x so a city near ±180° is not clipped at the seam.
+          var wx = ((lx % W) + W) % W;
+          var ni = (ly * W + wx) * 4;
+          nightPix[ni] = Math.min(255, nightPix[ni] + v * 255);
+          nightPix[ni + 1] = Math.min(255, nightPix[ni + 1] + v * 226);
+          nightPix[ni + 2] = Math.min(255, nightPix[ni + 2] + v * 152);
+        }
+      }
+    }
+    nightCtx.putImageData(nightImg, 0, 0);
+
+    var built = { day: dayC, spec: specC, cloud: cloudC, night: nightC };
+    _issEarthCanvases[key] = built;
+    return built;
+  }
+
+  // A soft additive disc for the Sun and for the docking-port capture flash.
+  var _issGlowCanvas = null;
+  function issGlowCanvas() {
+    if (_issGlowCanvas) return _issGlowCanvas;
+    var cvs = document.createElement('canvas');
+    cvs.width = 128; cvs.height = 128;
+    var g2d = cvs.getContext && cvs.getContext('2d');
+    if (!g2d) return null;
+    var grad = g2d.createRadialGradient(64, 64, 0, 64, 64, 64);
+    grad.addColorStop(0, 'rgba(255,255,255,1)');
+    grad.addColorStop(0.12, 'rgba(255,247,220,0.95)');
+    grad.addColorStop(0.32, 'rgba(255,214,140,0.42)');
+    grad.addColorStop(0.62, 'rgba(255,178,96,0.12)');
+    grad.addColorStop(1, 'rgba(255,160,80,0)');
+    g2d.fillStyle = grad;
+    g2d.fillRect(0, 0, 128, 128);
+    _issGlowCanvas = cvs;
+    return cvs;
+  }
 
   window.StemLab.registerTool('spaceStation', {
     icon: '🛰️',
@@ -244,7 +606,7 @@
       { id: 'iss_inside', label: 'Complete 3 jobs inside the station', icon: '🧑‍🔬', check: function (d) { var s = (d && d.spaceStation) || {}; return Object.keys(s.interiorDone || {}).filter(function (k) { return !!s.interiorDone[k]; }).length >= 3; } },
       { id: 'iss_ops', label: 'Simulate a full station orbit', icon: '📡', check: function (d) { var s = (d && d.spaceStation) || {}; return (s.opsRuns || 0) >= 1; } },
       { id: 'iss_orbit', label: 'Change the orbit in the Orbit Lab', icon: '🧮', check: function (d) { var s = (d && d.spaceStation) || {}; return !!s.orbitTouched; } },
-      { id: 'iss_quiz', label: 'Score 7+ on the station quiz', icon: '🧠', check: function (d) { var s = (d && d.spaceStation) || {}; return (s.quizBest || 0) >= 7; } },
+      { id: 'iss_quiz', label: 'Score ' + QUIZ_PASS + '+ on the station quiz', icon: '🧠', check: function (d) { var s = (d && d.spaceStation) || {}; return (s.quizBest || 0) >= QUIZ_PASS; } },
       { id: 'iss_dock', label: 'Achieve a soft-capture docking', icon: '🚀', check: function (d) { var s = (d && d.spaceStation) || {}; return (s.dockWins || 0) >= 1; } },
       { id: 'iss_eva', label: 'Complete the spacewalk pump repair', icon: '🧑‍🚀', check: function (d) { var s = (d && d.spaceStation) || {}; return !!(s.eva && s.eva.done && !s.eva.failMsg); } }
     ],
@@ -266,13 +628,13 @@
       if (!labToolData || !labToolData.spaceStation) {
         setLabToolData(function (prev) {
           return Object.assign({}, prev, { spaceStation: {
-            tab: 'interior', selModule: 'zarya', dayIdx: 0, sysIdx: 0, sysStep: 0,
+            tab: 'map', selModule: 'zarya', dayIdx: 0, sysIdx: 0, sysStep: 0,
             interiorRoom: 'harmony', interiorDone: {}, interiorSeen: { harmony: true }, interiorChoices: {},
             interiorInspected: {}, interiorAttempts: {}, interiorDiscovery: null, interiorLog: [],
             interiorGuided: true, lowGImpulse: 10, lowGResult: null,
             researchStep: 0, researchFeedback: '', researchErrors: 0, maintenanceChecks: {}, maintenanceReading: null, interiorNotes: {}, cabinStow: {}, cupolaTarget: 'day', cupolaCaptured: false, cupolaShutters: false, cupolaObservation: '',
             opsMode: 'integrated', opsScenario: 'nominal', opsOrbitMinute: 0, opsFocus: 'all', opsCrew: 7, opsResearch: 60, opsArrayAngle: 86, opsEclipse: 35, opsBattery: 76, opsRecovery: 98, opsScrub: 88, opsRadiator: 82, opsCooling: 86, opsCmg: 28, opsMissionDays: 180, opsExercise: 2.5, opsDebrisSize: 1, opsShieldGap: 10, opsDebrisSpeed: 12, opsEmergency: 'leak', opsEmergencyResult: '', opsRuns: 0, opsLog: [], assemblyIdx: 11,
-            orbitAlt: 420, quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false, quizResults: {},
+            orbitAlt: 420, orbitInc: 51.6, quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false, quizResults: {},
             seenModules: {}, seenHours: {}, orbitTouched: false, quizBest: 0, mapView: 'overview', mapCutaway: false,
             askInput: '', askAnswer: '', askLoading: false
           } });
@@ -348,46 +710,185 @@
           renderer.shadowMap.enabled = true;
           renderer.shadowMap.type = THREE.PCFSoftShadowMap;
           var scene = new THREE.Scene();
-          scene.background = new THREE.Color(0x030712);
-          scene.fog = new THREE.FogExp2(0x030712, 0.0055);
+          // Authored PRE tone-mapping. A plain render writes the clear colour
+          // straight out, but the post-FX chain puts the background through ACES
+          // like everything else, and 0x030712 came out of that as a milky navy
+          // (8,31,66) — the scene read as haze rather than as space. Measured on
+          // the real framebuffer: this value lands at (0,2,6) through the
+          // composer, which is the black the sky was always meant to be.
+          scene.background = new THREE.Color(0x000102);
+          scene.fog = new THREE.FogExp2(0x000102, 0.0055);
           var camera = new THREE.PerspectiveCamera(46, Wc / Hc, 0.1, 220);
           camera.position.set(8.2, 4.8, 10.4);
           camera.lookAt(0, 0, 1);
           scene.add(new THREE.HemisphereLight(0x9bdcff, 0x081225, 0.65));
           scene.add(new THREE.AmbientLight(0x7288aa, 0.32));
           var sun = new THREE.DirectionalLight(0xfff3da, 1.65);
+          // Deliberately NOT a point on the sweep above. Under reduced motion
+          // the sweep never runs, so this value's only job is to be the best
+          // still image of the station; it was chosen for that and photographed
+          // against the alternatives.
           sun.position.set(10, 7, 5); sun.castShadow = true;
           sun.shadow.mapSize.width = 1024; sun.shadow.mapSize.height = 1024;
           sun.shadow.camera.left = -13; sun.shadow.camera.right = 13; sun.shadow.camera.top = 13; sun.shadow.camera.bottom = -13;
           scene.add(sun);
           var rim = new THREE.DirectionalLight(0x38bdf8, 0.8);
           rim.position.set(-8, -2, -9); scene.add(rim);
-          // Earth below (big soft sphere, out of frame mostly)
-          // Tighter specular highlight = the ocean sun-glint that shows up in
-          // almost every real Cupola photograph (shininess 16 smeared it flat).
-          var earth = new THREE.Mesh(new THREE.SphereGeometry(30, 64, 40), new THREE.MeshPhongMaterial({ color: 0x185a92, emissive: 0x061a38, specular: 0xa8e4ff, shininess: 46 }));
+          // Earth below. Real Natural Earth coastlines, a specular map so only
+          // open water carries the sun-glint that shows up in almost every real
+          // Cupola photograph, and an emissive map of city lights at real
+          // coordinates so the night side is a map instead of a black gap.
+          // Every step is optional: if the 2-D canvas context is unavailable the
+          // planet falls back to the plain blue sphere it has always been.
+          var earthQuality = (_prefersReducedMotion || (!!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4)) ? 512 : 1024;
+          var earthSkin = null;
+          try { earthSkin = issEarthCanvases(earthQuality); } catch (e) { earthSkin = null; }
+          var earthTextures = [];
+          function issTexture(canvasEl, srgb) {
+            var tex = new THREE.CanvasTexture(canvasEl);
+            if (srgb && THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
+            if (THREE.RepeatWrapping) tex.wrapS = THREE.RepeatWrapping;
+            try { tex.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy()); } catch (e2) {}
+            earthTextures.push(tex);
+            return tex;
+          }
+          var earthMatOpts = { color: 0x185a92, emissive: 0x061a38, specular: 0xa8e4ff, shininess: 46 };
+          if (earthSkin) {
+            earthMatOpts.color = 0xffffff;
+            // Shininess 46 was tuned for an untextured sphere, where a broad
+            // sheen read as "shiny planet". Over a real surface map that same
+            // sheen is a white veil across half the disc and the coastlines
+            // vanish under it. A tight, small glint is both the truer look and
+            // the one that leaves the map readable.
+            earthMatOpts.shininess = 130;
+            earthMatOpts.specular = 0x9ec7e8;
+            earthMatOpts.map = issTexture(earthSkin.day, true);
+            earthMatOpts.specularMap = issTexture(earthSkin.spec, false);
+            // Phong adds emissive regardless of the light direction, so the
+            // cities glow faintly through daylight too. Kept low enough that
+            // the day side still reads as day and the night side still reads
+            // as a lit map — a custom shader would be the only exact fix and
+            // is not worth the fragility here.
+            earthMatOpts.emissive = 0xffffff;
+            earthMatOpts.emissiveMap = issTexture(earthSkin.night, true);
+            earthMatOpts.emissiveIntensity = 1.8;
+          }
+          var earth = new THREE.Mesh(new THREE.SphereGeometry(30, 64, 40), new THREE.MeshPhongMaterial(earthMatOpts));
+          // Only non-null when the city-light map exists, so the per-frame
+          // night-lights ramp below can be a single truthiness check.
+          var earthLightsMat = earthMatOpts.emissiveMap ? earth.material : null;
           earth.position.set(0, -34.5, 0); earth.receiveShadow = true;
+          // Chosen by photographing the scene at six rotations and counting how
+          // much land and how many city lights land in the DEFAULT view: this
+          // one puts a populated, land-heavy face under the station at rest
+          // instead of the middle of the Pacific.
+          earth.rotation.y = 0;
           scene.add(earth);
-          var cloudShell = new THREE.Mesh(new THREE.SphereGeometry(30.18, 64, 40), new THREE.MeshPhongMaterial({ color: 0xdff4ff, transparent: true, opacity: 0.055, depthWrite: false, shininess: 4 }));
-          cloudShell.position.copy(earth.position); scene.add(cloudShell);
+          var cloudMatOpts = { color: 0xdff4ff, transparent: true, opacity: 0.055, depthWrite: false, shininess: 4 };
+          if (earthSkin) {
+            // A real cloud deck instead of a flat white haze: alpha comes from
+            // the painted band map, so the deck thickens over the ITCZ and the
+            // storm tracks and thins over the subtropical highs.
+            cloudMatOpts.alphaMap = issTexture(earthSkin.cloud, false);
+            cloudMatOpts.opacity = 0.34;
+          }
+          // 30.06 rather than 30.18: at this scale 30 units is Earth's radius,
+          // so the old shell floated 38 km up and cast a visible offset halo at
+          // the limb. Weather lives around 10 km.
+          var cloudShell = new THREE.Mesh(new THREE.SphereGeometry(earthSkin ? 30.06 : 30.18, 64, 40), new THREE.MeshPhongMaterial(cloudMatOpts));
+          cloudShell.position.copy(earth.position);
+          cloudShell.rotation.y = earth.rotation.y;
+          scene.add(cloudShell);
           // Two additive back-side shells give the limb the "thin blue line":
           // a wide outer scatter halo plus a tight, brighter airglow band right
           // at the top of the atmosphere. Additive so the bloom pass finds them.
-          var atmo = new THREE.Mesh(new THREE.SphereGeometry(30.65, 64, 40), new THREE.MeshBasicMaterial({ color: 0x67c8ff, transparent: true, opacity: 0.15, side: THREE.BackSide, depthWrite: false, blending: THREE.AdditiveBlending }));
-          atmo.position.copy(earth.position);
-          scene.add(atmo);
-          var airglow = new THREE.Mesh(new THREE.SphereGeometry(30.3, 64, 40), new THREE.MeshBasicMaterial({ color: 0xbfeeff, transparent: true, opacity: 0.3, side: THREE.BackSide, depthWrite: false, blending: THREE.AdditiveBlending }));
-          airglow.position.copy(earth.position);
-          scene.add(airglow);
-          // Stars
-          var starGeo = new THREE.BufferGeometry();
-          var starPos = new Float32Array(620 * 3);
-          for (var si = 0; si < 620; si++) {
-            var sv = new THREE.Vector3((Math.random() - 0.5), (Math.random() - 0.2), (Math.random() - 0.5)).normalize().multiplyScalar(90);
-            starPos[si * 3] = sv.x; starPos[si * 3 + 1] = sv.y; starPos[si * 3 + 2] = sv.z;
+          //
+          // Both used to be one flat colour all the way round, which lit the
+          // NIGHT side's limb as brightly as the day side's and skipped the most
+          // recognisable thing an astronaut sees. Per-vertex colour fixes that
+          // and teaches the reason: sunlight reaching the terminator takes a
+          // long slant path through the atmosphere, Rayleigh scattering strips
+          // the blue out of it, and what is left is the orange line every
+          // orbital sunrise photograph is famous for.
+          var limbShells = [];
+          function makeLimbShell(radius, dayColor, warmColor, opacity) {
+            var geo = new THREE.SphereGeometry(radius, 64, 40);
+            var pos = geo.attributes.position;
+            var colors = new Float32Array(pos.count * 3);
+            var attr = new THREE.BufferAttribute(colors, 3);
+            if (THREE.DynamicDrawUsage) attr.setUsage(THREE.DynamicDrawUsage);
+            geo.setAttribute('color', attr);
+            var mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
+              color: 0xffffff, vertexColors: true, transparent: true, opacity: opacity,
+              side: THREE.BackSide, depthWrite: false, blending: THREE.AdditiveBlending
+            }));
+            mesh.position.copy(earth.position);
+            // The shells carry no rotation, so a local vertex direction is
+            // already a world direction and the sun test needs no transform.
+            var day = new THREE.Color(dayColor), warm = new THREE.Color(warmColor);
+            var inv = 1 / radius;
+            limbShells.push({
+              mesh: mesh,
+              update: function (sunDir) {
+                for (var i = 0; i < pos.count; i++) {
+                  var d = (pos.getX(i) * sunDir.x + pos.getY(i) * sunDir.y + pos.getZ(i) * sunDir.z) * inv;
+                  // Lit limb, terminator flare, and a floor so the night limb is
+                  // a faint airglow rather than a hard cut to nothing.
+                  var lit = Math.max(0, Math.min(1, (d + 0.02) / 0.32));
+                  var term = Math.exp(-(d / 0.13) * (d / 0.13));
+                  var i3 = i * 3;
+                  colors[i3] = day.r * lit + warm.r * term * 0.75 + 0.02;
+                  colors[i3 + 1] = day.g * lit + warm.g * term * 0.75 + 0.03;
+                  colors[i3 + 2] = day.b * lit + warm.b * term * 0.75 + 0.05;
+                }
+                attr.needsUpdate = true;
+              }
+            });
+            return mesh;
           }
-          starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-          scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xdbeafe, size: 0.3, transparent: true, opacity: 0.8, depthWrite: false, sizeAttenuation: true, blending: THREE.AdditiveBlending })));
+          var atmo = makeLimbShell(30.65, 0x67c8ff, 0xff8b3d, 0.17);
+          scene.add(atmo);
+          var airglow = makeLimbShell(30.3, 0xbfeeff, 0xffb056, 0.32);
+          scene.add(airglow);
+          // Stars, in two magnitude tiers with per-star colour. A single
+          // uniform white field reads as digital dust; real starlight varies in
+          // both brightness and colour temperature, and the few bright ones are
+          // what give the sky depth behind the station.
+          function addStarTier(count, pointSize, opacity, warmth) {
+            var starGeo = new THREE.BufferGeometry();
+            var starPos = new Float32Array(count * 3);
+            var starCol = new Float32Array(count * 3);
+            for (var si = 0; si < count; si++) {
+              var sv = new THREE.Vector3((Math.random() - 0.5), (Math.random() - 0.2), (Math.random() - 0.5)).normalize().multiplyScalar(90);
+              starPos[si * 3] = sv.x; starPos[si * 3 + 1] = sv.y; starPos[si * 3 + 2] = sv.z;
+              // temp < 0 leans blue-white (hot stars), > 0 leans amber (cool).
+              var temp = (Math.random() - 0.5) * 2 * warmth;
+              var dim = 0.62 + Math.random() * 0.38;
+              starCol[si * 3] = Math.min(1, (1 + Math.max(0, temp) * 0.25) * dim);
+              starCol[si * 3 + 1] = Math.min(1, (1 - Math.abs(temp) * 0.09) * dim);
+              starCol[si * 3 + 2] = Math.min(1, (1 + Math.max(0, -temp) * 0.35) * dim);
+            }
+            starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+            starGeo.setAttribute('color', new THREE.BufferAttribute(starCol, 3));
+            scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ size: pointSize, vertexColors: true, transparent: true, opacity: opacity, depthWrite: false, sizeAttenuation: true, blending: THREE.AdditiveBlending })));
+          }
+          addStarTier(620, 0.28, 0.78, 0.5);
+          addStarTier(58, 0.62, 0.95, 0.8);
+
+          // The Sun itself, as an additive billboard past the star sphere. It
+          // anchors the light: when the day/night sweep carries it behind the
+          // Earth the limb occludes it, which is exactly what an orbital
+          // sunset looks like from the Cupola.
+          var sunGlow = null, sunGlowTex = null;
+          try {
+            var glowSrc = issGlowCanvas();
+            if (glowSrc) {
+              sunGlowTex = new THREE.CanvasTexture(glowSrc);
+              if (THREE.sRGBEncoding) sunGlowTex.encoding = THREE.sRGBEncoding;
+              sunGlow = new THREE.Mesh(new THREE.PlaneGeometry(26, 26), new THREE.MeshBasicMaterial({ map: sunGlowTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+              scene.add(sunGlow);
+            }
+          } catch (e) { sunGlow = null; }
 
           var station = new THREE.Group();
           station.rotation.z = -0.055;
@@ -525,6 +1026,54 @@
           armHand.position.copy(armTip); armHand.rotation.z = armAngle2; armHand.castShadow = true;
           station.add(armHand);
 
+          // ── Visiting vehicles ────────────────────────────────────────────
+          // The real station is almost never alone: a crew or cargo Dragon sits
+          // on Harmony's forward port and a Progress freighter on Zvezda's aft
+          // port for most of any given month, and the aft freighter is what
+          // performs the reboosts the Systems tab talks about. They are
+          // attached as details of the module they are docked to, so the
+          // cutaway control dims them with their host.
+          function addVisitor(mesh, hostId) {
+            mesh.castShadow = true;
+            mesh._issParentId = hostId;
+            station.add(mesh); moduleDetails.push(mesh);
+            return mesh;
+          }
+          var hullMat = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.42, metalness: 0.35, transparent: true });
+          var trunkMat = new THREE.MeshStandardMaterial({ color: 0xd7dde5, roughness: 0.5, metalness: 0.3, transparent: true });
+          var arrayMat = new THREE.MeshStandardMaterial({ color: 0x1e2f57, roughness: 0.3, metalness: 0.7, emissive: 0x0a1836, transparent: true, side: THREE.DoubleSide });
+          // Dragon: cone-shaped capsule nose-in to Harmony (z = -4.2), trunk
+          // behind it with the body-mounted solar cells that replaced the old
+          // deployable wings.
+          var dragonNose = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.12, 10), trunkMat);
+          dragonNose.rotation.x = Math.PI / 2; dragonNose.position.set(0, 0, -4.26);
+          addVisitor(dragonNose, 'harmony');
+          var dragonCap = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.72, 16), hullMat);
+          dragonCap.rotation.x = -Math.PI / 2; dragonCap.position.set(0, 0, -4.68);
+          addVisitor(dragonCap, 'harmony');
+          var dragonTrunk = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.82, 16), trunkMat);
+          dragonTrunk.rotation.x = Math.PI / 2; dragonTrunk.position.set(0, 0, -5.45);
+          addVisitor(dragonTrunk, 'harmony');
+          var dragonCells = new THREE.Mesh(new THREE.CylinderGeometry(0.308, 0.308, 0.7, 16, 1, true, -Math.PI * 0.62, Math.PI * 1.24), arrayMat);
+          dragonCells.rotation.x = Math.PI / 2; dragonCells.position.set(0, 0, -5.45);
+          addVisitor(dragonCells, 'harmony');
+          // Progress: freighter on Zvezda's aft port (z = +6.2), the end of the
+          // station its engines push against during a reboost.
+          var progressCargo = new THREE.Mesh(new THREE.CylinderGeometry(0.23, 0.23, 0.7, 14), hullMat);
+          progressCargo.rotation.x = Math.PI / 2; progressCargo.position.set(0, 0, 6.58);
+          addVisitor(progressCargo, 'zvezda');
+          var progressBus = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.52, 14), trunkMat);
+          progressBus.rotation.x = Math.PI / 2; progressBus.position.set(0, 0, 7.16);
+          addVisitor(progressBus, 'zvezda');
+          [-1, 1].forEach(function (side) {
+            var wingPanel = new THREE.Mesh(new THREE.BoxGeometry(0.98, 0.02, 0.52), arrayMat);
+            wingPanel.position.set(side * 0.74, 0, 7.16);
+            addVisitor(wingPanel, 'zvezda');
+          });
+          var progressBell = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.1, 0.14, 10), new THREE.MeshStandardMaterial({ color: 0x3f4a5a, roughness: 0.55, metalness: 0.5, transparent: true }));
+          progressBell.rotation.x = Math.PI / 2; progressBell.position.set(0, 0, 7.49);
+          addVisitor(progressBell, 'zvezda');
+
           // Selection highlight
           // Brightened past the bloom threshold so the ring reads as a glowing
           // halo. Kept on normal blending, not additive: additive would wash the
@@ -600,7 +1149,13 @@
               truss: { camera: [0, 6.8, 10.8], target: [0, 0, -1.6], rotation: [0, 0, 0] },
               labs: { camera: [6.8, 2.4, -7.8], target: [0, 0, -2.8], rotation: [0, 0.25, -0.04] },
               russian: { camera: [5.8, 2.2, 11.8], target: [0, 0, 4.1], rotation: [0, -0.2, -0.04] },
-              nadir: { camera: [0, -11.5, 2.5], target: [0, 0, .5], rotation: [0, 0, 0] }
+              // Earth's surface sits at y = -4.5 in this scene (centre -34.5,
+              // radius 30), so the old nadir camera at y = -11.5 was INSIDE the
+              // planet: the "Earth-facing" button showed a flat pale wash — the
+              // inside of the atmosphere shells — and no Earth at all. Sitting
+              // just above the surface and looking up at the station's belly is
+              // the view the button has always promised.
+              nadir: { camera: [0, -3.9, 5.6], target: [0, 0, .5], rotation: [0, 0, 0] }
             };
             var view = views[name] || views.overview;
             if (_prefersReducedMotion) {
@@ -688,6 +1243,7 @@
           var _sunDir = new THREE.Vector3(), _wingQ = new THREE.Quaternion(), _wingNormal = new THREE.Vector3();
           var _axisOrigin = new THREE.Vector3(), _axisEnd = new THREE.Vector3();
           var _lastFrameSig = '';
+          var _lastLimbSun = new THREE.Vector3(), _limbPainted = false;
 
           var tick = 0, rafId = 0;
           function animate() {
@@ -704,10 +1260,35 @@
             if (!_prefersReducedMotion) {
               if (!dragging && !cameraTween) station.rotation.y += 0.0016;
               wings.forEach(function (w, i) { w.rotation.z += 0.0012 + i * 0.0001; }); // sun-tracking alpha joints
-              cloudShell.rotation.y += 0.00015;
+              // The ground track: the planet turns under the station, and the
+              // cloud deck turns very slightly faster than the surface it sits
+              // on, which is the wind.
+              earth.rotation.y += 0.00042;
+              cloudShell.rotation.y += 0.00057;
+              // Orbital day and night. The sweep used to circle the station in a
+              // HORIZONTAL plane, which kept the Sun permanently above the
+              // planet: the station dimmed on cue but the Earth's near face was
+              // lit at every point in the orbit, so it never had a night side at
+              // all. Circling in a plane that contains the Earth-station line
+              // makes "the station is eclipsed" and "the ground below is in
+              // darkness" the same event — which is what they are.
+              // The horizontal leg swings through z as well as x. With z pinned
+              // at +4.5 the Sun stayed behind the camera for the entire sweep —
+              // projecting it for all 360° of the orbit and all five camera
+              // presets, it never came within 1.9 frame-widths of the overview,
+              // so the Sun the whole day/night model turns on was permanently
+              // off screen. Tilting the sweep plane costs nothing (any plane
+              // containing the Earth-station line still gives a terminator) and
+              // brings the Sun into the landing view right at orbital sunset.
               var sa = tick * 0.002;
-              sun.position.set(Math.cos(sa) * 10, 6, Math.sin(sa) * 10); // day/night lighting sweep
-              sun.intensity = 0.55 + 0.7 * Math.max(0, Math.cos(sa));    // orbital "night" dims the station
+              sun.position.set(Math.cos(sa) * 10, Math.sin(sa) * 9.5, Math.cos(sa) * 4.5);
+              sun.intensity = 0.55 + 0.7 * Math.max(0, Math.sin(sa));    // orbital "night" dims the station
+            }
+            if (sunGlow) {
+              // Parked far out along the light's own direction so the Earth's
+              // limb can eclipse it, and turned to face the camera every frame.
+              sunGlow.position.copy(sun.position).normalize().multiplyScalar(78);
+              sunGlow.lookAt(camera.position);
             }
             // Sunlit-vs-eclipsed drives two real, teachable details: an array only
             // flashes when its tracking joint has brought it face-on to the Sun
@@ -716,6 +1297,18 @@
             // because in eclipse there is no sunlight to reflect.
             var daylight01 = Math.max(0, Math.min(1, (sun.intensity - 0.55) / 0.7));
             _sunDir.copy(sun.position).normalize();
+            // Repaint the limb only when the Sun has actually moved enough to
+            // change it — every 4th frame at most, and never at all while the
+            // scene is frozen for reduced motion. 2,665 vertices per shell is
+            // cheap once and wasteful sixty times a second.
+            if (tick % 4 === 0 && limbShells.length) {
+              var limbMoved = _sunDir.distanceToSquared(_lastLimbSun) > 1e-5;
+              if (limbMoved || !_limbPainted) {
+                for (var ls = 0; ls < limbShells.length; ls++) limbShells[ls].update(_sunDir);
+                _lastLimbSun.copy(_sunDir);
+                _limbPainted = true;
+              }
+            }
             for (var wi2 = 0; wi2 < wings.length; wi2++) {
               wings[wi2].getWorldQuaternion(_wingQ);
               _wingNormal.set(0, 1, 0).applyQuaternion(_wingQ);
@@ -727,6 +1320,14 @@
               }
             }
             var lampOn = 1 - daylight01;
+            // City lights come up as the station crosses into orbital night and
+            // fade out in daylight. Phong adds emissive regardless of where the
+            // Sun is, so a fixed intensity either blows the lights to white over
+            // the day side or leaves them invisible over the night side; driving
+            // them from the same daylight term the windows and the array glint
+            // use puts them where they belong. This is also true to life: you
+            // cannot see a city's lights from orbit at local noon.
+            if (earthLightsMat) earthLightsMat.emissiveIntensity = 0.1 + 1.45 * lampOn;
             for (var vi = 0; vi < viewportMats.length; vi++) {
               viewportMats[vi].color.setRGB(0.42 + 0.32 * lampOn, 0.62 + 0.33 * lampOn, 0.72 + 0.28 * lampOn);
             }
@@ -800,7 +1401,7 @@
                 '|' + camera.position.x.toFixed(3) + ',' + camera.position.y.toFixed(3) + ',' + camera.position.z.toFixed(3) +
                 '|' + q.x.toFixed(4) + ',' + q.y.toFixed(4) + ',' + q.z.toFixed(4) + ',' + q.w.toFixed(4) +
                 '|' + station.rotation.x.toFixed(4) + ',' + station.rotation.y.toFixed(4) +
-                '|' + Wc + 'x' + Hc + '|' + (composer ? 1 : 0);
+                '|' + Wc + 'x' + Hc + '|' + (composer ? 1 : 0) + '|' + (_limbPainted ? 1 : 0);
               if (frameSig === _lastFrameSig && tick % 120 !== 0) { rafId = requestAnimationFrame(animate); return; }
               _lastFrameSig = frameSig;
             }
@@ -818,6 +1419,10 @@
             window.removeEventListener('pointercancel', onUp);
             if (resizeObserver) resizeObserver.disconnect(); else window.removeEventListener('resize', resizeScene);
             try { if (composer && typeof composer.dispose === 'function') composer.dispose(); } catch (e) {}
+            // The source canvases are cached and reused; the GPU-side textures
+            // are per-renderer and must go with it.
+            try { earthTextures.forEach(function (tex) { if (tex && typeof tex.dispose === 'function') tex.dispose(); }); } catch (e) {}
+            try { if (sunGlowTex && typeof sunGlowTex.dispose === 'function') sunGlowTex.dispose(); } catch (e) {}
             try { renderer._alloComposer = null; } catch (e) {}
             composer = null;
             try { renderer.dispose(); } catch (e) {}
@@ -838,6 +1443,20 @@
       var GM = 398600.4418; // km^3/s^2
       var R_EARTH = 6371;   // km
       var orbitAlt = Math.max(200, Math.min(2000, Number(d.orbitAlt) || 420));
+      // Validated RAW before coercion, and derived ONCE. Number('') is 0, which
+      // would silently show an equatorial orbit as if the student had chosen it,
+      // and Number('abc') is NaN, which clamps to NaN and puts NaN into every
+      // coordinate in the ground-track SVG. The expression also used to be
+      // written out in both places that need it, so a changed default would
+      // have disagreed with itself.
+      // isFinite(Number(x)) alone is NOT enough: Number('') is 0, which is
+      // finite, so an empty value would sail through as a deliberate equatorial
+      // orbit. The raw value has to be rejected BEFORE coercion. A real numeric
+      // 0 must still survive — it is the Equatorial preset.
+      var _rawInc = d.orbitInc;
+      if (typeof _rawInc === 'string') _rawInc = _rawInc.trim();
+      var _incNum = (_rawInc == null || _rawInc === '') ? 51.6 : Number(_rawInc);
+      var orbitInc = Math.max(0, Math.min(90, isFinite(_incNum) ? _incNum : 51.6));
       var orbitR = R_EARTH + orbitAlt;
       var orbitV = Math.sqrt(GM / orbitR);                       // km/s
       var orbitT = (2 * Math.PI * orbitR / orbitV) / 60;         // minutes
@@ -2337,10 +2956,13 @@
           h('div',{className:'iss-ops-debrief'},h('strong',{style:{color:'#7dd3fc',fontSize:11}},'FLIGHT DIRECTOR DEBRIEF'),h('p',{style:{margin:'5px 0 0',color:TEXT,fontSize:11.5,lineHeight:1.55}},health>=75?'All modeled systems retain useful margin. Now increase research load or crew size and find the boundary.':health>=50?'The station is operating with thin margin. Inspect the red or amber subsystem before the next orbit.':'Mission rule violation: one or more life-critical systems require immediate correction.'),(d.opsLog||[]).length?h('div',{className:'iss-ops-log',role:'log'},(d.opsLog||[]).map(function(entry,i){return h('div',{key:i},entry);})):null));
       }
       // ── Tabs ──
+      // The 3-D station leads: it is the thing the tool is named after, it is
+      // the surface that tells a student in one second what they are looking
+      // at, and everything else in the tool is a way of going deeper into it.
       var TABS = [
+        { id: 'map', icon: '🛰️', label: __alloT('stem.spacestation.tab_map', '3-D Station') },
         { id: 'interior', icon: '🧑‍🚀', label: __alloT('stem.spacestation.tab_interior', 'Inside: Crew Shift') },
         { id: 'operations', icon: '📡', label: __alloT('stem.spacestation.tab_operations', 'Mission Operations') },
-        { id: 'map', icon: '🛰️', label: __alloT('stem.spacestation.tab_map', '3-D Station') },
         { id: 'day', icon: '👩‍🚀', label: __alloT('stem.spacestation.tab_day', 'A Day Aboard') },
         { id: 'systems', icon: '⚙️', label: __alloT('stem.spacestation.tab_systems', 'Systems & Challenges') },
         { id: 'orbit', icon: '🧮', label: __alloT('stem.spacestation.tab_orbit', 'Orbit Lab') },
@@ -2348,7 +2970,7 @@
         { id: 'history', icon: '📜', label: __alloT('stem.spacestation.tab_history', 'History & Future') },
         { id: 'quiz', icon: '🧠', label: __alloT('stem.spacestation.tab_quiz', 'Quiz') }
       ];
-      var tab = d.tab || 'interior';
+      var tab = d.tab || 'map';
 
       function renderModuleBlueprint(module) {
         var moduleColor = '#' + Number(module.color || 0x38bdf8).toString(16).padStart(6, '0');
@@ -2379,14 +3001,14 @@
       }
       function renderMap() {
         return h('div', null,
-          h('p', { id: 'iss-map-instructions', style: { fontSize: 12.5, color: SOFT, lineHeight: 1.6, margin: '0 0 10px' } },
-            __alloT('stem.spacestation.map_intro', 'A schematic (not to scale) 3-D map of the real station. Drag or use the arrow keys to rotate, plus and minus to zoom, and Home to return to the overview. The module buttons provide an equivalent non-canvas inspection path.')),
-          h('button', { type: 'button', onClick: function () { upd({ tab: 'interior', interiorRoom: d.interiorRoom || 'harmony' }); }, style: { margin: '0 0 10px', padding: '7px 12px', borderRadius: 9, border: '1px solid #38bdf8', background: 'rgba(56,189,248,0.12)', color: '#7dd3fc', fontWeight: 800, fontSize: 12, cursor: 'pointer' } }, '🚪 Open the hatch — explore inside'),
+          // The station comes FIRST on this tab — before instructions, before
+          // any button. It is the landing view of the whole tool, so the first
+          // thing on screen should be the thing itself.
           h('div', { className: 'iss-station-stage', style: { position: 'relative', borderRadius: 12, overflow: 'hidden', border: '1px solid #334155', background: '#050a18' } },
             h('canvas', {
               ref: function (cv) { if (cv) { cv._issWantSel = d.selModule; cv._issCutaway = !!d.mapCutaway; stationCanvasRef(cv); } },
               role: 'application', tabIndex: 0,
-              'aria-label': __alloT('stem.spacestation.canvas_aria', 'Interactive 3-D model of the International Space Station.'),
+              'aria-label': __alloT('stem.spacestation.canvas_aria', 'Interactive 3-D model of the International Space Station, orbiting above a lit Earth with a Dragon spacecraft docked at Harmony and a Progress freighter at Zvezda’s aft port.'),
               'aria-describedby': 'iss-map-instructions iss-map-status iss-map-orientation',
               'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight + - Home',
               style: { width: '100%', height: 'clamp(320px, 52vw, 500px)', display: 'block' }
@@ -2408,6 +3030,11 @@
             [['overview','◉ Overview'],['truss','↔ Truss'],['labs','⚗ Labs'],['russian','★ Russian segment'],['nadir','🌍 Earth-facing']].map(function (view) { var on = (d.mapView || 'overview') === view[0]; return h('button', { key: view[0], type: 'button', 'data-iss-camera-view': view[0], 'aria-pressed': on, onClick: function () { upd({ mapView: view[0] }); var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issSetView) cv._issSetView(view[0]); } }, view[1]); }),
             h('button', { type: 'button', 'data-iss-focus-module': d.selModule, onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issFocusModule) cv._issFocusModule(d.selModule); announceToSR('Camera centered on ' + selModule.name + '.'); } }, '◎ Center ' + selModule.name.split(' (')[0]),
             h('button', { type: 'button', 'data-iss-cutaway': 'true', 'aria-pressed': !!d.mapCutaway, onClick: function () { upd({ mapCutaway: !d.mapCutaway }); } }, d.mapCutaway ? '◫ Cutaway ON' : '▣ Isolate selected module')),
+          h('p', { id: 'iss-map-instructions', style: { fontSize: 12.5, color: SOFT, lineHeight: 1.6, margin: '10px 0' } },
+            __alloT('stem.spacestation.map_intro', 'A schematic (not to scale) 3-D map of the real station, with a Dragon docked at Harmony and a Progress freighter on Zvezda’s aft port. Drag or use the arrow keys to rotate, plus and minus to zoom, and Home to return to the overview. The module buttons provide an equivalent non-canvas inspection path.')),
+          h('p', { style: { fontSize: 11.5, color: SOFT, lineHeight: 1.55, margin: '0 0 10px', paddingLeft: 9, borderLeft: '2px solid rgba(148,163,184,.35)' } },
+            __alloT('stem.spacestation.earth_note', 'About the planet below: the coastlines are real, drawn from the public-domain Natural Earth dataset, and the city lights sit at the real coordinates of major metropolitan areas. The surface colouring, sea ice and cloud bands are schematic — a picture of where deserts, storm tracks and ice tend to be, not measured data. The station is drawn hanging above the globe rather than at a real point on its path; for where it actually flies, open Orbit Lab and look at the ground track.')),
+          h('button', { type: 'button', onClick: function () { upd({ tab: 'interior', interiorRoom: d.interiorRoom || 'harmony' }); }, style: { margin: '0 0 10px', padding: '7px 12px', borderRadius: 9, border: '1px solid #38bdf8', background: 'rgba(56,189,248,0.12)', color: '#7dd3fc', fontWeight: 800, fontSize: 12, cursor: 'pointer' } }, '🚪 Open the hatch — explore inside'),
           h('div', { className: 'iss-module-picker', role: 'group', 'aria-label': 'Station modules', style: { display: 'flex', flexWrap: 'wrap', gap: 6, margin: '10px 0' } },
             MODULES.map(function (m) {
               var on = m.id === d.selModule;
@@ -2841,6 +3468,161 @@
         );
       }
 
+      // ── Ground track ────────────────────────────────────────────────────
+      // The Orbit Lab let students change altitude and nothing else, so the
+      // second orbital parameter — the one that decides which of the world the
+      // station ever flies over, and which launch sites can reach it — was a
+      // single sentence in the History tab. The maths here is the real thing
+      // for a circular orbit: latitude = asin(sin i · sin θ), longitude from
+      // the ascending node = atan2(cos i · sin θ, cos θ), minus Earth's own
+      // rotation during the orbit, which is what walks each pass westward.
+      var LAUNCH_SITES = [
+        { name: 'Kourou', country: 'French Guiana', lat: 5.2, lon: -52.8 },
+        { name: 'Wenchang', country: 'China', lat: 19.6, lon: 110.9 },
+        { name: 'Cape Canaveral', country: 'USA', lat: 28.5, lon: -80.6 },
+        { name: 'Tanegashima', country: 'Japan', lat: 30.4, lon: 131.0 },
+        { name: 'Baikonur', country: 'Kazakhstan', lat: 46.0, lon: 63.3 }
+      ];
+      var SIDEREAL_DAY_S = 86164;
+      function groundTrackPoints(incDeg, periodMin, orbits) {
+        var inc = incDeg * Math.PI / 180;
+        var shiftPerOrbit = 360 * (periodMin * 60) / SIDEREAL_DAY_S;
+        var pts = [];
+        var steps = 180;
+        for (var o = 0; o < orbits; o++) {
+          for (var s = 0; s <= steps; s++) {
+            var theta = (s / steps) * Math.PI * 2;
+            var lat = Math.asin(Math.sin(inc) * Math.sin(theta)) * 180 / Math.PI;
+            var lonNode = Math.atan2(Math.cos(inc) * Math.sin(theta), Math.cos(theta)) * 180 / Math.PI;
+            var lon = lonNode - shiftPerOrbit * (o + s / steps) - 60;
+            lon = ((lon + 180) % 360 + 360) % 360 - 180;
+            pts.push([lon, lat, o]);
+          }
+        }
+        return pts;
+      }
+      function renderGroundTrack() {
+        var inc = orbitInc;
+        var mapX = 20, mapY = 40, mapW = 600, mapH = 300;
+        var cols = 180, rows = 90;
+        var cellW = mapW / cols, cellH = mapH / rows;
+        function px(lon) { return mapX + (lon + 180) / 360 * mapW; }
+        function py(lat) { return mapY + (90 - lat) / 180 * mapH; }
+        var bandTop = py(inc), bandBottom = py(-inc);
+        // One polyline per orbit, split wherever the track crosses the date
+        // line — a single path would draw a horizontal streak back across the
+        // whole map at every wrap.
+        var pts = groundTrackPoints(inc, orbitT, 3);
+        var segments = [], current = [], lastLon = null, lastOrbit = 0;
+        pts.forEach(function (p) {
+          // Split at 90°, not 180°: a near-polar track swaps hemisphere the
+          // instant it crosses the pole, and that jump is exactly 180°, so a
+          // 180° test misses it and draws a straight line along the top of the
+          // map as if the station flew west along the Arctic.
+          if (lastLon != null && (Math.abs(p[0] - lastLon) > 90 || p[2] !== lastOrbit)) {
+            if (current.length > 1) segments.push({ pts: current, orbit: lastOrbit });
+            current = [];
+          }
+          current.push(px(p[0]).toFixed(1) + ',' + py(p[1]).toFixed(1));
+          lastLon = p[0]; lastOrbit = p[2];
+        });
+        if (current.length > 1) segments.push({ pts: current, orbit: lastOrbit });
+        var landShare = issLandShareWithin(inc);
+        var westShift = 360 * (orbitT * 60) / SIDEREAL_DAY_S;
+        var blockedPads = LAUNCH_SITES.filter(function (s) { return inc < s.lat - 0.05; });
+        return h('div', { className: 'iss-learning-visual', 'data-iss-ground-track': inc.toFixed(1) },
+          h('svg', { viewBox: '0 0 640 372', role: 'img', 'aria-label': 'World map with the station ground track at ' + inc.toFixed(1) + ' degrees inclination. The track reaches ' + inc.toFixed(1) + ' degrees north and south, crossing ' + Math.round(landShare * 100) + ' percent of Earth’s land area. Each orbit shifts ' + westShift.toFixed(1) + ' degrees west. ' + (blockedPads.length ? blockedPads.map(function (s) { return s.name; }).join(' and ') + ' cannot reach this orbit directly; the other launch sites can.' : 'All five marked launch sites can reach this orbit directly.') },
+            h('text', { x: 20, y: 20, fill: '#94a3b8', fontSize: 8.5, fontWeight: 850, letterSpacing: 1.2 }, 'GROUND TRACK // 3 CONSECUTIVE ORBITS'),
+            h('text', { x: 620, y: 20, textAnchor: 'end', fill: '#7dd3fc', fontSize: 8.5, fontWeight: 850, letterSpacing: 1 }, 'INCLINATION ' + inc.toFixed(1) + '°'),
+            h('rect', { x: mapX, y: mapY, width: mapW, height: mapH, rx: 4, fill: '#071b33' }),
+            // Reachable band first, so the coastlines sit on top of it.
+            h('rect', { x: mapX, y: bandTop, width: mapW, height: Math.max(0, bandBottom - bandTop), fill: '#38bdf8', opacity: .13 }),
+            // ONE path, not 391 rects. Same pixels, but the rect version made
+            // this the most expensive surface in the whole tool: axe took 59s
+            // on this tab (3x the next worst), and React reconciled all 391
+            // elements on every 0.1° step of the inclination slider.
+            h('path', { d: issLandPath(cols, rows, mapX, mapY, cellW, cellH), fill: '#3f5e39', opacity: .95 }),
+            h('line', { x1: mapX, y1: py(0), x2: mapX + mapW, y2: py(0), stroke: '#94a3b8', strokeWidth: .7, strokeDasharray: '4 4', opacity: .6 }),
+            [inc, -inc].map(function (edge, i) {
+              return h('line', { key: i, x1: mapX, y1: py(edge), x2: mapX + mapW, y2: py(edge), stroke: '#7dd3fc', strokeWidth: 1, strokeDasharray: '5 3', opacity: .85 });
+            }),
+            segments.map(function (seg, i) {
+              return h('polyline', { key: i, points: seg.pts.join(' '), fill: 'none', stroke: seg.orbit === 0 ? '#fbbf24' : '#38bdf8', strokeWidth: seg.orbit === 0 ? 2 : 1.4, opacity: seg.orbit === 0 ? 1 : .55 - seg.orbit * 0.12, strokeLinecap: 'round' });
+            }),
+            // Reachability is carried by SHAPE as well as colour — a filled dot
+            // versus a hollow ring struck through. Red/green alone is unreadable
+            // for the commonest colour vision deficiency, and axe cannot catch
+            // that because both colours pass contrast against the map.
+            LAUNCH_SITES.map(function (site, i) {
+              var reachable = inc >= site.lat - 0.05;
+              var cx = px(site.lon), cy = py(site.lat);
+              return h('g', { key: i, 'data-iss-launch-site': site.name, 'data-iss-site-reachable': reachable ? 'yes' : 'no' },
+                h('circle', {
+                  cx: cx, cy: cy, r: 3.6,
+                  fill: reachable ? '#4ade80' : 'none',
+                  stroke: reachable ? '#04121f' : '#f87171', strokeWidth: reachable ? 1 : 1.6
+                }),
+                reachable ? null : h('line', { x1: cx - 2.6, y1: cy + 2.6, x2: cx + 2.6, y2: cy - 2.6, stroke: '#f87171', strokeWidth: 1.6, strokeLinecap: 'round' }));
+            }),
+            h('text', { x: mapX, y: mapY + mapH + 14, fill: '#7dd3fc', fontSize: 8, fontWeight: 800, letterSpacing: .6 }, 'ORBIT 1'),
+            h('text', { x: mapX + 58, y: mapY + mapH + 14, fill: '#94a3b8', fontSize: 8, fontWeight: 700 }, 'each later pass runs ' + westShift.toFixed(1) + '° further west'),
+            h('text', { x: 620, y: mapY + mapH + 14, textAnchor: 'end', fill: '#94a3b8', fontSize: 8, fontWeight: 700 }, 'filled dot = pad can reach this orbit · struck-through ring = it cannot'),
+            h('text', { x: mapX, y: mapY + mapH + 28, fill: '#e2e8f0', fontSize: 9.5, fontWeight: 800 }, 'Reaches ' + inc.toFixed(1) + '°N to ' + inc.toFixed(1) + '°S · flies over ' + Math.round(landShare * 100) + '% of Earth’s land')),
+          h('div', { className: 'iss-visual-caption' },
+            h('span', null, 'Coastlines: Natural Earth (public domain)'),
+            h('span', null, 'lat = asin(sin i × sin θ)')));
+      }
+      function renderInclinationLab() {
+        var inc = orbitInc;
+        var landShare = issLandShareWithin(inc);
+        var blocked = LAUNCH_SITES.filter(function (s) { return inc < s.lat - 0.05; });
+        return card(__alloT('stem.spacestation.inclination_lab', '🌍 Inclination: which world you fly over'),
+          h('div', null,
+            renderGroundTrack(),
+            h('label', { htmlFor: 'iss-orbit-inc', style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: SOFT, marginBottom: 4 } },
+              h('span', null, __alloT('stem.spacestation.inclination', 'Orbital inclination')),
+              h('span', { style: { color: '#7dd3fc', fontWeight: 800 }, 'aria-hidden': 'true' }, inc.toFixed(1) + '°')),
+            h('input', {
+              id: 'iss-orbit-inc', type: 'range', min: 0, max: 90, step: 0.1, value: inc,
+              onChange: function (e) { upd({ orbitInc: Number(e.target.value), orbitTouched: true }); },
+              'aria-valuetext': inc.toFixed(1) + ' degrees, reaching ' + inc.toFixed(1) + ' degrees north and south',
+              'aria-describedby': 'iss-inc-note',
+              style: { width: '100%', accentColor: '#38bdf8' }
+            }),
+            h('div', { role: 'group', 'aria-label': 'Inclination presets', style: { display: 'flex', flexWrap: 'wrap', gap: 6, margin: '8px 0' } },
+              [['ISS — 51.6°', 51.6], ['Equatorial — 0°', 0], ['Cape Canaveral due east — 28.5°', 28.5], ['Polar — 90°', 90]].map(function (preset) {
+                var on = Math.abs(inc - preset[1]) < 0.05;
+                return h('button', {
+                  key: preset[1], type: 'button', 'aria-pressed': on,
+                  onClick: function () { upd({ orbitInc: preset[1], orbitTouched: true }); },
+                  style: { padding: '5px 10px', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', background: on ? 'rgba(56,189,248,0.2)' : PANEL, color: on ? '#7dd3fc' : TEXT, border: '1px solid ' + (on ? '#38bdf8' : '#334155') }
+                }, preset[0]);
+              })),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8, marginTop: 6 } },
+              [['Highest latitude', inc.toFixed(1) + '° N and S'],
+               ['Earth’s land under the track', Math.round(landShare * 100) + '%'],
+               ['Westward shift per orbit', (360 * (orbitT * 60) / SIDEREAL_DAY_S).toFixed(1) + '°'],
+               ['Pads that can reach it', (LAUNCH_SITES.length - blocked.length) + ' of ' + LAUNCH_SITES.length]].map(function (p, i) {
+                return h('div', { className: 'iss-fact-item', key: i, style: { padding: 8, borderRadius: 8, background: 'rgba(2,6,23,0.4)', border: '1px solid #334155' } },
+                  h('div', { style: { fontSize: 10, color: SOFT, textTransform: 'uppercase' } }, p[0]),
+                  h('div', { style: { fontSize: 14, fontWeight: 800, color: '#7dd3fc', marginTop: 2 } }, p[1]));
+              })),
+            h('div', { id: 'iss-inc-note', style: { marginTop: 10, padding: 8, borderRadius: 8, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', fontSize: 12, color: TEXT, lineHeight: 1.55 } },
+              blocked.length
+                ? h('span', null, h('strong', { style: { color: '#f87171' } }, 'Out of reach: '), 'a rocket launched straight from ' + blocked.map(function (s) { return s.name + ' (' + s.lat + '°N)'; }).join(', ') + ' cannot reach ' + inc.toFixed(1) + '°. You can always aim for an inclination HIGHER than your launch latitude, never lower — the pad is already moving with the spin of the Earth at its own latitude, and changing orbital plane later costs more fuel than the trip up.')
+                : h('span', null, h('strong', { style: { color: '#4ade80' } }, 'Every pad here can reach it: '), inc.toFixed(1) + '° is at least as high as all five launch latitudes, so each one can fly to this orbit directly.')),
+            h('p', { style: { fontSize: 11.5, color: SOFT, marginTop: 8, lineHeight: 1.55 } },
+              // The {pct} placeholder is filled AFTER translation, and from
+              // issLandShareWithin(51.6) rather than the slider's current value:
+              // this paragraph explains the station's real orbit, so it must not
+              // change its numbers when a student drags to 10°. Interpolating
+              // into the FALLBACK instead would drop the number entirely the day
+              // a language pack supplies this key.
+              __alloT('stem.spacestation.inclination_why', 'Why 51.6° and not something lower? Baikonur sits at about 46°N, and a rocket cannot reach an inclination below its own launch latitude without an expensive change of plane afterwards — so from there, nothing under 46° is on the table. The usual explanation given for the extra few degrees is what lies under the flight path: a launch due east from Baikonur would drop its spent stages over populated land and toward the Chinese border. What the partnership settled on passes over every continent except Antarctica and about {pct}% of Earth’s land. Its northern limit runs almost exactly through London at 51.5°N — Berlin, at 52.5°N, never passes directly underneath.')
+                .replace('{pct}', String(Math.round(issLandShareWithin(51.6) * 100))))
+          ), '#38bdf8');
+      }
+
       function renderOrbit() {
         return h('div', null,
           h('p', { style: { fontSize: 12.5, color: SOFT, lineHeight: 1.6, margin: '0 0 10px' } },
@@ -2873,6 +3655,7 @@
               h('p', { style: { fontSize: 11, color: SOFT, marginTop: 8, lineHeight: 1.5 } },
                 __alloT('stem.spacestation.orbit_note', 'Notice the counter-intuitive part: LOWER orbits are FASTER. To catch up with something ahead of you in orbit, you briefly slow down and drop lower. Orbital mechanics breaks driving intuition — which is why dockings are computed, not eyeballed.'))
             ), '#38bdf8'),
+          renderInclinationLab(),
           card(__alloT('stem.spacestation.why_400', '🎯 Why ~400 km?'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', fontSize: 12.5, color: TEXT, lineHeight: 1.8 } },
               h('li', null, __alloT('stem.spacestation.why1', 'Low enough for cargo and crew rockets to carry useful mass, and below the worst radiation zones.')),
@@ -2929,9 +3712,21 @@
         var installLabel = installedNow.length ? 'INSTALLED THIS STEP // ' + installedNow.map(function (m) { return m.name.split(' (')[0]; }).join(' + ') : step === TIMELINE.length - 1 ? 'CONTROLLED DEORBIT PHASE // NO NEW HARDWARE' : 'OPERATIONS MILESTONE // NO NEW MAJOR ELEMENT';
         var powerByMilestone = [18, 30, 46, 75, 82, 92, 105, 110, 110, 110, 120, 120, 120];
         var powerStage = powerByMilestone[step] || 120;
+        // One entry per solar-array wing PAIR, keyed to the milestone it was
+        // actually installed on: P6 Nov 2000 (step 1), P4 Sep 2006 (step 3),
+        // S4 Jun 2007 (step 4), S6 Mar 2009 (step 6). P6 spent its first seven
+        // years on the Z1 truss above Unity before being moved to the port end.
+        var arrayWings = [
+          // y 52 for the Z1 years: clears the milestone caption's baseline at 43
+          // and stops just above Unity's hull, which is the truss it sat on.
+          { id: 'p6', from: 1, label: 'P6', x: step >= 4 ? 150 : 320, y: step >= 4 ? 58 : 52 },
+          { id: 'p4', from: 3, label: 'P4', x: 220, y: 116 },
+          { id: 's4', from: 4, label: 'S4', x: 420, y: 58 },
+          { id: 's6', from: 6, label: 'S6', x: 490, y: 116 }
+        ].filter(function (wing) { return step >= wing.from; });
         var volumeStage = Math.round(visible.filter(function (m) { return m.id !== 'truss'; }).length / 12 * 916);
         return h('div', { className: 'iss-assembly-stage' },
-          h('svg', { viewBox: '0 0 640 245', role: 'img', 'aria-label': 'Station assembly visualization at ' + TIMELINE[step].y + '. ' + visible.length + ' major elements shown. ' + installLabel + '.' },
+          h('svg', { viewBox: '0 0 640 245', role: 'img', 'aria-label': 'Station assembly visualization at ' + TIMELINE[step].y + '. ' + visible.length + ' major elements shown, ' + (arrayWings.length * 2) + ' of 8 solar array wings installed, ' + powerStage + ' kilowatts available. ' + installLabel + '.' },
             h('defs', null, h('pattern', { id: 'iss-assembly-grid', width: 24, height: 24, patternUnits: 'userSpaceOnUse' }, h('path', { d: 'M24 0H0V24', fill: 'none', stroke: '#38bdf8', strokeWidth: .45, opacity: .15 })), h('marker', { id: 'iss-deorbit-arrow', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto' }, h('path', { d: 'M0 0 L10 5 L0 10z', fill: '#fb7185' })),
               h('radialGradient', { id: 'iss-assembly-earth', cx: '46%', cy: '7%', r: '74%' },
                 h('stop', { offset: '0%', stopColor: '#8ed2f7' }), h('stop', { offset: '32%', stopColor: '#2470ad' }), h('stop', { offset: '100%', stopColor: '#08284f' })),
@@ -2940,7 +3735,22 @@
             h('circle', { cx: 320, cy: 360, r: 175, fill: 'none', stroke: '#7dd3fc', strokeWidth: 7, opacity: .35, filter: 'url(#iss-assembly-limb)' }),
             h('circle', { cx: 320, cy: 360, r: 170, fill: 'url(#iss-assembly-earth)', opacity: .92, stroke: '#a5e2ff', strokeWidth: 2 }),
             step === TIMELINE.length - 1 ? h('g', null, h('path', { className: 'iss-deorbit-path', d: 'M550 54 Q490 116 386 177', fill: 'none', stroke: '#fb7185', strokeWidth: 2.4, strokeDasharray: '7 6', markerEnd: 'url(#iss-deorbit-arrow)' }), h('text', { x: 548, y: 42, textAnchor: 'end', fill: '#fecdd3', fontSize: 9, fontWeight: 850, letterSpacing: 1 }, 'CONTROLLED REENTRY')) : null,
-            step >= 3 ? h('g', { opacity: step === TIMELINE.length - 1 ? .42 : 1 }, h('rect', { x: 110, y: 100, width: 420, height: 8, rx: 4, fill: '#94a3b8' }), [150,220,420,490].map(function (x, i) { return h('g', { key: i }, h('rect', { x: x - 24, y: i % 2 ? 116 : 58, width: 48, height: 34, rx: 2, fill: '#a86e16', stroke: '#fbbf24' }), [1,2,3].map(function (line) { return h('line', { key: line, x1: x - 24, y1: (i % 2 ? 116 : 58) + line * 8.5, x2: x + 24, y2: (i % 2 ? 116 : 58) + line * 8.5, stroke: '#fde68a', strokeWidth: .5 }); })); })) : null,
+            step >= 3 ? h('rect', { x: 110, y: 100, width: 420, height: 8, rx: 4, fill: '#94a3b8', opacity: step === TIMELINE.length - 1 ? .42 : 1 }) : null,
+            // Solar arrays arrive on the dates they actually arrived. All four
+            // wing pairs used to appear at once from 2002 and then sit there,
+            // which flatly contradicted the AVAILABLE POWER figure climbing
+            // 18 -> 120 kW in the same picture. P6 is the interesting one: it
+            // flew in Nov 2000 mounted on the Z1 truss ABOVE Unity and was
+            // physically RELOCATED to the end of the port truss in 2007, so it
+            // moves here too.
+            h('g', { opacity: step === TIMELINE.length - 1 ? .42 : 1 }, arrayWings.map(function (wing) {
+              return h('g', { key: wing.id, 'data-iss-array-wing': wing.id },
+                h('rect', { x: wing.x - 24, y: wing.y, width: 48, height: 34, rx: 2, fill: '#a86e16', stroke: '#fbbf24' }),
+                [1, 2, 3].map(function (line) {
+                  return h('line', { key: line, x1: wing.x - 24, y1: wing.y + line * 8.5, x2: wing.x + 24, y2: wing.y + line * 8.5, stroke: '#fde68a', strokeWidth: .5 });
+                }),
+                h('text', { x: wing.x, y: wing.y - 4, textAnchor: 'middle', fill: '#fde68a', fontSize: 7, fontWeight: 850, letterSpacing: .6 }, wing.label));
+            })),
             visible.filter(function (m) { return m.id !== 'truss'; }).map(function (m) {
               var x = 320 + m.pos[0] * 34, y = 106 + m.pos[2] * 12;
               var color = '#' + Number(m.color).toString(16).padStart(6, '0');
@@ -2958,7 +3768,7 @@
             }),
             h('text', { x: 20, y: 25, fill: '#7dd3fc', fontSize: 10, fontWeight: 850, letterSpacing: 1.4 }, 'ORBITAL ASSEMBLY // ' + TIMELINE[step].y),
             h('text', { x: 20, y: 43, fill: '#cbd5e1', fontSize: 9 }, TIMELINE[step].e.length > 86 ? TIMELINE[step].e.slice(0, 86) + '…' : TIMELINE[step].e),
-            h('g', { transform: 'translate(20,185)' }, [['MAJOR ELEMENTS', visible.length], ['PRESSURIZED VOLUME', volumeStage + ' m³'], ['AVAILABLE POWER', powerStage + ' kW']].map(function (metric, i) { return h('g', { key: i, transform: 'translate(' + (i * 200) + ',0)' }, h('text', { fill: '#94a3b8', fontSize: 8, fontWeight: 800, letterSpacing: .8 }, metric[0]), h('text', { y: 22, fill: i === 0 ? '#7dd3fc' : i === 1 ? '#34d399' : '#fbbf24', fontSize: 15, fontWeight: 900 }, String(metric[1]))); }))),
+            h('g', { transform: 'translate(20,185)' }, [['MAJOR ELEMENTS', visible.length, '#7dd3fc'], ['PRESSURIZED VOLUME', volumeStage + ' m³', '#34d399'], ['AVAILABLE POWER', powerStage + ' kW', '#fbbf24'], ['SOLAR WINGS', (arrayWings.length * 2) + ' / 8', '#fde68a']].map(function (metric, i) { return h('g', { key: i, transform: 'translate(' + (i * 152) + ',0)' }, h('text', { fill: '#94a3b8', fontSize: 8, fontWeight: 800, letterSpacing: .8 }, metric[0]), h('text', { y: 22, fill: metric[2], fontSize: 15, fontWeight: 900 }, String(metric[1]))); }))),
           renderAssemblyGrowthProfile(step, thresholds, powerByMilestone),
           h('div', { className: 'iss-visual-caption', 'data-iss-assembly-install': step }, h('span', null, installLabel), h('span', null, visible.length + ' MAJOR ELEMENTS ON ORBIT')),
           h('div', { className: 'iss-assembly-controls' },
@@ -2997,7 +3807,7 @@
         var missed = QUIZ.map(function (_, i) { return results[i] === false; }).filter(Boolean).length;
         var circumference = 2 * Math.PI * 46;
         var arc = circumference * score / QUIZ.length;
-        var outcome = score >= 7 ? 'FLIGHT QUALIFIED' : 'TRAINING LOOP';
+        var outcome = score >= QUIZ_PASS ? 'FLIGHT QUALIFIED' : 'TRAINING LOOP';
         var detail = known ? score + ' correct, ' + missed + ' to review.' : 'Question-by-question history begins on the next run.';
         return h('div', { className: 'iss-learning-visual iss-quiz-debrief', 'data-iss-quiz-debrief': known },
           h('svg', { viewBox: '0 0 640 198', role: 'img', 'aria-label': 'Quiz debrief. Score ' + score + ' out of ' + QUIZ.length + '. ' + outcome.toLowerCase() + '. ' + detail },
@@ -3010,9 +3820,9 @@
             h('g', { transform: 'translate(104,104)' },
               h('circle', { r: 52, fill: '#071525', stroke: '#334155', strokeWidth: 1 }),
               h('circle', { r: 46, fill: 'none', stroke: '#263449', strokeWidth: 8 }),
-              h('circle', { r: 46, fill: 'none', stroke: score >= 7 ? '#4ade80' : '#fbbf24', strokeWidth: 8, strokeLinecap: 'round', strokeDasharray: arc.toFixed(1) + ' ' + (circumference - arc).toFixed(1), transform: 'rotate(-90)', filter: 'url(#iss-quiz-ring-glow)' }),
+              h('circle', { r: 46, fill: 'none', stroke: score >= QUIZ_PASS ? '#4ade80' : '#fbbf24', strokeWidth: 8, strokeLinecap: 'round', strokeDasharray: arc.toFixed(1) + ' ' + (circumference - arc).toFixed(1), transform: 'rotate(-90)', filter: 'url(#iss-quiz-ring-glow)' }),
               h('text', { y: -2, textAnchor: 'middle', fill: '#f8fafc', fontSize: 22, fontWeight: 950 }, score + '/' + QUIZ.length),
-              h('text', { y: 17, textAnchor: 'middle', fill: score >= 7 ? '#86efac' : '#fde68a', fontSize: 7.5, fontWeight: 900, letterSpacing: 1 }, outcome)),
+              h('text', { y: 17, textAnchor: 'middle', fill: score >= QUIZ_PASS ? '#86efac' : '#fde68a', fontSize: 7.5, fontWeight: 900, letterSpacing: 1 }, outcome)),
             h('text', { x: 190, y: 53, fill: '#94a3b8', fontSize: 8, fontWeight: 850, letterSpacing: 1 }, known ? 'QUESTION FLIGHT RECORD' : 'SCORE RECORD'),
             QUIZ_TOPIC_LABELS.map(function (label, i) {
               var col = i % 5, row = Math.floor(i / 5), x = 216 + col * 82, y = 82 + row * 58;
@@ -3038,7 +3848,7 @@
               h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
                 renderQuizDebriefVisual(),
                 h('p', { style: { fontSize: 16, fontWeight: 800, color: TEXT, margin: '0 0 6px' } }, d.quizScore + ' / ' + QUIZ.length),
-                h('p', { style: { fontSize: 12.5, color: SOFT, margin: '0 0 10px' } }, d.quizScore >= 7 ? __alloT('stem.spacestation.quiz_great', 'Flight-controller material. Quest objective complete!') : __alloT('stem.spacestation.quiz_retry', 'Every controller trains on repetitions — revisit the tabs and fly it again.')),
+                h('p', { style: { fontSize: 12.5, color: SOFT, margin: '0 0 10px' } }, d.quizScore >= QUIZ_PASS ? __alloT('stem.spacestation.quiz_great', 'Flight-controller material. Quest objective complete!') : __alloT('stem.spacestation.quiz_retry', 'Every controller trains on repetitions — revisit the tabs and fly it again.')),
                 h('button', { type: 'button', autoFocus: true, onClick: function () { upd({ quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false, quizResults: {}, quizFocusTarget: 0 }); }, style: { padding: '7px 14px', borderRadius: 8, border: 'none', background: '#0ea5e9', color: '#082f49', fontWeight: 800, fontSize: 12, cursor: 'pointer' } }, __alloT('stem.spacestation.quiz_again', '🔁 Run it again'))
               ), '#22c55e')
           : card((qi + 1) + ' / ' + QUIZ.length + ' — ' + q.q,
@@ -3069,7 +3879,7 @@
                     if (qi + 1 >= QUIZ.length) {
                       var finalScore = d.quizScore || 0;
                       upd({ quizDone: true, quizBest: Math.max(d.quizBest || 0, finalScore) });
-                      if (finalScore >= 7 && addToast) addToast('🛰️ ' + __alloT('stem.spacestation.quiz_toast', 'Station quiz aced: ') + finalScore + '/' + QUIZ.length, 'success');
+                      if (finalScore >= QUIZ_PASS && addToast) addToast('🛰️ ' + __alloT('stem.spacestation.quiz_toast', 'Station quiz aced: ') + finalScore + '/' + QUIZ.length, 'success');
                     } else { upd({ quizIdx: qi + 1, quizPicked: null, quizFocusTarget: qi + 1 }); }
                   },
                   style: { marginTop: 10, padding: '7px 14px', borderRadius: 8, border: 'none', background: '#0ea5e9', color: '#082f49', fontWeight: 800, fontSize: 12, cursor: 'pointer' }

@@ -270,7 +270,7 @@ describe('Nuclear lab renders', () => {
   it('keeps the topic index in the same order as the sections it links to', () => {
     const registry = [...SRC.matchAll(/\{ id: '([a-z0-9]+)', grp: '[a-z]+', icon:/g)].map((m) => m[1]);
     const dom = [...SRC.matchAll(/^        sec\('([a-z0-9]+)'/gm)].map((m) => m[1]).filter((id) => id !== 'next');
-    expect(registry.length).toBe(14);
+    expect(registry.length).toBe(19);
     // Not a set comparison — order IS the contract, because the index prints
     // each topic's position as its section number.
     expect(dom).toEqual(registry);
@@ -304,5 +304,772 @@ describe('Nuclear lab renders', () => {
       console.error = original;
     }
     expect(warnings.filter(w => /unique "key" prop/.test(w))).toEqual([]);
+  });
+});
+
+// ── Detection ──────────────────────────────────────────────────────────────
+// The tool quotes sieverts in six places and, until this section, never said
+// how anybody measures one. Two claims here are easy to get subtly wrong and
+// hard to notice: the source activities (which are computed, not quoted) and
+// the counting statistics (where a plausible-looking formula can still be the
+// wrong one). Both are checked against first principles rather than against
+// the tool's own numbers.
+
+const COUNT_SOURCES = table('var COUNT_SOURCES = [');
+const GM_WINDOW = Number(/var GM_WINDOW_CM2 = ([\d.]+)/.exec(SRC)[1]);
+const GM_BACKGROUND = Number(/var GM_BACKGROUND = ([\d.]+)/.exec(SRC)[1]);
+const nkPoisson = new Function(
+  'return ' + SRC.slice(SRC.indexOf('function nkPoisson'), SRC.indexOf('function nkClamp'))
+)();
+
+const netRate = (src, d) => src.gps * (GM_WINDOW / (4 * Math.PI * d * d)) * src.eff;
+const srcById = (id) => COUNT_SOURCES.find((s) => s.id === id);
+
+describe('Source activities', () => {
+  // Natural potassium from the decay constant, not from a memorised figure.
+  const K_SPECIFIC = (0.000117 * 6.02214e23 / 39.0983) * (Math.LN2 / (1.248e9 * 3.1557e7));
+
+  it('derives potassium activity from the K-40 half-life', () => {
+    expect(K_SPECIFIC).toBeGreaterThan(30);
+    expect(K_SPECIFIC).toBeLessThan(33);
+  });
+
+  it('gets 1 kg of KCl right from its potassium mass fraction', () => {
+    const kcl = srcById('kcl');
+    const kMass = (39.0983 / 74.551) * 1000;          // g of K in 1 kg of KCl
+    expect(Math.abs(kcl.bq - kMass * K_SPECIFIC) / kcl.bq).toBeLessThan(0.01);
+    // Only 10.55% of K-40 decays emit the 1461 keV gamma. Using the activity
+    // as the photon rate would overstate the count rate by a factor of ten.
+    expect(Math.abs(kcl.gps - kcl.bq * 0.1055) / kcl.gps).toBeLessThan(0.02);
+  });
+
+  it('scales a banana to the same potassium chemistry', () => {
+    const b = srcById('banana');
+    expect(Math.abs(b.bq - 0.45 * K_SPECIFIC) / b.bq).toBeLessThan(0.05);
+    expect(b.gps).toBeLessThan(b.bq);
+  });
+
+  it('separates activity from photon rate for the two check sources', () => {
+    const cs = srcById('cs137'), co = srcById('co60');
+    // Same becquerels...
+    expect(cs.bq).toBe(co.bq);
+    // ...and NOT the same photon rate: Cs-137 emits its gamma in 85.1% of
+    // decays, Co-60 emits two. This pair is the whole point of the section,
+    // so if these ever converge the lesson is gone.
+    expect(Math.abs(cs.gps - cs.bq * 0.851) / cs.gps).toBeLessThan(0.01);
+    expect(co.gps).toBeCloseTo(co.bq * 2, 0);
+    expect(co.gps / cs.gps).toBeGreaterThan(2);
+  });
+
+  it('never lets a detector see more photons than the source emits', () => {
+    COUNT_SOURCES.forEach((s) => {
+      expect(s.gps, s.id).toBeLessThanOrEqual(s.bq * 2.001);
+      expect(netRate(s, 3), s.id).toBeLessThan(Math.max(s.gps, 1e-9));
+    });
+  });
+});
+
+describe('Inverse square and counting statistics', () => {
+  it('quarters the count rate for every doubling of distance', () => {
+    const cs = srcById('cs137');
+    [5, 10, 20].forEach((d) => {
+      expect(netRate(cs, d) / netRate(cs, d * 2)).toBeCloseTo(4, 6);
+    });
+  });
+
+  it('puts a school check source in a realistic range at arm length', () => {
+    // A 37 kBq Cs-137 disc on a classroom GM tube reads on the order of
+    // 100 counts a minute at 10 cm. Orders of magnitude either side would
+    // mean the geometry or the efficiency is wrong.
+    const cpm = netRate(srcById('cs137'), 10) * 60;
+    expect(cpm).toBeGreaterThan(40);
+    expect(cpm).toBeLessThan(300);
+    expect(GM_BACKGROUND * 60).toBeGreaterThan(15);
+    expect(GM_BACKGROUND * 60).toBeLessThan(40);
+  });
+
+  it('samples counts from a genuine Poisson distribution on both branches', () => {
+    // Below 30 the tool uses Knuth's method, above it a normal approximation.
+    // Both have to reproduce the defining property of Poisson: variance = mean.
+    [4, 200].forEach((lam) => {
+      const n = 20000;
+      let sum = 0, sumsq = 0;
+      for (let i = 0; i < n; i++) { const k = nkPoisson(lam); sum += k; sumsq += k * k; }
+      const mean = sum / n;
+      const varr = sumsq / n - mean * mean;
+      expect(Math.abs(mean - lam) / lam, 'mean at lambda=' + lam).toBeLessThan(0.05);
+      expect(Math.abs(varr - lam) / lam, 'variance at lambda=' + lam).toBeLessThan(0.15);
+    });
+    expect(nkPoisson(0)).toBe(0);
+    expect(nkPoisson(-1)).toBe(0);
+  });
+
+  it('makes precision cost the SQUARE of the time, not the time', () => {
+    const cs = srcById('cs137');
+    const rel = (t) => {
+      const g = (netRate(cs, 10) + GM_BACKGROUND) * t, b = GM_BACKGROUND * t;
+      return Math.sqrt(g + b) / t / netRate(cs, 10);
+    };
+    // Four times the counting time buys half the uncertainty. If this ever
+    // came out linear, the section's central claim would be false.
+    expect(rel(10) / rel(40)).toBeCloseTo(2, 1);
+    expect(rel(10)).toBeGreaterThan(0.2);    // a 10 s count is worthless
+    expect(rel(600)).toBeLessThan(0.05);     // 10 minutes is defensible
+  });
+
+  it('refuses to call a KCl bag detectable at arm length, and allows it up close', () => {
+    const kcl = srcById('kcl');
+    const detects = (d, t) => {
+      const net = netRate(kcl, d) * t, b = GM_BACKGROUND * t;
+      return net > 2.33 * Math.sqrt(2 * b);        // Currie critical level
+    };
+    // The honest, awkward result: ten minutes at 10 cm still is not enough.
+    expect(detects(10, 600)).toBe(false);
+    // Tube against the bag for the same ten minutes, and it is there.
+    expect(detects(3, 600)).toBe(true);
+  });
+
+  it('leaves the banana genuinely undetectable, as the dose ladder claims', () => {
+    // The dose table calls the banana "a scale marker, not a real exposure".
+    // If the detector could see one, those two sections would contradict.
+    const b = srcById('banana');
+    const net = netRate(b, 3) * 3600, bg = GM_BACKGROUND * 3600;
+    expect(net).toBeLessThan(2.33 * Math.sqrt(2 * bg));
+  });
+});
+
+describe('The detection section', () => {
+  it('renders its controls and the three units it exists to separate', () => {
+    const html = renderTool('nuclearLab', {});
+    expect(html).toContain('id="nksec-detect"');
+    expect(html).toContain('Becquerel (Bq)');
+    expect(html).toContain('Counts per second');
+    expect(html).toContain('Millisievert (mSv)');
+    expect(html).toContain('Take a count');
+  });
+
+  it('reports a stored measurement with its background and its uncertainty', () => {
+    const html = renderTool('nuclearLab', {
+      _nuclearLab: { cdSrc: 'cs137', cdDist: 10, cdTime: 600, cdRuns: [{ g: 1180, b: 260, t: 600, d: 10, s: 'cs137' }] }
+    });
+    expect(html).toContain('1,180 counts');       // gross
+    expect(html).toContain('260 counts');         // background, counted not assumed
+    expect(html).toContain('Net rate');
+    expect(html).toContain('Uncertainty');
+  });
+
+  it('says a weak reading is not a detection instead of quoting it anyway', () => {
+    const html = renderTool('nuclearLab', {
+      _nuclearLab: { cdSrc: 'kcl', cdDist: 40, cdTime: 10, cdRuns: [{ g: 5, b: 4, t: 10, d: 40, s: 'kcl' }] }
+    });
+    expect(html).toContain('cannot claim a detection');
+  });
+
+  it('treats a negative net from background alone as noise, not as an error', () => {
+    const html = renderTool('nuclearLab', {
+      _nuclearLab: { cdSrc: 'none', cdTime: 10, cdRuns: [{ g: 3, b: 6, t: 10, d: 10, s: 'none' }] }
+    });
+    expect(html).toContain('NEGATIVE net is not an error');
+  });
+
+  it('keeps the warning that a microsievert-per-hour readout is a conversion, not a measurement', () => {
+    const html = renderTool('nuclearLab', {});
+    expect(html).toContain('µSv/h');
+    expect(html).toContain('662 keV');
+  });
+});
+
+// ── Gray, sievert, and the body ────────────────────────────────────────────
+// Two sections that exist to stop specific, common errors, so the tests are
+// aimed at the errors rather than at the code: that a weighting factor table
+// silently stops summing to one, and that an effective half-life gets quoted
+// as whichever of its two inputs came to hand first.
+
+const RAD_WEIGHTS = table('var RAD_WEIGHTS = [');
+const TISSUE_WEIGHTS = table('var TISSUE_WEIGHTS = [');
+const BIO_NUCLIDES = table('var BIO_NUCLIDES = [');
+const bioById = (id) => BIO_NUCLIDES.find((n) => n.id === id);
+const tEff = (n) => (n.tp * n.tb) / (n.tp + n.tb);
+const DAY = 1, YEAR = 365.25;
+
+describe('ICRP weighting factors', () => {
+  it('sums the tissue weights to exactly 1.00', () => {
+    // This is the defining property, not a coincidence: the weights apportion
+    // whole-body detriment. A table that sums to 0.99 or 1.03 would make every
+    // effective dose in the tool quietly wrong, and would look completely
+    // normal on screen.
+    const sum = TISSUE_WEIGHTS.reduce((a, x) => a + x.wt, 0);
+    expect(sum).toBeCloseTo(1, 10);
+  });
+
+  it('matches ICRP 103 Table 3 tissue by tissue', () => {
+    const ref = { marrow: 0.12, colon: 0.12, lung: 0.12, stomach: 0.12, breast: 0.12, remainder: 0.12,
+      gonads: 0.08, bladder: 0.04, oesophagus: 0.04, liver: 0.04, thyroid: 0.04,
+      bone: 0.01, brain: 0.01, salivary: 0.01, skin: 0.01 };
+    expect(TISSUE_WEIGHTS).toHaveLength(Object.keys(ref).length);
+    for (const [id, wt] of Object.entries(ref)) {
+      expect(TISSUE_WEIGHTS.find((x) => x.id === id).wt, id).toBe(wt);
+    }
+  });
+
+  it('matches ICRP 103 Table 2 radiation weights, with alpha at twenty', () => {
+    const w = (id) => RAD_WEIGHTS.find((x) => x.id === id).wr;
+    expect(w('gamma')).toBe(1);
+    expect(w('beta')).toBe(1);       // NOT 2 — beta and gamma are weighted alike
+    expect(w('proton')).toBe(2);
+    expect(w('alpha')).toBe(20);
+    expect(w('neutron')).toBe(20);   // the ~1 MeV peak of a continuous function
+  });
+
+  it('says out loud that the neutron factor is not a single number', () => {
+    expect(RAD_WEIGHTS.find((x) => x.id === 'neutron').why).toMatch(/continuous function of energy/i);
+  });
+
+  it('keeps effective dose equal to equivalent dose for a whole-body exposure', () => {
+    // If w_T sums to 1, irradiating everything must give E = H. This is the
+    // arithmetic the section claims on screen.
+    const sum = TISSUE_WEIGHTS.reduce((a, x) => a + x.wt, 0);
+    const D = 3.7;
+    expect(D * 20 * sum).toBeCloseTo(D * 20, 9);
+  });
+});
+
+describe('Physical, biological and effective half-life', () => {
+  it('adds the RATES, not the times', () => {
+    // The error this guards against is T_eff = T_p + T_b, or the average of
+    // the two. Both are wrong, and both give plausible-looking numbers.
+    BIO_NUCLIDES.forEach((n) => {
+      const t = tEff(n);
+      expect(t, n.id).toBeLessThan(Math.min(n.tp, n.tb));       // shorter than EITHER
+      expect(t, n.id).toBeGreaterThan(Math.min(n.tp, n.tb) / 2); // and never less than half
+      expect(1 / t, n.id).toBeCloseTo(1 / n.tp + 1 / n.tb, 9);
+    });
+  });
+
+  it('reproduces the published effective half-lives', () => {
+    // These are the figures a nuclear medicine textbook prints. If the inputs
+    // drift, these break.
+    const ref = { tc99m: 4.81 / 24, i131: 7.29, h3: 9.98, cs137: 69.6, po210: 36.7 };
+    for (const [id, days] of Object.entries(ref)) {
+      expect(tEff(bioById(id)), id).toBeCloseTo(days, 1);
+    }
+    expect(tEff(bioById('sr90')) / YEAR).toBeCloseTo(11.1, 1);
+    expect(tEff(bioById('pu239')) / YEAR).toBeCloseTo(49.9, 1);
+  });
+
+  it('makes the caesium point the section is built around', () => {
+    // "Caesium-137 has a 30-year half-life" is true of soil and false of
+    // people by a factor of about 160. Both numbers have to stay in the tool
+    // for the correction to mean anything.
+    const cs = bioById('cs137');
+    expect(cs.tp / YEAR).toBeCloseTo(30.05, 1);
+    expect(tEff(cs)).toBeLessThan(80 * DAY);
+    expect(cs.tp / tEff(cs)).toBeGreaterThan(100);
+    expect(SRC).toMatch(/two different clocks/i);
+  });
+
+  it('does not let biology rescue the bone seekers', () => {
+    // Strontium, radium and plutonium are the counterexamples to "the body
+    // just flushes it out". If any of these ever came out short, the section
+    // would be telling a comforting lie.
+    ['sr90', 'ra226', 'pu239'].forEach((id) => {
+      expect(tEff(bioById(id)) / YEAR, id).toBeGreaterThan(10);
+    });
+  });
+
+  it('keeps physical half-lives consistent with the isotope table above', () => {
+    // The same nuclides appear in two tables in this file. They must agree.
+    const pairs = { cs137: 30.05, i131: 8.02 / YEAR, h3: 12.32, k40: 1.25e9, pu239: 24110 };
+    for (const [id, years] of Object.entries(pairs)) {
+      const iso = ISOTOPES.find((i) => i.id === id);
+      expect(Math.abs(bioById(id).tp / YEAR - iso.hl) / iso.hl, id).toBeLessThan(0.001);
+    }
+  });
+
+  it('classifies which clock dominates by the RATIO, not by which is smaller', () => {
+    // "The shorter one wins" holds for caesium (ratio 157) and fails for
+    // strontium (ratio 1.6), where the effective half-life is nowhere near
+    // either input. The verdict text branches on this, so the boundary cases
+    // have to stay on the side the prose assumes.
+    const ratio = (id) => { const n = bioById(id); return Math.max(n.tp, n.tb) / Math.min(n.tp, n.tb); };
+    ['cs137', 'h3', 'k40', 'ra226', 'pu239'].forEach((id) => expect(ratio(id), id).toBeGreaterThan(8));
+    ['tc99m', 'sr90', 'po210'].forEach((id) => expect(ratio(id), id).toBeLessThan(8));
+    // And the "neither" cases must genuinely be far from both inputs.
+    ['tc99m', 'sr90', 'po210'].forEach((id) => {
+      const n = bioById(id);
+      expect(1 - tEff(n) / Math.min(n.tp, n.tb), id).toBeGreaterThan(0.15);
+    });
+  });
+});
+
+describe('The two new sections render', () => {
+  it('shows all three dose quantities and the arithmetic between them', () => {
+    const html = renderTool('nuclearLab', { _nuclearLab: { wrId: 'alpha', wtId: 'whole', absorbedMGy: 2 } });
+    expect(html).toContain('id="nksec-weighting"');
+    expect(html).toContain('ABSORBED DOSE');
+    expect(html).toContain('EQUIVALENT DOSE');
+    expect(html).toContain('EFFECTIVE DOSE');
+    expect(html).toContain('2 mGy');
+    expect(html).toContain('40 mSv');       // 2 mGy alpha x 20
+  });
+
+  it('applies the tissue weight to a single-organ exposure', () => {
+    const html = renderTool('nuclearLab', { _nuclearLab: { wrId: 'gamma', wtId: 'thyroid', absorbedMGy: 10 } });
+    expect(html).toContain('10 mGy');
+    expect(html).toContain('0.4 mSv');       // 10 x 1 x 0.04
+  });
+
+  it('carries the ICRP caveat that effective dose is not personal risk', () => {
+    const html = renderTool('nuclearLab', {});
+    expect(html).toContain('What effective dose is NOT');
+    expect(html).toMatch(/not a measure of harm to a particular person/i);
+  });
+
+  it('renders the body-burden section for every nuclide without leaking a bad number', () => {
+    BIO_NUCLIDES.forEach((n) => {
+      const html = renderTool('nuclearLab', { _nuclearLab: { bioId: n.id } });
+      expect(html, n.id).toContain('id="nksec-biohalf"');
+      expect(html, n.id).not.toMatch(/NaN|Infinity/);
+      // Singular slip. The lookbehind matters: \b sits between "." and "1",
+      // so a naive \b1 also fires on "30.1 years" and "24.1 days".
+      expect(html, n.id).not.toMatch(/(?<![\d.])1 (days|years|hours)\b/);
+    });
+  });
+
+  it('states what potassium iodide does and does not do', () => {
+    const html = renderTool('nuclearLab', {});
+    expect(html).toMatch(/not an anti-radiation pill/i);
+    expect(html).toMatch(/nothing about caesium/i);
+  });
+});
+
+// ── Time, distance, shielding ──────────────────────────────────────────────
+// The dose rates in this section are DERIVED from each nuclide's decay scheme,
+// not read off a table, so the derivation is what needs testing. Two mistakes
+// cost about 20% each and neither shows up on screen: weighting the air
+// coefficient by the mean photon energy instead of per line, and dropping the
+// K X-rays. Both are pinned below against the published constants.
+
+const MU_EN_AIR = table('var MU_EN_AIR = [');
+const PROTECT_SOURCES = table('var PROTECT_SOURCES = [');
+const DOSE_LIMITS = table('var DOSE_LIMITS = [');
+const muEnAir = new Function(
+  'MU_EN_AIR', 'return ' + SRC.slice(SRC.indexOf('function nkMuEnAir'), SRC.indexOf('// mSv per hour at 1 m'))
+)(MU_EN_AIR);
+const gammaConst = new Function(
+  'nkMuEnAir', 'return ' + SRC.slice(SRC.indexOf('function nkGammaConst'), SRC.indexOf('// Energies in MeV, yields per decay'))
+)(muEnAir);
+
+// Classic specific gamma-ray constants, R*cm^2/(mCi*h), converted once:
+// 1 mCi = 27.027 per GBq, 1 m = 100 cm, 1 R = 8.76 mGy in air.
+const R_TO_MSVH = (27.027 / 10000) * 8.76;
+const PUBLISHED = { 'Tc-99m': 0.78, 'I-131': 2.2, 'Cs-137': 3.3, 'Co-60': 13.2 };
+
+describe('the air coefficient table', () => {
+  it('covers the range the sources actually emit in', () => {
+    const es = PROTECT_SOURCES.flatMap((s) => s.lines.map((l) => l[0]));
+    expect(Math.min(...es)).toBeGreaterThanOrEqual(MU_EN_AIR[0][0]);
+    expect(Math.max(...es)).toBeLessThanOrEqual(MU_EN_AIR[MU_EN_AIR.length - 1][0]);
+  });
+
+  it('reproduces NIST values at the tabulated points', () => {
+    for (const [e, v] of MU_EN_AIR) expect(muEnAir(e), `${e} MeV`).toBeCloseTo(v, 6);
+  });
+
+  it('interpolates in LOG space, which matters by a factor of two at 15 keV', () => {
+    // Between 10 keV (4.742) and 15 keV (1.334) the coefficient falls by 3.5x.
+    // A straight line between them would read ~3.0 at 12.5 keV; the log fit
+    // gives ~2.5, and NIST is ~2.4. Getting this wrong inflates every soft line.
+    const mid = muEnAir(0.0125);
+    const linear = (4.742 + 1.334) / 2;
+    expect(mid).toBeLessThan(linear * 0.9);
+    expect(mid).toBeGreaterThan(2.0);
+    expect(mid).toBeLessThan(3.0);
+  });
+
+  it('is monotonic where physics says it must be', () => {
+    // Photoelectric absorption falls steeply to a minimum near 60-100 keV, then
+    // Compton takes over and it rises gently to a broad peak around 0.5 MeV.
+    for (let i = 1; i < MU_EN_AIR.length; i++) {
+      if (MU_EN_AIR[i][0] <= 0.1) {
+        expect(MU_EN_AIR[i][1], `${MU_EN_AIR[i][0]} MeV`).toBeLessThan(MU_EN_AIR[i - 1][1]);
+      }
+    }
+    const peak = MU_EN_AIR.reduce((m, x) => (x[0] > 0.1 && x[1] > m[1] ? x : m), [0, 0]);
+    expect(peak[0]).toBeGreaterThanOrEqual(0.4);
+    expect(peak[0]).toBeLessThanOrEqual(0.6);
+  });
+});
+
+describe('derived gamma constants', () => {
+  it('lands within 3% of the published constant for every source offered', () => {
+    const off = [];
+    for (const s of PROTECT_SOURCES) {
+      const pub = PUBLISHED[s.nuclide] * R_TO_MSVH;
+      const derived = gammaConst(s.lines);
+      const err = Math.abs(derived - pub) / pub;
+      if (err > 0.03) off.push(`${s.nuclide}: derived ${derived.toFixed(4)} vs published ${pub.toFixed(4)} (${(err * 100).toFixed(1)}%)`);
+    }
+    expect(off, 'derived constants adrift:\n  ' + off.join('\n  ')).toEqual([]);
+  });
+
+  it('would be ~20% low if the K X-rays were dropped', () => {
+    // This is the trap the section's comment describes. Technetium's 18 keV
+    // X-rays carry little energy but sit where the air coefficient is twenty
+    // times higher, so they are most of its air kerma.
+    const tc = PROTECT_SOURCES.find((s) => s.nuclide === 'Tc-99m');
+    const withX = gammaConst(tc.lines);
+    const withoutX = gammaConst(tc.lines.filter((l) => l[0] > 0.05));
+    expect(withoutX / withX).toBeLessThan(0.85);
+  });
+
+  it('would be ~20% low if the coefficient were taken at the mean energy', () => {
+    // The other half of the trap: one coefficient for the whole spectrum.
+    const ir = PROTECT_SOURCES.find((s) => s.nuclide === 'I-131');
+    const perLine = gammaConst(ir.lines);
+    const eTot = ir.lines.reduce((a, [e, y]) => a + e * y, 0);
+    const yTot = ir.lines.reduce((a, [, y]) => a + y, 0);
+    const atMean = 1e9 * 1.602e-13 * eTot * muEnAir(eTot / yTot) * 0.1 / (4 * Math.PI) * 3600 * 1000;
+    expect(atMean).toBeLessThan(perLine);
+  });
+
+  it('ranks the sources the way their decay schemes demand', () => {
+    const g = {};
+    for (const s of PROTECT_SOURCES) g[s.nuclide] = gammaConst(s.lines);
+    // Co-60 emits two hard gammas per decay, Cs-137 one soft one: about 4x.
+    expect(g['Co-60'] / g['Cs-137']).toBeGreaterThan(3.5);
+    expect(g['Co-60'] / g['Cs-137']).toBeLessThan(4.5);
+    expect(g['Tc-99m']).toBeLessThan(g['I-131']);
+    expect(g['I-131']).toBeLessThan(g['Cs-137']);
+  });
+});
+
+describe('the three levers', () => {
+  const rate = (s, gbq, m, mu, cm) => gammaConst(s.lines) * gbq * Math.exp(-mu * cm) / (m * m);
+  const cs = PROTECT_SOURCES.find((s) => s.nuclide === 'Cs-137');
+
+  it('halves the dose for each lever, and multiplies across them', () => {
+    const base = rate(cs, cs.gbq, 1, 0, 0);
+    // Distance: x sqrt(2)
+    expect(rate(cs, cs.gbq, Math.SQRT2, 0, 0) / base).toBeCloseTo(0.5, 6);
+    // Shielding: one half-value layer of lead (mu = 0.771 /cm at 1 MeV)
+    const hvl = Math.LN2 / 0.771;
+    expect(rate(cs, cs.gbq, 1, 0.771, hvl) / base).toBeCloseTo(0.5, 6);
+    // All three together, time included, is one eighth — the section's claim.
+    const both = rate(cs, cs.gbq, Math.SQRT2, 0.771, hvl) / base;
+    expect(both * 0.5).toBeCloseTo(0.125, 6);
+  });
+
+  it('puts a 37 GBq caesium gauge in the range a survey meter would read', () => {
+    // ~2.8 mSv/h at 1 m. Orders of magnitude either side would mean the
+    // activity or the constant is wrong.
+    const r = rate(cs, cs.gbq, 1, 0, 0);
+    expect(r).toBeGreaterThan(1.5);
+    expect(r).toBeLessThan(5);
+    // And the stay time to the public annual limit is minutes, not hours.
+    expect(60 / r).toBeGreaterThan(10);
+    expect(60 / r).toBeLessThan(45);
+  });
+
+  it('keeps the nuclear-medicine patient reassuringly low', () => {
+    // The section tells families a whole day at arm's length is not a
+    // meaningful dose. That has to be true.
+    const tc = PROTECT_SOURCES.find((s) => s.nuclide === 'Tc-99m');
+    const allDayAtOneMetre = rate(tc, tc.gbq, 1, 0, 0) * 8;   // mSv over 8 hours
+    expect(allDayAtOneMetre).toBeLessThan(0.2);               // under a tenth of annual background
+  });
+
+  it('offers limits that match the dose ladder', () => {
+    const byId = Object.fromEntries(DOSE_LIMITS.map((l) => [l.id, l.mSv]));
+    expect(byId.worker).toBe(DOSES.find((d) => d.name.includes('radiation worker')).mSv);
+    expect(byId.sick).toBe(DOSES.find((d) => d.name.includes('Radiation sickness')).mSv);
+  });
+});
+
+describe('the protection section renders', () => {
+  it('shows all three levers and a stay time', () => {
+    const html = renderTool('nuclearLab', { _nuclearLab: { ptSrc: 'cs137', ptDist: 1, ptThick: 0 } });
+    expect(html).toContain('id="nksec-protect"');
+    expect(html).toContain('⏱️ TIME');
+    expect(html).toContain('📏 DISTANCE');
+    expect(html).toContain('🧱 SHIELDING');
+    expect(html).toContain('Dose rate here');
+  });
+
+  it('states the buildup simplification rather than hiding it', () => {
+    const html = renderTool('nuclearLab', {});
+    expect(html).toMatch(/narrow-beam attenuation with no buildup factor/i);
+    expect(html).toMatch(/performs somewhat worse/i);
+  });
+
+  it('survives a shield thick enough to stop essentially everything', () => {
+    const html = renderTool('nuclearLab', { _nuclearLab: { ptSrc: 'co60', ptShield: 'lead', ptThick: 20, ptDist: 0.3 } });
+    expect(html).toContain('id="nksec-protect"');
+    expect(html).not.toMatch(/NaN|Infinity|undefined/);
+  });
+});
+
+// ── Shelter or evacuate ────────────────────────────────────────────────────
+// This section's whole value is that the answer FLIPS, so what has to be
+// tested is that it flips in the right direction, at the right point, for the
+// right reason. A version that always said "shelter" would look identical on
+// any single screenshot and would be propaganda rather than a calculation.
+
+const SHELTER_PLACES = table('var SHELTER_PLACES = [');
+const PAG_LEVELS = table('var PAG_LEVELS = [');
+
+const OUT = SHELTER_PLACES[0].drf;
+const shelterDose = (rate, drf, plume) => rate * drf * plume;
+const evacDose = (rate, plume, hours) => rate * OUT * Math.min(hours, plume);
+const breakEven = (drf, plume) => drf * plume / OUT;
+
+describe('Shielding factors', () => {
+  it('orders buildings by how much mass is between you and the sky', () => {
+    for (let i = 1; i < SHELTER_PLACES.length; i++) {
+      expect(SHELTER_PLACES[i].drf, SHELTER_PLACES[i].name)
+        .toBeLessThan(SHELTER_PLACES[i - 1].drf);
+    }
+    expect(SHELTER_PLACES[0].id).toBe('outdoors');
+  });
+
+  it('keeps every factor inside the range it publishes', () => {
+    for (const p of SHELTER_PLACES) {
+      const [lo, hi] = p.range.split('–').map((x) => parseFloat(x.trim()));
+      expect(p.drf, `${p.name} outside its own stated range ${p.range}`).toBeGreaterThanOrEqual(lo);
+      expect(p.drf, `${p.name} outside its own stated range ${p.range}`).toBeLessThanOrEqual(hi);
+    }
+  });
+
+  it('treats a car as no shelter at all, which is the point', () => {
+    const car = SHELTER_PLACES.find((p) => p.id === 'outdoors');
+    expect(car.drf).toBeGreaterThanOrEqual(0.9);
+    expect(car.note).toMatch(/car is not shelter/i);
+  });
+
+  it('spans a factor of at least forty from outdoors to a big building', () => {
+    const best = SHELTER_PLACES[SHELTER_PLACES.length - 1];
+    expect(OUT / best.drf).toBeGreaterThan(40);
+  });
+});
+
+describe('The decision flips, and flips correctly', () => {
+  it('favours sheltering through a short release', () => {
+    // 8-hour plume, brick house, 4 hours to get clear through jammed roads.
+    const rate = 2, drf = 0.2, plume = 8, evacHrs = 4;
+    expect(shelterDose(rate, drf, plume)).toBeLessThan(evacDose(rate, plume, evacHrs));
+  });
+
+  it('favours leaving when the release goes on for days', () => {
+    // Same house, same drive, but the release lasts three days. No building
+    // shields you for 72 hours.
+    const rate = 2, drf = 0.2, plume = 72, evacHrs = 4;
+    expect(evacDose(rate, plume, evacHrs)).toBeLessThan(shelterDose(rate, drf, plume));
+  });
+
+  it('puts the break-even exactly where the two curves cross', () => {
+    for (const p of SHELTER_PLACES.slice(1)) {
+      for (const plume of [4, 8, 24, 72]) {
+        const be = breakEven(p.drf, plume);
+        const rate = 3;
+        // At break-even the two options cost the same, to floating-point.
+        expect(evacDose(rate, plume, be), `${p.id} @ ${plume}h`)
+          .toBeCloseTo(shelterDose(rate, p.drf, plume), 9);
+        // Either side of it, the cheaper option swaps.
+        if (be > 0.2 && be < plume) {
+          expect(evacDose(rate, plume, be * 0.9)).toBeLessThan(shelterDose(rate, p.drf, plume));
+          expect(evacDose(rate, plume, be * 1.1)).toBeGreaterThan(shelterDose(rate, p.drf, plume));
+        }
+      }
+    }
+  });
+
+  it('does not depend on the dose rate — only on time and shielding', () => {
+    // The break-even is rate-independent, which is why the section can give a
+    // student a rule of thumb rather than a number they must look up.
+    const a = breakEven(0.2, 8);
+    for (const rate of [0.1, 2, 30]) {
+      expect(evacDose(rate, 8, a)).toBeCloseTo(shelterDose(rate, 0.2, 8), 9);
+    }
+  });
+
+  it('never lets evacuating accrue dose after the plume has stopped', () => {
+    // Driving for 12 hours through a 2-hour release must cost 2 hours of dose,
+    // not 12. Getting this wrong would bias every answer toward sheltering.
+    expect(evacDose(5, 2, 12)).toBeCloseTo(5 * OUT * 2, 9);
+  });
+
+  it('makes a basement beat a four-hour drive for any plume under a day', () => {
+    const be = breakEven(SHELTER_PLACES.find((p) => p.id === 'basement').drf, 24);
+    expect(be).toBeLessThan(4);   // so a 4 h evacuation loses
+  });
+});
+
+describe('Published thresholds', () => {
+  it('matches the EPA and IAEA figures, in order', () => {
+    expect(PAG_LEVELS.map((l) => l.mSv)).toEqual([10, 50, 100]);
+    expect(PAG_LEVELS[0].window).toMatch(/4 days/);
+    expect(PAG_LEVELS[2].window).toMatch(/7 days/);
+  });
+
+  it('ties the IAEA criterion to the dose ladder rather than restating it', () => {
+    const iaea = PAG_LEVELS.find((l) => l.mSv === 100);
+    expect(iaea.what).toMatch(/clearly measurable cancer link/i);
+    expect(DOSES.find((x) => x.name.includes('Lowest dose')).mSv).toBe(iaea.mSv);
+  });
+
+  it('says the guide is "whichever is lower", not "evacuate"', () => {
+    expect(PAG_LEVELS[0].what).toMatch(/whichever gives the lower dose/i);
+  });
+});
+
+describe('The section renders honestly', () => {
+  it('shows both options and the break-even', () => {
+    const html = renderTool('nuclearLab', { _nuclearLab: { shRate: 2, shPlume: 8, shEvac: 4, shPlace: 'masonry' } });
+    expect(html).toContain('id="nksec-shelter"');
+    expect(html).toContain('Shelter here');
+    expect(html).toContain('Evacuate now');
+    expect(html).toMatch(/Break-even is/);
+  });
+
+  it('reaches the opposite verdict for a long release', () => {
+    const short = renderTool('nuclearLab', { _nuclearLab: { shRate: 2, shPlume: 6, shEvac: 4, shPlace: 'masonry' } });
+    const long = renderTool('nuclearLab', { _nuclearLab: { shRate: 2, shPlume: 72, shEvac: 4, shPlace: 'masonry' } });
+    expect(short).toContain('stay where you are');
+    expect(long).toContain('leaving costs less');
+  });
+
+  it('states what the arithmetic leaves out, in the section itself', () => {
+    // The 2,200 deaths were not dose. A calculator that quietly implied
+    // otherwise would be the most misleading thing in the whole tool.
+    const html = renderTool('nuclearLab', {});
+    expect(html).toMatch(/dose was not what killed people at Fukushima/i);
+    // Quote marks are HTML-escaped in the render, so match the phrase itself.
+    expect(html).toMatch(/was not .{0,12}never evacuate/i);
+    expect(html).toMatch(/per population rather than per map/i);
+  });
+
+  it('survives the extremes of every slider', () => {
+    for (const st of [
+      { shRate: 0.1, shPlume: 1, shEvac: 0.5, shPlace: 'outdoors' },
+      { shRate: 30, shPlume: 72, shEvac: 12, shPlace: 'large' },
+      { shRate: 30, shPlume: 1, shEvac: 12, shPlace: 'basement' },
+    ]) {
+      const html = renderTool('nuclearLab', { _nuclearLab: st });
+      expect(html, JSON.stringify(st)).toContain('id="nksec-shelter"');
+      expect(html, JSON.stringify(st)).not.toMatch(/NaN|Infinity|undefined/);
+    }
+  });
+});
+
+// ── Question routes ────────────────────────────────────────────────────────
+// Nineteen sections in document order is right for a reader going front to
+// back and wrong for almost everyone who arrives, because people turn up with
+// a question rather than a section number. The routes are the same nineteen
+// sections in five reading orders — so the thing to test is that they really
+// are the same nineteen, and that turning one on does not strand anybody.
+
+function pathTable() {
+  const a = SRC.indexOf('var NK_PATHS = [');
+  expect(a, 'NK_PATHS not found').toBeGreaterThan(-1);
+  const b = SRC.indexOf('\n      ];', a);
+  return new Function('return ' + SRC.slice(a + 'var NK_PATHS = '.length, b) + '\n      ]')();
+}
+const NK_PATHS = pathTable();
+const SECTION_IDS = [...SRC.matchAll(/\{ id: '([a-z0-9]+)', grp: '[a-z]+', icon:/g)].map((m) => m[1]);
+
+describe('Question routes', () => {
+  it('only ever points at sections that exist', () => {
+    // A route step naming a section that was renamed or removed would render a
+    // button that jumps nowhere, silently.
+    for (const r of NK_PATHS) {
+      for (const step of r.steps) {
+        expect(SECTION_IDS, `route "${r.q}" points at unknown section "${step}"`).toContain(step);
+      }
+    }
+  });
+
+  it('leaves no section unreachable from any route', () => {
+    // Not a formality: the routes are the only question-led way in, so a
+    // section none of them mentions is one a student can reach only by
+    // scrolling past it or already knowing its name.
+    const covered = new Set(NK_PATHS.flatMap((r) => r.steps));
+    const orphans = SECTION_IDS.filter((id) => !covered.has(id));
+    expect(orphans, 'sections no route leads to: ' + orphans.join(', ')).toEqual([]);
+  });
+
+  it('does not repeat a step inside one route', () => {
+    for (const r of NK_PATHS) {
+      expect(r.steps.length, `route "${r.q}" repeats a step`).toBe(new Set(r.steps).size);
+    }
+  });
+
+  it('gives every route a unique id, a real question, and a reason', () => {
+    const ids = NK_PATHS.map((r) => r.id);
+    expect(ids.filter((v, i) => ids.indexOf(v) !== i)).toEqual([]);
+    for (const r of NK_PATHS) {
+      expect(r.q, r.id + ' is not phrased as a question').toMatch(/\?$/);
+      expect(r.why.length, r.id + ' has no explanation').toBeGreaterThan(40);
+      expect(r.steps.length, r.id + ' is too short to be a route').toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it('sequences each route so it opens on something concrete', () => {
+    // Every route starts on a section that answers its question directly,
+    // rather than on background the student did not ask for.
+    const firsts = NK_PATHS.map((r) => r.steps[0]);
+    expect(firsts).toEqual(['compare', 'weighting', 'shielding', 'halflife', 'detect']);
+  });
+});
+
+describe('Taking a route', () => {
+  it('offers every route on first load', () => {
+    const html = renderTool('nuclearLab', {});
+    expect(html).toContain('START WITH A QUESTION');
+    for (const r of NK_PATHS) expect(html, r.q + ' missing').toContain(r.q);
+  });
+
+  it('narrows the index to that route, in its order', () => {
+    const html = renderTool('nuclearLab', { _nuclearLab: { nkPath: 'know' } });
+    const steps = [...html.matchAll(/Step (\d+) — ([^<(]+)/g)].map((m) => m[2].trim());
+    expect(steps.length).toBe(3);
+    // 'know' is detect -> dating -> chain, which is NOT document order
+    // (dating is section 2, detect is section 12). Order is the point.
+    expect(steps[0]).toMatch(/Measure it/);
+    expect(steps[1]).toMatch(/Carbon dating/);
+    expect(html).toContain('route: 3 steps');
+  });
+
+  it('still shows the section numbers, so a step is locatable in the document', () => {
+    const html = renderTool('nuclearLab', { _nuclearLab: { nkPath: 'know' } });
+    expect(html).toMatch(/§12/);   // detect
+    expect(html).toMatch(/§2/);    // dating
+  });
+
+  it('hides nothing — every section is still rendered under a route', () => {
+    // The route filters the INDEX, not the document. A student who takes a
+    // route and then scrolls must still meet everything else.
+    const html = renderTool('nuclearLab', { _nuclearLab: { nkPath: 'safe' } });
+    for (const id of SECTION_IDS) {
+      expect(html, 'section ' + id + ' vanished under a route').toContain('id="nksec-' + id + '"');
+    }
+  });
+
+  it('explains why the route is ordered the way it is', () => {
+    const html = renderTool('nuclearLab', { _nuclearLab: { nkPath: 'me' } });
+    expect(html).toContain(NK_PATHS.find((r) => r.id === 'me').why);
+  });
+
+  it('does not strand the reader if a stale route id is persisted', () => {
+    // Old saved state naming a route that no longer exists must fall back to
+    // the full index rather than an empty one.
+    const html = renderTool('nuclearLab', { _nuclearLab: { nkPath: 'no-such-route' } });
+    expect(html).toContain('showing all');
+    const jumps = (html.match(/aria-label="Jump to /g) || []).length;
+    expect(jumps).toBe(SECTION_IDS.length);
+  });
+
+  it('labels the category pills as a way OFF a route while one is active', () => {
+    const html = renderTool('nuclearLab', { _nuclearLab: { nkPath: 'safe' } });
+    expect(html).toMatch(/Leave the route and show/);
   });
 });

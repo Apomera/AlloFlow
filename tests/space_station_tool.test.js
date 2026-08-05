@@ -202,6 +202,99 @@ describe('space station tool', () => {
     });
   });
 
+  it('paints the planet from real coastline data and says which parts are schematic', () => {
+    TOOL_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      // The land mask is real Natural Earth data in the same base36 per-row RLE
+      // the flight-sim tool uses. Pin the decoder's shape and the grid size: a
+      // silent change to either draws a garbled planet that still "renders".
+      expect(source).toContain('ISS_LAND_W = 720, ISS_LAND_H = 360');
+      expect(source).toContain("ISS_LAND_RLE.split(';')");
+      expect(source).toContain("parseInt(runs[k], 36)");
+      // 360 rows of latitude, one per line, or the decode walks off the mask.
+      const rle = source.match(/var ISS_LAND_RLE = '([0-9a-z,;]+)'/);
+      expect(rle).not.toBeNull();
+      expect(rle[1].split(';').length).toBe(360);
+
+      // Honesty: the tab must tell students which of what they see is data.
+      expect(source).toContain('the coastlines are real');
+      expect(source).toContain('Natural Earth');
+      expect(source).toContain('are schematic');
+
+      // Texture generation must stay deterministic. The GL smoke test compares
+      // two mounts pixel-for-pixel; a Math.random() in the map painter would
+      // either fail it or hide a real regression behind noise.
+      const painter = source.slice(source.indexOf('function issEarthCanvases'), source.indexOf('function issGlowCanvas'));
+      expect(painter.length).toBeGreaterThan(500);
+      expect(painter).not.toContain('Math.random');
+      // Painted once per quality tier and reused across mounts.
+      expect(source).toContain('_issEarthCanvases[key]');
+
+      // City lights ride the same daylight term as the windows and the array
+      // glint: fixed emissive either blows them white over the day side or
+      // leaves them invisible over the night side.
+      expect(source).toContain('earthLightsMat.emissiveIntensity = 0.1 + 1.45 * lampOn');
+
+      // The day/night sweep must circle in a plane containing the Earth-station
+      // line. The old horizontal sweep kept the Sun above the planet forever,
+      // so the ground below never had a night side at all.
+      expect(source).toContain('sun.position.set(Math.cos(sa) * 10, Math.sin(sa) * 9.5, Math.cos(sa) * 4.5)');
+      expect(source).not.toContain('sun.position.set(Math.cos(sa) * 10, 6, Math.sin(sa) * 10)');
+      // A constant z kept the Sun behind the camera for the whole orbit, so the
+      // sun billboard never rendered in the view students land on.
+      expect(source).not.toContain('Math.sin(sa) * 9.5, 4.5)');
+
+      // Earth's surface is at y = -4.5 here, so an "Earth-facing" camera below
+      // that sits inside the planet and renders a flat wash.
+      expect(source).toContain('nadir: { camera: [0, -3.9, 5.6]');
+      expect(source).not.toContain('nadir: { camera: [0, -11.5, 2.5]');
+
+      // Per-renderer textures must be released with the renderer.
+      expect(source).toContain('earthTextures.forEach(');
+    });
+  });
+
+  it('lights the atmospheric limb from the Sun instead of ringing the planet evenly', () => {
+    TOOL_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      // Both shells carry per-vertex colour driven by the sun direction, so the
+      // night limb goes dark and the terminator gets its orange line. A flat
+      // material colour here is the regression: it lit the night side's limb as
+      // brightly as the day side's.
+      expect(source).toContain('function makeLimbShell(');
+      expect(source).toContain('vertexColors: true');
+      expect(source).toContain('limbShells[ls].update(_sunDir)');
+      expect(source).not.toContain("new THREE.MeshBasicMaterial({ color: 0x67c8ff, transparent: true, opacity: 0.15");
+
+      // Repainting 2,665 vertices per shell must stay off the hot path, and
+      // must still force ONE draw under reduced motion — the idle-render guard
+      // would otherwise hold the pre-paint image on screen for two seconds.
+      expect(source).toContain('tick % 4 === 0 && limbShells.length');
+      expect(source).toContain("+ (_limbPainted ? 1 : 0)");
+
+      // The background is authored PRE tone-mapping: the post-FX chain runs the
+      // clear colour through ACES, and the old value came out a milky navy.
+      expect(source).toContain('new THREE.Color(0x000102)');
+      expect(source).not.toContain('new THREE.Color(0x030712)');
+    });
+  });
+
+  it('docks the visiting vehicles at the ports they actually use', () => {
+    TOOL_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+      // Dragon on Harmony forward (module at z -3.4, half-length 0.8, so the
+      // port is at z -4.2) and Progress on Zvezda aft (4.6 + 1.6 = 6.2).
+      expect(source).toContain("addVisitor(dragonCap, 'harmony')");
+      expect(source).toContain("addVisitor(progressCargo, 'zvezda')");
+      // Attached as details of their host module so the cutaway control dims
+      // them together with it.
+      expect(source).toContain("mesh._issParentId = hostId");
+      expect(source).toContain('moduleDetails.push(mesh)');
+    });
+  });
+
   it('ships the docking sim, EVA game, and interior views with honest physics', () => {
     TOOL_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
@@ -286,9 +379,26 @@ describe('space station tool', () => {
       loadTool('stem_lab/stem_tool_spacestation.js', 'spaceStation');
     });
 
-    it('seeds its state bucket from empty and opens an interior crew shift', () => {
+    it('seeds its state bucket from empty and lands on the 3-D station', () => {
+      // The station is the tool's opening image: a fresh bucket must land on
+      // the 3-D map, not on the crew-shift interior it used to open with.
       const html = mountWithSeed(null);
       expect(html).toContain('Space Station');
+      expect(html).toContain('iss-station-stage');
+      expect(html).toContain('ISS // ORBITAL VIEW');
+      expect(html).toContain('Interactive 3-D model of the International Space Station');
+      expect(html).toContain('Fast facts');
+      // ...and the interior surface is NOT what greets them.
+      expect(html).not.toContain('data-iss-room-transition');
+      // The 3-D tab is also first in the tablist, so keyboard Home reaches it.
+      const mapIndex = html.indexOf('iss-tab-map');
+      const interiorIndex = html.indexOf('iss-tab-interior');
+      expect(mapIndex).toBeGreaterThan(-1);
+      expect(interiorIndex).toBeGreaterThan(mapIndex);
+    });
+
+    it('still opens the interior crew shift when that tab is selected', () => {
+      const html = mountWithSeed({ ...BASE, tab: 'interior' });
       expect(html).toContain('Float inside. Work like an astronaut.');
       expect(html).toContain('Crew quarters');
       expect(html).toContain('AFT');
@@ -1019,6 +1129,189 @@ describe('space station tool', () => {
         live.cleanup();
       }
     });
+    it('teaches inclination with a real ground track over real coastlines', () => {
+      const at = (orbitInc) => mountWithSeed({ ...BASE, tab: 'orbit', orbitInc });
+
+      // Default is the station's real inclination, and the track's highest
+      // latitude must equal it — that identity IS the orbital mechanics here.
+      const iss = at(51.6);
+      expect(iss).toContain('data-iss-ground-track="51.6"');
+      expect(iss).toContain('Reaches 51.6°N to 51.6°S');
+      expect(at(28.5)).toContain('Reaches 28.5°N to 28.5°S');
+      expect(at(90)).toContain('Reaches 90.0°N to 90.0°S');
+
+      // Land coverage is COMPUTED from the embedded mask (cos-weighted for
+      // area), not quoted: a band of zero width covers no land, a polar orbit
+      // covers all of it, and 51.6° lands where the real geography puts it.
+      expect(at(0)).toContain('0% of Earth’s land');
+      expect(at(90)).toContain('100% of Earth’s land');
+      expect(iss).toMatch(/flies over 7[01]% of Earth’s land/);
+      expect(at(28.5)).toMatch(/flies over 4[123]% of Earth’s land/);
+
+      // Earth turns under the orbit, so each pass runs west of the last. At the
+      // ~93 min period of a 420 km orbit that is ~23°, the published figure.
+      expect(iss).toMatch(/each later pass runs 23\.[0-9]° further west/);
+
+      // A pad cannot reach an inclination below its own latitude. Baikonur is
+      // at 46°N, so it can reach 51.6° but not 28.5°.
+      const reach = (html, site) => {
+        const i = html.indexOf('data-iss-launch-site="' + site + '"');
+        return i < 0 ? null : /data-iss-site-reachable="(yes|no)"/.exec(html.slice(i))[1];
+      };
+      expect(reach(iss, 'Baikonur')).toBe('yes');
+      expect(reach(at(28.5), 'Baikonur')).toBe('no');
+      expect(reach(at(28.5), 'Tanegashima')).toBe('no');     // 30.4°N
+      expect(reach(at(28.5), 'Cape Canaveral')).toBe('yes');  // 28.5°N exactly
+      expect(reach(at(28.5), 'Kourou')).toBe('yes');          // 5.2°N
+      expect(at(28.5)).toContain('3 of 5');
+      expect(iss).toContain('5 of 5');
+
+      // Reachability must not be carried by colour alone: red/green is the
+      // commonest colour-vision failure and axe cannot see the problem, because
+      // both colours pass contrast against the map behind them. Unreachable
+      // pads get a hollow ring with a strike through it, and the map's own
+      // aria-label names them.
+      expect(at(28.5)).toContain('filled dot = pad can reach this orbit');
+      expect(at(28.5)).toMatch(/data-iss-site-reachable="no"[\s\S]{0,400}?fill="none"/);
+      expect(at(28.5)).toMatch(/Tanegashima and Baikonur cannot reach this orbit directly/);
+      expect(iss).toContain('All five marked launch sites can reach this orbit directly');
+
+      // The explanation must survive: you can aim higher than your latitude,
+      // never lower.
+      expect(at(28.5)).toContain('cannot reach 28.5°');
+      expect(iss).toContain('Baikonur sits at about 46°N');
+      // The explanation of the REAL orbit must not follow the slider: it quotes
+      // the land share at 51.6°, not at whatever the student has dragged to.
+      expect(at(10)).toContain('about 71% of Earth’s land');
+      expect(at(10)).toContain('flies over 14% of Earth’s land');   // the live readout does follow
+      // ...and the placeholder must actually be substituted, never shipped raw.
+      expect(iss).not.toContain('{pct}');
+      // London 51.5°N is inside the band and Berlin 52.5°N is outside — a
+      // checkable anchor, and both cities are in the tool's own light list.
+      expect(iss).toContain('London at 51.5°N');
+      expect(iss).toContain('Berlin, at 52.5°N');
+    });
+
+    it('derives the quiz pass mark once instead of writing it out six times', () => {
+      TOOL_PATHS.forEach((filePath) => {
+        const source = readFileSync(filePath, 'utf8');
+        // The threshold appeared as a literal 7 in the quest hook, the quest
+        // LABEL, the debrief message, the completion toast, and three times in
+        // the debrief gauge. Adding an eleventh question moved the bar in some
+        // of those and not others, so the gauge would have said FLIGHT
+        // QUALIFIED at a score the quest refused to credit.
+        expect(source).toContain('var QUIZ_PASS = Math.ceil(QUIZ.length * 0.7)');
+        expect(source).toContain("label: 'Score ' + QUIZ_PASS + '+ on the station quiz'");
+        expect(source).toContain('(s.quizBest || 0) >= QUIZ_PASS');
+        expect(source).toContain('d.quizScore >= QUIZ_PASS');
+        expect(source).toContain('finalScore >= QUIZ_PASS');
+        expect(source).not.toMatch(/score >= 7 \?/);
+        expect(source).not.toContain("'Score 7+ on the station quiz'");
+      });
+
+      // QUIZ and QUIZ_TOPIC_LABELS are parallel arrays read by index in the
+      // debrief, so a length mismatch silently mislabels a question's topic.
+      const source = readFileSync(TOOL_PATHS[0], 'utf8');
+      const questions = (source.match(/^    \{ q: '/gm) || []).length;
+      const labels = source.match(/QUIZ_TOPIC_LABELS = \[([^\]]*)\]/)[1].split(',').length;
+      expect(questions).toBe(11);
+      expect(labels).toBe(questions);
+    });
+
+    it('survives a corrupted inclination instead of rendering NaN', () => {
+      // Number('') is 0 and Number('abc') is NaN. The first would quietly show
+      // an equatorial orbit as though the student had chosen it; the second put
+      // NaN into every coordinate of the ground-track SVG. Both fall back.
+      const bad = (orbitInc) => mountWithSeed({ ...BASE, tab: 'orbit', orbitInc });
+      ['', 'abc', null, undefined, NaN].forEach((value) => {
+        const html = bad(value);
+        expect(html).not.toContain('NaN');
+        expect(html).toContain('data-iss-ground-track="51.6"');
+      });
+      // A real value still wins, out-of-range values clamp rather than fall
+      // back, numeric strings are accepted, and a genuine 0 SURVIVES — it is
+      // the Equatorial preset, not a missing value.
+      expect(bad(28.5)).toContain('data-iss-ground-track="28.5"');
+      expect(bad('28.5')).toContain('data-iss-ground-track="28.5"');
+      expect(bad(0)).toContain('data-iss-ground-track="0.0"');
+      expect(bad(-40)).toContain('data-iss-ground-track="0.0"');
+      expect(bad(400)).toContain('data-iss-ground-track="90.0"');
+
+      // Derived once: two copies of the clamp expression would let a changed
+      // default disagree with itself between the map and the readouts.
+      TOOL_PATHS.forEach((filePath) => {
+        const source = readFileSync(filePath, 'utf8');
+        expect((source.match(/Number\(_rawInc\)/g) || []).length).toBe(1);
+        expect(source).toContain("_rawInc == null || _rawInc === ''");
+      });
+    });
+
+    it('answers the land-share question without rescanning the planet', () => {
+      TOOL_PATHS.forEach((filePath) => {
+        const source = readFileSync(filePath, 'utf8');
+        // The inclination slider steps every 0.1°, so a drag from 0 to 90 asks
+        // this question 900 times. Scanning all 259,200 mask cells per answer
+        // measured 157ms of pure compute per drag on a dev machine, which is
+        // far worse on the Chromebooks this ships to. Row areas are built once
+        // and the band is a prefix-sum difference.
+        expect(source).toContain('_issRowPrefix');
+        expect(source).toContain('function issLandRowAreas');
+        expect(source).toMatch(/_issRowPrefix\[lastExclusive\] - _issRowPrefix\[first\]/);
+        // The old per-call full scan must not come back.
+        expect(source).not.toMatch(/function issLandShareWithin[\s\S]{0,600}?for \(var col = 0; col < ISS_LAND_W/);
+      });
+    });
+
+    it('draws the ground track from the same land data as the globe', () => {
+      // One mask, two surfaces. If the flat map ever stops agreeing with the
+      // 3-D globe the tool is telling two different stories about the planet.
+      const html = mountWithSeed({ ...BASE, tab: 'orbit' });
+      expect(html).toContain('Coastlines: Natural Earth (public domain)');
+      // Land is ONE path built from run-length subpaths. A world with almost no
+      // subpaths means the mask decode silently produced an empty planet.
+      const landPath = /<path d="((?:M[-\d.]+ [-\d.]+h[-\d.]+v[-\d.]+h-[-\d.]+z)+)"/.exec(html);
+      expect(landPath).not.toBeNull();
+      expect((landPath[1].match(/M/g) || []).length).toBeGreaterThan(300);
+      // ...and it must NOT go back to hundreds of separate elements: that made
+      // the orbit tab's axe pass take 59s and re-reconciled on every drag.
+      expect((html.match(/<rect[^>]*>/g) || []).length).toBeLessThan(30);
+    });
+
+    it('grows the solar arrays on the dates they were actually installed', () => {
+      // The picture used to put all four wing pairs up at once from 2002 and
+      // leave them, beside an AVAILABLE POWER readout climbing 18 -> 120 kW.
+      const wingsAt = (assemblyIdx) => {
+        const html = mountWithSeed({ ...BASE, tab: 'history', assemblyIdx });
+        return (html.match(/data-iss-array-wing="([a-z0-9]+)"/g) || [])
+          .map((m) => m.replace(/.*"([a-z0-9]+)"/, '$1'));
+      };
+      expect(wingsAt(0)).toEqual([]);                       // 1998: no arrays yet
+      expect(wingsAt(1)).toEqual(['p6']);                   // Nov 2000: P6 on Z1
+      expect(wingsAt(3)).toEqual(['p6', 'p4']);             // Sep 2006: P4
+      expect(wingsAt(4)).toEqual(['p6', 'p4', 's4']);       // Jun 2007: S4
+      expect(wingsAt(6)).toEqual(['p6', 'p4', 's4', 's6']); // Mar 2009: complete
+      expect(wingsAt(12)).toEqual(['p6', 'p4', 's4', 's6']);
+
+      // The count is stated, not just drawn, so it reaches screen readers and
+      // sits next to the power figure it explains.
+      expect(mountWithSeed({ ...BASE, tab: 'history', assemblyIdx: 0 })).toContain('0 / 8');
+      expect(mountWithSeed({ ...BASE, tab: 'history', assemblyIdx: 1 })).toContain('2 / 8');
+      expect(mountWithSeed({ ...BASE, tab: 'history', assemblyIdx: 6 })).toContain('8 / 8');
+      expect(mountWithSeed({ ...BASE, tab: 'history', assemblyIdx: 6 })).toContain('8 of 8 solar array wings');
+
+      // P6 flew on the Z1 truss above Unity and was physically relocated to the
+      // port truss in 2007 — it should not be drawn at its final home before
+      // that happened.
+      const p6X = (assemblyIdx) => {
+        const html = mountWithSeed({ ...BASE, tab: 'history', assemblyIdx });
+        const group = html.slice(html.indexOf('data-iss-array-wing="p6"'));
+        const hit = group.match(/x="(-?\d+(?:\.\d+)?)"/);
+        return hit ? Number(hit[1]) : null;
+      };
+      expect(p6X(1)).toBe(296);   // 320 centre - 24: parked on Z1 above Unity
+      expect(p6X(6)).toBe(126);   // 150 port end - 24: relocated in 2007
+    });
+
     it('renders History and a completed quiz debrief', () => {
       const history = mountWithSeed({ ...BASE, tab: 'history' });
       expect(history).toContain('ORBITAL ASSEMBLY');
@@ -1042,14 +1335,15 @@ describe('space station tool', () => {
       const kiboInstall = mountWithSeed({ ...BASE, tab: 'history', assemblyIdx: 6 });
       expect(kiboInstall).toContain('INSTALLED THIS STEP');
       expect(kiboInstall).toContain('Kibo');
-      const quiz = mountWithSeed({ ...BASE, tab: 'quiz', quizDone: true, quizScore: 8, quizBest: 8, quizResults: { 0: true, 1: true, 2: true, 3: true, 4: true, 5: true, 6: true, 7: true, 8: false, 9: false } });
-      expect(quiz).toContain('8 / 10');
+      const quiz = mountWithSeed({ ...BASE, tab: 'quiz', quizDone: true, quizScore: 8, quizBest: 8, quizResults: { 0: true, 1: true, 2: true, 3: true, 4: true, 5: true, 6: true, 7: true, 8: false, 9: false, 10: false } });
+      expect(quiz).toContain('8 / 11');
       expect(quiz).toContain('Flight-controller material');
       expect(quiz).toContain('MISSION KNOWLEDGE DEBRIEF');
       expect(quiz).toContain('QUESTION FLIGHT RECORD');
-      expect(quiz).toContain('8 correct, 2 to review');
-      expect(quiz).toContain('data-iss-quiz-debrief="10"');
+      expect(quiz).toContain('8 correct, 3 to review');
+      expect(quiz).toContain('data-iss-quiz-debrief="11"');
       expect(quiz).toContain('SHIELDING');
+      expect(quiz).toContain('INCLINATION');
     });
 
     it('makes quiz outcomes color-independent and preserves keyboard focus', async () => {
@@ -1109,5 +1403,9 @@ describe('space station tool', () => {
       const src = readFileSync(p, 'utf8');
       expect(src, p + ' should load the space station tool').toContain("'stem_lab/stem_tool_spacestation.js'");
     });
-  });
+    // Reads both ~44k-line ANTI copies plus App.jsx and build.js. That sat just
+    // under vitest's 5s default and started timing out once the rest of the
+    // suite grew — a timeout here reads as "the tool is unregistered", which is
+    // alarming and wrong. Same convention as the axe tests below.
+  }, 30000);
 });
