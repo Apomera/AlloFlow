@@ -2051,3 +2051,64 @@ pins the fix rather than merely passing.
 of the region's items, so on a 61-item fixture a two-line banner exceeds it and
 no candidate is found at all - a different, already-handled path. The real page
 had 216 items.
+
+## Run-in level audit (2026-08-05) - the session-49 concern, checked and CLOSED
+
+Session 49 found that page 109 marks TWO levels of run-in heading - one face
+flush at the column left, a different face indented 12pt - and flagged that
+"a rebuild that flattened both into level 4 would have lost a real hierarchy".
+That was a claim about 48 already-committed tranches, so it was measured
+rather than left as a worry. **No defect. The hierarchy was already encoded.**
+
+`tools/runin_levels.cjs` (new, kept) reports per page every face appearing at
+a line start, with its flush/indented split, and names the pages that carry
+two distinct run-in levels.
+
+### The first version of the tool was wrong, and that matters
+
+Judging on line starts alone, it flagged **17 of 22 pages** as two-level -
+including page 106, which had been verified BY HAND to have exactly one. It
+was counting italic cross-reference faces and icon labels (`CAUTION`, `TIP`,
+the `!` glyph) as heading levels. A tool that agrees with a hypothesis on 77%
+of pages is not evidence, it is a mirror.
+
+The fix is the discriminator that actually separates the two: **a run-in
+heading only ever BEGINS a line, while an italic cross-reference falls wherever
+the sentence puts it.** Measuring each face's share of line starts against its
+TOTAL item count (plus a body-size filter to drop 16pt part titles and 5.4pt
+icon labels) drops the flag to 8 pages of 22, and both hand-verified pages -
+109 two-level, 106 one-level - now come out right.
+
+### What the corrected sweep found
+
+Of the eight, several are noise that the sample text exposes immediately: page
+88's "run-in" is the phrase "amount in the entry space at the top of" and page
+90's is a column of worksheet line numerals. The genuine, repeated signal is
+narrower and sharper:
+
+> **Across pages 102, 104, 107 and 109, Example labels are set in a distinct
+> face AND indented, while definitional and section run-ins are flush.**
+
+And the rebuild already draws exactly that line, everywhere, arrived at
+semantically before the typography was ever measured:
+
+| tranche | flush run-ins | indented Example labels |
+| --- | --- | --- |
+| 42 (p102) | "Cash tips" 5, "TRDA and GITCA programs" 5, "Amounts received that are not qualified tips" 5 | "Example 1"/"Example 2" **6** |
+| 43 (p103) | "Determining the amount of qualified tips received by an employee for 2025" 5 | Examples **6** |
+| 44 (p104) | "Qualified Tips From More Than One Employer Worksheet" 5 | "Example 2" **6** |
+| 47 (p107) | (under "Determining the amount..." 4) | Examples **5** |
+| 49 (p109) | six run-ins 4 | four run-ins **5** |
+
+In every case the indented face is authored exactly one level deeper than the
+flush one. **The typography independently confirms a hierarchy that was
+derived from meaning** - which is the strongest form this check could have
+returned, and a better answer than the audit was looking for.
+
+### One trap recorded
+
+**pdf.js font IDs are per-LOAD, not per-document.** Page 109 dumped alone
+reports its flush run-ins as `g_d0_f4`; the same page inside a 22-page dump
+reports them as `g_d0_f6`. IDs are consistent within one dump and meaningless
+across dumps, so never carry a face ID from one session's notes into another
+without re-deriving it.
