@@ -667,6 +667,37 @@ by accident.
 
 Queued for Dr. Howorth as §12.11.
 
+### 16.4 Defect found and fixed before mounting (2026-08-05)
+
+Recorded here because the commit carrying this explanation was swept into a concurrent
+commit and its message never landed in history.
+
+**The defect.**  averaged ALL supports. Access supports carry  and therefore weight 0, so every read-aloud added 1 to the denominator and 0 to
+the numerator. Heavier accommodation use dragged the mean down.
+
+Reproduced on a realistic six-week arc: a student with **identical** generative
+scaffolding (model-level AlloBot five times in both periods) who used read-aloud 8 times
+and then 30 times was reported as fading substantially, 1.15 to 0.43.
+
+That is backwards in the most consequential direction available. Leaning harder on an
+accommodation made a student look like they needed **less** support, in the one lane whose
+output could contribute to withdrawing it.
+
+**The fix.** Access supports have no intensity dimension — they are binary, used or not —
+so they are counted, never scored. Intensity covers scaffolds only; periods report
+ and  separately and the panel shows them as separate columns,
+so it is visible that access is not part of the fade read. Two periods of pure access
+support now report 'no fade to read' rather than a misleading steady 0 to 0.
+
+**Why it matters beyond this bug.** Same root cause as the  near-miss (§15.4)
+and the ai-vs-support population split: averaging across two populations that do not
+belong in one statistic. Three times in one day, each a layer further up. Any new number
+in this system should be asked, first, *whose population is this over?*
+
+It surfaced only because the lane was run on a realistic arc rather than a unit fixture.
+Fixture-shaped data would have hidden it indefinitely.
+
+
 ---
 
 *Design principle in one line: make honest work easy to demonstrate and dishonest work
