@@ -468,6 +468,44 @@ without a maintained counter field. Either carry a per-student counter the rules
 validate as monotonic, or accept looser enforcement on that one axis on the Firebase
 path and document it explicitly. Do not let it silently differ.
 
+### 10.4 MEASURED after Phase 1b: the asymmetry is bigger than estimated
+
+Writing the rules turned this from an estimate into a fact, and it is worse than the
+paragraph above guessed. Firestore rules cannot count sibling documents at all, so
+**three** invariants are not enforceable below the client on the Firebase path:
+
+| invariant | mailbox | Firebase rules |
+|---|---|---|
+| `HELD_HIDDEN_FROM_PEERS` | server-filtered | **enforced** (per-item read rule) |
+| `AUTHORSHIP_NOT_FORGEABLE` | signed token | **enforced** (`uid == request.auth.uid`) |
+| `STATUS_IS_HOST_ONLY` | admin endpoint | **enforced** (`allow update: if isHost()`) |
+| `EXPIRY_IS_READ_ONLY` | server check | **enforced** (`expiresAt > request.time`) |
+| `TEXT_IS_SANITIZED` | server normalizer | **bounded** (length only; exact normalization client-side) |
+| `ITEM_CAP_PER_STUDENT` | server-enforced | **advisory** — rules cannot count |
+| `BOARD_CAP` | server-enforced | **advisory** — rules cannot count |
+| `K_ANONYMITY_FLOOR` | server-enforced | **advisory** — cannot count distinct authors |
+
+The safety-critical four are genuinely enforced on both transports. The three advisory
+ones are resource-fairness and reveal-timing rather than disclosure risks: a student who
+forged past them would see no content they were not already entitled to, and would post
+more questions than intended. That is a nuisance, not a leak. Worth stating plainly
+because "advisory" sounds worse than it is here.
+
+**Options for a later decision:** accept advisory enforcement on Firebase and say so in
+the UI; mediate board writes through a Cloud Function; or keep the mailbox as the
+recommended transport for boards while Firebase stays supported. None of this blocks
+Phase 2.
+
+### 10.5 Verification gap to close before ship
+
+There is no `@firebase/rules-unit-testing` in this repo and no emulator available in the
+build environment, so `firestore.rules` has **never been executed** — only mirrored.
+`tests/question_board_firebase_adapter.test.js` runs the shared conformance suite
+against an executable mirror of the rules (`rulesOracle`) and structurally pins the real
+rules file to that mirror, so the design is proven and the two cannot drift silently. It
+does **not** prove the rules engine accepts the syntax or evaluates `get()` the way the
+mirror assumes. **One emulator run is required before this ships.**
+
 ## 11. Open questions for build time
 
 - Does the CacheService → Drive read-through degrade correctly for an *activity* after

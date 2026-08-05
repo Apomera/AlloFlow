@@ -244,6 +244,62 @@ service cloud.firestore {
         allow delete: if isOwner();
       }
 
+      // ── Driving Questions Boards ───────────────────────────────────────
+      // Phase 1b of DRIVING_QUESTIONS_BOARD_SPEC.md. Items live in a
+      // SUBCOLLECTION rather than inside the board doc, because Firestore rules
+      // gate whole documents: a single doc holding held + approved questions
+      // could not hide the held ones from a participant permitted to read it
+      // (spec §10.2). The mailbox keeps its single-doc layout and filters
+      // server-side; both must reach the same answer, which the shared
+      // conformance suite checks.
+      match /public/data/boards/{boardId} {
+        function boardDoc() { return resource.data; }
+        function isBoardHost() { return authed() && resource.data.hostId == request.auth.uid; }
+
+        // The config (prompt, policy) is readable by anyone who joined; the
+        // questions themselves are gated per-item below.
+        allow get: if authed();
+        allow list: if false;
+        allow create: if authed() && request.resource.data.hostId == request.auth.uid;
+        allow update, delete: if isBoardHost();
+
+        match /items/{itemId} {
+          function board() {
+            return get(/databases/$(database)/documents/artifacts/$(appId)/public/data/boards/$(boardId)).data;
+          }
+          function isHost() { return authed() && board().hostId == request.auth.uid; }
+          function isOwn() { return authed() && resource.data.uid == request.auth.uid; }
+          function boardOpen() {
+            return board().expiresAt is timestamp && board().expiresAt > request.time;
+          }
+
+          // HELD_HIDDEN_FROM_PEERS + OWN_ALWAYS_VISIBLE + HOST_SEES_ALL.
+          // NOTE for `list`: Firestore evaluates list against the QUERY, not each
+          // document, so a participant MUST query with where(status==approved) or
+          // where(uid==self). The adapter issues exactly those two queries and
+          // merges; an unconstrained participant query is denied by design.
+          allow get, list: if isHost() || isOwn() || resource.data.status == "approved";
+
+          // AUTHORSHIP_NOT_FORGEABLE — uid must be the caller, and the initial
+          // status must match the board policy so a student cannot self-approve
+          // onto a teacher_review board. TEXT_IS_SANITIZED is bounded here;
+          // exact normalization stays in the contract.
+          allow create: if authed()
+            && boardOpen()
+            && request.resource.data.uid == request.auth.uid
+            && request.resource.data.text is string
+            && request.resource.data.text.size() > 0
+            && request.resource.data.text.size() <= 200
+            && request.resource.data.answered == false
+            && request.resource.data.status == (board().revealPolicy == "auto_publish" ? "approved" : "pending");
+
+          // STATUS_IS_HOST_ONLY — status and answered are teacher-only, and a
+          // participant cannot edit their question after posting (which would
+          // otherwise let approved text be swapped for something else).
+          allow update, delete: if isHost();
+        }
+      }
+
       // ── Cross-session concept mastery — RETIRED 2026-07-01 ─────────────
       // The app no longer writes here (mastery is device-local; teachers get
       // it via live P2P snapshots + student project files). Kept readable/
