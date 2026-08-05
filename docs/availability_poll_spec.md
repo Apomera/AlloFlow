@@ -127,10 +127,16 @@ were collecting and keeping personal availability data indefinitely.
 - `deleteAt`: the response rows are erased. Suggest defaulting to a set period
   after `closesAt` rather than an absolute date, so it moves if the poll is
   extended, and make it clear at creation.
-- `deleteAt` should erase **rows**, keeping the tallies the organizer already
-  exported or pinned, so deleting participant data does not destroy the decision
-  that was made. Whether the tally itself should survive is a real question, and
-  in `real_name` mode a tally is not personal data while a row is.
+- `deleteAt` erases **rows and keeps the tally** (decided 2026-08-05). Removing
+  participant data must not destroy the decision that was made: in `real_name`
+  mode a row is personal data and a per-option count is not. After `deleteAt`
+  the organizer keeps "Tuesday 3:15pm, 7 yes / 2 maybe / 1 no" and loses who
+  said what, which is the right residue for a scheduling poll.
+  - Implication for the summary builder: the tally must be **materialised at
+    delete time**, not recomputed from rows that no longer exist.
+  - The kept tally must not be re-identifying. With very few respondents a
+    count can still fingerprint a person, so `minParticipants` applies to the
+    surviving tally exactly as it does to a live one.
 
 For back-compatibility with the existing normalizer, an incoming `expiresAt`
 maps to `closesAt`.
@@ -219,8 +225,7 @@ two backends that disagree about a poll result is a bug users cannot diagnose.
    "final" means when the organizer is watching results arrive.
 3. ~~Retention.~~ **Answered: two dates.** See §4 for closesAt
    and deleteAt, and the open sub-question of whether the TALLY outlives the rows.
-5. **Mailbox config portability.** Persistence is already solved (§11.1). Should
-   a teacher be able to export or QR their mailbox config to restore it or move
+5. ~~Mailbox config portability.~~ **Approved, see §12** (file export, not QR).
    it to a second device?
 4. ~~One device, two people.~~ **Answered, see §11.** They do NOT stay distinct
    today. Making them distinct is feasible and the work is client-side only.
@@ -344,3 +349,59 @@ implementation detail:
 Cost is small and contained, but it must land **with** the poll rather than
 after it: a scheduling tool that loses a respondent on a shared laptop is worse
 than no scheduling tool.
+
+---
+
+## 12. Mailbox config portability (approved 2026-08-05)
+
+Approved because §11.1 leaves no guaranteed recovery path: on Canvas the bridge
+can degrade to `memory`, the popup backend can be blocked, and localStorage does
+not survive the session. Without an export, a teacher whose storage is cleared
+has permanently lost a deployment they may not know how to recreate.
+
+**Export is a FILE by default, not a QR.** The payload contains the mailbox
+admin token, which is a credential with no expiry. A QR is a credential anyone
+in the room can photograph off a projector, and this tool's whole purpose is
+being shown to rooms of people. A file is deliberate, goes where the teacher
+puts it, and is not readable across a staffroom.
+
+```
+alloflow-mailbox-<yyyymmdd>.json
+{ v: 1, url, admin, scriptVersion, exportedAt }
+```
+
+Rules:
+
+- The export screen states plainly that the file contains an access key for
+  their mailbox and should be treated like a password.
+- Import validates `url` through `_alloCleanMailboxUrl` before storing, so a
+  pasted or edited file cannot point AlloFlow at an arbitrary origin.
+- Import writes to the bridge first (source of truth) and the localStorage cache
+  second, matching §11.1.
+- Offer QR only behind an explicit "show anyway" affordance, for the case of
+  moving to a phone with no file transfer. Never the default, never
+  auto-displayed.
+- Export is available whenever a config exists, including when the bridge is in
+  `memory` mode, since that is exactly the session whose config is about to be
+  lost.
+
+## 13. Remaining decisions
+
+Two left. Recommendations below; both are reversible.
+
+**13.1 Default `identityMode`: none. Force an explicit choice.**
+Recommended rather than picking a default, because identity mode is a privacy
+decision and a default is the thing people do not notice. A creator who wanted
+codenames for students and silently got real names has collected data they never
+meant to. The creation form should require the choice before the poll can be
+shared, with the three options described in plain language rather than by key.
+
+**13.2 Respondents may change their answer until `closesAt`.**
+The row is overwritten by design, so this is nearly free, and it is what people
+expect from Doodle. `updatedAt` is already in the response shape, so the
+organizer can see that a row moved. After `closesAt`, edits are refused with the
+same message as a late first response.
+
+The one caveat: in `anonymous` mode, "change my answer" only works within the
+same visit, because linking a returning visitor to their earlier row is exactly
+the linkage that mode promises not to keep (§11.3).
