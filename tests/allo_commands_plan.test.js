@@ -538,15 +538,46 @@ describe('AlloBot hands-free agent button', () => {
   it('the button is accessible, guarded, and present in source AND built module', () => {
     for (const path of ['view_misc_modals_source.jsx', 'view_misc_modals_module.js', 'desktop/web-app/public/view_misc_modals_module.js']) {
       const code = readFileSync(path, 'utf-8');
-      expect(code, path).toContain('chat_agent_voice');       // help-key = spotlight/where-is reachable
+      expect(code, path).toContain('chat_talk');              // help-key = spotlight/where-is reachable
       expect(code, path).toContain('aria-pressed');           // toggle semantics for AT
-      expect(code, path).toContain('agent_voice_stop_aria');  // distinct label per state
+      expect(code, path).toContain('talk_stop_tooltip');      // distinct label per state
       // One-time hint (the compiler normalizes quote style, so match either).
       expect(code, path).toMatch(/localStorage\.getItem\(["']allo_agent_voice_hint_v1["']\)/);
       // Hidden when speech recognition is unavailable, never a dead control.
-      expect(code, path).toMatch(/!!voiceAvailable && typeof onToggleVoiceAgent === ["']function["']/);
+      expect(code, path).toContain('onToggleVoiceAgent');
     }
   });
+  // Header consolidation (2026-08-05): "Voice Mode" and the 🤖 button both
+  // meant "talk to it", differing only by an implementation detail; "Show Me"
+  // sat beside them as a peer though it is a delivery preference. One labelled
+  // Talk control now owns speech, and secondary items live in an overflow menu.
+  it('there is exactly ONE talk control, and the old competing ones are gone', () => {
+    const src = readFileSync('view_misc_modals_source.jsx', 'utf-8');
+    expect((src.match(/data-help-key="chat_talk"/g) || []).length).toBe(1);
+    expect(src).not.toContain('data-help-key="chat_voice_mode"');   // merged
+    expect(src).not.toContain('data-help-key="chat_agent_voice"');  // merged
+    // Labelled, not icon-only: a tooltip is unreachable on touch.
+    expect(src).toMatch(/t\('chat_guide\.talk_on'\) \|\| 'Listening'/);
+    expect(src).toContain("t('chat_guide.talk') || 'Talk'");
+    expect(src).toContain('aria-pressed');
+    // Legacy state stays in step for one release so nothing downstream breaks.
+    expect(src).toContain('setIsConversationMode(next);');
+  });
+
+  it('secondary chat actions live behind a dismissible menu, not the header', () => {
+    const src = readFileSync('view_misc_modals_source.jsx', 'utf-8');
+    expect(src).toContain('data-help-key="chat_more"');
+    expect(src).toContain('aria-haspopup="true"');
+    expect(src).toContain("role=\"menuitemcheckbox\"");
+    // Escape and outside-click must close it — a menu dismissible only by its
+    // own trigger is a keyboard trap.
+    expect(src).toMatch(/ev\.key === 'Escape'\) setChatMenuOpen\(false\)/);
+    expect(src).toContain("document.addEventListener('mousedown', onDown)");
+    expect(src).toContain('document.removeEventListener');
+    // Show Me is demoted to a preference and says so: pointing happens anyway.
+    expect(src).toContain('Asking “where is…” always points');
+  });
+
   it('the first-enable hint teaches both voice and typed agentic control', () => {
     const src = readFileSync('view_misc_modals_source.jsx', 'utf-8');
     expect(src).toContain('stop listening');
@@ -601,7 +632,7 @@ describe('voice loop spoken replies and language', () => {
     for (const path of ['view_misc_modals_source.jsx', 'view_misc_modals_module.js']) {
       const code = readFileSync(path, 'utf-8');
       expect(code, path).toContain('sends microphone audio to your browser');
-      expect(code, path).toContain('Spoken replies are generated on this device');
+      expect(code, path).toContain('both stay on this device');
     }
   });
 });

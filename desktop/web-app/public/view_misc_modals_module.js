@@ -48,6 +48,20 @@ var Unplug = _lazyIcon('Unplug');
 var Cpu = _lazyIcon('Cpu');
 var Headphones = _lazyIcon('Headphones');
 function UDLGuideModal(props) {
+  const [chatMenuOpen, setChatMenuOpen] = React.useState(false);
+  React.useEffect(() => {
+    if (!chatMenuOpen) return void 0;
+    const onKey = (ev) => {
+      if (ev.key === "Escape") setChatMenuOpen(false);
+    };
+    const onDown = () => setChatMenuOpen(false);
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("mousedown", onDown);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("mousedown", onDown);
+    };
+  }, [chatMenuOpen]);
   const {
     InteractiveBlueprintCard,
     activeBlueprint,
@@ -164,59 +178,92 @@ function UDLGuideModal(props) {
     "button",
     {
       type: "button",
-      "data-help-key": "chat_voice_mode",
+      "data-help-key": "chat_talk",
+      "aria-pressed": alloVoiceActive ? "true" : "false",
       onClick: (e) => {
         if (isHelpMode) return;
         e.preventDefault();
-        const newState = !isConversationMode;
-        setIsConversationMode(newState);
-        if (newState) {
+        if (typeof onToggleVoiceAgent === "function") onToggleVoiceAgent();
+        const next = !alloVoiceActive;
+        setIsConversationMode(next);
+        if (next) {
           setIsDictationMode(true);
           setIsBotVisible(true);
         }
+        let seenHint = false;
+        try {
+          seenHint = !!localStorage.getItem("allo_agent_voice_hint_v1");
+        } catch (_) {
+        }
+        if (next && !seenHint) {
+          try {
+            localStorage.setItem("allo_agent_voice_hint_v1", "1");
+          } catch (_) {
+          }
+          setUdlMessages((prev) => [...prev, { role: "model", text: t("chat_guide.talk_hint") || "Listening. Ask a question or say what you want done \u2014 \u201Copen the learning hub\u201D, \u201Csimplify this to grade 3 then make a quiz\u201D, or \u201Cwhere is the export button?\u201D. Say \u201Cstop listening\u201D to finish. Typing works exactly the same way: single actions get a confirm chip, and multi-step asks get a plan card you review before anything runs. Privacy note: speech recognition sends microphone audio to your browser\u2019s speech service (Google on Chrome) while listening \u2014 best to keep it off during student conversations. Prefer fully on-device? Say or type \u201Cdownload voice models\u201D for a one-time download, after which recognition and the spoken voice both stay on this device." }]);
+        }
       },
-      className: `hover:bg-white/20 p-1.5 rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${isConversationMode ? "bg-green-700 text-white border-green-400" : "border-transparent"}`,
-      title: isConversationMode ? t("chat_guide.voice_disable") : t("chat_guide.voice_enable")
+      className: `hover:bg-white/20 px-2 py-1.5 rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${alloVoiceActive ? "bg-red-600 text-white border-red-400 animate-pulse" : "border-white/40"}`,
+      title: alloVoiceActive ? t("chat_guide.talk_stop_tooltip", "Stop listening") : t("chat_guide.talk_start_tooltip", "Talk to AlloBot: ask a question or say what you want done")
     },
     /* @__PURE__ */ React.createElement(Headphones, { size: 12 }),
     " ",
-    isConversationMode ? t("chat_guide.voice_on") : t("chat_guide.voice_mode")
-  ), isConversationMode && /* @__PURE__ */ React.createElement(
+    alloVoiceActive ? t("chat_guide.talk_on") || "Listening" : t("chat_guide.talk") || "Talk"
+  ), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
     "button",
     {
-      "data-help-key": "chat_auto_send",
-      onClick: handleToggleAutoSendVoice,
-      className: `hover:bg-white/20 p-1.5 rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${autoSendVoice ? "bg-teal-700 text-white border-teal-400" : "border-transparent opacity-80"}`,
-      title: t("chat_guide.auto_send_tooltip"),
-      "aria-label": t("chat_guide.auto_send_tooltip")
+      type: "button",
+      "data-help-key": "chat_more",
+      "aria-haspopup": "true",
+      "aria-expanded": chatMenuOpen ? "true" : "false",
+      "aria-label": t("chat_guide.more_actions", "More chat options"),
+      onClick: () => setChatMenuOpen((v) => !v),
+      className: "hover:bg-white/20 p-1 rounded transition-colors mr-1",
+      title: t("chat_guide.more_actions", "More chat options")
     },
-    autoSendVoice ? /* @__PURE__ */ React.createElement(Zap, { size: 12, className: "fill-current" }) : /* @__PURE__ */ React.createElement(Zap, { size: 12 }),
-    autoSendVoice ? t("chat_guide.auto_send_on") : t("chat_guide.auto_send_off")
+    /* @__PURE__ */ React.createElement(ChevronDown, { size: 18 })
+  ), chatMenuOpen && /* @__PURE__ */ React.createElement("div", { role: "menu", className: "absolute right-0 z-50 mt-1 w-60 rounded-xl border border-slate-200 bg-white p-1 text-slate-800 shadow-xl" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      role: "menuitemcheckbox",
+      "aria-checked": isShowMeMode ? "true" : "false",
+      type: "button",
+      onClick: () => {
+        handleToggleIsShowMeMode();
+        setChatMenuOpen(false);
+      },
+      className: "flex w-full items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100"
+    },
+    /* @__PURE__ */ React.createElement(Eye, { size: 14, className: "mt-0.5 shrink-0" }),
+    /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("chat_guide.show_me", "Point things out on screen")), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-500" }, isShowMeMode ? t("common.on", "On") : t("common.off", "Off"), " \u2014 ", t("chat_guide.show_me_desc", "Asking \u201Cwhere is\u2026\u201D always points, with or without this.")))
+  ), alloVoiceActive && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      role: "menuitemcheckbox",
+      "aria-checked": autoSendVoice ? "true" : "false",
+      type: "button",
+      onClick: () => {
+        handleToggleAutoSendVoice();
+        setChatMenuOpen(false);
+      },
+      className: "flex w-full items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100"
+    },
+    /* @__PURE__ */ React.createElement(Zap, { size: 14, className: "mt-0.5 shrink-0" }),
+    /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("chat_guide.auto_send_on", "Send as soon as I stop talking")), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-500" }, autoSendVoice ? t("common.on", "On") : t("common.off", "Off")))
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
-      "data-help-key": "chat_save",
-      onClick: () => saveFullChat(),
-      className: "hover:bg-white/20 p-1.5 rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border-transparent",
-      title: t("common.save_conversation_to_history"),
-      "aria-label": t("common.save_conversation_to_history")
+      role: "menuitem",
+      type: "button",
+      onClick: () => {
+        saveFullChat();
+        setChatMenuOpen(false);
+      },
+      className: "flex w-full items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100"
     },
-    /* @__PURE__ */ React.createElement(Save, { size: 12 }),
-    " ",
-    t("chat_guide.save_chat")
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      "aria-label": t("common.show"),
-      "data-help-key": "chat_show_me",
-      onClick: handleToggleIsShowMeMode,
-      className: `hover:bg-white/20 p-1.5 rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${isShowMeMode ? "bg-yellow-400 text-indigo-900 border-yellow-500" : "border-transparent"}`,
-      title: isShowMeMode ? t("chat_guide.show_me_disable_tooltip") : t("chat_guide.show_me_enable_tooltip")
-    },
-    /* @__PURE__ */ React.createElement(Eye, { size: 12 }),
-    " ",
-    isShowMeMode ? t("chat_guide.show_me_on") : t("chat_guide.show_me")
-  ), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement(Save, { size: 14, className: "mt-0.5 shrink-0" }),
+    /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("chat_guide.save_chat", "Save this chat"))
+  ))), /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.minimize"),
@@ -510,33 +557,7 @@ function UDLGuideModal(props) {
       id: "udl-autofill-check",
       "data-help-key": "chat_autofill"
     }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "udl-autofill-check", className: `flex items-center gap-1 cursor-pointer text-xs ${!isAutoFillMode && !hasUsedAutoFill ? "font-bold text-orange-900" : "font-medium"}` }, /* @__PURE__ */ React.createElement(Sparkles, { size: 12, className: theme === "contrast" ? "text-yellow-400" : "text-yellow-500 fill-current" }), t("chat_guide.autofill_label"), !isAutoFillMode && !hasUsedAutoFill && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-orange-600 font-normal ml-1 hidden sm:inline" }, t("common.recommended")))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, !!voiceAvailable && typeof onToggleVoiceAgent === "function" && /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      "aria-label": alloVoiceActive ? t("chat_guide.agent_voice_stop_aria") || "Stop hands-free agent listening" : t("chat_guide.agent_voice_start_aria") || "Start hands-free agent: speak commands to drive AlloFlow",
-      "aria-pressed": !!alloVoiceActive,
-      onClick: () => {
-        const turningOn = !alloVoiceActive;
-        onToggleVoiceAgent();
-        let seenHint = false;
-        try {
-          seenHint = !!localStorage.getItem("allo_agent_voice_hint_v1");
-        } catch (_) {
-        }
-        if (turningOn && !seenHint) {
-          try {
-            localStorage.setItem("allo_agent_voice_hint_v1", "1");
-          } catch (_) {
-          }
-          setUdlMessages((prev) => [...prev, { role: "model", text: t("chat_guide.agent_voice_hint") || "Hands-free agent is on. Say what you want done \u2014 \u201Copen the learning hub\u201D, \u201Csimplify this to grade 3 then make a quiz\u201D, or \u201Cwhere is the export button?\u201D \u2014 and I\u2019ll drive AlloFlow. Say \u201Cstop listening\u201D to finish, or \u201Ctoggle spoken replies\u201D if you don\u2019t want answers read aloud. Typing works the same way: single actions get a confirm chip, multi-step asks get a plan card you review before anything runs. Privacy note: speech recognition sends microphone audio to your browser\u2019s speech service (Google on Chrome) while listening \u2014 best to keep it off during student conversations. Spoken replies are generated on this device. Prefer fully on-device recognition? Say or type \u201Cdownload voice models\u201D \u2014 a one-time ~40 MB download into this device\u2019s durable storage; once cached, listening switches to the local engine automatically and audio stays on this device. Then \u201Ctoggle wake word\u201D makes it idle until you say \u201Chey Allo\u201D." }]);
-        }
-      },
-      title: alloVoiceActive ? t("chat_guide.agent_voice_stop_title") || "Listening for commands \u2014 click to stop" : t("chat_guide.agent_voice_start_title") || "Hands-free agent: speak commands to drive AlloFlow",
-      className: `p-2 rounded-lg transition-colors border ${alloVoiceActive ? "bg-red-600 text-white border-red-700 hover:bg-red-700 animate-pulse" : theme === "dark" ? "bg-indigo-900 border-indigo-700 text-indigo-300 hover:bg-indigo-800" : theme === "contrast" ? "bg-black border-yellow-400 text-yellow-400 hover:bg-yellow-900" : "bg-indigo-100 hover:bg-indigo-200 text-indigo-700 border-indigo-200"}`,
-      "data-help-key": "chat_agent_voice"
-    },
-    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, alloVoiceActive ? "\u{1F534}" : "\u{1F916}")
-  ), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "udl-autofill-check", className: `flex items-center gap-1 cursor-pointer text-xs ${!isAutoFillMode && !hasUsedAutoFill ? "font-bold text-orange-900" : "font-medium"}` }, /* @__PURE__ */ React.createElement(Sparkles, { size: 12, className: theme === "contrast" ? "text-yellow-400" : "text-yellow-500 fill-current" }), t("chat_guide.autofill_label"), !isAutoFillMode && !hasUsedAutoFill && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-orange-600 font-normal ml-1 hidden sm:inline" }, t("common.recommended")))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.enter_udl_input"),
