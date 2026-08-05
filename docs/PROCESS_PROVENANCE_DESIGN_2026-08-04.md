@@ -34,9 +34,19 @@ legitimate, visible part of the record.
    verdict — not in the UI, not in the data model, not in a prompt. The teacher view
    presents *observations*; judgment belongs to humans who know the child. (Same
    contract as Dispro Analyzer: thresholds and decisions are never ours.)
-2. **The student owns the log.** The full ledger is visible to the student in plain
-   language before submission, every session. Submitting it is an explicit act. There is
-   no hidden channel that reports on a student behind their back.
+2. **The student sees the log.** The full ledger is visible to the student in plain
+   language before submission, every session. There is no hidden channel that reports on
+   a student behind their back.
+   **AMENDED 2026-08-05 (Aaron).** This previously read "the student *owns* the log" and
+   required an explicit consent checkbox at submit. That was wrong on the ethics: minors
+   give **assent**, not consent, and a decision this complex cannot be meaningfully
+   expressed by a checkbox at submit time. Consent is obtained from **parents**, outside
+   the app, as part of the pilot. Real assent is likewise gathered outside the app.
+   The checkbox is therefore removed, not weakened: a pseudo-choice is worse than none,
+   because a visible decline reads as concealment (see 15.7). What replaces it is an
+   **explanation** — what a teacher can see, why, and a reminder to use AlloFlow's own
+   supports or a trusted adult rather than outside sites. Transparency is undiminished;
+   only the illusory gate is gone. Confirm with Dr. Howorth before pilot (§12.7).
 3. **No biometrics, ever.** No keystroke-dynamics identity claims, no webcam, no face or
    typing "fingerprinting." Proving *who* typed is out of scope by principle; the
    comprehension checkpoint (§6) is the identity-adjacent mechanism, and it is
@@ -231,6 +241,20 @@ disclaimer-presence pins) the way today's agentic work pinned its privacy invari
 5. **District policy review** happens before any pilot classroom.
 6. **Accommodation note is mandatory** in teacher docs (speech-to-text = paste-like
    bursts; AT must never read as an anomaly).
+
+**OPEN — for Dr. Sarah Howorth at the planned meeting (added 2026-08-05).** These come
+out of the §15 support-event work and the constraint-2 amendment. They are consent and
+assent questions, which is why they are hers and not ours:
+
+7. Does removing the submit-time checkbox satisfy **assent** expectations for the pilot,
+   given that parent **consent** is obtained separately and outside the app?
+8. Should the student-facing explanation appear once per assignment, once per session,
+   or at first use only? (Repetition buys informedness at the cost of being ignored.)
+9. Does progress-monitoring data collected through the **support lane** (§15.4) need
+   naming in the IEP or 504 document, or does it ride existing progress-monitoring
+   authorization?
+10. What language should the "use AlloFlow's supports or a trusted adult" nudge carry so
+    that it reads as guidance and not as a warning against getting help?
 
 ## 13. Where this lives — one coach, one ledger, one artifact pattern
 
@@ -518,22 +542,57 @@ requirement, not later polish.
 15.2 through 15.5 are self-contained and require no tool to be instrumented. Tier 1 is
 the proof the shape works.
 
-### 15.7 Open decisions
+### 15.7 Decisions (Aaron, 2026-08-05)
 
-1. **One ledger or two records?** Putting a word bank in a hash chain built for
-   tamper-evidence is arguably over-engineering, and it grows a payload already living
-   near an 85KB ceiling. The argument for one ledger is that the fade lens wants a
-   single ordered timeline. *Recommendation: one ledger*, with the population rule
-   (15.4) separating at read time rather than storage time.
-2. **Does the consent screen change?** Today's consent covers a Work Story that is
-   mostly AI events. Recording every scaffold is a materially broader thing to agree to,
-   and the consent prompt's "nothing more" phrasing must stay literally true. *Blocking
-   sub-task of the same change, not a follow-up* — constraint 2 says the student owns
-   the log, and consent that has drifted from what is collected is not ownership.
-3. **Do support events belong to a checkpoint window?** §6 checkpoints are answered with
-   generative AI off but access supports on. Recording which accommodations were active
-   is the honest presentation, and also the most accusation-adjacent placement in the
-   design. Deferred until 15.2–15.5 land.
+All three resolved. Recorded with the reasoning, because the reasoning is the part that
+will matter when someone revisits this.
+
+**1. One ledger, with support events BUCKETED.** Neither of the options originally posed.
+Support events are far more frequent than AI calls (read-aloud alone could be 60 in a
+session), so chaining each one spends CPU and payload on events nobody would ever forge.
+But splitting into two records loses the ordered timeline the fade lens depends on.
+Bucketing resolves both: aggregate support events into ~15s windows exactly as `noteEdit`
+already does, so 60 read-aloud requests become a handful of `read_aloud ×7` entries in one
+timeline. Reuses machinery that already exists and is already tested.
+
+**2. No consent checkbox. An explanation instead.** See the constraint-2 amendment (§2.2).
+Minors give assent, not consent; parents consent, outside the app, as part of the pilot.
+A checkbox at submit is a pseudo-choice on a decision a student is not positioned to make,
+and it carries a specific harm: **an opt-out that can be noticed is not a free choice**, so
+a visible decline reads as concealment. Worse, the students most likely to decline are the
+ones the support lane exists to serve.
+
+What ships in its place is instructional rather than pseudo-legal: a plain-language
+explanation of what a teacher can see and why, plus a reminder to use AlloFlow's own
+supports or a trusted adult rather than other online services. That does something the
+checkbox never could — it gives the student a reason to prefer the supports we can
+actually see and account for. Final wording to Dr. Howorth (§12.7–12.10).
+
+**3. Track WHICH supports were used. Bind the presentation, not the collection.**
+Reversed from the earlier recommendation, and the earlier reasoning was wrong. It assumed
+a reader who defaults to skepticism, and that assumption did all the work.
+
+If read-aloud is in a student's IEP, using it during a checkpoint is expected and
+appropriate: not a caveat on the answer, but evidence the plan was followed. Suppressing
+it creates an **accommodation-compliance gap** — a later reader cannot tell whether
+accommodations were provided at all. And "we won't record this because a teacher might
+misread it" is paternalism; everywhere else this design answers misreading by fixing the
+framing, not by withholding the fact.
+
+So collection is full. Presentation is bound, at the DATA layer rather than the view
+(view-only walls were already found to be fiction — see the §13 note):
+
+- The **support export** keeps full fidelity, counts included. A checkpoint window is
+  precisely when the fade lens most wants to know what was active.
+- The **checkpoint's own record** carries a list of supports *provided*, never a tally.
+  "Read-aloud available and used", not `read_aloud ×3`. Counts live only in the support
+  export, so the integrity-facing document is *structurally incapable* of rendering a
+  frequency beside a correct answer.
+
+This mirrors real assessment practice: a protocol documents that accommodations were
+provided per the plan. It does not attach a tally of how often the student used the
+reader. The first protects the validity of the administration; the second characterizes
+the child.
 
 ### 15.8 Phase placement
 

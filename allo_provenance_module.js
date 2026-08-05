@@ -136,6 +136,24 @@
       if (!out.support) return null;
       return out;
     },
+    // §15: the ledger's real unit. Any tool emits its own — only the tool
+    // knows it gave a sentence frame. `count` exists because these are
+    // BUCKETED (~15s, same as edits): read-aloud alone can fire 60 times in a
+    // session, and chaining each one spends payload and CPU on events nobody
+    // would ever forge.
+    support: function (e) {
+      var kind = clampStr(e.kind, 40);
+      if (!kind) return null;
+      var level = PROMPT_LEVELS.indexOf(e.promptLevel) >= 0 ? e.promptLevel : 'none';
+      var count = clampInt(e.count, 1, 100000);
+      var out = { kind: kind, promptLevel: level, count: count === null ? 1 : count };
+      // The population discriminator (§15.4). Only what went INTO the work is
+      // ever visible to the integrity lens; a word bank does not make an essay
+      // non-original, and neither does read-aloud.
+      if (e.insertedToWork === true) out.insertedToWork = true;
+      if (e.assistiveTech === true) out.assistiveTech = true;
+      return out;
+    },
     checkpoint: function (e) {
       // Fail toward 'unknown', never toward the incriminating value: a race,
       // a missing policy read or a typo must not record a student as having
@@ -147,12 +165,34 @@
       // precise duration beside an answer penalizes slow processors,
       // dictation users and extended-time accommodations.
       var bucket = DURATION_BUCKETS.indexOf(e.durationBucket) >= 0 ? e.durationBucket : bucketDuration(e.durationSec);
+      // §15.7(3): which accommodations were PROVIDED, as a de-duplicated sorted
+      // list — never a count. This mirrors how a real assessment protocol
+      // documents accommodation: it records that the plan was followed, not how
+      // many times the student used the reader. The first protects the validity
+      // of the administration; the second characterizes the child.
+      //
+      // Suppressing this entirely was the earlier plan and was WRONG: it left an
+      // accommodation-compliance gap, since a later reader could not tell whether
+      // accommodations were provided at all. Frequency lives only in the support
+      // export, so no integrity-facing surface can render one beside an answer.
+      var provided = [];
+      if (Array.isArray(e.supportsProvided)) {
+        var seen = {};
+        for (var i = 0; i < e.supportsProvided.length && provided.length < 12; i++) {
+          var name = clampStr(e.supportsProvided[i], 40);
+          if (!name || seen[name]) continue;
+          seen[name] = true;
+          provided.push(name);
+        }
+        provided.sort();
+      }
       return {
         id: clampStr(e.id, 40),
         aiState: st,
         outcome: outcome,
         responseMode: mode,
         durationBucket: bucket,
+        supportsProvided: provided,
         answerHash: clampStr(e.answerHash, 64),
         generatedFrom: clampStr(e.generatedFrom, 120)
       };
@@ -168,12 +208,23 @@
   // The fields that survive the integrity export. Kept beside the stripping
   // logic so the two can never disagree (a drift test pins the pairing).
   var HIDDEN_FROM_SUBMISSION = { promptLevel: true, promptPreview: true };
+  // §15.4, enforced HERE rather than in any view. A support event that did not
+  // put anything into the work is stripped of what it was and how often: the
+  // integrity export is physically unable to name which accommodations a child
+  // leans on. What survives is an anonymous timing marker, because a hash chain
+  // cannot drop links without breaking verification — an honest limit, stated
+  // in the coverage line rather than hidden.
+  var HIDDEN_SUPPORT_FROM_SUBMISSION = { kind: true, count: true, assistiveTech: true };
   function visibleBody(evt) {
     var out = {};
+    var supportWentIntoWork = evt.type === 'support' && evt.insertedToWork === true;
     for (var k in evt) {
       if (!Object.prototype.hasOwnProperty.call(evt, k)) continue;
       if (k === 'h' || k === 'f' || k === 'v') continue;
       if (evt.type === 'ai' && HIDDEN_FROM_SUBMISSION[k]) continue;
+      // Scaffold intensity is support-lens data whatever event carries it.
+      if (evt.type === 'support' && k === 'promptLevel') continue;
+      if (evt.type === 'support' && !supportWentIntoWork && HIDDEN_SUPPORT_FROM_SUBMISSION[k]) continue;
       out[k] = evt[k];
     }
     return out;
@@ -258,6 +309,41 @@
       buckets[key] = { since: t, chars: Math.round(Number(deltaChars) || 0), len: Math.max(0, Math.round(Number(len) || 0)) };
       return flushed;
     }
+    // Support buckets. Kept separate from edit buckets because the merge rule
+    // differs: two support events only combine when they are the SAME kind at
+    // the SAME level with the SAME insertedToWork. Collapsing across any of
+    // those would average away the distinction the lenses depend on.
+    var supportBuckets = {};
+    function supportKeyFor(kind, level, inserted) {
+      return kind + '|' + level + '|' + (inserted ? '1' : '0');
+    }
+    function noteSupport(kind, promptLevel, options) {
+      var name = String(kind || '').slice(0, 40);
+      if (!name) return Promise.resolve(null);
+      var o = options || {};
+      var level = PROMPT_LEVELS.indexOf(promptLevel) >= 0 ? promptLevel : 'none';
+      var inserted = o.insertedToWork === true;
+      var key = supportKeyFor(name, level, inserted);
+      var t = now();
+      var b = supportBuckets[key];
+      if (b && t - b.since < BUCKET_MS) { b.count += 1; return Promise.resolve(null); }
+      var flushed = b ? append('support', b.payload) : Promise.resolve(null);
+      var payload = { kind: name, promptLevel: level, count: 1 };
+      if (inserted) payload.insertedToWork = true;
+      if (o.assistiveTech === true) payload.assistiveTech = true;
+      supportBuckets[key] = { since: t, count: 1, payload: payload };
+      return flushed;
+    }
+    function flushSupports() {
+      var pending = Object.keys(supportBuckets).map(function (key) {
+        var b = supportBuckets[key];
+        b.payload.count = b.count;
+        return append('support', b.payload);
+      });
+      supportBuckets = {};
+      return Promise.all(pending);
+    }
+
     function flushEdits() {
       var pending = Object.keys(buckets).map(function (key) {
         var b = buckets[key];
@@ -270,7 +356,12 @@
     return {
       append: append,
       noteEdit: noteEdit,
+      noteSupport: noteSupport,
       flushEdits: flushEdits,
+      flushSupports: flushSupports,
+      // Flush BOTH. An unflushed bucket is silently lost data, and a partial
+      // flush produces counts that are simply wrong rather than merely late.
+      flush: function () { return Promise.all([flushEdits(), flushSupports()]); },
       // export waits for every in-flight append so the head is final.
       export: function () { return chain.then(function () { return exportNow(); }); },
       // ★★ Constraint 8 enforced at the DATA layer, not the view layer. The
@@ -370,6 +461,16 @@
         kinds[classifySupport(e.support)]++;
       }
       if (e.type === 'checkpoint') checkpoints++;
+      // §15.4 population rule. A scaffold that put nothing into the work is
+      // not an integrity fact about it. visibleBody has already stripped the
+      // detail from a submission export; this makes the SUMMARY refuse to
+      // count the anonymous markers that remain, so no panel can render a
+      // help-frequency from them.
+      if (e.type === 'support' && e.insertedToWork === true) {
+        var n = Math.max(1, parseInt(e.count, 10) || 1);
+        aiCount += n;
+        kinds[classifySupport(e.kind)] += n;
+      }
       if (e.type === 'edit') edits++;
       if (e.type === 'paste') pasteEvents.push({ t: e.t, chars: e.chars, sourceHint: e.sourceHint });
       if (lastT !== null) activeMs += Math.min(120000, Math.max(0, e.t - lastT));
@@ -386,6 +487,7 @@
       // itself under question. Kinds give the teacher what they need — that
       // most of this was access, not generation — without naming any of it.
       aiKinds: kinds,
+      coverage: COVERAGE_NOTE,
       pasteEvents: pasteEvents.slice(0, 200),
       checkpoints: checkpoints
     };
@@ -414,16 +516,24 @@
     var counts = { model: 0, guided: 0, hint: 0, none: 0 };
     for (var i = 0; i < evts.length; i++) {
       var e = evts[i];
-      if (e.type !== 'ai') continue;
+      if (e.type !== 'ai' && e.type !== 'support') continue;
       var level = PROMPT_LEVELS.indexOf(e.promptLevel) >= 0 ? e.promptLevel : 'none';
-      counts[level]++;
-      var name = String(e.support || '') || 'unspecified';
-      bySupport[name] = (bySupport[name] || 0) + 1;
-      series.push({ t: e.t, promptLevel: level, support: e.support });
+      // A support event carries a bucketed count; an ai event is one call.
+      var n = e.type === 'support' ? Math.max(1, parseInt(e.count, 10) || 1) : 1;
+      counts[level] += n;
+      var name = String(e.type === 'support' ? e.kind : e.support) || 'unspecified';
+      bySupport[name] = (bySupport[name] || 0) + n;
+      series.push({ t: e.t, promptLevel: level, support: name, count: n });
     }
     // bySupport lives HERE, in the fade lens, where naming a scaffold is the
     // point: a team watching support fade needs to know which scaffold faded.
-    return { promptLevelCounts: counts, bySupport: bySupport, series: series.slice(0, 2000) };
+    return {
+      promptLevelCounts: counts,
+      bySupport: bySupport,
+      coverage: COVERAGE_NOTE,
+      neverObservable: NEVER_OBSERVABLE.slice(),
+      series: series.slice(0, 2000)
+    };
   }
 
   // ── P3: comprehension checkpoints ────────────────────────────────────────
@@ -588,8 +698,23 @@
     // reads it — but the student must be told it exists at all.
     ai: 'Which AlloFlow helpers you used and when — and, in this view only, the start of what you asked them',
     checkpoint: 'Your check-in answers (as digital fingerprints) and how long they took',
+    // Student-facing, and deliberately not apologetic. Using a support is a
+    // normal part of working, so this line describes it the way it describes
+    // typing: a thing that happened, not a thing to explain.
+    support: 'Which supports helped you — like read-aloud or a glossary — and roughly how often',
     revision: 'How your work grew over time — sizes, not contents'
   };
+  // §15.5 — coverage is STATED, never implied. Two of the eight supports named
+  // in CHECKPOINT_ALWAYS_ALLOWED can never be recorded: spellcheck is the
+  // browser's, word_prediction is the keyboard's. Neither exists in AlloFlow to
+  // hook. A record that implies completeness while partial harms in BOTH
+  // directions — in the integrity lens absence gets read as evidence, and in
+  // the MTSS lens under-counted support makes a student look more independent
+  // than they are, which is a record capable of moving a fading decision.
+  var NEVER_OBSERVABLE = ['spellcheck', 'word_prediction'];
+  var COVERAGE_NOTE = 'This lists only the supports AlloFlow can see. Some help — '
+    + 'spellcheck, word prediction, a person sitting next to you — leaves no record here. '
+    + 'A short list does not mean little help was used.';
   var NEVER_COLLECTED = [
     'The words of your assignment answers (only amounts and timing)',
     'What you asked a helper — that never goes to your teacher',
@@ -620,7 +745,19 @@
       lines: lines,
       collected: describeCollection(),
       neverCollected: NEVER_COLLECTED.slice(),
-      consentPrompt: 'Include your Work Story with this submission? Your teacher will see the timeline above — nothing more. You can look through every line first.'
+      // No longer a question. Constraint 2 as amended: the student SEES the log,
+      // they do not gate it — a checkbox here was a choice they could not
+      // meaningfully make, and declining would have looked like hiding.
+      whyTeacherSees: 'Your teacher will see this Work Story with your assignment. '
+        + 'It shows how the work happened — when you worked, and which supports helped. '
+        + 'It never shows what you wrote to a helper, and it is not a score or a check on you.',
+      // The instructional half, and the reason this is better than a checkbox:
+      // it gives a student a reason to prefer supports we can actually account
+      // for. Wording pending Dr. Howorth (§12.10) — it must read as guidance,
+      // never as a warning against getting help.
+      useOurSupports: 'When you need help, use the supports here in AlloFlow or ask an adult you trust. '
+        + 'Those are the ones your teacher can see and help you with.',
+      coverage: COVERAGE_NOTE
     };
   }
 
@@ -671,17 +808,18 @@
     var open = React.useState(false);
     var isOpen = open[0], setOpen = open[1];
     if (!model) return null;
-    var included = !!(props && props.included);
-    var onToggle = (props && props.onToggle) || function () {};
-    var onClear = props && props.onClear;
+    // `included` / `onToggle` / `onClear` are deliberately GONE. See the
+    // constraint-2 amendment: with the gate removed, a delete button would be
+    // the same opt-out wearing a different hat, and a student erasing their own
+    // record is exactly the 'decline reads as concealment' failure. Amendment
+    // and deletion rights run through the district under FERPA, which is where
+    // they always ran — a self-serve button was never that mechanism.
     return h('section', { className: 'rounded-3xl shadow-lg overflow-hidden shrink-0 mb-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700', 'aria-labelledby': 'allo-work-story-title' },
       h('div', { className: 'p-3' },
         h('div', { id: 'allo-work-story-title', className: 'text-sm font-bold flex items-center gap-2' }, '📖 ' + t('work_story.title', 'Your Work Story')),
         h('p', { className: 'text-xs mt-1 opacity-80' }, model.summary),
-        h('label', { className: 'flex items-start gap-2 mt-2 text-xs cursor-pointer' },
-          h('input', { type: 'checkbox', checked: included, onChange: function (e) { onToggle(!!e.target.checked); }, className: 'mt-0.5' }),
-          h('span', null, model.consentPrompt)
-        ),
+        h('p', { className: 'text-xs mt-2' }, model.whyTeacherSees),
+        h('p', { className: 'text-xs mt-1 font-semibold' }, model.useOurSupports),
         h('button', {
           type: 'button',
           onClick: function () { setOpen(!isOpen); },
@@ -694,7 +832,7 @@
           h('ul', { className: 'list-disc ml-4' }, model.collected.map(function (c) { return h('li', { key: c.type }, c.what); })),
           h('p', { className: 'mt-2 font-semibold' }, t('work_story.never', 'What it never keeps:')),
           h('ul', { className: 'list-disc ml-4' }, model.neverCollected.map(function (n, i) { return h('li', { key: i }, n); })),
-          onClear ? h('button', { type: 'button', onClick: onClear, className: 'mt-2 text-xs underline' }, t('work_story.clear', 'Delete what has been recorded so far')) : null
+          h('p', { className: 'mt-2 text-xs opacity-80' }, model.coverage)
         ) : null
       )
     );
@@ -893,6 +1031,8 @@
     hashCheckpointAnswer: hashCheckpointAnswer,
     isAllowedDuringCheckpoint: isAllowedDuringCheckpoint,
     classifySupport: classifySupport,
+    NEVER_OBSERVABLE: NEVER_OBSERVABLE.slice(),
+    COVERAGE_NOTE: COVERAGE_NOTE,
     SUPPORT_KINDS: SUPPORT_KINDS.slice(),
     describeAiUse: describeAiUse,
     isStudentAuthoredSpan: isStudentAuthoredSpan,

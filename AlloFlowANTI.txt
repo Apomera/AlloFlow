@@ -4846,8 +4846,18 @@ if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
     window.addEventListener('alloflow-mute-changed', (e) => {
         if (e.detail && e.detail.muted) _stop();
     });
+    // §15.6 tier 1. AlloSpeechPlayer already exists to be the single front door
+    // for read-aloud (it replaced ~20 scattered speak() sites), so instrumenting
+    // HERE covers browser TTS, Kokoro, Piper and Gemini TTS at once. Recording
+    // must never delay or alter playback, hence the try/catch and no await.
+    const _instrumentedSpeak = function () {
+        try {
+            if (window.__alloNoteSupport) window.__alloNoteSupport('read_aloud', 'none', { assistiveTech: true });
+        } catch (_) {}
+        return speak.apply(this, arguments);
+    };
     window.AlloSpeechPlayer = {
-        speak,
+        speak: _instrumentedSpeak,
         stop: _stop,
         isPlaying: () => _state.isPlaying,
         getCurrentText: () => _state.currentText,
@@ -11690,7 +11700,6 @@ Return ONLY JSON in this shape:
   // Hard constraint 2 (student owns the log) is why the panel, the consent,
   // and these hooks all land together.
   const _alloLedgerRef = useRef(null);
-  const [workStoryIncluded, setWorkStoryIncluded] = useState(false);
   const [workStoryModel, setWorkStoryModel] = useState(null);
   const _alloProvenanceApi = () => (window.AlloModules && window.AlloModules.Provenance) || null;
   const _alloEnsureLedger = () => {
@@ -11739,6 +11748,18 @@ Return ONLY JSON in this shape:
   // which is a ref, so it can never go stale. Re-running on mode change bought
   // nothing.
   useEffect(() => { window.__alloNoteAiUse = (s, lv) => _alloNoteAiUse(s, lv); return () => { try { delete window.__alloNoteAiUse; } catch (_) { window.__alloNoteAiUse = null; } }; }, []);
+  // Exposed on window because the tools that know they gave a scaffold are
+  // loaded modules and plugins, not this component.
+  useEffect(() => { window.__alloNoteSupport = (k, lv, o) => _alloNoteSupport(k, lv, o); return () => { try { delete window.__alloNoteSupport; } catch (_) { window.__alloNoteSupport = null; } }; }, []);
+  // §15: any tool names its own support. Bucketed in the ledger (~15s), so a
+  // student who plays read-aloud on twelve paragraphs produces a couple of
+  // rows, not twelve. Silent no-op when no ledger exists, which is the normal
+  // case: collection only runs when a teacher enabled it for the assignment.
+  const _alloNoteSupport = (kind, promptLevel, options) => {
+      const led = _alloLedgerRef.current;
+      if (!led || typeof led.noteSupport !== 'function') return;
+      try { led.noteSupport(kind, promptLevel || 'none', options || {}); } catch (_) {}
+  };
   const _alloNoteAiUse = (support, promptLevel) => {
       const led = _alloLedgerRef.current;
       if (!led) return;
@@ -11753,13 +11774,10 @@ Return ONLY JSON in this shape:
           return exported;
       }).catch(() => null);
   };
-  const _alloClearWorkStory = () => {
-      _alloLedgerRef.current = null;
-      _alloLastLenRef.current = {};
-      setWorkStoryModel(null);
-      setWorkStoryIncluded(false);
-      addToast(t('work_story.cleared') || 'Your Work Story was deleted from this device.', 'info');
-  };
+  // _alloClearWorkStory removed with the consent checkbox (constraint 2 as
+  // amended): a student-facing delete is the same opt-out in another coat, and
+  // it had already gone stale — it called setWorkStoryIncluded, which no longer
+  // exists. Amendment and deletion run through the district under FERPA.
   const handleStudentInput = (resourceId, questionKey, value) => {
       _alloNoteStudentText(resourceId, questionKey, value);
       setStudentResponses(prev => ({
@@ -24931,6 +24949,13 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                     rec = null;
                     if (isDictationActiveRef.current && !intentionallyStopped) setTimeout(() => { try { api.start(); } catch (e) {} }, 250);
                 };
+                // §15.6 tier 1. Dictation is an access support and an input
+                // method; it is also the one that most often looks like a paste
+                // (a flush arrives as a length jump), so naming it here is what
+                // keeps that burst from reading as an anomaly later.
+                try {
+                    if (window.__alloNoteSupport) window.__alloNoteSupport('speech_to_text', 'none', { assistiveTech: true });
+                } catch (_) {}
                 rec.start();
                 return true;
             },
@@ -33525,9 +33550,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           responses: studentResponses,
           gameCompletions: gameCompletions,
       };
-      // Work Story rides ONLY with live consent (constraint 2). No tick, no
-      // ledger in the payload — and the teacher panel simply shows nothing.
-      if (workStoryIncluded && _alloLedgerRef.current) {
+      // Work Story rides whenever the TEACHER enabled it for this assignment
+      // (studentProjectSettings.workStoryEnabled), which is the gate that now
+      // governs collection. It is no longer gated on a student tick: constraint
+      // 2 as amended says the student sees the log rather than gating it, since
+      // minors give assent and parents give consent, both outside the app.
+      if (_alloLedgerRef.current) {
           try {
               const _P = _alloProvenanceApi();
               const _exported = await _alloRefreshWorkStory();
@@ -43855,8 +43883,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 </div>
             )}
             {!isTeacherMode && isStudentLinkMode && workStoryModel && window.AlloModules && window.AlloModules.WorkStoryPanel && React.createElement(window.AlloModules.WorkStoryPanel, {
-              t, model: workStoryModel, included: workStoryIncluded,
-              onToggle: setWorkStoryIncluded, onClear: _alloClearWorkStory
+              t, model: workStoryModel
           })}
           {!isTeacherMode && <StudentSaveAdventurePanel activeSessionCode={activeSessionCode} globalPoints={globalPoints} handleResumeAdventure={handleResumeAdventure} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleStartAdventure={handleStartAdventure} hasSavedAdventure={hasSavedAdventure} initiateSaveStudentProject={initiateSaveStudentProject} isResumingAdventure={isResumingAdventure} isSaveActionPulsing={isSaveActionPulsing} projectFileInputRef={projectFileInputRef} sessionData={sessionData} studentProjectSettings={studentProjectSettings} t={t} />}
             {isTeacherMode && activeSidebarTab === 'history' && !isIndependentMode && !isParentMode && <TeacherHistoryTab handleApplyRosterGroup={handleApplyRosterGroup} hasSourceOrAnalysis={hasSourceOrAnalysis} rosterKey={rosterKey} setIsRosterKeyOpen={setIsRosterKeyOpen} t={t} />}

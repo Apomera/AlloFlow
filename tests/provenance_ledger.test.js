@@ -129,10 +129,15 @@ describe('the two-lens wall (hard constraint 8)', () => {
     expect(s.aiInteractions).toBe(2);
     expect(s.pasteEvents[0]).toEqual({ t: 60000, chars: 40, sourceHint: 'intra-app' });
     expect(s.checkpoints).toBe(1);
+    // The wall is about DATA about this student, not the word "support"
+    // appearing in prose: `coverage` is a fixed explanatory string and is
+    // excluded by identity, not by pattern.
+    expect(s.coverage).toBe(P.COVERAGE_NOTE);
+    const { coverage, ...data } = s;
     // Case-INSENSITIVE on purpose. This assertion once passed only because a
     // field was named `aiBySupport`: the capital S slipped a per-accommodation
-    // breakdown past a wall test that was meant to stop exactly that.
-    const flat = JSON.stringify(s).toLowerCase();
+    // breakdown past a wall test meant to stop exactly that.
+    const flat = JSON.stringify(data).toLowerCase();
     expect(flat).not.toContain('promptlevel');
     expect(flat).not.toContain('support');
   });
@@ -183,11 +188,11 @@ describe('P1 (view half) — the student-owned Work Story', () => {
   it('the collection disclosure is derived from the schema — no drift possible', () => {
     const described = P.describeCollection().map((d) => d.type).sort();
     // Every schema type described, nothing described that the schema lacks.
-    const schemaTypes = ['ai', 'checkpoint', 'edit', 'paste', 'revision', 'session'];
+    const schemaTypes = ['ai', 'checkpoint', 'edit', 'paste', 'revision', 'session', 'support'];
     expect(described).toEqual(schemaTypes);
     for (const d of P.describeCollection()) expect(d.what.length).toBeGreaterThan(10);
   });
-  it('narrates in student language with consent framing, never verdicts', async () => {
+  it('narrates in student language with an explanation, never verdicts', async () => {
     const clock = mkClock();
     const led = P.createLedger({ now: clock.now });
     await led.append('session', { action: 'start' });
@@ -200,7 +205,10 @@ describe('P1 (view half) — the student-owned Work Story', () => {
     expect(m.lines[2]).toContain('glossary helper');
     expect(m.summary).toContain('You worked for about');
     expect(m.neverCollected.join(' ')).toContain('Screenshots');
-    expect(m.consentPrompt).toContain('nothing more');
+    // Constraint 2 as amended: an explanation, not a question. The old
+    // 'nothing more' consent prompt is gone with the checkbox it belonged to.
+    expect(m.consentPrompt).toBeUndefined();
+    expect(m.whyTeacherSees).toContain('not a score');
     const flat = JSON.stringify(m).toLowerCase();
     expect(flat).not.toContain('cheat');
     expect(flat).not.toContain('suspic');
@@ -378,7 +386,7 @@ describe('constraints in the module text itself', () => {
   // P1 flipped this from "no references anywhere" to the wiring contract.
   // The point is unchanged: collection may not exist without the student
   // surface and consent, so these pins fail if any half is removed.
-  it('P1 wiring: collection, surface, and consent all present in both ANTI copies', () => {
+  it('P1 wiring: collection and surface present in both ANTI copies', () => {
     for (const f of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt']) {
       const app = readFileSync(f, 'utf-8');
       // loader + module reachable
@@ -391,14 +399,19 @@ describe('constraints in the module text itself', () => {
       expect(app, f).toMatch(/_alloEnsureLedger = \(\) => \{\s*if \(!isStudentLinkMode\) return null;/);
       // THE SURFACE — must exist wherever collection does
       expect(app, f).toContain('window.AlloModules.WorkStoryPanel');
-      expect(app, f).toContain('onClear: _alloClearWorkStory');
-      // consent gate on transmission, default unchecked
-      expect(app, f).toContain('const [workStoryIncluded, setWorkStoryIncluded] = useState(false);');
-      expect(app, f).toMatch(/if \(workStoryIncluded && _alloLedgerRef\.current\) \{/);
-      // and the ledger is attached ONLY inside that consent branch
+      // Constraint 2 AMENDED (2026-08-05): the student sees the log, they do
+      // not gate it. The submit-time checkbox and the student-facing delete are
+      // both gone — a pseudo-choice a minor cannot meaningfully make, whose
+      // visible decline would have read as concealment. Consent is parental and
+      // lives outside the app. What gates COLLECTION is the teacher's
+      // per-assignment workStoryEnabled setting.
+      expect(app, f).not.toContain('workStoryIncluded');
+      expect(app, f).not.toContain('onClear: _alloClearWorkStory');
+      // The ledger is still attached only when one exists at all.
       const embedIdx = app.indexOf('_P.attachProvenance(submissionData, _exported)');
-      const consentIdx = app.indexOf('if (workStoryIncluded && _alloLedgerRef.current) {');
-      expect(embedIdx, f).toBeGreaterThan(consentIdx);
+      const gateIdx = app.indexOf('if (_alloLedgerRef.current) {');
+      expect(gateIdx, f).toBeGreaterThan(-1);
+      expect(embedIdx, f).toBeGreaterThan(gateIdx);
     }
   });
   it('the AI wrapper is transparent — same call through, properties preserved', () => {
@@ -635,6 +648,233 @@ describe('AI attribution — the host declares the calling feature', () => {
   it('exposes the declaration to loaded modules', () => {
     for (const p of COPIES) {
       expect(anti(p), p).toContain('window.__alloDeclareAiSupport = _alloDeclareAiSupport;');
+    }
+  });
+});
+
+describe('P7 — support events are the real unit of the ledger (§15)', () => {
+  it('buckets repeated support into one event, like edits', async () => {
+    const clock = mkClock();
+    const led = P.createLedger({ now: clock.now, bucketMs: 15000 });
+    for (let i = 0; i < 12; i++) led.noteSupport('read_aloud', 'none');
+    await led.flush();
+    const evts = (await led.export()).events.filter((e) => e.type === 'support');
+    // Twelve read-alouds, ONE row. This is the whole reason support events can
+    // live in a hash chain without costing payload and CPU on a Chromebook.
+    expect(evts).toHaveLength(1);
+    expect(evts[0]).toMatchObject({ kind: 'read_aloud', count: 12 });
+  });
+
+  it('splits a bucket when the window passes', async () => {
+    const clock = mkClock();
+    const led = P.createLedger({ now: clock.now, bucketMs: 15000 });
+    led.noteSupport('read_aloud', 'none');
+    clock.tick(16000);
+    led.noteSupport('read_aloud', 'none');
+    await led.flush();
+    expect((await led.export()).events.filter((e) => e.type === 'support')).toHaveLength(2);
+  });
+
+  it('never merges across level or insertedToWork', async () => {
+    const clock = mkClock();
+    const led = P.createLedger({ now: clock.now, bucketMs: 15000 });
+    led.noteSupport('allobot', 'hint');
+    led.noteSupport('allobot', 'model');
+    led.noteSupport('allobot', 'hint', { insertedToWork: true });
+    await led.flush();
+    // Collapsing these would average away exactly the distinction both lenses
+    // are built on.
+    expect((await led.export()).events.filter((e) => e.type === 'support')).toHaveLength(3);
+  });
+
+  it('refuses a nameless support rather than inventing one', async () => {
+    const led = P.createLedger({ now: mkClock().now });
+    await led.noteSupport('', 'none');
+    await led.flush();
+    expect(led.eventCount()).toBe(0);
+  });
+});
+
+describe('P7 — the population rule (§15.4)', () => {
+  async function mixed() {
+    const clock = mkClock();
+    const led = P.createLedger({ now: clock.now, bucketMs: 15000 });
+    await led.append('session', { action: 'start' });
+    led.noteSupport('read_aloud', 'none');            // helped, went nowhere
+    led.noteSupport('glossary', 'none');              // helped, went nowhere
+    led.noteSupport('compose', 'model', { insertedToWork: true }); // went INTO the work
+    await led.flush();
+    return led;
+  }
+
+  it('the integrity summary counts ONLY what went into the work', async () => {
+    const led = await mixed();
+    const s = P.summarizeProcess(await led.exportForSubmission());
+    // A word bank does not make an essay non-original, and neither does
+    // read-aloud. Only the composed text that landed in the work is an
+    // integrity fact about it.
+    expect(s.aiInteractions).toBe(1);
+    expect(s.aiKinds).toEqual({ access: 0, generative: 1, unattributed: 0 });
+  });
+
+  it('the submission export cannot NAME an accommodation that stayed out of the work', async () => {
+    const led = await mixed();
+    const flat = JSON.stringify(await led.exportForSubmission());
+    // Enforced in visibleBody, not in a view: no future panel can render these
+    // because the strings are not in the document at all.
+    expect(flat).not.toContain('read_aloud');
+    expect(flat).not.toContain('glossary');
+    expect(flat).toContain('compose');   // this one went into the work
+  });
+
+  it('scaffold INTENSITY never rides in the submission export, whatever carries it', async () => {
+    const led = await mixed();
+    const flat = JSON.stringify(await led.exportForSubmission());
+    expect(flat).not.toContain('promptLevel');
+    expect(flat).not.toContain('model');
+  });
+
+  it('the support lens sees ALL of it, at full fidelity', async () => {
+    const led = await mixed();
+    const fade = P.summarizeSupport(await led.exportForSupport());
+    expect(fade.bySupport).toEqual({ read_aloud: 1, glossary: 1, compose: 1 });
+    expect(fade.promptLevelCounts.model).toBe(1);
+  });
+
+  it('a stripped submission export still verifies', async () => {
+    const led = await mixed();
+    // The dual-commitment chain has to survive the population strip, or the
+    // integrity claim dies the moment a scaffold is recorded.
+    expect((await P.verifyLedger(await led.exportForSubmission())).ok).toBe(true);
+  });
+});
+
+describe('P7 — coverage is stated, never implied (§15.5)', () => {
+  it('both lenses carry the coverage note', async () => {
+    const led = P.createLedger({ now: mkClock().now });
+    await led.append('session', { action: 'start' });
+    expect(P.summarizeProcess(await led.exportForSubmission()).coverage).toBe(P.COVERAGE_NOTE);
+    expect(P.summarizeSupport(await led.exportForSupport()).coverage).toBe(P.COVERAGE_NOTE);
+  });
+
+  it('names what can NEVER be observed, so a short list is not read as little help', () => {
+    // Verified against the source: neither string appears anywhere in ANTI,
+    // because neither is an AlloFlow feature. Absence here is permanent, not
+    // pending instrumentation.
+    expect(P.NEVER_OBSERVABLE).toEqual(['spellcheck', 'word_prediction']);
+    expect(P.COVERAGE_NOTE).toContain('does not mean little help was used');
+  });
+
+  it('the coverage note makes no claim about the student', () => {
+    for (const word of ['cheat', 'suspicio', 'honest', 'verify', 'prove']) {
+      expect(P.COVERAGE_NOTE.toLowerCase()).not.toContain(word);
+    }
+  });
+});
+
+describe('P7 — checkpoints document provision, never a tally (§15.7)', () => {
+  it('keeps a sorted, de-duplicated list of supports provided', () => {
+    const e = P.sanitizeEvent('checkpoint', {
+      id: 'cp1', aiState: 'off', durationSec: 60,
+      supportsProvided: ['read_aloud', 'glossary', 'read_aloud'],
+    });
+    expect(e.supportsProvided).toEqual(['glossary', 'read_aloud']);
+  });
+
+  it('has NO way to express how often a support was used', () => {
+    const e = P.sanitizeEvent('checkpoint', {
+      id: 'cp1', aiState: 'off', durationSec: 60,
+      supportsProvided: ['read_aloud'], supportCounts: { read_aloud: 3 }, count: 3,
+    });
+    // A protocol records that accommodations were provided per the plan. It
+    // does not attach a tally of how often the student used the reader: the
+    // first protects the administration, the second characterizes the child.
+    expect(e.supportCounts).toBeUndefined();
+    expect(e.count).toBeUndefined();
+    expect(JSON.stringify(e)).not.toContain('3');
+  });
+
+  it('records an empty list rather than omitting the field', () => {
+    // An absent field is ambiguous between 'none provided' and 'not recorded'.
+    // For accommodation compliance those are very different claims.
+    const e = P.sanitizeEvent('checkpoint', { id: 'cp1', aiState: 'off', durationSec: 60 });
+    expect(e.supportsProvided).toEqual([]);
+  });
+});
+
+describe('P7 — constraint 2 amended: assent, not a checkbox', () => {
+  const anti = (p) => readFileSync(new URL('../' + p, import.meta.url), 'utf8');
+  const COPIES = ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt'];
+
+  it('the model explains instead of asking', async () => {
+    const clock = mkClock();
+    const led = P.createLedger({ now: clock.now });
+    await led.append('session', { action: 'start' });
+    const m = P.buildWorkStoryModel(await led.export());
+    expect(m.consentPrompt).toBeUndefined();
+    expect(m.whyTeacherSees).toContain('Your teacher will see');
+    // The instructional half: a reason to prefer supports we can account for.
+    expect(m.useOurSupports).toContain('an adult you trust');
+  });
+
+  it('no submit-time gate survives in either ANTI copy', () => {
+    for (const p of COPIES) {
+      const src = anti(p);
+      // A pseudo-choice is worse than none: a visible decline reads as
+      // concealment, and the students most likely to decline are the ones the
+      // support lane exists to serve.
+      expect(src, p).not.toContain('workStoryIncluded');
+      expect(src, p).not.toContain('setWorkStoryIncluded(');
+    }
+  });
+
+  it('the student can still SEE everything — transparency is undiminished', async () => {
+    const clock = mkClock();
+    const led = P.createLedger({ now: clock.now });
+    await led.append('session', { action: 'start' });
+    led.noteSupport('read_aloud', 'none');
+    await led.flush();
+    const m = P.buildWorkStoryModel(await led.export());
+    expect(m.lines.length).toBeGreaterThan(0);
+    expect(m.collected.map((c) => c.type)).toContain('support');
+    expect(m.neverCollected.length).toBeGreaterThan(0);
+    expect(m.coverage).toBe(P.COVERAGE_NOTE);
+  });
+});
+
+describe('P7 — tier-1 instrumentation (§15.6)', () => {
+  const anti = (p) => readFileSync(new URL('../' + p, import.meta.url), 'utf8');
+  const COPIES = ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt'];
+
+  it('read_aloud is instrumented at the single front door, not per call site', () => {
+    for (const p of COPIES) {
+      const src = anti(p);
+      expect(src, p).toContain("window.__alloNoteSupport('read_aloud'");
+      // Instrumenting AlloSpeechPlayer covers every TTS backend at once; a
+      // per-site approach would miss whichever site is added next.
+      expect(src, p).toContain('speak: _instrumentedSpeak');
+    }
+  });
+
+  it('recording never alters or delays playback', () => {
+    for (const p of COPIES) {
+      const src = anti(p);
+      const w = src.slice(src.indexOf('const _instrumentedSpeak'), src.indexOf('window.AlloSpeechPlayer = {'));
+      expect(w, p).toContain('return speak.apply(this, arguments);');
+      expect(w, p).toContain('try {');
+      expect(w, p).not.toContain('await');
+    }
+  });
+
+  it('dictation names itself, so its burst never reads as an anomaly', () => {
+    for (const p of COPIES) {
+      expect(anti(p), p).toContain("window.__alloNoteSupport('speech_to_text'");
+    }
+  });
+
+  it('the bridge is exposed for loaded modules and plugins', () => {
+    for (const p of COPIES) {
+      expect(anti(p), p).toContain('window.__alloNoteSupport = (k, lv, o) =>');
     }
   });
 });
