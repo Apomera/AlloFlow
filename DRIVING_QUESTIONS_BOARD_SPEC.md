@@ -357,9 +357,7 @@ and it inherits whatever retention, export and sharing behaviour that path alrea
   `firestore.rules` invariants. **Required scope, not deferred** — parity is decided.
   Ships behind the same contract, verified by the same conformance suite as 1a.
 - **Phase 2 — student surface.** Join by code, read prompt, post, see own items, see
-  approved items. **Start by evaluating the annotation-suite sticky-note component
-  (§1.4) for reuse** — its keyboard-accessible drag, contrast-checked palette and
-  labelled bubbles are the costly parts and already exist.
+  approved items. Reuse verdict from the evaluation the spec called for: **§9.1 below.**
 - **Phase 3 — teacher surface.** Create board, moderation queue, answered marking,
   open/answered split.
 - **Phase 4 — polish.** Export, board-full handling, expiry read-only state.
@@ -369,6 +367,37 @@ Phases 1–3 are the minimum that helps the teacher who asked. Phase 1 carries m
 the risk and is independently testable, which is where it should start.
 
 ---
+
+### 9.1 Phase 2 reuse verdict: take the palette, leave the component
+
+The spec asked Phase 2 to start by evaluating `NoteBubble` in
+`annotation_suite_source.jsx` for reuse. Done — and the answer is narrower than the
+earlier draft assumed, which *shrinks* Phase 2 rather than growing it.
+
+`NoteBubble({ a, onChange, onDelete, draggable, onMove })` is genuinely well factored:
+it touches only `a.id / a.color / a.content / a.x / a.y` and has no dependency on the
+annotation suite's document or page model. Lifting it would be easy.
+
+**But its two most expensive capabilities are both out of scope for a board:**
+
+- **Keyboard-accessible drag** (`onMove`, arrow-key nudging, `wasDraggedRef`) exists to
+  position a note on a document. A board has no canvas — §6 rules free-form spatial
+  arrangement out of v1 deliberately, because the open/answered split is the value, not
+  the arrangement. `a.x / a.y` have no meaning here.
+- **Inline editing** (`expanded`, `draft`, textarea, `onChange`) lets the author rewrite
+  a note in place. On a board a participant cannot edit after posting — the Firestore
+  rule is `allow update: if isHost()`, and the mailbox exposes no participant edit path.
+  Allowing it would let approved text be swapped for something else after review.
+
+So the honest verdict: **reuse the visual language, not the component.** Specifically
+take `NOTE_COLORS` — four fills already chosen for AA contrast against their own text
+colours (`#fef9c3/#713f12`, `#dcfce7/#14532d`, `#dbeafe/#1e3a8a`, `#fce7f3/#831843`) —
+and the bubble's general treatment. A board item renders as a static, non-draggable,
+non-editable card carrying text, author nickname, and its open/answered state.
+
+That is a much smaller component than `NoteBubble`, and writing it fresh is cheaper and
+clearer than importing one and disabling half of it. Colour should carry a *meaning* on a
+board (for example open vs answered) rather than being author-chosen decoration.
 
 ## 10. Transport parity — Firebase vs mailbox
 
@@ -495,6 +524,46 @@ because "advisory" sounds worse than it is here.
 the UI; mediate board writes through a Cloud Function; or keep the mailbox as the
 recommended transport for boards while Firebase stays supported. None of this blocks
 Phase 2.
+
+### 10.4b CORRECTION: there are THREE enforcement surfaces, not two
+
+Aaron's review caught a wrong assumption underneath §10.2–10.4. I had been treating
+"the Firebase path" as one thing whose rules we control. `docs/FIRESTORE_RULES_DEPLOY.md`
+is explicit that it is two things:
+
+1. **Gemini Canvas** — the platform injects `__firebase_config` for a **Google-managed
+   Canvas project**. Quoting the doc: *"It is not yours, you have no console for it, and
+   these rules cannot be deployed there."* Access control is Google's platform policy:
+   apps namespaced under `artifacts/{appId}/…` with platform-issued auth.
+2. **An owned project** (`prismflow-911fe` today for the demo site; a dedicated project
+   for the classroom phase). **This is where `firestore.rules` actually deploys.**
+
+So the enforcement picture for a board is:
+
+| surface | how invariants are enforced | strength |
+|---|---|---|
+| Mailbox (teacher's Apps Script) | server-side filtering + admin endpoint | **strongest** |
+| Firestore on an **owned** project | `firestore.rules` from Phase 1b | **strong**, once deployed |
+| Firestore on **Canvas** | platform namespacing + platform auth only | **weakest** |
+
+**The consequence that matters:** on Canvas — today's primary surface — Phase 1b's rules
+are inert. A `teacher_review` board's held questions would not be protected at the
+database layer, because any authed participant in that app's namespace can read it. That
+is the exact leak §10.2 was written to prevent, and on Canvas it cannot be closed with
+rules.
+
+**Therefore, for boards specifically: on Canvas, use the mailbox transport.** Not as a
+preference — it is the only way to keep the moderation promise on that surface. The
+Firestore board adapter is for the owned-project path, where the rules genuinely bind.
+
+Phase 1b is not wasted: it is the ready-made security layer for the owned project the
+classroom phase should run on anyway (the deploy doc argues that a Google-managed backend
+means no data-processing agreement, no retention control and no audit trail, which a
+district will not accept). It just is not the Canvas story.
+
+**Phase 2 consequence:** the UI must not offer `teacher_review` as a promise it cannot
+keep. Either the transport is the mailbox, or a board on Canvas-Firestore should say
+plainly that held questions are hidden in the interface but not secured in the database.
 
 ### 10.5 Verification gap to close before ship
 
