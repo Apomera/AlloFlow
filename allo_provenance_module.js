@@ -62,6 +62,22 @@
   // describes a past event and must fail HONEST (unknown => 'we do not know'),
   // because reporting an unlabelled call as generative would invent a claim.
 
+  // Slugs are for the schema; a student reads words. An unknown slug falls
+  // through as-is rather than being dropped, so a newly instrumented support
+  // never silently vanishes from a student's own record.
+  var SUPPORT_WORDS = {
+    read_aloud: 'read-aloud', speech_to_text: 'talk-to-type', word_prediction: 'word prediction',
+    glossary: 'the glossary', translate: 'translation', simplified: 'simplified text',
+    spellcheck: 'spellcheck', magnify: 'zoom'
+  };
+  function friendlySupport(slug) {
+    var k = String(slug || '');
+    return SUPPORT_WORDS[k] || k.replace(/_/g, ' ');
+  }
+  function joinWords(list) {
+    if (list.length <= 1) return list[0] || '';
+    return list.slice(0, -1).join(', ') + ' and ' + list[list.length - 1];
+  }
   function bucketDuration(sec) {
     var n = Number(sec);
     if (!isFinite(n) || n < 0) return 'unknown';
@@ -737,7 +753,16 @@
       if (e.type === 'session') lines.push(e.action === 'start' ? 'You started working.' : e.action === 'resume' ? 'You came back to it ' + at + '.' : 'You finished this session ' + at + '.');
       else if (e.type === 'paste') lines.push('You pasted in about ' + e.chars + ' characters ' + at + (e.sourceHint === 'intra-app' ? ' (from your own work in AlloFlow).' : '.'));
       else if (e.type === 'ai') lines.push('You used the ' + (e.support || 'AI') + ' helper ' + at + '.');
-      else if (e.type === 'checkpoint') lines.push('You answered a check-in ' + at + ' (' + e.durationSec + 's, AI ' + e.aiState + ').');
+      else if (e.type === 'checkpoint') {
+        // Coarse bucket, not seconds, and no bare 'AI off' either — a student
+        // reading their own story should not meet a state label they never set.
+        // No duration here. It sits awkwardly beside the 'when' phrase, and how
+        // long a child took to answer is exactly what the coarse buckets exist
+        // to stop anyone reading into.
+        var used = (e.supportsProvided || []).map(friendlySupport).filter(Boolean);
+        lines.push('You answered a check-in ' + at
+          + (used.length ? ', using ' + joinWords(used) : '') + '.');
+      }
     }
     var s = summarizeProcess(exported || { events: [] });
     return {
@@ -995,7 +1020,13 @@
               c.outcome === 'answered' ? c.answerText : 'Not attempted. This can happen for many reasons, including technical ones.'),
             h('div', { style: { fontSize: '0.75rem', color: '#475569', marginTop: 4 } }, 'Question: ' + c.questionText),
             c.sourceExcerpt ? h('div', { style: { fontSize: '0.75rem', color: '#475569', fontStyle: 'italic' } }, 'About: “' + c.sourceExcerpt + '”') : null,
-            c.answerLanguage ? h('div', { style: { fontSize: '0.72rem', color: '#475569' } }, 'Answered in ' + c.answerLanguage) : null);
+            c.answerLanguage ? h('div', { style: { fontSize: '0.72rem', color: '#475569' } }, 'Answered in ' + c.answerLanguage) : null,
+            // Provision, never a tally (§15.7). This documents that the plan was
+            // followed; it is not a fact about how much the student needed.
+            (c.supportsProvided && c.supportsProvided.length)
+              ? h('div', { style: { fontSize: '0.72rem', color: '#475569', marginTop: 2 } },
+                  'Accommodations provided: ' + c.supportsProvided.join(', '))
+              : null);
         })
       ) : null
     );

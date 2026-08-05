@@ -879,3 +879,57 @@ describe('P7 — tier-1 instrumentation (§15.6)', () => {
   });
 });
 
+describe('P7 follow-up — the checkpoint record has BOTH a writer and a reader', () => {
+  it('the student can read their own check-in line', async () => {
+    const led = P.createLedger({ now: mkClock().now });
+    await led.append('session', { action: 'start' });
+    await led.append('checkpoint', {
+      id: 'c', aiState: 'off', durationSec: 70,
+      supportsProvided: ['read_aloud', 'glossary'],
+    });
+    const m = P.buildWorkStoryModel(await led.export());
+    const line = m.lines[1];
+    // This rendered 'undefineds' — the narrator read durationSec, which the
+    // schema deliberately replaced with a coarse bucket.
+    expect(line).not.toContain('undefined');
+    // Slugs are for the schema. A child reads words.
+    expect(line).toContain('read-aloud');
+    expect(line).toContain('the glossary');
+    expect(line).not.toContain('read_aloud');
+  });
+
+  it('never tells a student how long they took', async () => {
+    const led = P.createLedger({ now: mkClock().now });
+    await led.append('checkpoint', { id: 'c', aiState: 'off', durationSec: 900 });
+    const line = P.buildWorkStoryModel(await led.export()).lines[0];
+    // The coarse buckets exist so nobody reads into how long a child took.
+    // Restating them in the student's own story defeats that.
+    expect(line.toLowerCase()).not.toContain('minute');
+    expect(line.toLowerCase()).not.toContain('second');
+  });
+
+  it('an unknown support still reaches the student, just de-slugged', async () => {
+    const led = P.createLedger({ now: mkClock().now });
+    await led.append('checkpoint', { id: 'c', aiState: 'off', supportsProvided: ['future_tool'] });
+    // Falling through beats dropping it: a newly instrumented support must
+    // never silently vanish from a student's own record.
+    expect(P.buildWorkStoryModel(await led.export()).lines[0]).toContain('future tool');
+  });
+
+  it('the TEACHER panel renders the provision list, or the field is dead', () => {
+    // I argued that suppressing accommodations leaves a compliance gap, then
+    // shipped supportsProvided with no reader — the same gap with extra steps.
+    // Same class as the workStoryEnabled toggle that had no writer.
+    const src = readFileSync('allo_provenance_module.js', 'utf8');
+    expect(src).toContain("'Accommodations provided: '");
+    expect(src).toContain('c.supportsProvided.join');
+  });
+
+  it('and renders it as provision, never a count', () => {
+    const src = readFileSync('allo_provenance_module.js', 'utf8');
+    const panel = src.slice(src.indexOf('function ProcessPanel'), src.indexOf('GLOBAL.AlloModules ='));
+    expect(panel).not.toMatch(/supportsProvided.length +/);
+    expect(panel).not.toContain('times');
+  });
+});
+
