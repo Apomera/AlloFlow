@@ -4414,6 +4414,53 @@ const safeSetItem = (key, value) => {
 const safeRemoveItem = (key) => {
     try { localStorage.removeItem(key); } catch(e) { /* silent */ }
 };
+// ── Durable preferences ────────────────────────────────────────────────────
+// Canvas localStorage is EPHEMERAL, so a preference written only there is gone
+// next session. Preferences therefore live in two places: localStorage as the
+// synchronous working copy (React state initializers must read it during
+// render, and the bridge is async), and the device-storage bridge as the
+// durable copy. _alloWritePref writes both; _alloHydratePrefsFromDevice pulls
+// the durable copy forward at boot.
+const ALLO_PREF_NS = 'prefs';
+const ALLO_PREF_KEYS = [
+  'allo_voice_speed', 'allo_voice_volume', 'allo_base_font_size', 'allo_line_height',
+  'allo_font_theme', 'allo_reading_ruler', 'allo_disable_animations',
+  'allo_selected_font', 'allo_color_overlay',
+  'allo_voice_speak_replies', 'allo_voice_standby', 'allo_voice_engine', 'allo_model_downloads'
+];
+const _alloWritePref = (key, value) => {
+    safeSetItem(key, value);
+    if (ALLO_PREF_KEYS.indexOf(key) < 0) return;
+    // Fire-and-forget: a preference must never block the UI on storage.
+    try {
+        _alloGetCanvasDeviceStorage()
+            .then((ds) => ds.set(ALLO_PREF_NS, key, String(value)))
+            .catch(() => {});
+    } catch (_) {}
+};
+const _alloClearPref = (key) => {
+    safeRemoveItem(key);
+    try {
+        _alloGetCanvasDeviceStorage()
+            .then((ds) => ds.remove(ALLO_PREF_NS, key))
+            .catch(() => {});
+    } catch (_) {}
+};
+const _alloHydratePrefsFromDevice = async () => {
+    try {
+        const ds = await _alloGetCanvasDeviceStorage();
+        const rows = await ds.getAll(ALLO_PREF_NS);
+        if (!Array.isArray(rows)) return null;
+        const found = {};
+        rows.forEach((r) => {
+            if (!r || !r.key || ALLO_PREF_KEYS.indexOf(r.key) < 0) return;
+            found[r.key] = r.value;
+            // Refill the volatile copy so later synchronous readers agree.
+            safeSetItem(r.key, String(r.value));
+        });
+        return found;
+    } catch (_) { return null; }
+};
 const _applyTextSurgery = (prevHtml, effectiveText) => {
     const _m = window.AlloModules && window.AlloModules.PureHelpers;
     if (_m && typeof _m._applyTextSurgery === 'function') return _m._applyTextSurgery(prevHtml, effectiveText);
@@ -14501,27 +14548,6 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const setColorOverlay = (v) => { try { safeSetItem('allo_color_overlay', v); } catch {} _setColorOverlay(v); };
   const [readingRuler, setReadingRuler] = useState(() => { try { return safeGetItem('allo_reading_ruler') === '1'; } catch (_) { return false; } });
   const [rulerY, setRulerY] = useState(0);
-  // Persist display + read-aloud preferences across sessions. These are
-  // accessibility settings: resetting them each visit silently undoes a
-  // student's setup. Stored per device with the same safeSetItem pattern the
-  // font picker and colour overlay already use.
-  useEffect(() => { safeSetItem('allo_voice_speed', String(voiceSpeed)); }, [voiceSpeed]);
-  useEffect(() => { safeSetItem('allo_voice_volume', String(voiceVolume)); }, [voiceVolume]);
-  useEffect(() => { safeSetItem('allo_base_font_size', String(baseFontSize)); }, [baseFontSize]);
-  useEffect(() => { safeSetItem('allo_line_height', String(lineHeight)); }, [lineHeight]);
-  useEffect(() => { safeSetItem('allo_font_theme', String(fontTheme || 'Default')); }, [fontTheme]);
-  useEffect(() => { safeSetItem('allo_reading_ruler', readingRuler ? '1' : '0'); }, [readingRuler]);
-  // Reduced motion: only a deliberate user choice is stored. With nothing
-  // stored the OS preference still wins, so we never override the system
-  // setting with a stale value.
-  useEffect(() => {
-    try {
-      let osPref = false;
-      try { osPref = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) {}
-      if (disableAnimations === osPref) safeRemoveItem('allo_disable_animations');
-      else safeSetItem('allo_disable_animations', disableAnimations ? '1' : '0');
-    } catch (_) {}
-  }, [disableAnimations]);
   const [fontTheme, setFontTheme] = useState(() => { try { return safeGetItem('allo_font_theme') || 'Default'; } catch (_) { return 'Default'; } });
   // Persisted (was session-only — the one reading-support preference that
   // reset on every reload while readingTheme/colorOverlay survived).
@@ -14533,6 +14559,62 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [baseFontSize, setBaseFontSize] = useState(() => { try { const v = parseFloat(safeGetItem('allo_base_font_size')); return Number.isFinite(v) && v >= 10 && v <= 48 ? v : 16; } catch (_) { return 16; } });
   const [sliderFontSize, setSliderFontSize] = useState(16);
   const [lineHeight, setLineHeight] = useState(() => { try { const v = parseFloat(safeGetItem('allo_line_height')); return Number.isFinite(v) && v >= 1 && v <= 3 ? v : 1.6; } catch (_) { return 1.6; } });
+
+  // ── Preference persistence (must stay BELOW every state it references) ──
+  // These effects previously sat above fontTheme/baseFontSize/lineHeight and
+  // read them in dep arrays during render — a temporal-dead-zone
+  // ReferenceError, i.e. a white screen. Keep this block last.
+  //
+  // Two stores on purpose: localStorage is the SYNCHRONOUS working copy React
+  // can read inside a state initializer, and the device-storage bridge is the
+  // DURABLE copy, because Canvas localStorage is ephemeral. Writes go to both;
+  // boot hydrates the durable copy back over the volatile one.
+  useEffect(() => { _alloWritePref('allo_voice_speed', String(voiceSpeed)); }, [voiceSpeed]);
+  useEffect(() => { _alloWritePref('allo_voice_volume', String(voiceVolume)); }, [voiceVolume]);
+  useEffect(() => { _alloWritePref('allo_base_font_size', String(baseFontSize)); }, [baseFontSize]);
+  useEffect(() => { _alloWritePref('allo_line_height', String(lineHeight)); }, [lineHeight]);
+  useEffect(() => { _alloWritePref('allo_font_theme', String(fontTheme || 'Default')); }, [fontTheme]);
+  useEffect(() => { _alloWritePref('allo_reading_ruler', readingRuler ? '1' : '0'); }, [readingRuler]);
+  // Reduced motion: only a deliberate user choice is stored. Choosing the same
+  // value as the OS CLEARS the override, so a stale value can never mask a
+  // later system change.
+  useEffect(() => {
+    try {
+      let osPref = false;
+      try { osPref = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) {}
+      if (disableAnimations === osPref) _alloClearPref('allo_disable_animations');
+      else _alloWritePref('allo_disable_animations', disableAnimations ? '1' : '0');
+    } catch (_) {}
+  }, [disableAnimations]);
+  // Boot hydration: pull the durable copy forward, then re-apply anything the
+  // volatile store was missing. Runs once; never clobbers a value the user has
+  // already changed in this session (guarded by the touched ref).
+  const _alloPrefsTouchedRef = useRef({});
+  useEffect(() => {
+    let cancelled = false;
+    _alloHydratePrefsFromDevice().then((found) => {
+      if (cancelled || !found) return;
+      const take = (key, current) => {
+        if (_alloPrefsTouchedRef.current[key]) return undefined;
+        const raw = found[key];
+        return raw === undefined || raw === null || String(raw) === String(current) ? undefined : raw;
+      };
+      const n = (v, lo, hi) => { const x = parseFloat(v); return Number.isFinite(x) && x >= lo && x <= hi ? x : undefined; };
+      let v;
+      if ((v = take('allo_voice_speed', voiceSpeed)) !== undefined && (v = n(v, 0.5, 2)) !== undefined) setVoiceSpeed(v);
+      if ((v = take('allo_voice_volume', voiceVolume)) !== undefined && (v = n(v, 0, 1)) !== undefined) setVoiceVolume(v);
+      if ((v = take('allo_base_font_size', baseFontSize)) !== undefined && (v = n(v, 10, 48)) !== undefined) setBaseFontSize(v);
+      if ((v = take('allo_line_height', lineHeight)) !== undefined && (v = n(v, 1, 3)) !== undefined) setLineHeight(v);
+      if ((v = take('allo_font_theme', fontTheme)) !== undefined) setFontTheme(String(v));
+      if ((v = take('allo_reading_ruler', readingRuler ? '1' : '0')) !== undefined) setReadingRuler(String(v) === '1');
+      if ((v = take('allo_selected_font', selectedFont)) !== undefined) _setSelectedFont(String(v));
+      if ((v = take('allo_color_overlay', colorOverlay)) !== undefined && ['none', 'blue', 'peach', 'yellow'].includes(String(v))) _setColorOverlay(String(v));
+      if ((v = found['allo_disable_animations']) !== undefined && !_alloPrefsTouchedRef.current['allo_disable_animations']) {
+        if (v === '1' || v === '0') setDisableAnimations(v === '1');
+      }
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
   const [letterSpacing, setLetterSpacing] = useState(0);
   const [isCheckingLevel, setIsCheckingLevel] = useState(false);
   const [isCheckingAlignment, setIsCheckingAlignment] = useState(false);
