@@ -11756,6 +11756,11 @@ Return ONLY JSON in this shape:
   // rows, not twelve. Silent no-op when no ledger exists, which is the normal
   // case: collection only runs when a teacher enabled it for the assignment.
   const _alloNoteSupport = (kind, promptLevel, options) => {
+      // Collected even when no ledger exists, because the check-in record is a
+      // separate artifact from the ledger and must not depend on it.
+      if (_alloCheckpointSupportsRef.current && kind) {
+          try { _alloCheckpointSupportsRef.current.add(String(kind)); } catch (_) {}
+      }
       const led = _alloLedgerRef.current;
       if (!led || typeof led.noteSupport !== 'function') return;
       try { led.noteSupport(kind, promptLevel || 'none', options || {}); } catch (_) {}
@@ -11764,6 +11769,146 @@ Return ONLY JSON in this shape:
       const led = _alloLedgerRef.current;
       if (!led) return;
       try { led.append('ai', { support: String(support || 'ai'), promptLevel: promptLevel || 'none' }); } catch (_) {}
+  };
+  // ── P3: comprehension checkpoints ──────────────────────────────────────
+  // Questions about the student's OWN writing, answered by them, read by the
+  // teacher. §13.5 binds this to a CARD, never a modal, and it must never
+  // block: it lives in the sidebar beside the Work Story, and submitting is
+  // unaffected whether it is answered, deferred, or ignored entirely.
+  const [checkpointState, setCheckpointState] = useState({ status: 'idle', questions: [], index: 0 });
+  const _alloCheckpointRecordsRef = useRef([]);
+  const _alloCheckpointSaltRef = useRef('');
+
+  // The artifact is the student's own writing, concatenated. Teacher-provided
+  // text is passed SEPARATELY so the module can exclude it: a question about a
+  // sentence frame would be a question about something the student never wrote.
+  const _alloCheckpointArtifact = () => {
+      const parts = [];
+      const provided = [];
+      try {
+          Object.keys(studentResponses || {}).forEach(resourceId => {
+              const answers = studentResponses[resourceId] || {};
+              Object.keys(answers).forEach(k => {
+                  const v = answers[k];
+                  if (typeof v === 'string' && v.trim()) parts.push(v.trim());
+              });
+          });
+          (generatedContent?.data || []).forEach(item => {
+              ['question', 'prompt', 'frame', 'starter', 'text'].forEach(key => {
+                  const v = item && item[key];
+                  if (typeof v === 'string' && v.trim()) provided.push(v.trim());
+              });
+          });
+          if (assignmentDirections) provided.push(String(assignmentDirections));
+      } catch (_) {}
+      // Blank line between answers so the module's sentence splitter never
+      // fuses the end of one response onto the start of the next.
+      return { text: parts.join(String.fromCharCode(10, 10)), providedTexts: provided };
+  };
+
+  // AI-off is not a degraded mode, it is a different generator. The no-egress
+  // rule is absolute: when the assignment forbids sending student writing out,
+  // nothing is sent, and the deterministic templates run locally instead.
+  const _alloGenerateCheckpoints = async () => {
+      const P = _alloProvenanceApi();
+      if (!P) return;
+      const { text, providedTexts } = _alloCheckpointArtifact();
+      if (text.replace(/\s+/g, ' ').trim().length < 120) {
+          setCheckpointState({ status: 'too-little', questions: [], index: 0 });
+          return;
+      }
+      setCheckpointState(prev => ({ ...prev, status: 'working' }));
+      const aiAllowed = !_isQrStudentAiDisabled()
+          && !(window.__alloQrStudentMode && window.__alloQrStudentMode.studentAi === 'off');
+      let questions = [];
+      if (aiAllowed) {
+          try {
+              // Arity 3, artifact text only. The firewall is the SIGNATURE:
+              // there is no parameter through which the ledger could reach a
+              // question, so a question can never be aimed at a doubted span.
+              const raw = await callGemini(
+                  P.buildCheckpointPrompt(text, studentProjectSettings?.readingLevel || 'grade 5', currentUiLanguage),
+                  true
+              );
+              questions = P.sanitizeCheckpointQuestions(JSON.parse(cleanJson(String(raw || '[]'))), text, { providedTexts });
+          } catch (_) { questions = []; }
+      }
+      // Fallback covers BOTH the policy case and any generation failure. A
+      // student never sees an error where a question should be.
+      if (!questions.length) questions = P.templateCheckpoints(text, { providedTexts });
+      if (!_alloCheckpointSaltRef.current) _alloCheckpointSaltRef.current = P.makeCheckpointSalt();
+      _alloCheckpointSupportsRef.current = new Set();
+      setCheckpointState({
+          status: questions.length ? 'ready' : 'too-little',
+          questions,
+          index: 0,
+          artifact: text,
+          providedTexts,
+          generatorSource: aiAllowed && questions.length ? 'ai' : 'template'
+      });
+  };
+
+  // One outcome per question, whatever the student chose to do. 'skipped' and
+  // 'deferred' are first-class results, not failures — §13.5 requires the
+  // escape hatches to be real, which means they must record as themselves.
+  const _alloRecordCheckpoint = async (outcome, answerText, responseMode) => {
+      const P = _alloProvenanceApi();
+      const st = checkpointState;
+      const q = st.questions[st.index];
+      if (!P || !q) return;
+      const aiState = _isQrStudentAiDisabled() ? 'off' : 'on';
+      _alloCheckpointRecordsRef.current.push(P.buildCheckpointRecord(q, answerText || '', {
+          outcome,
+          responseMode: responseMode || 'text',
+          aiState,
+          answerLanguage: currentUiLanguage,
+          generatorSource: st.generatorSource
+      }));
+      // The LEDGER gets metadata only — never the answer. A salted hash means
+      // two students who write the same sentence never collide, so the record
+      // cannot become an accidental plagiarism detector.
+      const led = _alloLedgerRef.current;
+      if (led) {
+          try {
+              const answerHash = answerText
+                  ? await P.hashCheckpointAnswer(_alloCheckpointSaltRef.current, answerText)
+                  : '';
+              await led.append('checkpoint', {
+                  id: q.id,
+                  aiState,
+                  outcome,
+                  responseMode: responseMode || 'text',
+                  answerHash,
+                  generatedFrom: q.sourceFieldId || '',
+                  // Provision, never a tally (§15.7). Which accommodations were
+                  // available during the check-in, so nobody can later ask
+                  // whether it ran under the student's normal conditions.
+                  supportsProvided: _alloCheckpointSupports()
+              });
+          } catch (_) {}
+      }
+      // Fresh set per question: one check-in's supports must not bleed onto
+      // the next, or the last record would accumulate the whole session.
+      _alloCheckpointSupportsRef.current = new Set();
+      setCheckpointState(prev => ({ ...prev, index: prev.index + 1 }));
+  };
+
+  // Access supports stay ON during a checkpoint by design: the AI-off state
+  // pauses generative answer-production, never read-aloud or a glossary.
+  //
+  // What gets RECORDED is which of them the student actually reached for while
+  // this check-in was open — named, never counted (§15.7). Listing the whole
+  // always-allowed set instead would be the same eight names on every record:
+  // no information, and an implied claim about a plan we cannot see.
+  const _alloCheckpointSupportsRef = useRef(null);
+  const _alloCheckpointSupports = () => {
+      const seen = _alloCheckpointSupportsRef.current;
+      if (!seen) return [];
+      const P = _alloProvenanceApi();
+      const allowed = (P && P.CHECKPOINT_ALWAYS_ALLOWED) || [];
+      // Only access supports belong on a check-in record. A generative helper
+      // during a checkpoint is a policy question, not an accommodation note.
+      return Array.from(seen).filter(k => allowed.indexOf(k) >= 0).sort();
   };
   const _alloRefreshWorkStory = () => {
       const led = _alloLedgerRef.current;
@@ -33555,6 +33700,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       // governs collection. It is no longer gated on a student tick: constraint
       // 2 as amended says the student sees the log rather than gating it, since
       // minors give assent and parents give consent, both outside the app.
+      if (_alloCheckpointRecordsRef.current.length) {
+          // Answers live in project.checkpoints[], NEVER in the ledger, beside
+          // the question and source excerpt the teacher has to read to make
+          // any sense of them.
+          submissionData.checkpoints = _alloCheckpointRecordsRef.current.slice(0, 10);
+      }
       if (_alloLedgerRef.current) {
           try {
               const _P = _alloProvenanceApi();
@@ -36889,6 +37040,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // handleSendUDLMessage (below) can reach it after the command preview/confirm
   // step, and so a "just chat" reply can re-send the original text as normal chat.
   const _sendUdlToChat = (manualText = null) => {
+    // §15.6 tier 2. The one delivery path into the chat module, so a single
+    // edit covers every route a student takes to the bot. Logged as 'guided'
+    // rather than 'model': AlloBot is Socratic by design, and recording it at
+    // the level that means "wrote it for them" would misstate what happened.
+    // A turn that DID produce inserted text is recorded by the AI wrapper.
+    try { if (window.__alloNoteSupport) window.__alloNoteSupport('allobot', 'guided'); } catch (_) {}
     const _m = window.AlloModules && window.AlloModules.UdlChat;
     if (_m && typeof _m.handleSendUDLMessage === "function") return _m.handleSendUDLMessage(manualText, {
       activeBlueprint, activeView, alloBotRef, currentUiLanguage, guidedFlowState,
@@ -43885,6 +44042,46 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             {!isTeacherMode && isStudentLinkMode && workStoryModel && window.AlloModules && window.AlloModules.WorkStoryPanel && React.createElement(window.AlloModules.WorkStoryPanel, {
               t, model: workStoryModel
           })}
+            {!isTeacherMode && isStudentLinkMode && workStoryModel && checkpointState.status === 'idle' && (
+              <button
+                type="button"
+                onClick={_alloGenerateCheckpoints}
+                className="w-full mb-4 rounded-2xl border border-slate-300 bg-white dark:bg-slate-800 dark:border-slate-700 p-3 text-left text-xs font-bold hover:border-indigo-400"
+              >
+                💬 {t('checkpoint.offer', 'Talk about your work') }
+                <span className="block font-normal opacity-75 mt-0.5">
+                  {t('checkpoint.offer_sub', 'A couple of questions about what you wrote. You can skip them.')}
+                </span>
+              </button>
+            )}
+            {!isTeacherMode && isStudentLinkMode && checkpointState.status === 'working' && (
+              <p role="status" className="mb-4 text-xs opacity-75">{t('checkpoint.working', 'Getting a question ready...')}</p>
+            )}
+            {!isTeacherMode && isStudentLinkMode && checkpointState.status === 'too-little' && (
+              <p role="status" className="mb-4 text-xs opacity-75">
+                {t('checkpoint.too_little', 'Write a bit more first, then this can ask you about it.')}
+              </p>
+            )}
+            {/* One question at a time. When the last is done the card simply
+                stops appearing — no completion badge, because finishing is not
+                an achievement and not finishing is not a failure. */}
+            {!isTeacherMode && isStudentLinkMode && checkpointState.status === 'ready'
+              && checkpointState.questions[checkpointState.index]
+              && window.AlloModules && window.AlloModules.CheckpointPanel
+              && React.createElement(window.AlloModules.CheckpointPanel, {
+                t,
+                question: checkpointState.questions[checkpointState.index],
+                language: currentUiLanguage,
+                choices: (window.AlloModules.Provenance && checkpointState.artifact)
+                  ? window.AlloModules.Provenance.buildCheckpointChoices(
+                      checkpointState.artifact,
+                      checkpointState.questions[checkpointState.index].sourceExcerpt,
+                      checkpointState.providedTexts)
+                  : [],
+                onAnswer: (text, mode) => _alloRecordCheckpoint('answered', text, mode),
+                onDefer: () => _alloRecordCheckpoint('deferred', '', 'text'),
+                onMisfit: () => _alloRecordCheckpoint('skipped', '', 'text')
+            })}
           {!isTeacherMode && <StudentSaveAdventurePanel activeSessionCode={activeSessionCode} globalPoints={globalPoints} handleResumeAdventure={handleResumeAdventure} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleStartAdventure={handleStartAdventure} hasSavedAdventure={hasSavedAdventure} initiateSaveStudentProject={initiateSaveStudentProject} isResumingAdventure={isResumingAdventure} isSaveActionPulsing={isSaveActionPulsing} projectFileInputRef={projectFileInputRef} sessionData={sessionData} studentProjectSettings={studentProjectSettings} t={t} />}
             {isTeacherMode && activeSidebarTab === 'history' && !isIndependentMode && !isParentMode && <TeacherHistoryTab handleApplyRosterGroup={handleApplyRosterGroup} hasSourceOrAnalysis={hasSourceOrAnalysis} rosterKey={rosterKey} setIsRosterKeyOpen={setIsRosterKeyOpen} t={t} />}
             {(!isTeacherMode || activeSidebarTab === 'history') && <HistoryPanel activeSidebarTab={activeSidebarTab} activeStation={activeStation} activeUnitId={activeUnitId} addToast={addToast} cloudSyncStatus={cloudSyncStatus} editTitle={editTitle} editingId={editingId} generatedContent={generatedContent} getDefaultTitle={getDefaultTitle} getFilteredHistory={getFilteredHistory} getIconForType={getIconForType} handleCancelEdit={handleCancelEdit} handleClearHistory={handleClearHistory} handleCreateUnit={handleCreateUnit} handleDeleteHistoryItem={handleDeleteHistoryItem} handleDeleteUnit={handleDeleteUnit} handleDragEnd={handleDragEnd} handleDragEnter={handleDragEnter} handleDragStart={handleDragStart} handleLoadProject={handleLoadProject} handleMoveToUnit={handleMoveToUnit} handleRestoreView={handleRestoreView} handleSaveEdit={handleSaveEdit} handleSetIsProjectSettingsOpenToTrue={handleSetIsProjectSettingsOpenToTrue} handleSetIsUnitModalOpenToFalse={handleSetIsUnitModalOpenToFalse} handleSetIsUnitModalOpenToTrue={handleSetIsUnitModalOpenToTrue} handleSetMovingItemIdToNull={handleSetMovingItemIdToNull} handleStartEdit={handleStartEdit} handleToggleIsHistoryMaximized={handleToggleIsHistoryMaximized} history={history} initiateSaveStudentProject={initiateSaveStudentProject} initiateSaveTeacherProject={initiateSaveTeacherProject} isCloudSyncEnabled={isCloudSyncEnabled} isCanvas={isCanvas} canvasRecoverySaveStatus={canvasRecoverySaveStatus} canvasRecoverySnapshotCount={canvasRecoveryStore.snapshots.length} onOpenDeviceRecovery={openCanvasRecoveryManager} isHistoryMaximized={isHistoryMaximized} isIndependentMode={isIndependentMode} isParentMode={isParentMode} isSaveActionPulsing={isSaveActionPulsing} isStorageDisabled={isStorageDisabled} isSyncMode={isSyncMode} isTeacherMode={isTeacherMode} isUnitModalOpen={isUnitModalOpen} lastSaved={lastSaved} moveItem={moveItem} movingItemId={movingItemId} newUnitName={newUnitName} pendingSync={pendingSync} projectFileInputRef={projectFileInputRef} sanitizeString={sanitizeString} activeSelStation={activeSelStation} setActiveSelStation={setActiveSelStation} setActiveStation={setActiveStation} setActiveUnitId={setActiveUnitId} setEditTitle={setEditTitle} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setMovingItemId={setMovingItemId} setNewUnitName={setNewUnitName} setSelHubTab={setSelHubTab} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTab={setStemLabTab} t={t} onVisualizeUnit={openThroughlineForUnit} units={units} />}

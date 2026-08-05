@@ -933,3 +933,129 @@ describe('P7 follow-up — the checkpoint record has BOTH a writer and a reader'
   });
 });
 
+describe('P3 wiring — checkpoints finally have a producer', () => {
+  const anti = (p) => readFileSync(p, 'utf-8');
+  const COPIES = ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt'];
+
+  it('generates, records, and stores — all three, in BOTH copies', () => {
+    for (const p of COPIES) {
+      const src = anti(p);
+      expect(src, p).toContain('const _alloGenerateCheckpoints');
+      expect(src, p).toContain('const _alloRecordCheckpoint');
+      // Answers live in project.checkpoints[], never the ledger.
+      expect(src, p).toContain('submissionData.checkpoints = _alloCheckpointRecordsRef.current');
+    }
+  });
+
+  it('the generator is handed artifact text ONLY — the firewall is the signature', () => {
+    for (const p of COPIES) {
+      const src = anti(p);
+      const gen = src.slice(src.indexOf('const _alloGenerateCheckpoints'), src.indexOf('const _alloRecordCheckpoint'));
+      // A question aimed at a doubted span would be an accusation delivered to
+      // a child in the second person. There must be no path from the ledger
+      // into generation.
+      expect(gen, p).not.toContain('_alloLedgerRef');
+      expect(gen, p).not.toContain('pasteEvents');
+      expect(gen, p).toContain('P.buildCheckpointPrompt(text,');
+    }
+  });
+
+  it('honours no-egress: AI off means templates, not a degraded AI call', () => {
+    for (const p of COPIES) {
+      const src = anti(p);
+      const gen = src.slice(src.indexOf('const _alloGenerateCheckpoints'), src.indexOf('const _alloRecordCheckpoint'));
+      expect(gen, p).toContain('const aiAllowed = !_isQrStudentAiDisabled()');
+      expect(gen, p).toContain('if (aiAllowed) {');
+      // The fallback also catches generation FAILURE, so a student never meets
+      // an error where a question should be.
+      expect(gen, p).toContain('if (!questions.length) questions = P.templateCheckpoints(text');
+    }
+  });
+
+  it('the ledger gets a hash, never the answer', () => {
+    for (const p of COPIES) {
+      const src = anti(p);
+      const rec = src.slice(src.indexOf('const _alloRecordCheckpoint'), src.indexOf('const _alloCheckpointSupportsRef'));
+      expect(rec, p).toContain('P.hashCheckpointAnswer(_alloCheckpointSaltRef.current, answerText)');
+      expect(rec, p).not.toMatch(/append\('checkpoint', \{[^}]*answerText/);
+    }
+  });
+
+  it('skip and defer are recorded as themselves, not as failures', () => {
+    for (const p of COPIES) {
+      const src = anti(p);
+      // §13.5 requires the escape hatches to be real. An escape hatch that
+      // records as 'unavailable' is not an escape hatch.
+      expect(src, p).toContain("_alloRecordCheckpoint('deferred', '', 'text')");
+      expect(src, p).toContain("_alloRecordCheckpoint('skipped', '', 'text')");
+    }
+  });
+
+  it('is a CARD in the sidebar and never blocks submission', () => {
+    for (const p of COPIES) {
+      const src = anti(p);
+      expect(src, p).toContain('window.AlloModules.CheckpointPanel');
+      // If submission consulted checkpoint state at all, it could block.
+      const save = src.slice(src.indexOf('submissionData.checkpoints'), src.indexOf('const safeName = submissionData.studentName'));
+      expect(save, p).not.toContain('checkpointState.status');
+      expect(save, p).not.toContain('return;');
+    }
+  });
+
+  it('supports collected per QUESTION, so one check-in cannot inherit another', () => {
+    for (const p of COPIES) {
+      const src = anti(p);
+      // Without the reset, the last record would accumulate the whole session
+      // and read as though the student leaned on everything at once.
+      const resets = src.split('_alloCheckpointSupportsRef.current = new Set();').length - 1;
+      expect(resets, p).toBe(2);   // one on open, one after each record
+    }
+  });
+});
+
+describe('P7 tier-2 — allobot names itself', () => {
+  const anti = (p) => readFileSync(p, 'utf-8');
+  const COPIES = ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt'];
+
+  it('instruments the single delivery path into the chat module', () => {
+    for (const p of COPIES) {
+      expect(anti(p), p).toContain("window.__alloNoteSupport('allobot', 'guided')");
+    }
+  });
+
+  it('records allobot as guided, not model', () => {
+    // AlloBot is Socratic by design. Logging it at the level that means
+    // "wrote it for them" would misstate what happened, in the direction that
+    // hurts the student.
+    for (const p of COPIES) {
+      expect(anti(p), p).not.toContain("__alloNoteSupport('allobot', 'model')");
+    }
+    expect(P.classifySupport('allobot')).toBe('generative');
+  });
+});
+
+describe('P7 — the ai/support population asymmetry is documented, not hidden', () => {
+  it('every ai event counts toward integrity, even without insertedToWork', async () => {
+    const led = P.createLedger({ now: mkClock().now });
+    await led.append('ai', { support: 'allobot', promptLevel: 'guided' });
+    const s = P.summarizeProcess(await led.exportForSubmission());
+    // Deliberate. Nothing sets insertedToWork on an ai event yet, so applying
+    // the population rule there would zero the count and hide a student who
+    // had a helper write their essay.
+    expect(s.aiInteractions).toBe(1);
+  });
+
+  it('a support event without insertedToWork does NOT count', async () => {
+    const led = P.createLedger({ now: mkClock().now, bucketMs: 15000 });
+    led.noteSupport('allobot', 'guided');
+    await led.flush();
+    expect(P.summarizeProcess(await led.exportForSubmission()).aiInteractions).toBe(0);
+  });
+
+  it('the asymmetry is explained in the source, so nobody rewrites it blindly', () => {
+    const src = readFileSync('allo_provenance_module.js', 'utf8');
+    expect(src).toContain('ASYMMETRY');
+    expect(src).toContain('would silently zero the integrity AI count');
+  });
+});
+

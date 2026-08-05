@@ -472,6 +472,21 @@
     for (var i = 0; i < evts.length; i++) {
       var e = evts[i];
       if (e.type === 'session' && (e.action === 'start' || e.action === 'resume')) sessions++;
+      // ★ ASYMMETRY, deliberate and worth understanding. The population rule
+      // (§15.4) is applied to `support` events but NOT to `ai` events: every
+      // AI call counts here regardless of insertedToWork.
+      //
+      // The reason is that nothing currently SETS insertedToWork on an ai
+      // event — the callGemini wrapper cannot know whether the reply was used.
+      // Applying the rule there would silently zero the integrity AI count and
+      // hide a student who had a helper write their essay, which is the one
+      // failure this lens exists to prevent.
+      //
+      // So ai events are counted conservatively and reported as what they are:
+      // classifySupport sends unlabelled calls to 'unattributed', and
+      // describeAiUse renders that as "not identified" rather than implying
+      // generation. When insertedToWork becomes reliable at that boundary,
+      // this branch should adopt the same rule the support branch uses.
       if (e.type === 'ai') {
         aiCount++;
         kinds[classifySupport(e.support)]++;
