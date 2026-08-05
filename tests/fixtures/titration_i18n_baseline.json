@@ -21,6 +21,8 @@
     "greek",
     "haitian_creole",
     "hebrew",
+    "hindi",
+    "indonesian",
     "italian",
     "japanese",
     "korean",
@@ -34,6 +36,7 @@
     "spanish_castilian",
     "spanish_latin_america",
     "swahili",
+    "thai",
     "turkish",
     "ukrainian",
     "vietnamese"
@@ -57,10 +60,10 @@
     "haitian_creole": 0,
     "hausa": 145,
     "hebrew": 0,
-    "hindi": 145,
+    "hindi": 0,
     "hmong": 145,
     "igbo": 145,
-    "indonesian": 145,
+    "indonesian": 0,
     "italian": 0,
     "japanese": 0,
     "kannada": 145,
@@ -88,7 +91,7 @@
     "tagalog": 145,
     "tamil": 145,
     "telugu": 145,
-    "thai": 145,
+    "thai": 0,
     "tigrinya": 145,
     "turkish": 0,
     "ukrainian": 0,
@@ -99,6 +102,7 @@
   "join_exceptions": {
     "japanese.sr_cm": "Japanese does not space before the following particle: \"10.0 cm上\".",
     "korean.sr_cm": "The next fragment (sr_above/sr_below) carries the leading space: \"10.0 cm 위\".",
-    "korean.bench_punchline_a": "Ends with an opening parenthesis; the vessel name follows directly."
+    "korean.bench_punchline_a": "Ends with an opening parenthesis; the vessel name follows directly.",
+    "thai.sr_true_level_so": "Thai spaces before numerals but not before Thai words. This fragment is followed by sr_too_low/sr_too_high (Thai words), so no space is wanted: เหนือระดับจริง ค่าอ่านจึงต่ำเกินไป. Where a number follows instead, the pack does use a space (sr_by)."
   }
 }
