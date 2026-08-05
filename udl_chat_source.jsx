@@ -1435,8 +1435,22 @@ function _commandWorkflowPlanCard(pending, AC, ctx, t, prefix) {
     if (readiness.status === 'block') blocked = true;
     const keys = step.params ? Object.keys(step.params).filter((key) => step.params[key] != null && step.params[key] !== '') : [];
     const params = keys.length ? (' - ' + keys.map((key) => key + ': ' + step.params[key]).join(', ')) : '';
+    // Nothing filled in at all: name the blank instead of rendering a bare
+    // label, and show the edit phrasing that already fills it. Only for steps
+    // with NO params set, so a command carrying many optional ones
+    // (find_reading has six) does not turn the card into a wall of "not set".
+    // There is no required-param model to consult: contract.requires is
+    // capabilities and contract.params is only an allow-list, so we can say a
+    // step is blank but never which blank matters.
+    let blank = '';
+    if (!keys.length && AC && typeof AC.getCommandContract === 'function') {
+      try {
+        const declared = (AC.getCommandContract(step.commandId) || {}).params || [];
+        if (declared.length) blank = ' - nothing set; say "set step ' + (index + 1) + ' ' + declared[0] + ' to ..."';
+      } catch (_) {}
+    }
     const detail = readiness.detail ? (' - ' + readiness.detail) : '';
-    return status + ' ' + (index + 1) + '. ' + (command.label || step.commandId) + params + detail;
+    return status + ' ' + (index + 1) + '. ' + (command.label || step.commandId) + params + blank + detail;
   }).join('\n');
   const intro = prefix || (t('chat_guide.plan_confirm') || 'That takes a few steps. Here is my plan:');
   const footer = blocked
