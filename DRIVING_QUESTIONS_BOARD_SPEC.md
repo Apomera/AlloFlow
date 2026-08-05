@@ -347,9 +347,15 @@ and it inherits whatever retention, export and sharing behaviour that path alrea
 
 ## 9. Rough phasing
 
-- **Phase 1 — server.** `question_board` type in `normalizeAssignmentActivityConfig`,
-  items array with server-side size clamping against `MAX_DOC_CHARS`, per-item status
-  write. Testable without any UI.
+- **Phase 0 — the contract.** Write the invariant list (§10.3) and the provider
+  interface *before* either backend. Both adapters implement it; the conformance suite
+  targets it. Skipping this is how the two paths drift.
+- **Phase 1a — mailbox adapter.** `question_board` type in
+  `normalizeAssignmentActivityConfig`, items array with server-side size clamping
+  against `MAX_DOC_CHARS`, per-item status write. Testable without any UI.
+- **Phase 1b — Firebase adapter + rules.** Item subcollection (§10.2) and the
+  `firestore.rules` invariants. **Required scope, not deferred** — parity is decided.
+  Ships behind the same contract, verified by the same conformance suite as 1a.
 - **Phase 2 — student surface.** Join by code, read prompt, post, see own items, see
   approved items. **Start by evaluating the annotation-suite sticky-note component
   (§1.4) for reuse** — its keyboard-accessible drag, contrast-checked palette and
@@ -400,8 +406,7 @@ an acceptable difference.
    them below the client.
 3. **Firebase parity is gated on real `firestore.rules` work** — held items must be
    unreadable by participants, item writes must be attributable and capped, and status
-   transitions must be teacher-only. Until those exist, the Firebase path should be
-   treated as unsupported for boards, not as a working alternative.
+   transitions must be teacher-only.
 4. **Prefer mailbox as the default for this feature**, on enforcement grounds alone.
    (An earlier draft also argued this on privacy grounds; that argument is withdrawn —
    see §8.3, the Firebase instance is Canvas-provisioned, not AlloFlow-owned. The
@@ -410,6 +415,58 @@ an acceptable difference.
 Latency is not a parity concern here. The mailbox's version-delta poll pump plus RTC
 nudge is invisible for async posting; it would only matter for continuous presence,
 which is out of scope (§6).
+
+### 10.1 DECIDED: both transports are first-class
+
+Aaron's call: full parity, both pathways supported. The rules work is therefore
+**required scope, not a later phase**, and the plan below changes accordingly.
+
+### 10.2 The consequence parity forces on the data model
+
+The two transports filter at different granularities, and this is not a detail:
+
+- **Mailbox filters server-side.** `summary.responses` is *computed* in Apps Script
+  before anything is sent (`Code.gs:1312`), so a held item never leaves the server. A
+  single document with a mixed held/approved map is perfectly safe.
+- **Firestore rules gate whole documents, not fields.** A participant permitted to read
+  a board document reads *everything in it*. A single doc containing held and approved
+  items therefore **cannot** hide the held ones, no matter how the rules are written.
+
+So parity forces the Firebase layout to separate items at document granularity —
+`boards/{boardId}/items/{itemId}`, one doc per item, with a rule roughly of the shape
+"readable if `status == 'approved'` or `resource.data.uid == request.auth.uid`". The
+existing rules already distinguish host from participant (`authed()`,
+`isHost()`, `request.resource.data.hostId == request.auth.uid`, `firestore.rules:156-162`),
+so the helpers are there to build on.
+
+That layout is **wrong for the mailbox**, where `MAX_DGET_DOCS = 12` caps watched docs
+per poll and a doc-per-item would blow straight through it. The mailbox keeps its single
+doc with the responses map.
+
+**This divergence is fine, and it is exactly what the provider contract is for.** The
+contract says *"give me the items this actor may see."* The mailbox adapter satisfies it
+with the server-computed summary; the Firebase adapter satisfies it with a
+rules-enforced subcollection query. The UI never learns which. Physical layouts differ;
+observable behaviour does not.
+
+### 10.3 Keeping two enforcement implementations honest
+
+Two implementations of the same invariants will drift. Two defences, both cheap:
+
+1. **Write the invariants down once, as the authoritative list**, and have both
+   implementations cite it. Minimum set: held items unreadable by peers; an item is
+   always readable by its own author; `status` and `answered` writable only by the host;
+   item writes attributable to the acting uid and not forgeable; per-student item cap;
+   participant cap; participant rate limit.
+2. **One conformance suite, run against both adapters.** Same tests, two backends —
+   the only real defence against drift, and the pattern the standards provider already
+   established in this repo.
+
+Known asymmetry to decide at build time rather than discover: **per-student item caps
+and rate limits are awkward in Firestore rules**, which cannot count prior documents
+without a maintained counter field. Either carry a per-student counter the rules
+validate as monotonic, or accept looser enforcement on that one axis on the Firebase
+path and document it explicitly. Do not let it silently differ.
 
 ## 11. Open questions for build time
 
