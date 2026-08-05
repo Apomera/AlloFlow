@@ -1134,14 +1134,46 @@ Its link target had to come from page 85's annotations, since that is where
 the second half of the paragraph is printed. The page-85 tranche must NOT
 re-author it.
 
-### NEXT: page 85 onward
+### Session 26 (2026-08-04) - page 85 - tranche-26 - 25 blocks - VALIDATED (merged)
 
-Page 85: identity theft reporting, checking refund status, making payments,
-"What if I can't pay now?", filing an amended return, and TAS. **Do not
-re-author the "Using direct deposit" paragraph carried into tranche 25.** Then
-86 (Interest and Penalties - a 14pt head that nests under How To Get Tax Help
-by the document's own structure, like Third Party Designee in session 20) and
-87 (Refund Information, an 18pt top-level TOC entry, so level 2).
+How To Get Tax Help continued: identity theft, refund status, making a
+payment, paying late, amended returns, notices, and contacting a local TAC.
+`merge-plans t01..t26` -> 1,278 blocks, `ok: true`, **pages 1-85 covered**,
+zero heading skips.
+
+**The most link-dense page of the rebuild: 28 Link annotations, NINE of them
+phrase links with no visible URL at all.** The entire payment-options list
+works that way - "IRS Direct Pay", "Debit Card, Credit Card, or Digital
+Wallet", "Electronic Funds Withdrawal", "Electronic Federal Tax Payment
+System", "Check or Money Order", "Cash" and "Same-Day Wire" each carry their
+own target, as do "Digital assets", "online payment agreement" and "Offer in
+Compromise Pre-Qualifier". Reading the visible text would have produced a list
+of seven payment methods with no way to reach any of them.
+
+**One target is deliberately not normalised.** Every other link on the page
+resolves to a `www.irs.gov` address; the Offer in Compromise Pre-Qualifier
+resolves to `irs.gov/oictool` with NO www. That is what the annotation
+contains, and quietly "fixing" it to match its neighbours would be inventing a
+URL.
+
+**Session 25's lesson is now a checked-in tool, not a note.**
+`mcp-testing/tools/carried_block_check.cjs` splits a receiving page's recall
+shortfall three ways: words present in the block the previous tranche carried,
+page furniture, and anything left over. Only the leftover needs
+investigating. On this page: recall 0.9366, **60 shortfall instances = 54
+carried + 6 furniture + 0 unexplained**. Run it on any page that receives a
+spanning block instead of eyeballing the token list.
+
+### NEXT: pages 86-87, then the schedules
+
+Page 86: Interest and Penalties, with Interest and Penalties as 12pt subheads
+and four run-in leads (Late filing, Late payment of tax, Frivolous return,
+Other). It is a 14pt head that nests under How To Get Tax Help by the
+document's own structure, like Third Party Designee in session 20. **Do not
+re-author the "Contacting your local TAC" paragraph carried into tranche 26** -
+run `carried_block_check.cjs` on page 86 against tranche 26 to confirm the
+shortfall. Page 87 is Refund Information, an 18pt top-level TOC entry, so
+level 2; it carries two links (IRS.gov/Refunds, IRS.gov/Spanish) and a TIP.
 
 Then 88-117, the instructions for Schedules 1, 1-A, 2 and 3, the largest
 remaining block. Then the back matter: Tax Topics (118), the

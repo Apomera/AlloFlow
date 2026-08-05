@@ -1,0 +1,547 @@
+{
+ "schema_version": "1.0",
+ "document": {
+  "title": "2025 Instructions for Form 1040 (and 1040-SR)",
+  "language": "en",
+  "source_page_count": 126,
+  "source_sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a",
+  "document_type": "booklet",
+  "subject": "Internal Revenue Service instructions for the 2025 Form 1040 and Form 1040-SR, including the instructions for Schedules 1 through 3.",
+  "variant": "original"
+ },
+ "blocks": [
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Reporting and resolving your tax-related identity theft issues",
+   "source_page": 85
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Tax-related identity theft happens when someone steals your personal information to commit tax fraud. Your taxes can be affected if your SSN is used to file a fraudulent return or to claim a refund or credit.",
+    "The IRS doesn’t initiate contact with taxpayers by email, text messages (including shortened links), telephone calls, or social media channels to request or verify personal or financial information. This includes requests for personal identification numbers (PINs), passwords, or similar information for credit cards, banks, or other financial accounts.",
+    "Go to IRS.gov/IdentityTheft, the IRS Identity Theft Central webpage, for information on identity theft and data security protection for taxpayers, tax professionals, and businesses. If your SSN has been lost or stolen or you suspect you’re a victim of tax-related identity theft, you can learn what steps you should take.",
+    "Get an Identity Protection PIN (IP PIN). IP PINs are six-digit numbers assigned to taxpayers to help prevent the misuse of their SSNs on fraudulent federal income tax returns. When you have an IP PIN, it prevents someone else from filing a tax return with your SSN. To learn more, go to IRS.gov/IPPIN."
+   ],
+   "source_page": 85,
+   "item_runs": [
+    [
+     {
+      "text": "Tax-related identity theft happens when someone steals your personal information to commit tax fraud. Your taxes can be affected if your SSN is used to file a fraudulent return or to claim a refund or credit.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "The IRS doesn’t initiate contact with taxpayers by email, text messages (including shortened links), telephone calls, or social media channels to request or verify personal or financial information. This includes requests for personal identification numbers (PINs), passwords, or similar information for credit cards, banks, or other financial accounts.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "Go to ",
+      "style": "normal"
+     },
+     {
+      "text": "IRS.gov/IdentityTheft",
+      "style": "normal",
+      "href": "https://www.irs.gov/identitytheft"
+     },
+     {
+      "text": ", the IRS Identity Theft Central webpage, for information on identity theft and data security protection for taxpayers, tax professionals, and businesses. If your SSN has been lost or stolen or you suspect you’re a victim of tax-related identity theft, you can learn what steps you should take.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "Get an Identity Protection PIN (IP PIN). IP PINs are six-digit numbers assigned to taxpayers to help prevent the misuse of their SSNs on fraudulent federal income tax returns. When you have an IP PIN, it prevents someone else from filing a tax return with your SSN. To learn more, go to ",
+      "style": "normal"
+     },
+     {
+      "text": "IRS.gov/IPPIN",
+      "style": "normal",
+      "href": "https://www.irs.gov/ippin"
+     },
+     {
+      "text": ".",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Ways to check on the status of your refund",
+   "source_page": 85
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Go to IRS.gov/Refunds.",
+    "Download the official IRS2Go app to your mobile device to check your refund status.",
+    "Call the automated refund hotline at 800-829-1954."
+   ],
+   "source_page": 85,
+   "item_runs": [
+    [
+     {
+      "text": "Go to ",
+      "style": "normal"
+     },
+     {
+      "text": "IRS.gov/Refunds",
+      "style": "normal",
+      "href": "https://www.irs.gov/refunds"
+     },
+     {
+      "text": ".",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "Download the official IRS2Go app to your mobile device to check your refund status.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "Call the automated refund hotline at 800-829-1954.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "Caution. The IRS can’t issue refunds before mid-February for returns that claimed the EITC or the additional child tax credit (ACTC). This applies to the entire refund, not just the portion associated with these credits.",
+   "runs": [
+    {
+     "text": "Caution.",
+     "style": "strong"
+    },
+    {
+     "text": " The IRS can’t issue refunds before mid-February for returns that claimed the EITC or the additional child tax credit (ACTC). This applies to the entire refund, not just the portion associated with these credits.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 85
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Making a tax payment",
+   "source_page": 85
+  },
+  {
+   "type": "paragraph",
+   "text": "The IRS recommends paying electronically whenever possible. Options to pay electronically are included in the list below. Payments of U.S. tax must be remitted to the IRS in U.S. dollars. Digital assets are not accepted. Go to IRS.gov/Payments for information on how to make a payment using any of the following options.",
+   "source_page": 85,
+   "runs": [
+    {
+     "text": "The IRS recommends paying electronically whenever possible. Options to pay electronically are included in the list below. Payments of U.S. tax must be remitted to the IRS in U.S. dollars. ",
+     "style": "normal"
+    },
+    {
+     "text": "Digital assets",
+     "style": "normal",
+     "href": "https://www.irs.gov/digitalassets"
+    },
+    {
+     "text": " are ",
+     "style": "normal"
+    },
+    {
+     "text": "not",
+     "style": "strong"
+    },
+    {
+     "text": " accepted. Go to ",
+     "style": "normal"
+    },
+    {
+     "text": "IRS.gov/Payments",
+     "style": "normal",
+     "href": "https://www.irs.gov/payments"
+    },
+    {
+     "text": " for information on how to make a payment using any of the following options.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "IRS Direct Pay: Pay taxes from your bank account. It’s free and secure, and no sign-in is required. You can change or cancel within 2 days of scheduled payment.",
+    "Debit Card, Credit Card, or Digital Wallet: Choose an approved payment processor to pay online or by phone.",
+    "Electronic Funds Withdrawal: Schedule a payment when filing your federal taxes using tax return preparation software or through a tax professional.",
+    "Electronic Federal Tax Payment System: This is the best option for businesses. Enrollment is required.",
+    "Check or Money Order: Mail your payment to the address listed on the notice or instructions.",
+    "Cash: You may be able to pay your taxes with cash at a participating retail store.",
+    "Same-Day Wire: You may be able to do same-day wire from your financial institution. Contact your financial institution for availability, cost, and time frames."
+   ],
+   "source_page": 85,
+   "item_runs": [
+    [
+     {
+      "text": "IRS Direct Pay",
+      "style": "normal",
+      "href": "https://www.irs.gov/directpay"
+     },
+     {
+      "text": ": Pay taxes from your bank account. It’s free and secure, and no sign-in is required. You can change or cancel within 2 days of scheduled payment.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "Debit Card, Credit Card, or Digital Wallet",
+      "style": "normal",
+      "href": "https://www.irs.gov/paybycard"
+     },
+     {
+      "text": ": Choose an approved payment processor to pay online or by phone.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "Electronic Funds Withdrawal",
+      "style": "normal",
+      "href": "https://www.irs.gov/efw"
+     },
+     {
+      "text": ": Schedule a payment when filing your federal taxes using tax return preparation software or through a tax professional.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "Electronic Federal Tax Payment System",
+      "style": "normal",
+      "href": "https://www.irs.gov/eftps"
+     },
+     {
+      "text": ": This is the best option for businesses. Enrollment is required.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "Check or Money Order",
+      "style": "normal",
+      "href": "https://www.irs.gov/paybymail"
+     },
+     {
+      "text": ": Mail your payment to the address listed on the notice or instructions.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "Cash",
+      "style": "normal",
+      "href": "https://www.irs.gov/paywithcash"
+     },
+     {
+      "text": ": You may be able to pay your taxes with cash at a participating retail store.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "Same-Day Wire",
+      "style": "normal",
+      "href": "https://www.irs.gov/samedaywire"
+     },
+     {
+      "text": ": You may be able to do same-day wire from your financial institution. Contact your financial institution for availability, cost, and time frames.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "Note: The IRS uses the latest encryption technology to ensure that the electronic payments you make online, by phone, or from a mobile device using the IRS2Go app are safe and secure. Paying electronically is quick and easy.",
+   "runs": [
+    {
+     "text": "Note:",
+     "style": "strong"
+    },
+    {
+     "text": " The IRS uses the latest encryption technology to ensure that the electronic payments you make online, by phone, or from a mobile device using the IRS2Go app are safe and secure. Paying electronically is quick and easy.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 85
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "What if I can’t pay now?",
+   "source_page": 85
+  },
+  {
+   "type": "paragraph",
+   "text": "Go to IRS.gov/Payments for more information about your options.",
+   "source_page": 85,
+   "runs": [
+    {
+     "text": "Go to ",
+     "style": "normal"
+    },
+    {
+     "text": "IRS.gov/Payments",
+     "style": "normal",
+     "href": "https://www.irs.gov/payments"
+    },
+    {
+     "text": " for more information about your options.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Apply for an online payment agreement (IRS.gov/OPA) to meet your tax obligation in monthly installments if you can’t pay your taxes in full today. Once you complete the online process, you will receive immediate notification of whether your agreement has been approved.",
+    "Use the Offer in Compromise Pre-Qualifier to see if you can settle your tax debt for less than the full amount you owe. For more information on the Offer in Compromise program, go to IRS.gov/OIC."
+   ],
+   "source_page": 85,
+   "item_runs": [
+    [
+     {
+      "text": "Apply for an ",
+      "style": "normal"
+     },
+     {
+      "text": "online payment agreement",
+      "style": "normal",
+      "href": "https://www.irs.gov/paymentplans"
+     },
+     {
+      "text": " (",
+      "style": "normal"
+     },
+     {
+      "text": "IRS.gov/OPA",
+      "style": "normal",
+      "href": "https://www.irs.gov/opa"
+     },
+     {
+      "text": ") to meet your tax obligation in monthly installments if you can’t pay your taxes in full today. Once you complete the online process, you will receive immediate notification of whether your agreement has been approved.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "Use the ",
+      "style": "normal"
+     },
+     {
+      "text": "Offer in Compromise Pre-Qualifier",
+      "style": "normal",
+      "href": "https://irs.gov/oictool"
+     },
+     {
+      "text": " to see if you can settle your tax debt for less than the full amount you owe. For more information on the Offer in Compromise program, go to ",
+      "style": "normal"
+     },
+     {
+      "text": "IRS.gov/OIC",
+      "style": "normal",
+      "href": "https://www.irs.gov/oic"
+     },
+     {
+      "text": ".",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Filing an amended return",
+   "source_page": 85
+  },
+  {
+   "type": "paragraph",
+   "text": "Go to IRS.gov/1040X for information and updates.",
+   "source_page": 85,
+   "runs": [
+    {
+     "text": "Go to ",
+     "style": "normal"
+    },
+    {
+     "text": "IRS.gov/1040X",
+     "style": "normal",
+     "href": "https://www.irs.gov/1040x"
+    },
+    {
+     "text": " for information and updates.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Checking the status of your amended return",
+   "source_page": 85
+  },
+  {
+   "type": "paragraph",
+   "text": "Go to IRS.gov/WMAR to track the status of Form 1040-X amended returns.",
+   "source_page": 85,
+   "runs": [
+    {
+     "text": "Go to ",
+     "style": "normal"
+    },
+    {
+     "text": "IRS.gov/WMAR",
+     "style": "normal",
+     "href": "https://www.irs.gov/wmar"
+    },
+    {
+     "text": " to track the status of Form 1040-X amended returns.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "Caution. It can take up to 3 weeks from the date you filed your amended return for it to show up in our system, and processing it can take up to 16 weeks.",
+   "runs": [
+    {
+     "text": "Caution.",
+     "style": "strong"
+    },
+    {
+     "text": " It can take up to 3 weeks from the date you filed your amended return for it to show up in our system, and processing it can take up to 16 weeks.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 85
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Understanding an IRS notice or letter you’ve received",
+   "source_page": 85
+  },
+  {
+   "type": "paragraph",
+   "text": "Go to IRS.gov/Notices to find additional information about responding to an IRS notice or letter.",
+   "source_page": 85,
+   "runs": [
+    {
+     "text": "Go to ",
+     "style": "normal"
+    },
+    {
+     "text": "IRS.gov/Notices",
+     "style": "normal",
+     "href": "https://www.irs.gov/notices"
+    },
+    {
+     "text": " to find additional information about responding to an IRS notice or letter.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "IRS Document Upload Tool",
+   "source_page": 85
+  },
+  {
+   "type": "paragraph",
+   "text": "You may be able to use the Document Upload Tool to respond digitally to eligible IRS notices and letters by securely uploading required documents online through IRS.gov. For more information, go to IRS.gov/DUT.",
+   "source_page": 85,
+   "runs": [
+    {
+     "text": "You may be able to use the Document Upload Tool to respond digitally to eligible IRS notices and letters by securely uploading required documents online through IRS.gov. For more information, go to ",
+     "style": "normal"
+    },
+    {
+     "text": "IRS.gov/DUT",
+     "style": "normal",
+     "href": "https://www.irs.gov/dut"
+    },
+    {
+     "text": ".",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Schedule LEP",
+   "source_page": 85
+  },
+  {
+   "type": "paragraph",
+   "text": "You can use Schedule LEP (Form 1040), Request for Change in Language Preference, to state a preference to receive notices, letters, or other written communications from the IRS in an alternative language. You may not immediately receive written communications in the requested language. The IRS’s commitment to LEP taxpayers is part of a multi-year timeline that began providing translations in 2023. You will continue to receive communications, including notices and letters, in English until they are translated to your preferred language.",
+   "source_page": 85
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Contacting your local TAC",
+   "source_page": 85
+  },
+  {
+   "type": "paragraph",
+   "text": "Keep in mind, many questions can be answered on IRS.gov without visiting a TAC. Go to IRS.gov/LetUsHelp for the topics people ask about most. If you still need help, TACs provide tax help when a tax issue can’t be handled online or by phone. All TACs now provide service by appointment, so you’ll know in advance that you can get the service you need without long wait times. Before you visit, go to IRS.gov/TAC to find the nearest TAC and to check hours, available services, and appointment options. Or, on the IRS2Go app, under the Stay Connected tab, choose the Contact Us option and click on “Local Offices.”",
+   "source_page": 85,
+   "runs": [
+    {
+     "text": "Keep in mind, many questions can be answered on IRS.gov without visiting a TAC. Go to ",
+     "style": "normal"
+    },
+    {
+     "text": "IRS.gov/LetUsHelp",
+     "style": "normal",
+     "href": "https://www.irs.gov/letushelp"
+    },
+    {
+     "text": " for the topics people ask about most. If you still need help, TACs provide tax help when a tax issue can’t be handled online or by phone. All TACs now provide service by appointment, so you’ll know in advance that you can get the service you need without long wait times. Before you visit, go to ",
+     "style": "normal"
+    },
+    {
+     "text": "IRS.gov/TAC",
+     "style": "normal",
+     "href": "https://www.irs.gov/tac"
+    },
+    {
+     "text": " to find the nearest TAC and to check hours, available services, and appointment options. Or, on the IRS2Go app, under the Stay Connected tab, choose the Contact Us option and click on “Local Offices.”",
+     "style": "normal"
+    }
+   ]
+  }
+ ],
+ "review_notes": [
+  "TRANCHE 26 OF A MULTI-SESSION REBUILD. This plan covers printed page 85, continuing How To Get Tax Help. It carries no document title by design — only tranche 1 does — so this file validates through merge-plans rather than standalone. No partial rebuild is delivered.",
+  "THE “USING DIRECT DEPOSIT” PARAGRAPH AT THE TOP OF THIS PAGE IS NOT REPEATED. It was authored whole at page 84 in tranche 25. A recall check on page 85 alone will therefore report its words as uncovered; they are covered by the previous tranche.",
+  "THE MOST LINK-DENSE PAGE OF THE REBUILD SO FAR: 28 Link annotations, and NINE of them are phrase links with no visible URL at all. The whole payment-options list works this way — “IRS Direct Pay”, “Debit Card, Credit Card, or Digital Wallet”, “Electronic Funds Withdrawal”, “Electronic Federal Tax Payment System”, “Check or Money Order”, “Cash” and “Same-Day Wire” each carry their own target, as do “Digital assets”, “online payment agreement” and “Offer in Compromise Pre-Qualifier”. Reading the visible text would have produced a list of seven payment methods with no way to reach any of them.",
+  "ONE TARGET IS DELIBERATELY NOT NORMALISED. Every other link on the page resolves to a www.irs.gov address, but the Offer in Compromise Pre-Qualifier resolves to irs.gov/oictool with NO www. That is what the annotation contains and it is reproduced exactly; quietly “fixing” it to match its neighbours would be inventing a URL.",
+  "TEN RUN-IN LEADS BECOME LEVEL-3 HEADINGS, with the trailing period dropped and the question mark kept where the source uses one (“What if I can't pay now?”). Level 3 because “How To Get Tax Help” is level 2, so these are its direct children.",
+  "THE “Note:” LABEL IS SET IN A DIFFERENT FACE FROM THE OTHER LEADS — sans-serif, where the run-in topic leads on this page are bold serif. It introduces a remark about the security of electronic payments rather than opening a new topic, so it is authored as a callout paragraph with a strong “Note:” lead, keeping the printed colon, rather than promoted to a heading.",
+  "TWO CAUTION BOXES INTERRUPT THEIR TOPICS IN PRINT and are placed after the content they qualify: the mid-February refund hold sits after the refund-status list, and the amended-return processing times after the IRS.gov/WMAR pointer. Both are authored as paragraphs opening with a strong “Caution.” in sentence case, as established in tranche 3.",
+  "“CONTACTING YOUR LOCAL TAC” SPANS THE 85-86 BREAK and is authored whole here. Its IRS.gov/TAC target had to be taken from page 86's annotations, since that is where the second half of the paragraph is printed. The page-86 tranche must not re-author it.",
+  "PAGE FURNITURE OMITTED as in every earlier tranche: the printed page number and the standing “Need more information or forms? Visit IRS.gov.” footer. Soft hyphens removed and justified line-break hyphens closed, while genuine compounds are kept (tax-related, six-digit, mid-February, Same-Day, sign-in, multi-year, 1040-X)."
+ ]
+}
