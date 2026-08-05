@@ -1401,20 +1401,48 @@ what introduces it. Kept rather than reordered: the "Before you begin" note
 already sends a reader to the Exceptions in the line instructions, so the
 worksheet points at its own context.
 
-### NEXT: page 95 onward
+### Session 35 (2026-08-05) - page 95 - tranche-35 - 22 blocks - VALIDATED (merged)
 
-Schedule 1's remaining adjustments (lines 18 through 26), then Schedule 1-A
-(101-110), Schedule 2 (111-114) and Schedule 3 (115-117), each a top-level TOC
-entry opening at level 2. Then the back matter: Tax Topics (118), the
+The end of the line 17 discussion, then Schedule 1 lines 18, 19a-19c and 20.
+`merge-plans t01..t35` -> 1,472 blocks, `ok: true`, **pages 1-95 covered**,
+zero heading skips. Recall 0.9839, all fifteen shortfall instances explained:
+page furniture plus the ten ordered-list markers the list structure now
+generates.
+
+**The ten-item list under line 20 is WHOLLY on this page, and confirming that
+took reading column 3 to its end.** A truncated dump stops at item 6 mid-word
+("You must file a joint return to de-") and page 96 opens on an unrelated
+fragment - together a very convincing case that the list spans the break. It
+does not: items 6 through 10 and the following run-in lead all sit in the rest
+of column 3. **This is the third page in a row where the truncated-dump
+inference was wrong**, in three different directions (t31 invented an ending,
+t33 concluded a continuation was missing, t35 would have split an intact
+list).
+
+**"Were You Covered by a Retirement Plan?" is what spans 95-96**, not the
+list. Authored whole here, so the page-96 tranche must open at "The
+'Retirement plan' box in box 13 of your Form W-2...".
+
+**Line 19b has no instruction of its own.** The heading pairs 19a, 19b and 19c
+as the source does, but only 19a and 19c carry text. 19b is the recipient's
+SSN field and the printed instructions say nothing about it.
+
+**Third Tax Topic link in three tranches with no visible URL** - Tax Topic 452
+resolves to irs.gov/taxtopics/tc452.html. Reading the text alone leaves a dead
+cross-reference every time.
+
+### NEXT: page 96 onward
+
+Page 96 is short (64 items): the rest of the retirement-plan coverage
+discussion, "Married persons filing separately", and a TIP about the saver's
+credit. **Do not re-author the "Were You Covered by a Retirement Plan?"
+paragraph**; open at "The 'Retirement plan' box in box 13...". Page 97 looks
+like a worksheet (bulleted, 97 items) - likely the IRA Deduction Worksheet, so
+the tranche-30/34 shape should apply.
+
+Then Schedule 1's remaining adjustments (98-100), Schedule 1-A (101-110),
+Schedule 2 (111-114) and Schedule 3 (115-117), each a top-level TOC entry
+opening at level 2. Then the back matter: Tax Topics (118), the
 Disclosure/Privacy Act notice (120), Major Categories of Federal Income and
 Outlays (122), and the MECHANICAL Index (123-126). Do not hand-author the
 Index.
-
-**Standing reminders for the schedule pages.** Read each column to its END
-before authoring - three blocks so far have run past a full-page insert or
-finished in a fragment that a truncated dump hides (tranches 29, 31, 33).
-Never infer a continuation; check the next page. Run `carried_block_check.cjs`
-on every page that receives a spanning block, against the tranche that carried
-it. And take every link target from the page's own annotations - roughly a
-third of them in this document resolve somewhere the visible text does not
-suggest.
