@@ -1845,13 +1845,67 @@ limitation); the numbering restarts in the source and the headings are
 deliberately not disambiguated, because the cross-references say "Example 2"
 and "Example 3" plainly.
 
-### NEXT: page 108 onward
+### Session 48 (2026-08-05) - page 108 - tranche-48 - 19 blocks - VALIDATED (merged)
 
-Page 108 carries TWO full-page worksheets at the top - "Qualified Overtime
-Compensation From More Than One Employer" (columns (a) name of employer, (b)
-qualified overtime reported on Form W-2 box 1) and a second, narrower payor
-worksheet ((a) Payor's name) - then Example 5 and onward. **Do not re-author
-Example 4**, which finishes below both worksheets.
+The two Qualified Overtime Compensation From More Than One Employer/Payor
+worksheets, Example 5, the SSN requirement, and Schedule 1-A lines 14a, 14b,
+and 18. `merge-plans t01..t48` -> 1,684 blocks, `ok: true`, **pages 1-108
+covered**, zero heading skips. Recall 0.9305; carried-block check against
+tranche 47: **47 shortfall instances = 23 carried + 4 furniture + 20
+"unexplained"**.
+
+> **ALL TWENTY "UNEXPLAINED" TOKENS ARE DEGRADED SOURCE, NOT LOST CONTENT** -
+> the clearest case since page 88. They are cross-column glue
+> (`compensamore`, `compensaon`, `comqualified`, `comdetermining`, `comfor`,
+> `incluline`, `over108`, `over1099misc`, `schedline`, `totime`,
+> `unqualified`) and hyphen halves whose partners landed in another column
+> (`pensation` x2, `tion` x2, `ded`, `der`, `plete`, `tal`, `ule`). **None of
+> these strings exists in the printed document.** `over108` is the folio glued
+> to "over-"; `schedline` is "Sched-" glued to "Line". Verified explicitly
+> rather than asserted: the plan contains "complete the qualified overtime",
+> "Schedule 1-A, line 14b", "the total amount from Form 1099-NEC", "not
+> included in box 1 of Form W-2", "deferred under a qualified retirement
+> plan", and "Determining the amount of qualified overtime compensation for
+> 2025", and contains **zero** of the glue strings.
+
+**This is the crossers-in-the-middle case that round 9 deliberately left
+open.** The page carries a full-page worksheet at the top AND a second across
+the MIDDLE. The round-9 peel handles furniture at an EDGE of a region; a
+crosser stranded mid-region falls through to the crossed cut, which is what
+happens here, and the Line 14a and Line 14b paragraphs - adjacent columns -
+interleave:
+
+> "...including your regular wages plus any qualified over- **108 Qualified
+> Overtime Compensation From More Than One Payor Worksheet**... time
+> compensation. Enter on line 14a qualified overtime compensation. Enter only
+> the qualified overtime compensa- on Line 14b only the qualified overtime..."
+
+Each column was banded and read top to bottom instead. **Line 14a runs from
+column 1 into column 2 and line 14b from column 2 into column 3**; both are
+authored whole. If a round 10 is ever run on the splitter, this page is the
+fixture: it is the same defect class as p88 but with the crosser mid-page
+rather than at the top.
+
+**Both worksheets keep their printed position**, unlike tranche 45. The test
+there was whether an insert splits an argument; these two do not - Example 4,
+the only block they interrupt, is already complete in tranche 47 - so print
+order stands and no departure needs justifying. The cost is that both
+worksheet headings sit at level 5 under "Determining the amount..." rather
+than under the line instructions that name them, and moving two full-page
+tables to fix that is a larger intervention than the imprecision is worth.
+
+**The two "Line 2." instructions carry the source's own inconsistency**: the
+employer worksheet reads "...column (b), and enter..." and the payor worksheet
+"...column (b) and enter..." - one comma, one not - and **neither ends with a
+period**. Checked in the item dump and reproduced as printed, the same call
+made for line 24z in tranche 40.
+
+### NEXT: page 109 onward
+
+Page 109 continues Schedule 1-A: Part IV (No Tax on Car Loan Interest) is
+expected next. Nothing is carried out of tranche 48 - line 18's TIP closes the
+page - but **check the 108-109 break before authoring**, since the last three
+pages have each carried a block across.
 
 Then the rest of Schedule 1-A (106-110), Schedule 2 (111-114) and Schedule 3
 (115-117), each a top-level TOC entry opening at level 2. Then the back

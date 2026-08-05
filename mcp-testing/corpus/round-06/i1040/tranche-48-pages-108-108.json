@@ -1,0 +1,264 @@
+{
+ "schema_version": "1.0",
+ "document": {
+  "title": "2025 Instructions for Form 1040 (and 1040-SR)",
+  "language": "en",
+  "source_page_count": 126,
+  "source_sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a",
+  "document_type": "booklet",
+  "subject": "Internal Revenue Service instructions for the 2025 Form 1040 and Form 1040-SR, including the instructions for Schedules 1 through 3.",
+  "variant": "original"
+ },
+ "blocks": [
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Qualified Overtime Compensation From More Than One Employer Worksheet",
+   "source_page": 108
+  },
+  {
+   "type": "table",
+   "caption": "Qualified Overtime Compensation From More Than One Employer Worksheet, line 1: one row per employer, A through E. Both columns are entry spaces you fill in; they are blank in the printed form. Keep this worksheet for your records. The total is taken on line 2, given just after this table.",
+   "columns": [
+    "Row",
+    "(a) Name of employer",
+    "(b) Qualified overtime reported on Form W-2, box 1"
+   ],
+   "rows": [
+    [
+     "A",
+     "",
+     ""
+    ],
+    [
+     "B",
+     "",
+     ""
+    ],
+    [
+     "C",
+     "",
+     ""
+    ],
+    [
+     "D",
+     "",
+     ""
+    ],
+    [
+     "E",
+     "",
+     ""
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 108
+  },
+  {
+   "type": "paragraph",
+   "text": "Line 2. Add the amounts from lines 1A through 1E, column (b), and enter this amount on Schedule 1-A, line 14a",
+   "source_page": 108,
+   "runs": [
+    {
+     "text": "Line 2.",
+     "style": "strong"
+    },
+    {
+     "text": " Add the amounts from lines 1A through 1E, column (b), and enter this amount on Schedule 1-A, line 14a",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Qualified Overtime Compensation From More Than One Payor Worksheet",
+   "source_page": 108
+  },
+  {
+   "type": "table",
+   "caption": "Qualified Overtime Compensation From More Than One Payor Worksheet, line 1: one row per payor, A through E. Both columns are entry spaces you fill in; they are blank in the printed form. Keep this worksheet for your records. The total is taken on line 2, given just after this table.",
+   "columns": [
+    "Row",
+    "(a) Payor’s name",
+    "(b) Qualified overtime reported on Form 1099-NEC, box 1, or Form 1099-MISC, box 3"
+   ],
+   "rows": [
+    [
+     "A",
+     "",
+     ""
+    ],
+    [
+     "B",
+     "",
+     ""
+    ],
+    [
+     "C",
+     "",
+     ""
+    ],
+    [
+     "D",
+     "",
+     ""
+    ],
+    [
+     "E",
+     "",
+     ""
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 108
+  },
+  {
+   "type": "paragraph",
+   "text": "Line 2. Add the amounts from lines 1A through 1E, column (b) and enter this amount on Schedule 1-A, line 14b",
+   "source_page": 108,
+   "runs": [
+    {
+     "text": "Line 2.",
+     "style": "strong"
+    },
+    {
+     "text": " Add the amounts from lines 1A through 1E, column (b) and enter this amount on Schedule 1-A, line 14b",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Example 5",
+   "source_page": 108
+  },
+  {
+   "type": "paragraph",
+   "text": "You work for a state government agency that is covered by a special overtime rule in section 7 of the FLSA. Your state agency pays compensatory time at a rate of one and one-half hours for each overtime hour worked. In 2025, you were paid wages of $4,500 for the compensatory time you took off during the year. You can include $1,500 when figuring your deduction for qualified overtime compensation ($4,500 divided by 3).",
+   "source_page": 108
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Valid SSN",
+   "source_page": 108
+  },
+  {
+   "type": "paragraph",
+   "text": "You and/or your spouse who received qualified overtime compensation must have a valid SSN to take this deduction. A valid SSN for purposes of the deduction for qualified overtime compensation is one that is valid for employment and that is issued by the SSA before the due date of your 2025 return (including extensions). For more information, see Valid SSN for No Tax on Tips, earlier.",
+   "source_page": 108,
+   "runs": [
+    {
+     "text": "You and/or your spouse who received qualified overtime compensation must have a valid SSN to take this deduction. A valid SSN for purposes of the deduction for qualified overtime compensation is one that is valid for employment and that is issued by the SSA before the due date of your 2025 return (including extensions). For more information, see ",
+     "style": "normal"
+    },
+    {
+     "text": "Valid SSN for No Tax on Tips",
+     "style": "emphasis"
+    },
+    {
+     "text": ", earlier.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 14a",
+   "source_page": 108
+  },
+  {
+   "type": "paragraph",
+   "text": "In most cases, the amount on Form W-2, box 1, includes all of your wages and compensation, including your regular wages plus any qualified overtime compensation. Enter on line 14a only the qualified overtime compensation amount that is included on Form W-2. Some employers may choose to provide the amount of qualified overtime compensation to employees using box 14 of Form W-2. See Determining the amount of qualified overtime compensation for 2025, earlier, to figure the amount to enter on Schedule 1-A, line 14a. Keep a copy of any document you relied on to support your calculation of qualified overtime compensation.",
+   "source_page": 108,
+   "runs": [
+    {
+     "text": "In most cases, the amount on Form W-2, box 1, includes all of your wages and compensation, including your regular wages plus any qualified overtime compensation. Enter on line 14a only the qualified overtime compensation amount that is included on Form W-2. Some employers may choose to provide the amount of qualified overtime compensation to employees using box 14 of Form W-2. See ",
+     "style": "normal"
+    },
+    {
+     "text": "Determining the amount of qualified overtime compensation for 2025",
+     "style": "emphasis"
+    },
+    {
+     "text": ", earlier, to figure the amount to enter on Schedule 1-A, line 14a. Keep a copy of any document you relied on to support your calculation of qualified overtime compensation.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "If you and/or your spouse received qualified overtime compensation from more than one employer in 2025, complete the Qualified Overtime Compensation From More Than One Employer Worksheet. If you received qualified overtime compensation that is not included in box 1 of Form W-2 (for example, overtime amounts that are deferred under a qualified retirement plan), enter that amount here. Keep a copy of any document you relied on to support your calculation of qualified overtime compensation.",
+   "source_page": 108
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 14b",
+   "source_page": 108
+  },
+  {
+   "type": "paragraph",
+   "text": "The amount on Form 1099-NEC, box 1, or Form 1099-MISC, box 3, is your nonemployee compensation or other income, including your compensation and other income plus any qualified overtime compensation. Enter on Line 14b only the qualified overtime compensation amount that is included in Form 1099-NEC, box 1, or Form 1099-MISC, box 3. Do not enter the total amount from Form 1099-NEC, box 1, or Form 1099-MISC, box 3. See Determining the amount of qualified overtime compensation for 2025, earlier, to figure the amount to enter on Schedule 1-A, line 14b. Keep a copy of any document you relied on to support your calculation of qualified overtime compensation.",
+   "source_page": 108,
+   "runs": [
+    {
+     "text": "The amount on Form 1099-NEC, box 1, or Form 1099-MISC, box 3, is your nonemployee compensation or other income, including your compensation and other income plus any qualified overtime compensation. Enter on Line 14b only the qualified overtime compensation amount that is included in Form 1099-NEC, box 1, or Form 1099-MISC, box 3. Do not enter the total amount from Form 1099-NEC, box 1, or Form 1099-MISC, box 3. See ",
+     "style": "normal"
+    },
+    {
+     "text": "Determining the amount of qualified overtime compensation for 2025",
+     "style": "emphasis"
+    },
+    {
+     "text": ", earlier, to figure the amount to enter on Schedule 1-A, line 14b. Keep a copy of any document you relied on to support your calculation of qualified overtime compensation.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "If you and/or your spouse received qualified overtime compensation from more than one payor in 2025, complete the Qualified Overtime Compensation From More Than One Payor Worksheet.",
+   "source_page": 108
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 18",
+   "source_page": 108
+  },
+  {
+   "type": "paragraph",
+   "text": "If the amount on line 18 is zero or less, your deduction for your qualified overtime compensation is not reduced. Skip lines 19 and 20 and enter the amount from Schedule 1-A, line 15, on Schedule 1-A, line 21.",
+   "source_page": 108
+  },
+  {
+   "type": "paragraph",
+   "text": "Tip. For more information on the qualified overtime deduction, see Notice 2025-69.",
+   "runs": [
+    {
+     "text": "Tip.",
+     "style": "strong"
+    },
+    {
+     "text": " For more information on the qualified overtime deduction, see Notice 2025-69.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 108
+  }
+ ],
+ "review_notes": [
+  "TRANCHE 48 OF A MULTI-SESSION REBUILD. This plan covers printed page 108: the two Qualified Overtime Compensation From More Than One Employer/Payor worksheets, Example 5, the SSN requirement, and Schedule 1-A lines 14a, 14b, and 18. It carries no document title by design — only tranche 1 does — so this file validates through merge-plans rather than standalone. No partial rebuild is delivered.",
+  "EXAMPLE 4's TAIL IS NOT REPEATED. It occupies the first six lines of column 1, below BOTH worksheets, and was authored whole at page 107 in tranche 47. Check the shortfall with carried_block_check.cjs against tranche 47.",
+  "THE READING ORDER WAS REBUILT FROM GEOMETRY, NOT TAKEN FROM THE COLUMN-AWARE TEXT. This page carries a full-page worksheet at the top AND a second one across the MIDDLE, and the column detector interleaves the Line 14a and Line 14b paragraphs, which sit in adjacent columns: “…including your regular wages plus any qualified over- 108 Qualified Overtime Compensation From More Than One Payor Worksheet… time compensation. Enter on line 14a qualified overtime compensation. Enter only the qualified overtime compensa- on Line 14b only the qualified overtime…”. A crosser stranded in the MIDDLE of a region is the case the round-9 peel deliberately does not handle, so each column was banded and read top to bottom instead. LINE 14a RUNS FROM COLUMN 1 INTO COLUMN 2 AND LINE 14b FROM COLUMN 2 INTO COLUMN 3; both are authored whole.",
+  "BOTH WORKSHEETS KEEP THEIR PRINTED POSITION at the head of the tranche, unlike tranche 45 where a paragraph was moved ahead of an insert. The test there was whether the insert split an argument; these two do not — Example 4, the only block they interrupt, is already complete in tranche 47 — so print order stands and no departure needs justifying. The cost is that both worksheet headings sit at level 5 under “Determining the amount of qualified overtime compensation for 2025” rather than under the line instructions that reference them by name; moving two full-page tables to fix that is a larger intervention than the imprecision is worth.",
+  "THE TWO “Line 2.” INSTRUCTIONS ARE REPRODUCED WITH THE SOURCE'S OWN INCONSISTENCY. The employer worksheet reads “…column (b), and enter…” and the payor worksheet “…column (b) and enter…” — one comma, one not — and NEITHER ends with a period. Checked in the item dump. Harmonising them would be editing tax instructions, the same call made for line 24z in tranche 40.",
+  "EVERY CELL IN BOTH GRIDS IS BLANK BY DESIGN — 5 rows x 2 entry columns each. Line 2 is a PARAGRAPH in both, not a table row, as in tranches 44 and 45: it is an instruction about the table with no cells under (a) and (b). “Keep for Your Records” is folded into each caption.",
+  "HEADING LEVELS: the two worksheets and Example 5 are level 5, siblings of tranche 47's Examples under “Determining the amount…” (level 4). “Valid SSN”, “Line 14a”, “Line 14b”, and “Line 18” are level 4, matching every other line instruction in this schedule. “Valid SSN” is printed exactly so and is NOT renamed to distinguish it from Part II's “Valid SSN for No Tax on Tips” — the cross-reference in its own text points at that other heading by its full name, so the two are already distinguishable.",
+  "PAGE FURNITURE OMITTED: the printed page number, which the failing column detector had dropped into the middle of the Line 14a paragraph. Soft hyphens removed and line-break hyphens closed, while genuine compounds are kept (W-2, 1099-NEC, 1099-MISC, 1-A, one-half, nonemployee)."
+ ]
+}
