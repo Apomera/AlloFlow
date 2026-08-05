@@ -229,6 +229,185 @@
         ]);
     }
 
+
+    // ── Phase 3: teacher surface ────────────────────────────────────────────
+
+    /**
+     * Validates a board the teacher is composing. Returns {config} or {errors},
+     * never a half-valid config — normalizeBoardConfig returns null for anything
+     * unusable, which is useless for telling a teacher WHAT is wrong, so the
+     * field-level reasons are produced here and the contract still has the final say.
+     */
+    function validateNewBoard(contract, draft) {
+        const d = draft || {};
+        const errors = {};
+        const prompt = contract.sanitizeText(d.prompt, contract.LIMITS.PROMPT_CHARS);
+        if (!prompt) errors.prompt = 'Give the board a driving question.';
+        const per = parseInt(d.itemsPerStudent, 10);
+        if (d.itemsPerStudent != null && (!isFinite(per) || per < 1)) {
+            errors.itemsPerStudent = 'Each student needs at least one question.';
+        }
+        if (d.expiresAt && isNaN(Date.parse(d.expiresAt))) errors.expiresAt = 'That end date is not a real date.';
+        if (Object.keys(errors).length) return { errors: errors, config: null };
+        const config = contract.normalizeBoardConfig({
+            activityId: d.activityId,
+            type: 'question_board',
+            prompt: prompt,
+            revealPolicy: d.revealPolicy,
+            minParticipants: d.minParticipants,
+            itemsPerStudent: d.itemsPerStudent,
+            boardCap: d.boardCap,
+            expiresAt: d.expiresAt
+        });
+        // A null here means the activityId was malformed — a caller bug, not a
+        // teacher one, so it must not be reported as a form error.
+        if (!config) return { errors: { activityId: 'This board could not be created. Try again.' }, config: null };
+        return { errors: {}, config: config };
+    }
+
+    /**
+     * The teacher view model. The open/answered split is the point of the whole
+     * feature — it is the bookkeeping a physical board cannot do — so it is
+     * computed here rather than left to the component.
+     */
+    function buildTeacherViewModel(contract, board, actor, options) {
+        const opts = options || {};
+        const config = (board && board.config) || {};
+        const isHost = !!(actor && actor.role === 'host');
+        // Host visibility still comes from the contract, so the teacher panel
+        // cannot invent a different answer from the student one.
+        const all = isHost ? (contract.visibleItemsFor(actor, board) || []) : [];
+        const needsReview = all.filter(function (i) { return i.status !== 'approved'; });
+        const approved = all.filter(function (i) { return i.status === 'approved'; });
+        const answered = approved.filter(function (i) { return !!i.answered; });
+        const open = approved.filter(function (i) { return !i.answered; });
+        const authors = {};
+        all.forEach(function (i) { if (i && i.uid) authors[i.uid] = true; });
+        return {
+            isHost: isHost,
+            prompt: config.prompt || '',
+            expired: contract.isExpired(board),
+            needsReview: needsReview,
+            open: open,
+            answered: answered,
+            total: all.length,
+            participantCount: Object.keys(authors).length,
+            // The number a teacher actually acts on at the end of a unit.
+            unansweredCount: open.length,
+            moderation: moderationNotice(config, opts.transport),
+            reviewMode: config.revealPolicy === 'teacher_review'
+        };
+    }
+
+    function ReviewRow(props) {
+        const item = props.item || {};
+        const tr = translator(props);
+        return h('li', {
+            key: item.id,
+            className: 'flex items-start justify-between gap-2 rounded border border-slate-300 bg-white p-2 text-sm'
+        }, [
+            h('div', { key: 'text' }, [
+                h('p', { key: 'q' }, item.text || ''),
+                h('p', { key: 'who', className: 'text-xs opacity-70' }, item.displayName || '')
+            ]),
+            h('div', { key: 'actions', className: 'flex shrink-0 gap-1' }, [
+                h('button', {
+                    key: 'approve', type: 'button',
+                    onClick: function () { if (props.onApprove) props.onApprove(item); },
+                    className: 'rounded bg-emerald-700 px-2 py-1 text-xs font-bold text-white'
+                }, tr('question_board.approve', 'Show to class')),
+                h('button', {
+                    key: 'hide', type: 'button',
+                    onClick: function () { if (props.onHide) props.onHide(item); },
+                    className: 'rounded border border-slate-400 px-2 py-1 text-xs font-bold'
+                }, tr('question_board.hide', 'Keep hidden'))
+            ])
+        ]);
+    }
+
+    function AnswerRow(props) {
+        const item = props.item || {};
+        const tr = translator(props);
+        const done = !!item.answered;
+        const palette = STATE_COLORS[done ? 'answered' : 'open'];
+        return h('li', {
+            key: item.id,
+            className: 'flex items-start justify-between gap-2 rounded border p-2 text-sm',
+            style: { background: palette.fill, borderColor: palette.border, color: palette.text },
+            'aria-label': (item.text || '') + '. ' + palette.label + '.'
+        }, [
+            h('div', { key: 'text' }, [
+                h('p', { key: 'q' }, item.text || ''),
+                (done && item.answered.note)
+                    ? h('p', { key: 'note', className: 'mt-1 text-xs' }, item.answered.note)
+                    : null
+            ]),
+            h('button', {
+                key: 'toggle', type: 'button',
+                onClick: function () { if (props.onToggleAnswered) props.onToggleAnswered(item, !done); },
+                className: 'shrink-0 rounded border px-2 py-1 text-xs font-bold',
+                style: { borderColor: palette.border }
+            }, done ? tr('question_board.reopen', 'Reopen') : tr('question_board.mark_answered', 'Mark answered'))
+        ]);
+    }
+
+    function QuestionBoardTeacher(props) {
+        const R = React();
+        if (!R) return null;
+        const contract = props.contract;
+        const tr = translator(props);
+        const vm = buildTeacherViewModel(contract, props.board, props.actor, { transport: props.transport });
+
+        // Defence in depth: the contract already refuses non-host moderation and
+        // both backends enforce it, but a teacher panel rendered for a student
+        // would be a bug worth failing loudly rather than rendering empty.
+        if (!vm.isHost) {
+            return h('p', { role: 'alert', className: 'text-sm' },
+                tr('question_board.host_only', 'Only the teacher who created this board can review it.'));
+        }
+
+        return h('section', { className: 'space-y-3', 'aria-label': tr('question_board.teacher_title', 'Driving questions board — teacher view') }, [
+            h('h2', { key: 'prompt', className: 'text-base font-bold' }, vm.prompt),
+
+            vm.moderation ? h('p', {
+                key: 'moderation', role: 'note',
+                className: vm.moderation.tone === 'warning'
+                    ? 'rounded border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900'
+                    : 'rounded border border-slate-300 bg-slate-50 p-2 text-xs text-slate-700'
+            }, vm.moderation.text) : null,
+
+            // The headline number: what the unit has NOT answered yet.
+            h('p', { key: 'counts', role: 'status', className: 'text-sm' },
+                vm.unansweredCount + ' ' + tr('question_board.still_open', 'still open') + ' · '
+                + vm.answered.length + ' ' + tr('question_board.answered', 'answered') + ' · '
+                + vm.participantCount + ' ' + tr('question_board.students_posted', 'students posted')),
+
+            vm.needsReview.length ? h('div', { key: 'queue' }, [
+                h('h3', { key: 'h', className: 'text-sm font-bold' },
+                    tr('question_board.queue', 'Waiting for you') + ' (' + vm.needsReview.length + ')'),
+                h('ul', { key: 'list', className: 'mt-1 space-y-1' }, vm.needsReview.map(function (item) {
+                    return ReviewRow({ item: item, t: props.t, onApprove: props.onApprove, onHide: props.onHide });
+                }))
+            ]) : null,
+
+            vm.open.length ? h('div', { key: 'open' }, [
+                h('h3', { key: 'h', className: 'text-sm font-bold' }, tr('question_board.open_heading', 'Open questions')),
+                h('ul', { key: 'list', className: 'mt-1 space-y-1' }, vm.open.map(function (item) {
+                    return AnswerRow({ item: item, t: props.t, onToggleAnswered: props.onToggleAnswered });
+                }))
+            ]) : null,
+
+            vm.answered.length ? h('div', { key: 'answered' }, [
+                h('h3', { key: 'h', className: 'text-sm font-bold' }, tr('question_board.answered_heading', 'Answered')),
+                h('ul', { key: 'list', className: 'mt-1 space-y-1' }, vm.answered.map(function (item) {
+                    return AnswerRow({ item: item, t: props.t, onToggleAnswered: props.onToggleAnswered });
+                }))
+            ]) : null,
+
+            (!vm.total) ? h('p', { key: 'empty', className: 'text-sm opacity-70' },
+                tr('question_board.empty', 'No questions yet. Share the board code with your class.')) : null
+        ]);
+    }
     return {
         VERSION: 1,
         STATE_COLORS,
@@ -236,6 +415,11 @@
         moderationNotice,
         buildBoardViewModel,
         QuestionCard,
-        QuestionBoardStudent
+        QuestionBoardStudent,
+        validateNewBoard,
+        buildTeacherViewModel,
+        ReviewRow,
+        AnswerRow,
+        QuestionBoardTeacher
     };
 });
