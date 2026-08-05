@@ -1298,18 +1298,42 @@ the asterisk would send a reader with nothing to return to.
 either edge, and it INTERRUPTS rather than continues its neighbours: the lines
 8a-8z caution runs from page 89 straight past this worksheet to page 91.
 
-### NEXT: page 91 onward
+### Session 31 (2026-08-05) - page 91 - tranche-31 - 34 blocks - VALIDATED (merged)
 
-Page 91 opens with the tail of the caution carried from page 89 - **do not
-re-author it** - and then runs Line 8a through Line 8o as bold run-in topics
-(net operating loss, gambling, cancellation of debt, foreign earned income,
-jury duty pay, prizes and awards, stock options, and so on). Page 92 continues
-the same series. Both are dense lists of short topics; expect the
-tranche-25 pattern, where promoting every run-in lead to a heading is what
-makes the page usable.
+Schedule 1 lines 8a through 8o, the Other Income series. `merge-plans
+t01..t31` -> 1,387 blocks, `ok: true`, **pages 1-91 covered**, zero heading
+skips. Recall 0.9381, and the non-adjacent carried-block check worked exactly
+as session 29 predicted: **51 shortfall instances = 43 carried + 8 furniture +
+0 unexplained**, run against tranche 29 rather than the page-90 tranche.
 
-Run `carried_block_check.cjs` on page **91** against tranche 29 (not page 90,
-which carries nothing).
+**"Line 8x" and its bold run-in lead are merged into one heading.** Left as
+printed, this page's heading list would read "Line 8a, Line 8b, Line 8c..." -
+fourteen entries that tell a reader nothing, on a page whose whole purpose is
+to let someone find the one kind of income that applies to them. Merged it
+reads "Line 8b. Gambling", "Line 8c. Cancellation of debt", "Line 8k. Stock
+options". The lead is removed from the paragraph rather than duplicated, which
+is what tranche 2 established, and the two conventions agree here.
+
+**Line 8g is absent, and that is the source's own numbering** - the series
+runs 8a-8f then 8h, with no gap in the text. Nothing was dropped.
+
+> **A near miss worth recording.** The column dump appeared to end mid-sentence
+> at "Enter on line 8o from your Forms 8992 the", and the obvious inference was
+> that line 8o spanned into page 92. It does not: page 92 opens a new topic at
+> line 8p. The sentence finishes on page 91 ("...the sum of ANY amounts
+> reported on Part II, line 5. Remember to attach copies of your Forms 8992."),
+> and a THIRD caution box follows it. A first draft had a fabricated ending and
+> no third caution, both caught only by reading the column to its end before
+> authoring. **Never infer a continuation from a truncated dump - check the
+> next page and re-read the column tail.**
+
+### NEXT: page 92 onward
+
+Page 92 continues the series at line 8p (461(l) excess business loss
+adjustment, ABLE account distributions, scholarship and fellowship grants,
+Medicaid waiver payments, nonqualified deferred compensation) and on through
+8z. Same merged-heading treatment. **Nothing is carried into page 92** - line
+8o completes on 91.
 
 Then Schedule 1's Part II adjustments, Schedule 1-A (101-110), Schedule 2
 (111-114) and Schedule 3 (115-117), each a top-level TOC entry opening at

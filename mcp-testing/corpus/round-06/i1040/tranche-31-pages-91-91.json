@@ -1,0 +1,262 @@
+{
+ "schema_version": "1.0",
+ "document": {
+  "title": "2025 Instructions for Form 1040 (and 1040-SR)",
+  "language": "en",
+  "source_page_count": 126,
+  "source_sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a",
+  "document_type": "booklet",
+  "subject": "Internal Revenue Service instructions for the 2025 Form 1040 and Form 1040-SR, including the instructions for Schedules 1 through 3.",
+  "variant": "original"
+ },
+ "blocks": [
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 8a. Net operating loss (NOL) deduction",
+   "source_page": 91
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter any deduction for an NOL from an earlier year. Enter the amount in the preprinted parentheses (as a negative number). The amount of your deduction will be subtracted from the other amounts of income listed on lines 8b through 8z. See the Instructions for Form 172 for details.",
+   "source_page": 91
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 8b. Gambling",
+   "source_page": 91
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter gambling winnings not attributable to a trade or business. Gambling winnings include lotteries, raffles, a lump-sum payment from the sale of a right to receive future lottery payments, etc. For details on gambling losses, see the instructions for Schedule A, line 16.",
+   "source_page": 91
+  },
+  {
+   "type": "paragraph",
+   "text": "Tip. Attach Form(s) W-2G to Form 1040 or 1040-SR if any federal income tax was withheld.",
+   "runs": [
+    {
+     "text": "Tip.",
+     "style": "strong"
+    },
+    {
+     "text": " Attach Form(s) W-2G to Form 1040 or 1040-SR if any federal income tax was withheld.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 91
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 8c. Cancellation of debt",
+   "source_page": 91
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter any canceled debt. Canceled debt may be shown in box 2 of Form 1099-C. However, part or all of your income from cancellation of debt may be nontaxable. See Pub. 4681 or go to IRS.gov and enter “canceled debt” or “foreclosure” in the search box.",
+   "source_page": 91
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 8d. Foreign earned income exclusion and housing exclusion from Form 2555",
+   "source_page": 91
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter the amount of your foreign earned income and housing exclusion from Form 2555, line 45. Enter the amount in the preprinted parentheses (as a negative number). The amount from Form 2555, line 45, will be subtracted from the other amounts of income listed on lines 8a through 8c and lines 8e through 8z.",
+   "source_page": 91
+  },
+  {
+   "type": "paragraph",
+   "text": "Complete the Foreign Earned Income Tax Worksheet if you enter an amount on Form 2555, line 45.",
+   "source_page": 91
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 8e. Income from Form 8853",
+   "source_page": 91
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter the total of the amounts from Form 8853, lines 8, 12, and 26. See Pub. 969.",
+   "source_page": 91
+  },
+  {
+   "type": "paragraph",
+   "text": "Caution. You may have to pay an additional tax if you received a taxable distribution from an Archer MSA or Medicare Advantage MSA. See the Instructions for Form 8853.",
+   "runs": [
+    {
+     "text": "Caution.",
+     "style": "strong"
+    },
+    {
+     "text": " You may have to pay an additional tax if you received a taxable distribution from an Archer MSA or Medicare Advantage MSA. See the Instructions for Form 8853.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 91
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 8f. Income from Form 8889",
+   "source_page": 91
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter the total of the amounts from Form 8889, lines 16 and 20.",
+   "source_page": 91
+  },
+  {
+   "type": "paragraph",
+   "text": "Caution. You may have to pay an additional tax if you received a taxable distribution from a health savings account. See the Instructions for Form 8889.",
+   "runs": [
+    {
+     "text": "Caution.",
+     "style": "strong"
+    },
+    {
+     "text": " You may have to pay an additional tax if you received a taxable distribution from a health savings account. See the Instructions for Form 8889.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 91
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 8h. Jury duty pay",
+   "source_page": 91
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter any jury duty pay and see the instructions for line 24a.",
+   "source_page": 91
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 8i. Prizes and awards",
+   "source_page": 91
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter prizes and awards but see the instructions for line 8m, Olympic and Paralympic medals and USOC prize money, later.",
+   "source_page": 91,
+   "runs": [
+    {
+     "text": "Enter prizes and awards but see the instructions for line 8m, ",
+     "style": "normal"
+    },
+    {
+     "text": "Olympic and Paralympic medals and USOC prize money",
+     "style": "emphasis"
+    },
+    {
+     "text": ", later.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 8j. Activity not engaged in for profit income",
+   "source_page": 91
+  },
+  {
+   "type": "paragraph",
+   "text": "See Pub. 525.",
+   "source_page": 91
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 8k. Stock options",
+   "source_page": 91
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter any income from the exercise of stock options not otherwise reported on Form 1040 or 1040-SR, line 1h.",
+   "source_page": 91
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 8l. Income from the rental of personal property if you engaged in the rental for profit but were not in the business of renting such property",
+   "source_page": 91
+  },
+  {
+   "type": "paragraph",
+   "text": "Also see the instructions for line 24b, later.",
+   "source_page": 91
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 8m. Olympic and Paralympic medals and USOC prize money",
+   "source_page": 91
+  },
+  {
+   "type": "paragraph",
+   "text": "The value of Olympic and Paralympic medals and the amount of United States Olympic Committee (USOC) prize money you receive on account of your participation in the Olympic or Paralympic Games may be nontaxable. These amounts should be reported to you in box 3 of Form 1099-MISC. To see if these amounts are nontaxable, first figure your adjusted gross income, including the amount of your medals and prize money.",
+   "source_page": 91
+  },
+  {
+   "type": "paragraph",
+   "text": "If your adjusted gross income is not more than $1,000,000 ($500,000 if married filing separately), these amounts are nontaxable and you should include the amount in box 3 of Form 1099-MISC on line 8m, then subtract it by including it on line 24c.",
+   "source_page": 91
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 8n. Section 951(a) inclusion",
+   "source_page": 91
+  },
+  {
+   "type": "paragraph",
+   "text": "Section 951 generally requires that a U.S. shareholder of a controlled foreign corporation include in income its pro rata share of the corporation’s subpart F income and its amount determined under section 956. Enter on line 8n the sum of any amounts reported on lines 1a through 1h and line 2 of your Forms 5471, Schedule(s) I.",
+   "source_page": 91
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 8o. Section 951A(a) inclusion",
+   "source_page": 91
+  },
+  {
+   "type": "paragraph",
+   "text": "Section 951A generally requires that a U.S. shareholder of a controlled foreign corporation include in income its global intangible low-taxed income (GILTI). Enter on line 8o from your Forms 8992 the sum of any amounts reported on Part II, line 5. Remember to attach copies of your Forms 8992.",
+   "source_page": 91
+  },
+  {
+   "type": "paragraph",
+   "text": "Caution. If you made a section 962 election and have an income inclusion under section 951 or 951A, do not report that income on line 8n or 8o, as applicable. Instead, report the tax with respect to the section 962 election on Form 1040 or 1040-SR, line 16, and attach a statement showing how you figured the tax that includes the gross amounts of section 951 and section 951A income.",
+   "runs": [
+    {
+     "text": "Caution.",
+     "style": "strong"
+    },
+    {
+     "text": " If you made a section 962 election and have an income inclusion under section 951 or 951A, do not report that income on line 8n or 8o, as applicable. Instead, report the tax with respect to the section 962 election on Form 1040 or 1040-SR, line 16, and attach a statement showing how you figured the tax that includes the gross amounts of section 951 and section 951A income.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 91
+  }
+ ],
+ "review_notes": [
+  "TRANCHE 31 OF A MULTI-SESSION REBUILD. This plan covers printed page 91, Schedule 1 lines 8a through 8o. It carries no document title by design — only tranche 1 does — so this file validates through merge-plans rather than standalone. No partial rebuild is delivered.",
+  "THE CAUTION AT THE TOP OF THIS PAGE IS NOT REPEATED. It was authored whole at page 89 in tranche 29 and runs 89 to 91, skipping the full-page worksheet on page 90. Check this page's shortfall with mcp-testing/tools/carried_block_check.cjs against TRANCHE 29, not against the page-90 tranche, which carries nothing.",
+  "“Line 8x” AND ITS BOLD RUN-IN LEAD ARE MERGED INTO ONE HEADING, and this is the decision worth arguing. The source prints a small “Line 8b” head and then opens the paragraph beneath it with a bold “Gambling.”. Left as printed, the heading list for this page would read “Line 8a, Line 8b, Line 8c…” — fourteen entries that tell a reader nothing, on a page whose whole purpose is to let someone find the one kind of income that applies to them. Merged, it reads “Line 8b. Gambling”, “Line 8c. Cancellation of debt”, “Line 8k. Stock options”. The lead is removed from the paragraph rather than duplicated, which is what tranche 2 established for promoted run-in leads, and the two conventions (Line NN plus its title; promote the run-in) agree here.",
+  "ONE MERGED HEADING IS UNAVOIDABLY LONG. Line 8l's lead is a full clause — “Income from the rental of personal property if you engaged in the rental for profit but were not in the business of renting such property” — and the paragraph left under it is a single cross-reference. It is kept whole rather than truncated: the condition is the point of that line, and a shortened heading would invite a reader to enter rental income that does not qualify.",
+  "LINE 8g IS ABSENT, AND THAT IS THE SOURCE'S OWN NUMBERING. The series runs 8a, 8b, 8c, 8d, 8e, 8f, 8h, 8i… with no 8g on the page and no gap in the text around it. Nothing was dropped in authoring; the printed instructions simply have no entry for 8g.",
+  "ICON CALLOUTS as established in tranche 3: one TIP and three CAUTION boxes become paragraphs opening with a strong label in sentence case, each placed after the line it qualifies. The last of them, on the section 962 election, qualifies BOTH lines 8n and 8o and sits after 8o.",
+  "NOTHING SPANS THE 91-92 BREAK, checked rather than assumed. The last column of this page appears to stop mid-sentence at “Enter on line 8o from your Forms 8992 the”, which is what a truncated reading of the column dump suggests; page 92 in fact opens a new topic at line 8p. The sentence completes on this page (“…the sum of any amounts reported on Part II, line 5. Remember to attach copies of your Forms 8992.”) and is followed by a third CAUTION box that a short reading of the column misses entirely. Both were recovered by reading the column to its end before authoring.",
+  "PAGE FURNITURE OMITTED: the printed page number and the standing “Need more information or forms? Visit IRS.gov.” footer. Soft hyphens removed and justified line-break hyphens closed, while genuine compounds are kept (1040-SR, 1099-C, 1099-MISC, W-2G, lump-sum, low-taxed, non-taxable spellings as printed)."
+ ]
+}
