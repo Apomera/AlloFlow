@@ -180,6 +180,37 @@ describe('a closed board reads as a record, not a broken surface', () => {
   });
 });
 
+describe('the modules are actually registered to ship and load', () => {
+  const read = (p) => require('node:fs').readFileSync(resolve(process.cwd(), p), 'utf8');
+
+  it('both modules are build-managed, so the deploy guards cover them', () => {
+    const build = read('build.js');
+    expect(build).toContain("filename: 'question_board_contract_module.js'");
+    expect(build).toContain("filename: 'question_board_view_module.js'");
+  });
+
+  it('both are loaded by BOTH ANTI copies', () => {
+    for (const p of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt']) {
+      const anti = read(p);
+      expect(anti, p).toContain("loadModule('QuestionBoardContract'");
+      expect(anti, p).toContain("loadModule('QuestionBoardView'");
+    }
+  });
+
+  it('the loadModule name matches the AlloModules key it sets', () => {
+    // Violating this makes every load false-alarm as a failure, per the
+    // loadModule contract — the name is the registry key, not a label.
+    const pairs = [
+      ['question_board_contract_module.js', 'QuestionBoardContract'],
+      ['question_board_view_module.js', 'QuestionBoardView']
+    ];
+    for (const [file, name] of pairs) {
+      expect(read(file)).toContain('root.AlloModules.' + name + ' =');
+      expect(read('AlloFlowANTI.txt')).toContain("loadModule('" + name + "'");
+    }
+  });
+});
+
 describe('the teacher is warned about capacity before students hit it', () => {
   it('shows a full-board notice', () => {
     const items = [];

@@ -12494,6 +12494,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=e8b8d986d');
     loadModule('StandardsContext', 'https://alloflow-cdn.pages.dev/standards_context_module.js?v=e8b8d986d');
     loadModule('StandardsProvider', 'https://alloflow-cdn.pages.dev/standards_provider_module.js?v=e8b8d986d');
+    // Driving Questions Board. The contract carries the invariants both
+    // transports enforce; the view module is inert until a surface mounts it.
+    loadModule('QuestionBoardContract', 'https://alloflow-cdn.pages.dev/question_board_contract_module.js?v=e8b8d986d');
+    loadModule('QuestionBoardView', 'https://alloflow-cdn.pages.dev/question_board_view_module.js?v=e8b8d986d');
+
     // Reviewed local standards snapshots (Learning Commons v1.11.0, CC BY 4.0).
     // DELIBERATE enablement per LEARNING_COMMONS_SNAPSHOT_IMPORT.md: publishing a
     // snapshot module does not switch it on; these lines do. The provider keys a

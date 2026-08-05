@@ -74,18 +74,27 @@
      * teacher_review board is a UI convention, not a security boundary, and the
      * teacher deserves to know that before relying on it.
      */
-    function moderationNotice(config, transport) {
+    function moderationNotice(config, transport, tr) {
+        // Everything else in this module renders through the guarded translator;
+        // this was the one surface still hard-coded to English. tr is optional so
+        // callers that only want the text keep working.
+        const say = (typeof tr === 'function') ? tr : function (key, fallback) { return fallback; };
         if (!config || config.revealPolicy !== 'teacher_review') return null;
         if (transport === 'firestore-canvas') {
             return {
                 tone: 'warning',
-                text: 'Questions are held for your review before classmates see them in this view. '
+                text: say('question_board.hold_display_only',
+                    'Questions are held for your review before classmates see them in this view. '
                     + 'On this connection that is a display rule, not a database one, so treat it as '
                     + 'tidiness rather than privacy. Use the Class Mailbox connection if you need held '
-                    + 'questions genuinely restricted.'
+                    + 'questions genuinely restricted.')
             };
         }
-        return { tone: 'info', text: 'Questions are held for your review before classmates see them.' };
+        return {
+            tone: 'info',
+            text: say('question_board.hold_enforced',
+                'Questions are held for your review before classmates see them.')
+        };
     }
 
     /**
@@ -126,7 +135,7 @@
             capacity: capacity,
             // A disabled composer with no explanation reads as a broken app.
             blockReason: postingBlockReason(contract, board, actor, capacity),
-            moderation: moderationNotice(config, opts.transport)
+            moderation: moderationNotice(config, opts.transport, opts.t)
         };
     }
 
@@ -163,7 +172,7 @@
         if (!R) return null;
         const contract = props.contract;
         const tr = translator(props);
-        const vm = buildBoardViewModel(contract, props.board, props.actor, { transport: props.transport });
+        const vm = buildBoardViewModel(contract, props.board, props.actor, { transport: props.transport, t: tr });
         const draft = props.draft || '';
 
         const submit = function () {
@@ -284,10 +293,10 @@
         const items = ((board && board.items) || []).filter(function (i) { return i && i.status === 'approved'; });
         const answered = items.filter(function (i) { return !!i.answered; });
         const open = items.filter(function (i) { return !i.answered; });
-        const who = function (i) { return (includeNames && i.displayName) ? ' — ' + i.displayName : ''; };
+        const who = function (i) { return (includeNames && i.displayName) ? ' — ' + escapeMarkdown(i.displayName) : ''; };
 
         const lines = [];
-        lines.push('# ' + (config.prompt || 'Driving questions board'));
+        lines.push('# ' + escapeMarkdown(config.prompt || 'Driving questions board'));
         lines.push('');
         lines.push(String(items.length) + ' questions from ' + countAuthors(items) + ' students · '
             + String(answered.length) + ' answered · ' + String(open.length) + ' still open');
@@ -295,13 +304,13 @@
         lines.push('');
         lines.push('## Still open');
         if (!open.length) lines.push('_None — every question was answered._');
-        open.forEach(function (i) { lines.push('- ' + i.text + who(i)); });
+        open.forEach(function (i) { lines.push('- ' + escapeMarkdown(i.text) + who(i)); });
         lines.push('');
         lines.push('## Answered');
         if (!answered.length) lines.push('_None yet._');
         answered.forEach(function (i) {
-            lines.push('- ' + i.text + who(i));
-            if (i.answered && i.answered.note) lines.push('  - ' + i.answered.note);
+            lines.push('- ' + escapeMarkdown(i.text) + who(i));
+            if (i.answered && i.answered.note) lines.push('  - ' + escapeMarkdown(i.answered.note));
         });
 
         return {
@@ -314,6 +323,16 @@
                 includedNames: includeNames
             }
         };
+    }
+
+    // A student question is arbitrary text landing in a markdown document. It
+    // must not be able to become a heading, a list, or a link in the teacher's
+    // record. Text is already control-char stripped and single-line by the
+    // contract's sanitizer, so only the inline/leading markers need escaping.
+    function escapeMarkdown(value) {
+        return String(value == null ? '' : value)
+            .replace(/([\\`*_\[\]()#>|~])/g, '\\$1')
+            .replace(/^(\s*)([-+])/, '$1\\$2');
     }
 
     function countAuthors(items) {
@@ -348,7 +367,13 @@
         if (d.itemsPerStudent != null && (!isFinite(per) || per < 1)) {
             errors.itemsPerStudent = 'Each student needs at least one question.';
         }
-        if (d.expiresAt && isNaN(Date.parse(d.expiresAt))) errors.expiresAt = 'That end date is not a real date.';
+        if (d.expiresAt && isNaN(Date.parse(d.expiresAt))) {
+            errors.expiresAt = 'That end date is not a real date.';
+        } else if (d.expiresAt && Date.parse(d.expiresAt) <= Date.now()) {
+            // Without this a teacher can create a board that is closed the moment
+            // it exists — it would accept nothing and give no clue why.
+            errors.expiresAt = 'That end date has already passed, so the board would open closed.';
+        }
         if (Object.keys(errors).length) return { errors: errors, config: null };
         const config = contract.normalizeBoardConfig({
             activityId: d.activityId,
@@ -396,7 +421,7 @@
             // The number a teacher actually acts on at the end of a unit.
             unansweredCount: open.length,
             capacity: boardCapacity(contract, board),
-            moderation: moderationNotice(config, opts.transport),
+            moderation: moderationNotice(config, opts.transport, opts.t),
             reviewMode: config.revealPolicy === 'teacher_review'
         };
     }
@@ -458,7 +483,7 @@
         if (!R) return null;
         const contract = props.contract;
         const tr = translator(props);
-        const vm = buildTeacherViewModel(contract, props.board, props.actor, { transport: props.transport });
+        const vm = buildTeacherViewModel(contract, props.board, props.actor, { transport: props.transport, t: tr });
 
         // Defence in depth: the contract already refuses non-host moderation and
         // both backends enforce it, but a teacher panel rendered for a student
@@ -532,6 +557,7 @@
         buildBoardViewModel,
         QuestionCard,
         QuestionBoardStudent,
+        escapeMarkdown,
         boardCapacity,
         exportBoardRecord,
         postingBlockReason,
