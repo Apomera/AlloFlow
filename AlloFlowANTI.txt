@@ -18048,6 +18048,48 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [canvasRecoveryRemoveMediaId, setCanvasRecoveryRemoveMediaId] = useState(null);
   const [canvasRecoveryBusyId, setCanvasRecoveryBusyId] = useState(null);
   const [canvasRecoveryRevision, setCanvasRecoveryRevision] = useState(0);
+  // On-device speech models (Whisper for recognition, Kokoro for the voice).
+  // Both persist in the durable model_cache namespace; this surfaces whether
+  // they are actually present and lets the teacher fetch them deliberately
+  // rather than discovering a download mid-lesson.
+  const [alloModelStatus, setAlloModelStatus] = useState({ loading: false, whisper: false, kokoro: false, bytes: 0, busy: '' });
+  const _alloModelCache = () => {
+    const AC = window.AlloModules && window.AlloModules.AlloCommands;
+    return (AC && AC.modelCache) || null;
+  };
+  const refreshAlloModelStatus = React.useCallback(() => {
+    const mc = _alloModelCache();
+    if (!mc) { setAlloModelStatus(prev => ({ ...prev, loading: false })); return; }
+    setAlloModelStatus(prev => ({ ...prev, loading: true }));
+    Promise.all([
+      Promise.resolve(mc.hasWhisper()).catch(() => false),
+      Promise.resolve(mc.hasKokoro()).catch(() => false),
+      Promise.resolve(mc.cachedBytes()).catch(() => 0),
+    ]).then(([whisper, kokoro, bytes]) => {
+      setAlloModelStatus({ loading: false, whisper: !!whisper, kokoro: !!kokoro, bytes: Number(bytes) || 0, busy: '' });
+    }).catch(() => setAlloModelStatus(prev => ({ ...prev, loading: false })));
+  }, []);
+  const downloadWhisperModel = React.useCallback(() => {
+    const mc = _alloModelCache();
+    if (!mc) return;
+    setAlloModelStatus(prev => ({ ...prev, busy: 'whisper' }));
+    Promise.resolve(mc.prefetchWhisper()).then(() => {
+      addToast('Speech recognition model saved on this device.', 'success');
+    }).catch((e) => {
+      addToast('Could not download the recognition model: ' + ((e && e.message) || 'unknown'), 'error');
+    }).finally(() => { setAlloModelStatus(prev => ({ ...prev, busy: '' })); refreshAlloModelStatus(); });
+  }, [refreshAlloModelStatus]);
+  const downloadKokoroModel = React.useCallback(() => {
+    // Kokoro has no file list of our own — loading it IS the download, and the
+    // worker's cache proxy persists it into model_cache on the way through.
+    if (typeof window.__loadKokoroTTS !== 'function') { addToast('The voice model loader is still starting up — try again in a moment.', 'info'); return; }
+    setAlloModelStatus(prev => ({ ...prev, busy: 'kokoro' }));
+    Promise.resolve(window.__loadKokoroTTS()).then((ok) => {
+      addToast(ok === false ? 'The voice model could not be downloaded.' : 'Natural voice model saved on this device.', ok === false ? 'error' : 'success');
+    }).catch((e) => {
+      addToast('Could not download the voice model: ' + ((e && e.message) || 'unknown'), 'error');
+    }).finally(() => { setAlloModelStatus(prev => ({ ...prev, busy: '' })); refreshAlloModelStatus(); });
+  }, [refreshAlloModelStatus]);
   const [storageManagerInventory, setStorageManagerInventory] = useState(() => ({
       loading: false,
       origin: { persisted: null, usage: null, quota: null },
@@ -32172,6 +32214,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   };
 
   const refreshStorageManagerInventory = async () => {
+    // On-device model presence refreshes with the rest of the inventory, so
+    // the panel never shows stale "not downloaded" next to a cached model.
+    try { refreshAlloModelStatus(); } catch (_) {}
       const refreshToken = ++storageManagerRefreshTokenRef.current;
       setStorageManagerInventory(current => ({ ...current, loading: true, error: '' }));
       try {
@@ -39963,7 +40008,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                           <button type="button" disabled={storageManagerInventory.loading}
                             onClick={() => void refreshStorageManagerInventory()}
                             className="min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-60">
-                            {storageManagerInventory.loading ? 'Refreshing…' : 'Refresh status'}
+                            {storageManagerInventory.loading || alloModelStatus.loading ? 'Refreshing…' : 'Refresh status'}
                           </button>
                         </div>
                         <div className="mt-4 grid gap-3 sm:grid-cols-3">
@@ -39989,6 +40034,34 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                               {retention.count} / {retention.maxSnapshots} target · {_alloFormatWorkspaceBytes(retention.bytes)}
                             </div>
                           </div>
+                        </div>
+                        <div className="mt-4">
+                          <h4 className="text-sm font-black text-slate-900">On-device speech models</h4>
+                          <p className="mt-1 text-xs text-slate-600">Downloaded once, then kept on this device so voice features work without sending audio anywhere. Removing browser data below also removes these.</p>
+                          <div className="mt-2 divide-y divide-slate-200 rounded-xl border border-slate-200">
+                            {[
+                              { key: 'whisper', label: 'Speech recognition (Whisper)', desc: 'Understands what you say, on this device', have: alloModelStatus.whisper, size: '~40 MB', onGet: downloadWhisperModel },
+                              { key: 'kokoro', label: 'Natural voice (Kokoro)', desc: 'Reads text aloud in a natural voice', have: alloModelStatus.kokoro, size: '~88 MB', onGet: downloadKokoroModel }
+                            ].map(m => (
+                              <div key={m.key} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
+                                <span className="min-w-0">
+                                  <span className="font-semibold text-slate-700">{m.label}</span>
+                                  <span className="block text-xs font-normal text-slate-500">{m.desc}</span>
+                                </span>
+                                {m.have ? (
+                                  <span className="shrink-0 rounded-md bg-emerald-50 px-2 py-1 text-xs font-black text-emerald-800">✓ On this device</span>
+                                ) : (
+                                  <button type="button" onClick={m.onGet} disabled={!!alloModelStatus.busy}
+                                    className="shrink-0 rounded-md border border-indigo-300 bg-white px-2 py-1 text-xs font-black text-indigo-800 disabled:opacity-50">
+                                    {alloModelStatus.busy === m.key ? 'Downloading…' : 'Download ' + m.size}
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                          {alloModelStatus.bytes > 0 && (
+                            <p className="mt-1 text-[11px] text-slate-500">Model cache on this device: ~{_alloFormatWorkspaceBytes(alloModelStatus.bytes)}</p>
+                          )}
                         </div>
                         {storageManagerInventory.managed.length > 0 && (
                           <div className="mt-4">

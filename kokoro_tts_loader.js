@@ -121,6 +121,62 @@
         let _tts = null;
         const CHUNK_THRESHOLD = ${CHUNK_THRESHOLD};
 
+        // ── Durable model cache proxy (added 2026-08-05) ─────────────────────
+        // kokoro-js downloads the voice model through fetch() and relies on the
+        // browser Cache API to keep it. In the Gemini Canvas sandbox that cache
+        // is partitioned and effectively ephemeral, so the ~88MB model was
+        // re-downloaded every session. This worker cannot reach AlloFlow's
+        // durable device-storage bridge (that lives on the main thread), so we
+        // intercept fetch here and relay through it: a hit returns bytes from
+        // durable storage, a miss downloads once and stores them.
+        // Only large model artifacts are proxied — never the library import,
+        // never small JSON config, and never anything cross-origin we did not
+        // ask for.
+        const _MODEL_URL_RE = /(huggingface\\.co|hf\\.co|onnx-community|kokoro)/i;
+        const _MODEL_FILE_RE = /\\.(onnx|onnx_data|bin|safetensors)(\\?|$)/i;
+        let _cacheSeq = 0;
+        const _cachePending = new Map();
+        self.addEventListener('message', (ev) => {
+            const d = ev.data;
+            if (!d || d.type !== 'allo-model-cache-reply') return;
+            const p = _cachePending.get(d.id);
+            if (!p) return;
+            _cachePending.delete(d.id);
+            p(d);
+        });
+        function _askMain(payload, transfer) {
+            return new Promise((resolve) => {
+                const id = 'mc' + (++_cacheSeq);
+                _cachePending.set(id, resolve);
+                // Never hang the model load on the cache: give up and fall
+                // through to the network.
+                setTimeout(() => { if (_cachePending.has(id)) { _cachePending.delete(id); resolve({ ok: false }); } }, 20000);
+                self.postMessage(Object.assign({ type: 'allo-model-cache', id }, payload), transfer || []);
+            });
+        }
+        const _nativeFetch = self.fetch.bind(self);
+        self.fetch = async function (input, init) {
+            let url = '';
+            try { url = typeof input === 'string' ? input : (input && input.url) || ''; } catch (_) {}
+            const proxied = url && _MODEL_URL_RE.test(url) && _MODEL_FILE_RE.test(url);
+            if (!proxied) return _nativeFetch(input, init);
+            try {
+                const hit = await _askMain({ op: 'get', url });
+                if (hit && hit.ok && hit.buffer) {
+                    return new Response(hit.buffer, { status: 200, headers: { 'content-type': hit.contentType || 'application/octet-stream' } });
+                }
+            } catch (_) {}
+            const res = await _nativeFetch(input, init);
+            try {
+                if (res && res.ok) {
+                    const buf = await res.clone().arrayBuffer();
+                    // Transfer the copy; the Response the caller gets is untouched.
+                    _askMain({ op: 'put', url, buffer: buf, contentType: res.headers.get('content-type') || '' }, [buf]);
+                }
+            } catch (_) {}
+            return res;
+        };
+
         // ── Sentence splitter (runs in worker) ──
         function splitSentences(text) {
             const sentences = text.match(/[^.!?]*(?:(?:Dr|Mr|Mrs|Ms|St|Jr|Sr|Prof|vs|Inc|Ltd|Co|U\\\\.S\\\\.A|etc)\\\\.[^.!?]*)*[.!?]+[\\\\s]*|[^.!?]+$/gi);
@@ -613,6 +669,29 @@
         }
 
         w.onmessage = ({ data }) => {
+            // Durable model cache relay (see the worker-side comment). Kept
+            // ahead of the switch because it is not part of the TTS protocol,
+            // and it must never throw into the worker's message handling.
+            if (data && data.type === 'allo-model-cache') {
+                const mc = window.AlloModules && window.AlloModules.AlloCommands && window.AlloModules.AlloCommands.modelCache;
+                const reply = (payload) => { try { w.postMessage(Object.assign({ type: 'allo-model-cache-reply', id: data.id }, payload)); } catch (_) {} };
+                if (!mc) { reply({ ok: false }); return; }
+                if (data.op === 'get') {
+                    Promise.resolve(mc.match(data.url)).then((res) => {
+                        if (!res) { reply({ ok: false }); return; }
+                        return res.arrayBuffer().then((buf) => {
+                            try { w.postMessage({ type: 'allo-model-cache-reply', id: data.id, ok: true, buffer: buf, contentType: res.headers.get('content-type') || '' }, [buf]); }
+                            catch (_) { reply({ ok: false }); }
+                        });
+                    }).catch(() => reply({ ok: false }));
+                } else if (data.op === 'put') {
+                    Promise.resolve(mc.put(data.url, data.buffer, data.contentType))
+                        .then(() => reply({ ok: true })).catch(() => reply({ ok: false }));
+                } else {
+                    reply({ ok: false });
+                }
+                return;
+            }
             switch (data.type) {
                 case 'progress':
                     _loadProgress = data.pct;

@@ -2124,6 +2124,49 @@ var modelCache = {
     return { files, bytes };
   },
   match: _mcMatch,
+  // Public store, used by the Kokoro worker proxy: the voice model is fetched
+  // INSIDE a Web Worker (which cannot reach the device-storage bridge), so the
+  // worker relays bytes here and reads them back through match().
+  put: function(url, buf, contentType) {
+    return _mcStoreBuffer(url, buf, contentType);
+  },
+  // Is anything cached whose URL contains this fragment? Used for model
+  // presence checks without hardcoding a file list we do not control.
+  hasUrlLike: async function(fragment) {
+    try {
+      var ds = await _deviceStorage();
+      var keys = await ds.list(MODEL_NS);
+      var needle = String(fragment || "").toLowerCase();
+      if (!needle || !Array.isArray(keys)) return false;
+      for (var i = 0; i < keys.length; i++) {
+        var k = String(keys[i] || "");
+        if (k.indexOf("u:") === 0 && k.toLowerCase().indexOf(needle) >= 0) return true;
+      }
+      return false;
+    } catch (_) {
+      return false;
+    }
+  },
+  // Kokoro's file set is decided by kokoro-js, not by us, so presence is
+  // detected rather than enumerated.
+  hasKokoro: function() {
+    return modelCache.hasUrlLike("kokoro");
+  },
+  // Approximate on-device size of the model cache, for the storage manager.
+  cachedBytes: async function() {
+    try {
+      var ds = await _deviceStorage();
+      var rows = await ds.getAll(MODEL_NS);
+      var total = 0;
+      (rows || []).forEach(function(r) {
+        var v = r && r.value;
+        if (v && typeof v.bytes === "number") total += v.bytes;
+      });
+      return total;
+    } catch (_) {
+      return 0;
+    }
+  },
   clear: async function() {
     var ds = await _deviceStorage();
     return ds.clearNamespace(MODEL_NS);

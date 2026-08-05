@@ -827,6 +827,50 @@ describe('model cache', () => {
     expect(readFileSync('storage_bridge.html', 'utf-8')).toContain('ArrayBuffer.isView(r.value)) ? r.value.byteLength');
   });
 
+  // Kokoro persistence (2026-08-05). The voice model downloads INSIDE a Web
+  // Worker that cannot reach the device-storage bridge, so it relied on the
+  // browser Cache API — partitioned and effectively ephemeral in the Canvas
+  // sandbox, which is why it re-downloaded every session.
+  it('the model cache exposes what the worker proxy and the storage manager need', () => {
+    expect(typeof AC.modelCache.put).toBe('function');
+    expect(typeof AC.modelCache.hasKokoro).toBe('function');
+    expect(typeof AC.modelCache.hasUrlLike).toBe('function');
+    expect(typeof AC.modelCache.cachedBytes).toBe('function');
+    // Presence is DETECTED, not enumerated: kokoro-js owns its file list.
+    const src = readFileSync('allo_commands_source.jsx', 'utf-8');
+    expect(src).toContain("hasKokoro: function () { return modelCache.hasUrlLike('kokoro'); }");
+  });
+  it('the Kokoro worker proxies model fetches through the durable cache', () => {
+    const loader = readFileSync('kokoro_tts_loader.js', 'utf-8');
+    // Worker side: intercepts fetch, asks the main thread, falls through on miss.
+    expect(loader).toContain('self.fetch = async function');
+    expect(loader).toContain('_nativeFetch(input, init)');
+    expect(loader).toContain("_askMain({ op: 'get', url })");
+    expect(loader).toMatch(/op: 'put', url, buffer: buf/);
+    // Only large model artifacts are proxied — never the library import.
+    expect(loader).toMatch(/_MODEL_FILE_RE = .*onnx/);
+    // A dead or slow cache must never hang the model load.
+    expect(loader).toMatch(/setTimeout\(\(\) => \{ if \(_cachePending\.has\(id\)\)/);
+    // Main-thread side: services get/put against modelCache, never throws back.
+    expect(loader).toContain("data.type === 'allo-model-cache'");
+    expect(loader).toContain('AlloCommands.modelCache');
+    expect(loader).toContain('mc.put(data.url, data.buffer, data.contentType)');
+  });
+  it('the storage manager shows model presence and offers downloads, in both ANTI copies', () => {
+    for (const f of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt']) {
+      const app = readFileSync(f, 'utf-8');
+      expect(app, f).toContain('On-device speech models');
+      expect(app, f).toContain('downloadWhisperModel');
+      expect(app, f).toContain('downloadKokoroModel');
+      expect(app, f).toContain('✓ On this device');
+      // Status is actually probed — a defined-but-never-called refresher would
+      // leave the panel permanently claiming "not downloaded".
+      expect(app, f).toContain('try { refreshAlloModelStatus(); } catch (_) {}');
+      // Kokoro's download IS its load; no invented file list.
+      expect(app, f).toContain('window.__loadKokoroTTS()');
+    }
+  });
+
   it('voice loop auto-policy hook exists and stays silent on failure', () => {
     const mod = readFileSync('allo_commands_source.jsx', 'utf-8');
     const hook = mod.slice(mod.indexOf('Policy \'auto\': first voice use'), mod.indexOf('Policy \'auto\': first voice use') + 900);
