@@ -5186,6 +5186,70 @@ function _alloNextSharedActivitySummaryOrder(currentValue, result, requestSequen
 }
 
 
+// ── Shared-activity credentials, one per RESPONDENT (not per device) ──────
+// A device may be handed round a staffroom or a classroom. Keeping a single
+// credential per activity meant the second person to answer inherited the
+// first person's identity and overwrote their row. These helpers keep a map
+// of credentials so each respondent gets their own, and are pure so they can
+// be tested without React or a network.
+const ALLO_ACTIVITY_CRED_VERSION = 2;
+
+// Accepts the legacy v1 shape ({uid, pt}) and migrates it into slot "s1", so
+// an in-flight respondent is never logged out by the upgrade.
+function alloNormalizeCredentialStore(raw) {
+  let parsed = raw;
+  if (typeof parsed === 'string') { try { parsed = JSON.parse(parsed); } catch (_) { parsed = null; } }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return { v: ALLO_ACTIVITY_CRED_VERSION, active: '', slots: {} };
+  if (parsed.uid && parsed.pt) {
+    return { v: ALLO_ACTIVITY_CRED_VERSION, active: 's1', slots: { s1: { uid: String(parsed.uid), pt: String(parsed.pt), label: '' } } };
+  }
+  const slots = {};
+  const rawSlots = parsed.slots && typeof parsed.slots === 'object' && !Array.isArray(parsed.slots) ? parsed.slots : {};
+  Object.keys(rawSlots).forEach((key) => {
+    const slot = rawSlots[key];
+    if (!slot || !slot.uid || !slot.pt) return;
+    slots[key] = { uid: String(slot.uid), pt: String(slot.pt), label: String(slot.label || '') };
+  });
+  const active = slots[parsed.active] ? String(parsed.active) : (Object.keys(slots)[0] || '');
+  return { v: ALLO_ACTIVITY_CRED_VERSION, active, slots };
+}
+
+// A named respondent keys on their own name so returning to edit finds their
+// row. Anonymous cannot: linking a return visit to an earlier row is exactly
+// the linkage that mode promises not to keep, so each start is a new slot.
+function alloCredentialSlotKey(identityMode, label, store) {
+  const cleaned = String(label || '').trim().toLowerCase().slice(0, 40);
+  if (identityMode !== 'anonymous' && cleaned) return 'n:' + cleaned;
+  const taken = store && store.slots ? store.slots : {};
+  let n = 1;
+  while (taken['s' + n]) n++;
+  return 's' + n;
+}
+
+function alloCredentialStoreWith(store, slotKey, credential, label) {
+  const base = alloNormalizeCredentialStore(store);
+  const slots = Object.assign({}, base.slots);
+  slots[slotKey] = { uid: String(credential.uid), pt: String(credential.pt), label: String(label || '') };
+  return { v: ALLO_ACTIVITY_CRED_VERSION, active: slotKey, slots };
+}
+
+function alloActiveCredential(store) {
+  const base = alloNormalizeCredentialStore(store);
+  const slot = base.slots[base.active];
+  return slot && slot.uid && slot.pt ? { uid: slot.uid, pt: slot.pt, label: slot.label } : null;
+}
+
+// Who has already answered on THIS device, so the client can offer "continue
+  // as Sam instead of assuming the person holding it is whoever typed last.
+function alloCredentialRoster(store) {
+  const base = alloNormalizeCredentialStore(store);
+  return Object.keys(base.slots).map((key) => ({
+    key,
+    label: base.slots[key].label,
+    active: key === base.active
+  }));
+}
+
 const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivityPanel({
     activity,
     mailbox,
@@ -5231,11 +5295,41 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
         setLastUpdatedAt(0);
     }, [activityScope]);
 
-    const rememberCredential = React.useCallback((credential) => {
+    // Writes into the respondent MAP, never over it, so one person answering
+    // does not evict another who used the same device.
+    const rememberCredential = React.useCallback((credential, slotKey, label) => {
         credentialRef.current = credential;
-        try { localStorage.setItem(storageKey, JSON.stringify(credential)); } catch (_) {}
+        try {
+            const next = alloCredentialStoreWith(localStorage.getItem(storageKey), slotKey, credential, label);
+            localStorage.setItem(storageKey, JSON.stringify(next));
+        } catch (_) {}
         return credential;
     }, [storageKey]);
+
+    // "Someone else is answering": mint a FRESH identity rather than reusing
+    // whatever is cached. The server issues a new uid per join, so this is the
+    // whole fix.
+    const startNewRespondent = React.useCallback(async (identityMode, label) => {
+        credentialRef.current = null;
+        let store = null;
+        try { store = alloNormalizeCredentialStore(localStorage.getItem(storageKey)); } catch (_) {}
+        const slotKey = alloCredentialSlotKey(identityMode, label, store);
+        const existing = store && store.slots ? store.slots[slotKey] : null;
+        if (existing && existing.uid && existing.pt) {
+            // A named respondent returning to change their answer keeps their
+            // row instead of appearing twice in the tally.
+            credentialRef.current = { uid: existing.uid, pt: existing.pt };
+            try {
+                const reactivated = alloCredentialStoreWith(localStorage.getItem(storageKey), slotKey, existing, label || existing.label);
+                localStorage.setItem(storageKey, JSON.stringify(reactivated));
+            } catch (_) {}
+            return credentialRef.current;
+        }
+        const joined = await _alloMailboxCallWithRetry(mailboxUrl, {
+            a: 'joinactivity', id: packId, k: packSecret, aid: activityId,
+        });
+        return rememberCredential({ uid: joined.uid, pt: joined.pt }, slotKey, label);
+    }, [activityId, mailboxUrl, packId, packSecret, rememberCredential, storageKey]);
 
     const clearCredential = React.useCallback(() => {
         credentialRef.current = null;
@@ -5247,8 +5341,8 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
         const current = credentialRef.current;
         if (current?.uid && current?.pt) return current;
         try {
-            const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
-            if (saved?.uid && saved?.pt) {
+            const saved = alloActiveCredential(localStorage.getItem(storageKey));
+            if (saved) {
                 credentialRef.current = saved;
                 return saved;
             }
@@ -5256,7 +5350,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
         const joined = await _alloMailboxCallWithRetry(mailboxUrl, {
             a: 'joinactivity', id: packId, k: packSecret, aid: activityId,
         });
-        return rememberCredential({ uid: joined.uid, pt: joined.pt });
+        return rememberCredential({ uid: joined.uid, pt: joined.pt }, 's1', '');
     }, [activityId, isTeacher, mailboxUrl, packId, packSecret, rememberCredential, storageKey]);
 
     const callStudentUpdate = React.useCallback(async (payload) => {
