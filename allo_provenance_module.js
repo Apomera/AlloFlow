@@ -610,21 +610,41 @@
         return { ok: false, reason: 'wrong-lens', periods: [], coverage: COVERAGE_NOTE };
       }
       var sum = summarizeSupport(ex);
-      var total = 0, weighted = 0;
-      for (var k = 0; k < PROMPT_LEVELS.length; k++) {
-        var lv = PROMPT_LEVELS[k];
-        total += sum.promptLevelCounts[lv];
-        weighted += sum.promptLevelCounts[lv] * fadeWeight(lv);
+      // ★ Intensity is computed over SCAFFOLDS ONLY, never over access
+      // supports. An access support has no prompt level — it is binary, used
+      // or not — so averaging it in drags the mean toward zero. That made a
+      // student who leaned harder on read-aloud read as FADING while their
+      // generative scaffolding was identical, in the one lane whose output
+      // could contribute to withdrawing that accommodation. Populations again
+      // (§15.4): the same mistake, one layer up.
+      var total = 0, weighted = 0, scaffoldUses = 0, accessUses = 0;
+      var evts = (ex.events || []);
+      for (var j = 0; j < evts.length; j++) {
+        var ev = evts[j];
+        if (ev.type !== 'ai' && ev.type !== 'support') continue;
+        var n = ev.type === 'support' ? Math.max(1, parseInt(ev.count, 10) || 1) : 1;
+        var who = classifySupport(ev.type === 'support' ? ev.kind : ev.support);
+        total += n;
+        if (who === 'access') { accessUses += n; continue; }
+        var lvl = PROMPT_LEVELS.indexOf(ev.promptLevel) >= 0 ? ev.promptLevel : 'none';
+        scaffoldUses += n;
+        weighted += fadeWeight(lvl) * n;
       }
       periods.push({
         label: clampStr(labels[i] || ('Assignment ' + (i + 1)), 80),
         startedWallClock: String(ex.startedWallClock || ''),
         supports: total,
+        // Reported SEPARATELY, never averaged together. Access use is a count
+        // question ('how often did they need it?'); scaffolding is an
+        // intensity question ('how much was done for them?'). Collapsing the
+        // two answers neither.
+        accessUses: accessUses,
+        scaffoldUses: scaffoldUses,
         byLevel: sum.promptLevelCounts,
         bySupport: sum.bySupport,
-        // Average support intensity, 0-3. Comparable across periods of
-        // different length, which a raw count is not.
-        intensity: total ? Math.round((weighted / total) * 100) / 100 : 0
+        // Mean scaffold intensity, 0-3, over scaffold events only. Comparable
+        // across periods of different length, which a raw count is not.
+        intensity: scaffoldUses ? Math.round((weighted / scaffoldUses) * 100) / 100 : 0
       });
     }
     return {
@@ -651,18 +671,27 @@
       };
     }
     var first = periods[0], last = periods[periods.length - 1];
+    // Scaffolding only. Access use is reported beside this, never folded in.
+    if (!first.scaffoldUses && !last.scaffoldUses) {
+      return {
+        direction: 'no-scaffolds',
+        delta: 0,
+        text: 'No scaffolding was recorded in either assignment, so there is no fade to read. '
+          + 'Access supports, if any, are listed separately.'
+      };
+    }
     var delta = Math.round((last.intensity - first.intensity) * 100) / 100;
     var direction = delta < -0.25 ? 'less' : delta > 0.25 ? 'more' : 'steady';
     var text;
     if (direction === 'less') {
-      text = 'Support intensity is lower than at the start (' + first.intensity + ' to ' + last.intensity + ').';
+      text = 'Scaffolding is lighter than at the start (' + first.intensity + ' to ' + last.intensity + ').';
     } else if (direction === 'more') {
       // Phrased without alarm. More support is information, not a problem, and
       // certainly not the student's failing.
-      text = 'Support intensity is higher than at the start (' + first.intensity + ' to ' + last.intensity + '). '
+      text = 'Scaffolding is heavier than at the start (' + first.intensity + ' to ' + last.intensity + '). '
         + 'That may reflect harder material as much as anything about the student.';
     } else {
-      text = 'Support intensity is about the same as at the start (' + first.intensity + ' to ' + last.intensity + ').';
+      text = 'Scaffolding is about the same as at the start (' + first.intensity + ' to ' + last.intensity + ').';
     }
     return { direction: direction, delta: delta, text: text };
   }
@@ -708,17 +737,19 @@
       h('p', { key: 'change', style: { fontSize: '0.82rem', marginTop: 8 } }, model.change.text),
       h('table', { key: 'periods', style: { width: '100%', marginTop: 8, fontSize: '0.78rem', borderCollapse: 'collapse' } }, [
         h('caption', { key: 'cap', style: { captionSide: 'top', textAlign: 'left', fontSize: '0.75rem', color: '#475569' } },
-          t('fade.periods_caption', 'Support intensity by assignment (0 = none, 3 = most)')),
+          t('fade.periods_caption', 'Access supports are counted, not scored. Scaffold intensity runs 0-3 and covers only scaffolding.')),
         h('thead', { key: 'th' }, h('tr', null, [
           h('th', { key: 'a', scope: 'col', style: { textAlign: 'left' } }, t('fade.assignment', 'Assignment')),
-          h('th', { key: 'b', scope: 'col', style: { textAlign: 'left' } }, t('fade.supports', 'Supports used')),
-          h('th', { key: 'c', scope: 'col', style: { textAlign: 'left' } }, t('fade.intensity', 'Intensity'))
+          h('th', { key: 'b', scope: 'col', style: { textAlign: 'left' } }, t('fade.access', 'Access supports used')),
+          h('th', { key: 'c', scope: 'col', style: { textAlign: 'left' } }, t('fade.scaffolds', 'Scaffolds used')),
+          h('th', { key: 'd', scope: 'col', style: { textAlign: 'left' } }, t('fade.intensity', 'Scaffold intensity'))
         ])),
         h('tbody', { key: 'tb' }, model.periods.map(function (p, i) {
           return h('tr', { key: i }, [
             h('th', { key: 'a', scope: 'row', style: { textAlign: 'left', fontWeight: 400 } }, p.label),
-            h('td', { key: 'b' }, String(p.supports)),
-            h('td', { key: 'c' }, String(p.intensity))
+            h('td', { key: 'b' }, String(p.accessUses)),
+            h('td', { key: 'c' }, String(p.scaffoldUses)),
+            h('td', { key: 'd' }, String(p.intensity))
           ]);
         }))
       ]),
@@ -1122,7 +1153,11 @@
       s.mode === 'choice'
         ? h('div', { className: 'mt-2 flex flex-col gap-1' }, choices.map(function (c, i) {
             return h('label', { key: i, className: 'text-xs flex items-start gap-2' },
-              h('input', { type: 'radio', name: 'allo-cp-choice', checked: s.choice === c, onChange: function () { set(Object.assign({}, s, { choice: c })); } }),
+              // Radio group scoped to THIS question. A fixed name works only
+              // while exactly one checkpoint is on screen — the moment two
+              // render together (a review view, say) a shared name silently
+              // links them, so choosing an answer to one clears the other.
+              h('input', { type: 'radio', name: 'allo-cp-choice-' + (q.id || 'cp'), checked: s.choice === c, onChange: function () { set(Object.assign({}, s, { choice: c })); } }),
               h('span', null, c));
           }))
         : s.mode === 'point'

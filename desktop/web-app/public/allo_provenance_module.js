@@ -62,6 +62,22 @@
   // describes a past event and must fail HONEST (unknown => 'we do not know'),
   // because reporting an unlabelled call as generative would invent a claim.
 
+  // Slugs are for the schema; a student reads words. An unknown slug falls
+  // through as-is rather than being dropped, so a newly instrumented support
+  // never silently vanishes from a student's own record.
+  var SUPPORT_WORDS = {
+    read_aloud: 'read-aloud', speech_to_text: 'talk-to-type', word_prediction: 'word prediction',
+    glossary: 'the glossary', translate: 'translation', simplified: 'simplified text',
+    spellcheck: 'spellcheck', magnify: 'zoom'
+  };
+  function friendlySupport(slug) {
+    var k = String(slug || '');
+    return SUPPORT_WORDS[k] || k.replace(/_/g, ' ');
+  }
+  function joinWords(list) {
+    if (list.length <= 1) return list[0] || '';
+    return list.slice(0, -1).join(', ') + ' and ' + list[list.length - 1];
+  }
   function bucketDuration(sec) {
     var n = Number(sec);
     if (!isFinite(n) || n < 0) return 'unknown';
@@ -136,6 +152,24 @@
       if (!out.support) return null;
       return out;
     },
+    // §15: the ledger's real unit. Any tool emits its own — only the tool
+    // knows it gave a sentence frame. `count` exists because these are
+    // BUCKETED (~15s, same as edits): read-aloud alone can fire 60 times in a
+    // session, and chaining each one spends payload and CPU on events nobody
+    // would ever forge.
+    support: function (e) {
+      var kind = clampStr(e.kind, 40);
+      if (!kind) return null;
+      var level = PROMPT_LEVELS.indexOf(e.promptLevel) >= 0 ? e.promptLevel : 'none';
+      var count = clampInt(e.count, 1, 100000);
+      var out = { kind: kind, promptLevel: level, count: count === null ? 1 : count };
+      // The population discriminator (§15.4). Only what went INTO the work is
+      // ever visible to the integrity lens; a word bank does not make an essay
+      // non-original, and neither does read-aloud.
+      if (e.insertedToWork === true) out.insertedToWork = true;
+      if (e.assistiveTech === true) out.assistiveTech = true;
+      return out;
+    },
     checkpoint: function (e) {
       // Fail toward 'unknown', never toward the incriminating value: a race,
       // a missing policy read or a typo must not record a student as having
@@ -147,12 +181,34 @@
       // precise duration beside an answer penalizes slow processors,
       // dictation users and extended-time accommodations.
       var bucket = DURATION_BUCKETS.indexOf(e.durationBucket) >= 0 ? e.durationBucket : bucketDuration(e.durationSec);
+      // §15.7(3): which accommodations were PROVIDED, as a de-duplicated sorted
+      // list — never a count. This mirrors how a real assessment protocol
+      // documents accommodation: it records that the plan was followed, not how
+      // many times the student used the reader. The first protects the validity
+      // of the administration; the second characterizes the child.
+      //
+      // Suppressing this entirely was the earlier plan and was WRONG: it left an
+      // accommodation-compliance gap, since a later reader could not tell whether
+      // accommodations were provided at all. Frequency lives only in the support
+      // export, so no integrity-facing surface can render one beside an answer.
+      var provided = [];
+      if (Array.isArray(e.supportsProvided)) {
+        var seen = {};
+        for (var i = 0; i < e.supportsProvided.length && provided.length < 12; i++) {
+          var name = clampStr(e.supportsProvided[i], 40);
+          if (!name || seen[name]) continue;
+          seen[name] = true;
+          provided.push(name);
+        }
+        provided.sort();
+      }
       return {
         id: clampStr(e.id, 40),
         aiState: st,
         outcome: outcome,
         responseMode: mode,
         durationBucket: bucket,
+        supportsProvided: provided,
         answerHash: clampStr(e.answerHash, 64),
         generatedFrom: clampStr(e.generatedFrom, 120)
       };
@@ -168,12 +224,23 @@
   // The fields that survive the integrity export. Kept beside the stripping
   // logic so the two can never disagree (a drift test pins the pairing).
   var HIDDEN_FROM_SUBMISSION = { promptLevel: true, promptPreview: true };
+  // §15.4, enforced HERE rather than in any view. A support event that did not
+  // put anything into the work is stripped of what it was and how often: the
+  // integrity export is physically unable to name which accommodations a child
+  // leans on. What survives is an anonymous timing marker, because a hash chain
+  // cannot drop links without breaking verification — an honest limit, stated
+  // in the coverage line rather than hidden.
+  var HIDDEN_SUPPORT_FROM_SUBMISSION = { kind: true, count: true, assistiveTech: true };
   function visibleBody(evt) {
     var out = {};
+    var supportWentIntoWork = evt.type === 'support' && evt.insertedToWork === true;
     for (var k in evt) {
       if (!Object.prototype.hasOwnProperty.call(evt, k)) continue;
       if (k === 'h' || k === 'f' || k === 'v') continue;
       if (evt.type === 'ai' && HIDDEN_FROM_SUBMISSION[k]) continue;
+      // Scaffold intensity is support-lens data whatever event carries it.
+      if (evt.type === 'support' && k === 'promptLevel') continue;
+      if (evt.type === 'support' && !supportWentIntoWork && HIDDEN_SUPPORT_FROM_SUBMISSION[k]) continue;
       out[k] = evt[k];
     }
     return out;
@@ -258,6 +325,41 @@
       buckets[key] = { since: t, chars: Math.round(Number(deltaChars) || 0), len: Math.max(0, Math.round(Number(len) || 0)) };
       return flushed;
     }
+    // Support buckets. Kept separate from edit buckets because the merge rule
+    // differs: two support events only combine when they are the SAME kind at
+    // the SAME level with the SAME insertedToWork. Collapsing across any of
+    // those would average away the distinction the lenses depend on.
+    var supportBuckets = {};
+    function supportKeyFor(kind, level, inserted) {
+      return kind + '|' + level + '|' + (inserted ? '1' : '0');
+    }
+    function noteSupport(kind, promptLevel, options) {
+      var name = String(kind || '').slice(0, 40);
+      if (!name) return Promise.resolve(null);
+      var o = options || {};
+      var level = PROMPT_LEVELS.indexOf(promptLevel) >= 0 ? promptLevel : 'none';
+      var inserted = o.insertedToWork === true;
+      var key = supportKeyFor(name, level, inserted);
+      var t = now();
+      var b = supportBuckets[key];
+      if (b && t - b.since < BUCKET_MS) { b.count += 1; return Promise.resolve(null); }
+      var flushed = b ? append('support', b.payload) : Promise.resolve(null);
+      var payload = { kind: name, promptLevel: level, count: 1 };
+      if (inserted) payload.insertedToWork = true;
+      if (o.assistiveTech === true) payload.assistiveTech = true;
+      supportBuckets[key] = { since: t, count: 1, payload: payload };
+      return flushed;
+    }
+    function flushSupports() {
+      var pending = Object.keys(supportBuckets).map(function (key) {
+        var b = supportBuckets[key];
+        b.payload.count = b.count;
+        return append('support', b.payload);
+      });
+      supportBuckets = {};
+      return Promise.all(pending);
+    }
+
     function flushEdits() {
       var pending = Object.keys(buckets).map(function (key) {
         var b = buckets[key];
@@ -270,7 +372,12 @@
     return {
       append: append,
       noteEdit: noteEdit,
+      noteSupport: noteSupport,
       flushEdits: flushEdits,
+      flushSupports: flushSupports,
+      // Flush BOTH. An unflushed bucket is silently lost data, and a partial
+      // flush produces counts that are simply wrong rather than merely late.
+      flush: function () { return Promise.all([flushEdits(), flushSupports()]); },
       // export waits for every in-flight append so the head is final.
       export: function () { return chain.then(function () { return exportNow(); }); },
       // ★★ Constraint 8 enforced at the DATA layer, not the view layer. The
@@ -365,11 +472,36 @@
     for (var i = 0; i < evts.length; i++) {
       var e = evts[i];
       if (e.type === 'session' && (e.action === 'start' || e.action === 'resume')) sessions++;
+      // ★ ASYMMETRY, deliberate and worth understanding. The population rule
+      // (§15.4) is applied to `support` events but NOT to `ai` events: every
+      // AI call counts here regardless of insertedToWork.
+      //
+      // The reason is that nothing currently SETS insertedToWork on an ai
+      // event — the callGemini wrapper cannot know whether the reply was used.
+      // Applying the rule there would silently zero the integrity AI count and
+      // hide a student who had a helper write their essay, which is the one
+      // failure this lens exists to prevent.
+      //
+      // So ai events are counted conservatively and reported as what they are:
+      // classifySupport sends unlabelled calls to 'unattributed', and
+      // describeAiUse renders that as "not identified" rather than implying
+      // generation. When insertedToWork becomes reliable at that boundary,
+      // this branch should adopt the same rule the support branch uses.
       if (e.type === 'ai') {
         aiCount++;
         kinds[classifySupport(e.support)]++;
       }
       if (e.type === 'checkpoint') checkpoints++;
+      // §15.4 population rule. A scaffold that put nothing into the work is
+      // not an integrity fact about it. visibleBody has already stripped the
+      // detail from a submission export; this makes the SUMMARY refuse to
+      // count the anonymous markers that remain, so no panel can render a
+      // help-frequency from them.
+      if (e.type === 'support' && e.insertedToWork === true) {
+        var n = Math.max(1, parseInt(e.count, 10) || 1);
+        aiCount += n;
+        kinds[classifySupport(e.kind)] += n;
+      }
       if (e.type === 'edit') edits++;
       if (e.type === 'paste') pasteEvents.push({ t: e.t, chars: e.chars, sourceHint: e.sourceHint });
       if (lastT !== null) activeMs += Math.min(120000, Math.max(0, e.t - lastT));
@@ -386,6 +518,7 @@
       // itself under question. Kinds give the teacher what they need — that
       // most of this was access, not generation — without naming any of it.
       aiKinds: kinds,
+      coverage: COVERAGE_NOTE,
       pasteEvents: pasteEvents.slice(0, 200),
       checkpoints: checkpoints
     };
@@ -414,18 +547,231 @@
     var counts = { model: 0, guided: 0, hint: 0, none: 0 };
     for (var i = 0; i < evts.length; i++) {
       var e = evts[i];
-      if (e.type !== 'ai') continue;
+      if (e.type !== 'ai' && e.type !== 'support') continue;
       var level = PROMPT_LEVELS.indexOf(e.promptLevel) >= 0 ? e.promptLevel : 'none';
-      counts[level]++;
-      var name = String(e.support || '') || 'unspecified';
-      bySupport[name] = (bySupport[name] || 0) + 1;
-      series.push({ t: e.t, promptLevel: level, support: e.support });
+      // A support event carries a bucketed count; an ai event is one call.
+      var n = e.type === 'support' ? Math.max(1, parseInt(e.count, 10) || 1) : 1;
+      counts[level] += n;
+      var name = String(e.type === 'support' ? e.kind : e.support) || 'unspecified';
+      bySupport[name] = (bySupport[name] || 0) + n;
+      series.push({ t: e.t, promptLevel: level, support: name, count: n });
     }
     // bySupport lives HERE, in the fade lens, where naming a scaffold is the
     // point: a team watching support fade needs to know which scaffold faded.
-    return { promptLevelCounts: counts, bySupport: bySupport, series: series.slice(0, 2000) };
+    return {
+      promptLevelCounts: counts,
+      bySupport: bySupport,
+      coverage: COVERAGE_NOTE,
+      neverObservable: NEVER_OBSERVABLE.slice(),
+      series: series.slice(0, 2000)
+    };
   }
 
+
+  // ── P6: the support-fade lane (MTSS/RTI) ─────────────────────────────────
+  // The consumer that makes the support lens worth collecting. A team asking
+  // "is this student needing less scaffolding over time?" needs MORE THAN ONE
+  // point, so this takes a list of support-lens exports — one per assignment,
+  // oldest first — and reports the shape of the change.
+  //
+  // Three things it deliberately does NOT do:
+  //  · It never decides. No 'responding', 'not responding', 'on track', no tier
+  //    recommendation. Those are team decisions about a child, and the Dispro
+  //    Analyzer precedent is binding here: thresholds and decisions are never
+  //    ours. What it reports is arithmetic, stated as arithmetic.
+  //  · It never touches the integrity lens. No paste counts, no checkpoint
+  //    outcomes, no chain verification. Constraint 8 is a separation of
+  //    POPULATIONS (§15.4), and this side sees only what helped the student.
+  //  · It never treats support as a deficit. Fewer scaffolds is not 'better'
+  //    and more is not 'worse' — a student whose needs increased is a student
+  //    whose plan may need to change, which is the point of monitoring.
+  function fadeWeight(level) {
+    // Errorless-learning ordering: a model-level prompt is more support than a
+    // hint. Weights make a mixed period comparable to another mixed period;
+    // they are NOT a score and are never shown.
+    if (level === 'model') return 3;
+    if (level === 'guided') return 2;
+    if (level === 'hint') return 1;
+    return 0;
+  }
+
+  function buildSupportFadeModel(supportExports, options) {
+    var opts = options || {};
+    var list = Array.isArray(supportExports) ? supportExports : [supportExports];
+    var labels = Array.isArray(opts.labels) ? opts.labels : [];
+    var periods = [];
+    for (var i = 0; i < list.length; i++) {
+      var ex = list[i];
+      if (!ex) continue;
+      // Guard the wall at the INPUT. Handing this an integrity export would
+      // silently produce an empty fade line that looks like 'no support used',
+      // which is the most misleading empty state this lane can have.
+      if (ex.lens === 'integrity') {
+        return { ok: false, reason: 'wrong-lens', periods: [], coverage: COVERAGE_NOTE };
+      }
+      var sum = summarizeSupport(ex);
+      // ★ Intensity is computed over SCAFFOLDS ONLY, never over access
+      // supports. An access support has no prompt level — it is binary, used
+      // or not — so averaging it in drags the mean toward zero. That made a
+      // student who leaned harder on read-aloud read as FADING while their
+      // generative scaffolding was identical, in the one lane whose output
+      // could contribute to withdrawing that accommodation. Populations again
+      // (§15.4): the same mistake, one layer up.
+      var total = 0, weighted = 0, scaffoldUses = 0, accessUses = 0;
+      var evts = (ex.events || []);
+      for (var j = 0; j < evts.length; j++) {
+        var ev = evts[j];
+        if (ev.type !== 'ai' && ev.type !== 'support') continue;
+        var n = ev.type === 'support' ? Math.max(1, parseInt(ev.count, 10) || 1) : 1;
+        var who = classifySupport(ev.type === 'support' ? ev.kind : ev.support);
+        total += n;
+        if (who === 'access') { accessUses += n; continue; }
+        var lvl = PROMPT_LEVELS.indexOf(ev.promptLevel) >= 0 ? ev.promptLevel : 'none';
+        scaffoldUses += n;
+        weighted += fadeWeight(lvl) * n;
+      }
+      periods.push({
+        label: clampStr(labels[i] || ('Assignment ' + (i + 1)), 80),
+        startedWallClock: String(ex.startedWallClock || ''),
+        supports: total,
+        // Reported SEPARATELY, never averaged together. Access use is a count
+        // question ('how often did they need it?'); scaffolding is an
+        // intensity question ('how much was done for them?'). Collapsing the
+        // two answers neither.
+        accessUses: accessUses,
+        scaffoldUses: scaffoldUses,
+        byLevel: sum.promptLevelCounts,
+        bySupport: sum.bySupport,
+        // Mean scaffold intensity, 0-3, over scaffold events only. Comparable
+        // across periods of different length, which a raw count is not.
+        intensity: scaffoldUses ? Math.round((weighted / scaffoldUses) * 100) / 100 : 0
+      });
+    }
+    return {
+      ok: true,
+      periods: periods,
+      change: describeFadeChange(periods),
+      coverage: COVERAGE_NOTE,
+      neverObservable: NEVER_OBSERVABLE.slice(),
+      // Shipped as data so no future panel can style it away or forget it.
+      teamNote: 'This shows which supports were used and how strong they were. '
+        + 'It is one source among many, it does not measure learning, and it '
+        + 'decides nothing about services or tiers.'
+    };
+  }
+
+  // Arithmetic, phrased as arithmetic. A team reads direction; it does not read
+  // a verdict, because there is none to read.
+  function describeFadeChange(periods) {
+    if (!periods || periods.length < 2) {
+      return {
+        direction: 'insufficient',
+        text: 'One assignment is a snapshot, not a trend. Two or more are needed before '
+          + 'any direction can be read.'
+      };
+    }
+    var first = periods[0], last = periods[periods.length - 1];
+    // Scaffolding only. Access use is reported beside this, never folded in.
+    if (!first.scaffoldUses && !last.scaffoldUses) {
+      return {
+        direction: 'no-scaffolds',
+        delta: 0,
+        text: 'No scaffolding was recorded in either assignment, so there is no fade to read. '
+          + 'Access supports, if any, are listed separately.'
+      };
+    }
+    var delta = Math.round((last.intensity - first.intensity) * 100) / 100;
+    var direction = delta < -0.25 ? 'less' : delta > 0.25 ? 'more' : 'steady';
+    var text;
+    if (direction === 'less') {
+      text = 'Scaffolding is lighter than at the start (' + first.intensity + ' to ' + last.intensity + ').';
+    } else if (direction === 'more') {
+      // Phrased without alarm. More support is information, not a problem, and
+      // certainly not the student's failing.
+      text = 'Scaffolding is heavier than at the start (' + first.intensity + ' to ' + last.intensity + '). '
+        + 'That may reflect harder material as much as anything about the student.';
+    } else {
+      text = 'Scaffolding is about the same as at the start (' + first.intensity + ' to ' + last.intensity + ').';
+    }
+    return { direction: direction, delta: delta, text: text };
+  }
+
+  // Which scaffolds moved, named. A team fading a specific support needs to
+  // know whether THAT support faded, not whether the total did.
+  function fadeBySupport(model) {
+    var periods = (model && model.periods) || [];
+    if (periods.length < 2) return [];
+    var first = periods[0].bySupport || {};
+    var last = periods[periods.length - 1].bySupport || {};
+    var names = {};
+    Object.keys(first).forEach(function (k) { names[k] = true; });
+    Object.keys(last).forEach(function (k) { names[k] = true; });
+    return Object.keys(names).sort().map(function (name) {
+      return { support: name, from: first[name] || 0, to: last[name] || 0 };
+    });
+  }
+
+  // The team-facing surface. Deliberately plain: no chart, no colour coding, no
+  // arrows. A red down-arrow beside a child's scaffolding turns monitoring into
+  // scoring, and the visual register is exactly what constraint 8 says these two
+  // lenses may never share.
+  function SupportFadePanel(props) {
+    var React = GLOBAL.React;
+    if (!React || !React.createElement) return null;
+    var h = React.createElement;
+    var t = (props && props.t) || function (k, f) { return f || k; };
+    var model = props && props.model;
+    if (!model) return null;
+    if (model.ok === false) {
+      // The wrong-lens case is worth SAYING. An empty fade line reads as 'this
+      // student used no support', which is the most misleading thing this
+      // panel could imply.
+      return h('p', { role: 'status', style: { fontSize: '0.8rem', color: '#475569' } },
+        t('fade.wrong_lens', 'This record is the submission copy, which does not carry support details. Open the support copy to see them.'));
+    }
+    var rows = fadeBySupport(model);
+    return h('section', { 'aria-labelledby': 'allo-fade-title', style: { border: '1px solid #e2e8f0', borderRadius: 8, padding: 10 } }, [
+      h('h3', { key: 'h', id: 'allo-fade-title', style: { fontSize: '0.9rem', fontWeight: 700, margin: 0 } },
+        t('fade.title', 'Support over time')),
+      h('p', { key: 'note', style: { fontSize: '0.78rem', color: '#475569', marginTop: 6 } }, model.teamNote),
+      h('p', { key: 'change', style: { fontSize: '0.82rem', marginTop: 8 } }, model.change.text),
+      h('table', { key: 'periods', style: { width: '100%', marginTop: 8, fontSize: '0.78rem', borderCollapse: 'collapse' } }, [
+        h('caption', { key: 'cap', style: { captionSide: 'top', textAlign: 'left', fontSize: '0.75rem', color: '#475569' } },
+          t('fade.periods_caption', 'Access supports are counted, not scored. Scaffold intensity runs 0-3 and covers only scaffolding.')),
+        h('thead', { key: 'th' }, h('tr', null, [
+          h('th', { key: 'a', scope: 'col', style: { textAlign: 'left' } }, t('fade.assignment', 'Assignment')),
+          h('th', { key: 'b', scope: 'col', style: { textAlign: 'left' } }, t('fade.access', 'Access supports used')),
+          h('th', { key: 'c', scope: 'col', style: { textAlign: 'left' } }, t('fade.scaffolds', 'Scaffolds used')),
+          h('th', { key: 'd', scope: 'col', style: { textAlign: 'left' } }, t('fade.intensity', 'Scaffold intensity'))
+        ])),
+        h('tbody', { key: 'tb' }, model.periods.map(function (p, i) {
+          return h('tr', { key: i }, [
+            h('th', { key: 'a', scope: 'row', style: { textAlign: 'left', fontWeight: 400 } }, p.label),
+            h('td', { key: 'b' }, String(p.accessUses)),
+            h('td', { key: 'c' }, String(p.scaffoldUses)),
+            h('td', { key: 'd' }, String(p.intensity))
+          ]);
+        }))
+      ]),
+      rows.length ? h('table', { key: 'bysupport', style: { width: '100%', marginTop: 10, fontSize: '0.78rem', borderCollapse: 'collapse' } }, [
+        h('caption', { key: 'cap', style: { captionSide: 'top', textAlign: 'left', fontSize: '0.75rem', color: '#475569' } },
+          t('fade.by_support_caption', 'Each support, first assignment to last')),
+        h('thead', { key: 'th' }, h('tr', null, [
+          h('th', { key: 'a', scope: 'col', style: { textAlign: 'left' } }, t('fade.support', 'Support')),
+          h('th', { key: 'b', scope: 'col', style: { textAlign: 'left' } }, t('fade.first', 'First')),
+          h('th', { key: 'c', scope: 'col', style: { textAlign: 'left' } }, t('fade.last', 'Last'))
+        ])),
+        h('tbody', { key: 'tb' }, rows.map(function (r, i) {
+          return h('tr', { key: i }, [
+            h('th', { key: 'a', scope: 'row', style: { textAlign: 'left', fontWeight: 400 } }, r.support),
+            h('td', { key: 'b' }, String(r.from)),
+            h('td', { key: 'c' }, String(r.to))
+          ]);
+        }))
+      ]) : null,
+      h('p', { key: 'cov', style: { fontSize: '0.75rem', color: '#475569', marginTop: 10 } }, model.coverage)
+    ]);
+  }
   // ── P3: comprehension checkpoints ────────────────────────────────────────
   // Questions generated FROM the student's own artifact, answered by the
   // student, read by the TEACHER. The safety rules below came out of an
@@ -588,8 +934,23 @@
     // reads it — but the student must be told it exists at all.
     ai: 'Which AlloFlow helpers you used and when — and, in this view only, the start of what you asked them',
     checkpoint: 'Your check-in answers (as digital fingerprints) and how long they took',
+    // Student-facing, and deliberately not apologetic. Using a support is a
+    // normal part of working, so this line describes it the way it describes
+    // typing: a thing that happened, not a thing to explain.
+    support: 'Which supports helped you — like read-aloud or a glossary — and roughly how often',
     revision: 'How your work grew over time — sizes, not contents'
   };
+  // §15.5 — coverage is STATED, never implied. Two of the eight supports named
+  // in CHECKPOINT_ALWAYS_ALLOWED can never be recorded: spellcheck is the
+  // browser's, word_prediction is the keyboard's. Neither exists in AlloFlow to
+  // hook. A record that implies completeness while partial harms in BOTH
+  // directions — in the integrity lens absence gets read as evidence, and in
+  // the MTSS lens under-counted support makes a student look more independent
+  // than they are, which is a record capable of moving a fading decision.
+  var NEVER_OBSERVABLE = ['spellcheck', 'word_prediction'];
+  var COVERAGE_NOTE = 'This lists only the supports AlloFlow can see. Some help — '
+    + 'spellcheck, word prediction, a person sitting next to you — leaves no record here. '
+    + 'A short list does not mean little help was used.';
   var NEVER_COLLECTED = [
     'The words of your assignment answers (only amounts and timing)',
     'What you asked a helper — that never goes to your teacher',
@@ -612,7 +973,16 @@
       if (e.type === 'session') lines.push(e.action === 'start' ? 'You started working.' : e.action === 'resume' ? 'You came back to it ' + at + '.' : 'You finished this session ' + at + '.');
       else if (e.type === 'paste') lines.push('You pasted in about ' + e.chars + ' characters ' + at + (e.sourceHint === 'intra-app' ? ' (from your own work in AlloFlow).' : '.'));
       else if (e.type === 'ai') lines.push('You used the ' + (e.support || 'AI') + ' helper ' + at + '.');
-      else if (e.type === 'checkpoint') lines.push('You answered a check-in ' + at + ' (' + e.durationSec + 's, AI ' + e.aiState + ').');
+      else if (e.type === 'checkpoint') {
+        // Coarse bucket, not seconds, and no bare 'AI off' either — a student
+        // reading their own story should not meet a state label they never set.
+        // No duration here. It sits awkwardly beside the 'when' phrase, and how
+        // long a child took to answer is exactly what the coarse buckets exist
+        // to stop anyone reading into.
+        var used = (e.supportsProvided || []).map(friendlySupport).filter(Boolean);
+        lines.push('You answered a check-in ' + at
+          + (used.length ? ', using ' + joinWords(used) : '') + '.');
+      }
     }
     var s = summarizeProcess(exported || { events: [] });
     return {
@@ -620,7 +990,19 @@
       lines: lines,
       collected: describeCollection(),
       neverCollected: NEVER_COLLECTED.slice(),
-      consentPrompt: 'Include your Work Story with this submission? Your teacher will see the timeline above — nothing more. You can look through every line first.'
+      // No longer a question. Constraint 2 as amended: the student SEES the log,
+      // they do not gate it — a checkbox here was a choice they could not
+      // meaningfully make, and declining would have looked like hiding.
+      whyTeacherSees: 'Your teacher will see this Work Story with your assignment. '
+        + 'It shows how the work happened — when you worked, and which supports helped. '
+        + 'It never shows what you wrote to a helper, and it is not a score or a check on you.',
+      // The instructional half, and the reason this is better than a checkbox:
+      // it gives a student a reason to prefer supports we can actually account
+      // for. Wording pending Dr. Howorth (§12.10) — it must read as guidance,
+      // never as a warning against getting help.
+      useOurSupports: 'When you need help, use the supports here in AlloFlow or ask an adult you trust. '
+        + 'Those are the ones your teacher can see and help you with.',
+      coverage: COVERAGE_NOTE
     };
   }
 
@@ -671,17 +1053,18 @@
     var open = React.useState(false);
     var isOpen = open[0], setOpen = open[1];
     if (!model) return null;
-    var included = !!(props && props.included);
-    var onToggle = (props && props.onToggle) || function () {};
-    var onClear = props && props.onClear;
+    // `included` / `onToggle` / `onClear` are deliberately GONE. See the
+    // constraint-2 amendment: with the gate removed, a delete button would be
+    // the same opt-out wearing a different hat, and a student erasing their own
+    // record is exactly the 'decline reads as concealment' failure. Amendment
+    // and deletion rights run through the district under FERPA, which is where
+    // they always ran — a self-serve button was never that mechanism.
     return h('section', { className: 'rounded-3xl shadow-lg overflow-hidden shrink-0 mb-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700', 'aria-labelledby': 'allo-work-story-title' },
       h('div', { className: 'p-3' },
         h('div', { id: 'allo-work-story-title', className: 'text-sm font-bold flex items-center gap-2' }, '📖 ' + t('work_story.title', 'Your Work Story')),
         h('p', { className: 'text-xs mt-1 opacity-80' }, model.summary),
-        h('label', { className: 'flex items-start gap-2 mt-2 text-xs cursor-pointer' },
-          h('input', { type: 'checkbox', checked: included, onChange: function (e) { onToggle(!!e.target.checked); }, className: 'mt-0.5' }),
-          h('span', null, model.consentPrompt)
-        ),
+        h('p', { className: 'text-xs mt-2' }, model.whyTeacherSees),
+        h('p', { className: 'text-xs mt-1 font-semibold' }, model.useOurSupports),
         h('button', {
           type: 'button',
           onClick: function () { setOpen(!isOpen); },
@@ -694,7 +1077,7 @@
           h('ul', { className: 'list-disc ml-4' }, model.collected.map(function (c) { return h('li', { key: c.type }, c.what); })),
           h('p', { className: 'mt-2 font-semibold' }, t('work_story.never', 'What it never keeps:')),
           h('ul', { className: 'list-disc ml-4' }, model.neverCollected.map(function (n, i) { return h('li', { key: i }, n); })),
-          onClear ? h('button', { type: 'button', onClick: onClear, className: 'mt-2 text-xs underline' }, t('work_story.clear', 'Delete what has been recorded so far')) : null
+          h('p', { className: 'mt-2 text-xs opacity-80' }, model.coverage)
         ) : null
       )
     );
@@ -770,7 +1153,11 @@
       s.mode === 'choice'
         ? h('div', { className: 'mt-2 flex flex-col gap-1' }, choices.map(function (c, i) {
             return h('label', { key: i, className: 'text-xs flex items-start gap-2' },
-              h('input', { type: 'radio', name: 'allo-cp-choice', checked: s.choice === c, onChange: function () { set(Object.assign({}, s, { choice: c })); } }),
+              // Radio group scoped to THIS question. A fixed name works only
+              // while exactly one checkpoint is on screen — the moment two
+              // render together (a review view, say) a shared name silently
+              // links them, so choosing an answer to one clears the other.
+              h('input', { type: 'radio', name: 'allo-cp-choice-' + (q.id || 'cp'), checked: s.choice === c, onChange: function () { set(Object.assign({}, s, { choice: c })); } }),
               h('span', null, c));
           }))
         : s.mode === 'point'
@@ -857,7 +1244,13 @@
               c.outcome === 'answered' ? c.answerText : 'Not attempted. This can happen for many reasons, including technical ones.'),
             h('div', { style: { fontSize: '0.75rem', color: '#475569', marginTop: 4 } }, 'Question: ' + c.questionText),
             c.sourceExcerpt ? h('div', { style: { fontSize: '0.75rem', color: '#475569', fontStyle: 'italic' } }, 'About: “' + c.sourceExcerpt + '”') : null,
-            c.answerLanguage ? h('div', { style: { fontSize: '0.72rem', color: '#475569' } }, 'Answered in ' + c.answerLanguage) : null);
+            c.answerLanguage ? h('div', { style: { fontSize: '0.72rem', color: '#475569' } }, 'Answered in ' + c.answerLanguage) : null,
+            // Provision, never a tally (§15.7). This documents that the plan was
+            // followed; it is not a fact about how much the student needed.
+            (c.supportsProvided && c.supportsProvided.length)
+              ? h('div', { style: { fontSize: '0.72rem', color: '#475569', marginTop: 2 } },
+                  'Accommodations provided: ' + c.supportsProvided.join(', '))
+              : null);
         })
       ) : null
     );
@@ -877,6 +1270,10 @@
     attachProvenance: attachProvenance,
     summarizeProcess: summarizeProcess,
     summarizeSupport: summarizeSupport,
+    // ── P6 ──
+    buildSupportFadeModel: buildSupportFadeModel,
+    SupportFadePanel: SupportFadePanel,
+    fadeBySupport: fadeBySupport,
     sanitizeEvent: sanitizeEvent,
     stableStringify: stableStringify,
     // Exported for checkpoint answer fingerprints (P3): the ledger stores a
@@ -893,6 +1290,8 @@
     hashCheckpointAnswer: hashCheckpointAnswer,
     isAllowedDuringCheckpoint: isAllowedDuringCheckpoint,
     classifySupport: classifySupport,
+    NEVER_OBSERVABLE: NEVER_OBSERVABLE.slice(),
+    COVERAGE_NOTE: COVERAGE_NOTE,
     SUPPORT_KINDS: SUPPORT_KINDS.slice(),
     describeAiUse: describeAiUse,
     isStudentAuthoredSpan: isStudentAuthoredSpan,

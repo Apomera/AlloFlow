@@ -499,7 +499,10 @@ describe('constraints in the module text itself', () => {
     const src = readFileSync('allo_provenance_module.js', 'utf-8');
     const cp = src.slice(src.indexOf('function CheckpointPanel'), src.indexOf('// ── P2 (surface)'));
     for (const mode of ['text', 'audio', 'choice', 'point']) expect(cp, mode).toContain("modeBtn('" + mode + "'");
-    expect(cp).toContain('q.sourceExcerpt');                    // never a memory test
+    expect(cp).toContain('q.sourceExcerpt');
+    // Radio groups are scoped per question: a fixed name silently links two
+    // checkpoints if they ever render together.
+    expect(cp).toContain("name: 'allo-cp-choice-' + (q.id || 'cp')");                    // never a memory test
     // Accommodations are named on screen, and speech stays on-device.
     expect(cp).toContain('Only the answer helper is paused');
     expect(cp).toContain('it becomes text on this device');
@@ -1161,6 +1164,56 @@ describe('P6 — the lane decides nothing and never crosses the wall', () => {
     const m = P.buildSupportFadeModel([await supportExport()]);
     // teamNote ships as DATA so no future panel can style it away or forget it.
     expect(m.teamNote).toContain('does not measure learning');
+  });
+});
+
+describe('P6 — accommodation use must never move the fade read', () => {
+  async function ledgerOf(spec) {
+    const clock = mkClock();
+    const led = P.createLedger({ now: clock.now, bucketMs: 15000 });
+    for (const [kind, level, n] of spec) {
+      for (let i = 0; i < n; i++) { clock.tick(20000); await led.append('ai', { support: kind, promptLevel: level }); }
+    }
+    return led.exportForSupport();
+  }
+
+  it('using an accommodation MORE does not read as needing less support', async () => {
+    // The defect this pins: intensity averaged access supports (level 'none',
+    // weight 0) into the mean, so heavier read-aloud use dragged it down. A
+    // student leaning harder on their accommodation read as FADING, in the one
+    // lane whose output could contribute to withdrawing that accommodation.
+    const sept = await ledgerOf([['allobot', 'model', 5], ['read_aloud', 'none', 8]]);
+    const dec  = await ledgerOf([['allobot', 'model', 5], ['read_aloud', 'none', 30]]);
+    const m = P.buildSupportFadeModel([sept, dec]);
+    expect(m.periods[0].intensity).toBe(m.periods[1].intensity);
+    expect(m.change.direction).toBe('steady');
+  });
+
+  it('counts access use instead, reported beside the fade and never inside it', async () => {
+    const sept = await ledgerOf([['allobot', 'model', 5], ['read_aloud', 'none', 8]]);
+    const dec  = await ledgerOf([['allobot', 'model', 5], ['read_aloud', 'none', 30]]);
+    const m = P.buildSupportFadeModel([sept, dec]);
+    // Access use is a COUNT question ('how often did they need it?');
+    // scaffolding is an INTENSITY question ('how much was done for them?').
+    expect(m.periods.map(p => p.accessUses)).toEqual([8, 30]);
+    expect(m.periods.map(p => p.scaffoldUses)).toEqual([5, 5]);
+  });
+
+  it('still sees a real fade in the scaffolding itself', async () => {
+    const a = await ledgerOf([['allobot', 'model', 4], ['read_aloud', 'none', 10]]);
+    const b = await ledgerOf([['allobot', 'hint', 4], ['read_aloud', 'none', 10]]);
+    const m = P.buildSupportFadeModel([a, b]);
+    expect(m.change.direction).toBe('less');
+  });
+
+  it('says so plainly when there is no scaffolding to read a fade from', async () => {
+    const a = await ledgerOf([['read_aloud', 'none', 6]]);
+    const b = await ledgerOf([['read_aloud', 'none', 9]]);
+    const m = P.buildSupportFadeModel([a, b]);
+    // Reporting 0 -> 0 as 'steady scaffolding' would imply a measurement that
+    // never happened.
+    expect(m.change.direction).toBe('no-scaffolds');
+    expect(m.change.text).toContain('no fade to read');
   });
 });
 
