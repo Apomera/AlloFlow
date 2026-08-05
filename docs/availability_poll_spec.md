@@ -198,7 +198,93 @@ two backends that disagree about a poll result is a bug users cannot diagnose.
    "final" means when the organizer is watching results arrive.
 3. **Retention.** `expiresAt` exists. What should it default to for a poll, and
    should expiry delete the responses or just close voting?
-4. **One device, two people.** I verified the token shape but not how a fresh
-   respondent is assigned a uid. If two people answer on one shared device, do
-   they stay distinct? This needs checking before build, because it decides
-   whether `real_name` mode is trustworthy.
+5. **Mailbox config portability.** Persistence is already solved (§11.1). Should
+   a teacher be able to export or QR their mailbox config to restore it or move
+   it to a second device?
+4. ~~One device, two people.~~ **Answered, see §11.** They do NOT stay distinct
+   today. Making them distinct is feasible and the work is client-side only.
+
+---
+
+## 11. Identity on the device (investigated 2026-08-05)
+
+### 11.1 Mailbox config persistence: already built
+
+Nothing to do. `mbConfig` initializes directly from localStorage:
+
+```js
+const url   = _alloCleanMailboxUrl(localStorage.getItem(ALLO_MB_URL_KEY) || '');
+const admin = localStorage.getItem(ALLO_MB_ADMIN_KEY) || '';
+const v     = Number(localStorage.getItem(ALLO_MB_VERSION_KEY) || 0);
+```
+
+Keys: `alloflow_session_mailbox_url`, `alloflow_session_mailbox_admin`, plus the
+deployed script version. So the deployment URL and admin token already survive
+across sessions on that device.
+
+Two caveats worth deciding on rather than discovering:
+
+- The **admin token is a credential** sitting in localStorage. It grants admin
+  access to that teacher's mailbox. Acceptable on a personal device, less so on
+  a shared staffroom machine, and it never expires on its own.
+- AlloFlow's primary surface is Gemini Canvas, where the page runs on a
+  blob/usercontent origin. localStorage is origin-scoped, so if that origin
+  changes the config silently disappears and the teacher must re-enter it. The
+  real gap is therefore not persistence but **portability**: an explicit
+  export/import (or QR) of the mailbox config, which also covers moving to a
+  second device. That is open question 5.
+
+### 11.2 Two people on one device: not distinct today
+
+Confirmed by reading, not assumed.
+
+The server mints a fresh participant id at join
+(`'mb-' + Utilities.getUuid()...`, Code.gs) and thereafter authenticates each
+request with `requestActor()`, which requires a `uid` matching `mb-[A-Za-z0-9_-]{8,48}`
+plus a `pt` token equal to `participantToken(admin, code, uid, secret)`. So
+identity is a uid and its HMAC, both issued by the organizer's own deployment.
+
+The client caches exactly one of those per storage key:
+
+```js
+const ensureCredential = ... => {
+  const current = credentialRef.current;
+  if (current?.uid && current?.pt) return current;   // reuse, always
+  ...
+}
+const rememberCredential = (credential) => {
+  localStorage.setItem(storageKey, JSON.stringify(credential));  // ONE credential
+}
+```
+
+So a second person on the same device silently inherits the first person's
+identity and **overwrites their answer**. In a scheduling poll that is a
+correctness bug, not a nicety: the grid would quietly lose a respondent.
+
+### 11.3 Making them distinct: feasible, client-side only
+
+The server side already supports it, because every join mints a new uuid and
+validates it independently. No Apps Script change is needed. The client changes:
+
+1. Store a **map** of credentials per activity instead of a single credential.
+2. Add an explicit "someone else is answering" path that skips
+   `ensureCredential`'s reuse branch and forces a fresh join, then stores the new
+   credential alongside the existing one.
+3. On return, offer "continue as X" versus "I am someone else" rather than
+   assuming.
+
+The behaviour differs by identity mode, and this is a design decision, not an
+implementation detail:
+
+- **`real_name`**: key the credential map by the typed name. Returning lets that
+  person edit their own row, which is the Doodle behaviour people expect.
+- **`codename`**: same, keyed by assigned codename, which must stay stable per
+  respondent or the tally double-counts.
+- **`anonymous`**: "is this the same person?" is unanswerable by design. Each new
+  visit should mint a fresh identity, and editing your own answer works only
+  within the same visit. Trying to do better here would require exactly the
+  linkage the mode promises not to keep.
+
+Cost is small and contained, but it must land **with** the poll rather than
+after it: a scheduling tool that loses a respondent on a shared laptop is worse
+than no scheduling tool.
