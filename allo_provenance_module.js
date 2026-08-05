@@ -567,6 +567,180 @@
     };
   }
 
+
+  // ── P6: the support-fade lane (MTSS/RTI) ─────────────────────────────────
+  // The consumer that makes the support lens worth collecting. A team asking
+  // "is this student needing less scaffolding over time?" needs MORE THAN ONE
+  // point, so this takes a list of support-lens exports — one per assignment,
+  // oldest first — and reports the shape of the change.
+  //
+  // Three things it deliberately does NOT do:
+  //  · It never decides. No 'responding', 'not responding', 'on track', no tier
+  //    recommendation. Those are team decisions about a child, and the Dispro
+  //    Analyzer precedent is binding here: thresholds and decisions are never
+  //    ours. What it reports is arithmetic, stated as arithmetic.
+  //  · It never touches the integrity lens. No paste counts, no checkpoint
+  //    outcomes, no chain verification. Constraint 8 is a separation of
+  //    POPULATIONS (§15.4), and this side sees only what helped the student.
+  //  · It never treats support as a deficit. Fewer scaffolds is not 'better'
+  //    and more is not 'worse' — a student whose needs increased is a student
+  //    whose plan may need to change, which is the point of monitoring.
+  function fadeWeight(level) {
+    // Errorless-learning ordering: a model-level prompt is more support than a
+    // hint. Weights make a mixed period comparable to another mixed period;
+    // they are NOT a score and are never shown.
+    if (level === 'model') return 3;
+    if (level === 'guided') return 2;
+    if (level === 'hint') return 1;
+    return 0;
+  }
+
+  function buildSupportFadeModel(supportExports, options) {
+    var opts = options || {};
+    var list = Array.isArray(supportExports) ? supportExports : [supportExports];
+    var labels = Array.isArray(opts.labels) ? opts.labels : [];
+    var periods = [];
+    for (var i = 0; i < list.length; i++) {
+      var ex = list[i];
+      if (!ex) continue;
+      // Guard the wall at the INPUT. Handing this an integrity export would
+      // silently produce an empty fade line that looks like 'no support used',
+      // which is the most misleading empty state this lane can have.
+      if (ex.lens === 'integrity') {
+        return { ok: false, reason: 'wrong-lens', periods: [], coverage: COVERAGE_NOTE };
+      }
+      var sum = summarizeSupport(ex);
+      var total = 0, weighted = 0;
+      for (var k = 0; k < PROMPT_LEVELS.length; k++) {
+        var lv = PROMPT_LEVELS[k];
+        total += sum.promptLevelCounts[lv];
+        weighted += sum.promptLevelCounts[lv] * fadeWeight(lv);
+      }
+      periods.push({
+        label: clampStr(labels[i] || ('Assignment ' + (i + 1)), 80),
+        startedWallClock: String(ex.startedWallClock || ''),
+        supports: total,
+        byLevel: sum.promptLevelCounts,
+        bySupport: sum.bySupport,
+        // Average support intensity, 0-3. Comparable across periods of
+        // different length, which a raw count is not.
+        intensity: total ? Math.round((weighted / total) * 100) / 100 : 0
+      });
+    }
+    return {
+      ok: true,
+      periods: periods,
+      change: describeFadeChange(periods),
+      coverage: COVERAGE_NOTE,
+      neverObservable: NEVER_OBSERVABLE.slice(),
+      // Shipped as data so no future panel can style it away or forget it.
+      teamNote: 'This shows which supports were used and how strong they were. '
+        + 'It is one source among many, it does not measure learning, and it '
+        + 'decides nothing about services or tiers.'
+    };
+  }
+
+  // Arithmetic, phrased as arithmetic. A team reads direction; it does not read
+  // a verdict, because there is none to read.
+  function describeFadeChange(periods) {
+    if (!periods || periods.length < 2) {
+      return {
+        direction: 'insufficient',
+        text: 'One assignment is a snapshot, not a trend. Two or more are needed before '
+          + 'any direction can be read.'
+      };
+    }
+    var first = periods[0], last = periods[periods.length - 1];
+    var delta = Math.round((last.intensity - first.intensity) * 100) / 100;
+    var direction = delta < -0.25 ? 'less' : delta > 0.25 ? 'more' : 'steady';
+    var text;
+    if (direction === 'less') {
+      text = 'Support intensity is lower than at the start (' + first.intensity + ' to ' + last.intensity + ').';
+    } else if (direction === 'more') {
+      // Phrased without alarm. More support is information, not a problem, and
+      // certainly not the student's failing.
+      text = 'Support intensity is higher than at the start (' + first.intensity + ' to ' + last.intensity + '). '
+        + 'That may reflect harder material as much as anything about the student.';
+    } else {
+      text = 'Support intensity is about the same as at the start (' + first.intensity + ' to ' + last.intensity + ').';
+    }
+    return { direction: direction, delta: delta, text: text };
+  }
+
+  // Which scaffolds moved, named. A team fading a specific support needs to
+  // know whether THAT support faded, not whether the total did.
+  function fadeBySupport(model) {
+    var periods = (model && model.periods) || [];
+    if (periods.length < 2) return [];
+    var first = periods[0].bySupport || {};
+    var last = periods[periods.length - 1].bySupport || {};
+    var names = {};
+    Object.keys(first).forEach(function (k) { names[k] = true; });
+    Object.keys(last).forEach(function (k) { names[k] = true; });
+    return Object.keys(names).sort().map(function (name) {
+      return { support: name, from: first[name] || 0, to: last[name] || 0 };
+    });
+  }
+
+  // The team-facing surface. Deliberately plain: no chart, no colour coding, no
+  // arrows. A red down-arrow beside a child's scaffolding turns monitoring into
+  // scoring, and the visual register is exactly what constraint 8 says these two
+  // lenses may never share.
+  function SupportFadePanel(props) {
+    var React = GLOBAL.React;
+    if (!React || !React.createElement) return null;
+    var h = React.createElement;
+    var t = (props && props.t) || function (k, f) { return f || k; };
+    var model = props && props.model;
+    if (!model) return null;
+    if (model.ok === false) {
+      // The wrong-lens case is worth SAYING. An empty fade line reads as 'this
+      // student used no support', which is the most misleading thing this
+      // panel could imply.
+      return h('p', { role: 'status', style: { fontSize: '0.8rem', color: '#475569' } },
+        t('fade.wrong_lens', 'This record is the submission copy, which does not carry support details. Open the support copy to see them.'));
+    }
+    var rows = fadeBySupport(model);
+    return h('section', { 'aria-labelledby': 'allo-fade-title', style: { border: '1px solid #e2e8f0', borderRadius: 8, padding: 10 } }, [
+      h('h3', { key: 'h', id: 'allo-fade-title', style: { fontSize: '0.9rem', fontWeight: 700, margin: 0 } },
+        t('fade.title', 'Support over time')),
+      h('p', { key: 'note', style: { fontSize: '0.78rem', color: '#475569', marginTop: 6 } }, model.teamNote),
+      h('p', { key: 'change', style: { fontSize: '0.82rem', marginTop: 8 } }, model.change.text),
+      h('table', { key: 'periods', style: { width: '100%', marginTop: 8, fontSize: '0.78rem', borderCollapse: 'collapse' } }, [
+        h('caption', { key: 'cap', style: { captionSide: 'top', textAlign: 'left', fontSize: '0.75rem', color: '#475569' } },
+          t('fade.periods_caption', 'Support intensity by assignment (0 = none, 3 = most)')),
+        h('thead', { key: 'th' }, h('tr', null, [
+          h('th', { key: 'a', scope: 'col', style: { textAlign: 'left' } }, t('fade.assignment', 'Assignment')),
+          h('th', { key: 'b', scope: 'col', style: { textAlign: 'left' } }, t('fade.supports', 'Supports used')),
+          h('th', { key: 'c', scope: 'col', style: { textAlign: 'left' } }, t('fade.intensity', 'Intensity'))
+        ])),
+        h('tbody', { key: 'tb' }, model.periods.map(function (p, i) {
+          return h('tr', { key: i }, [
+            h('th', { key: 'a', scope: 'row', style: { textAlign: 'left', fontWeight: 400 } }, p.label),
+            h('td', { key: 'b' }, String(p.supports)),
+            h('td', { key: 'c' }, String(p.intensity))
+          ]);
+        }))
+      ]),
+      rows.length ? h('table', { key: 'bysupport', style: { width: '100%', marginTop: 10, fontSize: '0.78rem', borderCollapse: 'collapse' } }, [
+        h('caption', { key: 'cap', style: { captionSide: 'top', textAlign: 'left', fontSize: '0.75rem', color: '#475569' } },
+          t('fade.by_support_caption', 'Each support, first assignment to last')),
+        h('thead', { key: 'th' }, h('tr', null, [
+          h('th', { key: 'a', scope: 'col', style: { textAlign: 'left' } }, t('fade.support', 'Support')),
+          h('th', { key: 'b', scope: 'col', style: { textAlign: 'left' } }, t('fade.first', 'First')),
+          h('th', { key: 'c', scope: 'col', style: { textAlign: 'left' } }, t('fade.last', 'Last'))
+        ])),
+        h('tbody', { key: 'tb' }, rows.map(function (r, i) {
+          return h('tr', { key: i }, [
+            h('th', { key: 'a', scope: 'row', style: { textAlign: 'left', fontWeight: 400 } }, r.support),
+            h('td', { key: 'b' }, String(r.from)),
+            h('td', { key: 'c' }, String(r.to))
+          ]);
+        }))
+      ]) : null,
+      h('p', { key: 'cov', style: { fontSize: '0.75rem', color: '#475569', marginTop: 10 } }, model.coverage)
+    ]);
+  }
   // ── P3: comprehension checkpoints ────────────────────────────────────────
   // Questions generated FROM the student's own artifact, answered by the
   // student, read by the TEACHER. The safety rules below came out of an
@@ -1061,6 +1235,10 @@
     attachProvenance: attachProvenance,
     summarizeProcess: summarizeProcess,
     summarizeSupport: summarizeSupport,
+    // ── P6 ──
+    buildSupportFadeModel: buildSupportFadeModel,
+    SupportFadePanel: SupportFadePanel,
+    fadeBySupport: fadeBySupport,
     sanitizeEvent: sanitizeEvent,
     stableStringify: stableStringify,
     // Exported for checkpoint answer fingerprints (P3): the ledger stores a

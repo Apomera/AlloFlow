@@ -1059,3 +1059,108 @@ describe('P7 — the ai/support population asymmetry is documented, not hidden',
   });
 });
 
+describe('P6 — the support-fade lane', () => {
+  async function period(level, n) {
+    const led = P.createLedger({ now: mkClock().now, bucketMs: 15000 });
+    for (let i = 0; i < n; i++) await led.append('ai', { support: 'allobot', promptLevel: level });
+    return led.exportForSupport();
+  }
+
+  it('sees a fade that a raw COUNT would miss entirely', async () => {
+    const m = P.buildSupportFadeModel([await period('model', 4), await period('hint', 4)]);
+    // Same number of interactions both times. Counting alone says 'no change';
+    // intensity says the scaffolding dropped from modelling to hinting, which
+    // is the entire thing a fade plan is trying to observe.
+    expect(m.periods[0].supports).toBe(m.periods[1].supports);
+    expect(m.periods[0].intensity).toBe(3);
+    expect(m.periods[1].intensity).toBe(1);
+    expect(m.change.direction).toBe('less');
+  });
+
+  it('refuses to read a trend from one point', async () => {
+    const m = P.buildSupportFadeModel([await period('model', 3)]);
+    expect(m.change.direction).toBe('insufficient');
+    expect(m.change.text).toContain('snapshot, not a trend');
+  });
+
+  it('calls a small wobble steady rather than manufacturing a direction', async () => {
+    const m = P.buildSupportFadeModel([await period('guided', 4), await period('guided', 4)]);
+    expect(m.change.direction).toBe('steady');
+  });
+
+  it('reports MORE support without alarm, and without blaming the student', async () => {
+    const m = P.buildSupportFadeModel([await period('hint', 4), await period('model', 4)]);
+    expect(m.change.direction).toBe('more');
+    // A student whose needs increased is a student whose plan may need to
+    // change. It is not a failing, and the text must not read like one.
+    expect(m.change.text).toContain('harder material');
+    for (const w of ['regress', 'decline', 'concern', 'fail', 'worse', 'problem']) {
+      expect(m.change.text.toLowerCase()).not.toContain(w);
+    }
+  });
+
+  it('names which scaffold moved, not just the total', async () => {
+    const a = P.createLedger({ now: mkClock().now, bucketMs: 15000 });
+    a.noteSupport('read_aloud', 'none'); a.noteSupport('read_aloud', 'none');
+    a.noteSupport('allobot', 'model');
+    await a.flush();
+    const b = P.createLedger({ now: mkClock().now, bucketMs: 15000 });
+    b.noteSupport('read_aloud', 'none'); b.noteSupport('read_aloud', 'none');
+    await b.flush();
+    const m = P.buildSupportFadeModel([await a.exportForSupport(), await b.exportForSupport()]);
+    const rows = P.fadeBySupport(m);
+    // A team fading ONE support needs to see that support, not an aggregate
+    // that hides it behind an unchanged one.
+    expect(rows).toContainEqual({ support: 'allobot', from: 1, to: 0 });
+    expect(rows).toContainEqual({ support: 'read_aloud', from: 2, to: 2 });
+  });
+});
+
+describe('P6 — the lane decides nothing and never crosses the wall', () => {
+  async function supportExport() {
+    const led = P.createLedger({ now: mkClock().now });
+    await led.append('ai', { support: 'allobot', promptLevel: 'model' });
+    return led.exportForSupport();
+  }
+
+  it('REFUSES an integrity export instead of silently showing nothing', async () => {
+    const led = P.createLedger({ now: mkClock().now });
+    await led.append('ai', { support: 'allobot', promptLevel: 'model' });
+    const m = P.buildSupportFadeModel([await led.exportForSubmission()]);
+    // An empty fade line reads as 'this student used no support', which is the
+    // most misleading empty state this lane can have. Guarded at the INPUT.
+    expect(m.ok).toBe(false);
+    expect(m.reason).toBe('wrong-lens');
+  });
+
+  it('carries no integrity data whatsoever', async () => {
+    const m = P.buildSupportFadeModel([await supportExport(), await supportExport()]);
+    const flat = JSON.stringify(m).toLowerCase();
+    for (const k of ['paste', 'checkpoint', 'answerhash', 'verified', 'tamper', 'chain']) {
+      expect(flat).not.toContain(k);
+    }
+  });
+
+  it('makes no intervention decision — the Dispro precedent is binding here', async () => {
+    const m = P.buildSupportFadeModel([await supportExport(), await supportExport()]);
+    const flat = JSON.stringify(m).toLowerCase();
+    for (const w of ['tier 2', 'tier 3', 'responding', 'not responding', 'on track',
+                     'at risk', 'refer', 'eligible', 'recommend', 'intervention']) {
+      expect(flat).not.toContain(w);
+    }
+    expect(m.teamNote).toContain('decides nothing');
+  });
+
+  it('states its own coverage, so a thin line is not read as little support', async () => {
+    const m = P.buildSupportFadeModel([await supportExport()]);
+    expect(m.coverage).toBe(P.COVERAGE_NOTE);
+    expect(m.neverObservable).toEqual(['spellcheck', 'word_prediction']);
+  });
+
+  it('says support is not a deficit, in the data rather than the styling', async () => {
+    const m = P.buildSupportFadeModel([await supportExport()]);
+    // teamNote ships as DATA so no future panel can style it away or forget it.
+    expect(m.teamNote).toContain('does not measure learning');
+  });
+});
+

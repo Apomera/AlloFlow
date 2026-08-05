@@ -255,6 +255,9 @@ assent questions, which is why they are hers and not ours:
    authorization?
 10. What language should the "use AlloFlow's supports or a trusted adult" nudge carry so
     that it reads as guidance and not as a warning against getting help?
+11. **Who may open the support-fade lane (§16)?** It shows a named student's scaffolding
+    over time — disability-adjacent, and "the team" is not the same audience as
+    "leadership". Needs an access answer before it is mounted anywhere.
 
 ## 13. Where this lives — one coach, one ledger, one artifact pattern
 
@@ -406,9 +409,13 @@ the same change):
 
 ---
 
-## 15. Support events — the ledger's real unit (scoped 2026-08-05; NOT built)
+## 15. Support events — the ledger's real unit (scoped and BUILT 2026-08-05)
 
-**Status: design only.** Nothing in this section is implemented. It supersedes the
+**Status: implemented** (P7, `f82b49019`; follow-up `f9c1c819a`; P3 wiring and tier-2
+attribution `40db23c09`). Scoped as design-only and built the same day; the reasoning
+below is preserved as written because it is what the code is accountable to.
+
+It supersedes the
 *spine* of the attribution work committed 2026-08-05 (`f04974fcb`), which remains
 correct but narrow, for the reasons below.
 
@@ -599,6 +606,66 @@ the child.
 Slots as **P7**, after P6 (MTSS lane), because P6 is the consumer that makes it worth
 having. Nothing in P0–P5 depends on it, and `f04974fcb` stays correct within its
 narrower scope until this supersedes it.
+
+---
+
+## 16. P6 support-fade lane — built, deliberately NOT mounted (2026-08-05)
+
+`buildSupportFadeModel` / `fadeBySupport` / `SupportFadePanel` ship in the provenance
+module with 10 tests. Nothing renders them yet, and that is a stop, not an oversight.
+
+### 16.1 What it does
+
+Takes N support-lens exports, oldest first, and reports **support intensity** per period
+(0-3, weighted by the errorless-learning hierarchy) plus a per-scaffold first-to-last
+comparison.
+
+Intensity rather than count, because counting misses the thing being monitored. A student
+with four AlloBot turns in September and four in December looks unchanged by count; if
+those turns went from model-level to hint-level, the scaffolding faded substantially.
+That case is the lane's first test.
+
+### 16.2 What it refuses to do
+
+- **No decision.** No tier, no 'responding' / 'not responding', no referral language, no
+  recommendation. The Dispro Analyzer precedent is binding: thresholds and decisions
+  about a child are never ours. Test-pinned against a list of decision words.
+- **No integrity data.** Guarded at the INPUT: handing it an integrity export returns
+  `{ok:false, reason:'wrong-lens'}` rather than an empty fade line, because an empty line
+  reads as "this student used no support", the most misleading state this lane can have.
+- **No deficit framing.** More support is reported without alarm and with the note that it
+  may reflect harder material. A student whose needs increased is a student whose plan may
+  need to change, not a student who failed.
+- **No chart.** Plain tables, no colour coding, no arrows. A red down-arrow beside a
+  child's scaffolding turns monitoring into scoring, and the visual register is precisely
+  what constraint 8 says these two lenses may never share.
+
+### 16.3 Why it is not mounted — an ACCESS decision, not a wiring one
+
+The obvious home is the Leadership Hub. That is probably wrong, and the question is not
+one to answer by choosing a file.
+
+This lane shows a named student's scaffolding over time. That is close to disability-
+adjacent information, and **"the team" is not the same audience as "leadership"**. A case
+manager reviewing fade against an IEP goal is the intended reader. A principal browsing a
+hub is not obviously the same person, and the difference is one of access rights rather
+than of layout.
+
+Three things must be settled before a mount:
+
+1. **Who may open it?** Case manager, service provider, and team members named on the
+   plan is one answer. Anyone with Leadership Hub access is a very different one.
+2. **Does it need its own gate,** separate from whatever gates the hub, and does that gate
+   live per-student rather than per-building?
+3. **Where does the multi-assignment series come from?** The lane needs N exports across
+   time. Nothing currently aggregates a student's submissions for this purpose, and
+   building that aggregation is itself a data-access decision, not a convenience.
+
+Mounting it somewhere plausible and revisiting later is the wrong order: once a surface
+exists, its audience is whoever can already reach that surface. That default would be set
+by accident.
+
+Queued for Dr. Howorth as §12.11.
 
 ---
 
