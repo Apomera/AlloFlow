@@ -981,15 +981,60 @@ survive, the block label does not). Zero genuinely unexplained.
 Eight rows read by eye off the rendered page 68 match the plan, including both
 panel seams; the sample table carries the 2,562 its worked example arrives at.
 
-### NEXT: page 80 (Tax Computation Worksheet), then 81-87
+### Session 22 (2026-08-04) - page 80 - tranche-22 - 11 blocks - VALIDATED (merged)
 
-Page 80 is the 2025 Tax Computation Worksheet: four sections (A-D by filing
-status), each a small table of rate bands with columns (a) amount from line
-15, (b) multiplication amount, (c) multiply, (d) subtraction amount, and the
-resulting tax. Different structure from the Tax Table and small enough to
-hand-author, so it gets its own tranche rather than being tacked onto this
-one - the same seam discipline used at page 48/49.
+The 2025 Tax Computation Worksheet for line 16: four sections (A-D by filing
+status), five rate-band rows each. `merge-plans t01..t22` -> 1,159 blocks,
+`ok: true`, **pages 1-80 covered**, zero heading skips. Recall 0.9837 and the
+cleanest shortfall of the rebuild so far: all ten instances are the page
+number and the standing footer, and nothing else.
 
-Then 81-87 (General Information, How To Get Tax Help, Refund Information),
-88-117 (the schedules), and the back matter, including the MECHANICAL Index
-(~123-126). Do not hand-author the Index.
+**Twenty rows, and still generated rather than transcribed** - these are rate
+bands and subtraction amounts where one transposed digit changes someone's
+tax. Checked: four sections of exactly five rows, rate bands in the order 22,
+24, 32, 35, 37 in every section, subtraction amounts strictly increasing, each
+band starting where the previous stopped, the first at $100,000 and the last
+left open ended.
+
+**The check worth reading cross-verifies this tranche against tranche 21.**
+The worksheet computes tax as (income x rate) - subtraction. The Tax Table
+computes the same tax by lookup, at each bracket's MIDPOINT. So the
+worksheet's parameters, applied to the Tax Table's own brackets, must
+reproduce the Tax Table's printed figures. They do:
+
+| Filing status | Tax Table rows reproduced | run ends at |
+|---|---|---|
+| Single | 1,031 | $48,450 |
+| Married filing separately | 1,031 | $48,450 |
+| Head of household | 703 | $64,850 |
+| Married filing jointly | 61 | $96,950 |
+
+Each run stops exactly where that filing status's 22% bracket begins and a
+different rate takes over. That is **2,826 cell values in one table reproduced
+from the parameters of another**, through arithmetic neither parser knows
+about, catching any error in either.
+
+> **Python's `round()` would have broken this, and did.** Every bracket
+> midpoint lands on x.5 exactly, and Python rounds half to EVEN while the IRS
+> rounds half UP: `round(16908.5)` is 16908, but the table prints 16909. The
+> first run of the check reported 0 matching rows out of 2,062 and looked like
+> a catastrophic parse failure. Use `math.floor(x + 0.5)` for anything
+> compared against printed money.
+
+**A tooling note.** The full-fidelity renderer needs `pdfjs-dist`, which is not
+a declared dependency and had vanished from `node_modules` again. Reinstalling
+it risks disturbing `@babel/core`, which is also undeclared and which the build
+needs - and another session had work in flight. The structure was confirmed
+from the vendored layout-only render instead (rules and cell boxes are exact
+even where the glyphs are tofu) plus the per-item geometry, which was enough.
+
+### NEXT: pages 81-87, then the schedules
+
+Pages 81-87: General Information, How To Get Tax Help, and Refund Information -
+all top-level TOC entries, so all level 2. Ordinary prose.
+
+Then 88-117, the instructions for Schedules 1, 1-A, 2 and 3, which are the
+largest remaining block. Then the back matter: Tax Topics (118), the
+Disclosure/Privacy Act notice (120), Major Categories of Federal Income and
+Outlays (122), and the MECHANICAL Index (123-126). Do not hand-author the
+Index.
