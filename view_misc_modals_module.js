@@ -49,6 +49,7 @@ var Cpu = _lazyIcon('Cpu');
 var Headphones = _lazyIcon('Headphones');
 function UDLGuideModal(props) {
   const [chatMenuOpen, setChatMenuOpen] = React.useState(false);
+  const [voicePaused, setVoicePaused] = React.useState(false);
   React.useEffect(() => {
     if (!chatMenuOpen) return void 0;
     const onKey = (ev) => {
@@ -184,6 +185,7 @@ function UDLGuideModal(props) {
         if (isHelpMode) return;
         e.preventDefault();
         if (typeof onToggleVoiceAgent === "function") onToggleVoiceAgent();
+        setVoicePaused(false);
         const next = !alloVoiceActive;
         setIsConversationMode(next);
         if (next) {
@@ -209,6 +211,26 @@ function UDLGuideModal(props) {
     /* @__PURE__ */ React.createElement(Headphones, { size: 12 }),
     " ",
     alloVoiceActive ? t("chat_guide.talk_on") || "Listening" : t("chat_guide.talk") || "Talk"
+  ), alloVoiceActive && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-help-key": "chat_talk_pause",
+      "aria-pressed": voicePaused ? "true" : "false",
+      onClick: () => {
+        const loop = window.__alloVoiceLoop;
+        if (!loop) return;
+        if (voicePaused) {
+          Promise.resolve(loop.resume()).then((ok) => setVoicePaused(!ok));
+        } else {
+          loop.pause();
+          setVoicePaused(true);
+        }
+      },
+      className: `hover:bg-white/20 px-2 py-1.5 rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${voicePaused ? "bg-amber-400 text-indigo-900 border-amber-500" : "border-white/40"}`,
+      title: voicePaused ? t("chat_guide.resume_tooltip", "Turn the microphone back on") : t("chat_guide.pause_tooltip", "Pause listening \u2014 releases the microphone but keeps your session")
+    },
+    voicePaused ? t("chat_guide.resume", "Resume") : t("chat_guide.pause", "Pause")
   ), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
     "button",
     {

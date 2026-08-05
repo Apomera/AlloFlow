@@ -2356,6 +2356,7 @@ function detectNavigationIntent(text) {
 function createVoiceLoop(getCtx) {
   let rec = null, active = false, errStreak = 0, routeController = null, routeSerial = 0, pageHideHandler = null;
   let whisperState = null, engineName = "webspeech", standby = false, awake = false, awakeTimer = null;
+  let paused = false;
   const cancelRoute = () => {
     routeSerial++;
     const controller = routeController;
@@ -2497,7 +2498,7 @@ function createVoiceLoop(getCtx) {
   const speakNow = (msg, c) => {
     const my = ++speakSerial;
     const text = String(msg || "").slice(0, 300);
-    const resume = () => {
+    const resume2 = () => {
       if (speakSerial !== my || !speaking) return;
       speaking = false;
       stopBargeWatch();
@@ -2520,7 +2521,7 @@ function createVoiceLoop(getCtx) {
           replyAudio = null;
         }
         speaking = true;
-        activeResume = resume;
+        activeResume = resume2;
         startBargeWatch();
         if (active && rec) {
           try {
@@ -2531,20 +2532,20 @@ function createVoiceLoop(getCtx) {
         Promise.resolve(window._kokoroTTS.speak(text, kv, 1)).then((url) => {
           if (speakSerial !== my) return;
           if (!url) {
-            resume();
+            resume2();
             return;
           }
           const a = new Audio(url);
           replyAudio = a;
-          a.onended = resume;
-          a.onerror = resume;
+          a.onended = resume2;
+          a.onerror = resume2;
           a.onloadedmetadata = () => {
             const ms = isFinite(a.duration) && a.duration > 0 ? a.duration * 1e3 + 1500 : 0;
-            if (ms) setTimeout(resume, ms);
+            if (ms) setTimeout(resume2, ms);
           };
-          Promise.resolve(a.play()).catch(resume);
-        }).catch(resume);
-        setTimeout(resume, 3e4);
+          Promise.resolve(a.play()).catch(resume2);
+        }).catch(resume2);
+        setTimeout(resume2, 3e4);
         return;
       }
     } catch (_) {
@@ -2555,10 +2556,10 @@ function createVoiceLoop(getCtx) {
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
       u.lang = c && c.voiceLang || "en-US";
-      u.onend = resume;
-      u.onerror = resume;
+      u.onend = resume2;
+      u.onerror = resume2;
       speaking = true;
-      activeResume = resume;
+      activeResume = resume2;
       startBargeWatch();
       if (active && rec) {
         try {
@@ -2567,7 +2568,7 @@ function createVoiceLoop(getCtx) {
         }
       }
       window.speechSynthesis.speak(u);
-      setTimeout(resume, 15e3);
+      setTimeout(resume2, 15e3);
     } catch (_) {
       speaking = false;
     }
@@ -2627,6 +2628,7 @@ function createVoiceLoop(getCtx) {
     }
     engineName = "webspeech";
     standby = false;
+    paused = false;
     awake = false;
     if (awakeTimer) {
       clearTimeout(awakeTimer);
@@ -2653,6 +2655,10 @@ function createVoiceLoop(getCtx) {
     const cc = getCtx();
     if (/^(stop listening|stop voice|voice off)\b/i.test(text)) {
       stop("Voice control off \u2014 the microphone is released.");
+      return;
+    }
+    if (/^(pause listening|pause voice|hold on|one moment|wait a moment)\b/i.test(text)) {
+      pause();
       return;
     }
     if (standby && engineName === "whisper") {
@@ -2726,6 +2732,10 @@ function createVoiceLoop(getCtx) {
     let busy = false;
     proc.onaudioprocess = (ev) => {
       if (!active || engineName !== "whisper") return;
+      if (paused) {
+        seg.reset();
+        return;
+      }
       if (speaking) {
         seg.reset();
         return;
@@ -2744,7 +2754,7 @@ function createVoiceLoop(getCtx) {
     src.connect(proc);
     proc.connect(gain);
     gain.connect(ac.destination);
-    whisperState = { stream, ac, proc, gain, seg };
+    whisperState = { stream, ac, proc, gain, seg, src, asr };
   };
   const beginWebSpeech = (c, standbyWanted) => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -2780,7 +2790,7 @@ function createVoiceLoop(getCtx) {
         if (errStreak >= 3) stop("Voice control stopped after repeated microphone errors.");
       };
       rec.onend = () => {
-        if (active && !speaking) {
+        if (active && !speaking && !paused) {
           try {
             rec.start();
           } catch (_) {
@@ -2860,9 +2870,74 @@ function createVoiceLoop(getCtx) {
     });
     return true;
   };
+  const pause = () => {
+    if (!active || paused) return false;
+    paused = true;
+    cancelRoute();
+    try {
+      if (rec) rec.stop();
+    } catch (_) {
+    }
+    if (whisperState) {
+      try {
+        whisperState.stream.getTracks().forEach(function(tr) {
+          tr.stop();
+        });
+      } catch (_) {
+      }
+      try {
+        if (whisperState.src) whisperState.src.disconnect();
+      } catch (_) {
+      }
+      whisperState.stream = null;
+      whisperState.src = null;
+      try {
+        whisperState.seg.reset();
+      } catch (_) {
+      }
+    }
+    announce("Paused \u2014 the microphone is off. Resume when you're ready.");
+    return true;
+  };
+  const resume = async () => {
+    if (!active || !paused) return false;
+    paused = false;
+    if (engineName === "whisper" && whisperState) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+        if (!active || paused) {
+          try {
+            stream.getTracks().forEach(function(tr) {
+              tr.stop();
+            });
+          } catch (_) {
+          }
+          return false;
+        }
+        const src2 = whisperState.ac.createMediaStreamSource(stream);
+        src2.connect(whisperState.proc);
+        whisperState.stream = stream;
+        whisperState.src = src2;
+      } catch (e) {
+        paused = true;
+        announce("Could not turn the microphone back on: " + (e && e.message || "unknown"));
+        return false;
+      }
+    } else {
+      try {
+        if (rec) rec.start();
+      } catch (_) {
+      }
+    }
+    announce("Listening again.");
+    return true;
+  };
   return {
     start,
     stop: () => stop("Voice control off \u2014 the microphone is released."),
+    pause,
+    resume,
+    isPaused: () => paused,
     isActive: () => active,
     engine: () => engineName,
     // Live standby switch. Refuses on Web Speech: standby means a hot mic,

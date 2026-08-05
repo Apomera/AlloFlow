@@ -564,6 +564,51 @@ describe('AlloBot hands-free agent button', () => {
     expect(src).toContain('setIsConversationMode(next);');
   });
 
+  // Momentary pause (2026-08-05): a teacher stepping aside to talk with a
+  // student needs the mic OFF without losing the session. A full stop forces a
+  // re-tap; wake-word standby keeps the mic hot. Neither is a pause.
+  it('pause releases the microphone and keeps the session, resume re-acquires it', () => {
+    const src = readFileSync('allo_commands_source.jsx', 'utf-8');
+    const pause = src.slice(src.indexOf('const pause = () => {'), src.indexOf('const resume = async'));
+    // Tracks are STOPPED, not merely disabled — the dark browser indicator is
+    // the honest signal. A muted-but-held mic is not a pause a teacher trusts.
+    expect(pause).toContain('whisperState.stream.getTracks().forEach');
+    expect(pause).toContain('.stop()');
+    expect(pause).not.toContain('enabled = false');
+    expect(pause).toContain('whisperState.src.disconnect()');
+    // The session survives: nothing here calls stop().
+    expect(pause).not.toMatch(/\bstop\(["']/);
+    const resume = src.slice(src.indexOf('const resume = async'), src.indexOf('  return {\n    start,'));
+    expect(resume).toContain('navigator.mediaDevices.getUserMedia');
+    expect(resume).toContain('src2.connect(whisperState.proc)');
+    // A failed resume stays honestly paused instead of pretending to listen.
+    expect(resume).toContain('paused = true; // stay honestly paused');
+    expect(src).toMatch(/pause,\s*resume,\s*isPaused:/);
+  });
+
+  it('nothing keeps listening while paused, on either engine', () => {
+    const src = readFileSync('allo_commands_source.jsx', 'utf-8');
+    expect(src).toContain('if (active && !speaking && !paused) {');   // web speech no auto-restart
+    expect(src).toContain('if (paused) { seg.reset(); return; }');     // whisper drops frames
+    // "pause listening" is handled next to the kill phrase, before routing,
+    // so it can never be swallowed as a command.
+    const handler = src.slice(src.indexOf('const handleUtterance'), src.indexOf('const startWhisperEngine'));
+    expect(handler.indexOf('stop listening|stop voice')).toBeLessThan(handler.indexOf('pause listening|pause voice'));
+    expect(handler.indexOf('pause listening|pause voice')).toBeLessThan(handler.indexOf('routeUtterance('));
+    // A full stop clears the flag so the next start is clean.
+    expect(src).toMatch(/standby = false;\s*paused = false;/);
+  });
+
+  it('the pause control appears only while listening and is state-labelled', () => {
+    const ui = readFileSync('view_misc_modals_source.jsx', 'utf-8');
+    expect(ui).toContain('data-help-key="chat_talk_pause"');
+    expect(ui).toMatch(/\{alloVoiceActive && \(\s*<button[\s\S]{0,200}chat_talk_pause/);
+    expect(ui).toContain("t('chat_guide.resume', 'Resume')");
+    expect(ui).toContain('aria-pressed={voicePaused');
+    // Turning Talk off entirely clears the paused badge.
+    expect(ui).toContain('setVoicePaused(false);');
+  });
+
   it('secondary chat actions live behind a dismissible menu, not the header', () => {
     const src = readFileSync('view_misc_modals_source.jsx', 'utf-8');
     expect(src).toContain('data-help-key="chat_more"');
@@ -602,7 +647,9 @@ describe('voice loop spoken replies and language', () => {
   it('the mic is muted while a reply is spoken, and the utterance restarts it', () => {
     const mod = readFileSync('allo_commands_source.jsx', 'utf-8');
     // rec.onend must NOT restart during speech; the utterance's end handler owns it.
-    expect(mod).toMatch(/if \(active && !speaking\) \{/);
+    // Also guards `paused` as of the momentary-pause work — the mic must not
+    // auto-restart while the user has deliberately paused it.
+    expect(mod).toMatch(/if \(active && !speaking && !paused\) \{/);
     const speak = mod.slice(mod.indexOf('const speakReply'), mod.indexOf('const announce'));
     // Starting a reply must still mute the recognizer. Barge-in arms its
     // watcher in between, so pin the MAPPING rather than the adjacency.

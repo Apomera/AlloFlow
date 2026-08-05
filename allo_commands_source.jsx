@@ -1915,6 +1915,8 @@ function detectNavigationIntent(text) {
 function createVoiceLoop(getCtx) {
   let rec = null, active = false, errStreak = 0, routeController = null, routeSerial = 0, pageHideHandler = null;
   let whisperState = null, engineName = "webspeech", standby = false, awake = false, awakeTimer = null;
+  // Momentary pause: the session stays alive but the microphone is released.
+  let paused = false;
   const cancelRoute = () => {
     routeSerial++;
     const controller = routeController;
@@ -2124,6 +2126,7 @@ function createVoiceLoop(getCtx) {
     }
     engineName = "webspeech";
     standby = false;
+    paused = false;
     awake = false;
     if (awakeTimer) { clearTimeout(awakeTimer); awakeTimer = null; }
     if (replyAudio) { try { replyAudio.pause(); } catch (_) {} replyAudio = null; }
@@ -2144,6 +2147,12 @@ function createVoiceLoop(getCtx) {
     const cc = getCtx();
     if (/^(stop listening|stop voice|voice off)\b/i.test(text)) {
       stop("Voice control off — the microphone is released.");
+      return;
+    }
+    // Spoken pause. Resume cannot be spoken — the microphone is off by then —
+    // so the UI owns resuming, and the announcement says so.
+    if (/^(pause listening|pause voice|hold on|one moment|wait a moment)\b/i.test(text)) {
+      pause();
       return;
     }
     if (standby && engineName === "whisper") {
@@ -2202,6 +2211,7 @@ function createVoiceLoop(getCtx) {
     let busy = false;
     proc.onaudioprocess = (ev) => {
       if (!active || engineName !== "whisper") return;
+      if (paused) { seg.reset(); return; }
       if (speaking) { seg.reset(); return; }
       const segment = seg.push(ev.inputBuffer.getChannelData(0));
       if (!segment || busy) return; // still transcribing: drop, keep memory flat
@@ -2216,7 +2226,7 @@ function createVoiceLoop(getCtx) {
     src.connect(proc);
     proc.connect(gain);
     gain.connect(ac.destination);
-    whisperState = { stream: stream, ac: ac, proc: proc, gain: gain, seg: seg };
+    whisperState = { stream: stream, ac: ac, proc: proc, gain: gain, seg: seg, src: src, asr: asr };
   };
   const beginWebSpeech = (c, standbyWanted) => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -2251,9 +2261,10 @@ function createVoiceLoop(getCtx) {
         if (errStreak >= 3) stop("Voice control stopped after repeated microphone errors.");
       };
       rec.onend = () => {
-        if (active && !speaking) {
+        if (active && !speaking && !paused) {
           // While `speaking`, the restart belongs to the utterance's end
-          // handler — restarting here would transcribe our own reply.
+          // handler — restarting here would transcribe our own reply. While
+          // `paused`, nothing restarts until the user resumes.
           try {
             rec.start();
           } catch (_) {
@@ -2337,9 +2348,53 @@ function createVoiceLoop(getCtx) {
     });
     return true;
   };
+  // Release the microphone without ending the session. The browser's
+  // recording indicator going dark is the point: a "muted" mic that still
+  // holds the device is not a pause a teacher can trust.
+  const pause = () => {
+    if (!active || paused) return false;
+    paused = true;
+    cancelRoute();
+    try { if (rec) rec.stop(); } catch (_) {}
+    if (whisperState) {
+      try { whisperState.stream.getTracks().forEach(function (tr) { tr.stop(); }); } catch (_) {}
+      try { if (whisperState.src) whisperState.src.disconnect(); } catch (_) {}
+      whisperState.stream = null;
+      whisperState.src = null;
+      try { whisperState.seg.reset(); } catch (_) {}
+    }
+    announce("Paused — the microphone is off. Resume when you're ready.");
+    return true;
+  };
+  const resume = async () => {
+    if (!active || !paused) return false;
+    paused = false;
+    if (engineName === "whisper" && whisperState) {
+      try {
+        // Permission already granted, so this re-acquires without a prompt.
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+        if (!active || paused) { try { stream.getTracks().forEach(function (tr) { tr.stop(); }); } catch (_) {} return false; }
+        const src2 = whisperState.ac.createMediaStreamSource(stream);
+        src2.connect(whisperState.proc);
+        whisperState.stream = stream;
+        whisperState.src = src2;
+      } catch (e) {
+        paused = true; // stay honestly paused rather than pretending to listen
+        announce("Could not turn the microphone back on: " + ((e && e.message) || "unknown"));
+        return false;
+      }
+    } else {
+      try { if (rec) rec.start(); } catch (_) {}
+    }
+    announce("Listening again.");
+    return true;
+  };
   return {
     start,
     stop: () => stop("Voice control off — the microphone is released."),
+    pause,
+    resume,
+    isPaused: () => paused,
     isActive: () => active,
     engine: () => engineName,
     // Live standby switch. Refuses on Web Speech: standby means a hot mic,

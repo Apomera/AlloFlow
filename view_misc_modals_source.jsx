@@ -13,6 +13,7 @@
 function UDLGuideModal(props) {
   // The Talk control reflects the live voice-loop state.
   const [chatMenuOpen, setChatMenuOpen] = React.useState(false);
+  const [voicePaused, setVoicePaused] = React.useState(false);
   // Escape and any outside click close the overflow menu — a menu that can
   // only be dismissed by re-clicking its own trigger is a keyboard trap.
   React.useEffect(() => {
@@ -110,6 +111,7 @@ function UDLGuideModal(props) {
                         if (isHelpMode) return;
                         e.preventDefault();
                         if (typeof onToggleVoiceAgent === 'function') onToggleVoiceAgent();
+                        setVoicePaused(false);
                         // Keep the legacy conversational flags in step so any
                         // surface still reading them behaves as before.
                         const next = !alloVoiceActive;
@@ -127,6 +129,28 @@ function UDLGuideModal(props) {
                 >
                     <Headphones size={12}/> {alloVoiceActive ? (t('chat_guide.talk_on') || 'Listening') : (t('chat_guide.talk') || 'Talk')}
                 </button>
+                {/* Momentary pause. Appears only while listening, and releases
+                    the microphone rather than muting it — the browser's
+                    recording indicator going dark is the honest signal when a
+                    teacher steps aside to talk with a student. The session
+                    survives, so resuming is one tap and no permission prompt. */}
+                {alloVoiceActive && (
+                <button
+                    type="button"
+                    data-help-key="chat_talk_pause"
+                    aria-pressed={voicePaused ? 'true' : 'false'}
+                    onClick={() => {
+                        const loop = window.__alloVoiceLoop;
+                        if (!loop) return;
+                        if (voicePaused) { Promise.resolve(loop.resume()).then((ok) => setVoicePaused(!ok)); }
+                        else { loop.pause(); setVoicePaused(true); }
+                    }}
+                    className={`hover:bg-white/20 px-2 py-1.5 rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${voicePaused ? 'bg-amber-400 text-indigo-900 border-amber-500' : 'border-white/40'}`}
+                    title={voicePaused ? t('chat_guide.resume_tooltip', 'Turn the microphone back on') : t('chat_guide.pause_tooltip', 'Pause listening — releases the microphone but keeps your session')}
+                >
+                    {voicePaused ? (t('chat_guide.resume', 'Resume')) : (t('chat_guide.pause', 'Pause'))}
+                </button>
+                )}
                 {/* Everything secondary lives behind one menu so the header
                     carries a single primary action plus window controls. */}
                 <div className="relative">
