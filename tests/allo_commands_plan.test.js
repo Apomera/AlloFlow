@@ -903,7 +903,15 @@ describe('on-device voice engine', () => {
     expect(mod).toMatch(/whisperState\.stream\.getTracks\(\)\.forEach[\s\S]{0,80}whisperState\.proc\.disconnect/);
     // Engine choice: cached model → whisper; otherwise fall back, plus a hard override.
     expect(mod).toContain('if (_voiceEnginePref() === "webspeech")');
-    expect(mod).toMatch(/hasWhisper\(\)\.then\(function \(has\) \{\s*if \(!active\) return;\s*if \(!has\) \{ beginWebSpeech\(c, standbyWanted\); return; \}/);
+    // The invariant is the MAPPING (no cached model -> Web Speech), not the
+    // literal line spacing, so allow the bounded-probe guards in between.
+    expect(mod).toMatch(/hasWhisper\(\)\.then\(function \(has\) \{[\s\S]{0,300}?if \(!has\) \{ beginWebSpeech\(c, standbyWanted\); return; \}/);
+    // The probe must stay BOUNDED. _deviceStorage()'s loader can hang (a script
+    // that neither loads nor errors never settles) and start() has already
+    // returned true, so an unbounded probe leaves the mic shut while the UI
+    // reports voice as on.
+    expect(mod).toContain('const probeTimer = setTimeout(');
+    expect(mod, 'the timeout opens the mic on browser speech').toMatch(/probeTimer[\s\S]{0,400}?beginWebSpeech\(c, false\)/);
     expect(readFileSync('desktop/web-app/public/allo_commands_module.js', 'utf-8')).toBe(readFileSync('allo_commands_module.js', 'utf-8'));
   });
 

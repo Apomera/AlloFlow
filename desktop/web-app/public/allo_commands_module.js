@@ -940,6 +940,116 @@ function buildAlloCommands(ctx, opts = {}) {
       return t("cmd.open_free_forms_done", "Free Forms opened.");
     } },
     { id: "open_stem_tool", opensPanel: "stemLab", icon: "\u{1F9EA}", roles: "all", label: t("cmd.open_stem_tool", "Open a specific STEM tool"), aliases: ["open stem tool", "launch stem tool", "open simulation", "open simulator", "start stem tool", "open lab tool", "jump to tool"], hint: t("cmd.open_stem_tool_hint", "Name any STEM Lab tool and go straight to it"), run: (c, params) => runOpenStemToolCommand(c, params || {}, t) },
+    // ── Restored to the canonical source (2026-08-04) ──────────────────────
+    // These 27 shipped in the BUILT module only (0c8bd276e), so every rebuild
+    // deleted them. Ported back verbatim so source is canonical again.
+    { id: "cycle_color_overlay", icon: "\u{1F308}", roles: "all", when: (c) => typeof c.cycleColorOverlay === "function", label: t("cmd.cycle_color_overlay", "Change the color overlay"), aliases: ["color overlay", "screen tint", "reading overlay", "colour overlay"], hint: t("cmd.cycle_color_overlay_hint", "Cycles the reading tint: none, blue, peach, yellow"), run: (c) => {
+      const next = c.cycleColorOverlay();
+      return next === "none" ? t("cmd.cycle_color_overlay_off", "Color overlay off.") : t("cmd.cycle_color_overlay_done", "Color overlay: ") + next + ".";
+    } },
+    { id: "download_voice_models", icon: "\u2B07\uFE0F", roles: "all", when: () => typeof fetch === "function" && _modelPolicy() !== "off", label: t("cmd.download_voice_models", "Download the on-device speech model"), aliases: ["download voice models", "download whisper", "offline voice", "install speech model", "on device voice"], hint: t("cmd.download_voice_models_hint", "One-time ~40 MB download to this device's durable storage; the on-device recognition engine will use it so no audio has to leave the device"), pendingNarration: t("cmd.download_voice_models_working", "Downloading the on-device speech model \u2014 it goes into this device's durable storage, visible in the Storage manager..."), runAsync: () => modelCache.prefetchWhisper().then((r) => t("cmd.download_voice_models_ready", "On-device speech model cached (") + Math.max(1, Math.round(r.bytes / 1048576)) + t("cmd.download_voice_models_ready2", " MB, in the model_cache storage area). The on-device engine will pick it up automatically once it ships.")) },
+    { id: "filter_glossary", icon: "\u{1F50D}", roles: "all", when: (c) => !!c.contentIsGlossary && typeof c.setGlossaryFilterChoice === "function", label: t("cmd.filter_glossary", "Filter glossary terms"), aliases: ["filter terms", "academic words only", "domain words only", "show all terms"], hint: t("cmd.filter_glossary_hint", "Show all terms, academic (Tier 2) only, or domain (Tier 3) only"), run: (c, p) => {
+      const tier = ["all", "academic", "domain"].includes(p && p.tier) ? p.tier : "all";
+      c.setGlossaryFilterChoice(tier);
+      return t("cmd.filter_glossary_done", "Glossary filter: ") + tier + ".";
+    } },
+    { id: "generate_anchor_chart", icon: "\u{1F4CC}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis && typeof c.generateAnchorChart === "function", label: t("cmd.generate_anchor_chart", "Make an anchor chart"), aliases: ["anchor chart", "class poster", "reference chart"], hint: t("cmd.generate_anchor_chart_hint", "Generate an anchor chart from the current content"), runAsync: (c) => Promise.resolve(c.generateAnchorChart()).then(() => t("cmd.generate_anchor_chart_ready", "Anchor chart ready.")) },
+    { id: "generate_brainstorm", icon: "\u{1F9E9}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis && typeof c.generateBrainstorm === "function", label: t("cmd.generate_brainstorm", "Make a brainstorm web"), aliases: ["brainstorm", "idea web", "mind web", "concept web"], hint: t("cmd.generate_brainstorm_hint", "Generate a brainstorm organizer from the current content"), runAsync: (c) => Promise.resolve(c.generateBrainstorm()).then(() => t("cmd.generate_brainstorm_ready", "Brainstorm web ready.")) },
+    { id: "generate_concept_sort", icon: "\u{1F5C2}\uFE0F", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis && typeof c.generateConceptSort === "function", label: t("cmd.generate_concept_sort", "Make a concept sort"), aliases: ["concept sort", "card sort", "sorting activity"], hint: t("cmd.generate_concept_sort_hint", "Generate a concept-sorting activity from the current content"), runAsync: (c) => Promise.resolve(c.generateConceptSort()).then(() => t("cmd.generate_concept_sort_ready", "Concept sort ready.")) },
+    { id: "generate_faq", icon: "\u2753", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis && typeof c.generateFaq === "function", label: t("cmd.generate_faq", "Make an FAQ list"), aliases: ["faq", "frequently asked questions", "question list"], hint: t("cmd.generate_faq_hint", "Generate an FAQ list from the current content"), runAsync: (c) => Promise.resolve(c.generateFaq()).then(() => t("cmd.generate_faq_ready", "FAQ list ready.")) },
+    { id: "generate_note_taking", icon: "\u{1F4DD}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis && typeof c.generateNoteTaking === "function", label: t("cmd.generate_note_taking", "Create a note-taking guide"), aliases: ["note taking", "guided notes", "notes template", "cornell notes"], hint: t("cmd.generate_note_taking_hint", "Generate a structured note-taking guide from the current content"), runAsync: (c) => Promise.resolve(c.generateNoteTaking()).then(() => t("cmd.generate_note_taking_ready", "Note-taking guide ready \u2014 it\u2019s in the output panel.")) },
+    { id: "generate_source_text", icon: "\u{1F4C4}", roles: "teacher", when: (c) => typeof c.generateSourceText === "function", label: t("cmd.generate_source_text", "Generate source text on a topic"), aliases: ["generate a source", "write a passage about", "make a reading about", "source text on"], hint: t("cmd.generate_source_text_hint", "Writes an original reading passage on your topic to build resources from"), pendingNarration: t("cmd.generate_source_text_working", "Writing a source passage..."), runAsync: (c, p) => Promise.resolve(c.generateSourceText(p && p.topic ? String(p.topic) : "")).then(() => t("cmd.generate_source_text_ready", "Source passage ready \u2014 you can now generate resources from it.")) },
+    { id: "open_screen_coach", opensPanel: "videoStudio", icon: "\u{1F9ED}", roles: "teacher", when: (c) => typeof c.openVideoStudio === "function", label: t("cmd.open_screen_coach", "Open the Screen Coach"), aliases: ["screen coach", "coach me", "guide me through", "help me use another site", "watch my screen"], hint: t("cmd.open_screen_coach_hint", "AI guidance over any tab you capture \u2014 it advises with on-screen highlights; you do the clicking"), run: (c) => {
+      c.openVideoStudio();
+      return t("cmd.open_screen_coach_done", "Opening Video Studio \u2014 the Screen Coach panel is at the top of the Record tab. Use \u201CWatch without recording\u201D to coach without saving anything.");
+    } },
+    { id: "print_page", icon: "\u{1F5A8}\uFE0F", roles: "all", when: () => typeof window !== "undefined" && typeof window.print === "function", label: t("cmd.print_page", "Print this page"), aliases: ["print", "print it", "printer"], hint: t("cmd.print_page_hint", "Opens the browser print dialog for the current page"), run: () => {
+      try {
+        window.print();
+      } catch (_) {
+      }
+      return t("cmd.print_page_done", "Opening the print dialog.");
+    } },
+    { id: "read_page_aloud", icon: "\u{1F508}", roles: "all", when: (c) => typeof c.openReadThisPage === "function", label: t("cmd.read_page_aloud", "Read this page aloud"), aliases: ["read this page", "read aloud", "read it to me", "read the page"], hint: t("cmd.read_page_aloud_hint", "Opens the read-aloud overlay for the current page"), run: (c) => {
+      c.openReadThisPage();
+      return t("cmd.read_page_aloud_done", "Opening read-aloud for this page.");
+    } },
+    { id: "set_model_download_policy", icon: "\u2699\uFE0F", roles: "all", when: () => true, label: t("cmd.set_model_download_policy", "Set model download policy"), aliases: ["model download policy", "auto download models", "stop model downloads"], hint: t("cmd.set_model_download_policy_hint", "ask (default), auto (fetch on first voice use), or off"), run: (c, p) => {
+      var v = modelCache.setPolicy(p && p.policy);
+      return t("cmd.set_model_download_policy_done", "Model downloads: ") + v + ".";
+    } },
+    { id: "start_bingo_game", icon: "\u{1F3B1}", roles: "all", when: (c) => !!c.contentIsGlossary && typeof c.startBingoGame === "function", label: t("cmd.start_bingo_game", "Play vocabulary bingo"), aliases: ["bingo", "vocab bingo", "vocabulary bingo"], hint: t("cmd.start_bingo_game_hint", "Play bingo with this glossary\u2019s terms"), run: (c) => {
+      c.startBingoGame();
+      return t("cmd.start_bingo_game_done", "Vocabulary bingo on.");
+    } },
+    { id: "start_crossword_game", icon: "\u{1F4F0}", roles: "all", when: (c) => !!c.contentIsGlossary && typeof c.startCrosswordGame === "function", label: t("cmd.start_crossword_game", "Play the crossword"), aliases: ["crossword", "crossword puzzle"], hint: t("cmd.start_crossword_game_hint", "Turn this glossary into a crossword puzzle"), run: (c) => {
+      c.startCrosswordGame();
+      return t("cmd.start_crossword_game_done", "Crossword on \u2014 clues come from the definitions.");
+    } },
+    { id: "start_matching_game", icon: "\u{1F517}", roles: "all", when: (c) => !!c.contentIsGlossary && typeof c.startMatchingGame === "function", label: t("cmd.start_matching_game", "Play the matching game"), aliases: ["matching game", "match terms"], hint: t("cmd.start_matching_game_hint", "Match glossary terms to their definitions"), run: (c) => {
+      c.startMatchingGame();
+      return t("cmd.start_matching_game_done", "Matching game on \u2014 drag each term to its definition.");
+    } },
+    { id: "start_memory_game", icon: "\u{1F9E0}", roles: "all", when: (c) => !!c.contentIsGlossary && typeof c.startMemoryGame === "function", label: t("cmd.start_memory_game", "Play the memory game"), aliases: ["memory game", "concentration game"], hint: t("cmd.start_memory_game_hint", "Study this glossary as a memory matching game"), run: (c) => {
+      c.startMemoryGame();
+      return t("cmd.start_memory_game_done", "Memory game on \u2014 flip cards to match terms and meanings.");
+    } },
+    { id: "start_review_game", icon: "\u{1F3AF}", roles: "all", when: (c) => !!c.contentIsQuiz && typeof c.toggleReviewGame === "function", label: t("cmd.start_review_game", "Play the quiz as a review game"), aliases: ["review game", "quiz game", "game mode"], hint: t("cmd.start_review_game_hint", "Turns the current quiz into a review game"), run: (c) => {
+      c.toggleReviewGame();
+      return t("cmd.start_review_game_done", "Review game toggled.");
+    } },
+    { id: "start_word_scramble", icon: "\u{1F500}", roles: "all", when: (c) => !!c.contentIsGlossary && typeof c.startWordScrambleGame === "function", label: t("cmd.start_word_scramble", "Play word scramble"), aliases: ["word scramble", "scramble game", "unscramble"], hint: t("cmd.start_word_scramble_hint", "Unscramble this glossary's terms"), run: (c) => {
+      c.startWordScrambleGame();
+      return t("cmd.start_word_scramble_done", "Word scramble on.");
+    } },
+    { id: "toggle_content_editing", icon: "\u270F\uFE0F", roles: "teacher", when: (c) => typeof c.toggleContentEditing === "function" && !!c.contentLoaded, label: t("cmd.toggle_content_editing", "Edit this content"), aliases: ["edit this", "edit mode", "let me edit", "stop editing"], hint: t("cmd.toggle_content_editing_hint", "Toggles edit mode on whatever is currently on screen"), run: (c) => {
+      const kind = c.toggleContentEditing();
+      return kind ? t("cmd.toggle_content_editing_done", "Edit mode toggled for the ") + kind + "." : t("cmd.toggle_content_editing_miss", "This view doesn\u2019t have an edit mode.");
+    } },
+    { id: "toggle_presentation_mode", icon: "\u{1F4FA}", roles: "teacher", when: (c) => !!c.contentLoaded && typeof c.togglePresentationMode === "function", label: t("cmd.toggle_presentation_mode", "Toggle presentation mode"), aliases: ["presentation mode", "present this", "projector mode", "full screen content"], hint: t("cmd.toggle_presentation_mode_hint", "Large-format view of the current content for projecting"), run: (c) => {
+      c.togglePresentationMode();
+      return t("cmd.toggle_presentation_mode_done", "Presentation mode toggled.");
+    } },
+    { id: "toggle_quiz_answers", icon: "\u{1F511}", roles: "teacher", when: (c) => !!c.contentIsQuiz && typeof c.toggleQuizAnswers === "function", label: t("cmd.toggle_quiz_answers", "Show or hide quiz answers"), aliases: ["quiz answers", "show answers", "hide answers", "answer key"], hint: t("cmd.toggle_quiz_answers_hint", "Toggles the answer key on the current quiz (teacher only)"), run: (c) => {
+      c.toggleQuizAnswers();
+      return t("cmd.toggle_quiz_answers_done", "Quiz answer key toggled.");
+    } },
+    { id: "toggle_side_by_side", icon: "\u{1F4D1}", roles: "all", when: (c) => !!c.contentIsSimplified && typeof c.toggleSideBySide === "function", label: t("cmd.toggle_side_by_side", "Compare with the original"), aliases: ["side by side", "compare original", "original next to adapted"], hint: t("cmd.toggle_side_by_side_hint", "Shows the adapted text next to the original source"), run: (c) => {
+      c.toggleSideBySide();
+      return t("cmd.toggle_side_by_side_done", "Side-by-side comparison toggled.");
+    } },
+    { id: "toggle_voice_replies", icon: "\u{1F50A}", roles: "all", when: (c) => c.voiceAvailable, label: t("cmd.toggle_voice_replies", "Toggle spoken replies"), aliases: ["spoken replies", "speak replies", "voice replies", "talk back"], hint: t("cmd.toggle_voice_replies_hint", "Voice control speaks its answers out loud (on by default)"), run: () => {
+      let next = "off";
+      try {
+        next = localStorage.getItem("allo_voice_speak_replies") === "off" ? "on" : "off";
+        localStorage.setItem("allo_voice_speak_replies", next);
+      } catch (_) {
+      }
+      return next === "off" ? t("cmd.voice_replies_off", "Spoken replies off \u2014 answers appear on screen only.") : t("cmd.voice_replies_on", "Spoken replies on \u2014 voice control will answer out loud.");
+    } },
+    { id: "toggle_wake_word", icon: "\u{1F4E3}", roles: "all", when: (c) => !!c.voiceAvailable, label: t("cmd.toggle_wake_word", "Toggle \u201Chey Allo\u201D standby"), aliases: ["wake word", "hey allo", "standby listening", "wake up word"], hint: t("cmd.toggle_wake_word_hint", "Voice control idles until you say \u201Chey Allo\u201D. Needs the on-device model \u2014 while idling, audio never leaves this device"), run: () => {
+      var on = "off";
+      try {
+        on = localStorage.getItem("allo_voice_standby") === "on" ? "off" : "on";
+        localStorage.setItem("allo_voice_standby", on);
+      } catch (_) {
+      }
+      var lp = window.__alloVoiceLoop;
+      var live = !!(lp && typeof lp.isActive === "function" && lp.isActive());
+      if (on === "on" && live && typeof lp.setStandby === "function" && !lp.setStandby(true)) {
+        return t("cmd.toggle_wake_word_needs_model", "\u201CHey Allo\u201D standby is saved, but it needs the on-device speech model \u2014 say \u201Cdownload voice models\u201D first. Until then, tap-to-talk keeps working.");
+      }
+      if (on === "off" && live && typeof lp.setStandby === "function") lp.setStandby(false);
+      return on === "on" ? t("cmd.toggle_wake_word_on", "\u201CHey Allo\u201D standby on \u2014 voice control idles until it hears the wake phrase (applies now if listening, and on every future start).") : t("cmd.toggle_wake_word_off", "Wake-word standby off \u2014 listening handles every utterance again.");
+    } },
+    { id: "voice_speed_down", icon: "\u23EA", roles: "all", when: (c) => typeof c.adjustVoiceSpeed === "function", label: t("cmd.voice_speed_down", "Speak slower"), aliases: ["slower voice", "slow down voice", "read slower"], hint: t("cmd.voice_speed_down_hint", "Lowers the read-aloud speed"), run: (c) => {
+      const next = c.adjustVoiceSpeed(-0.25);
+      return t("cmd.voice_speed_done", "Read-aloud speed is now ") + next + "x.";
+    } },
+    { id: "voice_speed_up", icon: "\u23E9", roles: "all", when: (c) => typeof c.adjustVoiceSpeed === "function", label: t("cmd.voice_speed_up", "Speak faster"), aliases: ["faster voice", "speed up voice", "read faster"], hint: t("cmd.voice_speed_up_hint", "Raises the read-aloud speed"), run: (c) => {
+      const next = c.adjustVoiceSpeed(0.25);
+      return t("cmd.voice_speed_done", "Read-aloud speed is now ") + next + "x.";
+    } },
     { id: "open_community_catalog", opensPanel: "communityCatalog", icon: "\u{1F5C2}\uFE0F", roles: "teacher", label: t("cmd.open_community_catalog", "Open the Community Catalog"), aliases: ["community catalog", "catalog", "shared lessons", "browse lessons", "community"], hint: t("cmd.open_community_catalog_hint", "Browse shared community lessons"), run: (c) => {
       c.openCommunityCatalog();
       return t("cmd.open_community_catalog_done", "Community Catalog opened.");
@@ -1444,8 +1554,6 @@ async function routeUtterance(ctx, rawText, opts = {}) {
     const m = text.match(g.re);
     if (m) {
       const cmd = commands.find((c) => c.id === g.id);
-      // The create_lesson grammar fires before the scorer, so a goal-shaped ask
-      // would short-circuit to the seed command and never reach the planner.
       if (opts.preview && cmd && _deferToPlanner(cmd, text)) return null;
       if (cmd) return _runCmd(cmd, "grammar", g.params(m));
     }
@@ -1458,9 +1566,6 @@ async function routeUtterance(ctx, rawText, opts = {}) {
       best = c;
     }
   }
-  // In the chat, a goal-shaped ask that merely matched a seed command is worth
-  // more than the seed. Returning null lets the caller's planner branch expand
-  // it. Voice and the palette are untouched: they run the match as before.
   if (opts.preview && bestScore >= 60 && _deferToPlanner(best, text)) return null;
   if (bestScore >= 60 && (!opts.preview || bestScore >= 80 && text.length >= 3)) return _runCmd(best, "deterministic");
   if (!opts.allowAi || typeof ctx.callGemini !== "function") return null;
@@ -1684,25 +1789,20 @@ function cancelCommand(ctx, commandOrId, opts = {}) {
 function runCommandById(ctx, id, params, opts = {}) {
   return executeCommand(ctx, id, params, opts);
 }
-// ── Intent resolution ───────────────────────────────────────────────────────
-// Both the single-command router and the planner used to send the model a flat
-// command menu and the raw utterance, and nothing else. So "make this easier"
-// or "do that here" had no referent, and the one part of the system that
-// reasons was the only part flying blind: these signals already existed on the
-// command context, and were being spent solely on ranking the Ctrl+K palette.
-// Bounded on purpose -- a brief, not a state dump.
 function _intentRecentCommandIds(limit) {
   try {
     const usage = _readCommandUsage();
-    return Object.keys(usage)
-      .sort((a, b) => (Number(usage[b] && usage[b].lastUsed) || 0) - (Number(usage[a] && usage[a].lastUsed) || 0))
-      .slice(0, limit || 4);
-  } catch (_) { return []; }
+    return Object.keys(usage).sort((a, b) => (Number(usage[b] && usage[b].lastUsed) || 0) - (Number(usage[a] && usage[a].lastUsed) || 0)).slice(0, limit || 4);
+  } catch (_) {
+    return [];
+  }
 }
 function _intentContextBrief(ctx) {
   if (!ctx) return "";
   const lines = [];
-  const add = (label, value) => { if (value) lines.push(label + ": " + String(value).slice(0, 120)); };
+  const add = (label, value) => {
+    if (value) lines.push(label + ": " + String(value).slice(0, 120));
+  };
   try {
     add("Audience", getCommandAudience(ctx));
     const surfaces = [];
@@ -1713,31 +1813,22 @@ function _intentContextBrief(ctx) {
     if (ctx.behaviorLensOpen) surfaces.push("Behavior Lens");
     if (ctx.pipelineOpen) surfaces.push(ctx.pipelineFixRunning ? "PDF remediation (fixing now)" : "PDF remediation");
     add("Open right now", surfaces.join(", "));
-    add("Content loaded", ctx.contentLoaded ? (ctx.contentIsGlossary ? "a glossary" : "yes") : "none yet");
+    add("Content loaded", ctx.contentLoaded ? ctx.contentIsGlossary ? "a glossary" : "yes" : "none yet");
     if (ctx.zenActive) add("Display", "zen mode");
     if (ctx.focusActive) add("Display", "focus mode");
     add("Recently ran", _intentRecentCommandIds(4).join(", "));
-  } catch (_) {}
+  } catch (_) {
+  }
   if (!lines.length) return "";
-  return "Here is what the user is doing right now. Prefer commands that fit this state, and read vague references like \"this\" or \"here\" against it.\n" + lines.join("\n") + "\n\n";
+  return 'Here is what the user is doing right now. Prefer commands that fit this state, and read vague references like "this" or "here" against it.\n' + lines.join("\n") + "\n\n";
 }
-// A single high-level goal deserves expansion into a full plan even though it
-// contains no "and"/"then" chain. "Make a lesson on volcanoes" should produce
-// the pack a teacher actually wants, not one lonely command.
 function _looksLikeGoal(rawText) {
   const text = String(rawText || "").trim().toLowerCase();
   if (text.length < 10) return false;
   if (!/\b(make|create|build|plan|prepare|prep|design|put together|set up|generate|get me ready)\b/.test(text)) return false;
-  // "Create a lesson about volcanoes for grade 5" must KEEP its precise
-  // single-command match: that grammar extracts topic and grade, which a plan
-  // would lose. Only an explicit breadth signal, or a noun that is inherently
-  // more than one artifact, is worth expanding into a full plan.
   if (/\b(comprehensive|complete|full|whole|entire|thorough|everything)\b/.test(text)) return true;
   return /\b(unit|materials|resources|pack|packet|activity set|lesson plans)\b/.test(text);
 }
-// Commands that are a reasonable literal reading of a goal-shaped ask but that
-// deliver far less than the ask implies. When the utterance reads as a goal,
-// hand these to the planner instead of settling for the seed.
 const _INTENT_SEED_COMMANDS = ["create_lesson", "generate_source_text", "generate_outline", "generate_analysis"];
 function _deferToPlanner(cmd, text) {
   if (!cmd || !cmd.id) return false;
@@ -1747,8 +1838,6 @@ function _deferToPlanner(cmd, text) {
 function looksMultiStep(rawText) {
   const text = String(rawText || "").trim();
   if (text.length < 12) return false;
-  // A goal-shaped ask ("make a complete lesson on X") is multi-step in effect
-  // even without a conjunction, so the planner gets a chance at it.
   if (_looksLikeGoal(text)) return true;
   if (/\b(then|after that|and then|followed by|once (?:that|it)'?s? done|next,)\b/i.test(text)) return true;
   if (/^\s*1[.)]/.test(text) && /\n\s*2[.)]/.test(text)) return true;
@@ -1830,16 +1919,12 @@ async function runPlan(ctxOrGet, steps, opts = {}) {
   const t = _mkT((getCtx() || {}).t);
   const list = (Array.isArray(steps) ? steps : []).slice(0, 6);
   const results = [];
-  // Get modals out of the way before the agent starts working. Without this a
-  // hub or export sheet left open sits over the whole run, and the plan looks
-  // broken because nothing visible happens. closeOtherPanels with no argument
-  // closes them all; steps that open their own panel still do so as they run.
-  // opts.keepPanels is the escape hatch for callers that own the surface.
   if (!opts.keepPanels) {
     try {
       const _stageCtx = getCtx();
       if (_stageCtx && typeof _stageCtx.closeOtherPanels === "function") _stageCtx.closeOtherPanels(opts.keepPanel || null);
-    } catch (_) {}
+    } catch (_) {
+    }
   }
   const stopRequested = opts.signal || typeof opts.shouldStop === "function" ? () => {
     if (opts.signal && opts.signal.aborted) return true;
@@ -1928,13 +2013,25 @@ function _deviceStorage() {
     window.__alloDeviceStoragePromise = new Promise(function(resolve, reject) {
       var s = document.createElement("script");
       s.src = DEVICE_STORAGE_URL;
+      var settled = false;
+      var finish = function(fn, arg) {
+        if (settled) return;
+        settled = true;
+        fn(arg);
+      };
+      setTimeout(function() {
+        finish(reject, new Error("Device storage module timed out."));
+      }, 15e3);
       s.onload = function() {
-        resolve(window.alloDeviceStorage);
+        finish(resolve, window.alloDeviceStorage);
       };
       s.onerror = function() {
-        reject(new Error("Device storage module failed to load."));
+        finish(reject, new Error("Device storage module failed to load."));
       };
       document.head.appendChild(s);
+    });
+    window.__alloDeviceStoragePromise.catch(function() {
+      window.__alloDeviceStoragePromise = null;
     });
   }
   return Promise.resolve(window.__alloDeviceStoragePromise).then(function(ds) {
@@ -2193,27 +2290,30 @@ function createVoiceLoop(getCtx) {
     }
   };
   let speaking = false, speakSerial = 0, replyAudio = null;
-  // Do not talk over the user. The recognizer reported FINAL results only, so
-  // nothing in this loop knew a sentence was in progress, and a reply would
-  // land on top of whoever was mid-thought. Interim results plus
-  // speechstart/speechend give an early "still talking" signal that speakReply
-  // waits on.
   let lastSpeechAt = 0, userSpeaking = false, pendingReply = null, pendingTimer = null;
-  const QUIET_MS = 800;       // silence required before a held reply is let out
-  const HOLD_MAX_MS = 8000;   // past this the reply is stale, so drop it: the toast already said it
-  const noteUserSpeech = (talking) => { lastSpeechAt = Date.now(); userSpeaking = !!talking; };
-  // A final transcript hands the floor back: answer it immediately rather than
-  // making the user wait out a pause they already finished.
-  const noteUserTurnEnd = () => { userSpeaking = false; lastSpeechAt = 0; };
-  const userIsBusy = () => userSpeaking || (lastSpeechAt > 0 && (Date.now() - lastSpeechAt) < QUIET_MS);
+  const QUIET_MS = 800;
+  const HOLD_MAX_MS = 8e3;
+  const noteUserSpeech = (talking) => {
+    lastSpeechAt = Date.now();
+    userSpeaking = !!talking;
+  };
+  const noteUserTurnEnd = () => {
+    userSpeaking = false;
+    lastSpeechAt = 0;
+  };
+  const userIsBusy = () => userSpeaking || lastSpeechAt > 0 && Date.now() - lastSpeechAt < QUIET_MS;
   const clearPendingReply = () => {
     pendingReply = null;
-    if (pendingTimer) { try { clearInterval(pendingTimer); } catch (_) {} pendingTimer = null; }
+    if (pendingTimer) {
+      try {
+        clearInterval(pendingTimer);
+      } catch (_) {
+      }
+      pendingTimer = null;
+    }
   };
   const speakReply = (msg, c) => {
     if (!c || c.voiceSpeakReplies === false) return;
-    // Newest wins: a held reply is REPLACED, never queued behind, so the room
-    // going quiet does not trigger a backlog of stale narration.
     if (userIsBusy()) {
       pendingReply = { msg, c, queuedAt: Date.now() };
       if (!pendingTimer) pendingTimer = setInterval(flushPendingReply, 250);
@@ -2222,8 +2322,14 @@ function createVoiceLoop(getCtx) {
     speakNow(msg, c);
   };
   const flushPendingReply = () => {
-    if (!pendingReply || !active) { clearPendingReply(); return; }
-    if (Date.now() - pendingReply.queuedAt >= HOLD_MAX_MS) { clearPendingReply(); return; }
+    if (!pendingReply || !active) {
+      clearPendingReply();
+      return;
+    }
+    if (Date.now() - pendingReply.queuedAt >= HOLD_MAX_MS) {
+      clearPendingReply();
+      return;
+    }
     if (userIsBusy()) return;
     const held = pendingReply;
     clearPendingReply();
@@ -2270,11 +2376,8 @@ function createVoiceLoop(getCtx) {
           replyAudio = a;
           a.onended = resume;
           a.onerror = resume;
-          // The flat 30s ceiling below is a backstop; a dropped end event used
-          // to leave the mic dead that long. Once the clip's real duration is
-          // known, resume when it should actually be finished.
           a.onloadedmetadata = () => {
-            const ms = (isFinite(a.duration) && a.duration > 0) ? (a.duration * 1000 + 1500) : 0;
+            const ms = isFinite(a.duration) && a.duration > 0 ? a.duration * 1e3 + 1500 : 0;
             if (ms) setTimeout(resume, ms);
           };
           Promise.resolve(a.play()).catch(resume);
@@ -2491,13 +2594,14 @@ function createVoiceLoop(getCtx) {
       if (standbyWanted) announce("\u201CHey Allo\u201D standby needs the on-device speech model \u2014 say \u201Cdownload voice models\u201D first. Tap-to-talk listening is on instead.");
       rec = new SR();
       rec.continuous = true;
-      // Interim results exist ONLY to detect that a sentence is in progress.
-      // Routing still waits for the final transcript in onresult below.
       rec.interimResults = true;
       rec.lang = c && c.voiceLang || "en-US";
       rec.onresult = (ev) => {
         const last = ev.results[ev.results.length - 1];
-        if (!last || !last.isFinal) { noteUserSpeech(true); return; }
+        if (!last || !last.isFinal) {
+          noteUserSpeech(true);
+          return;
+        }
         noteUserTurnEnd();
         handleUtterance(String(last[0] && last[0].transcript || ""));
       };
@@ -2555,12 +2659,22 @@ function createVoiceLoop(getCtx) {
     } catch (_) {
     }
     const standbyWanted = _voiceStandbyPref();
+    let engineChosen = false;
+    const probeTimer = setTimeout(function() {
+      if (engineChosen || !active) return;
+      engineChosen = true;
+      announce("Using browser speech: the on-device model did not answer in time.");
+      beginWebSpeech(c, false);
+    }, 2500);
     if (_voiceEnginePref() === "webspeech") {
       beginWebSpeech(c, standbyWanted);
       return true;
     }
     modelCache.hasWhisper().then(function(has) {
       if (!active) return;
+      if (engineChosen) return;
+      clearTimeout(probeTimer);
+      engineChosen = true;
       if (!has) {
         beginWebSpeech(c, standbyWanted);
         return;
@@ -2572,6 +2686,9 @@ function createVoiceLoop(getCtx) {
         announce(standby ? "On-device listening in standby \u2014 say \u201Chey Allo\u201D before a command. Audio never leaves this device." : "On-device recognition active \u2014 audio stays on this device.");
       });
     }).catch(function(e) {
+      clearTimeout(probeTimer);
+      if (engineChosen) return;
+      engineChosen = true;
       if (!active) return;
       whisperState = null;
       announce("On-device engine could not start (" + (e && e.message || "unknown") + ") \u2014 using browser speech instead.");

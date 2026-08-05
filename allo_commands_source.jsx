@@ -834,6 +834,116 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: 'open_lumen', opensPanel: 'stemLab', icon: '💡', roles: 'teacher', label: t('cmd.open_lumen', 'Open Lumen (data canvas)'), aliases: ['lumen', 'data canvas', 'chart data', 'graph data', 'progress charts', 'visualize data'], hint: t('cmd.open_lumen_hint', 'Turn assessment data into charts'), run: (c) => { c.openLumen(); return t('cmd.open_lumen_done', 'Lumen opened in the STEM Lab.'); } },
     { id: 'open_free_forms', opensPanel: 'stemLab', icon: '🏛️', roles: 'all', label: t('cmd.open_free_forms', 'Open Free Forms'), aliases: ['free forms', 'world of forms', 'forms', 'build a venn', 'story mountain', '3d organizer', 'build my own organizer'], hint: t('cmd.open_free_forms_hint', 'Build your own 3D World of Forms'), run: (c) => { c.openFreeForms(); return t('cmd.open_free_forms_done', 'Free Forms opened.'); } },
     { id: 'open_stem_tool', opensPanel: 'stemLab', icon: '🧪', roles: 'all', label: t('cmd.open_stem_tool', 'Open a specific STEM tool'), aliases: ['open stem tool', 'launch stem tool', 'open simulation', 'open simulator', 'start stem tool', 'open lab tool', 'jump to tool'], hint: t('cmd.open_stem_tool_hint', 'Name any STEM Lab tool and go straight to it'), run: (c, params) => runOpenStemToolCommand(c, params || {}, t) },
+    // ── Restored to the canonical source (2026-08-04) ──────────────────────
+    // These 27 shipped in the BUILT module only (0c8bd276e), so every rebuild
+    // deleted them. Ported back verbatim so source is canonical again.
+    { id: "cycle_color_overlay", icon: "\u{1F308}", roles: "all", when: (c) => typeof c.cycleColorOverlay === "function", label: t("cmd.cycle_color_overlay", "Change the color overlay"), aliases: ["color overlay", "screen tint", "reading overlay", "colour overlay"], hint: t("cmd.cycle_color_overlay_hint", "Cycles the reading tint: none, blue, peach, yellow"), run: (c) => {
+      const next = c.cycleColorOverlay();
+      return next === "none" ? t("cmd.cycle_color_overlay_off", "Color overlay off.") : t("cmd.cycle_color_overlay_done", "Color overlay: ") + next + ".";
+    } },
+    { id: "download_voice_models", icon: "\u2B07\uFE0F", roles: "all", when: () => typeof fetch === "function" && _modelPolicy() !== "off", label: t("cmd.download_voice_models", "Download the on-device speech model"), aliases: ["download voice models", "download whisper", "offline voice", "install speech model", "on device voice"], hint: t("cmd.download_voice_models_hint", "One-time ~40 MB download to this device's durable storage; the on-device recognition engine will use it so no audio has to leave the device"), pendingNarration: t("cmd.download_voice_models_working", "Downloading the on-device speech model \u2014 it goes into this device's durable storage, visible in the Storage manager..."), runAsync: () => modelCache.prefetchWhisper().then((r) => t("cmd.download_voice_models_ready", "On-device speech model cached (") + Math.max(1, Math.round(r.bytes / 1048576)) + t("cmd.download_voice_models_ready2", " MB, in the model_cache storage area). The on-device engine will pick it up automatically once it ships.")) },
+    { id: "filter_glossary", icon: "\u{1F50D}", roles: "all", when: (c) => !!c.contentIsGlossary && typeof c.setGlossaryFilterChoice === "function", label: t("cmd.filter_glossary", "Filter glossary terms"), aliases: ["filter terms", "academic words only", "domain words only", "show all terms"], hint: t("cmd.filter_glossary_hint", "Show all terms, academic (Tier 2) only, or domain (Tier 3) only"), run: (c, p) => {
+      const tier = ["all", "academic", "domain"].includes(p && p.tier) ? p.tier : "all";
+      c.setGlossaryFilterChoice(tier);
+      return t("cmd.filter_glossary_done", "Glossary filter: ") + tier + ".";
+    } },
+    { id: "generate_anchor_chart", icon: "\u{1F4CC}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis && typeof c.generateAnchorChart === "function", label: t("cmd.generate_anchor_chart", "Make an anchor chart"), aliases: ["anchor chart", "class poster", "reference chart"], hint: t("cmd.generate_anchor_chart_hint", "Generate an anchor chart from the current content"), runAsync: (c) => Promise.resolve(c.generateAnchorChart()).then(() => t("cmd.generate_anchor_chart_ready", "Anchor chart ready.")) },
+    { id: "generate_brainstorm", icon: "\u{1F9E9}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis && typeof c.generateBrainstorm === "function", label: t("cmd.generate_brainstorm", "Make a brainstorm web"), aliases: ["brainstorm", "idea web", "mind web", "concept web"], hint: t("cmd.generate_brainstorm_hint", "Generate a brainstorm organizer from the current content"), runAsync: (c) => Promise.resolve(c.generateBrainstorm()).then(() => t("cmd.generate_brainstorm_ready", "Brainstorm web ready.")) },
+    { id: "generate_concept_sort", icon: "\u{1F5C2}\uFE0F", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis && typeof c.generateConceptSort === "function", label: t("cmd.generate_concept_sort", "Make a concept sort"), aliases: ["concept sort", "card sort", "sorting activity"], hint: t("cmd.generate_concept_sort_hint", "Generate a concept-sorting activity from the current content"), runAsync: (c) => Promise.resolve(c.generateConceptSort()).then(() => t("cmd.generate_concept_sort_ready", "Concept sort ready.")) },
+    { id: "generate_faq", icon: "\u2753", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis && typeof c.generateFaq === "function", label: t("cmd.generate_faq", "Make an FAQ list"), aliases: ["faq", "frequently asked questions", "question list"], hint: t("cmd.generate_faq_hint", "Generate an FAQ list from the current content"), runAsync: (c) => Promise.resolve(c.generateFaq()).then(() => t("cmd.generate_faq_ready", "FAQ list ready.")) },
+    { id: "generate_note_taking", icon: "\u{1F4DD}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis && typeof c.generateNoteTaking === "function", label: t("cmd.generate_note_taking", "Create a note-taking guide"), aliases: ["note taking", "guided notes", "notes template", "cornell notes"], hint: t("cmd.generate_note_taking_hint", "Generate a structured note-taking guide from the current content"), runAsync: (c) => Promise.resolve(c.generateNoteTaking()).then(() => t("cmd.generate_note_taking_ready", "Note-taking guide ready \u2014 it\u2019s in the output panel.")) },
+    { id: "generate_source_text", icon: "\u{1F4C4}", roles: "teacher", when: (c) => typeof c.generateSourceText === "function", label: t("cmd.generate_source_text", "Generate source text on a topic"), aliases: ["generate a source", "write a passage about", "make a reading about", "source text on"], hint: t("cmd.generate_source_text_hint", "Writes an original reading passage on your topic to build resources from"), pendingNarration: t("cmd.generate_source_text_working", "Writing a source passage..."), runAsync: (c, p) => Promise.resolve(c.generateSourceText(p && p.topic ? String(p.topic) : "")).then(() => t("cmd.generate_source_text_ready", "Source passage ready \u2014 you can now generate resources from it.")) },
+    { id: "open_screen_coach", opensPanel: "videoStudio", icon: "\u{1F9ED}", roles: "teacher", when: (c) => typeof c.openVideoStudio === "function", label: t("cmd.open_screen_coach", "Open the Screen Coach"), aliases: ["screen coach", "coach me", "guide me through", "help me use another site", "watch my screen"], hint: t("cmd.open_screen_coach_hint", "AI guidance over any tab you capture \u2014 it advises with on-screen highlights; you do the clicking"), run: (c) => {
+      c.openVideoStudio();
+      return t("cmd.open_screen_coach_done", "Opening Video Studio \u2014 the Screen Coach panel is at the top of the Record tab. Use \u201CWatch without recording\u201D to coach without saving anything.");
+    } },
+    { id: "print_page", icon: "\u{1F5A8}\uFE0F", roles: "all", when: () => typeof window !== "undefined" && typeof window.print === "function", label: t("cmd.print_page", "Print this page"), aliases: ["print", "print it", "printer"], hint: t("cmd.print_page_hint", "Opens the browser print dialog for the current page"), run: () => {
+      try {
+        window.print();
+      } catch (_) {
+      }
+      return t("cmd.print_page_done", "Opening the print dialog.");
+    } },
+    { id: "read_page_aloud", icon: "\u{1F508}", roles: "all", when: (c) => typeof c.openReadThisPage === "function", label: t("cmd.read_page_aloud", "Read this page aloud"), aliases: ["read this page", "read aloud", "read it to me", "read the page"], hint: t("cmd.read_page_aloud_hint", "Opens the read-aloud overlay for the current page"), run: (c) => {
+      c.openReadThisPage();
+      return t("cmd.read_page_aloud_done", "Opening read-aloud for this page.");
+    } },
+    { id: "set_model_download_policy", icon: "\u2699\uFE0F", roles: "all", when: () => true, label: t("cmd.set_model_download_policy", "Set model download policy"), aliases: ["model download policy", "auto download models", "stop model downloads"], hint: t("cmd.set_model_download_policy_hint", "ask (default), auto (fetch on first voice use), or off"), run: (c, p) => {
+      var v = modelCache.setPolicy(p && p.policy);
+      return t("cmd.set_model_download_policy_done", "Model downloads: ") + v + ".";
+    } },
+    { id: "start_bingo_game", icon: "\u{1F3B1}", roles: "all", when: (c) => !!c.contentIsGlossary && typeof c.startBingoGame === "function", label: t("cmd.start_bingo_game", "Play vocabulary bingo"), aliases: ["bingo", "vocab bingo", "vocabulary bingo"], hint: t("cmd.start_bingo_game_hint", "Play bingo with this glossary\u2019s terms"), run: (c) => {
+      c.startBingoGame();
+      return t("cmd.start_bingo_game_done", "Vocabulary bingo on.");
+    } },
+    { id: "start_crossword_game", icon: "\u{1F4F0}", roles: "all", when: (c) => !!c.contentIsGlossary && typeof c.startCrosswordGame === "function", label: t("cmd.start_crossword_game", "Play the crossword"), aliases: ["crossword", "crossword puzzle"], hint: t("cmd.start_crossword_game_hint", "Turn this glossary into a crossword puzzle"), run: (c) => {
+      c.startCrosswordGame();
+      return t("cmd.start_crossword_game_done", "Crossword on \u2014 clues come from the definitions.");
+    } },
+    { id: "start_matching_game", icon: "\u{1F517}", roles: "all", when: (c) => !!c.contentIsGlossary && typeof c.startMatchingGame === "function", label: t("cmd.start_matching_game", "Play the matching game"), aliases: ["matching game", "match terms"], hint: t("cmd.start_matching_game_hint", "Match glossary terms to their definitions"), run: (c) => {
+      c.startMatchingGame();
+      return t("cmd.start_matching_game_done", "Matching game on \u2014 drag each term to its definition.");
+    } },
+    { id: "start_memory_game", icon: "\u{1F9E0}", roles: "all", when: (c) => !!c.contentIsGlossary && typeof c.startMemoryGame === "function", label: t("cmd.start_memory_game", "Play the memory game"), aliases: ["memory game", "concentration game"], hint: t("cmd.start_memory_game_hint", "Study this glossary as a memory matching game"), run: (c) => {
+      c.startMemoryGame();
+      return t("cmd.start_memory_game_done", "Memory game on \u2014 flip cards to match terms and meanings.");
+    } },
+    { id: "start_review_game", icon: "\u{1F3AF}", roles: "all", when: (c) => !!c.contentIsQuiz && typeof c.toggleReviewGame === "function", label: t("cmd.start_review_game", "Play the quiz as a review game"), aliases: ["review game", "quiz game", "game mode"], hint: t("cmd.start_review_game_hint", "Turns the current quiz into a review game"), run: (c) => {
+      c.toggleReviewGame();
+      return t("cmd.start_review_game_done", "Review game toggled.");
+    } },
+    { id: "start_word_scramble", icon: "\u{1F500}", roles: "all", when: (c) => !!c.contentIsGlossary && typeof c.startWordScrambleGame === "function", label: t("cmd.start_word_scramble", "Play word scramble"), aliases: ["word scramble", "scramble game", "unscramble"], hint: t("cmd.start_word_scramble_hint", "Unscramble this glossary's terms"), run: (c) => {
+      c.startWordScrambleGame();
+      return t("cmd.start_word_scramble_done", "Word scramble on.");
+    } },
+    { id: "toggle_content_editing", icon: "\u270F\uFE0F", roles: "teacher", when: (c) => typeof c.toggleContentEditing === "function" && !!c.contentLoaded, label: t("cmd.toggle_content_editing", "Edit this content"), aliases: ["edit this", "edit mode", "let me edit", "stop editing"], hint: t("cmd.toggle_content_editing_hint", "Toggles edit mode on whatever is currently on screen"), run: (c) => {
+      const kind = c.toggleContentEditing();
+      return kind ? t("cmd.toggle_content_editing_done", "Edit mode toggled for the ") + kind + "." : t("cmd.toggle_content_editing_miss", "This view doesn\u2019t have an edit mode.");
+    } },
+    { id: "toggle_presentation_mode", icon: "\u{1F4FA}", roles: "teacher", when: (c) => !!c.contentLoaded && typeof c.togglePresentationMode === "function", label: t("cmd.toggle_presentation_mode", "Toggle presentation mode"), aliases: ["presentation mode", "present this", "projector mode", "full screen content"], hint: t("cmd.toggle_presentation_mode_hint", "Large-format view of the current content for projecting"), run: (c) => {
+      c.togglePresentationMode();
+      return t("cmd.toggle_presentation_mode_done", "Presentation mode toggled.");
+    } },
+    { id: "toggle_quiz_answers", icon: "\u{1F511}", roles: "teacher", when: (c) => !!c.contentIsQuiz && typeof c.toggleQuizAnswers === "function", label: t("cmd.toggle_quiz_answers", "Show or hide quiz answers"), aliases: ["quiz answers", "show answers", "hide answers", "answer key"], hint: t("cmd.toggle_quiz_answers_hint", "Toggles the answer key on the current quiz (teacher only)"), run: (c) => {
+      c.toggleQuizAnswers();
+      return t("cmd.toggle_quiz_answers_done", "Quiz answer key toggled.");
+    } },
+    { id: "toggle_side_by_side", icon: "\u{1F4D1}", roles: "all", when: (c) => !!c.contentIsSimplified && typeof c.toggleSideBySide === "function", label: t("cmd.toggle_side_by_side", "Compare with the original"), aliases: ["side by side", "compare original", "original next to adapted"], hint: t("cmd.toggle_side_by_side_hint", "Shows the adapted text next to the original source"), run: (c) => {
+      c.toggleSideBySide();
+      return t("cmd.toggle_side_by_side_done", "Side-by-side comparison toggled.");
+    } },
+    { id: "toggle_voice_replies", icon: "\u{1F50A}", roles: "all", when: (c) => c.voiceAvailable, label: t("cmd.toggle_voice_replies", "Toggle spoken replies"), aliases: ["spoken replies", "speak replies", "voice replies", "talk back"], hint: t("cmd.toggle_voice_replies_hint", "Voice control speaks its answers out loud (on by default)"), run: () => {
+      let next = "off";
+      try {
+        next = localStorage.getItem("allo_voice_speak_replies") === "off" ? "on" : "off";
+        localStorage.setItem("allo_voice_speak_replies", next);
+      } catch (_) {
+      }
+      return next === "off" ? t("cmd.voice_replies_off", "Spoken replies off \u2014 answers appear on screen only.") : t("cmd.voice_replies_on", "Spoken replies on \u2014 voice control will answer out loud.");
+    } },
+    { id: "toggle_wake_word", icon: "\u{1F4E3}", roles: "all", when: (c) => !!c.voiceAvailable, label: t("cmd.toggle_wake_word", "Toggle \u201Chey Allo\u201D standby"), aliases: ["wake word", "hey allo", "standby listening", "wake up word"], hint: t("cmd.toggle_wake_word_hint", "Voice control idles until you say \u201Chey Allo\u201D. Needs the on-device model \u2014 while idling, audio never leaves this device"), run: () => {
+      var on = "off";
+      try {
+        on = localStorage.getItem("allo_voice_standby") === "on" ? "off" : "on";
+        localStorage.setItem("allo_voice_standby", on);
+      } catch (_) {
+      }
+      var lp = window.__alloVoiceLoop;
+      var live = !!(lp && typeof lp.isActive === "function" && lp.isActive());
+      if (on === "on" && live && typeof lp.setStandby === "function" && !lp.setStandby(true)) {
+        return t("cmd.toggle_wake_word_needs_model", "\u201CHey Allo\u201D standby is saved, but it needs the on-device speech model \u2014 say \u201Cdownload voice models\u201D first. Until then, tap-to-talk keeps working.");
+      }
+      if (on === "off" && live && typeof lp.setStandby === "function") lp.setStandby(false);
+      return on === "on" ? t("cmd.toggle_wake_word_on", "\u201CHey Allo\u201D standby on \u2014 voice control idles until it hears the wake phrase (applies now if listening, and on every future start).") : t("cmd.toggle_wake_word_off", "Wake-word standby off \u2014 listening handles every utterance again.");
+    } },
+    { id: "voice_speed_down", icon: "\u23EA", roles: "all", when: (c) => typeof c.adjustVoiceSpeed === "function", label: t("cmd.voice_speed_down", "Speak slower"), aliases: ["slower voice", "slow down voice", "read slower"], hint: t("cmd.voice_speed_down_hint", "Lowers the read-aloud speed"), run: (c) => {
+      const next = c.adjustVoiceSpeed(-0.25);
+      return t("cmd.voice_speed_done", "Read-aloud speed is now ") + next + "x.";
+    } },
+    { id: "voice_speed_up", icon: "\u23E9", roles: "all", when: (c) => typeof c.adjustVoiceSpeed === "function", label: t("cmd.voice_speed_up", "Speak faster"), aliases: ["faster voice", "speed up voice", "read faster"], hint: t("cmd.voice_speed_up_hint", "Raises the read-aloud speed"), run: (c) => {
+      const next = c.adjustVoiceSpeed(0.25);
+      return t("cmd.voice_speed_done", "Read-aloud speed is now ") + next + "x.";
+    } },
     { id: 'open_community_catalog', opensPanel: 'communityCatalog', icon: '🗂️', roles: 'teacher', label: t('cmd.open_community_catalog', 'Open the Community Catalog'), aliases: ['community catalog', 'catalog', 'shared lessons', 'browse lessons', 'community'], hint: t('cmd.open_community_catalog_hint', 'Browse shared community lessons'), run: (c) => { c.openCommunityCatalog(); return t('cmd.open_community_catalog_done', 'Community Catalog opened.'); } },
     { id: 'open_dynamic_assessment', opensPanel: 'dynamicAssessment', icon: '📊', roles: 'teacher', label: t('cmd.open_dynamic_assessment', 'Open Dynamic Assessment'), aliases: ['dynamic assessment', 'progress monitoring', 'probe', 'cbm', 'assessment'], hint: t('cmd.open_dynamic_assessment_hint', 'Run a dynamic assessment'), run: (c) => { c.openDynamicAssessment(); return t('cmd.open_dynamic_assessment_done', 'Dynamic Assessment opened.'); } },
     { id: 'open_reading_library', opensPanel: 'readingLibrary', icon: '📚', roles: 'all', label: t('cmd.open_reading_library', 'Open the Reading Library'), aliases: ['reading library', 'library', 'books', 'picture books', 'storyweaver', 'read a book'], hint: t('cmd.open_reading_library_hint', 'Browse open picture books in 10 languages'), run: (c) => { c.openReadingLibrary(); return t('cmd.open_reading_library_done', 'Reading Library opened.'); } },
@@ -1530,10 +1640,18 @@ function _deviceStorage() {
     window.__alloDeviceStoragePromise = new Promise(function (resolve, reject) {
       var s = document.createElement("script");
       s.src = DEVICE_STORAGE_URL;
-      s.onload = function () { resolve(window.alloDeviceStorage); };
-      s.onerror = function () { reject(new Error("Device storage module failed to load.")); };
+      // A script that neither loads nor errors would leave this promise
+      // pending forever, and every awaiting caller with it. Always settle.
+      var settled = false;
+      var finish = function (fn, arg) { if (settled) return; settled = true; fn(arg); };
+      setTimeout(function () { finish(reject, new Error("Device storage module timed out.")); }, 15000);
+      s.onload = function () { finish(resolve, window.alloDeviceStorage); };
+      s.onerror = function () { finish(reject, new Error("Device storage module failed to load.")); };
       document.head.appendChild(s);
     });
+    // A rejected load must not be cached forever: one bad network moment
+    // would otherwise disable device storage for the whole session.
+    window.__alloDeviceStoragePromise.catch(function () { window.__alloDeviceStoragePromise = null; });
   }
   return Promise.resolve(window.__alloDeviceStoragePromise).then(function (ds) {
     if (!ds || typeof ds.ready !== "function") throw new Error("Device storage is unavailable.");
@@ -2063,12 +2181,25 @@ function createVoiceLoop(getCtx) {
       }
     } catch (_) {}
     const standbyWanted = _voiceStandbyPref();
+    // Bound the on-device probe. hasWhisper() can hang (see _deviceStorage),
+    // and start() has already promised the caller that voice is on, so the
+    // mic must open on browser speech rather than wait forever.
+    let engineChosen = false;
+    const probeTimer = setTimeout(function () {
+      if (engineChosen || !active) return;
+      engineChosen = true;
+      announce("Using browser speech: the on-device model did not answer in time.");
+      beginWebSpeech(c, false);
+    }, 2500);
     if (_voiceEnginePref() === "webspeech") {
       beginWebSpeech(c, standbyWanted);
       return true;
     }
     modelCache.hasWhisper().then(function (has) {
       if (!active) return;
+      if (engineChosen) return;
+      clearTimeout(probeTimer);
+      engineChosen = true;
       if (!has) { beginWebSpeech(c, standbyWanted); return; }
       engineName = "whisper";
       standby = standbyWanted;
@@ -2079,6 +2210,9 @@ function createVoiceLoop(getCtx) {
           : "On-device recognition active — audio stays on this device.");
       });
     }).catch(function (e) {
+      clearTimeout(probeTimer);
+      if (engineChosen) return;
+      engineChosen = true;
       if (!active) return;
       whisperState = null;
       announce("On-device engine could not start (" + (e && e.message || "unknown") + ") — using browser speech instead.");

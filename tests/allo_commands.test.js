@@ -671,11 +671,17 @@ describe('createVoiceLoop single-flight routing', () => {
         instances.push(this);
       }
     }
+    // Pin the engine. With the default 'auto' pref, start() probes
+    // modelCache.hasWhisper() first and only reaches Web Speech asynchronously,
+    // so the recognizer would not exist yet on the next line. These tests are
+    // about single-flight ROUTING, not engine selection.
+    try { localStorage.setItem('allo_voice_engine', 'webspeech'); } catch (_) {}
     const previous = window.SpeechRecognition;
     window.SpeechRecognition = FakeSpeechRecognition;
     return {
       instances,
       restore: () => {
+        try { localStorage.removeItem('allo_voice_engine'); } catch (_) {}
         if (previous === undefined) delete window.SpeechRecognition;
         else window.SpeechRecognition = previous;
       },
