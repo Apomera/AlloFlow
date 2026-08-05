@@ -20,6 +20,1053 @@
   function sfxTitrSuccess() { titrTone(523,0.08,"sine",0.07); setTimeout(function(){titrTone(659,0.08,"sine",0.07);},70); setTimeout(function(){titrTone(784,0.1,"sine",0.08);},140); }
   if(!document.getElementById("titr-a11y")){var _s=document.createElement("style");_s.id="titr-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}";document.head.appendChild(_s);}
 
+// ═══════════════════════════════════════════════════════════════════════════
+// BURETTE READING — the parallax model behind the 3D station and the graded run
+// ═══════════════════════════════════════════════════════════════════════════
+// Every number here is plain arithmetic on purpose. The 3D view is a *picture of*
+// this model, never the source of it: WebGL can fail, be blocked by a school
+// network, or be absent on the device, and the graded titration still has to
+// produce the same reading from the same eye height.
+//
+// Why a burette misreads at all: the graduations are printed on the FRONT of the
+// glass, but the meniscus sits on the tube's axis, ~half an inner diameter behind
+// them. Sighting from eye E to the meniscus M crosses the scale plane at a point
+// offset from M's true height — the classic parallax error.
+//
+//        eye ──────╮                        h  = eye height above meniscus
+//                  ╰──── ✕ ← scale plane    L  = viewing distance
+//                        ╰──── M            d  = meniscus depth behind scale
+//
+// Similar triangles put the crossing point h·d/L above the true level. Burette
+// numbering increases DOWNWARD, so a crossing point above the meniscus reads a
+// SMALLER number: eye high → reads low, eye low → reads high. That is exactly the
+// rule the lab tip states, and now it is the rule the simulation obeys.
+var BURETTE = {
+  DEPTH_CM: 0.5,       // meniscus sits ~half a 1 cm inner bore behind the scale
+  VIEW_CM: 30,         // a normal working distance from the barrel
+  ML_PER_CM: 1.0,      // 50 mL over a ~50 cm graduated barrel
+  TOLERANCE_ML: 0.05,  // class A burette tolerance — also the grading band
+  DROP_ML: 0.05,       // one drop from a burette tip, ~20 drops per mL
+  MAX_EYE_CM: 20,      // how far the station lets you get out of line
+  CONCORDANCE_ML: 0.10 // replicates this close are "concordant" — the usual bench rule
+};
+
+// Reading error in mL for an eye sitting eyeCm above (+) or below (−) the meniscus.
+// Positive eyeCm returns a NEGATIVE error: looking down makes you read low.
+function buretteParallaxMl(eyeCm) {
+  var e = Number(eyeCm);
+  if (!isFinite(e)) return 0;
+  e = Math.max(-BURETTE.MAX_EYE_CM, Math.min(BURETTE.MAX_EYE_CM, e));
+  var err = -(e * BURETTE.DEPTH_CM / BURETTE.VIEW_CM) * BURETTE.ML_PER_CM;
+  // Negating zero yields -0, which is numerically fine but makes `err >= 0` sign
+  // checks and equality assertions behave differently from the +0 they read as.
+  return err === 0 ? 0 : err;
+}
+
+// What the student actually writes down. Assumes the initial reading was taken
+// correctly at eye level, which the station states on screen — modelling drift in
+// both readings would let a sloppy pair of sightings cancel out and quietly teach
+// the opposite lesson.
+function readBurette(trueMl, eyeCm) {
+  var v = Number(trueMl) || 0;
+  return Math.max(0, v + buretteParallaxMl(eyeCm));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GRADED UNKNOWNS — determining a concentration, which is what titration is FOR
+// ═══════════════════════════════════════════════════════════════════════════
+// Deterministic LCG (Numerical Recipes constants) rather than Math.random, so a
+// given run number always yields the same unknown: a teacher can hand the whole
+// class run 7 and compare answers, and the tests can pin real values.
+function titrLcg(seed) {
+  var s = (Math.abs(Math.floor(Number(seed) || 0)) % 2147483647) || 1;
+  // Scramble and warm up before handing out any values. A raw LCG's first output is
+  // LINEAR in the seed, so consecutive run numbers produced nearly identical first
+  // draws — runs 1 through 35 all served vinegar, and a student doing ten runs never
+  // saw a second product. Knuth's multiplicative hash decorrelates the seed; the
+  // warm-up steps discard the remaining short-period behaviour in the low bits.
+  s = (s * 2654435761) % 4294967296;
+  var step = function () {
+    s = (s * 1664525 + 1013904223) % 4294967296;
+    return s / 4294967296;
+  };
+  step(); step(); step();
+  return step;
+}
+
+// Real consumer products, with the concentration ranges they actually ship at.
+// All four are 1:1 stoichiometry (monoprotic acid or monobasic base) so the
+// arithmetic a student does by hand is exactly the arithmetic the grader does.
+var UNKNOWN_SPECS = [
+  // dilutionFactor: undiluted product would need hundreds of mL of titrant, which is
+  // why a real bench dilutes it first. The student titrates the DILUTED aliquot and
+  // multiplies back up — the step that makes the Dilution tab next door matter.
+  { id: 'vinegar', name: 'Household vinegar', icon: '🍶', analyte: 'Acetic acid (CH₃COOH)',
+    titrant: 'NaOH', titrantConc: 0.100, aliquotMl: 25.0, lo: 0.75, hi: 0.95,
+    dilutionFactor: 10, prep: '10.00 mL vinegar diluted to 100.0 mL; 25.00 mL of that titrated',
+    Ka: 1.8e-5, indicator: 'phenolphthalein', truthUnit: 'M',
+    blurb: 'Vinegar is sold at "5% acidity". Titrate it and find out what that really means in mol/L.' },
+  { id: 'ammonia', name: 'Ammonia cleaner', icon: '🧴', analyte: 'Ammonia (NH₃)',
+    titrant: 'HCl', titrantConc: 0.100, aliquotMl: 25.0, lo: 0.55, hi: 0.80,
+    dilutionFactor: 10, prep: '10.00 mL cleaner diluted to 100.0 mL; 25.00 mL of that titrated',
+    Kb: 1.8e-5, indicator: 'methylRed', truthUnit: 'M',
+    blurb: 'A weak base titrated with a strong acid — so the equivalence point is acidic, and phenolphthalein would mislead you.' },
+  { id: 'vitaminc', name: 'Vitamin C tablet', icon: '💊', analyte: 'Ascorbic acid',
+    titrant: 'NaOH', titrantConc: 0.0500, aliquotMl: 20.0, lo: 0.030, hi: 0.055,
+    dilutionFactor: 1, prep: 'One tablet dissolved and made up to volume; 20.00 mL titrated',
+    Ka: 7.9e-5, indicator: 'phenolphthalein', truthUnit: 'M',
+    blurb: 'One dissolved tablet. Titrated to the first equivalence point, ascorbic acid behaves as monoprotic.' },
+  // A STRONG acid, so the set covers the sharpest curve shape too and the equivalence
+  // sits exactly at pH 7. (Water alkalinity was the obvious environmental candidate and
+  // was dropped on purpose: carbonate cannot honestly be modelled as a lone weak base —
+  // its real endpoint sits near pH 8.3 precisely because the HCO3-/CO3^2- pair buffers
+  // it, which a single-Kb term cannot reproduce.)
+  { id: 'poolacid', name: 'Pool / muriatic acid', icon: '🏊', analyte: 'Hydrochloric acid (HCl)',
+    titrant: 'NaOH', titrantConc: 0.100, aliquotMl: 25.0, lo: 1.10, hi: 1.50,
+    dilutionFactor: 20, prep: '5.00 mL acid diluted to 100.0 mL; 25.00 mL of that titrated',
+    strong: 'acid', indicator: 'bromothymolBlue', truthUnit: 'M',
+    blurb: 'Sold for pool pH control. A strong acid, so the curve is near-vertical and equivalence sits exactly at pH 7.' }
+];
+
+// pH of an unknown part-way through its titration. Same physics as the main
+// calcPH engine, but parameterised by spec instead of a fixed preset: weak acid +
+// strong base for the two acids, weak base + strong acid for the two bases.
+// Needed because in graded mode the student gets NO pH meter — they find the
+// endpoint from the indicator, and the indicator needs a pH to respond to.
+function unknownPH(spec, conc, vb) {
+  var Kw = 1e-14;
+  var Va = spec.aliquotMl, Cb = spec.titrantConc;
+  var molesAnalyte = conc * Va / 1000;
+  var molesTitrant = Cb * (Number(vb) || 0) / 1000;
+  var totalVolL = (Va + (Number(vb) || 0)) / 1000;
+  var excess = molesAnalyte - molesTitrant;
+  var clamp = function (p) { return Math.max(0, Math.min(14, p)); };
+
+  // ONE equivalence pH for the whole run, evaluated at the volume where equivalence
+  // actually happens. Both the buffer formula and the excess-titrant formula are
+  // asymptotic approximations that break down beside it — Henderson–Hasselbalch runs
+  // off to infinity as the analyte is used up, and the excess formula ignores the
+  // conjugate species entirely — so each is bounded against this value. The result
+  // passes exactly through it and is monotone on both sides, which is what the real
+  // curve does and what an endpoint hunt needs.
+  var vEqMl = (molesAnalyte / Cb) * 1000;
+  var eqVolL = (Va + vEqMl) / 1000;
+
+  if (spec.strong === 'acid') {                   // strong acid titrated with strong base
+    if (molesTitrant <= 1e-12) return clamp(-Math.log10(conc));
+    if (excess > 1e-12) return clamp(Math.min(7, -Math.log10(excess / totalVolL)));
+    if (excess > -1e-12) return 7;
+    return clamp(Math.max(7, 14 + Math.log10(-excess / totalVolL)));
+  }
+
+  if (spec.Ka) {                                  // weak acid titrated with strong base
+    var Ka = spec.Ka;
+    if (molesTitrant <= 1e-12) return clamp(-Math.log10(Math.sqrt(Ka * conc)));
+    var eqPH = 14 + Math.log10(Math.sqrt((Kw / Ka) * (molesAnalyte / eqVolL)));
+    if (excess > 1e-12) {
+      var hh = -Math.log10(Ka) + Math.log10(molesTitrant / excess);
+      var alone = -Math.log10(Math.sqrt(Ka * (excess / totalVolL)));
+      // Floor: no dip below the initial pH. Ceiling: adding base before equivalence
+      // cannot take you past the equivalence pH.
+      return clamp(Math.min(Math.max(hh, alone), eqPH));
+    }
+    if (excess > -1e-12) return clamp(eqPH);
+    return clamp(Math.max(eqPH, 14 + Math.log10(-excess / totalVolL)));
+  }
+
+  var Kb = spec.Kb;                               // weak base titrated with strong acid
+  if (molesTitrant <= 1e-12) return clamp(14 + Math.log10(Math.sqrt(Kb * conc)));
+  var eqPHb = -Math.log10(Math.sqrt((Kw / Kb) * (molesAnalyte / eqVolL)));
+  if (excess > 1e-12) {
+    var pKb = -Math.log10(Kb);
+    var pOH = pKb + Math.log10(molesTitrant / excess);
+    var aloneOH = -Math.log10(Math.sqrt(Kb * (excess / totalVolL)));
+    // MAX on pOH, mirroring the acid branch's max(): the larger pOH is the smaller
+    // pH. Taking the min let the pH RISE after the first drop of acid — a base
+    // getting more basic as you titrate it with acid — and put half-equivalence at
+    // 11.07 instead of pOH = pKb -> pH 9.26.
+    return clamp(Math.max(14 - Math.max(pOH, aloneOH), eqPHb));
+  }
+  if (excess > -1e-12) return clamp(eqPHb);
+  return clamp(Math.min(eqPHb, -Math.log10(-excess / totalVolL)));
+}
+
+// Build run N. The true concentration is hidden from the UI until the student commits.
+function makeUnknown(runSeed) {
+  var rnd = titrLcg(runSeed);
+  var spec = UNKNOWN_SPECS[Math.floor(rnd() * UNKNOWN_SPECS.length) % UNKNOWN_SPECS.length];
+  // Quantised to 4 significant-ish steps so the truth is a value a student could
+  // plausibly report, not a 15-digit float.
+  var raw = spec.lo + rnd() * (spec.hi - spec.lo);
+  var step = (spec.hi - spec.lo) / 40;
+  var truth = Math.round(raw / step) * step;
+  // truth is the concentration of the PRODUCT; what sits in the flask is diluted.
+  var dil = spec.dilutionFactor || 1;
+  var flaskConc = truth / dil;
+  // Vb at the true equivalence: Cflask·Va = Cb·Vb  (1:1), so Vb = Cflask·Va/Cb.
+  var trueVb = (flaskConc * spec.aliquotMl) / spec.titrantConc;
+  return { spec: spec, truthConc: truth, flaskConc: flaskConc, trueVb: trueVb, seed: runSeed };
+}
+
+// Volume at which the indicator's colour actually turns. The pH curve is monotone
+// (unknownPH guarantees it), so bisection finds this in ~30 steps instead of scanning.
+// Used only to phrase what the student SEES — it is never shown, and the grade is
+// still measured against true equivalence, not against this.
+function findEndpointVb(spec, flaskConc, endPH, rising) {
+  var lo = 0, hi = 50;
+  var reached = function (v) {
+    var ph = unknownPH(spec, flaskConc, v);
+    return rising ? ph >= endPH : ph <= endPH;
+  };
+  if (!reached(hi)) return hi;
+  for (var i = 0; i < 40; i++) {
+    var mid = (lo + hi) / 2;
+    if (reached(mid)) hi = mid; else lo = mid;
+  }
+  return hi;
+}
+
+// What the flask looks like, expressed in DROPS either side of the colour change.
+// Keying this to pH bands instead made the "faint persistent colour" state about a
+// fifth of a drop wide, so a single drop could jump a student from "nothing yet"
+// straight to "you overshot" and the endpoint was literally unobservable. The real
+// skill is stopping at the FIRST drop that leaves lasting colour, and one drop is
+// exactly the burette's tolerance — so drops, not pH, are the honest unit here.
+function endpointObservation(gVb, endVb) {
+  var drops = (gVb - endVb) / BURETTE.DROP_ML;
+  if (drops < -1) return 'none';
+  if (drops < 0) return 'flash';       // colour flares where the drop lands, then swirls away
+  if (drops <= 2) return 'endpoint';   // faint and lasting — stop here
+  return 'over';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GLASSWARE — why the tolerances differ, which is a fact about SHAPE
+// ═══════════════════════════════════════════════════════════════════════════
+// The Equipment tab lists tolerances (burette 0.05 mL, volumetric flask 0.10, pipette
+// 0.02) as though they were arbitrary facts to memorise. They are not: they follow
+// from how wide the vessel is where you read it. One millilitre poured into a 10 mm
+// burette bore stands about 13 mm tall and you can read it to a fraction of a
+// division; the same millilitre in a 70 mm beaker is a quarter-millimetre film you
+// cannot see at all. That is a geometric argument, so it is worth showing in 3D.
+//
+// Capacities and class A tolerances are the standard catalogue values; bore diameters
+// are typical for that glassware.
+var GLASSWARE = [
+  // 11 mm bore, not 10: at 10 the arithmetic implies a 64 cm barrel, where a real
+  // 50 mL burette is about 50 cm. 11 mm gives 10.5 mm per mL and a 52 cm barrel.
+  { id: 'burette',  label: 'Burette, 50 mL',            capMl: 50,  tolMl: 0.05, boreMm: 11, kind: 'burette' },
+  { id: 'pipette',  label: 'Volumetric pipette, 25 mL', capMl: 25,  tolMl: 0.03, boreMm: 6,  kind: 'pipette' },
+  { id: 'volflask', label: 'Volumetric flask, 100 mL',  capMl: 100, tolMl: 0.10, boreMm: 12, kind: 'volflask' },
+  { id: 'cylinder', label: 'Measuring cylinder, 100 mL', capMl: 100, tolMl: 0.50, boreMm: 26, kind: 'cylinder' },
+  { id: 'conical',  label: 'Conical flask, 250 mL',     capMl: 250, tolMl: 12.5, boreMm: 22, kind: 'conical' },
+  { id: 'beaker',   label: 'Beaker, 250 mL',            capMl: 250, tolMl: 12.5, boreMm: 70, kind: 'beaker' }
+];
+
+// How tall a 1 mL slice stands in a vessel of the given bore. 1 mL = 1000 mm³, so
+// height = 1000 / (pi r²). This is the number the whole bench exists to make visible.
+function mlHeightMm(boreMm) {
+  var r = Number(boreMm) / 2;
+  if (!(r > 0)) return 0;
+  return 1000 / (Math.PI * r * r);
+}
+
+// Tolerance as a fraction of capacity, for ranking precision independently of size —
+// a 0.05 mL error means something very different on 50 mL than on 250 mL.
+function tolPercent(g) { return g.capMl > 0 ? (g.tolMl / g.capMl) * 100 : 0; }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BUFFER CAPACITY — what a spike of strong acid does to a buffer
+// ═══════════════════════════════════════════════════════════════════════════
+// Henderson–Hasselbalch describes a solution that still HAS both members of the
+// conjugate pair. The Buffer Discovery tab used it unconditionally, clamping [A⁻] to
+// 0.001 M when the spike consumed more base than the buffer held — so a buffer that
+// had been completely destroyed was still reported through the buffer equation. The
+// pH shifts it printed were wrong by over a full unit either way, and those printed
+// shifts are exactly what the tab asks students to log and reason from.
+//
+// Once A⁻ is gone the leftover is FREE STRONG ACID, and that is what sets the pH.
+// Both regimes below meet at the same value when the spike exactly exhausts the
+// buffer, so the curve stays continuous instead of stepping at the boundary.
+function bufferAfterStrongAcid(Ka, ratio, totalConc, deltaAcid) {
+  var pKa = -Math.log10(Ka);
+  var ha = totalConc / (1 + ratio);          // [A⁻]/[HA] = ratio, and they sum to total
+  var aMinus = totalConc - ha;
+  var consumed = Math.min(deltaAcid, aMinus);
+  var newHA = ha + consumed;
+  var newA = aMinus - consumed;
+  var excess = deltaAcid - consumed;         // strong acid the buffer could not absorb
+  // A spike that EXACTLY exhausts the buffer leaves excess = 5.6e-17 rather than 0
+  // (ratio 0.25 gives aMinus = 0.19999999999999996). Without a physical threshold the
+  // panel announces "the A⁻ ran out completely, the leftover strong acid now sets the
+  // pH" over a leftover of 5.6e-17 M.
+  if (excess <= totalConc * 1e-9) { excess = 0; }
+  var pHAfter;
+  if (excess <= 0 && newA > 0) {
+    var hh = pKa + Math.log10(newA / newHA);
+    // H–H dives to −∞ as the last of the A⁻ goes; the physical floor is the weak
+    // acid on its own, solved exactly rather than as √(Ka·C) because Ka is not
+    // necessarily small next to C here.
+    var hAlone = (-Ka + Math.sqrt(Ka * Ka + 4 * Ka * newHA)) / 2;
+    pHAfter = Math.max(hh, -Math.log10(hAlone));
+  } else {
+    // Buffer destroyed. [H⁺] is the leftover strong acid plus whatever the weak acid
+    // still manages to give up against it. The quadratic keeps this continuous with
+    // the branch above as excess → 0.
+    var b = excess + Ka;
+    var x = (-b + Math.sqrt(b * b + 4 * Ka * totalConc)) / 2;
+    pHAfter = -Math.log10(excess + x);
+  }
+  return {
+    pHBefore: pKa + Math.log10(ratio),
+    pHAfter: Math.max(0, Math.min(14, pHAfter)),
+    exhausted: excess > 0
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// REPLICATES — precision is not accuracy, and a burette can prove it
+// ═══════════════════════════════════════════════════════════════════════════
+// Nobody titrates once. The bench workflow is a rough run to find the endpoint, then
+// repeats until two or three agree within about 0.10 mL, and the mean of those is the
+// result. Grading a single run rewarded a lucky drop and taught none of that.
+//
+// The reason it is worth the machinery: parallax from a FIXED eye height is a
+// SYSTEMATIC error. Do four replicates without moving your head and they will agree
+// beautifully with each other and all be wrong by the same amount. That is the
+// cleanest demonstration of precision-without-accuracy a student can be shown, and it
+// falls straight out of the readings this station already produces.
+function replicateStats(readings) {
+  var n = readings.length;
+  if (!n) return { n: 0, mean: 0, spread: 0, sd: 0 };
+  var sum = 0, lo = Infinity, hi = -Infinity;
+  for (var i = 0; i < n; i++) {
+    sum += readings[i];
+    if (readings[i] < lo) lo = readings[i];
+    if (readings[i] > hi) hi = readings[i];
+  }
+  var mean = sum / n;
+  // Sample standard deviation (n-1); with a single reading there is no spread to
+  // speak of, so it is reported as zero rather than NaN.
+  var ss = 0;
+  for (var j = 0; j < n; j++) ss += (readings[j] - mean) * (readings[j] - mean);
+  return { n: n, mean: mean, spread: hi - lo, sd: n > 1 ? Math.sqrt(ss / (n - 1)) : 0 };
+}
+
+// Precision (do the replicates agree?) and accuracy (is the mean right?) are scored
+// independently, because the whole point is that they can come apart.
+function precisionAccuracy(stats, trueVb) {
+  // EPS matters here, it is not defensive noise. Readings are quantised to 0.01 mL, so
+  // a spread of exactly 0.10 — the textbook concordance criterion, and therefore the
+  // single most likely value to land on — comes out of the subtraction as
+  // 0.10000000000000142 and would be judged NOT concordant.
+  var EPS = 1e-9;
+  var precise = stats.n >= 2 && stats.spread <= BURETTE.CONCORDANCE_ML + EPS;
+  var accurate = Math.abs(stats.mean - trueVb) <= BURETTE.TOLERANCE_ML + EPS;
+  return {
+    precise: precise, accurate: accurate,
+    biasMl: stats.mean - trueVb,
+    verdict: precise && accurate ? 'both'
+      : precise && !accurate ? 'precise-not-accurate'
+      : !precise && accurate ? 'accurate-not-precise'
+      : 'neither'
+  };
+}
+
+// If every replicate was read from the same non-level eye height, the bias is not
+// scatter — it is parallax, and its size is predictable rather than mysterious. Naming
+// the cause is the difference between "you were wrong" and "here is what to change".
+function systematicDiagnosis(trials) {
+  if (!trials || trials.length < 2) return null;
+  var eye = trials[0].eyeCm;
+  for (var i = 1; i < trials.length; i++) {
+    if (Math.abs(trials[i].eyeCm - eye) > 0.01) return null;   // eye moved, so not this
+  }
+  if (Math.abs(eye) < 0.25) return null;                       // level throughout: no bias
+  return { kind: 'parallax', eyeCm: eye, predictedMl: buretteParallaxMl(eye) };
+}
+
+// Grade a committed run. Reports BOTH errors on purpose: the volume error is what
+// the student controls, the concentration error is what it costs them, and seeing
+// 0.25 mL become 1% of an answer is the whole lesson about reading technique.
+function gradeUnknown(unknown, recordedVb) {
+  var spec = unknown.spec;
+  // Titrated concentration scaled back up through the dilution, so the answer is
+  // reported for the product on the shelf, as a real report would be.
+  var measured = ((spec.titrantConc * recordedVb) / spec.aliquotMl) * (spec.dilutionFactor || 1);
+  var volErr = recordedVb - unknown.trueVb;
+  var concErrPct = unknown.truthConc > 0
+    ? ((measured - unknown.truthConc) / unknown.truthConc) * 100
+    : 0;
+  var absVol = Math.abs(volErr);
+  var band = absVol <= BURETTE.TOLERANCE_ML ? 'excellent'
+    : absVol <= 0.15 ? 'good'
+    : absVol <= 0.50 ? 'fair' : 'poor';
+  return {
+    measuredConc: measured, volErrMl: volErr, concErrPct: concErrPct,
+    withinTolerance: absVol <= BURETTE.TOLERANCE_ML, band: band
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 3D PARALLAX STATION — a diagram you can walk around
+// ═══════════════════════════════════════════════════════════════════════════
+// Deliberately NOT a first-person view down a burette. Putting the student's eye
+// where the error happens hides the very thing that causes it; what teaches the
+// mechanism is seeing, from the side, the sight line leave the eye, cross the
+// front scale, and land on the meniscus behind it. So this is an orbitable
+// diagram, and the accessible eye-height control below it is the real input.
+//
+// HONEST EXAGGERATION: a real 1 cm bore viewed from 30 cm has a depth:distance
+// ratio of 1:60 — at burette scale the two readings differ by well under a
+// millimetre and the diagram would show nothing. The scene therefore draws a wide
+// bore seen from close in (ratio ~1:5), which is how textbooks draw it and is
+// geometrically self-consistent: the sight line really does pass through the mark
+// it points at. The mL figure beside it is always computed from REAL burette
+// geometry by buretteParallaxMl(), never from the picture. The UI says so.
+var BUR3D = {
+  R: 0.42,            // drawn bore radius (world units)
+  VIEW: 1.8,          // drawn eye distance from the tube axis
+  H: 3.2,             // drawn barrel height
+  ML_WINDOW: 4.8,     // mL of scale the drawn barrel spans
+  // Kept small on purpose: the camera frames everything the scene occupies, so a
+  // tall eye travel makes it back off until the burette is a sliver. 0.10 keeps the
+  // eye inside the frame across the full +/-20 cm while the tighter VIEW above
+  // preserves a clearly visible gap between the two readings.
+  EYE_UNITS_PER_CM: 0.10,
+  TICKS: 21
+};
+BUR3D.UNITS_PER_ML = BUR3D.H / BUR3D.ML_WINDOW;
+// How much the picture overstates the effect, derived from the constants rather
+// than typed in, so the on-screen caption cannot drift away from the geometry.
+BUR3D.EXAGGERATION = (BUR3D.EYE_UNITS_PER_CM * (BUR3D.R / BUR3D.VIEW) / BUR3D.UNITS_PER_ML)
+  / (BURETTE.DEPTH_CM / BURETTE.VIEW_CM * BURETTE.ML_PER_CM);
+
+// Thin cylinder between two points — LineBasicMaterial.linewidth is ignored on
+// nearly every platform, so real geometry is the only way to get a visible line.
+function bur3dSegment(THREE, parent, a, b, hex, thick, opacity) {
+  var dir = new THREE.Vector3().subVectors(b, a);
+  var len = dir.length();
+  if (!(len > 1e-6)) return null;
+  var geo = new THREE.CylinderGeometry(thick, thick, len, 8, 1);
+  var mat = new THREE.MeshLambertMaterial({
+    color: hex, transparent: opacity != null && opacity < 1, opacity: opacity == null ? 1 : opacity
+  });
+  var mesh = new THREE.Mesh(geo, mat);
+  mesh.position.copy(a).add(b).multiplyScalar(0.5);
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
+  parent.add(mesh);
+  return mesh;
+}
+
+// Text in the scene, as a canvas-textured sprite. r128 has no text geometry, and a
+// sprite always faces the camera — which is what a scale number has to do if the
+// diagram is going to stay readable from every orbit angle.
+//
+// Textures are tracked on S and disposed at the top of each build: the shell's
+// disposeGroup() releases geometry and material but NOT material.map, and this scene
+// rebuilds on every eye-height step, so an untracked texture would leak once per tick
+// of the slider.
+function bur3dLabel(THREE, S, parent, text, pos, hex, size) {
+  var cvs = document.createElement('canvas');
+  cvs.width = 256; cvs.height = 96;
+  var g = cvs.getContext('2d');
+  if (!g) return null;
+  g.clearRect(0, 0, 256, 96);
+  // Shrink to fit rather than overflow the texture. At a fixed 58px, "10.5 mm/mL"
+  // measured ~320px against a 256px canvas and rendered as ".5 mm/m" — clipped at both
+  // ends, on every vessel on the bench.
+  var fontPx = 58;
+  var face = 'px system-ui, -apple-system, sans-serif';
+  g.font = 'bold ' + fontPx + face;
+  while (fontPx > 18 && g.measureText(String(text)).width > 236) {
+    fontPx -= 2;
+    g.font = 'bold ' + fontPx + face;
+  }
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  // Dark outline first, so a number stays legible against glass, liquid or void.
+  g.lineWidth = 10;
+  g.strokeStyle = 'rgba(2,8,18,0.92)';
+  g.strokeText(text, 128, 50);
+  g.fillStyle = hex;
+  g.fillText(text, 128, 50);
+  var tex = new THREE.CanvasTexture(cvs);
+  var mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
+  var sp = new THREE.Sprite(mat);
+  sp.position.copy(pos);
+  var s = size || 0.5;
+  sp.scale.set(s, s * 0.375, 1);
+  sp.renderOrder = 10;
+  parent.add(sp);
+  if (S._texes) S._texes.push(tex);
+  return sp;
+}
+
+// A flat band across the front of the scale, marking one reading.
+function bur3dBand(THREE, parent, y, hex, emphatic) {
+  var geo = new THREE.BoxGeometry(BUR3D.R * 2.9, emphatic ? 0.045 : 0.03, 0.03);
+  var mat = new THREE.MeshLambertMaterial({ color: hex });
+  var m = new THREE.Mesh(geo, mat);
+  m.position.set(0, y, BUR3D.R + 0.02);
+  parent.add(m);
+  return m;
+}
+
+function buildBuretteScene(THREE, S, m) {
+  var R = BUR3D.R, H = BUR3D.H;
+  // Release the previous build's label textures. disposeGroup() upstream frees
+  // geometry and material but not material.map, and this scene rebuilds on every
+  // step of the eye-height slider.
+  if (S._texes) { for (var ti = 0; ti < S._texes.length; ti++) { try { S._texes[ti].dispose(); } catch (e) {} } }
+  S._texes = [];
+  var yM = 0;                                  // meniscus sits at the origin
+  var eyeY = yM + (m.eyeCm || 0) * BUR3D.EYE_UNITS_PER_CM;
+  // Similar triangles: the sight line eye -> meniscus crosses the scale plane
+  // (z = R) at R/VIEW of the way down from the eye's height.
+  var crossY = yM + (eyeY - yM) * (R / BUR3D.VIEW);
+
+  // Glass barrel. Rendered from inside as well so the meniscus stays visible
+  // through the front wall instead of being culled behind it.
+  var glass = new THREE.Mesh(
+    new THREE.CylinderGeometry(R, R, H, 28, 1, true),
+    new THREE.MeshPhongMaterial({
+      color: m.contrast ? 0xffffff : 0x93c5fd, transparent: true,
+      opacity: m.contrast ? 0.30 : 0.16, side: THREE.DoubleSide, shininess: 60
+    })
+  );
+  glass.position.y = yM - H / 2 + H * 0.62;
+  S.model.add(glass);
+
+  // Titrant column below the meniscus.
+  var colH = H * 0.62;
+  var liquid = new THREE.Mesh(
+    new THREE.CylinderGeometry(R * 0.93, R * 0.93, colH, 24),
+    new THREE.MeshLambertMaterial({
+      color: m.contrast ? 0x888888 : (m.liquidHex || 0x38bdf8), transparent: true, opacity: 0.55
+    })
+  );
+  liquid.position.y = yM - colH / 2;
+  S.model.add(liquid);
+
+  // The meniscus itself: concave, so its LOWEST point is what you read. Drawn as a
+  // shallow inverted dome on the tube axis — i.e. a full bore-radius BEHIND the
+  // scale face, which is the entire cause of the error.
+  var men = new THREE.Mesh(
+    new THREE.SphereGeometry(R * 0.93, 20, 8, 0, Math.PI * 2, 0, Math.PI * 0.42),
+    new THREE.MeshPhongMaterial({ color: m.contrast ? 0xffffff : 0x22d3ee, shininess: 90, side: THREE.DoubleSide })
+  );
+  men.position.y = yM + R * 0.30;
+  men.scale.y = -0.62;                         // flip into a bowl
+  S.model.add(men);
+  S.meniscusY = yM;
+
+  // Front scale face, carrying the graduations. This is the plane the student
+  // reads against, and it sits a bore-radius in FRONT of the meniscus.
+  var face = new THREE.Mesh(
+    new THREE.BoxGeometry(R * 3.0, H, 0.02),
+    new THREE.MeshLambertMaterial({
+      color: m.contrast ? 0x000000 : 0x0f172a, transparent: true, opacity: 0.55
+    })
+  );
+  face.position.set(0, glass.position.y, R + 0.01);
+  S.model.add(face);
+
+  var tickMat = new THREE.MeshLambertMaterial({ color: m.contrast ? 0xffffff : 0xcbd5e1 });
+  var top = glass.position.y + H / 2, bot = glass.position.y - H / 2;
+  // Burette numbering runs DOWNWARD — 0.00 at the top, 50.00 at the tip — which is
+  // the whole reason "reads high" and "reads a bigger number" mean the same thing.
+  // Without printed numbers a student can see the two marks are apart but not which
+  // way the error goes, so the scale is genuinely numbered.
+  // Graduations are anchored to ROUND millilitres, not to a fixed count of evenly
+  // spaced marks. Dividing the barrel into N ticks put the labels on 18.3 / 19.5 /
+  // 20.7 — no burette ever made is graduated at 1.2 mL intervals, and a scale that
+  // does not look like the instrument teaches the student to read the wrong thing.
+  // 0.2 mL minors, whole-millilitre majors, which is what a 50 mL class A burette
+  // actually carries (real ones subdivide to 0.1; 0.2 keeps the draw count sane).
+  var mlPerUnit = BUR3D.ML_WINDOW / H;
+  var trueMl = m.trueMl || 0;
+  var yForMl = function (ml) { return yM - (ml - trueMl) / mlPerUnit; };
+  var mlTop = trueMl + (yM - top) * mlPerUnit;      // smallest number, at the top
+  var mlBot = trueMl + (yM - bot) * mlPerUnit;
+  var first = Math.ceil(mlTop * 5) / 5;
+  for (var v = first; v <= mlBot + 1e-9; v = Math.round((v + 0.2) * 5) / 5) {
+    if (v < 0 || v > 50) continue;                  // past either end of the barrel
+    var ty = yForMl(v);
+    var major = Math.abs(v - Math.round(v)) < 1e-9;
+    var tk = new THREE.Mesh(new THREE.BoxGeometry(major ? R * 2.0 : R * 1.1, 0.018, 0.022), tickMat);
+    tk.position.set(major ? 0 : -R * 0.45, ty, R + 0.025);
+    S.model.add(tk);
+    if (major) {
+      bur3dLabel(THREE, S, S.model, v.toFixed(0),
+        new THREE.Vector3(-R * 2.0, ty, R + 0.04),
+        m.contrast ? '#ffffff' : '#94a3b8', 0.46);
+    }
+  }
+
+  // TRUE reading (green): where the meniscus actually is.
+  bur3dBand(THREE, S.model, yM, m.contrast ? 0xffffff : 0x4ade80, false);
+  // RECORDED reading: green while the eye is genuinely level (the sight line then
+  // lands ON the true mark and no second band is drawn at all), amber once there is
+  // an error inside burette tolerance, red once it exceeds it.
+  var level = Math.abs(crossY - yM) <= 0.004;
+  var offHex = m.contrast ? 0xffffff
+    : level ? 0x4ade80 : (m.withinTolerance ? 0xfbbf24 : 0xf87171);
+  if (!level) bur3dBand(THREE, S.model, crossY, offHex, true);
+  S.crossY = crossY;
+
+  // The two numbers, side by side on the scale they are read from. This is the
+  // payload of the whole station: not "your eye is crooked" but "your eye being
+  // crooked made you write 21.08 where the liquid says 21.25".
+  if (m.trueMl != null) {
+    bur3dLabel(THREE, S, S.model, m.trueMl.toFixed(2),
+      new THREE.Vector3(R * 2.35, yM, R + 0.05), m.contrast ? '#ffffff' : '#4ade80', 0.62);
+    if (!level && m.readMl != null) {
+      bur3dLabel(THREE, S, S.model, m.readMl.toFixed(2),
+        new THREE.Vector3(R * 2.35, crossY, R + 0.05),
+        m.contrast ? '#ffffff' : (m.withinTolerance ? '#fbbf24' : '#f87171'), 0.62);
+    }
+  }
+
+  // The eye, and the sight line through the scale to the meniscus.
+  var eye = new THREE.Mesh(
+    new THREE.SphereGeometry(0.11, 16, 12),
+    new THREE.MeshPhongMaterial({ color: m.contrast ? 0xffffff : 0xf1f5f9, shininess: 70 })
+  );
+  var eyePos = new THREE.Vector3(0, eyeY, BUR3D.VIEW);
+  eye.position.copy(eyePos);
+  S.model.add(eye);
+  bur3dSegment(THREE, S.model, eyePos, new THREE.Vector3(0, yM, 0), offHex, 0.012, 0.95);
+
+  // Faint guide at true eye level, so "get your eye level with the meniscus"
+  // is a visible target and not just an instruction.
+  bur3dSegment(THREE, S.model, new THREE.Vector3(0, yM, 0),
+    new THREE.Vector3(0, yM, BUR3D.VIEW + 0.35), m.contrast ? 0xffffff : 0x4ade80, 0.004, 0.5);
+
+  S.target = new THREE.Vector3(0, yM + 0.1, 0);
+  // The scale numbers hang off both flanks of the face, so the fit has to allow for
+  // them or the camera crops the very digits the station exists to show.
+  S.fitPts = [
+    new THREE.Vector3(0, top, 0), new THREE.Vector3(0, bot, 0),
+    new THREE.Vector3(R * 2.7, yM, R), new THREE.Vector3(-R * 2.3, yM, R),
+    eyePos.clone(), new THREE.Vector3(0, yM - 0.4, BUR3D.VIEW + 0.4)
+  ];
+}
+
+// ── The glassware bench ─────────────────────────────────────────────────────
+// Every vessel is drawn at its TRUE relative bore, because bore is the whole
+// argument, and each carries a 1 mL slice of liquid at true scale against that bore.
+// Drawn HEIGHTS are equalised and truncated instead of being to scale: a real burette
+// is six times the height of a beaker, and at honest scale the short vessels collapse
+// to nothing and the comparison that matters becomes unreadable. The UI says so.
+var BENCH = {
+  MM_PER_UNIT: 46,     // world units per millimetre of real bore
+  H: 2.0,              // drawn body height, the same for every vessel
+  GAP: 0.34,           // clear margin between neighbouring vessels
+  MIN_BAND: 0.014      // floor on the 1 mL band, or the beaker's is literally invisible
+};
+
+function benchVessel(THREE, S, m, g, x, selected) {
+  var grp = new THREE.Group();
+  var r = (g.boreMm / 2) / BENCH.MM_PER_UNIT;
+  var H = BENCH.H;
+  var glassMat = new THREE.MeshPhongMaterial({
+    color: m.contrast ? 0xffffff : (selected ? 0x7dd3fc : 0x93c5fd),
+    transparent: true, opacity: selected ? 0.34 : 0.16,
+    side: THREE.DoubleSide, shininess: 70
+  });
+
+  // Body profile. Only the READING bore has to be right; the reservoir below it is
+  // shaped for recognition.
+  if (g.kind === 'volflask' || g.kind === 'conical') {
+    var bulbR = Math.max(r * 2.2, 0.30);
+    var neckH = H * 0.55, bulbH = H - neckH;
+    grp.add(new THREE.Mesh(new THREE.CylinderGeometry(r, r, neckH, 20, 1, true), glassMat));
+    grp.children[0].position.y = bulbH + neckH / 2;
+    var body;
+    if (g.kind === 'conical') {
+      body = new THREE.Mesh(new THREE.CylinderGeometry(r, bulbR, bulbH, 24, 1, true), glassMat);
+      body.position.y = bulbH / 2;
+    } else {
+      // The bulb has to MEET the neck. Sized and centred so the top of the squashed
+      // sphere lands exactly at bulbH — otherwise the flask renders as a ball with a
+      // tube floating above it, which is what it did.
+      var squash = 0.85;
+      body = new THREE.Mesh(new THREE.SphereGeometry(bulbR, 20, 14), glassMat);
+      body.scale.y = squash;
+      body.position.y = bulbH - bulbR * squash;
+    }
+    grp.add(body);
+  } else if (g.kind === 'pipette') {
+    var bulbR2 = Math.max(r * 3.0, 0.16);
+    grp.add(new THREE.Mesh(new THREE.CylinderGeometry(r, r, H, 18, 1, true), glassMat));
+    grp.children[0].position.y = H / 2;
+    var bulb = new THREE.Mesh(new THREE.SphereGeometry(bulbR2, 18, 12), glassMat);
+    bulb.position.y = H * 0.42; bulb.scale.y = 2.0;
+    grp.add(bulb);
+  } else {
+    var tube = new THREE.Mesh(new THREE.CylinderGeometry(r, r, H, 24, 1, true), glassMat);
+    tube.position.y = H / 2;
+    grp.add(tube);
+  }
+
+  // The 1 mL slice, at true scale against this bore.
+  var bandH = Math.max(BENCH.MIN_BAND, mlHeightMm(g.boreMm) / BENCH.MM_PER_UNIT);
+  var band = new THREE.Mesh(
+    new THREE.CylinderGeometry(r * 0.97, r * 0.97, bandH, 24),
+    new THREE.MeshLambertMaterial({
+      color: m.contrast ? 0xffffff : (selected ? 0x22d3ee : 0x38bdf8),
+      transparent: true, opacity: 0.92
+    })
+  );
+  band.position.y = H * 0.45;
+  grp.add(band);
+
+  // Base disc, so the row reads as a bench rather than floating tubes.
+  var foot = new THREE.Mesh(
+    new THREE.CylinderGeometry(Math.max(r, 0.16), Math.max(r, 0.18), 0.03, 20),
+    new THREE.MeshLambertMaterial({ color: m.contrast ? 0xffffff : (selected ? 0x0ea5e9 : 0x334155) })
+  );
+  foot.position.y = 0.015;
+  grp.add(foot);
+
+  grp.position.x = x;
+  S.model.add(grp);
+
+  // Bore under every vessel; the mm-per-mL figure only on the selected one. Labelling
+  // all six put two lines of text over each of the narrow vessels, which sit closest
+  // together — the full set is in the table below, where it can be read properly.
+  bur3dLabel(THREE, S, S.model, g.boreMm + ' mm',
+    new THREE.Vector3(x, -0.26, 0), m.contrast ? '#ffffff' : (selected ? '#22d3ee' : '#94a3b8'), 0.52);
+  if (selected) {
+    bur3dLabel(THREE, S, S.model, mlHeightMm(g.boreMm).toFixed(1) + ' mm per mL',
+      new THREE.Vector3(x, BENCH.H + 0.26, 0), m.contrast ? '#ffffff' : '#67e8f9', 0.92);
+  }
+  return grp;
+}
+
+// Widest half-width a vessel occupies, so the row can be packed without the beaker
+// growing through its neighbours — a fixed gap put the 250 mL beaker (76 mm across at
+// this scale) straight through the conical flask beside it.
+function benchHalfWidth(g) {
+  var r = (g.boreMm / 2) / BENCH.MM_PER_UNIT;
+  if (g.kind === 'volflask' || g.kind === 'conical') return Math.max(r * 2.2, 0.30);
+  if (g.kind === 'pipette') return Math.max(r * 3.0, 0.16);
+  return Math.max(r, 0.18);
+}
+
+function buildBenchScene(THREE, S, m) {
+  if (S._texes) { for (var ti = 0; ti < S._texes.length; ti++) { try { S._texes[ti].dispose(); } catch (e) {} } }
+  S._texes = [];
+  var n = GLASSWARE.length;
+  // Lay the row out by accumulating each vessel's own footprint plus a margin.
+  var xs = [], cursor = 0;
+  for (var i = 0; i < n; i++) {
+    var hw = benchHalfWidth(GLASSWARE[i]);
+    if (i > 0) cursor += hw;
+    xs.push(cursor);
+    cursor += hw + BENCH.GAP;
+  }
+  var total = xs[n - 1];
+  for (var j = 0; j < n; j++) {
+    benchVessel(THREE, S, m, GLASSWARE[j], xs[j] - total / 2, GLASSWARE[j].id === m.selected);
+  }
+  S.benchCount = n;
+  S.target = new THREE.Vector3(0, BENCH.H * 0.45, 0);
+  var edge = total / 2 + benchHalfWidth(GLASSWARE[n - 1]) + 0.3;
+  S.fitPts = [
+    new THREE.Vector3(-edge, 0, 0), new THREE.Vector3(edge, 0, 0),
+    new THREE.Vector3(0, BENCH.H + 0.5, 0), new THREE.Vector3(0, -0.45, 0),
+    new THREE.Vector3(0, BENCH.H * 0.5, 0.8), new THREE.Vector3(0, BENCH.H * 0.5, -0.8)
+  ];
+}
+
+var BENCH_GL = (typeof window !== 'undefined' && window.StemLab && typeof window.StemLab.makeOrbitViewer === 'function')
+  ? window.StemLab.makeOrbitViewer({
+      attr: 'data-titration-bench-gl',
+      clearColor: 0x0a1420,
+      fov: 40,
+      rot: { y: 18, x: 10 },
+      fitSlack: 1.08,
+      failMessage: '3D bench unavailable — the table of tolerances below carries the same comparison.',
+      lights: function (THREE, scene) {
+        scene.add(new THREE.AmbientLight(0xffffff, 0.74));
+        var key = new THREE.DirectionalLight(0xffffff, 0.55);
+        key.position.set(0.4, 1, 0.8);
+        scene.add(key);
+        var rim = new THREE.DirectionalLight(0x93c5fd, 0.24);
+        rim.position.set(-0.6, 0.35, -0.5);
+        scene.add(rim);
+      },
+      debug: function (S) {
+        return { vessels: S.benchCount || 0, labelTextures: S._texes ? S._texes.length : 0 };
+      },
+      build: buildBenchScene
+    })
+  : {
+      attach: function () {}, push: function () {}, onStatusChange: function () {},
+      status: function () { return 'failed'; },
+      debug: function () { return { state: 'failed', contextLost: false, hostTooOld: true }; },
+      dispose: function () {}
+    };
+
+function benchGlRef(nodeOrNull) { BENCH_GL.attach(nodeOrNull); }
+var benchDrag = { current: null };
+
+if (typeof window !== 'undefined') window.__alloBenchGL = BENCH_GL;
+
+// Host may be older than this tool (it has bitten the rocks crystal lab before):
+// calling a missing factory at load time would throw before registerTool runs and
+// take the WHOLE tool down, not just its 3D. Degrade to a stub; the 2D station
+// carries the lesson exactly as it does on a device with no WebGL.
+var BURETTE_GL = (typeof window !== 'undefined' && window.StemLab && typeof window.StemLab.makeOrbitViewer === 'function')
+  ? window.StemLab.makeOrbitViewer({
+      attr: 'data-titration-burette-gl',
+      clearColor: 0x0a1420,
+      fov: 40,
+      rot: { y: 34, x: 6 },
+      fitSlack: 1.10,
+      failMessage: '3D burette view unavailable — the eye-height control and readings below still work.',
+      lights: function (THREE, scene) {
+        scene.add(new THREE.AmbientLight(0xffffff, 0.70));
+        var key = new THREE.DirectionalLight(0xffffff, 0.58);
+        key.position.set(0.5, 0.9, 0.8);
+        scene.add(key);
+        var rim = new THREE.DirectionalLight(0x93c5fd, 0.26);
+        rim.position.set(-0.6, 0.3, -0.5);
+        scene.add(rim);
+      },
+      debug: function (S) {
+        return {
+          meniscusY: S.meniscusY, crossY: S.crossY, exaggeration: BUR3D.EXAGGERATION,
+          // Label textures alive right now. Constant across rebuilds means the
+          // dispose-on-rebuild in buildBuretteScene is holding; a number that climbs
+          // with every step of the eye slider is a texture leak.
+          labelTextures: S._texes ? S._texes.length : 0,
+          objects: S.model ? S.model.children.length : 0
+        };
+      },
+      build: buildBuretteScene
+    })
+  : {
+      attach: function () {}, push: function () {}, onStatusChange: function () {},
+      status: function () { return 'failed'; },
+      debug: function () { return { state: 'failed', contextLost: false, hostTooOld: true }; },
+      dispose: function () {}
+    };
+
+// ONE stable ref callback at module scope. An inline arrow would be a new identity
+// every render, so React would detach and reattach — rebuilding the scene on every
+// single tick of the eye-height slider.
+// Stops the safety-drill countdown when the walkthrough leaves the DOM. See the ref
+// site for why this has to live at module scope rather than inline.
+function titrDrillTeardownRef(node) {
+  if (node) return;
+  if (typeof window !== 'undefined' && window._titrationDrillTimer) {
+    clearInterval(window._titrationDrillTimer);
+    window._titrationDrillTimer = null;
+  }
+}
+
+function buretteGlRef(nodeOrNull) { BURETTE_GL.attach(nodeOrNull); }
+
+// Drag state lives beside the viewer at module scope, so it survives the re-render
+// that every orbit step triggers.
+var buretteDrag = { current: null };
+var BUR_HOME = { rotY: 34, rotX: 6, zoom: 1 };
+// A FRESH rotation object each time. Storing BUR_HOME itself put its zoom key inside
+// the rotation state and handed React a shared module-scope object to hold.
+function burHomeRot() { return { rotY: BUR_HOME.rotY, rotX: BUR_HOME.rotX }; }
+
+if (typeof window !== 'undefined') window.__alloBuretteGL = BURETTE_GL;
+
+// Animated titration-curve canvas. Declared here, at module scope, for STABLE IDENTITY.
+//
+// As an inline `ref: function (cvEl) {...}` this was a new function on every render, so
+// React tore it down and set it up again on every single state change: measured at one
+// full restart per re-render, which reset performance.now() and snapped the animation
+// back to its first frame every time the volume slider moved, while churning the
+// canvas backing store, the ResizeObserver and the visibilitychange listener with it.
+//
+// The body is self-contained — it closes over nothing from render scope — so hoisting
+// it is a pure identity change. Per-canvas state rides on the element (_ttAnim,
+// _ttCleanup) exactly as before.
+function titrAnimCanvasRef(cvEl) {
+            if (!cvEl) {
+              try { if (window.__alloTitrationAnimCleanup) window.__alloTitrationAnimCleanup(); } catch (e) {}
+              return;
+            }
+            if (cvEl._ttCleanup) cvEl._ttCleanup();
+            else if (cvEl._ttAnim) { cancelAnimationFrame(cvEl._ttAnim); cvEl._ttAnim = null; }
+            try { if (window.__alloTitrationAnimCleanup && window.__alloTitrationAnimCleanup !== cvEl._ttCleanup) window.__alloTitrationAnimCleanup(); } catch (e) {}
+            var c2 = cvEl.getContext('2d');
+            if (!c2) return;
+            var W = cvEl.offsetWidth || 600;
+            var H = cvEl.offsetHeight || 220;
+            cvEl.width = W * 2; cvEl.height = H * 2;
+            if (c2.setTransform) c2.setTransform(2, 0, 0, 2, 0, 0);
+            else c2.scale(2, 2);
+            var start = performance.now();
+            var alive = true;
+            var reducedMotion = false;
+            var ro = null;
+            try { reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+            function isTitrationHidden() { return typeof document !== 'undefined' && !!document.hidden; }
+            function cancelTitrationFrame() {
+              if (cvEl._ttAnim && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(cvEl._ttAnim);
+              cvEl._ttAnim = null;
+            }
+            function scheduleTitrationFrame() {
+              if (!alive || reducedMotion || cvEl._ttAnim || isTitrationHidden()) return;
+              if (typeof requestAnimationFrame !== 'function') return;
+              cvEl._ttAnim = requestAnimationFrame(drawTt);
+            }
+            function cleanupTitrationAnim() {
+              alive = false;
+              cancelTitrationFrame();
+              if (ro) ro.disconnect();
+              if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onTitrationVisibilityChange);
+              if (window.__alloTitrationAnimCleanup === cvEl._ttCleanup) window.__alloTitrationAnimCleanup = null;
+              cvEl._ttCleanup = null;
+            }
+            function onTitrationVisibilityChange() {
+              if (!alive) return;
+              if (!cvEl.isConnected) { cleanupTitrationAnim(); return; }
+              if (isTitrationHidden()) cancelTitrationFrame();
+              else { cancelTitrationFrame(); drawTt(); }
+            }
+            function resizeTitrationCanvas() {
+              if (!alive || !cvEl.isConnected) { cleanupTitrationAnim(); return; }
+              cancelTitrationFrame();
+              W = cvEl.offsetWidth || 600; H = cvEl.offsetHeight || 220;
+              cvEl.width = W * 2; cvEl.height = H * 2;
+              if (c2.setTransform) c2.setTransform(2, 0, 0, 2, 0, 0);
+              else c2.scale(2, 2);
+              drawTt();
+            }
+            cvEl._ttCleanup = cleanupTitrationAnim;
+            try { window.__alloTitrationAnimCleanup = cvEl._ttCleanup; } catch (e) {}
+            if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onTitrationVisibilityChange);
+            function drawTt() {
+              if (!alive) return;
+              cvEl._ttAnim = null;
+              if (!cvEl.isConnected) { cleanupTitrationAnim(); return; }
+              if (isTitrationHidden()) { cancelTitrationFrame(); return; }
+              var t = reducedMotion ? 5 : (performance.now() - start) / 1000;
+              var cyc = (t * 0.10) % 1; // 0 = no base added, 1 = excess base
+              // pH at this point: classic S-curve
+              var pH;
+              if (cyc < 0.45) pH = 2 + cyc * 4;
+              else if (cyc < 0.55) pH = 4 + (cyc - 0.45) * 80;
+              else pH = 12 - (1 - cyc) * 3;
+              c2.fillStyle = '#020210';
+              c2.fillRect(0, 0, W, H);
+              // LEFT: beaker + burette
+              var lftW = W * 0.35;
+              var burX = lftW * 0.5;
+              var burY = 20;
+              var burH = 80;
+              // Burette
+              c2.fillStyle = '#7dd3fc';
+              c2.fillRect(burX - 6, burY, 12, burH * (1 - cyc));
+              c2.strokeStyle = '#cbd5e1'; c2.lineWidth = 1.5;
+              c2.strokeRect(burX - 6, burY, 12, burH);
+              c2.font = '8px monospace'; c2.fillStyle = '#7dd3fc'; c2.textAlign = 'left';
+              c2.fillText('NaOH', burX + 10, burY + 12);
+              // Drip — glowing NaOH beads
+              c2.save();
+              c2.shadowColor = 'rgba(125,211,252,0.9)'; c2.shadowBlur = 6;
+              for (var dr = 0; dr < 3; dr++) {
+                var drY = burY + burH + 10 + ((t * 50 + dr * 18) % 40);
+                c2.fillStyle = '#7dd3fc';
+                c2.beginPath();
+                c2.arc(burX, drY, 2, 0, Math.PI * 2);
+                c2.fill();
+              }
+              c2.restore();
+              // Beaker
+              var bkY = H * 0.55;
+              var bkW = 70;
+              c2.strokeStyle = '#cbd5e1'; c2.lineWidth = 2;
+              c2.beginPath();
+              c2.moveTo(burX - bkW / 2, bkY);
+              c2.lineTo(burX - bkW / 2, bkY + 60);
+              c2.lineTo(burX + bkW / 2, bkY + 60);
+              c2.lineTo(burX + bkW / 2, bkY);
+              c2.stroke();
+              // Solution color shifts with pH (red\u2192clear\u2192pink for phenolphthalein)
+              var solColor;
+              if (pH < 8.3) solColor = 'rgba(252, 165, 165, 0.6)'; // colorless/pale
+              else solColor = 'rgba(217, 70, 239, 0.7)'; // pink past 8.3
+              c2.fillStyle = solColor;
+              c2.fillRect(burX - bkW / 2 + 2, bkY + 5, bkW - 4, 55);
+              // Liquid-surface sheen (depth highlight, not a color/pH change)
+              var solSheen = c2.createLinearGradient(0, bkY + 5, 0, bkY + 30);
+              solSheen.addColorStop(0, 'rgba(255,255,255,0.20)');
+              solSheen.addColorStop(1, 'rgba(255,255,255,0)');
+              c2.fillStyle = solSheen;
+              c2.fillRect(burX - bkW / 2 + 2, bkY + 5, bkW - 4, 25);
+              c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#cbd5e1'; c2.textAlign = 'center';
+              c2.fillText('HCl + indicator', burX, bkY + 75);
+              // RIGHT: pH vs volume plot
+              var plotX = lftW + 30, plotY = 20;
+              var plotW = W - plotX - 20, plotH = H - 60;
+              c2.fillStyle = 'rgba(255,255,255,0.04)';
+              c2.fillRect(plotX, plotY, plotW, plotH);
+              c2.strokeStyle = '#475569'; c2.lineWidth = 1; c2.strokeRect(plotX, plotY, plotW, plotH);
+              c2.font = '8px monospace'; c2.fillStyle = '#94a3b8'; c2.textAlign = 'right';
+              c2.fillText('14', plotX - 4, plotY + 8);
+              c2.fillText('7', plotX - 4, plotY + plotH / 2);
+              c2.fillText('0', plotX - 4, plotY + plotH);
+              // Equivalence line
+              c2.strokeStyle = 'rgba(251, 191, 36, 0.4)'; c2.setLineDash([3, 3]);
+              c2.beginPath();
+              c2.moveTo(plotX + plotW * 0.50, plotY); c2.lineTo(plotX + plotW * 0.50, plotY + plotH);
+              c2.stroke();
+              c2.setLineDash([]);
+              c2.font = '7px monospace'; c2.fillStyle = '#fbbf24'; c2.textAlign = 'center';
+              c2.fillText('Equivalence', plotX + plotW * 0.50, plotY + plotH - 4);
+              // Plot curve up to current cyc — neon glow on the key data trace
+              c2.save();
+              c2.shadowColor = 'rgba(16,185,129,0.85)'; c2.shadowBlur = 8;
+              c2.strokeStyle = '#10b981'; c2.lineWidth = 2;
+              c2.beginPath();
+              for (var px = 0; px <= cyc * plotW; px++) {
+                var prog = px / plotW;
+                var pHere;
+                if (prog < 0.45) pHere = 2 + prog * 4;
+                else if (prog < 0.55) pHere = 4 + (prog - 0.45) * 80;
+                else pHere = 12 - (1 - prog) * 3;
+                var py = plotY + (1 - pHere / 14) * plotH;
+                if (px === 0) c2.moveTo(plotX + px, py);
+                else c2.lineTo(plotX + px, py);
+              }
+              c2.stroke();
+              c2.restore();
+              // Current marker — glowing pulse so the eye tracks the titration point
+              var cpX = plotX + cyc * plotW;
+              var cpY = plotY + (1 - pH / 14) * plotH;
+              var cpPulse = 5 + Math.sin(t * 4) * 1.2;
+              c2.save();
+              c2.shadowColor = 'rgba(253,224,71,0.95)'; c2.shadowBlur = 12;
+              c2.fillStyle = '#fde047';
+              c2.beginPath();
+              c2.arc(cpX, cpY, cpPulse, 0, Math.PI * 2);
+              c2.fill();
+              c2.restore();
+              c2.fillStyle = 'rgba(0,0,0,0.85)';
+              c2.fillRect(8, H - 18, W - 16, 16);
+              c2.font = 'bold 9px sans-serif'; c2.fillStyle = '#fde047'; c2.textAlign = 'center';
+              c2.fillText('pH = ' + pH.toFixed(1) + '  \u00B7  At equivalence point: moles acid = moles base, pH jumps from 4 \u2192 10', W / 2, H - 7);
+              scheduleTitrationFrame();
+            }
+            drawTt();
+            if (typeof ResizeObserver === 'function') {
+              ro = new ResizeObserver(resizeTitrationCanvas);
+              ro.observe(cvEl);
+            }
+          }
+
 window.StemLab.registerTool('titrationLab', {
   label: 'Titration Lab',
   icon: '\uD83E\uDDEA',
@@ -132,6 +1179,14 @@ var indicators = [
 
     colorLow: '#eab308', colorHigh: '#3b82f6', colorMid: '#22c55e' },
 
+  // Methyl red (pKa 5.1) — the textbook choice for a weak base titrated with a strong
+  // acid, whose equivalence lands near pH 5.3. Neither methyl orange (3.1-4.4) nor
+  // bromothymol blue (6.0-7.6) straddles that, so without this one the tool could not
+  // offer a correct indicator for its own strong-acid/weak-base preset.
+  { id: 'methylRed', label: __alloT('stem.titration.methyl_red', 'Methyl Red'), low: 4.4, high: 6.2,
+
+    colorLow: '#dc2626', colorHigh: '#facc15', colorMid: '#fb923c' },
+
   { id: 'universal', label: __alloT('stem.titration.universal', 'Universal'), low: 0, high: 14,
 
     colorLow: '#ef4444', colorHigh: '#7c3aed', colorMid: '#22c55e' }
@@ -200,6 +1255,7 @@ var safetyTips = {
   overshot: { icon: '\u274C', text: __alloT('stem.titration.you_overshot_the_equivalence_point_in_', 'You overshot the equivalence point! In a real lab, you would need to restart with a fresh sample.'), color: '#ef4444' },
   reset: { icon: '\u267B\uFE0F', text: __alloT('stem.titration.good_lab_practice_always_rinse_the_bur', 'Good lab practice: always rinse the burette with distilled water, then with titrant solution before refilling.'), color: '#22c55e' },
   halfEquiv: { icon: '\uD83E\uDDEA', text: __alloT('stem.titration.at_the_half_equivalence_point_ph_pka_t', 'At the half-equivalence point, pH = pKa. This is the center of the buffer region!'), color: '#a78bfa' },
+  halfEquivRedox: { icon: '\u26A1', text: __alloT('stem.titration.at_half_equivalence_e_equals_e0', 'At half-equivalence exactly half the Fe\u00B2\u207A has been oxidised, so [Fe\u00B3\u207A] = [Fe\u00B2\u207A], the log term in the Nernst equation goes to zero, and the electrode reads E\u00B0 for the couple itself \u2014 the redox twin of pH = pKa.'), color: '#a78bfa' },
   redoxWarning: { icon: '\uD83D\uDCAB', text: __alloT('stem.titration.kmno_is_a_strong_oxidizer_in_a_real_la', 'KMnO\u2084 is a strong oxidizer! In a real lab, keep away from organic solvents and use a fume hood. Purple \u2192 colorless = endpoint.'), color: '#c026d3' },
   polyprotic: { icon: '\uD83D\uDD2C', text: __alloT('stem.titration.polyprotic_acids_have_multiple_equival', 'Polyprotic acids have multiple equivalence points! Watch for the S-curve to flatten between each one (buffer regions).'), color: '#06b6d4' },
   backTitration: { icon: '\uD83D\uDC8A', text: __alloT('stem.titration.in_a_back_titration_you_add_excess_aci', 'In a back-titration, you add EXCESS acid first, then titrate the leftover acid. This works for insoluble analytes like CaCO\u2083.'), color: '#f472b6' },
@@ -327,11 +1383,35 @@ var challengeIdx = d.challengeIdx != null ? d.challengeIdx : 0;
 var challengeAnswer = d.challengeAnswer || null;
 var challengeScore = d.challengeScore || 0;
 var challengeStreak = d.challengeStreak || 0;
+// ── Graded unknown-determination run (the Challenge tab's headline mode) ──
+var chMode = d.chMode || 'graded';            // graded | quiz
+var gRun = d.gRun != null ? d.gRun : 1;       // run number == the LCG seed
+var gVb = Number(d.gVb) || 0;                 // titrant PHYSICALLY delivered, mL
+var gEyeCm = Number(d.gEyeCm) || 0;           // eye offset from the meniscus, cm
+var gResult = d.gResult || null;              // grade object once committed
+var gTrials = d.gTrials || [];                // recorded replicates for this unknown
+var gStartMs = d.gStartMs || 0;
+var gLog = d.gLog || [];
+var gUnknown = makeUnknown(gRun);
+var gFlaskPH = unknownPH(gUnknown.spec, gUnknown.flaskConc, gVb);
+var gRecordedVb = readBurette(gVb, gEyeCm);
 var showEquipGuide = d.showEquipGuide || false;
 var selectedEquip = d.selectedEquip || null;
-var molarityCalcC1 = d.molarityC1 != null ? d.molarityC1 : 1.0;
-var molarityCalcV1 = d.molarityV1 != null ? d.molarityV1 : 10;
-var molarityCalcC2 = d.molarityC2 != null ? d.molarityC2 : 0.1;
+// The dilution calculator divides by C₁, so a stored 0 — or a cleared field, since
+// Number('') is 0 and not NaN — printed "measure Infinity mL of stock solution with a
+// pipette" and a water-to-add of -Infinity. The RAW value has to be judged before it
+// is coerced, because coercion is what hides the empty string. Each field is then held
+// at the minimum its own slider allows, so the panel can never be shown a value the UI
+// itself would not let you pick.
+function titrNum(raw, fallback, min) {
+  if (raw == null || raw === '') return fallback;
+  var n = Number(raw);
+  if (!isFinite(n)) return fallback;
+  return min != null && n < min ? min : n;
+}
+var molarityCalcC1 = titrNum(d.molarityC1, 1.0, 0.01);
+var molarityCalcV1 = titrNum(d.molarityV1, 10, 1);
+var molarityCalcC2 = titrNum(d.molarityC2, 0.1, 0.001);
 var accuracyLog = d.accuracyLog || [];
 
 var maxVol = 50;
@@ -358,11 +1438,74 @@ if (safetyChecked && labTab === 'titrate') {
   else if ((presetId === 'sa_wb' || presetId === 'wa_wb') && volumeAdded > 1 && volumeAdded < 3) activeTip = safetyTips.fumeHood;
   else if (volumeAdded > 5 && volumeAdded < 7) activeTip = safetyTips.meniscus;
   else if (preset.Ka && Math.abs(volumeAdded - Veq/2) < 1) activeTip = safetyTips.halfEquiv;
+  else if (preset.redox && Math.abs(volumeAdded - Veq/2) < 0.6) activeTip = safetyTips.halfEquivRedox;
   else if (volumeAdded > Veq - 2 && volumeAdded < Veq + 0.5) activeTip = safetyTips.nearEquiv;
   else if (volumeAdded > Veq + 3) activeTip = safetyTips.overshot;
 }
 
 
+
+// ── Redox Potentiometry (Nernst) ──
+// The Fe(II)/KMnO4 preset is not an acid-base titration, and what a real lab plots for it
+// is not pH: it is the potential of a Pt indicator electrode against a reference, read on a
+// potentiometer. Modelled from the two half-reactions in the 1 M H2SO4 medium:
+//
+//   Fe3+ + e-                  -> Fe2+                 E0 = +0.771 V   (n = 1)
+//   MnO4- + 8 H+ + 5 e-        -> Mn2+ + 4 H2O         E0 = +1.507 V   (n = 5)
+//   overall: 5 Fe2+ + MnO4- + 8 H+ -> 5 Fe3+ + Mn2+ + 4 H2O
+//
+// E0 values are the standard (1 M H+) ones. Real 1 M H2SO4 shifts the iron couple down to a
+// FORMAL potential near 0.68 V because sulfate complexes Fe3+ — the explainer in the UI says
+// so; we plot the standard couple so the numbers match the E0 table students are given.
+var REDOX = {
+  E0_FE: 0.771,   // V, Fe3+|Fe2+
+  E0_MN: 1.507,   // V, MnO4-|Mn2+ at [H+] = 1 M
+  nFE: 1,
+  nMN: 5,
+  H_COEFF: 8,     // H+ in the permanganate half-reaction
+  S: 0.05916,     // V, 2.303RT/F at 25 C
+  pH: 0,          // 1 M H2SO4 medium, [H+] ~ 1 M
+  // A real flask always carries a trace of Fe3+ from air oxidation. Without it the
+  // Fe3+|Fe2+ potential is undefined at V = 0 (log of zero); 1 part in 10^4 is the usual
+  // order of magnitude and starts the curve near 0.53 V, where real curves start.
+  TRACE_FE3: 1e-4
+};
+
+// Equivalence potential. Add the two Nernst equations weighted by their electron counts:
+// at equivalence [Fe3+] = 5[Mn2+] and [Fe2+] = 5[MnO4-], so every concentration term
+// cancels and only the H+ term from the permanganate half-reaction survives.
+//   E_eq = (nFe*E0_Fe + nMn*E0_Mn)/(nFe + nMn) - (8*S/(nFe + nMn))*pH
+// At pH 0 this is 1.384 V, the textbook value for Fe2+ titrated with MnO4-.
+function redoxEquivE() {
+  var n = REDOX.nFE + REDOX.nMN;
+  return (REDOX.nFE * REDOX.E0_FE + REDOX.nMN * REDOX.E0_MN) / n
+    - (REDOX.H_COEFF * REDOX.S / n) * REDOX.pH;
+}
+
+// Fraction of the Fe2+ that has been oxidised: 5 Fe2+ consumed per MnO4- delivered.
+function redoxFraction(vol) {
+  var molesFe = preset.concAcid * preset.volAcid / 1000;
+  if (!(molesFe > 0)) return 0;
+  return (preset.concBase * vol / 1000) * REDOX.nMN / molesFe;
+}
+
+// Cell potential in volts at a given titrant volume.
+function calcE(vol) {
+  var f = redoxFraction(vol);
+  var eq = redoxEquivE();
+  if (Math.abs(f - 1) < 1e-9) return eq;
+  if (f < 1) {
+    // Excess Fe2+ — the iron couple sets the potential:
+    //   E = E0_Fe + S*log10([Fe3+]/[Fe2+]),  [Fe3+]/[Fe2+] = f/(1-f)
+    var ratio = Math.max(f, REDOX.TRACE_FE3) / Math.max(1 - f, 1e-12);
+    return Math.min(eq, REDOX.E0_FE + REDOX.S * Math.log10(ratio));
+  }
+  // Excess MnO4- — the permanganate couple takes over:
+  //   E = E0_Mn + (S/5)*log10([MnO4-][H+]^8/[Mn2+]),  [MnO4-]/[Mn2+] = f-1
+  var post = REDOX.E0_MN
+    + (REDOX.S / REDOX.nMN) * (Math.log10(f - 1) - REDOX.H_COEFF * REDOX.pH);
+  return Math.max(eq, post);
+}
 
 // ── pH Calculation Engine ──
 
@@ -379,18 +1522,10 @@ function calcPH(vol) {
     return Math.max(0, Math.min(14, 14 + Math.log10(-remaining / totalV)));
   }
 
-  // Handle redox titration (approximated as endpoint detection)
-  if (preset.redox) {
-    var molesFe = preset.concAcid * preset.volAcid / 1000;
-    var molesKMnO4 = preset.concBase * vol / 1000;
-    var stoichFe = molesKMnO4 * 5; // 1 KMnO4 reacts with 5 Fe2+
-    var totalVL = (preset.volAcid + vol) / 1000;
-    // pH mainly affected by H2SO4 medium (stays acidic)
-    var basePH = 1.5; // acidic medium
-    if (stoichFe < molesFe) return basePH + 0.5 * (stoichFe / molesFe);
-    if (Math.abs(stoichFe - molesFe) < 1e-7) return 3.0; // equivalence
-    return Math.min(7, 3.0 + 2 * (stoichFe - molesFe) / (molesFe * 0.5)); // post-equiv, higher "potential"
-  }
+  // Redox titration: pH is NOT the measured variable here — see calcE below. The
+  // analyte is dissolved in ~1 M H2SO4 and the titration consumes no net H+ that the
+  // medium does not swamp, so the pH is simply the (constant) pH of the medium.
+  if (preset.redox) return REDOX.pH;
 
   // Handle polyprotic acid (simplified 3-stage for H3PO4)
   if (preset.polyprotic) {
@@ -536,25 +1671,110 @@ function getFlaskColor(pH) {
 
 
 
+// Permanganate is self-indicating, so the redox flask has its own colour law: Fe2+ in
+// sulfate is near-colourless, Fe3+ builds a pale straw yellow as the titration proceeds,
+// and the first drop of unreacted MnO4- turns it faint pink — that pink IS the endpoint —
+// deepening to purple as you overshoot. pH indicators play no part in any of this.
+function getRedoxFlaskColor(f) {
+  if (f <= 1) return _lerpColor('rgba(214,240,226,0.20)', 'rgba(250,236,170,0.38)', Math.max(0, f));
+  return _lerpColor('rgba(250,236,170,0.38)', 'rgba(147,51,234,0.80)', Math.sqrt(Math.min(1, (f - 1) / 1.5)));
+}
+
+// ── What the y-axis actually measures ──
+// Acid-base presets plot pH on a 0-14 scale. The redox preset plots the cell potential a Pt
+// electrode reads, in volts — a different quantity on a different scale. Everything
+// downstream (curve, gridlines, ticks, readouts, live region, SVG label) asks `yAxis`
+// instead of assuming pH, so neither mode has to know about the other.
+var isPotentiometric = !!preset.redox;
+
+var yAxis = isPotentiometric ? {
+  mode: 'E', min: 0.4, max: 1.6,
+  grid: [0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6],
+  ticks: [0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6],
+  label: __alloT('stem.titration.axis_cell_potential', 'Cell potential (V)'),
+  tick: function (y) { return y.toFixed(1); },
+  readout: function (y) { return y.toFixed(3); },
+  unit: ' V',
+  speech: function (y) { return y.toFixed(3) + ' volts'; },
+  at: calcE
+} : {
+  mode: 'pH', min: 0, max: 14,
+  grid: [0, 2, 4, 6, 7, 8, 10, 12, 14],
+  ticks: [0, 2, 4, 6, 8, 10, 12, 14],
+  label: 'pH',
+  tick: function (y) { return String(y); },
+  readout: function (y) { return y.toFixed(2); },
+  unit: '',
+  speech: function (y) { return 'pH ' + y.toFixed(2); },
+  at: calcPH
+};
+
 // ── Generate Titration Curve ──
 
 var curveData = [];
 
 for (var v = 0; v <= maxVol; v += 0.2) {
 
-  curveData.push({ vol: Math.round(v * 100) / 100, pH: calcPH(v) });
+  curveData.push({ vol: Math.round(v * 100) / 100, y: yAxis.at(v) });
 
 }
 
 var currentPH = calcPH(volumeAdded);
 
-var currentColor = getFlaskColor(currentPH);
+var currentY = yAxis.at(volumeAdded);
+
+var redoxF = isPotentiometric ? redoxFraction(volumeAdded) : 0;
+
+var currentColor = isPotentiometric ? getRedoxFlaskColor(redoxF) : getFlaskColor(currentPH);
+
+// The flask colour doubles as the colour of the big numeric readout — but a flask tint
+// is chosen to look like a liquid, not to be read as text on a dark card. Measured in a
+// real browser, phenolphthalein's colourless state (rgba(200,220,255,0.25)) gave the pH
+// number a contrast of 1.95:1 against the panel: the headline value of the whole
+// simulation, effectively invisible, in the tool's most-used state.
+//
+// So the readout takes an opaque, legible stand-in whenever the flask colour is too
+// faint to read. The flask itself is unchanged — it should look like what is in the
+// flask; only the NUMBER swaps to something a student can actually see.
+// Text laid ON a coloured chip: pick whichever of near-black or white the accent
+// actually contrasts with. Forcing either one uniformly fails at the other end of the
+// palette — white sat at 2.1:1 on the sky-400 tab, and near-black at 3.8:1 on the
+// magenta redox chip.
+function titrOnColor(hex) {
+  var p = _parseColor(hex);
+  var lin = function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  var L = 0.2126 * lin(p.r) + 0.7152 * lin(p.g) + 0.0722 * lin(p.b);
+  var withDark = (L + 0.05) / (0.0114 + 0.05);      // vs #0f172a
+  var withWhite = (1.05) / (L + 0.05);
+  return withDark >= withWhite ? '#0f172a' : '#ffffff';
+}
+
+function readoutSafeColor(c) {
+  var p = _parseColor(c);
+  if (p.a >= 0.75) {
+    // Opaque enough to keep, unless it is simply too dark for a dark background.
+    var lum = (0.2126 * p.r + 0.7152 * p.g + 0.0722 * p.b) / 255;
+    if (lum >= 0.38) return c;
+  }
+  return '#e2e8f0';                 // slate-200: ~12:1 on these panels
+}
+var readoutColor = isPotentiometric
+  ? (redoxF > 1 ? '#e879f9' : '#fde68a')
+  : readoutSafeColor(currentColor);
 
 var pastEquivalence = volumeAdded >= Veq - 0.3;
 
 var equivPH = calcPH(Veq);
 
-var indicatorStatus = currentPH < indicator.low ? 'Before endpoint' :
+var equivY = yAxis.at(Veq);
+
+// Endpoint status. For redox this is the self-indicating pink, not an indicator band:
+// the endpoint is the first faint lasting colour from a tiny excess of MnO4-.
+var indicatorStatus = isPotentiometric
+
+  ? (redoxF < 1 ? 'Before endpoint' : redoxF <= 1.05 ? 'At endpoint' : 'Past endpoint')
+
+  : currentPH < indicator.low ? 'Before endpoint' :
 
   currentPH > indicator.high ? 'Past endpoint' : 'At endpoint';
 
@@ -566,24 +1786,27 @@ var indicatorAnalysisOn = indicatorId !== 'universal' && !preset.redox && !prese
 var equivInBand = equivPH >= indicator.low && equivPH <= indicator.high;
 var endpointVol = null; // volume where the indicator first changes color (pH enters its band)
 if (indicatorAnalysisOn) {
+  // Safe to read .y as a pH here: indicatorAnalysisOn excludes the redox preset, the only
+  // one whose curve carries volts instead.
   for (var _ci = 0; _ci < curveData.length; _ci++) {
-    if (curveData[_ci].pH >= indicator.low) { endpointVol = curveData[_ci].vol; break; }
+    if (curveData[_ci].y >= indicator.low) { endpointVol = curveData[_ci].vol; break; }
   }
 }
 var titrationErrorMl = (indicatorAnalysisOn && endpointVol != null) ? Math.abs(endpointVol - Veq) : 0;
 var titrationErrorPct = (indicatorAnalysisOn && Veq > 0) ? (titrationErrorMl / Veq * 100) : 0;
 var indicatorMismatch = indicatorAnalysisOn && !equivInBand;
 
-// WCAG 4.1.3: announce the live pH + endpoint status to screen-reader users
-// whenever the titrant volume changes. The visual pH readout, curve, and flask
+// WCAG 4.1.3: announce the live measurement + endpoint status to screen-reader users
+// whenever the titrant volume changes. The visual readout, curve, and flask
 // color have no other non-visual channel; #allo-live-titration (created on first
 // run) is the polite live region. Guarded on volume change so unrelated
-// re-renders do not re-announce.
+// re-renders do not re-announce. yAxis.speech() says "pH 8.72" or "1.384 volts"
+// so the announcement always names the quantity actually being measured.
 if (safetyChecked && labTab === 'titrate' && typeof document !== 'undefined') {
   var _titrLive = document.getElementById('allo-live-titration');
   if (_titrLive && window._titrLastAnnouncedVol !== volumeAdded) {
     window._titrLastAnnouncedVol = volumeAdded;
-    _titrLive.textContent = volumeAdded.toFixed(1) + ' mL added. pH ' + currentPH.toFixed(2) + '. ' + indicatorStatus + '.';
+    _titrLive.textContent = volumeAdded.toFixed(1) + ' mL added. ' + yAxis.speech(currentY) + '. ' + indicatorStatus + '.';
   }
 }
 
@@ -648,7 +1871,12 @@ var chartH = svgH - pad.top - pad.bottom;
 
 var xScale = function (v) { return pad.left + (v / maxVol) * chartW; };
 
-var yScale = function (pH) { return pad.top + chartH - (pH / 14) * chartH; };
+// Maps the plotted quantity (pH 0-14, or volts over the redox window) onto the chart,
+// clamped so a value outside the window rides the edge instead of drawing off-canvas.
+var yScale = function (val) {
+  var t = (val - yAxis.min) / (yAxis.max - yAxis.min);
+  return pad.top + chartH - Math.max(0, Math.min(1, t)) * chartH;
+};
 
 
 
@@ -660,7 +1888,7 @@ curveData.forEach(function (pt, i) {
 
   var x = xScale(pt.vol).toFixed(1);
 
-  var y = yScale(pt.pH).toFixed(1);
+  var y = yScale(pt.y).toFixed(1);
 
   var cmd = i === 0 ? 'M' : 'L';
 
@@ -869,6 +2097,17 @@ if (!safetyChecked) {
 
   return React.createElement("div", {
     className: "space-y-4 max-w-2xl mx-auto",
+    // The drill countdown is a window-level setInterval started and stopped DURING
+    // render. That is fine while the gate keeps rendering, and a leak the moment it
+    // stops: start a drill, navigate to another tool, and nothing ever runs the stop
+    // branch again — the interval keeps firing upd() five times a second for the rest
+    // of the session, re-rendering the host over a tool nobody is looking at.
+    //
+    // This ref is declared at module scope on purpose. React re-invokes an INLINE
+    // callback ref (null, then node) on every single re-render, and this subtree
+    // re-renders on every tick, so an inline version would clear its own timer
+    // immediately. A stable identity is only called on real mount and unmount.
+    ref: titrDrillTeardownRef,
     style: { animation: 'safetyFadeUp 0.4s ease' }
   },
     React.createElement("style", null, safetyCSSText),
@@ -1716,7 +2955,7 @@ return React.createElement("div", {
       }, __alloT('stem.titration.back_4', "\u2190 Back")),
 
       React.createElement("h3", { className: "text-lg font-black text-white tracking-tight" }, __alloT('stem.titration.virtual_titration_lab', "\uD83E\uDDEA Virtual Titration Lab")),
-      React.createElement("span", { className: "text-[11px] text-slate-600 ml-1" }, "v2.0")
+      React.createElement("span", { className: "text-[11px] text-slate-400 ml-1" }, "v2.0")
 
     ),
 
@@ -1735,17 +2974,22 @@ return React.createElement("div", {
       React.createElement("div", null,
         React.createElement("div", { className: "text-[10px] font-black uppercase tracking-[0.15em] text-cyan-300" }, "Experiment command"),
         React.createElement("h2", { id: "titration-command-title", className: "mt-2 text-xl sm:text-2xl font-black text-white" }, volumeAdded === 0 ? "Prepare a controlled first addition" : pastEquivalence ? "Endpoint passed — evaluate error" : Math.abs(volumeAdded - Veq) <= 2 ? "Approach equivalence drop by drop" : "Build the titration curve"),
-        React.createElement("p", { className: "mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed" }, volumeAdded === 0 ? "Confirm the preset and indicator, then add titrant while watching both color and pH." : pastEquivalence ? "Compare the observed endpoint with the stoichiometric equivalence volume before resetting." : Math.abs(volumeAdded - Veq) <= 2 ? "The curve is steep here. Use the smallest additions and swirl after every drop." : "Add measured volumes, observe the response, and predict where the sharp change will occur."),
+        React.createElement("p", { className: "mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed" }, volumeAdded === 0 ? (isPotentiometric ? "Confirm the preset, then add titrant while watching both the colour and the electrode potential." : "Confirm the preset and indicator, then add titrant while watching both color and pH.") : pastEquivalence ? "Compare the observed endpoint with the stoichiometric equivalence volume before resetting." : Math.abs(volumeAdded - Veq) <= 2 ? "The curve is steep here. Use the smallest additions and swirl after every drop." : "Add measured volumes, observe the response, and predict where the sharp change will occur."),
         React.createElement("div", { className: "mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4", "aria-label": "Live titration metrics" },
-          [[volumeAdded.toFixed(1) + ' mL', 'Titrant'], [currentPH.toFixed(2), preset.redox ? 'Reaction index' : 'Current pH'], [Veq.toFixed(1) + ' mL', 'Equivalence'], [indicatorStatus, 'Indicator']].map(function(metric) {
+          [[volumeAdded.toFixed(1) + ' mL', 'Titrant'], [yAxis.readout(currentY) + yAxis.unit, isPotentiometric ? 'Cell potential' : 'Current pH'], [Veq.toFixed(1) + ' mL', 'Equivalence'], [indicatorStatus, isPotentiometric ? 'MnO₄⁻ colour' : 'Indicator']].map(function(metric) {
             return React.createElement("div", { key: metric[1], className: "rounded-xl border border-white/10 bg-white/5 p-3" }, React.createElement("div", { className: "text-base font-black text-white truncate" }, metric[0]), React.createElement("div", { className: "mt-1 text-[10px] font-bold text-slate-400" }, metric[1]));
           })
         )
       ),
-      React.createElement("aside", { className: "rounded-xl border border-cyan-500/20 bg-black/20 p-4", "aria-label": "Equivalence progress" },
+      // role=group, not <aside>. A complementary landmark nested inside the section's
+      // own region is a WCAG landmark-structure violation, and this panel is not
+      // complementary content anyway — it is the progress readout for the activity
+      // right beside it. A bare labelled <div> would have its aria-label dropped, so
+      // the role has to stay.
+      React.createElement("div", { role: "group", className: "rounded-xl border border-cyan-500/20 bg-black/20 p-4", "aria-label": "Equivalence progress" },
         React.createElement("div", { className: "flex items-center justify-between gap-3" }, React.createElement("span", { className: "text-[10px] font-black uppercase tracking-wide text-cyan-300" }, "Equivalence progress"), React.createElement("span", { className: "text-lg font-black text-white" }, Math.min(100, Math.round(volumeAdded / Math.max(0.1, Veq) * 100)) + "%")),
         React.createElement("div", { className: "mt-3 h-2 overflow-hidden rounded-full bg-slate-800", role: "progressbar", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": Math.min(100, Math.round(volumeAdded / Math.max(0.1, Veq) * 100)), "aria-label": "Progress toward equivalence volume" }, React.createElement("div", { className: "h-full rounded-full bg-gradient-to-r from-cyan-500 to-indigo-500 transition-all", style: { width: Math.min(100, volumeAdded / Math.max(0.1, Veq) * 100) + '%' } })),
-        React.createElement("ol", { className: "mt-4 space-y-2 text-[11px] text-slate-300" }, ["Measure volume precisely", "Track color and pH together", "Distinguish endpoint from equivalence"].map(function(step, i) {
+        React.createElement("ol", { className: "mt-4 space-y-2 text-[11px] text-slate-300" }, ["Measure volume precisely", isPotentiometric ? "Track colour and potential together" : "Track color and pH together", "Distinguish endpoint from equivalence"].map(function(step, i) {
           return React.createElement("li", { key: step, className: "flex gap-2" }, React.createElement("span", { className: "font-black text-cyan-400" }, (i + 1) + "."), React.createElement("span", null, step));
         }))
       )
@@ -1772,8 +3016,8 @@ return React.createElement("div", {
         onKeyDown: function(e) { onTitrTabKey(e, _TITR_TABS.indexOf(tab.id)); },
         onClick: function() { upd('labTab', tab.id); },
         className: "px-3 py-1.5 rounded-full text-[11px] font-bold transition-all " +
-          (active ? "text-white shadow-lg scale-105" : "transition-colors text-slate-200 hover:text-white bg-slate-800/50 hover:bg-slate-700/60 border border-slate-700 active:scale-[0.97]"),
-        style: active ? { background: tab.color, boxShadow: '0 0 12px ' + tab.color + '40' } : {}
+          (active ? "shadow-lg scale-105" : "transition-colors text-slate-200 hover:text-white bg-slate-800/50 hover:bg-slate-700/60 border border-slate-700 active:scale-[0.97]"),
+        style: active ? { background: tab.color, color: titrOnColor(tab.color), boxShadow: '0 0 12px ' + tab.color + '40' } : {}
       }, tab.label);
     })
   ),
@@ -1789,7 +3033,7 @@ return React.createElement("div", {
   (function() {
     var TAB_META = {
       titrate:    { accent: '#38bdf8', soft: 'rgba(56,189,248,0.10)', icon: '\uD83E\uDDEA', title: __alloT('stem.titration.titrate_find_the_equivalence_point', 'Titrate \u2014 find the equivalence point'),  hint: __alloT('stem.titration.add_titrant_drop_by_drop_until_indicat', 'Add titrant drop-by-drop until indicator changes color. Equivalence point = stoichiometric balance; endpoint = where indicator switches. They are not exactly the same.') },
-      challenge:  { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83C\uDFC6', title: __alloT('stem.titration.challenge_graded_titrations', 'Challenge \u2014 graded titrations'),           hint: __alloT('stem.titration.match_real_world_unknowns_by_titrating', 'Match real-world unknowns by titrating to within \u00b10.05 mL of theoretical. Tracks accuracy + speed; AP Chem-aligned scoring.') },
+      challenge:  { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83C\uDFC6', title: __alloT('stem.titration.challenge_graded_titrations', 'Challenge \u2014 graded titrations'),           hint: __alloT('stem.titration.match_real_world_unknowns_by_titrating', 'Determine the concentration of a hidden unknown \u2014 vinegar, ammonia, vitamin C, pool acid \u2014 by titrating it. No pH readout: you judge the endpoint by indicator colour, then read the burette, and where your eye sits decides what you record. Graded on volume error against the \u00b10.05 mL burette tolerance and on the concentration error it causes. A question bank on safety and theory sits alongside it.') },
       incidents:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83D\uDEA8', title: __alloT('stem.titration.safety_drills_what_could_go_wrong', 'Safety drills \u2014 what could go wrong'),     hint: __alloT('stem.titration.burette_explodes_acid_burns_spill_indi', 'Burette explodes, acid-burns spill, indicator added too early. Practice the right response sequence before it matters in a real lab.') },
       equipment:  { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',  icon: '\uD83D\uDD2C', title: __alloT('stem.titration.equipment_burette_flask_pipette', 'Equipment \u2014 burette, flask, pipette'),     hint: __alloT('stem.titration.burette_tolerance_0_05_ml_volumetric_f', 'Burette tolerance 0.05 mL; volumetric flask 0.10 mL; pipette 0.02 mL. Precision class A vs B doubles tolerance. Calibration matters more than students realize.') },
       molarity:   { accent: '#a78bfa', soft: 'rgba(167,139,250,0.10)', icon: '\uD83E\uDDEE', title: __alloT('stem.titration.dilution_calculator_m_v_m_v', 'Dilution calculator \u2014 M\u2081V\u2081 = M\u2082V\u2082'),     hint: __alloT('stem.titration.stock_diluent_desired_concentration_th', 'Stock + diluent \u2192 desired concentration. The 4 most-tested AP Chem problems all reduce to this single equation. Track significant figures: weakest measurement sets the answer.') },
@@ -1839,9 +3083,9 @@ return React.createElement("div", {
 
         className: "px-3 py-1.5 rounded-full text-xs font-bold transition-all " +
 
-          (active ? "text-white shadow-lg scale-105" : "transition-colors text-slate-300 hover:text-white bg-slate-800/60 hover:bg-slate-700/80 border border-slate-600 active:scale-[0.97]"),
+          (active ? "shadow-lg scale-105" : "transition-colors text-slate-300 hover:text-white bg-slate-800/60 hover:bg-slate-700/80 border border-slate-600 active:scale-[0.97]"),
 
-        style: active ? { background: p.color, boxShadow: '0 0 12px ' + p.color + '60' } : {}
+        style: active ? { background: p.color, color: titrOnColor(p.color), boxShadow: '0 0 12px ' + p.color + '60' } : {}
 
       }, p.icon + " " + p.label);
 
@@ -1905,14 +3149,28 @@ return React.createElement("div", {
         ]
   ),
 
-  // ── Redox honesty: this preset is NOT a pH titration ──
-  labTab === 'titrate' && preset.redox && React.createElement("div", {
-    className: "rounded-xl p-2.5 border text-[12px] leading-snug max-w-2xl mx-auto",
+  // ── Redox: what the axis is, and where the numbers come from ──
+  // A redox titration is followed with a Pt electrode and a potentiometer, not a pH meter,
+  // so the curve here is volts from the Nernst equation. Both half-reactions and both E°
+  // values are on screen: the plotted curve should be checkable by hand against them.
+  labTab === 'titrate' && isPotentiometric && React.createElement("div", {
+    className: "rounded-xl p-3 border text-[12px] leading-snug max-w-2xl mx-auto space-y-2",
     role: "status",
     style: { background: 'rgba(112,26,117,0.30)', borderColor: 'rgba(217,70,239,0.5)', color: '#f5d0fe' }
   },
-    React.createElement("span", { className: "font-black" }, __alloT('stem.titration.redox_titration_not_a_ph_curve', '⚗ Redox titration — not a pH curve. ')),
-    __alloT('stem.titration.the_trace_shows_relative_reaction_prog', 'The trace shows relative reaction progress, not pH — there is no pH meter here. The endpoint is the first faint, lasting pink from a tiny excess of MnO₄⁻ (it reacts purple → colorless until then). Read this endpoint by COLOR.')
+    React.createElement("div", null,
+      React.createElement("span", { className: "font-black" }, __alloT('stem.titration.redox_potentiometric_curve', '⚗ Redox titration — the y-axis is volts, not pH. ')),
+      __alloT('stem.titration.redox_potentiometric_explainer', 'You follow a redox titration with a platinum electrode on a potentiometer. Before equivalence the Fe³⁺/Fe²⁺ couple sets the potential; after it, the leftover MnO₄⁻/Mn²⁺ couple takes over. The near-vertical jump between them is the endpoint.')
+    ),
+    React.createElement("div", { className: "font-mono text-[11px] leading-relaxed", style: { color: '#f0abfc' } },
+      React.createElement("div", null, 'Fe³⁺ + e⁻ → Fe²⁺    E° = +0.771 V'),
+      React.createElement("div", null, 'MnO₄⁻ + 8H⁺ + 5e⁻ → Mn²⁺ + 4H₂O    E° = +1.507 V'),
+      React.createElement("div", null, 'E = E° + (0.05916/n)·log₁₀([ox]/[red])'),
+      React.createElement("div", null, 'Eₑ = (1·0.771 + 5·1.507)/6 = ' + redoxEquivE().toFixed(3) + ' V')
+    ),
+    React.createElement("div", null,
+      __alloT('stem.titration.redox_colour_and_formal_potential', 'You can also read the endpoint by eye — permanganate is self-indicating: it goes purple → colourless as it reacts, so the first faint lasting pink means a trace is left over. Two honest caveats: real 1 M H₂SO₄ shifts the iron couple down to a formal potential near 0.68 V because sulfate complexes Fe³⁺, and at exactly 0 mL the potential is undefined (no Fe³⁺ yet) — the curve starts from the trace of Fe³⁺ that air oxidation always leaves.')
+    )
   ),
 
 
@@ -1939,7 +3197,7 @@ return React.createElement("div", {
 
         'aria-label': __alloT('stem.titration.titrant_volume_2', 'Titrant volume'),
 
-        'aria-valuetext': volumeAdded.toFixed(1) + ' milliliters, pH ' + currentPH.toFixed(2) + ', ' + indicatorStatus,
+        'aria-valuetext': volumeAdded.toFixed(1) + ' milliliters, ' + yAxis.speech(currentY) + ', ' + indicatorStatus,
 
         className: "flex-1 min-w-[120px] accent-cyan-400",
 
@@ -2082,7 +3340,7 @@ return React.createElement("div", {
         // Flask (Erlenmeyer shape via SVG) — Enhanced
         React.createElement("svg", {
           width: buretteW + 40, height: 90, role: "img",
-          "aria-label": __alloT('stem.titration.flask_diagram', "Titration flask diagram showing the current pH and indicator state."),
+          "aria-label": isPotentiometric ? __alloT('stem.titration.flask_diagram_redox', "Titration flask diagram showing the permanganate colour of the solution.") : __alloT('stem.titration.flask_diagram', "Titration flask diagram showing the current pH and indicator state."),
           style: { position: 'absolute', left: '0px', top: buretteH + 30 + 'px' }
         },
           // Flask glow when near equivalence
@@ -2147,15 +3405,15 @@ return React.createElement("div", {
 
       },
 
-        React.createElement("span", { className: "text-[11px] text-slate-200 font-bold block" }, __alloT('stem.titration.current_ph', "CURRENT pH")),
+        React.createElement("span", { className: "text-[11px] text-slate-200 font-bold block" }, isPotentiometric ? __alloT('stem.titration.cell_potential_caps', "CELL POTENTIAL") : __alloT('stem.titration.current_ph', "CURRENT pH")),
 
         React.createElement("span", {
 
           className: "text-2xl font-black tabular-nums tracking-tight",
 
-          style: { color: currentColor, transition: 'color 0.5s ease' }
+          style: { color: readoutColor, transition: 'color 0.5s ease' }
 
-        }, currentPH.toFixed(2))
+        }, yAxis.readout(currentY) + yAxis.unit)
 
       )
 
@@ -2181,7 +3439,7 @@ return React.createElement("div", {
 
         role: "img",
 
-        'aria-label': 'Titration curve for ' + preset.label + '. Currently ' + volumeAdded.toFixed(1) + ' mL of titrant added at pH ' + currentPH.toFixed(2) + '. Equivalence point near ' + Veq.toFixed(1) + ' mL at pH ' + equivPH.toFixed(2) + '.',
+        'aria-label': 'Titration curve for ' + preset.label + '. Currently ' + volumeAdded.toFixed(1) + ' mL of titrant added at ' + yAxis.speech(currentY) + '. Equivalence point near ' + Veq.toFixed(1) + ' mL at ' + yAxis.speech(equivY) + '.',
 
         style: { maxHeight: '340px' }
 
@@ -2193,9 +3451,11 @@ return React.createElement("div", {
 
 
 
-        // Indicator transition zone
+        // Indicator transition zone. A pH-indicator band is meaningless against a volts
+        // axis — the redox preset self-indicates with permanganate colour instead — so the
+        // band is drawn only in pH mode.
 
-        indicatorId !== 'universal' && React.createElement("rect", {
+        !isPotentiometric && indicatorId !== 'universal' && React.createElement("rect", {
 
           x: pad.left, y: zoneY1, width: chartW, height: Math.max(0, zoneH),
 
@@ -2203,7 +3463,7 @@ return React.createElement("div", {
 
         }),
 
-        indicatorId !== 'universal' && React.createElement("text", {
+        !isPotentiometric && indicatorId !== 'universal' && React.createElement("text", {
 
           x: pad.left + 4, y: zoneY1 + 12, fill: indicator.colorMid, fontSize: '9', fontWeight: 'bold', opacity: 0.6
 
@@ -2226,17 +3486,21 @@ return React.createElement("div", {
 
 
 
-        // Grid lines (pH)
+        // Grid lines. pH mode picks out pH 7 as the neutral reference; volts mode has no
+        // equivalent landmark on the axis itself (the reference is the equivalence
+        // potential, drawn with the equivalence marker below).
 
-        [0, 2, 4, 6, 7, 8, 10, 12, 14].map(function (pH) {
+        yAxis.grid.map(function (gv) {
+
+          var isRef = yAxis.mode === 'pH' && gv === 7;
 
           return React.createElement("line", {
 
-            key: 'g' + pH, x1: pad.left, y1: yScale(pH), x2: pad.left + chartW, y2: yScale(pH),
+            key: 'g' + gv, x1: pad.left, y1: yScale(gv), x2: pad.left + chartW, y2: yScale(gv),
 
-            stroke: pH === 7 ? 'rgba(74,222,128,0.3)' : 'rgba(100,116,139,0.15)', strokeWidth: pH === 7 ? 1.5 : 0.5,
+            stroke: isRef ? 'rgba(74,222,128,0.3)' : 'rgba(100,116,139,0.15)', strokeWidth: isRef ? 1.5 : 0.5,
 
-            strokeDasharray: pH === 7 ? '' : '3,3'
+            strokeDasharray: isRef ? '' : '3,3'
 
           });
 
@@ -2244,21 +3508,21 @@ return React.createElement("div", {
 
         // pH 7 label
 
-        React.createElement("text", { x: pad.left + chartW + 4, y: yScale(7) + 3, fill: '#4ade80', fontSize: '9', fontWeight: 'bold' }, __alloT('stem.titration.ph_7', 'pH 7')),
+        yAxis.mode === 'pH' && React.createElement("text", { x: pad.left + chartW + 4, y: yScale(7) + 3, fill: '#4ade80', fontSize: '9', fontWeight: 'bold' }, __alloT('stem.titration.ph_7', 'pH 7')),
 
 
 
         // Y-axis labels
 
-        [0, 2, 4, 6, 8, 10, 12, 14].map(function (pH) {
+        yAxis.ticks.map(function (tv) {
 
           return React.createElement("text", {
 
-            key: 'y' + pH, x: pad.left - 6, y: yScale(pH) + 3,
+            key: 'y' + tv, x: pad.left - 6, y: yScale(tv) + 3,
 
             fill: '#94a3b8', fontSize: '9', textAnchor: 'end', fontFamily: 'monospace'
 
-          }, pH);
+          }, yAxis.tick(tv));
 
         }),
 
@@ -2292,7 +3556,7 @@ return React.createElement("div", {
 
           transform: 'rotate(-90, 12, ' + (pad.top + chartH / 2) + ')'
 
-        }, 'pH'),
+        }, yAxis.label),
 
 
 
@@ -2336,7 +3600,7 @@ return React.createElement("div", {
 
         volumeAdded > 0 && React.createElement("circle", {
 
-          cx: xScale(volumeAdded), cy: yScale(currentPH), r: 5,
+          cx: xScale(volumeAdded), cy: yScale(currentY), r: 5,
 
           fill: '#38bdf8', stroke: '#0f172a', strokeWidth: 2,
 
@@ -2350,18 +3614,19 @@ return React.createElement("div", {
 
         React.createElement("circle", {
 
-          cx: xScale(Veq), cy: yScale(equivPH), r: 4,
+          cx: xScale(Veq), cy: yScale(equivY), r: 4,
 
           fill: 'none', stroke: '#f87171', strokeWidth: 1.5, strokeDasharray: '2,2'
 
         }),
 
-        // Equivalence pH label (so students see Veq pH at a glance)
+        // Equivalence label (so students see the value at Veq at a glance) — the
+        // equivalence pH for an acid-base run, the equivalence POTENTIAL for the redox one.
         React.createElement("text", {
-          x: xScale(Veq) + 6, y: yScale(equivPH) - 6,
+          x: xScale(Veq) + 6, y: yScale(equivY) - 6,
           fill: '#f87171', fontSize: '10', fontWeight: 'bold',
           style: { textShadow: '0 0 4px rgba(15,23,42,0.9)' }
-        }, 'pHₑ ' + equivPH.toFixed(2)),
+        }, (isPotentiometric ? 'Eₑ ' : 'pHₑ ') + yAxis.readout(equivY) + yAxis.unit),
 
         // Half-equivalence point (pH = pKa) — only meaningful for weak-acid titrations
         preset.Ka && React.createElement("line", {
@@ -2379,7 +3644,27 @@ return React.createElement("div", {
           x: xScale(Veq / 2) + 6, y: yScale(-Math.log10(preset.Ka)) - 6,
           fill: '#a78bfa', fontSize: '10', fontWeight: 'bold',
           style: { textShadow: '0 0 4px rgba(15,23,42,0.9)' }
-        }, '½ Vₑ → pH=pKₐ (' + (-Math.log10(preset.Ka)).toFixed(2) + ')')
+        }, '½ Vₑ → pH=pKₐ (' + (-Math.log10(preset.Ka)).toFixed(2) + ')'),
+
+        // The redox counterpart of pH = pKa at half-equivalence. At ½Vₑ exactly half the
+        // Fe²⁺ is oxidised, so [Fe³⁺] = [Fe²⁺], the log term in the Nernst equation is
+        // zero, and the electrode reads the standard potential of the couple itself.
+        isPotentiometric && React.createElement("line", {
+          x1: xScale(Veq / 2), y1: pad.top, x2: xScale(Veq / 2), y2: pad.top + chartH,
+          stroke: '#a78bfa', strokeWidth: 1, strokeDasharray: '4,3', opacity: 0.7
+        }),
+
+        isPotentiometric && React.createElement("circle", {
+          cx: xScale(Veq / 2), cy: yScale(REDOX.E0_FE), r: 4,
+          fill: '#a78bfa', stroke: '#0f172a', strokeWidth: 1.5,
+          style: { filter: 'drop-shadow(0 0 4px rgba(167,139,250,0.7))' }
+        }),
+
+        isPotentiometric && React.createElement("text", {
+          x: xScale(Veq / 2) + 6, y: yScale(REDOX.E0_FE) - 6,
+          fill: '#a78bfa', fontSize: '10', fontWeight: 'bold',
+          style: { textShadow: '0 0 4px rgba(15,23,42,0.9)' }
+        }, '½ Vₑ → E=E°(Fe) (' + REDOX.E0_FE.toFixed(3) + ' V)')
 
       )
 
@@ -2403,21 +3688,23 @@ return React.createElement("div", {
 
     },
 
-      React.createElement("div", { className: "text-[11px] font-bold text-slate-200 mb-1" }, __alloT('stem.titration.current_ph_2', "CURRENT pH")),
+      React.createElement("div", { className: "text-[11px] font-bold text-slate-200 mb-1" }, isPotentiometric ? __alloT('stem.titration.cell_potential_caps', "CELL POTENTIAL") : __alloT('stem.titration.current_ph_2', "CURRENT pH")),
 
-      React.createElement("div", { className: "text-xl font-black tabular-nums tracking-tight", style: { color: currentColor } }, currentPH.toFixed(2)),
+      React.createElement("div", { className: "text-xl font-black tabular-nums tracking-tight", style: { color: readoutColor } }, yAxis.readout(currentY) + yAxis.unit),
 
       React.createElement("div", {
 
         className: "mt-1 h-1.5 rounded-full",
 
-        style: { background: 'linear-gradient(90deg, #ef4444, #eab308, #22c55e, #3b82f6, #7c3aed)', position: 'relative' }
+        // The rainbow reads as a pH scale, so volts mode gets its own ramp: the pale
+        // straw of an Fe3+ solution through to permanganate purple.
+        style: { background: isPotentiometric ? 'linear-gradient(90deg, #d1fae5, #fde68a, #f472b6, #9333ea)' : 'linear-gradient(90deg, #ef4444, #eab308, #22c55e, #3b82f6, #7c3aed)', position: 'relative' }
 
       },
 
         React.createElement("div", {
 
-          style: { position: 'absolute', left: (currentPH / 14 * 100) + '%', top: '-2px',
+          style: { position: 'absolute', left: (Math.max(0, Math.min(1, (currentY - yAxis.min) / (yAxis.max - yAxis.min))) * 100) + '%', top: '-2px',
 
             width: '6px', height: '10px', background: 'white', borderRadius: '3px',
 
@@ -2443,7 +3730,7 @@ return React.createElement("div", {
 
       React.createElement("div", { className: "text-xl font-black tabular-nums text-cyan-400 tracking-tight" }, volumeAdded.toFixed(1) + " mL"),
 
-      React.createElement("div", { className: "text-[11px] text-slate-600 mt-1" }, "V\u2091 = " + Veq.toFixed(1) + " mL")
+      React.createElement("div", { className: "text-[11px] text-slate-400 mt-1" }, "V\u2091 = " + Veq.toFixed(1) + " mL")
 
     ),
 
@@ -2459,9 +3746,9 @@ return React.createElement("div", {
 
       React.createElement("div", { className: "text-[11px] font-bold text-slate-200 mb-1" }, __alloT('stem.titration.equivalence_point', "EQUIVALENCE POINT")),
 
-      React.createElement("div", { className: "text-lg font-black tabular-nums  tracking-tight" + (pastEquivalence ? 'text-red-400' : 'text-slate-300') },
+      React.createElement("div", { className: "text-lg font-black tabular-nums tracking-tight " + (pastEquivalence ? 'text-red-400' : 'text-slate-300') },
 
-        "pH " + equivPH.toFixed(2)
+        (isPotentiometric ? "E " : "pH ") + yAxis.readout(equivY) + yAxis.unit
 
       ),
 
@@ -2640,7 +3927,12 @@ return React.createElement("div", {
       var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
       var prompt = 'Explain this titration setup ' + lv.hint + '. '
         + 'Setup: ' + preset.label + ' (' + preset.desc + '). Flask: ' + preset.acidName + ' (' + preset.volAcid + ' mL). Burette: ' + preset.baseName + '. '
-        + 'Indicator: ' + indicator.label + '. Volume added so far: ' + volumeAdded.toFixed(1) + ' mL. '
+        // The redox run has no pH indicator and no pH meter — telling the tutor otherwise
+        // makes it explain phenolphthalein in a permanganate titration.
+        + (isPotentiometric
+            ? 'This is a REDOX titration followed with a platinum electrode: the measured quantity is cell potential in volts, not pH, and there is no added indicator — permanganate is self-indicating. Current potential: ' + yAxis.readout(currentY) + ' V. '
+            : 'Indicator: ' + indicator.label + '. ')
+        + 'Volume added so far: ' + volumeAdded.toFixed(1) + ' mL. '
         + 'In 3 short sentences: (1) What reaction is happening? (2) What will the student see as they add titrant? (3) What the equivalence point means here. '
         + 'No markdown, no bullets, no headings. Use plain prose.';
       callGemini(prompt, false, false, 0.5).then(function (resp) {
@@ -2690,7 +3982,493 @@ return React.createElement("div", {
   // ══════════════════════════════════════════════
   // CHALLENGE TAB — Safety & Theory Quiz
   // ══════════════════════════════════════════════
+  // \u2500\u2500 Challenge mode switch: the graded determination, or the question bank \u2500\u2500
   labTab === 'challenge' && React.createElement("div", {
+    className: "flex gap-2 flex-wrap", role: "tablist",
+    "aria-label": __alloT('stem.titration.challenge_mode', 'Challenge mode')
+  },
+    [
+      { id: 'graded', label: __alloT('stem.titration.graded_unknown', '\uD83C\uDFAF Graded unknown'), hint: __alloT('stem.titration.determine_a_concentration', 'Determine a concentration') },
+      { id: 'quiz', label: __alloT('stem.titration.question_bank', '\u2753 Question bank'), hint: __alloT('stem.titration.safety_and_theory_mcqs', 'Safety and theory MCQs') }
+    ].map(function (mo) {
+      var on = chMode === mo.id;
+      return React.createElement("button", {
+        key: mo.id, role: "tab", "aria-selected": on ? 'true' : 'false',
+        onClick: function () { if (typeof sfxTitrClick === 'function') sfxTitrClick(); upd('chMode', mo.id); },
+        title: mo.hint,
+        className: "px-3 py-1.5 rounded-xl text-[12px] font-bold transition-all border " +
+          (on ? "bg-amber-500 text-slate-900 border-amber-300"
+              : "bg-slate-800/60 text-slate-200 border-slate-600 hover:bg-slate-700/80")
+      }, mo.label);
+    })
+  ),
+
+  // \u2550\u2550\u2550 GRADED UNKNOWN \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+  // The tab has always advertised "match real-world unknowns by titrating to
+  // within \u00B10.05 mL, tracks accuracy + speed". This is that, for real: a hidden
+  // concentration, a burette you can only run forwards, an endpoint you have to
+  // SEE rather than be told, and a reading whose accuracy depends on where your
+  // eye is. No pH number is shown anywhere in this mode \u2014 that is the point.
+  labTab === 'challenge' && chMode === 'graded' && (function () {
+    var spec = gUnknown.spec;
+    var gInd = null;
+    for (var ii = 0; ii < indicators.length; ii++) if (indicators[ii].id === spec.indicator) gInd = indicators[ii];
+    gInd = gInd || indicators[0];
+    var rising = !!(spec.Ka || spec.strong === 'acid');   // does pH climb as you titrate?
+    var endPH = rising ? gInd.low : gInd.high;            // pH at which the colour turns
+    var gEndVb = findEndpointVb(spec, gUnknown.flaskConc, endPH, rising);
+    var obsKind = endpointObservation(gVb, gEndVb);
+    var obs = {
+      none:     { text: __alloT('stem.titration.obs_none', 'No colour change yet.'), tone: '#94a3b8' },
+      flash:    { text: __alloT('stem.titration.obs_flash', 'A flash of colour where each drop lands \u2014 it disappears when you swirl. Slow down: you are one drop away.'), tone: '#fbbf24' },
+      endpoint: { text: __alloT('stem.titration.obs_persist', 'Faint colour that PERSISTS after swirling. This is the endpoint \u2014 stop here.'), tone: '#4ade80' },
+      over:     { text: __alloT('stem.titration.obs_over', 'Strong, deep colour throughout \u2014 you have gone past the endpoint.'), tone: '#f87171' }
+    }[obsKind];
+    var glReady = BURETTE_GL.status() === 'ready';
+    BURETTE_GL.onStatusChange(function () { upd('glTick', (d.glTick || 0) + 1); });
+    var parErr = buretteParallaxMl(gEyeCm);
+    var eyeLevel = Math.abs(gEyeCm) < 0.25;
+    // Camera state is the student's, not a constant. sig deliberately excludes it:
+    // orbit and zoom are applied by the render loop without touching the model, so
+    // dragging never rebuilds the scene — only the eye height and the readings do.
+    var gRot = d.gRot3d || burHomeRot();
+    var gZoom = d.gZoom3d || BUR_HOME.zoom;
+    var setRot = function (rotY, rotX) {
+      upd('gRot3d', { rotY: rotY, rotX: Math.max(-70, Math.min(78, rotX)) });
+    };
+    var setZoom = function (z) { upd('gZoom3d', Math.max(0.5, Math.min(2.6, z))); };
+    BURETTE_GL.push({
+      sig: [Math.round(gEyeCm * 4), spec.id, Math.abs(parErr) <= BURETTE.TOLERANCE_ML,
+            gVb.toFixed(2), gRecordedVb.toFixed(2)].join('|'),
+      eyeCm: gEyeCm, contrast: !!(ctx && ctx.isContrast),
+      liquidHex: 0x38bdf8, withinTolerance: Math.abs(parErr) <= BURETTE.TOLERANCE_ML,
+      trueMl: gVb, readMl: gRecordedVb,
+      rotY: gRot.rotY, rotX: gRot.rotX, zoom: gZoom
+    });
+
+    function deliver(ml) {
+      if (gResult) return;
+      var next = Math.min(50, Math.round((gVb + ml) * 1000) / 1000);
+      updMulti({ gVb: next, gStartMs: gStartMs || Date.now() });
+      if (typeof sfxTitrClick === 'function') sfxTitrClick();
+    }
+
+    // Side elevation of the same geometry. ALWAYS the guaranteed floor: it renders
+    // whether or not WebGL is available, and it is what a screen-reader user's
+    // description is written against.
+    var elevation = (function () {
+      var W = 260, H = 150, mx = 96, my = 78;           // meniscus at (mx,my)
+      var scaleX = mx + 26, eyeX = 236;
+      var eyeY = my - gEyeCm * 2.2;
+      var crossY = my + (eyeY - my) * ((scaleX - mx) / (eyeX - mx));
+      return React.createElement("svg", {
+        viewBox: '0 0 ' + W + ' ' + H, className: "w-full", style: { maxHeight: '160px' },
+        role: "img", "aria-label": 'Side view: eye ' + Math.abs(gEyeCm).toFixed(0) + ' cm ' +
+          (eyeLevel ? 'level with' : gEyeCm > 0 ? 'above' : 'below') +
+          ' the meniscus. The sight line crosses the scale ' +
+          (eyeLevel ? 'exactly at the meniscus.' : (gEyeCm > 0 ? 'above' : 'below') + ' the true level, so the reading is ' +
+            (gEyeCm > 0 ? 'too low' : 'too high') + ' by ' + Math.abs(parErr).toFixed(3) + ' millilitres.')
+      },
+        React.createElement("rect", { x: mx - 22, y: 8, width: 48, height: H - 16, fill: 'rgba(147,197,253,0.10)', stroke: 'rgba(147,197,253,0.45)' }),
+        React.createElement("line", { x1: scaleX, y1: 8, x2: scaleX, y2: H - 8, stroke: '#cbd5e1', strokeWidth: 1.5 }),
+        React.createElement("rect", { x: mx - 21, y: my, width: 46, height: H - 8 - my, fill: 'rgba(56,189,248,0.35)' }),
+        React.createElement("line", { x1: mx - 21, y1: my, x2: mx + 25, y2: my, stroke: '#22d3ee', strokeWidth: 2 }),
+        React.createElement("line", { x1: mx, y1: my, x2: eyeX, y2: my, stroke: '#4ade80', strokeWidth: 1, strokeDasharray: '3,3', opacity: 0.65 }),
+        React.createElement("line", { x1: mx, y1: my, x2: eyeX, y2: eyeY, stroke: eyeLevel ? '#4ade80' : '#fbbf24', strokeWidth: 1.6 }),
+        React.createElement("circle", { cx: eyeX, cy: eyeY, r: 6, fill: '#f1f5f9' }),
+        React.createElement("line", { x1: scaleX - 12, y1: my, x2: scaleX + 12, y2: my, stroke: '#4ade80', strokeWidth: 3 }),
+        !eyeLevel && React.createElement("line", { x1: scaleX - 12, y1: crossY, x2: scaleX + 12, y2: crossY, stroke: '#fbbf24', strokeWidth: 3 }),
+        React.createElement("text", { x: 6, y: my + 4, fill: '#4ade80', fontSize: '9', fontWeight: 'bold' }, 'true'),
+        !eyeLevel && React.createElement("text", { x: 6, y: crossY + 4, fill: '#fbbf24', fontSize: '9', fontWeight: 'bold' }, 'you read')
+      );
+    })();
+
+    return React.createElement("div", { className: "rounded-2xl p-5 border space-y-4",
+      style: Object.assign({}, glass, { background: 'rgba(3,25,40,0.85)', borderColor: 'rgba(245,158,11,0.3)' }) },
+
+      // \u2500\u2500 Briefing \u2500\u2500
+      React.createElement("div", { className: "flex items-start justify-between gap-3 flex-wrap" },
+        React.createElement("div", null,
+          React.createElement("h3", { className: "text-sm font-black text-amber-400" },
+            spec.icon + ' ' + __alloT('stem.titration.unknown_run', 'Unknown') + ' #' + gRun + ' \u2014 ' + spec.name),
+          React.createElement("p", { className: "text-[12px] text-slate-300 mt-1 max-w-xl leading-relaxed" }, spec.blurb)
+        ),
+        React.createElement("button", {
+          onClick: function () {
+            updMulti({ gRun: gRun + 1, gVb: 0, gResult: null, gStartMs: 0, gEyeCm: 0 });
+            if (announceToSR) announceToSR('New unknown loaded. Run ' + (gRun + 1) + '.');
+          },
+          className: "px-3 py-1.5 rounded-xl text-[12px] font-bold bg-slate-800/70 text-amber-300 border border-amber-700/50 hover:bg-slate-700/80"
+        }, __alloT('stem.titration.new_unknown', '\uD83C\uDFB2 New unknown'))
+      ),
+
+      React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-2" },
+        [[spec.analyte, __alloT('stem.titration.analyte', 'Analyte')],
+         [spec.aliquotMl.toFixed(2) + ' mL', __alloT('stem.titration.aliquot', 'Aliquot in flask')],
+         [spec.titrant + ' ' + spec.titrantConc.toFixed(4) + ' M', __alloT('stem.titration.titrant_known', 'Titrant (known)')],
+         [gInd.label, __alloT('stem.titration.indicator_label', 'Indicator')]].map(function (m) {
+          return React.createElement("div", { key: m[1], className: "rounded-xl border border-white/10 bg-white/5 p-2.5" },
+            React.createElement("div", { className: "text-[13px] font-black text-white truncate" }, m[0]),
+            React.createElement("div", { className: "mt-0.5 text-[10px] font-bold text-slate-400" }, m[1]));
+        })
+      ),
+      React.createElement("p", { className: "text-[11px] text-slate-400 italic" }, '\uD83E\uDDEB ' + spec.prep),
+
+      // \u2500\u2500 Burette: forward only, like the real thing \u2500\u2500
+      React.createElement("div", { className: "rounded-xl p-3 border border-slate-600/40 bg-slate-900/40 space-y-2" },
+        React.createElement("div", { className: "flex items-center justify-between flex-wrap gap-2" },
+          React.createElement("span", { className: "text-[11px] font-bold text-slate-200" }, __alloT('stem.titration.deliver_titrant', 'DELIVER TITRANT')),
+          React.createElement("span", { className: "text-[11px] text-slate-400" },
+            __alloT('stem.titration.one_drop_is', 'One drop = ') + BURETTE.DROP_ML.toFixed(2) + ' mL')
+        ),
+        React.createElement("div", { className: "flex gap-2 flex-wrap" },
+          [[BURETTE.DROP_ML, '+1 drop'], [BURETTE.DROP_ML * 5, '+5 drops'], [0.5, '+0.5 mL'], [2, '+2 mL'], [5, '+5 mL']].map(function (b) {
+            return React.createElement("button", {
+              key: b[1], disabled: !!gResult, onClick: function () { deliver(b[0]); },
+              "aria-label": __alloT('stem.titration.deliver', 'Deliver ') + b[1],
+              className: "px-3 py-1.5 rounded-lg text-[12px] font-bold border transition-all " +
+                (gResult ? "bg-slate-800/40 text-slate-500 border-slate-700 cursor-not-allowed"
+                         : "bg-cyan-900/40 text-cyan-200 border-cyan-700/50 hover:bg-cyan-800/60 active:scale-[0.97]")
+            }, b[1]);
+          }),
+          // Abandons the aliquot currently in the flask. It deliberately does NOT clear
+          // gResult: doing so let a student submit, read the true concentration off the
+          // result panel, and then re-titrate the SAME unknown to a perfect score. Once
+          // an unknown is reported it is finished, and the only way on is a new one.
+          React.createElement("button", {
+            disabled: !!gResult,
+            onClick: function () { if (gResult) return;
+              updMulti({ gVb: 0, gStartMs: gStartMs || Date.now() });
+              if (announceToSR) announceToSR('Fresh sample. Burette back to zero.'); },
+            className: "px-3 py-1.5 rounded-lg text-[12px] font-bold border " +
+              (gResult ? "bg-slate-800/40 text-slate-500 border-slate-700 cursor-not-allowed"
+                       : "bg-amber-900/40 text-amber-200 border-amber-700/50 hover:bg-amber-800/60")
+          }, __alloT('stem.titration.fresh_sample', '\u21BA Fresh sample'))
+        ),
+        React.createElement("p", { className: "text-[10px] text-slate-400 italic" },
+          __alloT('stem.titration.no_undo', 'A burette only runs one way \u2014 there is no undo. Overshoot and you start over with a fresh aliquot, exactly as you would at the bench.'))
+      ),
+
+      // \u2500\u2500 What you can SEE (no pH meter in this mode) \u2500\u2500
+      React.createElement("div", { className: "rounded-xl p-3 border flex items-center gap-3 flex-wrap",
+        style: { borderColor: obs.tone + '66', background: 'rgba(15,23,42,0.55)' } },
+        React.createElement("div", { "aria-hidden": true, style: {
+          width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
+          background: getIndicatorColor(gFlaskPH), border: '2px solid rgba(148,163,184,0.5)'
+        } }),
+        React.createElement("div", { className: "flex-1 min-w-[180px]" },
+          React.createElement("div", { className: "text-[11px] font-bold text-slate-200" }, __alloT('stem.titration.in_the_flask', 'IN THE FLASK')),
+          React.createElement("div", { className: "text-[12px] font-semibold", style: { color: obs.tone } }, obs.text)
+        ),
+        React.createElement("div", { className: "text-[10px] text-slate-400 italic max-w-[220px]" },
+          __alloT('stem.titration.no_ph_meter', 'No pH readout in graded mode \u2014 you judge the endpoint the way you would at a real bench.'))
+      ),
+
+      // \u2500\u2500 The reading: 3D station + accessible eye control \u2500\u2500
+      React.createElement("div", { className: "rounded-xl p-3 border border-slate-600/40 bg-slate-900/40 space-y-3" },
+        React.createElement("div", { className: "text-[11px] font-bold text-slate-200" }, __alloT('stem.titration.read_the_burette', '\uD83D\uDC41\uFE0F READ THE BURETTE')),
+        React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-3" },
+          React.createElement("div", null,
+            // The GL container is ALWAYS laid out at its real size. It used to be
+            // display:none until the viewer reported ready, which meant the renderer
+            // was built against a zero-width node — a 0x0 canvas that never recovered
+            // its size on some paths and could not be screenshotted at all. The
+            // elevation is overlaid on top instead, so there is always something to
+            // look at and the renderer always has a box to measure.
+            React.createElement("div", {
+              style: { position: 'relative', height: 240, borderRadius: 10, overflow: 'hidden',
+                background: '#0a1420', border: '1px solid rgba(100,116,139,0.35)' }
+            },
+              React.createElement("div", {
+                ref: buretteGlRef,
+                style: { position: 'absolute', inset: 0, cursor: 'grab', touchAction: 'pan-y' },
+                // The canvas inside is aria-hidden, so this container carries the
+                // description. tabIndex + onKeyDown are not optional extras: drag
+                // alone would make the only way to inspect the geometry a mouse.
+                // Both go away when 3D is not up — an empty div claiming role="img"
+                // next to the elevation's own would announce the same picture twice,
+                // and offer a focus stop that does nothing.
+                role: glReady ? "img" : undefined,
+                tabIndex: glReady ? 0 : undefined,
+                "aria-label": !glReady ? undefined : 'Burette parallax diagram, ' + BUR3D.EXAGGERATION.toFixed(1) +
+                  ' times life size. ' +
+                  (eyeLevel
+                    ? 'The eye is level with the meniscus and the sight line meets the scale at the true reading of ' + gVb.toFixed(2) + ' millilitres.'
+                    : 'The eye is ' + Math.abs(gEyeCm).toFixed(0) + ' centimetres ' + (gEyeCm > 0 ? 'above' : 'below') +
+                      ' the meniscus, so the sight line crosses the scale at ' + gRecordedVb.toFixed(2) +
+                      ' millilitres instead of the true ' + gVb.toFixed(2) + '.') +
+                  ' Arrow keys orbit, plus and minus zoom, 0 resets.',
+                onPointerDown: function (ev) {
+                  buretteDrag.current = { x: ev.clientX, y: ev.clientY, rotY: gRot.rotY, rotX: gRot.rotX };
+                  try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) {}
+                },
+                onPointerMove: function (ev) {
+                  var g = buretteDrag.current;
+                  if (!g) return;
+                  setRot(g.rotY + (ev.clientX - g.x) * 0.5, g.rotX + (ev.clientY - g.y) * 0.35);
+                },
+                onPointerUp: function () { buretteDrag.current = null; },
+                onPointerCancel: function () { buretteDrag.current = null; },
+                onWheel: function (ev) {
+                  ev.preventDefault();
+                  setZoom(gZoom * (ev.deltaY < 0 ? 1.12 : 0.89));
+                },
+                onKeyDown: function (ev) {
+                  var k = ev.key;
+                  if (k === 'ArrowLeft') { setRot(gRot.rotY - 8, gRot.rotX); }
+                  else if (k === 'ArrowRight') { setRot(gRot.rotY + 8, gRot.rotX); }
+                  else if (k === 'ArrowUp') { setRot(gRot.rotY, gRot.rotX - 6); }
+                  else if (k === 'ArrowDown') { setRot(gRot.rotY, gRot.rotX + 6); }
+                  else if (k === '+' || k === '=') { setZoom(gZoom * 1.15); }
+                  else if (k === '-' || k === '_') { setZoom(gZoom * 0.87); }
+                  else if (k === '0' || k === 'Home') { updMulti({ gRot3d: burHomeRot(), gZoom3d: BUR_HOME.zoom }); }
+                  else return;
+                  ev.preventDefault();
+                }
+              }),
+              glReady && React.createElement("div", {
+                style: { position: 'absolute', left: 8, bottom: 6, fontSize: 10,
+                  color: '#94a3b8', pointerEvents: 'none', background: 'rgba(10,20,32,0.7)',
+                  padding: '3px 8px', borderRadius: 999 },
+                "aria-hidden": true
+              }, __alloT('stem.titration.gl_hint', 'Drag or arrow keys — orbit · scroll or ± — zoom · 0 — reset')),
+              glReady && React.createElement("button", {
+                onClick: function () { updMulti({ gRot3d: burHomeRot(), gZoom3d: BUR_HOME.zoom }); },
+                style: { position: 'absolute', right: 8, top: 6 },
+                className: "px-2 py-0.5 rounded text-[10px] font-bold text-slate-200 bg-slate-900/70 border border-slate-600 hover:bg-slate-800"
+              }, __alloT('stem.titration.reset_view', 'Reset view')),
+              !glReady && React.createElement("div", {
+                style: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', background: '#0a1420' }
+              }, elevation)
+            ),
+            React.createElement("p", { className: "text-[10px] text-slate-400 mt-1 leading-snug" },
+              glReady
+                ? (__alloT('stem.titration.exag_note', 'Drawn as a wide bore seen from close in, so the effect is visible \u2014 about ')
+                    + BUR3D.EXAGGERATION.toFixed(1)
+                    + __alloT('stem.titration.exag_note_tail', '\u00D7 life. The numbers on the scale and the millilitre figures come from real burette geometry, not from the picture.'))
+                : __alloT('stem.titration.elevation_note', 'Side elevation. The green line is where the meniscus really sits; the amber line is where your sight line crosses the scale.'))
+          ),
+          React.createElement("div", { className: "space-y-2" },
+            React.createElement("label", { className: "block text-[11px] font-bold text-slate-300", htmlFor: "titr-eye" },
+              __alloT('stem.titration.eye_height', 'Eye height vs the meniscus')),
+            React.createElement("input", {
+              id: "titr-eye", type: "range", min: -BURETTE.MAX_EYE_CM, max: BURETTE.MAX_EYE_CM, step: 0.5,
+              value: gEyeCm, disabled: !!gResult,
+              onChange: function (e) { upd('gEyeCm', parseFloat(e.target.value)); },
+              "aria-valuetext": (eyeLevel ? 'Level with the meniscus' :
+                Math.abs(gEyeCm).toFixed(1) + ' centimetres ' + (gEyeCm > 0 ? 'above' : 'below')) +
+                '. Reading error ' + (parErr >= 0 ? 'plus ' : 'minus ') + Math.abs(parErr).toFixed(3) + ' millilitres.',
+              className: "w-full accent-amber-400"
+            }),
+            React.createElement("div", { className: "flex items-center justify-between text-[10px] text-slate-400" },
+              React.createElement("span", null, __alloT('stem.titration.below', '20 cm below')),
+              React.createElement("button", {
+                onClick: function () { upd('gEyeCm', 0); },
+                className: "px-2 py-0.5 rounded font-bold text-emerald-300 bg-emerald-900/30 border border-emerald-700/50 hover:bg-emerald-800/50"
+              }, __alloT('stem.titration.get_level', 'Get level')),
+              React.createElement("span", null, __alloT('stem.titration.above', '20 cm above'))),
+            React.createElement("div", { className: "rounded-lg p-2.5 border",
+              style: { borderColor: eyeLevel ? 'rgba(74,222,128,0.5)' : 'rgba(251,191,36,0.5)', background: 'rgba(15,23,42,0.6)' } },
+              React.createElement("div", { className: "text-[10px] font-bold text-slate-400" }, __alloT('stem.titration.burette_reads', 'BURETTE READS')),
+              React.createElement("div", { className: "text-2xl font-black tabular-nums", style: { color: eyeLevel ? '#4ade80' : '#fbbf24' } },
+                gRecordedVb.toFixed(2) + ' mL'),
+              React.createElement("div", { className: "text-[10px] mt-0.5", style: { color: eyeLevel ? '#4ade80' : '#fbbf24' } },
+                eyeLevel
+                  ? __alloT('stem.titration.eye_is_level', '\u2713 Eye level \u2014 no parallax error.')
+                  : (parErr < 0 ? __alloT('stem.titration.reads_low', 'Eye above the meniscus \u2192 reads LOW by ')
+                                : __alloT('stem.titration.reads_high', 'Eye below the meniscus \u2192 reads HIGH by ')) + Math.abs(parErr).toFixed(3) + ' mL')
+            )
+          )
+        )
+      ),
+
+      // \u2500\u2500 Replicates: record trials, then report their mean \u2500\u2500
+      (function () {
+        if (gResult) return null;
+        var liveStats = replicateStats(gTrials.map(function (t) { return t.recorded; }));
+        var concordant = gTrials.length >= 2 && liveStats.spread <= BURETTE.CONCORDANCE_ML + 1e-9;
+        return React.createElement("div", { className: "rounded-xl p-3 border border-slate-600/40 bg-slate-900/40 space-y-2" },
+          React.createElement("div", { className: "flex items-center justify-between flex-wrap gap-2" },
+            React.createElement("span", { className: "text-[11px] font-bold text-slate-200" }, __alloT('stem.titration.trials', '\uD83E\uDDFE TRIALS')),
+            React.createElement("span", { className: "text-[10px] text-slate-400 italic" },
+              __alloT('stem.titration.concordance_rule', 'Bench rule: repeat until two or three agree within ') + BURETTE.CONCORDANCE_ML.toFixed(2) + __alloT('stem.titration.concordance_rule_tail', ' mL, then report their mean.'))
+          ),
+          gTrials.length === 0
+            ? React.createElement("p", { className: "text-[11px] text-slate-400" },
+                __alloT('stem.titration.no_trials_yet', 'No trials recorded yet. Titrate to the endpoint, then record the burette reading. Your first run is usually rough \u2014 that is normal, and you can discard it.'))
+            : React.createElement("table", { className: "w-full text-[11px]" },
+                // The last column holds the discard buttons. It still needs a header
+                // with real text — an empty <th> gives screen-reader users an unnamed
+                // column — so it is named and hidden visually rather than left blank.
+                React.createElement("thead", null, React.createElement("tr", { className: "text-slate-400" },
+                  ['Trial', 'Reading', 'Eye', 'Actions'].map(function (hh, hi) {
+                    return React.createElement("th", {
+                      key: hi, scope: 'col',
+                      className: "px-2 py-1 text-left font-bold",
+                      style: hi === 3 ? { position: 'absolute', width: 1, height: 1, padding: 0,
+                        margin: -1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap', border: 0 } : null
+                    }, hh);
+                  }))),
+                React.createElement("tbody", null, gTrials.map(function (t, i) {
+                  return React.createElement("tr", { key: i, className: "text-slate-300 border-t border-slate-700/40" },
+                    React.createElement("td", { className: "px-2 py-1" }, '#' + (i + 1)),
+                    React.createElement("td", { className: "px-2 py-1 tabular-nums font-bold" }, t.recorded.toFixed(2) + ' mL'),
+                    React.createElement("td", { className: "px-2 py-1" }, Math.abs(t.eyeCm) < 0.25 ? 'level' :
+                      Math.abs(t.eyeCm).toFixed(0) + ' cm ' + (t.eyeCm > 0 ? 'above' : 'below')),
+                    React.createElement("td", { className: "px-2 py-1 text-right" },
+                      React.createElement("button", {
+                        onClick: function () {
+                          upd('gTrials', gTrials.filter(function (_, k) { return k !== i; }));
+                        },
+                        "aria-label": __alloT('stem.titration.discard_trial', 'Discard trial ') + (i + 1),
+                        className: "px-2 py-0.5 rounded text-[10px] font-bold text-slate-300 bg-slate-800 border border-slate-600 hover:bg-slate-700"
+                      }, __alloT('stem.titration.discard', 'Discard'))));
+                }))
+              ),
+          gTrials.length >= 2 && React.createElement("div", { className: "text-[11px] font-bold",
+            style: { color: concordant ? '#4ade80' : '#fbbf24' } },
+            __alloT('stem.titration.mean_of', 'Mean of ') + liveStats.n + ': ' + liveStats.mean.toFixed(3) + ' mL \u00B7 ' +
+            __alloT('stem.titration.spread_is', 'spread ') + liveStats.spread.toFixed(3) + ' mL \u00B7 ' +
+            (concordant ? __alloT('stem.titration.concordant', 'concordant \u2713')
+                        : __alloT('stem.titration.not_concordant', 'not concordant \u2014 run another'))),
+          React.createElement("div", { className: "flex gap-2 flex-wrap" },
+            React.createElement("button", {
+              onClick: function () {
+                var t = { vb: gVb, eyeCm: gEyeCm, recorded: gRecordedVb };
+                updMulti({ gTrials: gTrials.concat([t]), gVb: 0, gStartMs: gStartMs || Date.now() });
+                if (typeof sfxTitrClick === 'function') sfxTitrClick();
+                if (announceToSR) announceToSR('Trial ' + (gTrials.length + 1) + ' recorded at ' +
+                  gRecordedVb.toFixed(2) + ' millilitres. Fresh aliquot in the flask.');
+              },
+              disabled: gVb <= 0,
+              className: "px-4 py-2 rounded-xl text-[12px] font-black transition-all " +
+                (gVb <= 0 ? "bg-slate-800/50 text-slate-500 cursor-not-allowed"
+                          : "bg-cyan-700 text-white hover:bg-cyan-600 active:scale-[0.98]")
+            }, __alloT('stem.titration.record_trial', '\uD83D\uDCCB Record trial ') + (gTrials.length + 1)),
+            React.createElement("button", {
+              onClick: function () {
+                var readings = gTrials.map(function (t) { return t.recorded; });
+                var st = replicateStats(readings);
+                var res = gradeUnknown(gUnknown, st.mean);
+                res.stats = st;
+                res.pa = precisionAccuracy(st, gUnknown.trueVb);
+                res.diag = systematicDiagnosis(gTrials);
+                res.trials = gTrials.slice();
+                res.seconds = gStartMs ? Math.round((Date.now() - gStartMs) / 1000) : 0;
+                updMulti({
+                  gResult: res,
+                  gLog: gLog.concat([{ run: gRun, name: spec.name, band: res.band, volErrMl: res.volErrMl,
+                    concErrPct: res.concErrPct, seconds: res.seconds, trials: st.n, spread: st.spread }]).slice(-8)
+                });
+                if (res.withinTolerance && typeof awardStemXP === 'function') awardStemXP('titr-graded-' + gRun, 25, 'Graded titration within tolerance');
+                if (typeof sfxTitrSuccess === 'function' && res.withinTolerance) sfxTitrSuccess();
+                if (announceToSR) announceToSR('Reported. ' + res.measuredConc.toPrecision(3) + ' molar from ' +
+                  st.n + ' trials. ' + (res.withinTolerance ? 'Within tolerance.' : 'Outside the 0.05 millilitre tolerance.'));
+              },
+              disabled: gTrials.length < 2,
+              className: "px-4 py-2 rounded-xl text-[12px] font-black transition-all " +
+                (gTrials.length < 2 ? "bg-slate-800/50 text-slate-500 cursor-not-allowed"
+                                    : "bg-amber-500 text-slate-900 hover:bg-amber-400 active:scale-[0.98]")
+            }, __alloT('stem.titration.finish_and_report', '\u2705 Finish and report the mean')),
+            gTrials.length < 2 && React.createElement("span", { className: "text-[10px] text-slate-400 self-center" },
+              __alloT('stem.titration.need_two', 'At least two trials before you can report a result.'))
+          )
+        );
+      })(),
+
+      gResult && (function () {
+        var r = gResult;
+        var bandMeta = { excellent: ['#4ade80', 'Excellent \u2014 inside burette tolerance'],
+          good: ['#a3e635', 'Good \u2014 just outside tolerance'],
+          fair: ['#fbbf24', 'Fair \u2014 a visible technique error'],
+          poor: ['#f87171', 'Poor \u2014 check your endpoint and your eye line'] }[r.band];
+        return React.createElement("div", { className: "rounded-xl p-4 border space-y-3",
+          style: { borderColor: bandMeta[0] + '88', background: 'rgba(15,23,42,0.7)' } },
+          React.createElement("div", { className: "text-sm font-black", style: { color: bandMeta[0] } }, bandMeta[1]),
+          React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-2" },
+            [[r.measuredConc.toPrecision(3) + ' M', __alloT('stem.titration.your_answer', 'Your answer')],
+             [gUnknown.truthConc.toPrecision(3) + ' M', __alloT('stem.titration.true_value', 'True value')],
+             [(r.volErrMl >= 0 ? '+' : '') + r.volErrMl.toFixed(3) + ' mL', __alloT('stem.titration.volume_error', 'Volume error')],
+             [(r.concErrPct >= 0 ? '+' : '') + r.concErrPct.toFixed(2) + '%', __alloT('stem.titration.concentration_error', 'Concentration error')]].map(function (m) {
+              return React.createElement("div", { key: m[1], className: "rounded-lg border border-white/10 bg-white/5 p-2.5" },
+                React.createElement("div", { className: "text-[13px] font-black text-white truncate" }, m[0]),
+                React.createElement("div", { className: "mt-0.5 text-[10px] font-bold text-slate-400" }, m[1]));
+            })
+          ),
+          // \u2500\u2500 Precision and accuracy, scored SEPARATELY \u2500\u2500
+          // Reporting one number hides the most common misconception in the whole
+          // topic: students read "close together" as "correct". Splitting them lets
+          // the panel say precise-but-wrong out loud when that is what happened.
+          r.pa && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+            [[r.pa.precise, __alloT('stem.titration.precision', 'Precision'),
+              __alloT('stem.titration.spread_label', 'spread ') + r.stats.spread.toFixed(3) + ' mL over ' + r.stats.n + ' trials',
+              r.pa.precise ? __alloT('stem.titration.replicates_agree', 'Replicates agree') : __alloT('stem.titration.replicates_scatter', 'Replicates scatter')],
+             [r.pa.accurate, __alloT('stem.titration.accuracy', 'Accuracy'),
+              __alloT('stem.titration.mean_is_off_by', 'mean off by ') + Math.abs(r.pa.biasMl).toFixed(3) + ' mL',
+              r.pa.accurate ? __alloT('stem.titration.mean_is_right', 'Mean is right') : __alloT('stem.titration.mean_is_biased', 'Mean is biased')]
+            ].map(function (m) {
+              return React.createElement("div", { key: m[1], className: "rounded-lg border p-2.5",
+                style: { borderColor: m[0] ? 'rgba(74,222,128,0.5)' : 'rgba(248,113,113,0.5)',
+                  background: m[0] ? 'rgba(22,101,52,0.15)' : 'rgba(127,29,29,0.15)' } },
+                React.createElement("div", { className: "text-[10px] font-bold text-slate-400" }, m[1]),
+                React.createElement("div", { className: "text-[13px] font-black", style: { color: m[0] ? '#4ade80' : '#f87171' } },
+                  (m[0] ? '\u2713 ' : '\u2717 ') + m[3]),
+                React.createElement("div", { className: "text-[10px] text-slate-400 mt-0.5" }, m[2]));
+            })
+          ),
+
+          // The teaching moment this whole feature exists for.
+          r.pa && r.pa.verdict === 'precise-not-accurate' && React.createElement("div", {
+            className: "rounded-lg p-3 border text-[11px] leading-relaxed",
+            style: { borderColor: 'rgba(251,191,36,0.6)', background: 'rgba(120,53,15,0.28)', color: '#fde68a' }
+          },
+            React.createElement("span", { className: "font-black" }, __alloT('stem.titration.precise_not_accurate_head', '\u26a0 Precise, but not accurate. ')),
+            __alloT('stem.titration.precise_not_accurate_body', 'Your replicates agree with each other to ') + r.stats.spread.toFixed(3) +
+            __alloT('stem.titration.ml_yet_sit', ' mL, yet their mean sits ') + Math.abs(r.pa.biasMl).toFixed(3) +
+            __alloT('stem.titration.ml_from_truth', ' mL from the true value. Repeating a measurement cannot reveal an error that repeats with it \u2014 that is a SYSTEMATIC error, and no number of extra trials will average it away.') +
+            (r.diag
+              ? __alloT('stem.titration.diag_parallax', ' Here it is parallax: every trial was read from ') + Math.abs(r.diag.eyeCm).toFixed(1) + ' cm ' +
+                (r.diag.eyeCm > 0 ? 'above' : 'below') + __alloT('stem.titration.diag_predicts', ' the meniscus, which predicts a bias of ') +
+                (r.diag.predictedMl >= 0 ? '+' : '') + r.diag.predictedMl.toFixed(3) + __alloT('stem.titration.diag_observed', ' mL \u2014 and you measured ') +
+                (r.pa.biasMl >= 0 ? '+' : '') + r.pa.biasMl.toFixed(3) + ' mL.'
+              : '')
+          ),
+
+          React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" },
+            __alloT('stem.titration.true_equivalence_was', 'True equivalence was at ') + gUnknown.trueVb.toFixed(3) + ' mL; ' +
+            __alloT('stem.titration.your_mean_was', 'the mean of your ') + r.stats.n +
+            __alloT('stem.titration.trials_was', ' trials was ') + r.stats.mean.toFixed(3) + ' mL.' +
+            (r.seconds ? ' (' + r.seconds + ' s)' : '')),
+          React.createElement("button", {
+            onClick: function () { updMulti({ gRun: gRun + 1, gVb: 0, gResult: null, gStartMs: 0, gEyeCm: 0, gTrials: [] }); },
+            className: "px-4 py-2 rounded-xl text-[12px] font-bold bg-amber-500 text-slate-900 hover:bg-amber-400"
+          }, __alloT('stem.titration.next_unknown', '\u2192 Next unknown'))
+        );
+      })(),
+
+      gLog.length > 0 && React.createElement("details", { className: "rounded-xl border border-slate-700/50 overflow-hidden" },
+        React.createElement("summary", { className: "px-3 py-2 cursor-pointer text-[12px] font-bold text-slate-300" },
+          __alloT('stem.titration.run_log', 'Run log') + ' (' + gLog.length + ')'),
+        React.createElement("table", { className: "w-full text-[11px]" },
+          React.createElement("thead", null, React.createElement("tr", { className: "text-slate-400" },
+            ['Run', 'Unknown', '\u0394V (mL)', '\u0394 conc', 'Time'].map(function (hh) {
+              return React.createElement("th", { key: hh, scope: 'col', className: "px-2 py-1 text-left font-bold" }, hh);
+            }))),
+          React.createElement("tbody", null, gLog.map(function (e, i) {
+            return React.createElement("tr", { key: i, className: "text-slate-300 border-t border-slate-700/40" },
+              React.createElement("td", { className: "px-2 py-1" }, '#' + e.run),
+              React.createElement("td", { className: "px-2 py-1" }, e.name),
+              React.createElement("td", { className: "px-2 py-1 tabular-nums" }, (e.volErrMl >= 0 ? '+' : '') + e.volErrMl.toFixed(3)),
+              React.createElement("td", { className: "px-2 py-1 tabular-nums" }, (e.concErrPct >= 0 ? '+' : '') + e.concErrPct.toFixed(2) + '%'),
+              React.createElement("td", { className: "px-2 py-1 tabular-nums" }, e.seconds + ' s'));
+          }))
+        )
+      )
+    );
+  })(),
+
+  labTab === 'challenge' && chMode === 'quiz' && React.createElement("div", {
     className: "rounded-2xl p-5 border space-y-4",
     style: Object.assign({}, glass, { background: 'rgba(3,25,40,0.85)', borderColor: 'rgba(245,158,11,0.3)' })
   },
@@ -2710,7 +4488,7 @@ return React.createElement("div", {
             className: "text-[11px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider " +
               (cq.category === 'safety' ? 'bg-red-900/30 text-red-400' : cq.category === 'technique' ? 'bg-cyan-900/30 text-cyan-400' : 'bg-indigo-900/30 text-indigo-400')
           }, cq.category),
-          React.createElement("span", { className: "text-[11px] text-slate-600" }, "Q" + (challengeIdx + 1) + " of " + challengeQuestions.length)
+          React.createElement("span", { className: "text-[11px] text-slate-400" }, "Q" + (challengeIdx + 1) + " of " + challengeQuestions.length)
         ),
         React.createElement("p", { className: "text-sm font-semibold text-white mb-3" }, cq.q),
         React.createElement("div", { className: "flex flex-col gap-2" },
@@ -2772,7 +4550,7 @@ return React.createElement("div", {
         React.createElement("span", { className: "text-[11px] font-bold px-2 py-0.5 rounded-full bg-red-900/30 text-red-400" }, "Score: " + incidentScore)
       )
     ),
-    React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" },
+    React.createElement("p", { className: "text-xs text-slate-300 leading-relaxed" },
       __alloT('stem.titration.practice_responding_to_real_lab_emerge', "Practice responding to real lab emergencies. Choose the correct response to each scenario. These drills could save your life in a real lab!")
     ),
     // Scenario selector dots
@@ -2865,6 +4643,118 @@ return React.createElement("div", {
   },
     React.createElement("h3", { className: "text-sm font-black text-emerald-400 mb-2" }, __alloT('stem.titration.lab_equipment_proper_technique', "\uD83D\uDD2C Lab Equipment & Proper Technique")),
     React.createElement("p", { className: "text-xs text-slate-200 mb-3" }, __alloT('stem.titration.master_the_correct_technique_for_each_', "Master the correct technique for each piece of equipment. Good technique = accurate results + safe lab work.")),
+
+    // \u2500\u2500 Why the tolerances differ: the glassware bench \u2500\u2500
+    // The list below teaches technique. This teaches the number that sits beside every
+    // piece of glassware in a catalogue and is otherwise pure memorisation.
+    (function () {
+      var benchSel = d.benchSel || 'burette';
+      var sel = GLASSWARE[0];
+      for (var gi = 0; gi < GLASSWARE.length; gi++) if (GLASSWARE[gi].id === benchSel) sel = GLASSWARE[gi];
+      var benchReady = BENCH_GL.status() === 'ready';
+      BENCH_GL.onStatusChange(function () { upd('benchTick', (d.benchTick || 0) + 1); });
+      var bRot = d.benchRot || { rotY: 18, rotX: 10 };
+      var bZoom = d.benchZoom || 1;
+      var setBRot = function (y, x) { upd('benchRot', { rotY: y, rotX: Math.max(-40, Math.min(70, x)) }); };
+      BENCH_GL.push({
+        sig: [benchSel, !!(ctx && ctx.isContrast)].join('|'),
+        selected: benchSel, contrast: !!(ctx && ctx.isContrast),
+        rotY: bRot.rotY, rotX: bRot.rotX, zoom: bZoom
+      });
+      var slice = mlHeightMm(sel.boreMm);
+      var beaker = mlHeightMm(70);
+      return React.createElement("div", { className: "rounded-xl p-3 border border-emerald-800/40 bg-slate-900/40 space-y-3 mb-4" },
+        React.createElement("div", { className: "text-[11px] font-bold text-emerald-300" },
+          __alloT('stem.titration.why_tolerances_differ', '\uD83D\uDCD0 WHY THE TOLERANCES DIFFER')),
+        React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" },
+          __alloT('stem.titration.bore_explains_tolerance', 'A tolerance is not an arbitrary number stamped on the glass \u2014 it follows from how wide the vessel is where you read it. The blue slice in each vessel below is one millilitre, drawn to scale against that vessel\'s real bore.')),
+        React.createElement("div", {
+          style: { position: 'relative', height: 220, borderRadius: 10, overflow: 'hidden',
+            background: '#0a1420', border: '1px solid rgba(100,116,139,0.35)' }
+        },
+          React.createElement("div", {
+            ref: benchGlRef,
+            style: { position: 'absolute', inset: 0, cursor: 'grab', touchAction: 'pan-y' },
+            role: benchReady ? "img" : undefined,
+            tabIndex: benchReady ? 0 : undefined,
+            "aria-label": !benchReady ? undefined :
+              'Six vessels side by side, each drawn at its true bore with a one millilitre slice to scale. ' +
+              GLASSWARE.map(function (g) {
+                return g.label + ', bore ' + g.boreMm + ' millimetres, one millilitre stands ' +
+                  mlHeightMm(g.boreMm).toFixed(1) + ' millimetres tall';
+              }).join('. ') + '. Arrow keys orbit, 0 resets.',
+            onPointerDown: function (ev) {
+              benchDrag.current = { x: ev.clientX, y: ev.clientY, rotY: bRot.rotY, rotX: bRot.rotX };
+              try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) {}
+            },
+            onPointerMove: function (ev) {
+              var g2 = benchDrag.current;
+              if (!g2) return;
+              setBRot(g2.rotY + (ev.clientX - g2.x) * 0.5, g2.rotX + (ev.clientY - g2.y) * 0.3);
+            },
+            onPointerUp: function () { benchDrag.current = null; },
+            onPointerCancel: function () { benchDrag.current = null; },
+            onWheel: function (ev) { ev.preventDefault(); upd('benchZoom', Math.max(0.55, Math.min(2.4, bZoom * (ev.deltaY < 0 ? 1.12 : 0.89)))); },
+            onKeyDown: function (ev) {
+              var k = ev.key;
+              if (k === 'ArrowLeft') setBRot(bRot.rotY - 8, bRot.rotX);
+              else if (k === 'ArrowRight') setBRot(bRot.rotY + 8, bRot.rotX);
+              else if (k === 'ArrowUp') setBRot(bRot.rotY, bRot.rotX - 6);
+              else if (k === 'ArrowDown') setBRot(bRot.rotY, bRot.rotX + 6);
+              else if (k === '+' || k === '=') upd('benchZoom', Math.min(2.4, bZoom * 1.15));
+              else if (k === '-' || k === '_') upd('benchZoom', Math.max(0.55, bZoom * 0.87));
+              else if (k === '0' || k === 'Home') updMulti({ benchRot: { rotY: 18, rotX: 10 }, benchZoom: 1 });
+              else return;
+              ev.preventDefault();
+            }
+          }),
+          !benchReady && React.createElement("div", {
+            style: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center',
+              justifyContent: 'center', color: '#94a3b8', fontSize: 11, textAlign: 'center', padding: 12 }
+          }, __alloT('stem.titration.bench_fallback', 'The 3D bench needs WebGL. The table below carries the same comparison.')),
+          benchReady && React.createElement("div", {
+            style: { position: 'absolute', left: 8, bottom: 6, fontSize: 10, color: '#94a3b8',
+              pointerEvents: 'none', background: 'rgba(10,20,32,0.7)', padding: '3px 8px', borderRadius: 999 },
+            "aria-hidden": true
+          }, __alloT('stem.titration.bench_hint', 'Drag or arrow keys \u2014 orbit \u00B7 heights are equalised, bores are true'))
+        ),
+        // Selector doubles as the accessible control: the 3D never has to be clicked.
+        React.createElement("div", { className: "flex gap-1.5 flex-wrap" },
+          GLASSWARE.map(function (g) {
+            var on = g.id === benchSel;
+            return React.createElement("button", {
+              key: g.id, onClick: function () { upd('benchSel', g.id); },
+              "aria-pressed": on ? 'true' : 'false',
+              className: "px-2 py-1 rounded-lg text-[10px] font-bold border transition-all " +
+                (on ? "bg-emerald-500 text-slate-900 border-emerald-300"
+                    : "bg-slate-800/60 text-slate-300 border-slate-600 hover:bg-slate-700/70")
+            }, g.label);
+          })
+        ),
+        React.createElement("table", { className: "w-full text-[11px]" },
+          React.createElement("thead", null, React.createElement("tr", { className: "text-slate-400" },
+            ['Vessel', 'Bore', '1 mL stands', 'Tolerance', 'as % of capacity'].map(function (hh) {
+              return React.createElement("th", { key: hh, scope: 'col', className: "px-2 py-1 text-left font-bold" }, hh);
+            }))),
+          React.createElement("tbody", null, GLASSWARE.map(function (g) {
+            var on = g.id === benchSel;
+            return React.createElement("tr", { key: g.id,
+              className: "border-t border-slate-700/40 " + (on ? "text-emerald-300 font-bold" : "text-slate-300") },
+              React.createElement("td", { className: "px-2 py-1" }, g.label),
+              React.createElement("td", { className: "px-2 py-1 tabular-nums" }, g.boreMm + ' mm'),
+              React.createElement("td", { className: "px-2 py-1 tabular-nums" }, mlHeightMm(g.boreMm).toFixed(1) + ' mm'),
+              React.createElement("td", { className: "px-2 py-1 tabular-nums" }, '\u00B1' + g.tolMl + ' mL'),
+              React.createElement("td", { className: "px-2 py-1 tabular-nums" }, tolPercent(g).toFixed(2) + '%'));
+          }))
+        ),
+        React.createElement("p", { className: "text-[11px] leading-relaxed", style: { color: '#a7f3d0' } },
+          __alloT('stem.titration.bench_punchline_a', 'In the ') + sel.label.toLowerCase() +
+          __alloT('stem.titration.bench_punchline_b', ', one millilitre stands ') + slice.toFixed(1) +
+          __alloT('stem.titration.bench_punchline_c', ' mm tall \u2014 about ') + (slice / beaker).toFixed(0) +
+          __alloT('stem.titration.bench_punchline_d', '\u00D7 what the same millilitre manages in a 250 mL beaker, where it is a ') +
+          beaker.toFixed(2) + __alloT('stem.titration.bench_punchline_e', ' mm film you could not see, let alone read. That is the entire reason you titrate from a burette and not out of a beaker.'))
+      );
+    })(),
     React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3" },
       labEquipment.map(function(eq) {
         var isSelected = selectedEquip === eq.id;
@@ -3045,7 +4935,10 @@ return React.createElement("div", {
 
               id: 'titr-' + Date.now(), tool: 'titrationLab', label: __alloT('stem.titration.titration_lab', 'Titration Lab'),
 
-              data: { presetId: presetId, indicator: indicatorId, volumeAdded: volumeAdded, pH: currentPH },
+              // Snapshots carry whichever quantity the run actually measures; cellPotentialV
+              // is present only for the redox preset, where pH is just the constant medium.
+              data: Object.assign({ presetId: presetId, indicator: indicatorId, volumeAdded: volumeAdded, pH: currentPH },
+                isPotentiometric ? { cellPotentialV: currentY } : null),
 
               timestamp: Date.now()
 
@@ -3072,7 +4965,7 @@ return React.createElement("div", {
           React.createElement("span", { className: "text-lg" }, "\uD83E\uDDEB"),
           React.createElement("h4", { className: "text-sm font-bold text-emerald-700" }, __alloT('stem.titration.titration_curve_finding_the_equivalenc', "Titration Curve \u2014 Finding the equivalence point"))
         ),
-        React.createElement("span", { className: "text-[10px] italic text-slate-600" }, __alloT('stem.titration.strong_acid_strong_base_ph_meter_shows', "strong acid + strong base \u00B7 pH meter shows the jump"))
+        React.createElement("span", { className: "text-[10px] italic text-slate-500" }, __alloT('stem.titration.strong_acid_strong_base_ph_meter_shows', "strong acid + strong base \u00B7 pH meter shows the jump"))
       ),
       React.createElement("div", { className: "rounded-xl overflow-hidden border border-emerald-200", style: { background: '#020210', aspectRatio: '16/6' } },
         React.createElement("canvas", {
@@ -3080,181 +4973,7 @@ return React.createElement("div", {
           role: 'img',
           tabIndex: 0,
           'aria-label': 'Animated titration curve showing the pH change and equivalence-point region as titrant is added.',
-          ref: function(cvEl) {
-            if (!cvEl) {
-              try { if (window.__alloTitrationAnimCleanup) window.__alloTitrationAnimCleanup(); } catch (e) {}
-              return;
-            }
-            if (cvEl._ttCleanup) cvEl._ttCleanup();
-            else if (cvEl._ttAnim) { cancelAnimationFrame(cvEl._ttAnim); cvEl._ttAnim = null; }
-            try { if (window.__alloTitrationAnimCleanup && window.__alloTitrationAnimCleanup !== cvEl._ttCleanup) window.__alloTitrationAnimCleanup(); } catch (e) {}
-            var c2 = cvEl.getContext('2d');
-            if (!c2) return;
-            var W = cvEl.offsetWidth || 600;
-            var H = cvEl.offsetHeight || 220;
-            cvEl.width = W * 2; cvEl.height = H * 2;
-            if (c2.setTransform) c2.setTransform(2, 0, 0, 2, 0, 0);
-            else c2.scale(2, 2);
-            var start = performance.now();
-            var alive = true;
-            var reducedMotion = false;
-            var ro = null;
-            try { reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
-            function isTitrationHidden() { return typeof document !== 'undefined' && !!document.hidden; }
-            function cancelTitrationFrame() {
-              if (cvEl._ttAnim && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(cvEl._ttAnim);
-              cvEl._ttAnim = null;
-            }
-            function scheduleTitrationFrame() {
-              if (!alive || reducedMotion || cvEl._ttAnim || isTitrationHidden()) return;
-              if (typeof requestAnimationFrame !== 'function') return;
-              cvEl._ttAnim = requestAnimationFrame(drawTt);
-            }
-            function cleanupTitrationAnim() {
-              alive = false;
-              cancelTitrationFrame();
-              if (ro) ro.disconnect();
-              if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onTitrationVisibilityChange);
-              if (window.__alloTitrationAnimCleanup === cvEl._ttCleanup) window.__alloTitrationAnimCleanup = null;
-              cvEl._ttCleanup = null;
-            }
-            function onTitrationVisibilityChange() {
-              if (!alive) return;
-              if (!cvEl.isConnected) { cleanupTitrationAnim(); return; }
-              if (isTitrationHidden()) cancelTitrationFrame();
-              else { cancelTitrationFrame(); drawTt(); }
-            }
-            function resizeTitrationCanvas() {
-              if (!alive || !cvEl.isConnected) { cleanupTitrationAnim(); return; }
-              cancelTitrationFrame();
-              W = cvEl.offsetWidth || 600; H = cvEl.offsetHeight || 220;
-              cvEl.width = W * 2; cvEl.height = H * 2;
-              if (c2.setTransform) c2.setTransform(2, 0, 0, 2, 0, 0);
-              else c2.scale(2, 2);
-              drawTt();
-            }
-            cvEl._ttCleanup = cleanupTitrationAnim;
-            try { window.__alloTitrationAnimCleanup = cvEl._ttCleanup; } catch (e) {}
-            if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onTitrationVisibilityChange);
-            function drawTt() {
-              if (!alive) return;
-              cvEl._ttAnim = null;
-              if (!cvEl.isConnected) { cleanupTitrationAnim(); return; }
-              if (isTitrationHidden()) { cancelTitrationFrame(); return; }
-              var t = reducedMotion ? 5 : (performance.now() - start) / 1000;
-              var cyc = (t * 0.10) % 1; // 0 = no base added, 1 = excess base
-              // pH at this point: classic S-curve
-              var pH;
-              if (cyc < 0.45) pH = 2 + cyc * 4;
-              else if (cyc < 0.55) pH = 4 + (cyc - 0.45) * 80;
-              else pH = 12 - (1 - cyc) * 3;
-              c2.fillStyle = '#020210';
-              c2.fillRect(0, 0, W, H);
-              // LEFT: beaker + burette
-              var lftW = W * 0.35;
-              var burX = lftW * 0.5;
-              var burY = 20;
-              var burH = 80;
-              // Burette
-              c2.fillStyle = '#7dd3fc';
-              c2.fillRect(burX - 6, burY, 12, burH * (1 - cyc));
-              c2.strokeStyle = '#cbd5e1'; c2.lineWidth = 1.5;
-              c2.strokeRect(burX - 6, burY, 12, burH);
-              c2.font = '8px monospace'; c2.fillStyle = '#7dd3fc'; c2.textAlign = 'left';
-              c2.fillText('NaOH', burX + 10, burY + 12);
-              // Drip — glowing NaOH beads
-              c2.save();
-              c2.shadowColor = 'rgba(125,211,252,0.9)'; c2.shadowBlur = 6;
-              for (var dr = 0; dr < 3; dr++) {
-                var drY = burY + burH + 10 + ((t * 50 + dr * 18) % 40);
-                c2.fillStyle = '#7dd3fc';
-                c2.beginPath();
-                c2.arc(burX, drY, 2, 0, Math.PI * 2);
-                c2.fill();
-              }
-              c2.restore();
-              // Beaker
-              var bkY = H * 0.55;
-              var bkW = 70;
-              c2.strokeStyle = '#cbd5e1'; c2.lineWidth = 2;
-              c2.beginPath();
-              c2.moveTo(burX - bkW / 2, bkY);
-              c2.lineTo(burX - bkW / 2, bkY + 60);
-              c2.lineTo(burX + bkW / 2, bkY + 60);
-              c2.lineTo(burX + bkW / 2, bkY);
-              c2.stroke();
-              // Solution color shifts with pH (red\u2192clear\u2192pink for phenolphthalein)
-              var solColor;
-              if (pH < 8.3) solColor = 'rgba(252, 165, 165, 0.6)'; // colorless/pale
-              else solColor = 'rgba(217, 70, 239, 0.7)'; // pink past 8.3
-              c2.fillStyle = solColor;
-              c2.fillRect(burX - bkW / 2 + 2, bkY + 5, bkW - 4, 55);
-              // Liquid-surface sheen (depth highlight, not a color/pH change)
-              var solSheen = c2.createLinearGradient(0, bkY + 5, 0, bkY + 30);
-              solSheen.addColorStop(0, 'rgba(255,255,255,0.20)');
-              solSheen.addColorStop(1, 'rgba(255,255,255,0)');
-              c2.fillStyle = solSheen;
-              c2.fillRect(burX - bkW / 2 + 2, bkY + 5, bkW - 4, 25);
-              c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#cbd5e1'; c2.textAlign = 'center';
-              c2.fillText('HCl + indicator', burX, bkY + 75);
-              // RIGHT: pH vs volume plot
-              var plotX = lftW + 30, plotY = 20;
-              var plotW = W - plotX - 20, plotH = H - 60;
-              c2.fillStyle = 'rgba(255,255,255,0.04)';
-              c2.fillRect(plotX, plotY, plotW, plotH);
-              c2.strokeStyle = '#475569'; c2.lineWidth = 1; c2.strokeRect(plotX, plotY, plotW, plotH);
-              c2.font = '8px monospace'; c2.fillStyle = '#94a3b8'; c2.textAlign = 'right';
-              c2.fillText('14', plotX - 4, plotY + 8);
-              c2.fillText('7', plotX - 4, plotY + plotH / 2);
-              c2.fillText('0', plotX - 4, plotY + plotH);
-              // Equivalence line
-              c2.strokeStyle = 'rgba(251, 191, 36, 0.4)'; c2.setLineDash([3, 3]);
-              c2.beginPath();
-              c2.moveTo(plotX + plotW * 0.50, plotY); c2.lineTo(plotX + plotW * 0.50, plotY + plotH);
-              c2.stroke();
-              c2.setLineDash([]);
-              c2.font = '7px monospace'; c2.fillStyle = '#fbbf24'; c2.textAlign = 'center';
-              c2.fillText('Equivalence', plotX + plotW * 0.50, plotY + plotH - 4);
-              // Plot curve up to current cyc — neon glow on the key data trace
-              c2.save();
-              c2.shadowColor = 'rgba(16,185,129,0.85)'; c2.shadowBlur = 8;
-              c2.strokeStyle = '#10b981'; c2.lineWidth = 2;
-              c2.beginPath();
-              for (var px = 0; px <= cyc * plotW; px++) {
-                var prog = px / plotW;
-                var pHere;
-                if (prog < 0.45) pHere = 2 + prog * 4;
-                else if (prog < 0.55) pHere = 4 + (prog - 0.45) * 80;
-                else pHere = 12 - (1 - prog) * 3;
-                var py = plotY + (1 - pHere / 14) * plotH;
-                if (px === 0) c2.moveTo(plotX + px, py);
-                else c2.lineTo(plotX + px, py);
-              }
-              c2.stroke();
-              c2.restore();
-              // Current marker — glowing pulse so the eye tracks the titration point
-              var cpX = plotX + cyc * plotW;
-              var cpY = plotY + (1 - pH / 14) * plotH;
-              var cpPulse = 5 + Math.sin(t * 4) * 1.2;
-              c2.save();
-              c2.shadowColor = 'rgba(253,224,71,0.95)'; c2.shadowBlur = 12;
-              c2.fillStyle = '#fde047';
-              c2.beginPath();
-              c2.arc(cpX, cpY, cpPulse, 0, Math.PI * 2);
-              c2.fill();
-              c2.restore();
-              c2.fillStyle = 'rgba(0,0,0,0.85)';
-              c2.fillRect(8, H - 18, W - 16, 16);
-              c2.font = 'bold 9px sans-serif'; c2.fillStyle = '#fde047'; c2.textAlign = 'center';
-              c2.fillText('pH = ' + pH.toFixed(1) + '  \u00B7  At equivalence point: moles acid = moles base, pH jumps from 4 \u2192 10', W / 2, H - 7);
-              scheduleTitrationFrame();
-            }
-            drawTt();
-            if (typeof ResizeObserver === 'function') {
-              ro = new ResizeObserver(resizeTitrationCanvas);
-              ro.observe(cvEl);
-            }
-          },
+          ref: titrAnimCanvasRef,
           style: { width: '100%', height: '100%', display: 'block' }
         })
       )
@@ -3270,21 +4989,24 @@ return React.createElement("div", {
     function setBF(patch) { if (typeof upd === 'function') upd('buffers', Object.assign({}, bf, patch)); }
     // Henderson-Hasselbalch: pH = pKa + log([A-]/[HA]) — buffer best near pKa with 0.1<ratio<10
     var pKa = -Math.log10(bf.ka);
-    var pHcurrent = pKa + Math.log10(bf.ratio);
-    // Add 20% more acid: HA increases by 20% of total, A- decreases by same. Recalc.
     var totalConc = 1.0;
-    var ha = totalConc / (1 + bf.ratio);
-    var aMinus = totalConc - ha;
     var deltaAcid = 0.2 * totalConc;
-    var newHA = ha + deltaAcid;
-    var newAMinus = Math.max(0.001, aMinus - deltaAcid);
-    var pHafter = pKa + Math.log10(newAMinus / newHA);
+    // Shared with the tests; see bufferAfterStrongAcid for why H-H alone was not enough.
+    var bfRes = bufferAfterStrongAcid(bf.ka, bf.ratio, totalConc, deltaAcid);
+    var pHcurrent = bfRes.pHBefore;
+    var pHafter = bfRes.pHAfter;
     var pHshift = Math.abs(pHafter - pHcurrent);
     // Discrete outcome: good buffer (<1.0 unit shift), poor buffer (>=1.0 unit shift)
     var isGood = pHshift < 1.0;
     var outcomeMeta = isGood
       ? { label: __alloT('stem.titration.good_buffer', '🛡️ GOOD BUFFER'), desc: 'pH shifted only ' + pHshift.toFixed(2) + ' units after 20% more acid. Buffer is holding.', color: '#059669', bg: '#ecfdf5', border: '#86efac' }
-      : { label: __alloT('stem.titration.poor_buffer', '💥 POOR BUFFER'), desc: 'pH shifted ' + pHshift.toFixed(2) + ' units — buffer overwhelmed. Use different conditions.', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' };
+      : { label: __alloT('stem.titration.poor_buffer', '💥 POOR BUFFER'),
+          // Naming exhaustion matters: "overwhelmed" and "ran out of A⁻ entirely" are
+          // different failures, and only the second one leaves free strong acid behind.
+          desc: 'pH shifted ' + pHshift.toFixed(2) + ' units — ' + (bfRes.exhausted
+            ? 'the A⁻ ran out completely, so the leftover strong acid now sets the pH. There is no buffer left.'
+            : 'buffer overwhelmed. Use different conditions.'),
+          color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5' };
     function logObs() {
       var obs = { pKa: parseFloat(pKa.toFixed(2)), ratio: parseFloat(bf.ratio.toFixed(2)), pH: parseFloat(pHcurrent.toFixed(2)), shift: parseFloat(pHshift.toFixed(2)), good: isGood };
       setBF({ log: (bf.log || []).concat([obs]).slice(-8) });
@@ -3292,7 +5014,7 @@ return React.createElement("div", {
     return React.createElement('div', { className: 'rounded-2xl p-5 border space-y-4', style: Object.assign({}, glass, { background: 'rgba(3,30,40,0.85)', borderColor: 'rgba(8,145,178,0.3)' }) },
       React.createElement('h3', { className: 'text-sm font-black text-cyan-400 mb-1' }, __alloT('stem.titration.buffer_strength_discovery', '🛡️ Buffer strength discovery')),
       React.createElement('p', { className: 'text-[12px] text-slate-300 mb-3 leading-relaxed' },
-        __alloT('stem.titration.three_sliders_weak_acid_strength_ka_bu', 'Three sliders: weak acid strength (Ka), buffer ratio [A⁻]/[HA], and starting pH. The simulation tells you whether the buffer HOLDS or FAILS after adding 20% more acid (discrete outcome — no numeric "buffer score"). Sweep the sliders. Log observations. Type what you discover about what makes a good buffer.')),
+        __alloT('stem.titration.three_sliders_weak_acid_strength_ka_bu', 'Two sliders you control — weak acid strength (Ka) and buffer ratio [A⁻]/[HA]; the starting pH below them is a readout, not a control. The simulation tells you whether the buffer HOLDS or FAILS after adding 20% more acid (discrete outcome — no numeric "buffer score"). Sweep the sliders. Log observations. Type what you discover about what makes a good buffer.')),
       React.createElement('div', { className: 'mb-3 p-3 rounded-lg text-center', style: { background: outcomeMeta.bg, border: '2px solid ' + outcomeMeta.border } },
         React.createElement('div', { className: 'text-base font-black mb-1', style: { color: outcomeMeta.color } }, outcomeMeta.label),
         React.createElement('div', { className: 'text-[11px] text-slate-700' }, outcomeMeta.desc)
@@ -3360,7 +5082,13 @@ return React.createElement("div", {
           React.createElement('input', { type: 'checkbox', id: 'bf-und', checked: !!bf.understood, onChange: function(e) { setBF({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
           React.createElement('label', { htmlFor: 'bf-und', className: 'text-[12px] font-bold text-emerald-300 cursor-pointer' },
             __alloT('stem.titration.i_think_i_understand_the_trade_offs_le', 'I think I understand the trade-offs — let me explain them in my own words'))),
-        bf.understood && React.createElement('textarea', { value: bf.explanation || '',
+        // A placeholder is not an accessible name: it vanishes the moment the student
+        // starts typing, so anyone relying on the accessible name loses the prompt
+        // exactly when they need it. The visible label is bound with htmlFor.
+        bf.understood && React.createElement('label', {
+          htmlFor: 'bf-explain', className: 'block text-[11px] font-bold text-emerald-300 mb-1'
+        }, __alloT('stem.titration.explain_label', 'Your explanation')),
+        bf.understood && React.createElement('textarea', { id: 'bf-explain', value: bf.explanation || '',
           onChange: function(e) { setBF({ explanation: e.target.value }); },
           placeholder: __alloT('stem.titration.explain_in_your_own_words_what_is_the_', 'Explain in your own words: what is the relationship between pKa, ratio, and starting pH? What single condition (or combination) makes a buffer hold against more acid? Why does ratio range matter?'),
           className: 'w-full text-[12px] border border-emerald-700 rounded p-2 font-mono leading-snug bg-slate-900 text-slate-200', rows: 4 }),

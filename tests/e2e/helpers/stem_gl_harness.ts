@@ -32,6 +32,7 @@
  */
 import { createServer, Server } from 'node:http';
 import { readFile } from 'node:fs/promises';
+import { readdirSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import type { Page } from '@playwright/test';
 
@@ -40,6 +41,8 @@ const MIME: Record<string, string> = {
   '.js': 'text/javascript; charset=utf-8',
   '.html': 'text/html; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
+  // Without this the stylesheet is served as octet-stream and Chromium refuses it.
+  '.css': 'text/css; charset=utf-8',
   '.wasm': 'application/wasm',
 };
 
@@ -64,15 +67,49 @@ export interface HarnessOptions {
    * replacing wholesale.
    */
   preScripts?: string[];
+  /**
+   * Serve the app's real compiled stylesheet (Tailwind + app CSS) into the harness.
+   *
+   * Off by default, because it changes what every existing spec renders: without it a
+   * tool is laid out by its inline styles alone, which is what the screenshots in
+   * specs 18-24 were baselined against.
+   *
+   * Turn it ON when the thing under test depends on CSS — responsive grids that only
+   * split at a breakpoint, or anything colour-contrast related. axe's colour-contrast
+   * rule is meaningless without it: unstyled text on the harness background is not
+   * what a student sees, so a pass would be worthless and a fail misleading.
+   *
+   * The bundle is resolved by glob rather than by its content hash, so a rebuild that
+   * renames main.<hash>.css does not silently drop the styling. If no bundle exists in
+   * the tree, start() throws rather than quietly serving an unstyled page.
+   */
+  appStyles?: boolean;
   /** Injected verbatim into the page after mount helpers — define your own probes. */
   probes?: string;
 }
 
-function harnessHtml(o: HarnessOptions): string {
+/**
+ * Locate the app's compiled stylesheet. Globbed, not hash-pinned: the filename carries
+ * a content hash that changes on every rebuild.
+ */
+export function findAppStylesheet(): string | null {
+  for (const dir of ['app/static/css', 'desktop/web-app/public/app/static/css']) {
+    let names: string[] = [];
+    try { names = readdirSync(join(ROOT, dir)); } catch { continue; }
+    const hit = names.filter((n) => /^main\..*\.css$/.test(n)).sort()[0];
+    if (hit) return dir + '/' + hit;
+  }
+  return null;
+}
+
+function harnessHtml(o: HarnessOptions, appCss: string | null): string {
   const extra = (o.extraScripts || []).map((s) => '<script src="/' + s + '"></script>').join('\n');
   const pre = (o.preScripts || []).map((s) => '<script src="/' + s + '"></script>').join('\n');
+  // Before the inline block below, so the harness's own sizing still wins.
+  const styles = appCss ? `<link rel="stylesheet" href="/${appCss}">` : '';
   return `<!doctype html>
-<html><head><meta charset="utf-8"><title>${o.toolId} harness</title>
+<html lang="en"><head><meta charset="utf-8"><title>${o.toolId} harness</title>
+${styles}
 <style>html,body{margin:0;height:100%;background:#0f172a}
 #wrap{width:${o.width || 900}px;height:${o.height || 600}px;position:relative;display:flex}</style></head>
 <body><div id="wrap"></div>
@@ -223,7 +260,18 @@ export class GlHarness {
 
   /** Call in test.beforeAll. */
   async start(): Promise<void> {
-    const html = harnessHtml(this.opts);
+    // Resolved once per run. Asking for app styles and silently not getting them
+    // would make a colour-contrast pass meaningless, so an absent bundle is an error.
+    let appCss: string | null = null;
+    if (this.opts.appStyles) {
+      appCss = findAppStylesheet();
+      if (!appCss) {
+        throw new Error(
+          'appStyles was requested but no app/static/css/main.*.css exists in the tree. '
+          + 'Build the web app first, or drop appStyles for this spec.');
+      }
+    }
+    const html = harnessHtml(this.opts, appCss);
     this.server = createServer(async (req, res) => {
       const url = (req.url || '/').split('?')[0];
       if (url === '/__harness') {

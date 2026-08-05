@@ -70,6 +70,70 @@ describe('titrationLab — live sim is exposed to screen readers', () => {
   });
 });
 
+// The redox preset is followed with a Pt electrode on a potentiometer, not a pH meter, so
+// its curve is CELL POTENTIAL in volts. Every value below is a hand-checkable landmark of
+// the Nernst treatment of 5 Fe²⁺ + MnO₄⁻ + 8H⁺ → 5 Fe³⁺ + Mn²⁺ + 4H₂O at [H⁺] = 1 M:
+//   E°(Fe³⁺|Fe²⁺) = 0.771 V (n=1)   E°(MnO₄⁻|Mn²⁺) = 1.507 V (n=5)   S = 0.05916 V
+// If a future edit changes the electrochemistry, these fail loudly.
+describe('titrationLab — redox preset plots cell potential, not pH', () => {
+  const E_CASES = [
+    // No Fe³⁺ exists at V=0, so the curve starts from the trace air oxidation always
+    // leaves (1 part in 10⁴): 0.771 + 0.05916·log10(1e-4) = 0.534 V.
+    { name: 'start of the run (trace Fe3+ from air oxidation)', vol: 0, E: '0.534' },
+    // f = 0.2 → 0.771 + 0.05916·log10(0.2/0.8) = 0.735 V.
+    { name: '1 mL in, iron couple in control', vol: 1, E: '0.735' },
+    // Half-equivalence: [Fe³⁺] = [Fe²⁺], the log term vanishes, E = E° exactly.
+    // This is the redox twin of pH = pKa at half-equivalence.
+    { name: 'half-equivalence reads E = E°(Fe) exactly', vol: 2.5, E: '0.771' },
+    // Equivalence: add both Nernst equations weighted by n; concentrations cancel.
+    // (1·0.771 + 5·1.507)/6 = 1.384 V — the textbook value for this titration.
+    { name: 'equivalence at 5 mL = (n1E1 + n2E2)/(n1+n2)', vol: 5, E: '1.384' },
+    // 100% excess: [MnO₄⁻] = [Mn²⁺], the log term vanishes again, E = E°(Mn).
+    { name: 'double the equivalence volume reads E = E°(MnO4-)', vol: 10, E: '1.507' },
+  ];
+  for (const c of E_CASES) {
+    it(c.name + ' -> ' + c.E + ' V', () => {
+      const html = renderLab({ presetId: 'redox_kmno4', volumeAdded: c.vol });
+      expect(new RegExp('>' + c.E.replace('.', '\\.') + ' V<').test(html)).toBe(true);
+    });
+  }
+
+  it('labels the y-axis in volts and drops the pH 7 reference line', () => {
+    const html = renderLab({ presetId: 'redox_kmno4', volumeAdded: 5 });
+    expect(html).toContain('Cell potential (V)');
+    expect(html).toContain('CELL POTENTIAL');
+    expect(html).toContain('Eₑ 1.384 V');       // equivalence marker, in volts
+    expect(html).not.toContain('pH 7');          // neutral-pH gridline is meaningless here
+    expect(html).not.toContain('Reaction index'); // the old fabricated readout
+  });
+
+  it('marks half-equivalence as E = E°(Fe), the redox twin of pH = pKa', () => {
+    const html = renderLab({ presetId: 'redox_kmno4', volumeAdded: 2.5 });
+    expect(html).toContain('E=E°(Fe) (0.771 V)');
+  });
+
+  it('announces volts, not pH, to screen readers', () => {
+    const html = renderLab({ presetId: 'redox_kmno4', volumeAdded: 5 });
+    expect(/aria-valuetext="5\.0 milliliters, 1\.384 volts/.test(html)).toBe(true);
+    expect(/aria-label="Titration curve[^"]*at 1\.384 volts/.test(html)).toBe(true);
+  });
+
+  it('reads the endpoint by permanganate colour, not an indicator band', () => {
+    // MnO4- self-indicates: purple -> colourless until a trace is left over.
+    expect(renderLab({ presetId: 'redox_kmno4', volumeAdded: 4 })).toContain('Before endpoint');
+    expect(renderLab({ presetId: 'redox_kmno4', volumeAdded: 5 })).toContain('At endpoint');
+    expect(renderLab({ presetId: 'redox_kmno4', volumeAdded: 8 })).toContain('Past endpoint');
+  });
+
+  it('leaves the acid-base presets on the pH axis', () => {
+    const html = renderLab({ presetId: 'sa_sb', volumeAdded: 25 });
+    expect(html).toContain('pH 7');
+    expect(html).toContain('CURRENT pH');
+    expect(html).not.toContain('Cell potential (V)');
+    expect(/aria-valuetext="25\.0 milliliters, pH 7\.00/.test(html)).toBe(true);
+  });
+});
+
 describe('titrationLab — LOW scientific-accuracy fixes', () => {
   it('weak-acid curve rises monotonically from the start (no H-H dip)', () => {
     // After the first trace of base the pH must be >= the initial 2.87, not dip
