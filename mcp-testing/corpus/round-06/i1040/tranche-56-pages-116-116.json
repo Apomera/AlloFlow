@@ -1,0 +1,400 @@
+{
+ "schema_version": "1.0",
+ "document": {
+  "title": "2025 Instructions for Form 1040 (and 1040-SR)",
+  "language": "en",
+  "source_page_count": 126,
+  "source_sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a",
+  "document_type": "booklet",
+  "subject": "Internal Revenue Service instructions for the 2025 Form 1040 and Form 1040-SR, including the instructions for Schedules 1 through 3.",
+  "variant": "original"
+ },
+ "blocks": [
+  {
+   "type": "list",
+   "ordered": true,
+   "items": [
+    "The amount on Form 1040, 1040-SR, or 1040-NR, line 11b, is more than $39,500 ($59,250 if head of household; $79,000 if married filing jointly).",
+    "The person(s) who made the qualified contribution or elective deferral (a) was born after January 1, 2008, (b) is claimed as a dependent on someone else’s 2025 tax return, or (c) was a student (defined next)."
+   ],
+   "source_page": 116
+  },
+  {
+   "type": "paragraph",
+   "text": "You were a student if during any part of 5 calendar months of 2025, you:",
+   "source_page": 116
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Were enrolled as a full-time student at a school; or",
+    "Took a full-time, on-farm training course given by a school or a state, county, or local government agency."
+   ],
+   "source_page": 116
+  },
+  {
+   "type": "paragraph",
+   "text": "A school includes a technical, trade, or mechanical school. It doesn’t include an on-the-job training course, correspondence school, or school offering courses only through the Internet.",
+   "source_page": 116
+  },
+  {
+   "type": "paragraph",
+   "text": "For more details, use Tax Topic 610 or see Form 8880.",
+   "source_page": 116,
+   "runs": [
+    {
+     "text": "For more details, use ",
+     "style": "normal"
+    },
+    {
+     "text": "Tax Topic 610",
+     "style": "emphasis",
+     "href": "https://www.irs.gov/taxtopics/tc610.html"
+    },
+    {
+     "text": " or see Form 8880.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 5. Residential Energy Credits",
+   "source_page": 116
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 5a—residential clean energy credit",
+   "source_page": 116
+  },
+  {
+   "type": "paragraph",
+   "text": "If you made energy saving improvements to one or more homes that you used as a residence during 2025, you may be able to take the residential clean energy credit. For more information, see Form 5695 and its instructions.",
+   "source_page": 116
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 5b—energy efficient home improvement credit",
+   "source_page": 116
+  },
+  {
+   "type": "paragraph",
+   "text": "If you made qualified energy efficiency improvements to your main home located in the United States in 2025, you may be able to take the energy efficient home improvement credit. For more information, see Form 5695 and its instructions.",
+   "source_page": 116
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Condos and co-ops",
+   "source_page": 116
+  },
+  {
+   "type": "paragraph",
+   "text": "If you are a member of a condominium management association for a condominium you own or a tenant-stockholder in a cooperative housing corporation, you are treated as having paid your proportionate share of any costs of such association or corporation for purposes of these credits.",
+   "source_page": 116
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "More details",
+   "source_page": 116
+  },
+  {
+   "type": "paragraph",
+   "text": "For details, see Form 5695.",
+   "source_page": 116
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Lines 6a Through 6z. Other Nonrefundable Credits",
+   "source_page": 116
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 6a",
+   "source_page": 116
+  },
+  {
+   "type": "paragraph",
+   "text": "The general business credit consists of a number of credits that usually apply only to individuals who are partners, shareholders in an S corporation, self-employed, or who have rental property. See Form 3800 or Pub. 334.",
+   "source_page": 116
+  },
+  {
+   "type": "paragraph",
+   "text": "Caution. The net elective payment election amount from Form 3800, Part III, line 6, column (j), is reported on Schedule 3, line 13c.",
+   "runs": [
+    {
+     "text": "Caution.",
+     "style": "strong"
+    },
+    {
+     "text": " The net elective payment election amount from Form 3800, Part III, line 6, column (j), is reported on Schedule 3, line 13c.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 116
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 6b",
+   "source_page": 116
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter any credit for prior-year minimum tax. See Form 8801.",
+   "source_page": 116
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 6c",
+   "source_page": 116
+  },
+  {
+   "type": "paragraph",
+   "text": "You may be able to take the adoption credit if you paid expenses to adopt a child or you adopted a child with special needs and the adoption became final in 2025. See the Instructions for Form 8839.",
+   "source_page": 116
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 6d",
+   "source_page": 116
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter any credit for the elderly or the disabled. See Schedule R.",
+   "source_page": 116
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 6e",
+   "source_page": 116
+  },
+  {
+   "type": "paragraph",
+   "text": "Line 6e has been reserved for future use.",
+   "source_page": 116
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 6f",
+   "source_page": 116
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter the personal use part of any credit for new clean vehicles. See Form 8936, Part III.",
+   "source_page": 116
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 6g",
+   "source_page": 116
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter any mortgage interest credit if a state or local government gave you a mortgage credit certificate. See Form 8396.",
+   "source_page": 116
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 6h",
+   "source_page": 116
+  },
+  {
+   "type": "paragraph",
+   "text": "You can’t claim the District of Columbia first-time homebuyer credit for a home you bought after 2011. You can claim it only if you have a credit carryforward from 2024. See Form 8859.",
+   "source_page": 116
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 6i",
+   "source_page": 116
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter any qualified electric vehicle credit. You can’t claim this credit for a vehicle placed in service after 2006. You can claim this credit only if you have an electric vehicle passive activity credit carried forward from a prior year. See Form 8834.",
+   "source_page": 116
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 6j",
+   "source_page": 116
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter any alternative fuel vehicle refueling property credit. See Form 8911.",
+   "source_page": 116
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 6k",
+   "source_page": 116
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter any credit to holders of tax credit bonds. See Form 8912.",
+   "source_page": 116
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 6l",
+   "source_page": 116
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter the amount from Form 8978, line 14 (relating to partner’s audit liability under section 6226). If the amount on Form 8978, line 14, is negative, complete the following worksheet to figure the amount to enter on line 6l. If the amount on Form 8978, line 14, is positive, see the instructions for Form 1040 or 1040-SR, line 16.",
+   "source_page": 116
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Negative Form 8978 Adjustment Worksheet—Schedule 3 (Line 6l)",
+   "source_page": 116
+  },
+  {
+   "type": "paragraph",
+   "text": "Note. Complete this worksheet if Form 8978, line 14, is negative.",
+   "source_page": 116,
+   "runs": [
+    {
+     "text": "Note.",
+     "style": "strong"
+    },
+    {
+     "text": " Complete this worksheet if Form 8978, line 14, is negative.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "table",
+   "caption": "Negative Form 8978 Adjustment Worksheet—Schedule 3 (Line 6l). The Amount column holds the entry spaces you fill in; they are blank in the printed form, and line 3's entry space is printed in parentheses because the amount is negative. Line 3 is a Yes/No branch.",
+   "columns": [
+    "Line",
+    "Instruction",
+    "Amount"
+   ],
+   "rows": [
+    [
+     "1.",
+     "Enter the amount from Form 1040 or 1040-SR, line 18",
+     ""
+    ],
+    [
+     "2.",
+     "Enter as a positive number the negative amount from Form 8978, line 14",
+     ""
+    ],
+    [
+     "3.",
+     "Is the amount on line 1 equal to or more than the amount on line 2? Yes. Enter the amount from line 2 on line 6l No. Enter the amount from line 1 on line 6l, and subtract line 2 from line 1*",
+     ""
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 116,
+   "cell_runs": [
+    [
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     [
+      {
+       "text": "Is the amount on line 1 equal to or more than the amount on line 2? ",
+       "style": "normal"
+      },
+      {
+       "text": "Yes.",
+       "style": "strong"
+      },
+      {
+       "text": " Enter the amount from line 2 on line 6l ",
+       "style": "normal"
+      },
+      {
+       "text": "No.",
+       "style": "strong"
+      },
+      {
+       "text": " Enter the amount from line 1 on line 6l, and subtract line 2 from line 1*",
+       "style": "normal"
+      }
+     ],
+     null
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "* Use this amount to complete the Negative Form 8978 Adjustment Worksheet in the Schedule 2, line 17z, instructions.",
+   "source_page": 116
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 6m",
+   "source_page": 116
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter any credit for previously owned clean vehicles. See Form 8936, Part IV.",
+   "source_page": 116
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 6z",
+   "source_page": 116
+  },
+  {
+   "type": "paragraph",
+   "text": "Leave line 6z blank.",
+   "source_page": 116
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Line 9. Net Premium Tax Credit",
+   "source_page": 116
+  },
+  {
+   "type": "paragraph",
+   "text": "The premium tax credit helps pay for health insurance purchased through the Marketplace. You may be eligible to claim the premium tax credit if you, your spouse, or a dependent enrolled in health insurance through the Marketplace.",
+   "source_page": 116
+  }
+ ],
+ "review_notes": [
+  "TRANCHE 56 OF A MULTI-SESSION REBUILD. This plan covers printed page 116: the Saver's Credit exclusions, Schedule 3 line 5, lines 6a through 6z with the Negative Form 8978 Adjustment Worksheet, and the opening of line 9. It carries no document title by design — only tranche 1 does — so this file validates through merge-plans rather than standalone. No partial rebuild is delivered.",
+  "THIS TRANCHE OPENS WITH THE LIST TRANCHE 55 INTRODUCED. Page 115's line 4 paragraph ends “…if either of the following applies.” and the two numbered items are printed wholly here. ONE BLOCK IS CARRIED OUT: line 9's paragraph begins in this page's last column and finishes at the top of page 117, so it is authored whole here and **tranche 57 must open at “Eligible individuals may have advance payments…”**.",
+  "THE READING ORDER WAS REBUILT FROM GEOMETRY. The column-aware text places the full-width worksheet BETWEEN column 2 and column 3 — “Line 6f.” is followed by the worksheet and then “Line 6g.” — because the worksheet band spans all three column x-ranges and the splitter emitted it with the left region. The true order is column 1, column 2, column 3, then the worksheet. Checked because the page reports 4 columns, which on page 114 meant a genuine worksheet band and on page 108 meant the detector had failed; here it is a third thing again, a band emitted in the wrong place.",
+  "THE WORKSHEET IS PLACED DIRECTLY AFTER LINE 6l, not at the foot of the page where it is printed. Line 6l says “complete the FOLLOWING worksheet”, so this is the source's own stated reading order rather than a rebuild preference; print order would put it after line 9 and nest it under that heading. Same test as tranches 45 and 54.",
+  "THE TWO NEGATIVE FORM 8978 WORKSHEETS ARE ALREADY DISTINGUISHABLE and neither is renamed. Tranche 54 authored “…Worksheet—Schedule 2 (Line 17z)” and this one is “…Worksheet—Schedule 3 (Line 6l)”; each one's footnote points at the other by its full name, so the source's own suffixes do the disambiguating.",
+  "WORKSHEET LINE 3 CARRIES ITS YES/NO BRANCH IN ONE CELL WITH cell_runs. The source prints NO period after the Yes branch, so folding the labels as plain text would read “…on line 6l No. Enter…” as a run-on. Rather than invent punctuation, the cell keeps the source's own bold on “Yes.” and “No.” through cell_runs, which the schema supports. The generator gained a table() helper that expands inline markup per cell.",
+  "ELEVEN “Line 6x.” RUN-INS ARE BARE LINE NUMBERS at level 5, under “Lines 6a Through 6z. Other Nonrefundable Credits” which merges its own number-and-title pair as tranches 51 and 53 did. The four line 5 run-ins keep the source's em dash (“Line 5a—residential clean energy credit”) because it is part of the printed name, not a separator this rebuild added. “Tax Topic 610” is an ITALIC LINK, authored with the [[«text»|url]] form introduced in tranche 55, and its target (taxtopics/tc610.html) was read from the annotation rect.",
+  "PAGE FURNITURE OMITTED: the printed page number, which the failing band placement had dropped into the middle of the worksheet. All five contractions are curly. Soft hyphens removed and line-break hyphens closed, while genuine compounds are kept (1040-SR, 1040-NR, tenant-stockholder, co-ops, on-farm, on-the-job, full-time, first-time, prior-year, self-employed)."
+ ]
+}

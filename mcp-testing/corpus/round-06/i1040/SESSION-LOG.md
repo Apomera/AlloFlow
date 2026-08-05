@@ -2169,17 +2169,55 @@ paragraph made across the 88-89 break in tranche 28. Requirement 5's "a." and
 them at the SAME indent as the numbered items, so it does not step them in
 either.
 
-### NEXT: page 116 onward
+### Session 56 (2026-08-05) - page 116 - tranche-56 - 50 blocks - VALIDATED (merged)
 
-**Tranche 56 must OPEN with the numbered list** ("1. The amount on Form 1040,
-1040-SR, or 1040-NR, line 11b, is more than $39,500...") and keep it attached
-to the Line 4 heading from tranche 55. Page 116 reads as **4 columns**, so
-check its geometry first - on page 114 that meant a genuine full-width
-worksheet band, on page 108 it meant the detector had failed.
+The Saver's Credit exclusions, Schedule 3 line 5, lines 6a through 6z with the
+Negative Form 8978 Adjustment Worksheet, and the opening of line 9.
+`merge-plans t01..t56` -> 1,943 blocks, `ok: true`, **pages 1-116 covered**,
+zero heading skips. **Recall 0.9938 against pdf.js with zero content missing**
+- the four missing digits are the two generated list markers plus the
+worksheet's duplicated entry-space labels, and the fifth token is the folio.
 
-Schedule 3's line 6l instructions carry the OTHER Negative Form 8978
-Adjustment Worksheet, which tranche 54's worksheet and bullet both name; keep
-the two distinguishable.
+> **THE VALIDATOR CAUGHT A REAL DEFECT ON THE FIRST ATTEMPT.** `merge-plans`
+> returned `ok: false` with "cell_runs[N][2] must be a non-empty array of
+> runs". Cause: a Python precedence slip - `runs or [...] if plain else []`
+> parses as `runs or ([...] if plain else [])`, so every EMPTY cell produced
+> `[]`. The contract wants **null** per cell for "no runs", and an empty cell
+> could not carry runs regardless, since a run's text has `minLength: 1`.
+> Worth recording that the gate found this rather than a reader: the recall
+> check was already 0.9938 and would never have noticed, because cell_runs
+> carry no text of their own.
+
+**A third distinct meaning for a 4-column report.** On page 114 it was a
+genuine full-width worksheet band read correctly; on page 108 it was the
+detector failing outright; here it is a third thing - the band is found but
+**emitted in the wrong place**, between column 2 and column 3, so the text
+runs "Line 6f." then the whole worksheet then "Line 6g.". The true order is
+column 1, column 2, column 3, then the worksheet, and it was rebuilt from
+geometry. **A 4-column report on a 3-column page now has three known causes
+and always needs the geometry checked.**
+
+**The worksheet is placed directly after line 6l**, not at the foot of the
+page where it is printed, because line 6l says "complete the FOLLOWING
+worksheet" - the source's own stated reading order, not a rebuild preference.
+Same test as tranches 45 and 54.
+
+**Worksheet line 3 carries its Yes/No branch in one cell using cell_runs.**
+The source prints NO period after the Yes branch, so folding the labels as
+plain text would read "...on line 6l No. Enter..." as a run-on. Rather than
+invent punctuation, the cell keeps the source's own bold on "Yes." and "No.".
+The generator gained a `table()` helper that expands inline markup per cell.
+
+**The two Negative Form 8978 worksheets need no disambiguation**: tranche 54's
+is "...—Schedule 2 (Line 17z)" and this one "...—Schedule 3 (Line 6l)", and
+each one's footnote names the other in full. The source's own suffixes do the
+work.
+
+### NEXT: page 117 onward
+
+**Tranche 57 must open at "Eligible individuals may have advance payments..."**
+- line 9's paragraph begins in page 116's last column and finishes at the top
+of 117. Page 117 completes Schedule 3.
 
 Then the back matter: Tax Topics (118), the Disclosure/Privacy Act notice
 (120), Major Categories of Federal Income and Outlays (122), and the MECHANICAL
