@@ -320,6 +320,37 @@ as a artifact of pride, not a compliance receipt.
    be misread (e.g., speech-to-text users show paste-like bursts)? Likely needs an
    explicit note in the teacher docs — your call on wording.
 
+## 13.5 Checkpoint UI invariants (P3 — binding on the wiring phase)
+
+Adversarial review (2026-08-04) surfaced harms that code alone cannot prevent. The
+module now enforces what it can; these are the rules the UI must satisfy, each to be
+test-pinned when the surface lands:
+
+1. **Never blocks.** Not a modal, no progress gate, no countdown, no visible clock.
+   Dismissible to "later" unlimited times, recording nothing a teacher sees. A blocking
+   quiz inside homework ends the session for an anxious or PDA-profile student.
+2. **The work stays visible and editable** throughout, with the source span highlighted.
+   A checkpoint on a cleared screen is a working-memory test wearing a comprehension hat.
+3. **All four response modes ship together** — text, audio, choice, point — and answering
+   in the home language is permitted unless the objective is English production. Written
+   production alone measures expressive language, spelling and English proficiency.
+4. **One-tap escape hatch** beside every question: "This question doesn't fit my work."
+   Voids that checkpoint, routes the question to the teacher as a generator-quality
+   report, is never counted or shown as a refusal. (The §6 promise of teacher edit/veto
+   at composition is impossible — the artifact doesn't exist yet — so composition
+   approves question *types* and this is the student-side check.)
+5. **Teacher view renders the answer first and alone**, beside the source excerpt, above
+   the fixed line: *"A short or unclear answer is not evidence of anything. It is a
+   reason to talk with the student."* Duration is never shown beside an answer.
+6. **Banned permanently** (extends §8): duration beside an answer, answer word/character
+   counts, any class-level checkpoint column, and any sort or rank on a checkpoint field.
+7. **No egress when policy forbids it.** If the assignment's AI policy is off, generate
+   locally from the template bank — never send student writing out. Where generation does
+   run, the student and family disclosures say so verbatim.
+8. **Accommodations are never suppressed.** The AI-off state pauses generative answer
+   help only; read-aloud, glossary, translation, simplified text and input aids stay on,
+   and the checkpoint UI says which remain available.
+
 ## 14. P1 wiring map (scouted 2026-08-04; view half already shipped)
 
 Shipped so far: P0 ledger core, P2 teacher panel view-model, and P1's **view half** —

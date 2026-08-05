@@ -25,6 +25,34 @@
   var LEDGER_VERSION = 1;
   var MAX_EVENTS = 20000; // a school year of assignments, not a keylogger
   var PROMPT_LEVELS = ['model', 'guided', 'hint', 'none'];
+  // ── P3 vocabularies (all fail toward the non-incriminating value) ─────────
+  var CHECKPOINT_OUTCOMES = ['answered', 'skipped', 'deferred', 'unavailable'];
+  var CHECKPOINT_RESPONSE_MODES = ['text', 'audio', 'choice', 'point'];
+  var DURATION_BUCKETS = ['under_1m', '1_5m', '5_15m', 'over_15m', 'unknown'];
+  // What a teacher may conclude, in code. There is no 'failed', no
+  // 'insufficient', no number: a weak answer is evidence of nothing.
+  var CHECKPOINT_VERDICTS = ['confirmed', 'talk_with_student'];
+  // ★ Accommodations are NEVER suppressed by a checkpoint. The AI-off state
+  // may only pause generative answer-production; read-aloud, glossary,
+  // translation, simplified text and input aids are access, not answers.
+  // Default-deny on the gate list, default-allow on accommodations.
+  var CHECKPOINT_ALWAYS_ALLOWED = ['read_aloud', 'glossary', 'translate', 'simplified',
+    'spellcheck', 'word_prediction', 'speech_to_text', 'magnify'];
+  var CHECKPOINT_GATED_SUPPORTS = ['allobot', 'compose', 'explain_content', 'answer_help'];
+  function isAllowedDuringCheckpoint(support) {
+    var s = String(support || '').toLowerCase();
+    if (CHECKPOINT_ALWAYS_ALLOWED.indexOf(s) >= 0) return true;
+    if (CHECKPOINT_GATED_SUPPORTS.indexOf(s) >= 0) return false;
+    return false; // unclassified generative support: gated, never guessed open
+  }
+  function bucketDuration(sec) {
+    var n = Number(sec);
+    if (!isFinite(n) || n < 0) return 'unknown';
+    if (n < 60) return 'under_1m';
+    if (n < 300) return '1_5m';
+    if (n < 900) return '5_15m';
+    return 'over_15m';
+  }
 
   // ── Canonical JSON (sorted keys, stable across engines) ───────────────────
   function stableStringify(value) {
@@ -68,8 +96,15 @@
     paste: function (e) {
       var chars = clampInt(e.chars, 0, 5e6);
       if (chars === null) return null;
-      var hint = e.sourceHint === 'intra-app' ? 'intra-app' : 'external';
-      return { field: clampStr(e.field, 80), chars: chars, sourceHint: hint };
+      // NEVER synthesize a definite origin. An IME composition, an AAC device,
+      // a word-prediction commit, a dictation flush or an autocorrect
+      // replacement all arrive as an unattributable jump — stamping those
+      // "external paste" manufactures the exact signal a teacher over-reads,
+      // and it hits assistive-technology users hardest.
+      var hint = ['intra-app', 'external', 'unknown'].indexOf(e.sourceHint) >= 0 ? e.sourceHint : 'unknown';
+      var out = { field: clampStr(e.field, 80), chars: chars, sourceHint: hint };
+      if (e.assistiveTech === true) out.assistiveTech = true;
+      return out;
     },
     ai: function (e) {
       var level = PROMPT_LEVELS.indexOf(e.promptLevel) >= 0 ? e.promptLevel : 'none';
@@ -85,12 +120,22 @@
       return out;
     },
     checkpoint: function (e) {
-      var dur = clampInt(e.durationSec, 0, 86400);
-      if (dur === null) return null;
+      // Fail toward 'unknown', never toward the incriminating value: a race,
+      // a missing policy read or a typo must not record a student as having
+      // answered with AI on.
+      var st = (e.aiState === 'off' || e.aiState === 'on') ? e.aiState : 'unknown';
+      var outcome = CHECKPOINT_OUTCOMES.indexOf(e.outcome) >= 0 ? e.outcome : 'unavailable';
+      var mode = CHECKPOINT_RESPONSE_MODES.indexOf(e.responseMode) >= 0 ? e.responseMode : 'text';
+      // Coarse buckets only. Nothing legitimate needs "74 seconds", and a
+      // precise duration beside an answer penalizes slow processors,
+      // dictation users and extended-time accommodations.
+      var bucket = DURATION_BUCKETS.indexOf(e.durationBucket) >= 0 ? e.durationBucket : bucketDuration(e.durationSec);
       return {
         id: clampStr(e.id, 40),
-        aiState: e.aiState === 'off' ? 'off' : 'on',
-        durationSec: dur,
+        aiState: st,
+        outcome: outcome,
+        responseMode: mode,
+        durationBucket: bucket,
         answerHash: clampStr(e.answerHash, 64),
         generatedFrom: clampStr(e.generatedFrom, 120)
       };
@@ -102,6 +147,20 @@
       return { field: clampStr(e.field, 80), rev: rev, textHash: clampStr(e.textHash, 64), len: len };
     }
   };
+
+  // The fields that survive the integrity export. Kept beside the stripping
+  // logic so the two can never disagree (a drift test pins the pairing).
+  var HIDDEN_FROM_SUBMISSION = { promptLevel: true, promptPreview: true };
+  function visibleBody(evt) {
+    var out = {};
+    for (var k in evt) {
+      if (!Object.prototype.hasOwnProperty.call(evt, k)) continue;
+      if (k === 'h' || k === 'f' || k === 'v') continue;
+      if (evt.type === 'ai' && HIDDEN_FROM_SUBMISSION[k]) continue;
+      out[k] = evt[k];
+    }
+    return out;
+  }
 
   // Whitelist + strip: the ONLY way data enters a ledger. Unknown types and
   // unknown keys cannot be recorded, so the student review surface can
@@ -133,7 +192,22 @@
       if (events.length >= MAX_EVENTS) return Promise.resolve(null);
       var evt = Object.assign({ t: Math.max(0, now() - startedAt), type: type }, clean);
       chain = chain.then(function () {
-        return sha256Hex(head + '|' + stableStringify(evt)).then(function (h) {
+        // DUAL COMMITMENT. f commits to the whole event (including the
+        // support-lens fields a teacher must never see); v commits only to
+        // the fields that survive stripping. The chain links BOTH, so the
+        // integrity export — which carries f and v but not the hidden
+        // fields — stays fully verifiable: v catches edits to what the
+        // teacher can see, the f-and-v chain catches reorder, drop and head
+        // forgery, and f keeps the hidden fields cryptographically committed
+        // without ever disclosing them.
+        return Promise.all([
+          sha256Hex(stableStringify(evt)),
+          sha256Hex(stableStringify(visibleBody(evt)))
+        ]).then(function (pair) {
+          evt.f = pair[0];
+          evt.v = pair[1];
+          return sha256Hex(head + '|' + evt.f + '|' + evt.v);
+        }).then(function (h) {
           evt.h = h;
           head = h;
           events.push(evt);
@@ -182,6 +256,34 @@
       flushEdits: flushEdits,
       // export waits for every in-flight append so the head is final.
       export: function () { return chain.then(function () { return exportNow(); }); },
+      // ★★ Constraint 8 enforced at the DATA layer, not the view layer. The
+      // integrity export physically cannot carry scaffold intensity or the
+      // student's own words: promptLevel and promptPreview are deleted from
+      // every ai event, so no future panel, export, or JSON.stringify can
+      // conflate "needed help" with doubt about the work, and no teacher ever
+      // reads what a child typed into a helper. Chain heads are dropped with
+      // them (the hashes covered the removed fields), so the submission
+      // export is verified by its own recomputed chain — see verifyLedger's
+      // lens handling.
+      exportForSubmission: function () {
+        return chain.then(function () {
+          var full = exportNow();
+          var stripped = full.events.map(function (e) {
+            var copy = visibleBody(e);
+            copy.f = e.f; copy.v = e.v; copy.h = e.h; // commitments travel; hidden values do not
+            return copy;
+          });
+          return { version: LEDGER_VERSION, lens: 'integrity', startedWallClock: startedWallClock, events: stripped, head: full.head };
+        });
+      },
+      // MTSS/RTI lane. Separate consumer, separate transport, separate
+      // consent — never rendered beside the integrity view.
+      exportForSupport: function () {
+        return chain.then(function () {
+          var full = exportNow();
+          return { version: LEDGER_VERSION, lens: 'support', startedWallClock: startedWallClock, events: full.events.slice(), head: full.head };
+        });
+      },
       eventCount: function () { return events.length; }
     };
   }
@@ -198,21 +300,39 @@
         return Promise.resolve(headOk ? { ok: true, events: evts.length } : { ok: false, brokenAt: evts.length, reason: 'head mismatch' });
       }
       var evt = evts[i];
-      var body = {};
-      for (var k in evt) if (k !== 'h' && Object.prototype.hasOwnProperty.call(evt, k)) body[k] = evt[k];
-      return sha256Hex(head + '|' + stableStringify(body)).then(function (h) {
-        if (h !== evt.h) return { ok: false, brokenAt: i, reason: 'chain break' };
-        head = h;
-        i++;
-        return step();
+      // Always recomputable: the visible-field commitment. On a full export
+      // the whole-event commitment is checked too; on an integrity export the
+      // hidden fields are absent by design, so f is verified as a link only.
+      var checks = [sha256Hex(stableStringify(visibleBody(evt)))];
+      var isFull = exported.lens !== 'integrity';
+      if (isFull) {
+        var fullBody = {};
+        for (var k in evt) if (k !== 'h' && k !== 'f' && k !== 'v' && Object.prototype.hasOwnProperty.call(evt, k)) fullBody[k] = evt[k];
+        checks.push(sha256Hex(stableStringify(fullBody)));
+      }
+      return Promise.all(checks).then(function (got) {
+        if (got[0] !== evt.v) return { ok: false, brokenAt: i, reason: 'chain break' };
+        if (isFull && got[1] !== evt.f) return { ok: false, brokenAt: i, reason: 'chain break' };
+        return sha256Hex(head + '|' + evt.f + '|' + evt.v).then(function (h) {
+          if (h !== evt.h) return { ok: false, brokenAt: i, reason: 'chain break' };
+          head = h;
+          i++;
+          return step();
+        });
       });
     }
     return step();
   }
 
   // ── Attach: additive embed in the student project JSON. ───────────────────
+  // ★ Refuses anything but the integrity export. The support lens must never
+  // ride a submission, so this throws rather than silently downgrading — a
+  // caller that hands over the wrong lens has a bug that must be loud.
   function attachProvenance(projectJson, exported) {
     if (!projectJson || typeof projectJson !== 'object') return projectJson;
+    if (!exported || exported.lens !== 'integrity') {
+      throw new Error('attachProvenance requires an integrity-lens export (use ledger.exportForSubmission()).');
+    }
     projectJson.provenance = { version: LEDGER_VERSION, ledger: exported, attachedAt: new Date().toISOString() };
     return projectJson;
   }
@@ -260,6 +380,136 @@
     return { promptLevelCounts: counts, series: series.slice(0, 2000) };
   }
 
+  // ── P3: comprehension checkpoints ────────────────────────────────────────
+  // Questions generated FROM the student's own artifact, answered by the
+  // student, read by the TEACHER. The safety rules below came out of an
+  // adversarial review and are enforced in code, not in guidance:
+  //
+  //  · FIREWALL: the generator sees artifact TEXT ONLY. It never receives the
+  //    ledger, paste events, or AI events — a question aimed at a doubted
+  //    span would be an accusation delivered to a child in the second person.
+  //    Span selection is deterministic given the same text.
+  //  · VERBATIM GATE: a quoted span must appear in the artifact character-for-
+  //    character, and must not overlap teacher-provided text (starter copy,
+  //    sentence frames, the prompt). Hallucinated attribution — "you wrote X"
+  //    about a sentence the student never wrote — is accusation-shaped.
+  //  · NO ANSWER LEAK: a question copy-answerable from a short adjacent span
+  //    rewards the copier and punishes the paraphraser, so those are dropped.
+  //  · NO PRODUCTION FLOOR: no minimum words or characters, ever. Written
+  //    production measures expressive language, spelling and English
+  //    proficiency — not comprehension.
+  //  · ANSWERS NEVER ENTER THE LEDGER: they live in project.checkpoints[],
+  //    beside the question and source excerpt the teacher must read.
+  var CHECKPOINT_TEMPLATES = [
+    'You wrote this part yourself. Say more about why it belongs here.',
+    'Put this part in your own words, however you like.',
+    'What would change in your work if this part were different?',
+    'What made you decide to include this?'
+  ];
+  function normalizeForCompare(s) { return String(s || '').toLowerCase().replace(/\s+/g, ' ').trim(); }
+  // A span is student-authored when it survives removal of every provided
+  // text (assignment starter, sentence frames, the prompt itself).
+  function isStudentAuthoredSpan(span, artifactText, providedTexts) {
+    var s = normalizeForCompare(span);
+    if (!s) return false;
+    if (normalizeForCompare(artifactText).indexOf(s) < 0) return false;
+    var provided = Array.isArray(providedTexts) ? providedTexts : [];
+    for (var i = 0; i < provided.length; i++) {
+      if (normalizeForCompare(provided[i]).indexOf(s) >= 0) return false;
+    }
+    return true;
+  }
+  // Copy-answerable check: if the model's own expected answer is contained in
+  // the artifact as a short consecutive run of words, the question tests
+  // copying, not understanding.
+  function isCopyAnswerable(expectedAnswer, artifactText, maxWords) {
+    var words = normalizeForCompare(expectedAnswer).split(' ').filter(Boolean);
+    if (!words.length) return false;
+    if (words.length <= (maxWords || 15) && normalizeForCompare(artifactText).indexOf(words.join(' ')) >= 0) return true;
+    return false;
+  }
+  function sanitizeCheckpointQuestions(raw, artifactText, opts) {
+    opts = opts || {};
+    var provided = opts.providedTexts || [];
+    var list = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.questions) ? raw.questions : []);
+    var out = [];
+    for (var i = 0; i < list.length && out.length < 3; i++) {
+      var q = list[i] || {};
+      var text = clampStr(q.question || q.text, 240).trim();
+      var span = clampStr(q.sourceExcerpt || q.span, 400).trim();
+      if (!text || !span) continue;
+      if (!isStudentAuthoredSpan(span, artifactText, provided)) continue;      // verbatim + authorship gate
+      if (isCopyAnswerable(q.expectedAnswer || '', artifactText, 15)) continue; // answer-leak gate
+      if (/^(is|are|was|were|do|does|did|can|will|would|should|has|have)\b/i.test(text)) continue; // yes/no stem
+      out.push({
+        id: 'cp' + (out.length + 1),
+        question: text,
+        sourceExcerpt: span,
+        sourceFieldId: clampStr(q.sourceFieldId || opts.fieldId || '', 80)
+      });
+    }
+    return out;
+  }
+  // Local, no-egress fallback: used when the assignment's AI policy forbids
+  // sending student writing out, and whenever generation fails. Deterministic.
+  function templateCheckpoints(artifactText, opts) {
+    opts = opts || {};
+    var sentences = String(artifactText || '').split(/(?<=[.!?])\s+/).map(function (s) { return s.trim(); })
+      .filter(function (s) { return s.length >= 25 && isStudentAuthoredSpan(s, artifactText, opts.providedTexts || []); });
+    var picks = [];
+    for (var i = 0; i < sentences.length && picks.length < 2; i += Math.max(1, Math.floor(sentences.length / 2))) picks.push(sentences[i]);
+    return picks.map(function (span, i) {
+      return { id: 'cp' + (i + 1), question: CHECKPOINT_TEMPLATES[i % CHECKPOINT_TEMPLATES.length], sourceExcerpt: span, sourceFieldId: clampStr(opts.fieldId || '', 80) };
+    });
+  }
+  // The generator's ONLY inputs: artifact text, provided texts to exclude,
+  // reading level, language. No ledger parameter exists — by signature.
+  function buildCheckpointPrompt(artifactText, readingLevel, language) {
+    return 'A student wrote the text below. Write 2 short questions that ask the student to explain their OWN thinking about it.\n' +
+      'STUDENT TEXT:\n"""\n' + String(artifactText || '').slice(0, 6000) + '\n"""\n' +
+      'Rules: quote a span the student wrote VERBATIM as sourceExcerpt. Never ask something answerable by copying a short phrase from the text. ' +
+      'No yes/no questions. No questions about spelling or grammar. Never quote a misspelling back — normalize it. ' +
+      'Do not presume a choice the student may not have made. Write at a ' + (readingLevel || 'grade 5') + ' reading level' +
+      (language && language !== 'English' ? ' in ' + language : '') + '.\n' +
+      'Reply with ONLY JSON: [{"question":"…","sourceExcerpt":"verbatim span from the text","expectedAnswer":"what a strong answer would say"}]';
+  }
+  // The record the TEACHER reads. Lives in project.checkpoints[], never in the
+  // ledger: the ledger stays metadata-only, and answers stay out of it.
+  function buildCheckpointRecord(q, answer, opts) {
+    opts = opts || {};
+    var outcome = CHECKPOINT_OUTCOMES.indexOf(opts.outcome) >= 0 ? opts.outcome : (answer ? 'answered' : 'unavailable');
+    return {
+      id: clampStr(q && q.id, 40) || 'cp1',
+      questionText: clampStr(q && q.question, 240),
+      sourceExcerpt: clampStr(q && q.sourceExcerpt, 400),
+      sourceFieldId: clampStr(q && q.sourceFieldId, 80),
+      answerText: outcome === 'answered' ? clampStr(answer, 4000) : '',
+      answerLanguage: clampStr(opts.answerLanguage || '', 40),
+      responseMode: CHECKPOINT_RESPONSE_MODES.indexOf(opts.responseMode) >= 0 ? opts.responseMode : 'text',
+      outcome: outcome,
+      aiState: (opts.aiState === 'off' || opts.aiState === 'on') ? opts.aiState : 'unknown',
+      generatorSource: opts.generatorSource === 'template' ? 'template' : 'ai',
+      // Fixed, non-dismissible guidance for the teacher view. Shipped as data
+      // so it cannot be styled away or forgotten by a future panel.
+      teacherNote: 'A short or unclear answer is not evidence of anything. It is a reason to talk with the student.'
+    };
+  }
+  // Salted so two students who write the same sentence never collide — an
+  // unsalted hash is an accidental plagiarism detector and, for short
+  // answers, brute-forceable back into the words it promised not to keep.
+  function makeCheckpointSalt() {
+    try {
+      var a = new Uint8Array(16);
+      GLOBAL.crypto.getRandomValues(a);
+      var s = '';
+      for (var i = 0; i < a.length; i++) s += (a[i] < 16 ? '0' : '') + a[i].toString(16);
+      return s;
+    } catch (_) { return ''; }
+  }
+  function hashCheckpointAnswer(salt, answer) {
+    return sha256Hex(String(salt || '') + '|' + String(answer || ''));
+  }
+
   // ── P1 (view half): the student-owned "Work Story" view-model. ────────────
   // Student-facing language throughout. The "what we keep" disclosure is
   // DERIVED FROM the event schema, so the promise shown to students can never
@@ -270,12 +520,16 @@
     session: 'When you started, took breaks, and finished working',
     edit: 'How much you typed and when — never the words themselves',
     paste: 'When something was pasted in, and how big it was',
-    ai: 'Which AlloFlow helpers you used, and when',
+    // Honest: the ai shape retains a 120-char promptPreview for the student's
+    // OWN view. It is stripped from exportForSubmission, so a teacher never
+    // reads it — but the student must be told it exists at all.
+    ai: 'Which AlloFlow helpers you used and when — and, in this view only, the start of what you asked them',
     checkpoint: 'Your check-in answers (as digital fingerprints) and how long they took',
     revision: 'How your work grew over time — sizes, not contents'
   };
   var NEVER_COLLECTED = [
-    'The words you type (only amounts and timing)',
+    'The words of your assignment answers (only amounts and timing)',
+    'What you asked a helper — that never goes to your teacher',
     'Screenshots or recordings of your screen',
     'Anything you do outside AlloFlow',
     'Your camera or microphone'
@@ -397,8 +651,26 @@
     summarizeSupport: summarizeSupport,
     sanitizeEvent: sanitizeEvent,
     stableStringify: stableStringify,
+    // Exported for checkpoint answer fingerprints (P3): the ledger stores a
+    // hash of an answer, never the answer text.
+    hashText: sha256Hex,
     LEDGER_VERSION: LEDGER_VERSION,
-    PROMPT_LEVELS: PROMPT_LEVELS.slice()
+    PROMPT_LEVELS: PROMPT_LEVELS.slice(),
+    // ── P3 ──
+    sanitizeCheckpointQuestions: sanitizeCheckpointQuestions,
+    templateCheckpoints: templateCheckpoints,
+    buildCheckpointPrompt: buildCheckpointPrompt,
+    buildCheckpointRecord: buildCheckpointRecord,
+    makeCheckpointSalt: makeCheckpointSalt,
+    hashCheckpointAnswer: hashCheckpointAnswer,
+    isAllowedDuringCheckpoint: isAllowedDuringCheckpoint,
+    isStudentAuthoredSpan: isStudentAuthoredSpan,
+    bucketDuration: bucketDuration,
+    CHECKPOINT_ALWAYS_ALLOWED: CHECKPOINT_ALWAYS_ALLOWED.slice(),
+    CHECKPOINT_OUTCOMES: CHECKPOINT_OUTCOMES.slice(),
+    CHECKPOINT_RESPONSE_MODES: CHECKPOINT_RESPONSE_MODES.slice(),
+    CHECKPOINT_VERDICTS: CHECKPOINT_VERDICTS.slice(),
+    DURATION_BUCKETS: DURATION_BUCKETS.slice()
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = GLOBAL.AlloModules.Provenance;
   GLOBAL.AlloModules.ProvenanceModule = true;

@@ -148,7 +148,7 @@ describe('P2 — teacher process panel view-model', () => {
     await led.append('ai', { support: 'glossary', promptLevel: 'hint' });
     clock.tick(120000);
     await led.append('checkpoint', { id: 'cp1', aiState: 'off', durationSec: 60 });
-    const project = P.attachProvenance({ title: 'w' }, await led.export());
+    const project = P.attachProvenance({ title: 'w' }, await led.exportForSubmission());
     const m = await P.buildProcessPanelModel(JSON.parse(JSON.stringify(project)));
     expect(m.present).toBe(true);
     expect(m.summaryLine).toContain('1 AI support');
@@ -198,6 +198,160 @@ describe('P1 (view half) — the student-owned Work Story', () => {
     expect(flat).not.toContain('cheat');
     expect(flat).not.toContain('suspic');
     expect(flat).not.toContain('promptlevel'); // support lens stays out of the student view too
+  });
+});
+
+// P3 — comprehension checkpoints. Every pin below traces to a specific harm
+// raised in adversarial review; the comments name the harm so a future editor
+// knows what they would be re-enabling.
+describe('P3 — checkpoint safety rules', () => {
+  const ARTIFACT = 'Erosion wore the canyon down over time. I picked the Colorado River because my family drove there last summer and I saw the layers myself.';
+  const PROVIDED = ['Erosion wore the canyon down over time.']; // teacher starter text
+
+  it('accommodations survive the AI-off state; unclassified generative help does not', () => {
+    // HARM: gating the whole AI layer strips read-aloud/glossary/translation
+    // from students whose IEP requires them, at the highest-stakes moment.
+    for (const ok of P.CHECKPOINT_ALWAYS_ALLOWED) expect(P.isAllowedDuringCheckpoint(ok), ok).toBe(true);
+    expect(P.isAllowedDuringCheckpoint('allobot')).toBe(false);
+    expect(P.isAllowedDuringCheckpoint('compose')).toBe(false);
+    expect(P.isAllowedDuringCheckpoint('some_new_generative_thing')).toBe(false); // default-deny
+    expect(P.CHECKPOINT_ALWAYS_ALLOWED).toContain('speech_to_text');
+  });
+
+  it('vocabularies fail toward the non-incriminating value', () => {
+    // HARM: a race or typo recording a student as having answered with AI on;
+    // assistive-tech insertions stamped "external paste".
+    expect(P.sanitizeEvent('checkpoint', {}).aiState).toBe('unknown');
+    expect(P.sanitizeEvent('checkpoint', {}).outcome).toBe('unavailable');
+    expect(P.sanitizeEvent('paste', { chars: 9 }).sourceHint).toBe('unknown');
+    expect(P.sanitizeEvent('paste', { chars: 9, assistiveTech: true }).assistiveTech).toBe(true);
+    // No precise duration beside an answer — coarse buckets only.
+    expect(P.sanitizeEvent('checkpoint', { durationSec: 74 }).durationBucket).toBe('1_5m');
+    expect(P.sanitizeEvent('checkpoint', {}).durationSec).toBeUndefined();
+    expect(P.bucketDuration(-1)).toBe('unknown');
+  });
+
+  it('the generator is firewalled from the ledger by signature and is deterministic', () => {
+    // HARM: a question aimed at a pasted span is an accusation to a child.
+    expect(P.buildCheckpointPrompt.length).toBe(3); // (artifactText, readingLevel, language) — no ledger param
+    const a = P.templateCheckpoints(ARTIFACT, { providedTexts: PROVIDED });
+    const b = P.templateCheckpoints(ARTIFACT, { providedTexts: PROVIDED });
+    expect(a).toEqual(b);
+    expect(a.length).toBeGreaterThan(0);
+    for (const q of a) expect(PROVIDED.join(' ')).not.toContain(q.sourceExcerpt); // never quotes teacher text
+  });
+
+  it('rejects hallucinated, teacher-authored, copy-answerable and yes/no questions', () => {
+    const raw = [
+      // A good question: its strong answer is NOT sitting in the artifact.
+      { question: 'What would change in your work if you had picked a river you had never seen?', sourceExcerpt: 'I picked the Colorado River', expectedAnswer: 'I could not have described the rock layers from memory and would have needed a source' },
+      { question: 'Explain this.', sourceExcerpt: 'a sentence the student never wrote', expectedAnswer: 'x' },       // hallucinated
+      { question: 'What does erosion mean here?', sourceExcerpt: 'Erosion wore the canyon down over time.', expectedAnswer: 'y' }, // teacher-provided span
+      { question: 'Is the canyon deep?', sourceExcerpt: 'I saw the layers myself', expectedAnswer: 'z' },            // yes/no
+      { question: 'What wore the canyon down?', sourceExcerpt: 'I saw the layers myself', expectedAnswer: 'Erosion wore the canyon down over time' }, // copy-answerable
+    ];
+    const out = P.sanitizeCheckpointQuestions(raw, ARTIFACT, { providedTexts: PROVIDED });
+    expect(out).toHaveLength(1);
+    expect(out[0].question).toContain('What would change');
+    // The rejected one that matters most: "why did you pick X" is dropped when
+    // the student already wrote the reason two words later — that question
+    // rewards the copier and punishes the student who paraphrases.
+    const leaky = P.sanitizeCheckpointQuestions(
+      [{ question: 'Why did you pick the Colorado River?', sourceExcerpt: 'I picked the Colorado River', expectedAnswer: 'because my family drove there' }],
+      ARTIFACT, { providedTexts: PROVIDED });
+    expect(leaky).toHaveLength(0);
+    expect(out[0].id).toBe('cp1');
+  });
+
+  it('answers and questions live OUTSIDE the ledger, and the schema can never take them', () => {
+    // HARM: stuffing answers into the ledger detonates the no-words promise.
+    const rec = P.buildCheckpointRecord({ id: 'cp1', question: 'Why?', sourceExcerpt: 'I picked' }, 'Because I saw it.', { outcome: 'answered', responseMode: 'audio', answerLanguage: 'Spanish', aiState: 'off' });
+    expect(rec.answerText).toBe('Because I saw it.');
+    expect(rec.responseMode).toBe('audio');
+    expect(rec.answerLanguage).toBe('Spanish');
+    expect(rec.teacherNote).toContain('not evidence of anything');
+    // The ledger event shape has no channel for text.
+    const evt = P.sanitizeEvent('checkpoint', { id: 'cp1', answerText: 'sneaky', questionText: 'sneaky' });
+    expect(evt.answerText).toBeUndefined();
+    expect(evt.questionText).toBeUndefined();
+  });
+
+  it('a non-answer is recorded as a neutral outcome, never as silence to interpret', () => {
+    // HARM: a blank could be a crash, an offline device, or an accommodation —
+    // teachers fill silence with the least charitable story.
+    expect(P.CHECKPOINT_OUTCOMES).toEqual(['answered', 'skipped', 'deferred', 'unavailable']);
+    const skipped = P.buildCheckpointRecord({ id: 'cp1' }, '', { outcome: 'skipped' });
+    expect(skipped.outcome).toBe('skipped');
+    expect(skipped.answerText).toBe('');
+  });
+
+  it('answer hashes are salted — no accidental collusion detector', () => {
+    // HARM: identical short answers collide, producing the plagiarism flag
+    // this design refused to build; short answers are also brute-forceable.
+    expect(P.makeCheckpointSalt()).toHaveLength(32);
+    return Promise.all([
+      P.hashCheckpointAnswer('saltA', 'The river carved it.'),
+      P.hashCheckpointAnswer('saltB', 'The river carved it.'),
+    ]).then(([h1, h2]) => expect(h1).not.toBe(h2));
+  });
+
+  it('teacher verdicts are two words, neither of them a judgement of the student', () => {
+    expect(P.CHECKPOINT_VERDICTS).toEqual(['confirmed', 'talk_with_student']);
+    expect(P.CHECKPOINT_VERDICTS.join(' ')).not.toMatch(/fail|insufficient|incomplete|poor/i);
+  });
+
+  it('no production floor exists anywhere in the checkpoint flow', () => {
+    // HARM: a word minimum measures expressive language and English
+    // proficiency, then presents the result as evidence about authorship.
+    const src = readFileSync('allo_provenance_module.js', 'utf-8');
+    const cp = src.slice(src.indexOf('P3: comprehension checkpoints'), src.indexOf('P1 (view half)'));
+    expect(cp).not.toMatch(/minWords|minLength|minChars|at least \d+ words/i);
+    expect(cp).toContain('NO PRODUCTION FLOOR');
+  });
+});
+
+describe('P3 — the two-lens wall is enforced at the DATA layer', () => {
+  async function ledgerWithAi() {
+    const led = P.createLedger({ now: mkClock().now });
+    await led.append('session', { action: 'start' });
+    await led.append('ai', { support: 'allobot', promptLevel: 'model', promptPreview: 'my mom is in the hospital so I' });
+    await led.append('paste', { field: 'a', chars: 90 });
+    return led;
+  }
+  it('the submission export physically cannot carry scaffold level or the student’s words', async () => {
+    // HARM: promptLevel beside paste sizes conflates "needed help" with doubt;
+    // promptPreview hands a teacher what a child typed into a helper.
+    const led = await ledgerWithAi();
+    const sub = await led.exportForSubmission();
+    const flat = JSON.stringify(sub);
+    expect(flat).not.toContain('promptLevel');
+    expect(flat).not.toContain('promptPreview');
+    expect(flat).not.toContain('hospital');
+    expect(sub.lens).toBe('integrity');
+    // And it is still fully verifiable despite the stripping.
+    expect((await P.verifyLedger(sub)).ok).toBe(true);
+    // Attaching it to a project keeps it clean end to end.
+    const project = P.attachProvenance({ title: 'w' }, sub);
+    expect(JSON.stringify(project)).not.toContain('promptLevel');
+  });
+  it('attachProvenance REFUSES a support-lens export rather than downgrading it', async () => {
+    const led = await ledgerWithAi();
+    const sup = await led.exportForSupport();
+    expect(sup.lens).toBe('support');
+    expect(JSON.stringify(sup)).toContain('promptLevel'); // the MTSS lane keeps it, by design
+    expect(() => P.attachProvenance({}, sup)).toThrow(/integrity-lens/);
+    const full = await led.export();
+    expect(() => P.attachProvenance({}, full)).toThrow(/integrity-lens/);
+  });
+  it('the stripped export still catches edits to what the teacher CAN see', async () => {
+    const led = await ledgerWithAi();
+    const sub = await led.exportForSubmission();
+    const tampered = JSON.parse(JSON.stringify(sub));
+    tampered.events[2].chars = 5; // shrink the paste
+    expect((await P.verifyLedger(tampered)).ok).toBe(false);
+    const reordered = JSON.parse(JSON.stringify(sub));
+    reordered.events.reverse();
+    expect((await P.verifyLedger(reordered)).ok).toBe(false);
   });
 });
 
@@ -255,7 +409,7 @@ describe('constraints in the module text itself', () => {
     const led = P.createLedger({ now: mkClock().now });
     await led.append('session', { action: 'start' });
     const project = { title: 'My work', items: [1, 2] };
-    const out = P.attachProvenance(project, await led.export());
+    const out = P.attachProvenance(project, await led.exportForSubmission());
     expect(out.title).toBe('My work');
     expect(out.provenance.ledger.events).toHaveLength(1);
     const back = JSON.parse(JSON.stringify(out));
