@@ -494,6 +494,23 @@
       teacherNote: 'A short or unclear answer is not evidence of anything. It is a reason to talk with the student.'
     };
   }
+  // Recognition-mode options. Distractors are drawn from the student's OWN
+  // other sentences (critique: recognition beats production for students whose
+  // expressive language, spelling or English proficiency would otherwise be
+  // what gets measured). Deterministic ordering — no Math.random, so the same
+  // artifact always yields the same choices and nothing is unreproducible.
+  function buildCheckpointChoices(artifactText, correctSpan, providedTexts) {
+    var sentences = String(artifactText || '').split(/(?<=[.!?])\s+/)
+      .map(function (s) { return s.trim(); })
+      .filter(function (s) { return s.length >= 20 && isStudentAuthoredSpan(s, artifactText, providedTexts || []); });
+    var correct = String(correctSpan || '').trim();
+    var others = sentences.filter(function (s) { return s !== correct; });
+    var opts = [correct].concat(others.slice(0, 3)).filter(Boolean);
+    // Stable rotation by span length so the answer is not always first.
+    var shift = correct.length % Math.max(1, opts.length);
+    return opts.slice(shift).concat(opts.slice(0, shift));
+  }
+
   // Salted so two students who write the same sentence never collide — an
   // unsalted hash is an accidental plagiarism detector and, for short
   // answers, brute-forceable back into the words it promised not to keep.
@@ -637,6 +654,113 @@
     );
   }
 
+  // ── P3 (surface): the student's checkpoint card. ─────────────────────────
+  // The §13.5 invariants are behaviour here, not guidance:
+  //   · NEVER BLOCKS — a card, not a modal; "I'll come back to this" is
+  //     always available and unlimited, and records nothing a teacher sees.
+  //   · THE WORK STAYS VISIBLE — this renders beside the student's work and
+  //     always shows the source excerpt, so it is never a memory test.
+  //   · FOUR RESPONSE MODES ship together; the student picks.
+  //   · ESCAPE HATCH — "This question doesn't fit my work" voids the question
+  //     and reports it as generator quality, never as a refusal.
+  //   · NO PRODUCTION FLOOR — Answer is never disabled on length.
+  //   · ACCOMMODATIONS STAY ON, and the card says which.
+  function CheckpointPanel(props) {
+    var React = GLOBAL.React;
+    if (!React || !React.createElement) return null;
+    var h = React.createElement;
+    var t = (props && props.t) || function (k, f) { return f || k; };
+    var q = props && props.question;
+    var st = React.useState({ mode: 'text', text: '', choice: '', speaking: false });
+    var s = st[0], set = st[1];
+    if (!q) return null;
+    var onAnswer = (props && props.onAnswer) || function () {};
+    var onDefer = (props && props.onDefer) || function () {};
+    var onMisfit = (props && props.onMisfit) || function () {};
+    var allowed = (props && props.allowedSupports) || CHECKPOINT_ALWAYS_ALLOWED;
+    var choices = (props && props.choices) || [];
+
+    var modeBtn = function (id, label) {
+      return h('button', {
+        key: id, type: 'button',
+        onClick: function () { set(Object.assign({}, s, { mode: id })); },
+        'aria-pressed': s.mode === id ? 'true' : 'false',
+        className: 'text-xs px-2 py-1 rounded border ' + (s.mode === id ? 'bg-indigo-100 border-indigo-300' : 'border-slate-300')
+      }, label);
+    };
+    // Speaking uses on-device speech-to-text (an allowed accommodation) and
+    // becomes text the student can edit. Honest label: nothing is uploaded.
+    var startSpeaking = function () {
+      var SR = GLOBAL.SpeechRecognition || GLOBAL.webkitSpeechRecognition;
+      if (!SR) return;
+      try {
+        var rec = new SR();
+        rec.lang = (props && props.language) || 'en-US';
+        rec.onresult = function (ev) {
+          var said = '';
+          for (var i = 0; i < ev.results.length; i++) said += ev.results[i][0].transcript;
+          set(function (prev) { return Object.assign({}, prev, { text: (prev.text ? prev.text + ' ' : '') + said, speaking: false }); });
+        };
+        rec.onerror = function () { set(function (prev) { return Object.assign({}, prev, { speaking: false }); }); };
+        rec.onend = function () { set(function (prev) { return Object.assign({}, prev, { speaking: false }); }); };
+        set(Object.assign({}, s, { speaking: true }));
+        rec.start();
+      } catch (_) { set(Object.assign({}, s, { speaking: false })); }
+    };
+
+    return h('section', { className: 'rounded-2xl border border-indigo-200 bg-indigo-50/40 p-3 mb-4', 'aria-labelledby': 'allo-cp-title' },
+      h('div', { id: 'allo-cp-title', className: 'text-sm font-bold' }, '💬 ' + t('checkpoint.title', 'A quick check-in about your work')),
+      h('blockquote', { className: 'text-xs mt-2 p-2 rounded bg-white border-l-4 border-indigo-300' }, '“' + q.sourceExcerpt + '”'),
+      h('p', { className: 'text-sm mt-2 font-medium' }, q.question),
+      h('p', { className: 'text-[11px] mt-1 opacity-70' },
+        t('checkpoint.support_note', 'Still available while you answer: ') + allowed.slice(0, 4).join(', ').replace(/_/g, ' ') +
+        t('checkpoint.support_note2', '. Only the answer helper is paused.')),
+      h('div', { className: 'flex gap-1 mt-2 flex-wrap' }, [
+        modeBtn('text', t('checkpoint.mode_text', '⌨️ Type')),
+        modeBtn('audio', t('checkpoint.mode_audio', '🎤 Speak')),
+        choices.length > 1 ? modeBtn('choice', t('checkpoint.mode_choice', '☑️ Choose')) : null,
+        modeBtn('point', t('checkpoint.mode_point', '👆 Point to it'))
+      ].filter(Boolean)),
+      s.mode === 'choice'
+        ? h('div', { className: 'mt-2 flex flex-col gap-1' }, choices.map(function (c, i) {
+            return h('label', { key: i, className: 'text-xs flex items-start gap-2' },
+              h('input', { type: 'radio', name: 'allo-cp-choice', checked: s.choice === c, onChange: function () { set(Object.assign({}, s, { choice: c })); } }),
+              h('span', null, c));
+          }))
+        : s.mode === 'point'
+          ? h('p', { className: 'text-xs mt-2' }, t('checkpoint.point_help', 'Click the sentence in your work that this is about, then press Answer.'))
+          : h('div', { className: 'mt-2' },
+              s.mode === 'audio' ? h('button', {
+                type: 'button', onClick: startSpeaking,
+                className: 'text-xs px-2 py-1 rounded border border-slate-300 mb-1'
+              }, s.speaking ? t('checkpoint.listening', '🔴 Listening — say your answer') : t('checkpoint.speak', '🎤 Speak your answer (it becomes text on this device)')) : null,
+              h('textarea', {
+                value: s.text,
+                onChange: function (e) { set(Object.assign({}, s, { text: e.target.value })); },
+                rows: 3,
+                'aria-label': t('checkpoint.answer_label', 'Your answer'),
+                className: 'w-full text-sm p-2 rounded border border-slate-300'
+              })),
+      h('div', { className: 'flex gap-2 mt-2 flex-wrap' },
+        // NO PRODUCTION FLOOR: Answer is never disabled on how much was
+        // written. A word minimum would measure expressive language, spelling
+        // and English proficiency, then present it as evidence about
+        // authorship — do not add one here.
+        h('button', {
+          type: 'button',
+          onClick: function () { onAnswer(s.mode === 'choice' ? s.choice : s.text, s.mode); },
+          className: 'text-xs px-3 py-1 rounded bg-indigo-600 text-white'
+        }, t('checkpoint.answer', 'Answer')),
+        h('button', { type: 'button', onClick: function () { onDefer(); }, className: 'text-xs px-3 py-1 rounded border border-slate-300' },
+          t('checkpoint.later', 'I’ll come back to this')),
+        h('button', { type: 'button', onClick: function () { onMisfit(); }, className: 'text-xs px-3 py-1 rounded border border-slate-300' },
+          t('checkpoint.misfit', 'This question doesn’t fit my work'))
+      ),
+      h('p', { className: 'text-[11px] mt-2 opacity-70' },
+        t('checkpoint.no_grade', 'This is not graded here, there is no timer, and your work stays open while you answer.'))
+    );
+  }
+
   // ── P2 (surface): the teacher's Process panel. ───────────────────────────
   // Renders buildProcessPanelModel. Deliberately spare: the one-line summary
   // is the DEFAULT view so the first read is "process", not doubt; details
@@ -673,6 +797,22 @@
           : h('div', { style: Object.assign({ marginTop: 4 }, muted) }, 'No large insertions recorded.'),
         h('div', { style: { marginTop: 8, padding: '6px 8px', background: '#f8fafc', borderRadius: 6, fontSize: '0.78rem', color: '#475569' } },
           model.integrity.line + ' ' + model.integrity.disclaimer)
+      ) : null,
+      // Checkpoints: the ANSWER first and alone beside its excerpt, under the
+      // fixed guidance line. No duration, no length, no verdict — and a
+      // non-answer renders in the same neutral register as an answer.
+      (props.checkpoints && props.checkpoints.length) ? h('div', { style: { marginTop: 10 } },
+        h('div', { style: { fontWeight: 700, color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Check-ins'),
+        h('div', { style: { margin: '4px 0 6px', padding: '6px 8px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 6, fontSize: '0.78rem', color: '#475569' } },
+          props.checkpoints[0].teacherNote || 'A short or unclear answer is not evidence of anything. It is a reason to talk with the student.'),
+        props.checkpoints.map(function (c, i) {
+          return h('div', { key: i, style: { marginTop: 6, padding: '6px 8px', border: '1px solid #e2e8f0', borderRadius: 6 } },
+            h('div', { style: { fontSize: '0.85rem', color: '#1e293b' } },
+              c.outcome === 'answered' ? c.answerText : 'Not attempted. This can happen for many reasons, including technical ones.'),
+            h('div', { style: { fontSize: '0.75rem', color: '#475569', marginTop: 4 } }, 'Question: ' + c.questionText),
+            c.sourceExcerpt ? h('div', { style: { fontSize: '0.75rem', color: '#475569', fontStyle: 'italic' } }, 'About: “' + c.sourceExcerpt + '”') : null,
+            c.answerLanguage ? h('div', { style: { fontSize: '0.72rem', color: '#475569' } }, 'Answered in ' + c.answerLanguage) : null);
+        })
       ) : null
     );
   }
@@ -680,6 +820,8 @@
   GLOBAL.AlloModules = GLOBAL.AlloModules || {};
   var PROVENANCE_API = {
     ProcessPanel: ProcessPanel,
+    CheckpointPanel: CheckpointPanel,
+    buildCheckpointChoices: buildCheckpointChoices,
     WorkStoryPanel: WorkStoryPanel,
     buildProcessPanelModel: buildProcessPanelModel,
     buildWorkStoryModel: buildWorkStoryModel,
@@ -724,6 +866,7 @@
     window.AlloModules.Provenance = PROVENANCE_API;
     window.AlloModules.WorkStoryPanel = WorkStoryPanel;
     window.AlloModules.ProcessPanel = ProcessPanel;
+    window.AlloModules.CheckpointPanel = CheckpointPanel;
   }
   if (typeof module !== 'undefined' && module.exports) module.exports = PROVENANCE_API;
   GLOBAL.AlloModules.ProvenanceModule = true;

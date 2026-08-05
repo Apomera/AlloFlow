@@ -438,6 +438,49 @@ describe('constraints in the module text itself', () => {
     expect(panel).not.toMatch(/score|flag|percent|%/i);
     expect(panel).not.toMatch(/durationSec|durationBucket/);       // no duration beside anything
   });
+  // P3 surface — the eight UI invariants from doc §13.5, as behaviour.
+  it('P3 surface: the checkpoint card never blocks and never gates on length', () => {
+    const src = readFileSync('allo_provenance_module.js', 'utf-8');
+    const cp = src.slice(src.indexOf('function CheckpointPanel'), src.indexOf('// ── P2 (surface)'));
+    expect(cp).toContain("h('section'");                       // a card, not a modal
+    expect(cp).not.toMatch(/role: ['"]dialog|aria-modal|position: ?['"]fixed/);
+    expect(cp).toContain('checkpoint.later');                   // defer always available
+    expect(cp).toContain('checkpoint.misfit');                  // escape hatch
+    expect(cp).toContain('no timer');                           // stated to the student
+    // NO production floor: the Answer button carries no length condition.
+    expect(cp).not.toMatch(/disabled: [^,\n]*\.length|minLength|s\.text\.length [<>]/);
+    expect(cp).toContain('NO PRODUCTION FLOOR');
+  });
+  it('P3 surface: all four response modes ship, and the work stays visible', () => {
+    const src = readFileSync('allo_provenance_module.js', 'utf-8');
+    const cp = src.slice(src.indexOf('function CheckpointPanel'), src.indexOf('// ── P2 (surface)'));
+    for (const mode of ['text', 'audio', 'choice', 'point']) expect(cp, mode).toContain("modeBtn('" + mode + "'");
+    expect(cp).toContain('q.sourceExcerpt');                    // never a memory test
+    // Accommodations are named on screen, and speech stays on-device.
+    expect(cp).toContain('Only the answer helper is paused');
+    expect(cp).toContain('it becomes text on this device');
+  });
+  it('P3: recognition choices come from the student’s own writing, deterministically', () => {
+    const artifact = 'I picked the Colorado River because I saw it. Erosion cuts rock slowly over time. My cousin took the photo we used.';
+    const provided = ['Erosion cuts rock slowly over time.'];
+    const a = P.buildCheckpointChoices(artifact, 'I picked the Colorado River because I saw it.', provided);
+    const b = P.buildCheckpointChoices(artifact, 'I picked the Colorado River because I saw it.', provided);
+    expect(a).toEqual(b);                                       // no Math.random
+    expect(a).toContain('I picked the Colorado River because I saw it.');
+    expect(a.join(' ')).not.toContain('Erosion cuts rock');     // teacher text never a distractor
+    expect(a.length).toBeGreaterThan(1);
+  });
+  it('P3 teacher view: answer first, guidance fixed, non-answers neutral, no metrics', () => {
+    const src = readFileSync('allo_provenance_module.js', 'utf-8');
+    const panel = src.slice(src.indexOf('function ProcessPanel'), src.indexOf('GLOBAL.AlloModules = GLOBAL.AlloModules'));
+    const answerIdx = panel.indexOf('c.answerText');
+    const questionIdx = panel.indexOf("'Question: '");
+    expect(answerIdx).toBeGreaterThan(-1);
+    expect(answerIdx).toBeLessThan(questionIdx);                // the answer renders FIRST
+    expect(panel).toContain('not evidence of anything');        // fixed guidance line
+    expect(panel).toContain('Not attempted. This can happen for many reasons');
+    expect(panel).not.toMatch(/durationBucket|answerText\.length|\bscore\b/);
+  });
   it('the module ships in the deploy file list', () => {
     expect(readFileSync('build.js', 'utf-8')).toContain("'allo_provenance_module.js',");
   });
