@@ -1795,12 +1795,63 @@ the link text breaks across a line), and they sit INSIDE the CAUTION box: the
 "For more information..." sentence continues below the icon at the column left
 with no indent, which is how an icon callout wraps once it clears the icon.
 
-### NEXT: page 107 onward
+### Session 47 (2026-08-05) - page 107 - tranche-47 - 12 blocks - VALIDATED (merged)
 
-Page 107 continues Part III with the five methods for figuring qualified
-overtime compensation (paragraphs 1 through 5) and Examples 4 and 5. **Do not
-re-author the paragraph carried out of tranche 46**; open at "If your employer
-is covered by a different overtime rule...".
+The five methods for figuring qualified overtime compensation and worked
+Examples 1 through 4. `merge-plans t01..t47` -> 1,665 blocks, `ok: true`,
+**pages 1-107 covered**, zero heading skips. Recall 0.9778; carried-block
+check against tranche 46: **23 shortfall instances = 17 carried + 4 furniture
++ 2 "unexplained"**, and both of those are accounted for below.
+
+> **THE CARRIED-BLOCK TOOL HAS NO NOTION OF GENERATED LIST MARKERS.** The two
+> "unexplained" tokens are `2` and `4`, one instance each - the ordered list's
+> own markers for items 2 and 4, which the list STRUCTURE generates rather
+> than carrying as literal text. The markers for 1, 3 and 5 do not show up:
+> `1` and `5` were absorbed by the carried block (which contains "paragraphs 1
+> through 5") and `3` by its other occurrences on the page. So an ordered list
+> will always leave some marker digits in the unexplained bucket, and which
+> ones is an accident of what else the page happens to say. Same class as
+> tranche 29's nine digits; worth checking against the list count before
+> treating a bare digit as loss.
+
+**Example 4 jumps TWO full-page worksheets** - the sixth block in the rebuild
+to span a full-page insert and the first to span two. It begins in this page's
+last column and finishes at the top of page 108 below both the "Qualified
+Overtime Compensation From More Than One Employer" worksheet and the payor
+worksheet under it. Authored whole here; **tranche 48 opens at the worksheets
+and then Example 5**.
+
+**The five methods are one ordered list and the enumeration is load-bearing.**
+The prose refers to them by number ("the methods described in paragraphs 1
+through 5", "the method described in paragraph 2 or paragraph 4"), so they
+cannot be split into paragraphs without breaking those references.
+
+**Method 5's two sub-bullets are folded into its item.** The plan schema's
+list items are plain strings - checked in `repair-plan.schema.json`, not
+assumed - so a nested list cannot be a child of a list item, and breaking the
+numbered list to emit them separately would destroy the enumeration above.
+They join the parent sentence after its colon, as Chart C was handled in
+tranche 4, with the second option's leading capital lowercased where it now
+sits mid-sentence (Chart B). The source's own ", and" already joins them, so
+no connective was invented. What is lost: the visual fact that these were two
+bullets. Nothing else.
+
+**Four faces separate cleanly and each is treated differently** - `g_d0_f3`
+(bold) the five run-in leads, kept strong inside their list items; `g_d0_f4`
+the Example labels, promoted to level-5 headings; `g_d0_f2` (italic) BOTH the
+inline "Example N" cross-references and the TIP box text; `g_d0_f5` the TIP
+icon. A second Example 1/2/3 series (page 105 has one for the net income
+limitation); the numbering restarts in the source and the headings are
+deliberately not disambiguated, because the cross-references say "Example 2"
+and "Example 3" plainly.
+
+### NEXT: page 108 onward
+
+Page 108 carries TWO full-page worksheets at the top - "Qualified Overtime
+Compensation From More Than One Employer" (columns (a) name of employer, (b)
+qualified overtime reported on Form W-2 box 1) and a second, narrower payor
+worksheet ((a) Payor's name) - then Example 5 and onward. **Do not re-author
+Example 4**, which finishes below both worksheets.
 
 Then the rest of Schedule 1-A (106-110), Schedule 2 (111-114) and Schedule 3
 (115-117), each a top-level TOC entry opening at level 2. Then the back
