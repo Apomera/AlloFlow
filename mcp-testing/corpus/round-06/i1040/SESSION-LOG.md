@@ -515,3 +515,31 @@ decisions worth recording:
 
 **Line 16's list spans the page-35 insert** (begins page 34, finishes page 36),
 authored whole at page 34, so merged order runs 34 → 35 → 36 as printed.
+
+### Session 11 (2026-08-04) — pages 38-39 · tranche-11 · 29 blocks · VALIDATED (merged)
+
+The Qualified Dividends and Capital Gain Tax Worksheet (25 lines, the longest
+so far), the child tax credit (line 19), and the start of Payments
+(lines 25-26). `merge-plans t01..t11` → 717 blocks, `ok: true`, pages 1-39
+covered.
+
+**Recall 0.9794 with the cleanest shortfall profile yet: every missing token
+is a numeral** — the worksheet line numbers, which the source prints twice
+per line (once at the start, once beside the entry box), plus one printed page
+number. No prose is missing at all.
+
+One rule sharpened, worth carrying forward:
+
+> **Worksheet rows follow the printed ENTRY lines, not the printed layout.**
+
+Lines 6 and 13 stack three filing-status amounts beside a *single* entry box,
+so those options stay inside that line's instruction cell. That looks like the
+opposite of tranche 10, where 4a/4b/4c became separate rows — but it is the
+same rule: 4a/4b/4c each have their own entry box, these do not.
+
+**No handoff note this time** — page 39 ends on a complete sentence, so
+nothing spans the 39/40 edge.
+
+**Next up is the EIC**, pages 40-60: the longest and most structurally
+involved section left, with a flowchart, multiple worksheets, and the EIC
+tables. Worth starting fresh rather than at the tail of another session.
