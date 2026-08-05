@@ -1600,13 +1600,44 @@ children of Part II with nothing between, and the validator rejects the
 h3-to-h5 skip that treating the run-in as level 5 would create. Same lesson as
 tranche 24.
 
-### NEXT: page 102 onward
+### Session 42 (2026-08-05) - page 102 - tranche-42 - 22 blocks - VALIDATED (merged)
 
-Page 102 continues Part II: "Cash tips", and the run-in topics defining
-qualified tips. **Do not re-author "Determined by the customer/payor."** - it
-closes the list authored whole at page 101.
+Schedule 1-A Part II continued: what counts as a cash tip, TRDA/GITCA
+programs, the voluntariness test, and amounts that are not qualified tips.
+`merge-plans t01..t42` -> 1,576 blocks, `ok: true`, **pages 1-102 covered**,
+zero heading skips. Recall 0.9924; **8 shortfall instances = 4 carried + 4
+furniture + 0 unexplained**.
 
-Then the rest of Schedule 1-A (103-110), Schedule 2 (111-114) and Schedule 3
+**A TIP box is moved from the middle of a list to after it.** The SSTB
+transition-relief note is printed between the first and second bullets of
+"Amounts received that are not qualified tips" and qualifies the FIRST bullet
+only. Splitting a three-item list in two to hold its position would be worse
+for a reader than moving it, and the note names its own subject in its first
+sentence ("whether a trade or business is an SSTB for purposes of this
+deduction"), so nothing is ambiguous about placing it after the list.
+
+**Two pairs of examples share the same headings.** The page carries "Example
+1"/"Example 2" under the voluntariness test and another pair under amounts
+that are not qualified tips. The repetition is the source's; both pairs are
+level 6 beneath the level-5 run-in lead governing them, so a reader navigating
+by heading can tell which discussion each belongs to.
+
+**The truncated-dump trap again, and again in a new direction.** A short dump
+stops inside Example 2 and page 103 opens on unrelated text - together a
+convincing case that the Example spans the break. It does not: Example 2
+finishes on page 102 and the "Occupations that customarily and regularly
+received tips" paragraph is what carries over. **Fourth page in this stretch
+where reading the column to its end changed the answer.**
+
+### NEXT: page 103 onward
+
+Page 103 lists the tipped occupations by category (beverage and food service,
+entertainment, hospitality, and so on), keyed to Treasury Tipped Occupation
+Codes. **Do not re-author the "Occupations that customarily and regularly
+received tips" paragraph** carried into tranche 42. Page 103 carries two Link
+annotations, both to the same irs.gov occupations page.
+
+Then the rest of Schedule 1-A (104-110), Schedule 2 (111-114) and Schedule 3
 (115-117), each a top-level TOC entry opening at level 2. Then the back
 matter: Tax Topics (118), the Disclosure/Privacy Act notice (120), Major
 Categories of Federal Income and Outlays (122), and the MECHANICAL Index
