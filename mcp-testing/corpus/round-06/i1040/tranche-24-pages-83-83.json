@@ -1,0 +1,557 @@
+{
+ "schema_version": "1.0",
+ "document": {
+  "title": "2025 Instructions for Form 1040 (and 1040-SR)",
+  "language": "en",
+  "source_page_count": 126,
+  "source_sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a",
+  "document_type": "booklet",
+  "subject": "Internal Revenue Service instructions for the 2025 Form 1040 and Form 1040-SR, including the instructions for Schedules 1 through 3.",
+  "variant": "original"
+ },
+ "blocks": [
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Amended Return",
+   "source_page": 83
+  },
+  {
+   "type": "paragraph",
+   "text": "File Form 1040-X to change a return you already filed. Generally, to timely claim a refund on your amended return, Form 1040-X must be filed within 3 years after the date the original return was filed or within 2 years after the date the tax was paid, whichever is later. But you may have more time to file Form 1040-X if you live in a federally declared disaster area or you are physically or mentally unable to manage your financial affairs. See Pub. 556 for details.",
+   "source_page": 83
+  },
+  {
+   "type": "paragraph",
+   "text": "You can file Form 1040-X electronically with tax filing software to amend Forms 1040 and 1040-SR. See IRS.gov/Filing/Amended-Return-Frequently-Asked-Questions for more information.",
+   "source_page": 83,
+   "runs": [
+    {
+     "text": "You can file Form 1040-X electronically with tax filing software to amend Forms 1040 and 1040-SR. See ",
+     "style": "normal"
+    },
+    {
+     "text": "IRS.gov/Filing/Amended-Return-Frequently-Asked-Questions",
+     "style": "normal",
+     "href": "https://www.irs.gov/filing/amended-return-frequently-asked-questions"
+    },
+    {
+     "text": " for more information.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "Use the Where’s My Amended Return application on IRS.gov to track the status of your amended return. It can take up to 3 weeks from the date you mailed it to show up in our system.",
+   "source_page": 83,
+   "runs": [
+    {
+     "text": "Use the ",
+     "style": "normal"
+    },
+    {
+     "text": "Where’s My Amended Return",
+     "style": "normal",
+     "href": "https://www.irs.gov/1040xstatus"
+    },
+    {
+     "text": " application on IRS.gov to track the status of your amended return. It can take up to 3 weeks from the date you mailed it to show up in our system.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Need a Copy of Your Tax Return Information?",
+   "source_page": 83
+  },
+  {
+   "type": "paragraph",
+   "text": "Tax return transcripts are free and are generally used to validate income and tax filing status for mortgage applications, student and small business loan applications, and during tax return preparation. To get a free transcript:",
+   "source_page": 83
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Access your online account at IRS.gov/Account,",
+    "Visit IRS.gov/Transcript,",
+    "Use Form 4506-T or 4506T-EZ, or",
+    "Call us at 800-908-9946."
+   ],
+   "source_page": 83,
+   "item_runs": [
+    [
+     {
+      "text": "Access your online account at ",
+      "style": "normal"
+     },
+     {
+      "text": "IRS.gov/Account",
+      "style": "normal",
+      "href": "https://www.irs.gov/account"
+     },
+     {
+      "text": ",",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "Visit ",
+      "style": "normal"
+     },
+     {
+      "text": "IRS.gov/Transcript",
+      "style": "normal",
+      "href": "https://www.irs.gov/transcript"
+     },
+     {
+      "text": ",",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "Use Form 4506-T or 4506T-EZ, or",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "Call us at 800-908-9946.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "If you need a copy of your actual tax return, use Form 4506. There is a fee for each return requested. See Form 4506 for the current fee. If your main home, principal place of business, or tax records are located in a federally declared disaster area, this fee will be waived.",
+   "source_page": 83
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Past Due Returns",
+   "source_page": 83
+  },
+  {
+   "type": "paragraph",
+   "text": "If you or someone you know needs to file past due tax returns, go to Filing past due returns or IRS.gov/Individuals for help in filing those returns. Send the return to the address that applies to you in the latest Form 1040 and 1040-SR instructions. For example, if you are filing a 2022 return in 2026 use the address at the end of these instructions. However, if you got an IRS notice, mail the return to the address in the notice.",
+   "source_page": 83,
+   "runs": [
+    {
+     "text": "If you or someone you know needs to file past due tax returns, go to ",
+     "style": "normal"
+    },
+    {
+     "text": "Filing past due returns",
+     "style": "normal",
+     "href": "https://www.irs.gov/Filingpastdue"
+    },
+    {
+     "text": " or ",
+     "style": "normal"
+    },
+    {
+     "text": "IRS.gov/Individuals",
+     "style": "normal",
+     "href": "https://www.irs.gov/individual-tax-filing"
+    },
+    {
+     "text": " for help in filing those returns. Send the return to the address that applies to you in the latest Form 1040 and 1040-SR instructions. For example, if you are filing a 2022 return in 2026 use the address at the end of these instructions. However, if you got an IRS notice, mail the return to the address in the notice.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 2,
+   "text": "How To Get Tax Help",
+   "source_page": 83
+  },
+  {
+   "type": "paragraph",
+   "text": "If you have questions about a tax issue; need help preparing your tax return; or want to download free publications, forms, or instructions, go to IRS.gov to find resources that can help you right away.",
+   "source_page": 83,
+   "runs": [
+    {
+     "text": "If you have questions about a tax issue; need help preparing your tax return; or want to download free publications, forms, or instructions, go to ",
+     "style": "normal"
+    },
+    {
+     "text": "IRS.gov",
+     "style": "normal",
+     "href": "https://www.irs.gov/"
+    },
+    {
+     "text": " to find resources that can help you right away.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Tax reform",
+   "source_page": 83
+  },
+  {
+   "type": "paragraph",
+   "text": "Tax reform legislation impacting federal taxes, credits, and deductions was enacted in P.L. 119-21, commonly known as the One Big Beautiful Bill Act, on July 4, 2025. Go to IRS.gov/OBBB for more information and updates on how this legislation affects your taxes.",
+   "source_page": 83,
+   "runs": [
+    {
+     "text": "Tax reform legislation impacting federal taxes, credits, and deductions was enacted in P.L. 119-21, commonly known as the One Big Beautiful Bill Act, on July 4, 2025. Go to ",
+     "style": "normal"
+    },
+    {
+     "text": "IRS.gov/OBBB",
+     "style": "normal",
+     "href": "https://www.irs.gov/obbb"
+    },
+    {
+     "text": " for more information and updates on how this legislation affects your taxes.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Preparing and filing your tax return",
+   "source_page": 83
+  },
+  {
+   "type": "paragraph",
+   "text": "After receiving all your wage and earnings statements (Forms W-2, W-2G, 1099-R, 1099-MISC, 1099-NEC, etc.); unemployment compensation statements (by mail or in a digital format) or other government payment statements (Form 1099-G); and interest, dividend, and retirement statements from banks and investment firms (Forms 1099), you have several options to choose from to prepare and file your tax return. You can prepare the tax return yourself, see if you qualify for free tax preparation, or hire a tax professional to prepare your return.",
+   "source_page": 83
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Free options for tax preparation",
+   "source_page": 83
+  },
+  {
+   "type": "paragraph",
+   "text": "Your options for preparing and filing your return online or in your local community, if you qualify, include the following.",
+   "source_page": 83
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Free File. This program lets you prepare and file your federal individual income tax return for free using software or Free File Fillable Forms. However, state tax preparation may not be available through Free File. Go to IRS.gov/FreeFile to see if you qualify for free online federal tax preparation, e-filing, and direct deposit or payment options.",
+    "VITA. The Volunteer Income Tax Assistance (VITA) program offers free tax help to people with low-to-moderate incomes, persons with disabilities, and limited-English-speaking taxpayers who need help preparing their own tax returns. Go to IRS.gov/VITA, download the free IRS2Go app, or call 800-906-9887 for information on free tax return preparation.",
+    "TCE. The Tax Counseling for the Elderly (TCE) program offers free tax help for all taxpayers, particularly those who are 60 years of age and older. TCE volunteers specialize in answering questions about pensions and retirement-related issues unique to seniors. Go to IRS.gov/TCE or download the free IRS2Go app for information on free tax return preparation.",
+    "MilTax. Members of the U.S. Armed Forces and qualified veterans may use MilTax, a free tax service offered by the Department of Defense through Military OneSource. For more information, go to MilitaryOneSource (MilitaryOneSource.mil/MilTax)."
+   ],
+   "source_page": 83,
+   "item_runs": [
+    [
+     {
+      "text": "Free File.",
+      "style": "strong"
+     },
+     {
+      "text": " This program lets you prepare and file your federal individual income tax return for free using software or Free File Fillable Forms. However, state tax preparation may not be available through Free File. Go to ",
+      "style": "normal"
+     },
+     {
+      "text": "IRS.gov/FreeFile",
+      "style": "normal",
+      "href": "https://www.irs.gov/freefile"
+     },
+     {
+      "text": " to see if you qualify for free online federal tax preparation, e-filing, and direct deposit or payment options.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "VITA.",
+      "style": "strong"
+     },
+     {
+      "text": " The Volunteer Income Tax Assistance (VITA) program offers free tax help to people with low-to-moderate incomes, persons with disabilities, and limited-English-speaking taxpayers who need help preparing their own tax returns. Go to ",
+      "style": "normal"
+     },
+     {
+      "text": "IRS.gov/VITA",
+      "style": "normal",
+      "href": "https://www.irs.gov/vita"
+     },
+     {
+      "text": ", download the free IRS2Go app, or call 800-906-9887 for information on free tax return preparation.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "TCE.",
+      "style": "strong"
+     },
+     {
+      "text": " The Tax Counseling for the Elderly (TCE) program offers free tax help for all taxpayers, particularly those who are 60 years of age and older. TCE volunteers specialize in answering questions about pensions and retirement-related issues unique to seniors. Go to ",
+      "style": "normal"
+     },
+     {
+      "text": "IRS.gov/TCE",
+      "style": "normal",
+      "href": "https://www.irs.gov/tce"
+     },
+     {
+      "text": " or download the free IRS2Go app for information on free tax return preparation.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "MilTax.",
+      "style": "strong"
+     },
+     {
+      "text": " Members of the U.S. Armed Forces and qualified veterans may use MilTax, a free tax service offered by the Department of Defense through Military OneSource. For more information, go to ",
+      "style": "normal"
+     },
+     {
+      "text": "MilitaryOneSource",
+      "style": "normal",
+      "href": "https://www.militaryonesource.mil/miltax"
+     },
+     {
+      "text": " (",
+      "style": "normal"
+     },
+     {
+      "text": "MilitaryOneSource.mil/MilTax",
+      "style": "normal",
+      "href": "https://www.militaryonesource.mil/miltax"
+     },
+     {
+      "text": ").",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "Also, the IRS offers Free Fillable Forms, which can be completed online and then e-filed regardless of income.",
+   "source_page": 83
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Using online tools to help prepare your return",
+   "source_page": 83
+  },
+  {
+   "type": "paragraph",
+   "text": "Go to IRS.gov/Tools for the following.",
+   "source_page": 83,
+   "runs": [
+    {
+     "text": "Go to ",
+     "style": "normal"
+    },
+    {
+     "text": "IRS.gov/Tools",
+     "style": "normal",
+     "href": "https://www.irs.gov/tools"
+    },
+    {
+     "text": " for the following.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "The Earned Income Tax Credit Assistant (IRS.gov/EITCAssistant) determines if you’re eligible for the earned income credit (EITC).",
+    "The Online EIN Application (IRS.gov/EIN) helps you get an employer identification number (EIN) at no cost.",
+    "The Tax Withholding Estimator (IRS.gov/W4App) makes it easier for you to estimate the federal income tax you want your employer to withhold from your paycheck. This is tax withholding. See how your withholding affects your refund, take-home pay, or tax due.",
+    "The Sales Tax Deduction Calculator (IRS.gov/SalesTax) figures the amount you can claim if you itemize deductions on Schedule A (Form 1040)."
+   ],
+   "source_page": 83,
+   "item_runs": [
+    [
+     {
+      "text": "The ",
+      "style": "normal"
+     },
+     {
+      "text": "Earned Income Tax Credit Assistant",
+      "style": "normal",
+      "href": "https://www.irs.gov/eitcassistant"
+     },
+     {
+      "text": " (",
+      "style": "normal"
+     },
+     {
+      "text": "IRS.gov/EITCAssistant",
+      "style": "normal",
+      "href": "https://www.irs.gov/eitcassistant"
+     },
+     {
+      "text": ") determines if you’re eligible for the earned income credit (EITC).",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "The ",
+      "style": "normal"
+     },
+     {
+      "text": "Online EIN Application",
+      "style": "normal",
+      "href": "https://www.irs.gov/ein"
+     },
+     {
+      "text": " (",
+      "style": "normal"
+     },
+     {
+      "text": "IRS.gov/EIN",
+      "style": "normal",
+      "href": "https://www.irs.gov/ein"
+     },
+     {
+      "text": ") helps you get an employer identification number (EIN) at no cost.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "The ",
+      "style": "normal"
+     },
+     {
+      "text": "Tax Withholding Estimator",
+      "style": "normal",
+      "href": "https://www.irs.gov/W4app"
+     },
+     {
+      "text": " (",
+      "style": "normal"
+     },
+     {
+      "text": "IRS.gov/W4App",
+      "style": "normal",
+      "href": "https://www.irs.gov/w4app"
+     },
+     {
+      "text": ") makes it easier for you to estimate the federal income tax you want your employer to withhold from your paycheck. This is tax withholding. See how your withholding affects your refund, take-home pay, or tax due.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "The ",
+      "style": "normal"
+     },
+     {
+      "text": "Sales Tax Deduction Calculator",
+      "style": "normal",
+      "href": "https://www.irs.gov/salestax"
+     },
+     {
+      "text": " (",
+      "style": "normal"
+     },
+     {
+      "text": "IRS.gov/SalesTax",
+      "style": "normal",
+      "href": "https://www.irs.gov/salestax"
+     },
+     {
+      "text": ") figures the amount you can claim if you itemize deductions on Schedule A (Form 1040).",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Getting answers to your tax questions",
+   "source_page": 83
+  },
+  {
+   "type": "paragraph",
+   "text": "On IRS.gov, you can get up-to-date information on current events and changes in tax law.",
+   "source_page": 83
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "IRS.gov/Help: A variety of tools to help you get answers to some of the most common tax questions.",
+    "IRS.gov/ITA: The Interactive Tax Assistant, a tool that will ask you questions and, based on your input, provide answers on a number of tax topics.",
+    "IRS.gov/Forms: Find forms, instructions, and publications. You will find details on the most recent tax changes and interactive links to help you find answers to your questions.",
+    "You may also be able to access tax information in your e-filing software."
+   ],
+   "source_page": 83,
+   "item_runs": [
+    [
+     {
+      "text": "IRS.gov/Help",
+      "style": "normal",
+      "href": "https://www.irs.gov/help"
+     },
+     {
+      "text": ": A variety of tools to help you get answers to some of the most common tax questions.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "IRS.gov/ITA",
+      "style": "normal",
+      "href": "https://www.irs.gov/ita"
+     },
+     {
+      "text": ": The Interactive Tax Assistant, a tool that will ask you questions and, based on your input, provide answers on a number of tax topics.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "IRS.gov/Forms",
+      "style": "normal",
+      "href": "https://www.irs.gov/forms"
+     },
+     {
+      "text": ": Find forms, instructions, and publications. You will find details on the most recent tax changes and interactive links to help you find answers to your questions.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "You may also be able to access tax information in your e-filing software.",
+      "style": "normal"
+     }
+    ]
+   ]
+  }
+ ],
+ "review_notes": [
+  "TRANCHE 24 OF A MULTI-SESSION REBUILD. This plan covers printed page 83 only: Amended Return, Need a Copy of Your Tax Return Information?, Past Due Returns, and the opening of How To Get Tax Help. It carries no document title by design — only tranche 1 does — so this file validates through merge-plans rather than standalone. No partial rebuild is delivered.",
+  "A ONE-PAGE TRANCHE because the page earns it: 31 Link annotations, three section headings, a top-level section opening halfway down, and six run-in-led topics with four embedded lists. Page 84 continues the same section and is a natural next tranche.",
+  "“HOW TO GET TAX HELP” IS LEVEL 2 THOUGH IT IS PRINTED AT 14pt, the same size as the level-3 heads immediately above it (Amended Return, Past Due Returns). The page-2 table of contents lists it as a top-level entry alongside “What's New”, “Filing Requirements” and “Line Instructions”, while those neighbours are not listed at all. This is the same conflict “Assemble Your Return” posed in session 20 and is resolved the same way: type size states prominence, the TOC states structure, and where they disagree the TOC is the better evidence.",
+  "THE RECORDS-RETENTION PARAGRAPH THAT FINISHES AT THE TOP OF THIS PAGE IS NOT REPEATED. It was authored whole at page 82 in tranche 23, as the handoff convention requires. A recall check on this page alone will therefore show “replacement property. For more details, see chapter 1 of Pub. 17.” as uncovered; it is covered by the previous tranche.",
+  "THE LAST LIST RUNS ACROSS THE 83-84 BREAK AND IS AUTHORED WHOLE HERE. “Getting answers to your tax questions” has four items, two of which are printed on page 84. Splitting a four-item list at a page boundary would leave a reader with two orphaned fragments, so the whole list is authored at page 83 and the page-84 tranche must not re-author its last two items.",
+  "EVERY LINK TARGET IS THE PDF'S OWN ANNOTATION, matched to its text by rect position, and this page shows why that is not optional. “IRS.gov/Individuals” resolves to irs.gov/individual-tax-filing, which no amount of reading the visible text would produce. Two are phrase links with no visible URL at all: “Where's My Amended Return” (irs.gov/1040xstatus) and “Filing past due returns” (irs.gov/Filingpastdue).",
+  "FOUR TOOL NAMES ARE LINKED TWICE, and both links are kept. The source sets each as “The Earned Income Tax Credit Assistant (IRS.gov/EITCAssistant)” with the NAME and the PARENTHETICAL both carrying the same target. Collapsing them to one link would mean choosing which half to drop and rewriting the sentence; keeping both is faithful, and the mild redundancy of two adjacent links to one destination costs a screen-reader user far less than altered wording would.",
+  "BOLD RUN-IN LEADS BECOME LEVEL-3 HEADINGS with the trailing period dropped (Tax reform, Preparing and filing your tax return, Free options for tax preparation, Using online tools to help prepare your return, Getting answers to your tax questions), so the directory of help options is navigable. Level 3 and not 4: they are the direct children of “How To Get Tax Help”, which is itself level 2, and merge-plans rejects the h2-to-h4 skip that level 4 would create. Bold leads INSIDE list items — Free File, VITA, TCE, MilTax — stay in the item and are marked strong, because promoting them would break the list they belong to.",
+  "PAGE FURNITURE OMITTED as in every earlier tranche: the printed page number and the standing “Need more information or forms? Visit IRS.gov.” footer. Soft hyphens removed and justified line-break hyphens closed, while genuine compounds are kept (1040-SR, 1099-MISC, low-to-moderate, limited-English-speaking, retirement-related, take-home, up-to-date, e-filing)."
+ ]
+}

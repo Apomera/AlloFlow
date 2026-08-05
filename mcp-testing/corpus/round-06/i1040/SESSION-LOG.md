@@ -1060,19 +1060,57 @@ slip session 5 made. Review notes do not pass through `rich()`, so the markers
 would have shipped literally. Normalised to curly quotes. Worth remembering:
 the leakage check must cover `review_notes`, not just blocks.
 
-### NEXT: pages 83-87, then the schedules
+### Session 24 (2026-08-04) - page 83 - tranche-24 - 26 blocks - VALIDATED (merged)
 
-Page 83 finishes the records-retention paragraph (authored whole at page 82 -
-do NOT re-author it) and opens Amended Return, Need a Copy of Your Tax Return
-Information?, and Past Due Returns, then "How To Get Tax Help" begins halfway
-down. That is a top-level TOC entry, so level 2, despite being printed at the
-same 14pt as the level-3 heads around it - the same type-size-versus-TOC
-conflict that "Assemble Your Return" posed in session 20. Pages 84-85 continue
-it, page 86 adds Interest and Penalties, and page 87 is Refund Information,
-also a top-level TOC entry.
+Amended Return, Need a Copy of Your Tax Return Information?, Past Due Returns,
+and the opening of How To Get Tax Help. `merge-plans t01..t24` -> 1,217
+blocks, `ok: true`, **pages 1-83 covered**, zero heading skips. Recall 0.9843.
 
-Then 88-117, the instructions for Schedules 1, 1-A, 2 and 3, which are the
-largest remaining block. Then the back matter: Tax Topics (118), the
+**A one-page tranche because the page earns it:** 31 Link annotations, three
+section headings, a top-level section opening halfway down, and six
+run-in-led topics with four embedded lists.
+
+**"How To Get Tax Help" is level 2 though printed at 14pt**, the same size as
+the level-3 heads immediately above it. The TOC lists it as a top-level entry
+while those neighbours are not listed at all. Same conflict "Assemble Your
+Return" posed in session 20, resolved the same way.
+
+**The validator caught the consequence.** With that section at level 2, its
+run-in topics are its DIRECT children, so authoring them at level 4 (the level
+run-in leads get everywhere else in this rebuild) skipped h2 to h4 and
+`merge-plans` rejected the plan. They are level 3 here. **The level a run-in
+lead takes depends on what encloses it, not on what it looks like** - that is
+the second time this rebuild has learned it from the validator rather than
+from the page.
+
+**The recall shortfall was predicted in advance and matched exactly.** The
+records-retention paragraph finishing at the top of page 83 was authored whole
+at page 82 in tranche 23, so a page-83 recall shows "replacement property. For
+more details, see chapter 1 of Pub. 17." as uncovered. Every other shortfall
+token is page furniture. Nothing unexplained.
+
+**A four-item list runs across the 83-84 break and is authored whole here.**
+Splitting it would leave a reader two orphaned fragments. The page-84 tranche
+must NOT re-author its last two items (IRS.gov/Forms, and the e-filing
+software note).
+
+**Four tool names are linked twice each and both links are kept** - the source
+sets "The Earned Income Tax Credit Assistant (IRS.gov/EITCAssistant)" with the
+name and the parenthetical both carrying the same target. Collapsing them
+would mean choosing which half to drop and rewriting the sentence.
+
+### NEXT: page 84 onward
+
+Page 84 continues How To Get Tax Help (Need someone to prepare your tax
+return?, Business Services Online, ordering forms, IRS eBooks, your online
+account). **Do not re-author the two list items carried into tranche 24.**
+Then 85 (identity theft, refund status, payments, amended returns, TAS), 86
+(Interest and Penalties - a 14pt head that nests under How To Get Tax Help by
+the document's own structure, like Third Party Designee in session 20), and 87
+(Refund Information, an 18pt top-level TOC entry, so level 2).
+
+Then 88-117, the instructions for Schedules 1, 1-A, 2 and 3, the largest
+remaining block. Then the back matter: Tax Topics (118), the
 Disclosure/Privacy Act notice (120), Major Categories of Federal Income and
 Outlays (122), and the MECHANICAL Index (123-126). Do not hand-author the
 Index.
