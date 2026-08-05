@@ -313,7 +313,53 @@ the risk and is independently testable, which is where it should start.
 
 ---
 
-## 10. Open questions for build time
+## 10. Transport parity — Firebase vs mailbox
+
+**Question:** can the board behave identically for the end user on both pathways?
+
+**Identical UX: yes, and the pattern is already proven twice in this repo.** The
+mailbox bridge reroutes the Firestore bindings so that "polls, quiz, pictionary and the
+whole SessionModal run UNCHANGED over the mailbox" (`AlloFlowANTI.txt:270-282`). The
+standards provider is the same shape: one contract, swappable backing. A board should
+follow it — one provider interface, two adapters, UI coded against the interface only.
+
+**Identical enforcement: no, not today, and this is the real work.**
+
+`firestore.rules` contains **zero** occurrences of `revealPolicy`, `minParticipants`,
+or `word_cloud`. Every guarantee in §1.3 — reveal gating, the k-anonymity floor,
+per-response moderation status, participant caps, participant rate limits — is enforced
+**server-side in Apps Script only** (`Code.gs`). The Firestore rules govern session and
+signaling docs (`:156-191`) and an owner-scoped collection (`:236-237`), nothing about
+activities.
+
+The consequence is sharp and safety-relevant: if the Firebase adapter is built by
+mirroring client behaviour alone, **held (unapproved) questions would be readable
+straight from Firestore by any joined student**, and the reveal gate would be
+decoration. For a moderated, pseudonymous board carrying student free text, that is not
+an acceptable difference.
+
+### Design rules that follow
+
+1. **Design to the tighter constraint.** Build against the mailbox's limits (85 KB doc,
+   250 participants, 120 participant writes/min, 8 activities). Firestore's ceilings are
+   far higher, so a board designed for the mailbox runs unmodified on Firebase; the
+   reverse silently breaks.
+2. **Put the invariants in the contract, not the UI.** Reveal gating and the
+   k-anonymity floor are data-access rules. Whichever adapter is active must enforce
+   them below the client.
+3. **Firebase parity is gated on real `firestore.rules` work** — held items must be
+   unreadable by participants, item writes must be attributable and capped, and status
+   transitions must be teacher-only. Until those exist, the Firebase path should be
+   treated as unsupported for boards, not as a working alternative.
+4. **Prefer mailbox as the default for this feature** — §8.3 (data posture) points the
+   same direction independently, so the transport with the stronger privacy story is
+   also the one with the working enforcement.
+
+Latency is not a parity concern here. The mailbox's version-delta poll pump plus RTC
+nudge is invisible for async posting; it would only matter for continuous presence,
+which is out of scope (§6).
+
+## 11. Open questions for build time
 
 - Does the CacheService → Drive read-through degrade correctly for an *activity* after
   a multi-day eviction? The session doc has an explicit re-seed path; confirm the
