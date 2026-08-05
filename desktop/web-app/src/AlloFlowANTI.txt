@@ -36142,7 +36142,6 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       startMatchingGame: () => { try { setActiveView('glossary'); } catch (_) {} handleSetIsMatchingGameToTrue(); },
       startBingoGame: () => { try { setActiveView('glossary'); } catch (_) {} if (isTeacherMode) handleSetIsBingoGameToTrue(); else handleSetIsStudentBingoGameToTrue(); },
       cycleColorOverlay: () => { const order = ['none', 'blue', 'peach', 'yellow']; const next = order[(order.indexOf(colorOverlay) + 1) % order.length]; setColorOverlay(next); return next; },
-      toggleAnimations: () => { setDisableAnimations(prev => !prev); return true; },
       animationsDisabled: disableAnimations,
       adjustVoiceSpeed: (delta) => { const next = Math.round(Math.max(0.5, Math.min(2, (Number(voiceSpeed) || 1) + (Number(delta) || 0))) * 100) / 100; setVoiceSpeed(next); return next; },
       startCrosswordGame: () => { try { setActiveView('glossary'); } catch (_) {} handleSetIsCrosswordGameToTrue(); },
