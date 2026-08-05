@@ -1979,18 +1979,58 @@ them would break a reference the source relies on.
 Nothing is carried out: the page ends on a completed "Valid SSN" paragraph and
 page 111 opens the Instructions for Schedule 2, checked rather than assumed.
 
-### NEXT: page 111 onward
+### Session 51 (2026-08-05) - page 111 - tranche-51 - 29 blocks - VALIDATED (merged)
 
-**Schedule 1-A is done.** Page 111 opens the **Instructions for Schedule 2,
-Additional Taxes** - a new top-level TOC entry, so its heading opens at level
-2 as Schedule 1 and Schedule 1-A did. It carries General Instructions, then
-Specific Instructions with "Lines 1a Through 1z / Additions to Tax" and line
-1a (Excess advance premium tax credit repayment).
+The opening of the Instructions for Schedule 2, Additional Taxes: General
+Instructions and the lines 1a through 1y additions to tax. `merge-plans
+t01..t51` -> 1,769 blocks, `ok: true`, **pages 1-111 covered**, zero heading
+skips. Recall 0.9887 against the union baseline, **0.9932 against pdf.js alone
+with ZERO content missing** - the six remaining tokens are the five
+ordered-list markers and the folio.
 
-Then Schedule 2 (111-114) and Schedule 3 (115-117). Then the back matter: Tax
-Topics (118), the Disclosure/Privacy Act notice (120), Major Categories of
-Federal Income and Outlays (122), and the MECHANICAL Index (123-126). Do not
-hand-author the Index.
+**The session-49 phantom repeated, on the same token.** The union run again
+reported one missing `of`, and again it exists only in the CONTENT-STREAM
+channel. Twice now, and both times the token is `of` - which makes it a
+specific CS extraction quirk rather than noise, and means the `--source pdfjs`
+check written up in session 49 is a repeatable procedure, not a one-off. It
+took under a minute the second time.
+
+**Nothing is carried in or out**, checked in both directions - the first
+tranche since 40 that needs no handoff either way.
+
+**"Lines 1a Through 1z" and "Additions to Tax" are merged into one heading.**
+The source sets them as a size cascade under "Specific Instructions" (16pt):
+the range at 12pt, the title at 10pt. That is the same
+number-line-over-title-line pair it sets on page 88 - "Line 1" at 14pt over
+"Taxable Refunds, Credits, or Offsets of State and Local Income Taxes" at 12pt
+- which tranche 28 merged into a single level-4 heading. **Page 88's geometry
+was re-measured rather than recalled from the wording**, and the two match.
+Result is 2 -> 3 -> 4 -> 5 with no skips.
+
+`runin_levels.cjs` reports ONE run-in level here: all thirteen line run-ins
+share a face and are all flush. Unlike pages 102-110, this page has no
+indented second tier, so every line instruction is level 5.
+
+**The condition lists under lines 1b and 1c interrupt their sentences**, and
+the sentence is allowed to resume in its own block ("then, enter the amount
+from Part I, line 4a, on Schedule 2, line 1b."). The alternative - folding the
+conditions into the parent, as method 5 was handled in tranche 47 - is wrong
+here: the two conditions are joined by "and" and BOTH must hold, so flattening
+them into prose would bury a conjunction a filer has to satisfy. Tranche 47's
+fold was forced by an ordered list whose numbering the prose referenced;
+nothing here is numbered.
+
+### NEXT: page 112 onward
+
+Page 112 opens with a **TIP box** about elective pay and credit transferability
+(carrying a long IRS.gov URL that will need checking against its Link
+annotation), then **Line 2, Alternative Minimum Tax (AMT)**. Nothing is carried
+into it from tranche 51.
+
+Then the rest of Schedule 2 (112-114) and Schedule 3 (115-117). Then the back
+matter: Tax Topics (118), the Disclosure/Privacy Act notice (120), Major
+Categories of Federal Income and Outlays (122), and the MECHANICAL Index
+(123-126). Do not hand-author the Index.
 
 ## Run-in level audit (2026-08-05) - the session-49 concern, checked and CLOSED
 

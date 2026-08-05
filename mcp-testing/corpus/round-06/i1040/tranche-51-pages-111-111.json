@@ -1,0 +1,194 @@
+{
+ "schema_version": "1.0",
+ "document": {
+  "title": "2025 Instructions for Form 1040 (and 1040-SR)",
+  "language": "en",
+  "source_page_count": 126,
+  "source_sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a",
+  "document_type": "booklet",
+  "subject": "Internal Revenue Service instructions for the 2025 Form 1040 and Form 1040-SR, including the instructions for Schedules 1 through 3.",
+  "variant": "original"
+ },
+ "blocks": [
+  {
+   "type": "heading",
+   "level": 2,
+   "text": "Instructions for Schedule 2: Additional Taxes",
+   "source_page": 111
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "General Instructions",
+   "source_page": 111
+  },
+  {
+   "type": "paragraph",
+   "text": "Use Schedule 2 if you have additional taxes that can’t be entered directly on Form 1040, 1040-SR, or 1040-NR.",
+   "source_page": 111
+  },
+  {
+   "type": "paragraph",
+   "text": "Include the amount on Schedule 2, line 3, in the total on Form 1040, 1040-SR, or 1040-NR, line 17.",
+   "source_page": 111
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter the amount on Schedule 2, line 21, on Form 1040 or 1040-SR, line 23; or 1040-NR, line 23b.",
+   "source_page": 111
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Specific Instructions",
+   "source_page": 111
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Lines 1a Through 1z. Additions to Tax",
+   "source_page": 111
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 1a. Excess advance premium tax credit repayment",
+   "source_page": 111
+  },
+  {
+   "type": "paragraph",
+   "text": "The premium tax credit helps pay premiums for health insurance purchased from the Marketplace. Eligible individuals may have advance payments of the premium tax credit paid on their behalf directly to the insurance company. If you, your spouse with whom you are filing a joint return, or your dependent was enrolled in coverage purchased from the Marketplace and advance payments of the premium tax credit were made for the coverage, complete Form 8962 to reconcile (compare) the advance payments with your premium tax credit. You (or whoever enrolled you) should have received Form 1095-A from the Marketplace with information about your coverage and any advance credit payments. If the advance credit payments were more than the premium tax credit you can claim, the amount you must repay will be shown on Form 8962, line 29. Enter that amount, if any, on line 1a.",
+   "source_page": 111
+  },
+  {
+   "type": "paragraph",
+   "text": "You may have to repay excess advance payments of the premium tax credit even if someone else enrolled you, your spouse, or your dependent in Marketplace coverage. In that case, another individual may have received the Form 1095-A for the coverage. You may also have to repay excess advance payments of the premium tax credit if you enrolled an individual in coverage through the Marketplace, you don’t claim the individual as a dependent on your return, and no one else claims that individual as a dependent. For more information, see the Instructions for Form 8962.",
+   "source_page": 111
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 1b. Repayment of new clean vehicle credit(s) from Schedule A (Form 8936), Part II",
+   "source_page": 111
+  },
+  {
+   "type": "paragraph",
+   "text": "If you purchased a new clean vehicle from a registered dealer and reduced the amount you paid at the time of sale by transferring the credit to the dealer, you may have to repay the amount of the credit you transferred if you no longer qualify. If you completed Schedule A (Form 8936), Part II, and you:",
+   "source_page": 111
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Checked the “Yes” box on Part II, line 8a or 8d; and",
+    "Checked the “Yes” box on Part I, line 4a;"
+   ],
+   "source_page": 111
+  },
+  {
+   "type": "paragraph",
+   "text": "then, enter the amount from Part I, line 4a, on Schedule 2, line 1b.",
+   "source_page": 111
+  },
+  {
+   "type": "paragraph",
+   "text": "If you completed more than one Schedule A (Form 8936), Part II, and you need to report an amount from more than one Schedule A (Form 8936), Part II, enter the total of those amounts on line 1b.",
+   "source_page": 111
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 1c. Repayment of previously owned clean vehicle credit(s) from Schedule A (Form 8936), Part IV",
+   "source_page": 111
+  },
+  {
+   "type": "paragraph",
+   "text": "If you purchased a previously owned clean vehicle from a registered dealer and reduced the amount you paid at the time of sale by transferring the credit to the dealer, you may have to repay the amount of the credit you transferred if you no longer qualify. If you completed Schedule A (Form 8936), Part IV, and you:",
+   "source_page": 111
+  },
+  {
+   "type": "list",
+   "ordered": false,
+   "items": [
+    "Checked the “Yes” box on Part IV, line 13a or 13c; and",
+    "Checked the “Yes” box on Part I, line 4a;"
+   ],
+   "source_page": 111
+  },
+  {
+   "type": "paragraph",
+   "text": "then, enter the amount from Part I, line 4a, on Schedule 2, line 1c.",
+   "source_page": 111
+  },
+  {
+   "type": "paragraph",
+   "text": "If you completed more than one Schedule A (Form 8936), Part IV, and you need to report an amount from more than one Schedule A (Form 8936), Part IV, enter the total of those amounts on line 1c.",
+   "source_page": 111
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 1d. Recapture of net EPE",
+   "source_page": 111
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter any amount of net elective payment election (EPE) recapture from Form 4255, line 2a, column (l).",
+   "source_page": 111
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 1e. Excessive payments (EPs) on gross EPE from Form 4255",
+   "source_page": 111
+  },
+  {
+   "type": "paragraph",
+   "text": "If you reported an amount on Form 4255, column (n)(1), on line 1a, 1c, 1d, and/or 2a, check the applicable box and enter the amount on line 1e. If you checked more than one box, enter the total amount on line 1e.",
+   "source_page": 111
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 1f. 20% EP from Form 4255",
+   "source_page": 111
+  },
+  {
+   "type": "paragraph",
+   "text": "If you reported an amount on Form 4255, column (n)(3), line 1a, 1c, 1d, and/or 2a, check the applicable box and enter the amount on line 1f. If you checked more than one box, enter the total on line 1f.",
+   "source_page": 111
+  },
+  {
+   "type": "heading",
+   "level": 5,
+   "text": "Line 1y. Other additions to tax",
+   "source_page": 111
+  },
+  {
+   "type": "paragraph",
+   "text": "Enter the following additions to tax.",
+   "source_page": 111
+  },
+  {
+   "type": "list",
+   "ordered": true,
+   "items": [
+    "Recapture of the alternative fuel vehicle refueling property credit (see Form 8911). Identify as “ARPCR.”",
+    "Any EPE related to the credit applied against tax from Form 8933 reported on Form 4255, line 2a, column (k). Identify as “EPE8933.”",
+    "Recapture of any non-EPE credit from Form 8933 reported on Form 4255, line 2a, column (j). Also, any section 6418(g)(3) amounts attributable to recapture from Form 8933 reported on Form 4255, line 2a, column (m)(3). Identify as “NEPE8933.”",
+    "Any amount that was reported on Form 4255, column (n)(2), line 1a, 1c, 1d, and/or 2a. Identify as “EPGEPE.”",
+    "Any section 6418(g)(2) excessive credit transfer amount reported on Form 4255, column (m)(1) and (m)(2). Identify as “6418(g)(2).”"
+   ],
+   "source_page": 111
+  }
+ ],
+ "review_notes": [
+  "TRANCHE 51 OF A MULTI-SESSION REBUILD. This plan covers printed page 111, the opening of the Instructions for Schedule 2, Additional Taxes. It carries no document title by design — only tranche 1 does — so this file validates through merge-plans rather than standalone. No partial rebuild is delivered.",
+  "NOTHING IS CARRIED IN OR OUT, checked in both directions. Page 110 ends on a completed “Valid SSN” paragraph and this page opens a new schedule; the line 1y list completes here at item 5 and page 112 opens with a TIP box. The first tranche since 40 that needs no handoff either way.",
+  "THE SCHEDULE'S SUBTITLE IS FOLDED INTO ITS HEADING — “Instructions for Schedule 2: Additional Taxes” — as for Schedule 1 in tranche 28 and Schedule 1-A in tranche 41. The table of contents lists only the first half.",
+  "“Lines 1a Through 1z” AND “Additions to Tax” ARE MERGED INTO ONE HEADING. The source sets them as a size cascade under “Specific Instructions” (16pt): the range at 12pt, the title at 10pt. That is the same number-line-over-title-line pair it sets on page 88 — “Line 1” at 14pt over “Taxable Refunds, Credits, or Offsets of State and Local Income Taxes” at 12pt — which tranche 28 merged into a single level-4 heading. Merged the same way, giving 2 → 3 → 4 → 5 with no skips. Checked against page 88's geometry rather than assumed from the wording.",
+  "ALL THIRTEEN LINE RUN-INS SHARE ONE FACE AND ARE ALL FLUSH, measured with runin_levels.cjs: this page has ONE run-in level, not the two that pages 102, 104, 107, 109, and 110 carry. They are level 5, children of “Lines 1a Through 1z. Additions to Tax”, and each merges its line number with its printed title as “Line NN. Title” with the trailing period dropped.",
+  "THE CONDITION LISTS UNDER LINES 1b AND 1c INTERRUPT THEIR SENTENCES, and the sentence is allowed to resume in its own block (“then, enter the amount from Part I, line 4a, on Schedule 2, line 1b.”). The alternative was folding the two conditions into the parent sentence, as method 5 was handled in tranche 47. It is the wrong call here: those two conditions are joined by “and” and BOTH must hold, so flattening them into prose would bury a conjunction a filer has to satisfy. Tranche 47's fold was forced by an ordered list whose numbering the prose referenced; nothing here is numbered.",
+  "THE PAGE CARRIES NO LINK ANNOTATIONS, checked rather than assumed — the references to Forms 8962, 8936, 4255, 8911, and 8933 are all plain text in the source. Both contractions on the page are curly. PAGE FURNITURE OMITTED: the printed page number. Soft hyphens removed and line-break hyphens closed, while genuine compounds are kept (1040-SR, 1040-NR, 1095-A, non-EPE, 6418(g)(2), (m)(1), (n)(3))."
+ ]
+}
