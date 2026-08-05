@@ -1545,14 +1545,48 @@ rebuild.
 prints a bold "Jury duty pay." after "Line 24a" and nothing after the others.
 The inconsistency is the document's, not the authoring's.
 
-### NEXT: page 100
+### Session 40 (2026-08-05) - page 100 - tranche-40 - 14 blocks - VALIDATED (merged)
 
-Page 100 completes Schedule 1: the rest of lines 24f through 24z and line 25
-(Other Adjustments), and probably the Part II total at line 26. Nothing is
-carried into it - the line 24e paragraph completes on page 99.
+Schedule 1 lines 24f through 24k and 24z. **This completes the Instructions
+for Schedule 1** - 225 blocks across pages 88-100. `merge-plans t01..t40` ->
+1,528 blocks, `ok: true`, **pages 1-100 covered**, zero heading skips. Recall
+0.9533, all seven shortfall instances explained: page furniture plus
+`dis100`/`crimination`, which is "discrimination" split at the column break
+with the page number wedged between its halves - the artifact tranches 2, 4,
+27 and 28 all found.
 
-Then Schedule 1-A (101-110), Schedule 2 (111-114) and Schedule 3 (115-117),
-each a top-level TOC entry opening at level 2. Then the back matter: Tax
-Topics (118), the Disclosure/Privacy Act notice (120), Major Categories of
-Federal Income and Outlays (122), and the MECHANICAL Index (123-126). Do not
-hand-author the Index.
+**Nothing is carried in or out** - the first page since 95 for which that is
+true.
+
+**"Leave line 24z blank." is reproduced as printed.** Line 24z is the
+schedule's catch-all write-in line, and other pages of these instructions
+refer to it as though a write-in may be required: both the Self-Employed
+Health Insurance and Student Loan Interest worksheets open by saying "if the
+instructions for Schedule 1, line 24z, have you enter a write-in adjustment on
+line 24z, figure that write-in first". For 2025 the line 24z instruction is
+simply to leave it blank. **The apparent tension is the source's own and is
+reproduced without comment or correction** - a rebuild that quietly harmonised
+the two would be editing tax instructions, which is not this project's job.
+
+**Schedule 1 ends at line 24z.** There are no printed instructions for lines
+25 or 26, and none were dropped.
+
+### NEXT: page 101, the Instructions for Schedule 1-A
+
+A new top-level TOC entry, so it opens at level 2. Expect the same shapes:
+"Line NN. Title" headings, bold run-in leads merged into them where present,
+icon callouts, and probably worksheets - decide the Amount-column shape per
+worksheet (tranche 39's note).
+
+Then Schedule 2 (111-114) and Schedule 3 (115-117), also level-2 entries. Then
+the back matter: Tax Topics (118), the Disclosure/Privacy Act notice (120),
+Major Categories of Federal Income and Outlays (122), and the MECHANICAL Index
+(123-126). Do not hand-author the Index.
+
+**Standing reminders**, all earned the hard way: read each column to its END
+before authoring; never infer a continuation from a truncated dump - check the
+next page, and check BELOW any full-page worksheet; run
+`carried_block_check.cjs` on every receiving page; take every link target from
+the page's own annotations; and read the recall shortfall for ordinary common
+words, which signal paraphrase in the authoring rather than furniture in the
+source.
