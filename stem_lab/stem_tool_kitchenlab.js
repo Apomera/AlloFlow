@@ -4332,6 +4332,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       else content = renderSafety();
 
       return h('div', { id: 'kitchen-lab-region', tabIndex: -1, style: rootStyle, role: 'region', 'aria-label': __alloT('stem.kitchenlab.kitchen_lab_2', 'Kitchen Lab') },
+        // ── Light-mode readability (2026-08-05) ─────────────────────────────
+        // This tool paints a PERMANENTLY dark surface (rootStyle's #1c1410 →
+        // #251a13 gradient); it does not follow the theme the way a light-palette
+        // tool does. But its text asked for var(--allo-stem-text), which the
+        // default/light palette defines as #0f172a — near-black ON near-black,
+        // measured at 1.02:1. Every heading, body line and caption using the
+        // variable (112 sites) was invisible in light mode while the hardcoded
+        // amber accents stayed readable, which is exactly what the field report
+        // showed.
+        //
+        // Rebind the two text variables for THIS SUBTREE ONLY, so the surface and
+        // its text are described by the same palette. Measured on #1c1410:
+        // 1.02:1 → 14.72:1 for body text, 7.08:1 for the soft variant. Dark theme
+        // already supplied these exact values, so it renders identically; the
+        // second rule keeps high-contrast yellow (16.90:1 here), which must not be
+        // flattened away by the first rule.
+        h('style', null,
+          '#kitchen-lab-region{--allo-stem-text:#e2e8f0;--allo-stem-text-soft:#94a3b8;}' +
+          '.theme-contrast #kitchen-lab-region{--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;}'),
         renderHeader(),
         renderTabs(),
         h('div', { role: 'tabpanel', id: 'stem-kitchen-panel-' + section, 'aria-labelledby': 'stem-kitchen-tab-' + section, tabIndex: 0, style: { padding: 20 } }, content),
