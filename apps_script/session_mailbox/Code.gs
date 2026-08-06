@@ -950,6 +950,42 @@ function normalizeAssignmentActivityConfig(value, expiresAt) {
       expiresAt: String(expiresAt || source.expiresAt || '')
     };
   }
+  if (source.type === 'signup') {
+    // Sign-up sheet: options carry a CAPACITY and claiming is exclusive.
+    var suIdMode = String(source.identityMode || '');
+    if (suIdMode !== 'anonymous' && suIdMode !== 'codename' && suIdMode !== 'real_name') return null;
+    var suRaw = Array.isArray(source.options) ? source.options : [];
+    var suOptions = [];
+    for (var si = 0; si < suRaw.length && suOptions.length < MAX_POLL_OPTIONS; si++) {
+      var suLabel = normalizeAssignmentBoardItemText(suRaw[si] && suRaw[si].label).slice(0, 80);
+      if (!suLabel) continue;
+      var cap = parseInt(suRaw[si] && suRaw[si].capacity, 10);
+      if (!isFinite(cap) || cap < 1) cap = 1;
+      cap = Math.min(cap, MAX_SIGNUP_CAPACITY);
+      suOptions.push({ id: 'o' + (suOptions.length + 1), label: suLabel, capacity: cap });
+    }
+    if (!suOptions.length) return null;
+    var perPerson = parseInt(source.maxPerPerson, 10);
+    if (!isFinite(perPerson) || perPerson < 1) perPerson = 1;
+    perPerson = Math.min(perPerson, suOptions.length);
+    var suCloses = String(source.closesAt || expiresAt || source.expiresAt || '');
+    return {
+      v: 1,
+      activityId: activityId,
+      type: 'signup',
+      delivery: 'shared_async',
+      prompt: prompt,
+      identityMode: suIdMode,
+      options: suOptions,
+      maxPerPerson: perPerson,
+      // A sign-up sheet is USELESS if nobody can see what is left, so unlike
+      // the other types remaining counts are public from the first claim.
+      minParticipants: minParticipants,
+      closesAt: suCloses,
+      deleteAt: String(source.deleteAt || ''),
+      expiresAt: suCloses
+    };
+  }
   if (source.type === 'availability') {
     // Scheduling poll (docs/availability_poll_spec.md). Option labels are the
     // organizer's OWN text: no date parsing and no timezones by design (spec §8).
@@ -1334,6 +1370,112 @@ function applyAvailabilityRetention(state) {
   return true;
 }
 
+// ── Sign-up sheet helpers ────────────────────────────────────────────────
+var MAX_SIGNUP_CAPACITY = 500;
+
+function signupCapacityFor(config, optionId) {
+  for (var i = 0; i < config.options.length; i++) {
+    if (config.options[i].id === optionId) return parseInt(config.options[i].capacity, 10) || 1;
+  }
+  return 0;
+}
+
+// Claims held by everyone EXCEPT one actor. Excluding them is what lets a
+// person resubmit or change their mind without competing against their own
+// existing claim for the last seat.
+function signupTakenCounts(config, responses, exceptUid) {
+  var counts = {};
+  for (var i = 0; i < config.options.length; i++) counts[config.options[i].id] = 0;
+  var rows = responses && typeof responses === 'object' ? responses : {};
+  Object.keys(rows).forEach(function (uid) {
+    if (uid === exceptUid) return;
+    var claims = rows[uid] && rows[uid].claims;
+    if (!Array.isArray(claims)) return;
+    claims.forEach(function (id) { if (counts[id] != null) counts[id]++; });
+  });
+  return counts;
+}
+
+// Deduped, known ids only, capped at what one person may hold.
+function normalizeSignupClaims(value, config) {
+  var source = value;
+  if (typeof source === 'string') { try { source = JSON.parse(source); } catch (e) { return null; } }
+  if (!Array.isArray(source)) return null;
+  var allowed = {};
+  for (var i = 0; i < config.options.length; i++) allowed[config.options[i].id] = true;
+  var out = [];
+  for (var k = 0; k < source.length; k++) {
+    var id = String(source[k] || '');
+    if (!allowed[id] || out.indexOf(id) >= 0) continue;
+    out.push(id);
+  }
+  // An empty array is legitimate: it is how somebody RELEASES a slot they can
+  // no longer make, which matters more here than in a poll.
+  if (out.length > (parseInt(config.maxPerPerson, 10) || 1)) return null;
+  return out;
+}
+
+function buildSignupSummary(state, isHost) {
+  var config = state.config;
+  applySignupRetention(state);
+  var responses = state.responses && typeof state.responses === 'object' ? state.responses : {};
+  var counts = state.tally || signupTakenCounts(config, responses, null);
+  var slots = [];
+  var claimants = {};
+  Object.keys(responses).forEach(function (uid) {
+    var claims = responses[uid] && responses[uid].claims;
+    if (!Array.isArray(claims)) return;
+    claims.forEach(function (id) {
+      if (!claimants[id]) claimants[id] = [];
+      claimants[id].push({
+        label: config.identityMode === 'real_name' ? String(responses[uid].name || '') : availabilityCodename(uid)
+      });
+    });
+  });
+  for (var i = 0; i < config.options.length; i++) {
+    var opt = config.options[i];
+    var taken = parseInt(counts[opt.id], 10) || 0;
+    slots.push({
+      id: opt.id,
+      label: opt.label,
+      capacity: opt.capacity,
+      taken: taken,
+      remaining: Math.max(0, opt.capacity - taken),
+      // Names attach to a SLOT here rather than a row, because "who has 3:15"
+      // is the question a sign-up sheet exists to answer. Anonymous mode still
+      // withholds them from everyone, including the organizer.
+      who: (isHost && config.identityMode !== 'anonymous') ? (claimants[opt.id] || []) : []
+    });
+  }
+  return {
+    ok: true,
+    activityId: state.activityId,
+    type: 'signup',
+    prompt: config.prompt,
+    identityMode: config.identityMode,
+    maxPerPerson: config.maxPerPerson,
+    closesAt: config.closesAt,
+    deleteAt: config.deleteAt,
+    closed: availabilityIsClosed(config),
+    slots: slots,
+    version: parseInt(state.version, 10) || 0,
+    updatedAt: parseInt(state.updatedAt, 10) || 0
+  };
+}
+
+// Same bargain as the poll: the counts outlive the people. After deleteAt the
+// organizer still knows every slot filled, and no longer knows who took them.
+function applySignupRetention(state) {
+  if (!state || !state.config || state.config.type !== 'signup') return false;
+  var deleteAt = Date.parse(state.config.deleteAt);
+  if (!isFinite(deleteAt) || Date.now() < deleteAt) return false;
+  var responses = state.responses && typeof state.responses === 'object' ? state.responses : {};
+  if (!Object.keys(responses).length && state.tally) return false;
+  if (!state.tally) state.tally = signupTakenCounts(state.config, responses, null);
+  state.responses = {};
+  return true;
+}
+
 function availabilityIsClosed(config) {
   var closesAt = Date.parse(config && config.closesAt);
   return isFinite(closesAt) && Date.now() >= closesAt;
@@ -1405,6 +1547,7 @@ function buildAvailabilitySummary(state, isHost) {
 
 function buildAssignmentActivityPublicSummary(state) {
   var responses = state.responses && typeof state.responses === 'object' ? state.responses : {};
+  if (state.config.type === 'signup') return buildSignupSummary(state, false);
   if (state.config.type === 'availability') return buildAvailabilitySummary(state, false);
   if (state.config.type === 'rating') {
     var counts = {};
@@ -1555,9 +1698,14 @@ function upsertAssignmentActivity(cache, p, admin) {
   var ratingValue = null;
   var boardText = '';
   var pollPicks = null;
+  var signupClaims = null;
   if (context.config.type === 'question_board') {
     boardText = normalizeAssignmentBoardItemText(p.term);
     if (!boardText) return out({ ok: false, e: 'bad-term' });
+  } else if (context.config.type === 'signup') {
+    if (availabilityIsClosed(context.config)) return out({ ok: false, e: 'poll-closed' });
+    signupClaims = normalizeSignupClaims(p.claims, context.config);
+    if (!signupClaims) return out({ ok: false, e: 'bad-claims' });
   } else if (context.config.type === 'availability') {
     if (availabilityIsClosed(context.config)) return out({ ok: false, e: 'poll-closed' });
     pollPicks = normalizeAvailabilityPicks(p.picks, context.config);
@@ -1618,6 +1766,26 @@ function upsertAssignmentActivity(cache, p, admin) {
         row.items.pop();
         return out({ ok: false, e: 'board-bytes' });
       }
+    } else if (context.config.type === 'signup') {
+      // The whole point of doing this here: we are inside LockService, so the
+      // seat count cannot change between the check and the write. Checking on
+      // arrival instead would double-book the last slot under any real load.
+      var takenByOthers = signupTakenCounts(context.config, responses, actor.uid);
+      var fullSlots = [];
+      for (var ci = 0; ci < signupClaims.length; ci++) {
+        var claimId = signupClaims[ci];
+        if (takenByOthers[claimId] >= signupCapacityFor(context.config, claimId)) fullSlots.push(claimId);
+      }
+      // Refuse the WHOLE submission and name the full slots, so the client can
+      // say which one went rather than silently dropping part of a person's
+      // choice.
+      if (fullSlots.length) return out({ ok: false, e: 'slot-full', full: fullSlots });
+      var suRow = { claims: signupClaims, updatedAt: Date.now() };
+      if (context.config.identityMode === 'real_name') {
+        var suName = normalizeAssignmentBoardItemText(p.nm).slice(0, 40);
+        if (suName) suRow.name = suName;
+      }
+      responses[actor.uid] = suRow;
     } else if (context.config.type === 'availability') {
       var pollRow = { picks: pollPicks, updatedAt: Date.now() };
       // A name is stored ONLY in real_name mode. If the row carried one in the
@@ -1652,6 +1820,11 @@ function upsertAssignmentActivity(cache, p, admin) {
     state.updatedAt = Date.now();
     writeAssignmentActivityState(state);
     cacheAssignmentActivitySummary(cache, state);
+    if (context.config.type === 'signup') {
+      var claimed = buildSignupSummary(state, false);
+      claimed.own = responses[actor.uid] || null;
+      return out(claimed);
+    }
     if (context.config.type === 'availability') {
       var voted = buildAvailabilitySummary(state, false);
       voted.own = responses[actor.uid] || null;
@@ -1675,6 +1848,7 @@ function getAssignmentActivityAdmin(cache, p) {
     return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
   }
   var state = readAssignmentActivityState(context);
+  if (context.config.type === 'signup') return out(buildSignupSummary(state, true));
   if (context.config.type === 'availability') {
     // The organizer is the audience for a scheduling poll, so rows come back
     // here. buildAvailabilitySummary still withholds them in anonymous mode.
