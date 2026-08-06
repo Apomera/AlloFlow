@@ -1083,14 +1083,15 @@ function HeaderBar(props) {
                                             <label className="block text-[10px] font-bold text-sky-900">
                                               Activity type
                                               <select
-                                                value={sharedAssignmentActivity?.type === 'rating' ? 'rating' : 'word_cloud'}
+                                                value={['rating', 'availability', 'word_cloud'].indexOf(sharedAssignmentActivity?.type) >= 0 ? sharedAssignmentActivity.type : 'word_cloud'}
                                                 onChange={event => {
-                                                  const nextType = event.target.value === 'rating' ? 'rating' : 'word_cloud';
+                                                  const nextType = ['rating', 'availability', 'word_cloud'].indexOf(event.target.value) >= 0 ? event.target.value : 'word_cloud';
                                                   setSharedAssignmentActivity(previous => {
-                                                    const currentType = previous?.type === 'rating' ? 'rating' : 'word_cloud';
+                                                    const currentType = ['rating', 'availability', 'word_cloud'].indexOf(previous?.type) >= 0 ? previous.type : 'word_cloud';
                                                     const defaults = {
                                                       word_cloud: 'What word or short phrase best captures your thinking?',
                                                       rating: 'How would you rate your understanding?',
+                                                      availability: 'Which of these times could you make?',
                                                     };
                                                     const currentPrompt = String(previous?.prompt || '');
                                                     return {
@@ -1104,8 +1105,59 @@ function HeaderBar(props) {
                                               >
                                                 <option value="word_cloud">Word Cloud</option>
                                                 <option value="rating">Rating scale (not scored)</option>
+                                                <option value="availability">Availability poll (find a time)</option>
                                               </select>
                                             </label>
+                                            {sharedAssignmentActivity?.type === 'availability' && (
+                                              <>
+                                                <label className="mt-2 block text-[11px] font-black text-slate-700">
+                                                  Options, one per line
+                                                  <textarea
+                                                    value={String(sharedAssignmentActivity?.optionsText || '')}
+                                                    onChange={event => setSharedAssignmentActivity(previous => ({ ...(previous || {}), optionsText: event.target.value }))}
+                                                    rows={4}
+                                                    placeholder={"Tue Mar 4, 3:15pm\nWed Mar 5, 3:15pm\nThu Mar 6, 3:15pm"}
+                                                    className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800"
+                                                  />
+                                                </label>
+                                                <p className="mt-1 text-[10px] leading-relaxed text-slate-500">
+                                                  Write times however you say them. AlloFlow does not convert time zones, so put the zone in the label if people are in more than one.
+                                                </p>
+                                                <label className="mt-2 block text-[11px] font-black text-slate-700">
+                                                  Who is voting
+                                                  <select
+                                                    value={String(sharedAssignmentActivity?.identityMode || '')}
+                                                    onChange={event => setSharedAssignmentActivity(previous => ({ ...(previous || {}), identityMode: event.target.value }))}
+                                                    className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800"
+                                                  >
+                                                    {/* No default: this is a privacy decision, and a default is the thing nobody notices. */}
+                                                    <option value="">Choose before sharing...</option>
+                                                    <option value="real_name">Real names (staff, families)</option>
+                                                    <option value="codename">Codenames (students)</option>
+                                                    <option value="anonymous">Anonymous (counts only)</option>
+                                                  </select>
+                                                </label>
+                                                <label className="mt-2 flex items-center gap-2 text-[11px] font-bold text-slate-700">
+                                                  <input
+                                                    type="checkbox"
+                                                    checked={sharedAssignmentActivity?.allowMaybe !== false}
+                                                    onChange={event => setSharedAssignmentActivity(previous => ({ ...(previous || {}), allowMaybe: event.target.checked }))}
+                                                  />
+                                                  Allow "maybe" as well as yes and no
+                                                </label>
+                                                <label className="mt-1 flex items-center gap-2 text-[11px] font-bold text-slate-700">
+                                                  <input
+                                                    type="checkbox"
+                                                    checked={sharedAssignmentActivity?.multiSelect !== false}
+                                                    onChange={event => setSharedAssignmentActivity(previous => ({ ...(previous || {}), multiSelect: event.target.checked }))}
+                                                  />
+                                                  People can pick more than one
+                                                </label>
+                                                {!sharedAssignmentActivity?.identityMode && (
+                                                  <p className="mt-1 text-[10px] font-bold text-amber-700">Pick who is voting before you share this poll.</p>
+                                                )}
+                                              </>
+                                            )}
                                             <label className="block text-[10px] font-bold text-sky-900">
                                               Prompt
                                               <textarea

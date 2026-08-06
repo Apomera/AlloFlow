@@ -5262,6 +5262,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     // here rather than at the call sites means both places that already open
     // this panel support boards without either being touched.
     const isQuestionBoard = activity?.type === 'question_board';
+    const isPoll = activity?.type === 'availability';
     const ratingActivity = _alloNormalizeSharedRatingActivity(activity);
     const effectiveActivity = ratingActivity || activity;
     const activityMeta = _alloSharedActivityUiMeta(effectiveActivity);
@@ -5278,6 +5279,11 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     const [summary, setSummary] = React.useState(null);
     const [term, setTerm] = React.useState('');
     const [ratingValue, setRatingValue] = React.useState(null);
+    // Availability poll. Declared here with every other hook: the type-based
+    // dispatch lower down is deliberately placed after all hooks, and adding
+    // state below it would change hook order when the activity type changes.
+    const [pollPicks, setPollPicks] = React.useState({});
+    const [pollName, setPollName] = React.useState('');
     const [busy, setBusy] = React.useState(false);
     const [error, setError] = React.useState('');
     const [lastUpdatedAt, setLastUpdatedAt] = React.useState(0);
@@ -5614,7 +5620,136 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
           </form>
         )}
 
-        {!isTeacher && !isRating && (
+        {isPoll && !isTeacher && (
+          <form
+            className="mt-4 rounded-xl border border-sky-100 bg-white p-3"
+            onSubmit={async (event) => {
+              event.preventDefault();
+              if (busy) return;
+              const marks = {};
+              (summary?.options || []).forEach((opt) => { if (pollPicks[opt.id]) marks[opt.id] = pollPicks[opt.id]; });
+              if (!Object.keys(marks).length) { addToast('Mark at least one option first.', 'info'); return; }
+              if (summary?.identityMode === 'real_name' && !pollName.trim()) { addToast('Add your name so the organizer knows who can make it.', 'info'); return; }
+              try {
+                await callStudentUpdate({ picks: marks, nm: summary?.identityMode === 'real_name' ? pollName.trim().slice(0, 40) : '' });
+                addToast('Your availability was saved. You can change it until the poll closes.', 'success');
+              } catch (submitError) { addToast('That did not save: ' + ((submitError && submitError.message) || 'unknown'), 'error'); }
+            }}
+          >
+            <fieldset disabled={busy || summary?.closed}>
+              <legend className="block text-xs font-black text-slate-800">
+                {summary?.closed ? 'This poll has closed' : 'Which of these could you make?'}
+              </legend>
+              {summary?.identityMode === 'real_name' && (
+                <label className="mt-2 block text-[11px] font-black text-slate-700">
+                  Your name
+                  <input
+                    type="text"
+                    value={pollName}
+                    onChange={(event) => setPollName(event.target.value.slice(0, 40))}
+                    className="mt-1 w-full rounded-md border border-sky-300 px-2 py-1.5 text-xs font-semibold text-slate-800"
+                  />
+                </label>
+              )}
+              {summary?.identityMode === 'anonymous' && (
+                <p className="mt-1 text-[11px] font-bold text-slate-600">You are answering anonymously. The organizer sees totals only.</p>
+              )}
+              <div className="mt-3 space-y-2">
+                {(summary?.options || []).map((opt) => (
+                  <div key={opt.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 px-2 py-1.5">
+                    <span className="text-xs font-bold text-slate-800">{opt.label}</span>
+                    <div role="group" aria-label={opt.label} className="flex gap-1">
+                      {['yes', summary?.allowMaybe === false ? null : 'maybe', 'no'].filter(Boolean).map((mark) => (
+                        <button
+                          key={mark}
+                          type="button"
+                          aria-pressed={pollPicks[opt.id] === mark}
+                          onClick={() => setPollPicks((previous) => {
+                            const next = { ...previous };
+                            // Single-choice polls behave like a radio group: one yes,
+                            // and choosing another moves it rather than adding a second.
+                            if (summary?.multiSelect === false && mark === 'yes') {
+                              Object.keys(next).forEach((key) => { if (next[key] === 'yes') delete next[key]; });
+                            }
+                            next[opt.id] = mark;
+                            return next;
+                          })}
+                          className={`rounded-md px-2 py-1 text-[11px] font-black ${pollPicks[opt.id] === mark ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700'}`}
+                        >
+                          {mark === 'yes' ? 'Yes' : mark === 'maybe' ? 'Maybe' : 'No'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button type="submit" className="mt-3 rounded-lg bg-sky-700 px-3 py-1.5 text-xs font-black text-white disabled:opacity-50">
+                {busy ? 'Saving...' : 'Save my availability'}
+              </button>
+            </fieldset>
+          </form>
+        )}
+
+        {isPoll && isTeacher && (
+          <div className="mt-4 rounded-xl border border-sky-100 bg-white p-3">
+            <p className="text-xs font-black text-slate-800">
+              {summary?.participantCount || 0} {(summary?.participantCount === 1) ? 'response' : 'responses'}
+              {summary?.closed ? ' - closed' : ''}
+            </p>
+            {!(summary?.tally || []).length && (
+              <p className="mt-2 text-[11px] font-bold text-slate-600">
+                {summary?.identityMode === 'anonymous'
+                  ? `Totals appear once ${summary?.minParticipants || 3} people have answered, so no single answer can be picked out.`
+                  : 'No responses yet.'}
+              </p>
+            )}
+            <div className="mt-2 space-y-1">
+              {(summary?.tally || []).map((opt) => {
+                const isBest = (summary?.best || []).indexOf(opt.id) >= 0;
+                return (
+                  <div key={opt.id} className={`flex flex-wrap items-center justify-between gap-2 rounded-lg px-2 py-1.5 ${isBest ? 'bg-emerald-50 ring-1 ring-emerald-300' : 'bg-slate-50'}`}>
+                    <span className="text-xs font-bold text-slate-800">
+                      {opt.label}{isBest ? ' - best so far' : ''}
+                    </span>
+                    <span className="text-[11px] font-black text-slate-700">{opt.yes} yes / {opt.maybe} maybe / {opt.no} no</span>
+                  </div>
+                );
+              })}
+            </div>
+            {(summary?.best || []).length > 1 && (
+              <p className="mt-2 text-[11px] font-bold text-amber-700">Those options are tied. Pick whichever suits you.</p>
+            )}
+            {!!(summary?.rows || []).length && (
+              <div className="mt-3 overflow-x-auto">
+                <table className="w-full text-left text-[11px]">
+                  <caption className="sr-only">Who chose what</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col" className="px-2 py-1 font-black text-slate-700">Name</th>
+                      {(summary?.options || []).map((opt) => (
+                        <th key={opt.id} scope="col" className="px-2 py-1 font-black text-slate-700">{opt.label}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(summary?.rows || []).map((row, index) => (
+                      <tr key={`${row.label}-${index}`} className="border-t border-slate-200">
+                        <th scope="row" className="px-2 py-1 font-bold text-slate-800">{row.label || 'Someone'}</th>
+                        {(summary?.options || []).map((opt) => (
+                          <td key={opt.id} className="px-2 py-1 text-slate-700">
+                            {row.picks?.[opt.id] === 'yes' ? 'Yes' : row.picks?.[opt.id] === 'maybe' ? 'Maybe' : row.picks?.[opt.id] === 'no' ? 'No' : '-'}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {!isTeacher && !isRating && !isPoll && (
           <form onSubmit={submitTerm} className="mt-4 rounded-xl border border-sky-100 bg-white p-3">
             <label htmlFor={`shared-word-cloud-${activityId}`} className="block text-xs font-black text-slate-800">Your word or short phrase</label>
             <div className="mt-2 flex flex-col gap-2 sm:flex-row">
@@ -5683,7 +5818,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
           </div>
         )}
 
-        {isTeacher && !isRating && (
+        {isTeacher && !isRating && !isPoll && (
           <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3">
             <div className="flex flex-wrap gap-2 text-[11px] font-black">
               <span className="rounded-full bg-amber-100 px-2 py-1 text-amber-900">Held {heldCount}</span>
@@ -21062,6 +21197,13 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       minValue: 1,
       maxValue: 5,
       labels: [],
+      // Availability poll (docs/availability_poll_spec.md). identityMode has no
+      // default on purpose: it is a privacy decision, so the creator must pick
+      // it before the poll can be shared.
+      optionsText: '',
+      identityMode: '',
+      allowMaybe: true,
+      multiSelect: true,
   });
   const [recentQrShares, setRecentQrShares] = useState(() => {
       try {
@@ -22713,7 +22855,18 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           return null;
       }
       const expiresAt = new Date(Date.now() + homeworkExpiryDays * 24 * 60 * 60 * 1000).toISOString();
-      const sharedActivityType = sharedAssignmentActivity.type === 'rating' ? 'rating' : 'word_cloud';
+      const ALLO_ACTIVITY_TYPES = ['rating', 'availability', 'word_cloud'];
+      const sharedActivityType = ALLO_ACTIVITY_TYPES.indexOf(sharedAssignmentActivity.type) >= 0
+          ? sharedAssignmentActivity.type
+          : 'word_cloud';
+      // One label per line is the whole authoring story for slots: no date
+      // parsing and no timezones, which is a deliberate non-goal (spec §8).
+      const pollOptions = String(sharedAssignmentActivity.optionsText || '')
+          .split(/\r?\n/)
+          .map(line => line.replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80))
+          .filter(Boolean)
+          .slice(0, 50)
+          .map((label, index) => ({ id: `o${index + 1}`, label }));
       const ratingMin = Math.max(1, Math.min(9, Math.trunc(Number(sharedAssignmentActivity.minValue) || 1)));
       const ratingMax = Math.max(ratingMin + 1, Math.min(10, Math.trunc(Number(sharedAssignmentActivity.maxValue) || 5)));
       const ratingLabels = Array.from({ length: ratingMax - ratingMin + 1 }, (_, index) => (
@@ -22727,7 +22880,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               type: sharedActivityType,
               delivery: 'shared_async',
               prompt: String(sharedAssignmentActivity.prompt || '').replace(/\s+/g, ' ').trim().slice(0, 240)
-                  || (sharedActivityType === 'rating' ? 'How would you rate your understanding?' : 'What word or short phrase best captures your thinking?'),
+                  || (sharedActivityType === 'rating' ? 'How would you rate your understanding?'
+                      : sharedActivityType === 'availability' ? 'Which of these times could you make?'
+                      : 'What word or short phrase best captures your thinking?'),
               minParticipants: Math.max(3, Math.min(10, Number(sharedAssignmentActivity.minParticipants) || 3)),
               revealPolicy: sharedActivityType === 'word_cloud'
                   ? (sharedAssignmentActivity.revealPolicy === 'auto_publish' ? 'auto_publish' : 'teacher_review')
@@ -22735,6 +22890,17 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               minValue: sharedActivityType === 'rating' ? ratingMin : undefined,
               maxValue: sharedActivityType === 'rating' ? ratingMax : undefined,
               labels: sharedActivityType === 'rating' ? ratingLabels : undefined,
+              identityMode: sharedActivityType === 'availability' ? String(sharedAssignmentActivity.identityMode || '') : undefined,
+              options: sharedActivityType === 'availability' ? pollOptions : undefined,
+              allowMaybe: sharedActivityType === 'availability' ? sharedAssignmentActivity.allowMaybe !== false : undefined,
+              multiSelect: sharedActivityType === 'availability' ? sharedAssignmentActivity.multiSelect !== false : undefined,
+              // Voting closes when the assignment link does; the rows are erased a
+              // week later. Two dates, because "stop collecting" and "stop
+              // existing" are different events for a scheduling poll (spec §4).
+              closesAt: sharedActivityType === 'availability' ? expiresAt : undefined,
+              deleteAt: sharedActivityType === 'availability'
+                  ? new Date(Date.parse(expiresAt) + 7 * 24 * 60 * 60 * 1000).toISOString()
+                  : undefined,
           })
           : null;
       const sharedActivities = sharedActivity ? [sharedActivity] : [];
