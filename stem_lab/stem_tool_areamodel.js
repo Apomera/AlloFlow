@@ -901,7 +901,6 @@ window.StemLab = window.StemLab || {
                 upd({ viewMode: ids[next] });
               },
               onClick: function() { sfxClick(); upd({ viewMode: m.id }); },
-              'aria-pressed': active,
               className: 'flex-1 py-2 px-3 rounded-lg text-sm font-bold transition-all ' +
                 (active ? 'bg-white text-amber-800 shadow-sm' : 'text-amber-700 hover:text-amber-800')
             }, m.icon + ' ' + m.label);

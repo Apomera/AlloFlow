@@ -3726,8 +3726,8 @@ window.StemLab = window.StemLab || {
             ),
             h('div', { className: 'grid md:grid-cols-[1fr_1fr] gap-3' },
               h('div', { className: 'space-y-2' },
-                h('label', { className: 'block text-[11px] font-bold text-slate-600 uppercase' }, 'Focus area'),
-                h('select', { value: overviewFocus, onChange: function(e) { upd('overviewFocus', e.target.value); }, className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm font-bold bg-white text-slate-800' },
+                h('label', { htmlFor: 'ls-overview-focus', className: 'block text-[11px] font-bold text-slate-600 uppercase' }, 'Focus area'),
+                h('select', { id: 'ls-overview-focus', value: overviewFocus, onChange: function(e) { upd('overviewFocus', e.target.value); }, className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm font-bold bg-white text-slate-800' },
                   LIFE_SKILL_PATHS.map(function(path) { return h('option', { key: path.id, value: path.id }, path.title); })
                 )
               ),

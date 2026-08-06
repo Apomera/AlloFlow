@@ -219,7 +219,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
       ctx2d.stroke();
       ctx2d.setLineDash([]);
       // Label
-      ctx2d.fillStyle = isDark ? '#a855f7' : '#7c3aed';
+      ctx2d.fillStyle = isDark ? '#c084fc' : '#7c3aed';
       ctx2d.textAlign = 'left';
       ctx2d.fillText('Model', 6, 14);
     }
@@ -749,7 +749,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
       ctx2d.stroke();
       // Label
       ctx2d.font = 'bold 11px sans-serif';
-      ctx2d.fillStyle = isDark ? '#4ade80' : '#16a34a';
+      ctx2d.fillStyle = isDark ? '#4ade80' : '#15803d';
       ctx2d.textAlign = 'center';
       ctx2d.fillText(v.symbol, vx, vy + 4);
     }
@@ -804,7 +804,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
       ctx2d.stroke();
       // Readout
       ctx2d.font = '9px sans-serif';
-      ctx2d.fillStyle = isDark ? '#fdba74' : '#ea580c';
+      ctx2d.fillStyle = isDark ? '#fdba74' : '#c2410c';
       ctx2d.textAlign = 'left';
       ctx2d.fillText('F1:' + Math.round(currentF1) + '  F2:' + Math.round(currentF2), cx2 + 12, cy2 - 4);
     }
@@ -894,9 +894,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
       // Legend
       ctx2d.font = '9px sans-serif';
       ctx2d.textAlign = 'left';
-      ctx2d.fillStyle = isDark ? '#4ade80' : '#16a34a';
+      ctx2d.fillStyle = isDark ? '#4ade80' : '#15803d';
       ctx2d.fillText('Target', pad + 4, pad + 10);
-      ctx2d.fillStyle = isDark ? '#f97316' : '#ea580c';
+      ctx2d.fillStyle = isDark ? '#f97316' : '#c2410c';
       ctx2d.fillText('Your pitch', pad + 4, pad + 22);
     }
   }
@@ -1062,9 +1062,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     // Legend
     ctx2d.font = 'bold 10px sans-serif';
     ctx2d.textAlign = 'left';
-    ctx2d.fillStyle = isDark ? '#3b82f6' : '#2563eb';
+    ctx2d.fillStyle = isDark ? '#60a5fa' : '#2563eb';
     ctx2d.fillText('Recording 1', 6, 14);
-    ctx2d.fillStyle = isDark ? '#f97316' : '#ea580c';
+    ctx2d.fillStyle = isDark ? '#f97316' : '#c2410c';
     ctx2d.fillText('Recording 2', 6, 26);
 
     if (!pitchData1 && !pitchData2) {
@@ -2860,13 +2860,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                       }, t('stem.oratory.cancel', 'Cancel'))))
                 : h('div', { className: 'flex flex-wrap gap-2', role: 'list', 'aria-label': t('stem.oratory.available_warm_up_exercises', 'Available warm-up exercises') },
                     WARMUPS.map(function(wu) {
-                      return h('button', {
-                        key: wu.id,
-                        role: 'listitem',
+                      return h('div', { key: wu.id, role: 'listitem' }, h('button', {
                         className: btnSecondary + ' flex items-center gap-1.5',
                         onClick: function() { setWarmupActive(wu); },
                         'aria-label': wu.label + ': ' + wu.desc
-                      }, h('span', null, wu.icon), wu.label);
+                      }, h('span', null, wu.icon), wu.label));
                     }))
             ),
 
@@ -3255,9 +3253,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 h('p', { className: subTextClass + ' mb-4' }, t('stem.oratory.choose_an_exercise_type_the_tool_will_', 'Choose an exercise type. The tool will give you phrases to practice with real-time prosody feedback.'))),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3', role: 'list', 'aria-label': t('stem.oratory.exercise_types', 'Exercise types') },
                 EXERCISE_TYPES.map(function(et) {
-                  return h('button', {
-                    key: et.id,
-                    role: 'listitem',
+                  return h('div', { key: et.id, role: 'listitem' }, h('button', {
                     className: cardClass + ' text-left hover:ring-2 hover:ring-violet-400 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-violet-500',
                     onClick: function() {
                       setExerciseType(et.id);
@@ -3280,7 +3276,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                       h('span', { className: 'text-2xl' }, et.icon),
                       h('div', null,
                         h('div', { className: headingClass + ' text-sm' }, et.label),
-                        h('div', { className: subTextClass }, __alloT('stem.oratory.' + (et.id) + '_desc', et.desc)))));
+                        h('div', { className: subTextClass }, __alloT('stem.oratory.' + (et.id) + '_desc', et.desc))))));
                 })),
               // AI generation note
               h('div', { className: subTextClass + ' text-center mt-2 italic' },

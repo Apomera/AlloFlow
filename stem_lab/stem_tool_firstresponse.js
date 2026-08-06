@@ -1447,7 +1447,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                 CALL_DECISIONS.map(function(c) {
                   var active = pickedTag === c.tag;
-                  return h('button', { key: c.tag, role: 'listitem', 'data-fr-focusable': true,
+                  return h('div', { key: c.tag, role: 'listitem' }, h('button', { 'data-fr-focusable': true,
                     'aria-pressed': active ? 'true' : 'false',
                     onClick: function() { upd('callDecisionTag', c.tag); frAnnounce('Selected: ' + c.situation + '. Call ' + c.line + '.'); },
                     style: btn({
@@ -1456,7 +1456,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                       color: active ? '#dbeafe' : T.text,
                       borderColor: active ? '#1e40af' : T.border
                     })
-                  }, c.situation);
+                  }, c.situation));
                 })
               ),
               picked && h('div', { role: 'region', 'aria-label': __alloT('stem.firstresponse.recommended_line_for_selected_situatio', 'Recommended line for selected situation'),
@@ -1492,7 +1492,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               lines.map(function(L) {
                 var href = L.sms ? ('sms:' + L.sms + (L.body ? ('?body=' + encodeURIComponent(L.body)) : '')) : ('tel:' + L.tel);
                 var verb = L.sms ? 'Text' : 'Call';
-                return h('a', { key: L.num, role: 'listitem', href: href,
+                return h('div', { key: L.num, role: 'listitem' }, h('a', { href: href,
                   'data-fr-focusable': true,
                   'aria-label': verb + ' ' + L.num + ' — ' + L.label,
                   style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '12px 14px', borderRadius: 10, background: T.card, border: '1px solid ' + T.border, color: T.text, textDecoration: 'none' } },
@@ -1501,7 +1501,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                     h('div', { style: { fontSize: 12, color: T.muted, marginTop: 2 } }, L.label)
                   ),
                   h('span', { 'aria-hidden': 'true', style: { fontSize: 13, color: T.link, fontWeight: 700 } }, verb + ' →')
-                );
+                ));
               })
             )
           );
@@ -2394,7 +2394,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                 WHO.map(function(w) {
                   var active = who === w.id;
-                  return h('button', { key: w.id, role: 'listitem', 'data-fr-focusable': true,
+                  return h('div', { key: w.id, role: 'listitem' }, h('button', { 'data-fr-focusable': true,
                     'aria-pressed': active ? 'true' : 'false',
                     onClick: function() {
                       updMulti({ chokeWho: w.id, chokeView: 'protocol' });
@@ -2410,7 +2410,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                   },
                     h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, w.icon),
                     h('span', null, w.label)
-                  );
+                  ));
                 })
               )
             ),
@@ -2908,7 +2908,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             h('div', { role: 'list',
               style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
               SCENARIOS.map(function(s) {
-                return h('button', { key: s.id, role: 'listitem', 'data-fr-focusable': true,
+                return h('div', { key: s.id, role: 'listitem' }, h('button', { 'data-fr-focusable': true,
                   'aria-label': 'Start scenario: ' + s.title + (s.contentWarning ? ' (content warning)' : ''),
                   onClick: function() {
                     if (s.contentWarning && !mhAcknowledged) {
@@ -2930,7 +2930,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                   ),
                   h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.45 } }, s.steps.length, ' steps'),
                   s.contentWarning && h('div', { style: { fontSize: 10, color: T.accentHi, fontStyle: 'italic' } }, __alloT('stem.firstresponse.content_warning', '⚠️ content warning'))
-                );
+                ));
               })
             )
           );

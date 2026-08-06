@@ -1809,12 +1809,20 @@ function FluencyModePanel(props) {
 // the engine, a registered local snapshot provider, or an AI backend is
 // unavailable — absence of data never renders as a broken affordance.
 function SurpriseTopicLauncher(props) {
-  const { addToast, gradeLevel, setSourceTopic, setStandardInputValue } = props;
+  const { addToast, gradeLevel, setSourceTopic, setSourceTone, setSourceVocabulary, setStandardInputValue, sourceVocabulary, studentInterests } = props;
   const [surpriseQuery, setSurpriseQuery] = React.useState('');
   const [resolution, setResolution] = React.useState(null);
   const [surpriseState, setSurpriseState] = React.useState('idle'); // idle | loading | ready | error
   const [directions, setDirections] = React.useState([]);
   const [hood, setHood] = React.useState(null);
+  // Rung 3: when the local snapshot has no lexical hook for a seed, ask the
+  // model to NAME standard codes — then verify every one of them against the
+  // snapshot before it is allowed anywhere near a proposal. The model is a
+  // lookup of last resort here, never a source of truth: a code it invents
+  // simply fails to resolve and is reported as unverified rather than used.
+  const [codeState, setCodeState] = React.useState('idle'); // idle | loading | done | error
+  const [codeHits, setCodeHits] = React.useState([]);       // resolved against the snapshot
+  const [codeMisses, setCodeMisses] = React.useState([]);   // proposed but NOT in the snapshot
   const engine = (typeof window !== 'undefined' && window.AlloModules) ? window.AlloModules.SurpriseMeEngine : null;
   const providerApi = (typeof window !== 'undefined' && window.AlloModules) ? window.AlloModules.StandardsProvider : null;
   const provider = providerApi && typeof providerApi.getRegisteredProvider === 'function' ? providerApi.getRegisteredProvider() : null;
@@ -1826,7 +1834,7 @@ function SurpriseTopicLauncher(props) {
     try {
       const nextHood = engine.buildHood(provider, match.id);
       setHood(nextHood);
-      const raw = await surpriseAi(engine.buildPrompt(match, nextHood, { gradeLevel }), false, false, 0.8);
+      const raw = await surpriseAi(engine.buildPrompt(match, nextHood, { gradeLevel, studentInterests }), false, false, 0.8);
       setDirections(engine.parseDirections(raw));
       setSurpriseState('ready');
     } catch (error) {
@@ -1845,6 +1853,49 @@ function SurpriseTopicLauncher(props) {
       setResolution({ status: 'error', match: null, candidates: [] });
     }
   };
+  // Ask for codes, then let the snapshot decide which of them are real. 98% of
+  // the shipped corpus is CCSS, so a CCSS code the model names usually does
+  // resolve — and when it resolves it brings its graph with it, which is the
+  // whole point: this rung ends in the SAME grounded proposal as typing the
+  // code by hand, not in a weaker one.
+  const askForCodes = async () => {
+    const seed = String(surpriseQuery || '').trim();
+    if (!seed) return;
+    setCodeState('loading');
+    setCodeHits([]);
+    setCodeMisses([]);
+    try {
+      const prompt = [
+        'A teacher described what they want to teach. Name up to 4 official K-12 standard codes that best match.',
+        'Seed: ' + seed,
+        gradeLevel ? 'Grade level: ' + gradeLevel : '',
+        'Prefer Common Core (CCSS) codes where the subject is ELA or mathematics.',
+        'Return ONLY a JSON array of objects with keys "code" and "why" (<=15 words). No prose.'
+      ].filter(Boolean).join('\n');
+      const raw = await surpriseAi(prompt, false, false, 0.2);
+      const jsonText = String(raw || '').replace(/^[\s\S]*?(\[)/, '$1').replace(/(\])[\s\S]*$/, '$1');
+      const proposed = JSON.parse(jsonText);
+      const hits = [];
+      const misses = [];
+      for (const entry of (Array.isArray(proposed) ? proposed : []).slice(0, 4)) {
+        const code = String((entry && entry.code) || '').trim();
+        if (!code) continue;
+        let resolved = null;
+        try {
+          const r = provider.resolveStandard(code);
+          resolved = r && r.status === 'resolved' ? r.match : null;
+        } catch (e) { resolved = null; }
+        if (resolved) hits.push({ match: resolved, why: String((entry && entry.why) || '').slice(0, 90) });
+        else misses.push({ code: code.slice(0, 40), why: String((entry && entry.why) || '').slice(0, 90) });
+      }
+      setCodeHits(hits);
+      setCodeMisses(misses);
+      setCodeState('done');
+    } catch (error) {
+      setCodeState('error');
+      if (addToast) addToast('Could not look up a standard code for that.', 'error');
+    }
+  };
   const chooseCandidate = (candidate) => {
     setResolution({ status: 'resolved', match: candidate, candidates: [] });
     proposeFor(candidate);
@@ -1857,20 +1908,41 @@ function SurpriseTopicLauncher(props) {
     // Prefill the resolver in Universal Settings with the code so attaching
     // the standard is one click away — this launcher never attaches silently.
     if (match && match.code && typeof setStandardInputValue === 'function') setStandardInputValue(match.code);
-    if (addToast) addToast('Topic seeded with this direction. The standard code is prefilled in Universal Settings.', 'success');
+    // Carry the rest of the brief into the fields that would otherwise be
+    // re-derived by hand. Same discipline as the standard code above: every
+    // field changed is named back to the teacher, and the controls sit in view
+    // directly below, so nothing moves without it being visible.
+    const changed = ['Topic'];
+    if (direction.tone && typeof setSourceTone === 'function') {
+      setSourceTone(direction.tone);
+      changed.push('Tone (' + direction.tone + ')');
+    }
+    // Only when empty. A dropdown put back is one click; vocabulary the
+    // teacher typed is work, and overwriting it would destroy that.
+    if (direction.vocabulary && direction.vocabulary.length
+      && typeof setSourceVocabulary === 'function' && !String(sourceVocabulary || '').trim()) {
+      setSourceVocabulary(direction.vocabulary.join(', '));
+      changed.push('Key vocabulary');
+    }
+    // Target level is deliberately untouched: it is the teacher's own setting
+    // and an INPUT to the prompt that produced this direction, so moving it
+    // would contradict what they told us.
+    if (addToast) {
+      addToast('Set ' + changed.join(', ') + '. The standard code is prefilled in Universal Settings.', 'success');
+    }
   };
   const resolvedMatch = resolution && resolution.status === 'resolved' && resolution.match;
   return (
     <div className="rounded border border-violet-200 bg-violet-50/70 p-2 text-[11px] text-slate-700">
-      <div className="font-bold text-violet-900">Not sure what to write? Surprise me from a standard</div>
+      <div className="font-bold text-violet-900">Not sure what to write? Surprise me</div>
       <div className="mt-1 flex gap-1">
         <input
           type="text"
           value={surpriseQuery}
           onChange={(e) => setSurpriseQuery(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && resolveAndPropose()}
-          placeholder="Standard code, e.g. 3.OA.A.1"
-          aria-label="Standard code for surprise lesson directions"
+          placeholder="A code, a skill, or a goal — e.g. 3.OA.A.1, compare fractions"
+          aria-label="Standard code, skill, or learning goal for surprise lesson directions"
           className="flex-grow rounded border border-violet-300 p-1.5 focus:border-violet-500 focus:ring-2 focus:ring-violet-200 outline-none"
         />
         <button type="button" onClick={resolveAndPropose} disabled={surpriseState === 'loading' || !surpriseQuery.trim()}
@@ -1888,7 +1960,69 @@ function SurpriseTopicLauncher(props) {
           ))}
         </div>
       )}
-      {resolution && resolution.status === 'not-found' && <div role="status" className="mt-1">No exact local match for that code in the loaded snapshots.</div>}
+      {/* resolveStandard falls back to a ranked search and returns its matches
+          on 'not-found' — the status means "no EXACT code match", not "nothing
+          found". Those candidates used to be computed and discarded, so typing
+          a skill produced a dead end while the answer sat unrendered. */}
+      {resolution && resolution.status === 'not-found' && (resolution.candidates || []).length > 0 && (
+        <div role="status" className="mt-1">Closest standards in the loaded snapshots — pick one to ground the proposals:
+          {(resolution.candidates || []).slice(0, 4).map((candidate) => (
+            <button type="button" key={candidate.id} onClick={() => chooseCandidate(candidate)}
+              className="ml-1 mt-1 rounded border border-violet-300 bg-white px-1.5 py-0.5 text-left font-bold hover:bg-violet-100">
+              {candidate.code}<span className="font-normal"> · {String(candidate.label || candidate.text || '').slice(0, 60)}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      {/* Nothing matched. Usually that is correct rather than a failure: a
+          gecko is a CONTEXT, not a target, and no standards corpus contains
+          one. Say which of the two it looks like instead of implying the
+          teacher typed something wrong. */}
+      {resolution && resolution.status === 'not-found' && !(resolution.candidates || []).length && (
+        <div role="status" className="mt-1">
+          Nothing in the loaded snapshots matches that word-for-word. If it is a <strong>context</strong> — a gecko, a World Cup,
+          a school garden — put it in the topic field above and choose a standard; the proposals will use it as the hook.
+          <div className="mt-1">
+            <button type="button" onClick={askForCodes} disabled={codeState === 'loading'}
+              className="rounded border border-violet-400 bg-white px-2 py-1 font-bold hover:bg-violet-100 disabled:opacity-50">
+              {codeState === 'loading' ? 'Looking…' : 'Or ask AI which standard this is'}
+            </button>
+          </div>
+        </div>
+      )}
+      {/* Codes the model named AND the snapshot confirmed. These carry a graph,
+          so choosing one lands in exactly the same grounded flow as typing the
+          code by hand. */}
+      {codeState === 'done' && codeHits.length > 0 && (
+        <div role="status" className="mt-1">Found in the loaded snapshots — pick one to ground the proposals:
+          {codeHits.map((hit) => (
+            <button type="button" key={hit.match.id} onClick={() => chooseCandidate(hit.match)}
+              className="ml-1 mt-1 rounded border border-violet-300 bg-white px-1.5 py-0.5 text-left font-bold hover:bg-violet-100">
+              {hit.match.code}<span className="font-normal"> · {String(hit.match.label || '').slice(0, 55)}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      {/* Named by the model, absent from the snapshot. It may be a real code
+          from a framework we do not ship, or it may be invented — nothing here
+          can tell the difference, so it is offered for the teacher to check and
+          never used to ground a proposal. */}
+      {codeState === 'done' && codeMisses.length > 0 && (
+        <div role="status" className="mt-1 text-slate-600">
+          Also suggested, but <strong>not in the loaded snapshots</strong> — unverified, check before relying on it:
+          {codeMisses.map((miss) => (
+            <button type="button" key={miss.code}
+              onClick={() => { if (setStandardInputValue) setStandardInputValue(miss.code); if (addToast) addToast('Code ' + miss.code + ' prefilled in Universal Settings — verify it before use.', 'info'); }}
+              className="ml-1 mt-1 rounded border border-slate-300 bg-white px-1.5 py-0.5 font-bold hover:bg-slate-100">
+              {miss.code}
+            </button>
+          ))}
+          <span className="block mt-0.5">No graph is available for these, so no grounded directions can be proposed from them.</span>
+        </div>
+      )}
+      {codeState === 'done' && !codeHits.length && !codeMisses.length && (
+        <div role="status" className="mt-1 text-slate-600">No standard code came back for that seed either.</div>
+      )}
       {resolution && resolution.status === 'error' && <div role="alert" className="mt-1 text-red-700">The local snapshot could not resolve this entry.</div>}
       {surpriseState === 'ready' && resolvedMatch && hood && (
         <p className="mt-1 text-violet-900">Graph context: {hood.prerequisites.length} prerequisite(s), {hood.leadsTo.length} next, {hood.related.length} related{hood.dataset && hood.dataset.provider ? ' — ' + hood.dataset.provider : ''}. Directions are AI proposals grounded in these source edges, for educator judgment — not certification.</p>
@@ -1909,7 +2043,7 @@ function SourceGenPanel(props) {
     setSourceTone, setSourceTopic, setSourceVocabulary, setStandardInputValue,
     setTargetStandards, showSourceGen, sourceCustomInstructions, sourceLength,
     sourceLevel, sourceTone, sourceTopic, sourceVocabulary,
-    standardInputValue, standardMode, suggestedStandards, t,
+    standardInputValue, standardMode, studentInterests, suggestedStandards, t,
     targetStandards
   } = props;
   if (!(showSourceGen)) return null;
@@ -1929,7 +2063,7 @@ function SourceGenPanel(props) {
                           autoFocus
                         />
                       </div>
-                      <SurpriseTopicLauncher addToast={addToast} gradeLevel={gradeLevel} setSourceTopic={setSourceTopic} setStandardInputValue={setStandardInputValue} />
+                      <SurpriseTopicLauncher addToast={addToast} gradeLevel={gradeLevel} setSourceTopic={setSourceTopic} setSourceTone={setSourceTone} setSourceVocabulary={setSourceVocabulary} setStandardInputValue={setStandardInputValue} sourceVocabulary={sourceVocabulary} studentInterests={studentInterests} />
                       <div className="grid grid-cols-2 gap-3">
                           <div>
                             <label className="block text-xs font-medium text-indigo-900 mb-1">{t('input.tone')}</label>

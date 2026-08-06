@@ -1487,6 +1487,7 @@ var d = labToolData || {};
                 // Each continent is an optgroup with the continent as "All" option plus
                 // sub-regions (Southern Europe, Southeast Asia, etc.) for finer control.
                 React.createElement('select', {
+                  'aria-label': __alloT('stem.geo.quiz_region', 'Quiz region'),
                   value: geoRegion,
                   onChange: function(e) { upd('geoRegionFilter', e.target.value); upd('geoTarget', null); upd('geoAnswered', []); },
                   className: 'text-xs bg-white/20 border border-white/30 rounded px-1 py-0.5 text-white',
@@ -1505,6 +1506,7 @@ var d = labToolData || {};
                 // Difficulty
 
                 React.createElement('select', {
+                  'aria-label': __alloT('stem.geo.quiz_difficulty', 'Quiz difficulty'),
 
                   value: geoDifficulty,
 

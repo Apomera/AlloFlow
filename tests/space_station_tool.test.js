@@ -115,8 +115,14 @@ describe('space station tool', () => {
       expect(source).toContain('Whipple');                 // debris shielding
       expect(source).toContain('Control Moment Gyroscopes');
       // Real orbital mechanics, not hardcoded outputs
-      expect(source).toContain('var GM = 398600.4418');
-      expect(source).toContain('Math.sqrt(GM / orbitR)');
+      // One orbit implementation feeds the fast-facts card, the status strip,
+      // the Orbit Lab readouts and the drag/reboost reference curve. They used
+      // to derive it separately, and the card's static '~92 min' disagreed with
+      // the strip's computed 93 on the very same screen.
+      expect(source).toContain('var ISS_GM = 398600.4418');
+      expect(source).toContain('function issOrbit(altKm)');
+      expect((source.match(/398600\.4418/g) || []).length).toBe(1);
+      expect(source).toContain('var v = Math.sqrt(ISS_GM / r)');   // v = sqrt(GM/r), once
       // Future plans stay hedged
       expect(source).toContain('Planned retirement');
       expect(source).toContain('Deorbit Vehicle');
@@ -1216,6 +1222,159 @@ describe('space station tool', () => {
       const labels = source.match(/QUIZ_TOPIC_LABELS = \[([^\]]*)\]/)[1].split(',').length;
       expect(questions).toBe(11);
       expect(labels).toBe(questions);
+    });
+
+    it('renders every system, not just the first one', () => {
+      // The suite only ever mounted the Systems tab at sysIdx 0, so a new
+      // system could crash the tab in a real browser while every test stayed
+      // green. Three id-keyed maps have to agree — SYSTEMS, the flow diagram
+      // and the coupling map — and only one of them has a fallback.
+      const source = readFileSync(TOOL_PATHS[0], 'utf8');
+      const ids = [...source.matchAll(/^ {4}\{ id: '([a-z0-9]+)', icon:/gm)].map((m) => m[1]);
+      const flows = [...source.matchAll(/^ {10}([a-z0-9]+): \{ nodes:/gm)].map((m) => m[1]);
+      const couplings = [...source.matchAll(/^ {10}([a-z0-9]+): \{ upstream:/gm)].map((m) => m[1]);
+      expect(ids.length).toBeGreaterThanOrEqual(8);
+      expect(flows.sort()).toEqual([...ids].sort());
+      expect(couplings.sort()).toEqual([...ids].sort());
+
+      // And each one actually renders ITS OWN content — the flow map falls back
+      // to the water loop, so "it rendered" is not enough; the selected
+      // system's own name and coupling note have to be on screen.
+      const entries = [...source.matchAll(/^ {4}\{ id: '([a-z0-9]+)', icon: '[^']*', name: '([^']+)'/gm)]
+        .map((m) => ({ id: m[1], name: m[2] }));
+      expect(entries.length).toBe(ids.length);
+      entries.forEach((entry, index) => {
+        const html = mountWithSeed({ ...BASE, tab: 'systems', sysIdx: index, sysStep: 0 });
+        expect(html, 'system ' + entry.id + ' should render').toContain('iss-system-tabs');
+        // React escapes & in the serialized markup, so compare like for like.
+        const escaped = entry.name.replace(/&/g, '&amp;');
+        expect(html, 'system ' + entry.id + ' should show its own name').toContain(escaped);
+        expect(html, 'system ' + entry.id + ' should not render as NaN/undefined').not.toContain('undefined');
+      });
+
+      // The Operations tab pulls three schematics by MEANING, not by position:
+      // an index lookup silently drew the wrong loop if SYSTEMS was reordered.
+      expect(source).toContain("systemById('water')");
+      expect(source).toContain("systemById('thermal')");
+      expect(source).toContain("systemById('body')");
+      expect(source).not.toMatch(/renderSystemSchematic\(SYSTEMS\[\d\]\)/);
+    });
+
+    it('renders every module, day slot and quiz question — not just the first', () => {
+      // Generalising the Systems-tab bug: this suite only ever mounted 4 of 13
+      // modules, 2 of 12 crew-day slots and 1 of 11 quiz questions, so a bad
+      // entry anywhere else could ship green. Several modules take id-specific
+      // branches (cupola and harmony open bespoke interiors; the truss is drawn
+      // as a box rather than a cylinder), which is exactly where entries differ.
+      const source = readFileSync(TOOL_PATHS[0], 'utf8');
+      const esc = (s) => s.replace(/&/g, '&amp;');
+
+      const modules = [...source.matchAll(/^ {4}\{ id: '([a-z0-9]+)', name: '([^']+)'/gm)]
+        .map((m) => ({ id: m[1], name: m[2] }));
+      expect(modules.length).toBe(13);
+      modules.forEach((mod) => {
+        const html = mountWithSeed({ ...BASE, tab: 'map', selModule: mod.id });
+        expect(html, 'module ' + mod.id + ' should render its own card').toContain(esc(mod.name));
+        expect(html, 'module ' + mod.id + ' should not leak undefined').not.toContain('undefined');
+        expect(html, 'module ' + mod.id + ' should not leak NaN').not.toContain('NaN');
+      });
+
+      const dayBlock = source.match(/var DAY_SCHEDULE = \[([\s\S]*?)\n {2}\];/)[1];
+      const daySlots = [...dayBlock.matchAll(/\{ h: '([^']+)'/g)].map((m) => m[1]);
+      expect(daySlots.length).toBe(12);
+      daySlots.forEach((time, index) => {
+        const html = mountWithSeed({ ...BASE, tab: 'day', dayIdx: index });
+        expect(html, 'day slot ' + time + ' should render').toContain(time);
+        expect(html, 'day slot ' + time + ' should not leak undefined').not.toContain('undefined');
+      });
+
+      const quizCount = (source.match(/^ {4}\{ q: '/gm) || []).length;
+      for (let i = 0; i < quizCount; i++) {
+        const html = mountWithSeed({ ...BASE, tab: 'quiz', quizIdx: i, quizPicked: null });
+        expect(html, 'quiz question ' + i + ' should render').toContain('iss-quiz-option-' + i + '-0');
+        expect(html, 'quiz question ' + i + ' should not leak undefined').not.toContain('undefined');
+      }
+    });
+
+    it('renders every operations mode, preset scenario and emergency', () => {
+      // Same class again: the Operations tab is the tool's most branch-heavy
+      // surface, and two of its nine modes and three of its five preset
+      // scenarios had never been mounted by any test.
+      const source = readFileSync(TOOL_PATHS[0], 'utf8');
+
+      const modes = [...source.matchAll(/\['([a-z]+)','[^']*','[A-Z][^']*'\]/g)]
+        .map((m) => m[1])
+        .filter((id, i, all) => all.indexOf(id) === i);
+      expect(modes).toContain('integrated');
+      expect(modes).toContain('thermal');
+      expect(modes).toContain('attitude');
+      modes.forEach((mode) => {
+        const html = mountWithSeed({ ...BASE, tab: 'operations', opsMode: mode });
+        expect(html, 'ops mode ' + mode + ' should render').toContain('iss-ops-grid');
+        expect(html, 'ops mode ' + mode + ' should not leak undefined').not.toContain('undefined');
+        expect(html, 'ops mode ' + mode + ' should not leak NaN').not.toContain('NaN');
+      });
+
+      const scenarios = [...source.matchAll(/\{ id: '([a-z]+)', icon: '[^']*', label: '[^']*', note: '[^']*', patch:/g)]
+        .map((m) => m[1]);
+      expect(scenarios).toEqual(['nominal', 'science', 'eclipse', 'crew', 'fault']);
+      scenarios.forEach((scenario) => {
+        const html = mountWithSeed({ ...BASE, tab: 'operations', opsScenario: scenario });
+        expect(html, 'scenario ' + scenario + ' should render').toContain('iss-ops-grid');
+        expect(html, 'scenario ' + scenario + ' should not leak NaN').not.toContain('NaN');
+      });
+
+      ['leak', 'fire', 'cooling'].forEach((emergency) => {
+        const html = mountWithSeed({ ...BASE, tab: 'operations', opsMode: 'emergency', opsEmergency: emergency });
+        expect(html, 'emergency ' + emergency + ' should render').toContain('iss-ops-grid');
+        expect(html, 'emergency ' + emergency + ' should not leak undefined').not.toContain('undefined');
+      });
+    });
+
+    it('derives the relay numbers from the same physics it teaches', () => {
+      const html = mountWithSeed({ ...BASE, tab: 'systems', sysIdx: 6, sysStep: 0 });
+      expect(html).toContain('Talking to the ground');
+
+      // Geostationary is not a quoted altitude — it is the ONE radius whose
+      // period is a sidereal day, so it falls out of Kepler's third law.
+      const GM = 398600.4418, Re = 6371, SID = 86164, C = 299792.458, ref = 420;
+      const rGeo = Math.cbrt((GM * SID * SID) / (4 * Math.PI * Math.PI));
+      const alt = Math.round((rGeo - Re) / 100) * 100;
+      expect(alt).toBe(35800);                         // published 35,786 km
+      expect(html).toContain(alt.toLocaleString() + ' km');
+      expect(html).toContain(Math.round((rGeo - Re) / ref) + '× higher');
+
+      // ...and the delay is that path length over c, using the SHORT geometry
+      // so the number quoted is a floor.
+      const path = (rGeo - (Re + ref)) + (rGeo - Re);
+      const ms = Math.round(((2 * path) / C) * 1000 / 10) * 10;
+      expect(ms).toBeGreaterThan(400);
+      expect(ms).toBeLessThan(600);
+      expect(html).toContain(ms + ' ms');
+    });
+
+    it('agrees with itself about the orbit on a single screen', () => {
+      // The map tab shows the hero status strip AND the fast-facts grid. The
+      // strip computed the period from sqrt(GM/r) and rounded it to 93; the
+      // card stated a flat '~92 min'. Both were visible at once.
+      const html = mountWithSeed({ ...BASE, tab: 'map', orbitAlt: 420 });
+
+      const period = /Orbit period<\/div><div[^>]*>~?(\d+(?:\.\d+)?) min/.exec(html)
+        || /~(\d+) min/.exec(html);
+      expect(period).not.toBeNull();
+      const cardMinutes = Math.round(Number(period[1]));
+
+      const strip = /(\d+) minutes/.exec(html);
+      expect(strip).not.toBeNull();
+      const stripMinutes = Number(strip[1]);
+      expect(cardMinutes).toBe(stripMinutes);
+
+      // And both must match the physics, not just each other: a 420 km circular
+      // orbit is 92.8 minutes at 7.66 km/s.
+      const r = 6371 + 420;
+      const v = Math.sqrt(398600.4418 / r);
+      expect(stripMinutes).toBe(Math.round((2 * Math.PI * r / v) / 60));
+      expect(html).toContain(v.toFixed(2) + ' km/s');
     });
 
     it('survives a corrupted inclination instead of rendering NaN', () => {

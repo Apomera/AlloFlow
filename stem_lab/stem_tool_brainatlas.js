@@ -10101,10 +10101,10 @@ var d = labToolData.brainAtlas || {};
                   React.createElement("div", { className: "brainatlas-3d-pathway-steps", role: "list", "aria-label": brain3DPathwayInfo.title + " sequence" },
                     brain3DPathwayInfo.steps.map(function (step, stepIndex) {
                       var activeStep = brain3DPathwayStep === stepIndex;
-                      return React.createElement("button", { key: step.label, type: "button", className: "brainatlas-3d-pathway-step", role: "listitem", "aria-current": activeStep ? "step" : undefined, title: step.description, onClick: function () { selectBrainAtlas3DPathwayStep(step, stepIndex); } },
+                      return h('div', { key: step.label, role: 'listitem' }, React.createElement("button", { type: "button", className: "brainatlas-3d-pathway-step", "aria-current": activeStep ? "step" : undefined, title: step.description, onClick: function () { selectBrainAtlas3DPathwayStep(step, stepIndex); } },
                         React.createElement("span", { className: "brainatlas-3d-pathway-number", "aria-hidden": "true" }, stepIndex + 1),
                         React.createElement("strong", null, step.label)
-                      );
+                      ));
                     })
                   )
                 ),
@@ -10164,10 +10164,10 @@ var d = labToolData.brainAtlas || {};
                     ),
                     React.createElement("div", { className: "brainatlas-3d-section-items", role: "list", "aria-label": "Structures intersecting the current cutaway" },
                       brain3DCutawaySection.items.map(function (item) {
-                        return React.createElement("button", { key: item.key, type: "button", role: "listitem", className: "brainatlas-3d-section-item", "aria-pressed": selected3DStructure === item.key ? "true" : "false", title: item.label + " · " + item.family, onClick: function () { selectBrainAtlas3DCutawayStructure(item); } },
+                        return h('div', { key: item.key, role: 'listitem' }, React.createElement("button", { type: "button", className: "brainatlas-3d-section-item", "aria-pressed": selected3DStructure === item.key ? "true" : "false", title: item.label + " · " + item.family, onClick: function () { selectBrainAtlas3DCutawayStructure(item); } },
                           React.createElement("span", { "aria-hidden": "true" }, item.icon || "A"),
                           React.createElement("span", null, item.label)
-                        );
+                        ));
                       })
                     )
                   )

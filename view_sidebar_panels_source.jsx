@@ -153,6 +153,10 @@ function ResourceCustomInstructions({ value, onChange, t, helpKey, ariaFallback,
 // the TEACHER chooses — cannot drift between surfaces. Registered as
 // AlloModules.SurpriseMeEngine by the build wrapper.
 const SurpriseMeEngine = {
+  // Exactly the values the Tone/Style select offers. A proposal outside
+  // this set cannot be applied, so the model is given the list and anything
+  // else it returns is dropped rather than coerced.
+  TONES: ['Informative', 'Narrative', 'Dialogue', 'Persuasive', 'Humorous', 'Step-by-Step'],
   brief: function (rec) { return (rec.code ? rec.code + ' ' : '') + String(rec.label || rec.text || '').slice(0, 160); },
   buildHood: function (provider, id) {
     const grab = (fn, key) => { try { const r = provider[fn](id, { maxResults: 6 }); return (r && r[key]) || []; } catch (e) { return []; } };
@@ -181,7 +185,9 @@ const SurpriseMeEngine = {
       'Return ONLY a JSON array of exactly 3 objects, no prose, each with keys: ',
       '"title" (<=10 words), "phenomenon" (real-world hook, <=25 words), "essentialQuestion" (<=20 words), ',
       '"activity" (one concrete suggested activity, <=35 words), "evidence" (proposed evidence of learning, <=25 words), ',
-      '"udlSupports" (array of 2-3 short supports).'
+      '"udlSupports" (array of 2-3 short supports), ',
+      '"tone" (EXACTLY one of: ' + SurpriseMeEngine.TONES.join(', ') + ' — whichever suits this direction), ',
+      '"vocabulary" (array of 3-5 key terms a student meets in this direction).'
     ].filter(Boolean).join('\n');
   },
   parseDirections: function (raw) {
@@ -191,7 +197,11 @@ const SurpriseMeEngine = {
     const directions = (Array.isArray(parsed) ? parsed : []).slice(0, 3).map((d) => ({
       title: clamp(d.title, 90), phenomenon: clamp(d.phenomenon, 220), essentialQuestion: clamp(d.essentialQuestion, 180),
       activity: clamp(d.activity, 300), evidence: clamp(d.evidence, 220),
-      udlSupports: (Array.isArray(d.udlSupports) ? d.udlSupports : []).slice(0, 3).map((u) => clamp(u, 90))
+      udlSupports: (Array.isArray(d.udlSupports) ? d.udlSupports : []).slice(0, 3).map((u) => clamp(u, 90)),
+      // Anything not on the TONES list is dropped, not coerced: a tone the
+      // select cannot show is worse than no proposal at all.
+      tone: SurpriseMeEngine.TONES.indexOf(clamp(d.tone, 40)) >= 0 ? clamp(d.tone, 40) : '',
+      vocabulary: (Array.isArray(d.vocabulary) ? d.vocabulary : []).slice(0, 5).map((v) => clamp(v, 60)).filter(Boolean)
     })).filter((d) => d.title && d.essentialQuestion);
     if (!directions.length) throw new Error('no usable directions');
     return directions;
@@ -2035,7 +2045,7 @@ function SourceInputPanel(props) {
           setAiStandardRegion, setIncludeSourceCitations, setSourceCustomInstructions, setSourceLength, setSourceLevel,
           setSourceTone, setSourceTopic, setSourceVocabulary, setStandardInputValue, setTargetStandards,
           showSourceGen, sourceCustomInstructions, sourceLength, sourceLevel, sourceTone,
-          sourceTopic, sourceVocabulary, standardInputValue, standardMode, suggestedStandards,
+          sourceTopic, sourceVocabulary, standardInputValue, standardMode, studentInterests, suggestedStandards,
           t, targetStandards
                 })}
                 <div className="p-4 relative">

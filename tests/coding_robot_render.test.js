@@ -87,7 +87,16 @@ describe('Visual Blocks keyboard access', () => {
     });
 
     expect(html).toContain('Keyboard help');
-    expect(html).toContain('aria-controls="coding-blockly-keyboard-help-turtle"');
+    // The panel UNMOUNTS on close (asserted below), so a permanent
+    // aria-controls would name an element that is not in the document — which
+    // axe rates critical. The reference now tracks the panel: present while
+    // open, absent while closed, with aria-expanded carrying the state either
+    // way. Assert the wiring exists rather than that it is unconditional.
+    // Closed by default, so the reference is correctly absent here and
+    // aria-expanded carries the state. The relationship itself is exercised by
+    // the open/Escape test below, which asserts focus moves into the panel.
+    expect(html).toContain('aria-expanded="false"');
+    expect(html).not.toContain('aria-controls="coding-blockly-keyboard-help-turtle"');
     expect(html).toContain('aria-expanded="false"');
     expect(html).toContain('aria-describedby="coding-blockly-keyboard-help-turtle-summary"');
     expect(html).toContain('Choose Accessible Outline for a linear editor');

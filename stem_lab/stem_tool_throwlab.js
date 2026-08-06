@@ -4956,6 +4956,10 @@ window.StemLab = window.StemLab || {
                 targetText)
             ),
             h('div', {
+              role: 'progressbar',
+              'aria-valuenow': Math.round(successPct),
+              'aria-valuemin': 0,
+              'aria-valuemax': 100,
               style: { marginTop: 12, height: 9, borderRadius: 20, overflow: 'hidden', background: 'rgba(15,23,42,0.72)' },
               'aria-label': __alloT('stem.throwlab.session_success_progress', 'Session success progress')
             },

@@ -76,8 +76,27 @@ describe('launcher grounding and honesty', () => {
 
 describe('the built modules ship it', () => {
   it('launcher is rendered inside SourceGenPanel in the built misc module', () => {
-    expect(miscModule).toContain('Surprise me from a standard');
+    // The heading dropped "from a standard" when the launcher started
+    // accepting a skill or a learning goal as well as a code. Assert the
+    // launcher SHIPS rather than pinning the wording, which is copy.
+    expect(miscModule).toContain('Surprise me');
     expect(miscModule).toContain('SurpriseTopicLauncher');
+  });
+
+  it('the built launcher takes any seed, not only a code', () => {
+    // resolveStandard already fell back to a ranked search and returned its
+    // matches under status 'not-found'; the panel rendered a dead-end message
+    // and discarded them. These pin the widened door so it cannot narrow again.
+    expect(miscModule).toContain('a skill, or a goal');
+    expect(miscModule).toContain('Closest standards in the loaded snapshots');
+  });
+
+  it('the built launcher fills the engine\'s interests slot', () => {
+    // buildPrompt has always emitted "Student interests to consider:", and the
+    // sidebar surface always passed them. This one did not, so the same engine
+    // produced a thinner prompt here — exactly the drift the shared module
+    // exists to prevent.
+    expect(miscModule).toContain('{ gradeLevel, studentInterests }');
   });
 
   it('the sidebar module still ships the resolver entry (both surfaces live)', () => {

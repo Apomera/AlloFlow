@@ -1924,26 +1924,26 @@ window.StemLab = window.StemLab || {
                   onClick: function() { upd('_showLabGuide', !showLabGuide); },
                   className: 'punnett-control border ' + (showLabGuide ? 'bg-violet-100 text-violet-800 border-violet-400' : 'bg-white text-slate-700 border-slate-200'),
                   'aria-pressed': showLabGuide,
-                  'aria-controls': 'punnett-command-title'
+                  'aria-controls': showLabGuide ? 'punnett-command-title' : undefined
                 }, '🧭 Guide'),
                 h('button', {
                   onClick: function() { upd('_showQuestProgress', !showQuestProgress); },
                   className: 'punnett-control border ' + (showQuestProgress ? 'bg-emerald-100 text-emerald-800 border-emerald-400' : 'bg-white text-slate-700 border-slate-200'),
                   'aria-pressed': showQuestProgress,
-                  'aria-controls': 'punnett-quest-progress'
+                  'aria-controls': showQuestProgress ? 'punnett-quest-progress' : undefined
                 }, '🏆 ' + completedQuestCount + '/' + PUNNETT_CHALLENGES.length),
                 h('button', {
                   onClick: function() { upd('_showBadgePanel', !showBadgePanel); },
                   className: 'punnett-control border ' + (showBadgePanel ? 'bg-amber-100 text-amber-800 border-amber-400' : 'bg-white text-slate-700 border-slate-200'),
                   'aria-pressed': showBadgePanel,
-                  'aria-controls': 'punnett-badge-panel',
+                  'aria-controls': showBadgePanel ? 'punnett-badge-panel' : undefined,
                   'aria-label': 'Toggle badges'
                 }, '🏅 ' + Object.keys(badges).length + '/' + BADGES.length),
                 h('button', {
                   onClick: function() { upd('_showAI', !showAI); },
                   className: 'punnett-control border ' + (showAI ? 'bg-sky-100 text-sky-800 border-sky-400' : 'bg-white text-slate-700 border-slate-200'),
                   'aria-pressed': showAI,
-                  'aria-controls': 'punnett-ai-panel',
+                  'aria-controls': showAI ? 'punnett-ai-panel' : undefined,
                   'aria-label': 'Toggle AI genetics tutor'
                 }, '🤖 Tutor')
               )

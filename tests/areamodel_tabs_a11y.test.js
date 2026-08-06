@@ -16,6 +16,13 @@ describe('Area Model mode tabs accessibility', () => {
     expect(source).toContain("e.key === 'End'");
     expect(source).toContain("role: 'tabpanel'");
     expect(source).toContain("'aria-labelledby': 'stem-areamodel-tab-' + viewMode");
-    expect(source).toContain("'aria-pressed': active");
+    // aria-SELECTED, not aria-pressed. This line used to assert
+    // "'aria-pressed': active", which is prohibited on role="tab" — axe rates
+    // it critical, and the browser drops it, so the state it claimed to expose
+    // was never exposed. aria-selected is the state attribute a tab actually
+    // has, and it was already present alongside it.
+    expect(source).toContain("'aria-selected': active");
+    expect(source, 'aria-pressed is invalid on role="tab" and must not come back')
+      .not.toContain("'aria-pressed': active");
   });
 });

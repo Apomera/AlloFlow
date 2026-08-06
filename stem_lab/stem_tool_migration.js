@@ -699,7 +699,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
               // Leader star
               if (db.role === 'leader') {
-                c.fillStyle = isDark ? '#fbbf24' : '#d97706';
+                c.fillStyle = isDark ? '#fbbf24' : '#92400e';
                 c.font = '10px system-ui';
                 c.textAlign = 'center';
                 c.fillText('\u2605', db.x, db.y - 22);

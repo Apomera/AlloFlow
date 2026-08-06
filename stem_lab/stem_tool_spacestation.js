@@ -23,6 +23,37 @@
   // ── ISS module database (positions are schematic scene coordinates) ──
   // Axis convention for the 3-D scene: X = truss (port/starboard),
   // Z = pressurized stack (forward/aft), Y = zenith/nadir.
+  // One implementation of the orbit, used by the fast-facts card AND by the
+  // Orbit Lab's live readouts. They used to be independent: the card stated a
+  // flat '~92 min' while the status strip computed and rounded the same orbit
+  // to 93, so the tool contradicted itself on a single screen. Anything quoted
+  // as a fact about the real station is derived here at its real altitude, so
+  // the two can no longer drift apart.
+  var ISS_GM = 398600.4418;   // km^3/s^2
+  var ISS_R_EARTH = 6371;     // km
+  var ISS_REF_ALT = 420;      // km — the altitude the "fast facts" describe
+  function issOrbit(altKm) {
+    var r = ISS_R_EARTH + altKm;
+    var v = Math.sqrt(ISS_GM / r);
+    return { r: r, v: v, minutes: (2 * Math.PI * r / v) / 60 };
+  }
+  var _issRefOrbit = issOrbit(ISS_REF_ALT);
+
+  // Derived, not quoted — from the same orbital physics the Orbit Lab teaches.
+  // Geostationary is the ONE radius whose period is a sidereal day, so it falls
+  // straight out of Kepler's third law; the round-trip delay is then just the
+  // path length over c. Rounded to the nearest 100 km because the model uses a
+  // mean Earth radius, and the equatorial figure differs by a few km.
+  var ISS_SIDEREAL_DAY_S = 86164;
+  var ISS_C_KM_S = 299792.458;
+  var _issGeoR = Math.cbrt(ISS_GM * ISS_SIDEREAL_DAY_S * ISS_SIDEREAL_DAY_S / (4 * Math.PI * Math.PI));
+  var ISS_GEO_ALT_KM = Math.round((_issGeoR - ISS_R_EARTH) / 100) * 100;
+  var ISS_GEO_RATIO = Math.round((_issGeoR - ISS_R_EARTH) / ISS_REF_ALT);
+  // Station up to a relay directly overhead, then relay down to the terminal —
+  // the SHORT geometry, so the quoted delay is a floor rather than a boast.
+  var _issCommPathKm = (_issGeoR - (ISS_R_EARTH + ISS_REF_ALT)) + (_issGeoR - ISS_R_EARTH);
+  var ISS_COMM_DELAY_MS = Math.round(2 * _issCommPathKm / ISS_C_KM_S * 1000 / 10) * 10;
+
   var MODULES = [
     { id: 'zarya', name: 'Zarya (FGB)', agency: '🇷🇺 built / 🇺🇸 owned', launched: 'Nov 20, 1998 — Proton rocket', pos: [0, 0, 2.2], size: [0.55, 3.4], axis: 'z', color: 0xc9b18a,
       role: 'The very first ISS module. Provided early propulsion, power, and storage; today it is mostly a corridor and storage space.',
@@ -183,6 +214,10 @@
       how: 'Whipple shields — a thin outer bumper spaced ahead of the hull — make an incoming particle vaporize itself before it reaches the crew wall. Big tracked debris is dodged with reboost burns.',
       num: 'Orbital debris moves at up to ~15 km/s relative speed; even a paint fleck hits like a rifle round. The station has performed dozens of debris-avoidance maneuvers.',
       challenge: 'Armor thick enough to stop everything would be too heavy to launch. How does the two-wall trick beat one thick wall of the same mass?' },
+    { id: 'comms', icon: '📻', name: 'Talking to the ground', color: '#22d3ee',
+      how: 'The station is almost never within sight of Houston — at 420 km it can only see a few hundred kilometres of ground at a time. So it talks UPWARD instead. A fleet of relay satellites parked in geostationary orbit, far above the station, catch its signal and pass it down to a ground terminal in New Mexico and on to mission control. Because those satellites hang over the same spot on Earth, one of them can nearly always see the station wherever it is in its orbit.',
+      num: 'Geostationary orbit is not a choice of altitude so much as a consequence of v = √(GM/r): there is exactly ONE radius whose orbit takes a full day, about ' + ISS_GEO_ALT_KM.toLocaleString() + ' km up, and a satellite there appears to hover. That is roughly ' + ISS_GEO_RATIO + '× higher than the station itself. The signal has to climb all that way and come back down, so a question from the ground takes about ' + ISS_COMM_DELAY_MS + ' ms to make the round trip before anyone hears the answer — brief, but not nothing.',
+      challenge: 'Design question: a crew on the way to Mars is minutes to tens of minutes from Earth ONE WAY, so no relay satellite can give them a conversation. What has to change about how a crew is trained, and about who makes decisions, when every question takes the better part of an hour to answer?' },
     { id: 'body', icon: '🦴', name: 'The human system', color: '#e879f9',
       how: 'Bodies are engineering systems too: without gravity, bones shed ~1-1.5% density per month, muscles shrink, fluid shifts puff faces and press on eyes, and radiation dose runs far above ground level.',
       num: 'Daily dose aboard is roughly 0.5-1 mSv — months aboard approach what a nuclear worker may receive in a year. Exercise, diet, and shielding are the current countermeasures.',
@@ -190,6 +225,15 @@
   ];
 
   // ── History & future ──
+  // The Operations tab pulls three of these schematics by ARRAY INDEX
+  // (SYSTEMS[0], [3], [6]). Reorder or insert a system and the ECLSS mode
+  // silently starts drawing the thermal loop — nothing throws, the picture is
+  // just wrong. Look them up by the id they mean instead.
+  function systemById(id) {
+    for (var i = 0; i < SYSTEMS.length; i++) if (SYSTEMS[i].id === id) return SYSTEMS[i];
+    return SYSTEMS[0];
+  }
+
   var TIMELINE = [
     { y: '1998', e: 'Zarya then Unity launch; the first two modules are joined in orbit.' },
     { y: '2000', e: 'Zvezda arrives; Expedition 1 moves in Nov 2 — humans have lived off Earth continuously ever since.' },
@@ -232,8 +276,8 @@
   var QUIZ_PASS = Math.ceil(QUIZ.length * 0.7);
 
   var FAST_FACTS = [
-    ['Altitude', '~400-420 km'], ['Speed', '7.66 km/s'], ['Orbit period', '~92 min'],
-    ['Sunrises/day', '16'], ['Truss length', '109 m'], ['Mass', '~420,000 kg'],
+    ['Altitude', '~400-420 km'], ['Speed', _issRefOrbit.v.toFixed(2) + ' km/s'], ['Orbit period', '~' + _issRefOrbit.minutes.toFixed(0) + ' min'],
+    ['Sunrises/day', String(Math.round(1440 / _issRefOrbit.minutes))], ['Truss length', '109 m'], ['Mass', '~420,000 kg'],
     ['Pressurized volume', '~916 m³'], ['Usual crew', '7'], ['Crewed since', 'Nov 2, 2000'],
     ['Partner nations', '15'], ['Visitors so far', '280+ from 20+ countries'], ['Solar array area', '~2,500 m²']
   ];
@@ -1440,8 +1484,8 @@
       }
 
       // ── Orbit Lab math (real physics) ──
-      var GM = 398600.4418; // km^3/s^2
-      var R_EARTH = 6371;   // km
+      // Shares issOrbit() with the fast-facts card so a student can never read
+      // one number in the card and a different one in the readout beside it.
       var orbitAlt = Math.max(200, Math.min(2000, Number(d.orbitAlt) || 420));
       // Validated RAW before coercion, and derived ONCE. Number('') is 0, which
       // would silently show an equatorial orbit as if the student had chosen it,
@@ -1457,9 +1501,10 @@
       if (typeof _rawInc === 'string') _rawInc = _rawInc.trim();
       var _incNum = (_rawInc == null || _rawInc === '') ? 51.6 : Number(_rawInc);
       var orbitInc = Math.max(0, Math.min(90, isFinite(_incNum) ? _incNum : 51.6));
-      var orbitR = R_EARTH + orbitAlt;
-      var orbitV = Math.sqrt(GM / orbitR);                       // km/s
-      var orbitT = (2 * Math.PI * orbitR / orbitV) / 60;         // minutes
+      var _orbit = issOrbit(orbitAlt);
+      var orbitR = _orbit.r;
+      var orbitV = _orbit.v;                                     // km/s
+      var orbitT = _orbit.minutes;                               // minutes
       var orbitsPerDay = (24 * 60) / orbitT;
       var dragNote = orbitAlt < 300 ? 'Severe drag — reboosts would be needed constantly; deorbit in weeks-to-months without them.'
         : orbitAlt <= 500 ? 'ISS territory: thin-air drag steals ~50-100 m of altitude per day; regular reboost burns required.'
@@ -2785,11 +2830,11 @@
             opsMeter('Battery after one orbit',projectedBattery,projectedBattery > 25 ? '#4ade80' : '#f87171',orbitDelta >= 0 ? 'Net charge +' + orbitDelta.toFixed(1) + '%' : 'Net discharge ' + orbitDelta.toFixed(1) + '%'), opsSpark('Battery state',projectedBattery,projectedBattery > 25 ? '#4ade80' : '#f87171',Math.abs(orbitDelta) + 3));
         }
         function renderEclss() {
-          return h('div', null, renderSystemSchematic(SYSTEMS[0]), h('div', { className: 'iss-ops-grid' }, opsControl('iss-eclss-crew','Crew demand',crew,3,11,1,' people','#7dd3fc','opsCrew'), opsControl('iss-eclss-recovery','Water recovery',recovery,70,99,.5,'%','#38bdf8','opsRecovery'), opsControl('iss-eclss-scrub','CO₂ scrubber output',scrub,40,100,1,'%','#34d399','opsScrub'), statusBox('Water recovered',waterReturn.toFixed(1) + ' L/day','Daily potable-water model for the selected crew.','#38bdf8'), statusBox('Water resupply gap',resupplyWater.toFixed(2) + ' L/day','Even a small open-loop loss compounds on Mars.','#fbbf24'), statusBox('Oxygen demand',oxygenNeed.toFixed(2) + ' kg/day','Electrolysis must replace crew consumption.','#34d399')),
+          return h('div', null, renderSystemSchematic(systemById('water')), h('div', { className: 'iss-ops-grid' }, opsControl('iss-eclss-crew','Crew demand',crew,3,11,1,' people','#7dd3fc','opsCrew'), opsControl('iss-eclss-recovery','Water recovery',recovery,70,99,.5,'%','#38bdf8','opsRecovery'), opsControl('iss-eclss-scrub','CO₂ scrubber output',scrub,40,100,1,'%','#34d399','opsScrub'), statusBox('Water recovered',waterReturn.toFixed(1) + ' L/day','Daily potable-water model for the selected crew.','#38bdf8'), statusBox('Water resupply gap',resupplyWater.toFixed(2) + ' L/day','Even a small open-loop loss compounds on Mars.','#fbbf24'), statusBox('Oxygen demand',oxygenNeed.toFixed(2) + ' kg/day','Electrolysis must replace crew consumption.','#34d399')),
             opsMeter('Loop closure',recovery,'#38bdf8','Target ≥ 98% for exploration-class missions'), opsMeter('Cabin-air quality',airScore,co2 < CO2_ACTION_PPM ? '#34d399' : '#f87171','Modeled CO₂ ' + co2.toFixed(0) + ' ppm — Earth air is ~420 ppm; crews work to stay under ' + CO2_ACTION_PPM), opsSpark('CO2 trend',airScore,co2 < CO2_ACTION_PPM ? '#34d399' : '#f87171',8));
         }
         function renderThermal() {
-          return h('div', null, renderSystemSchematic(SYSTEMS[3]), h('div', { className: 'iss-ops-grid' }, opsControl('iss-thermal-rad','Radiator deployment',radiator,30,100,1,'%','#fb923c','opsRadiator'), opsControl('iss-thermal-flow','Cooling-loop flow',cooling,40,100,1,'%','#38bdf8','opsCooling'), opsControl('iss-thermal-research','Heat-producing research',research,0,100,5,'%','#a78bfa','opsResearch'), statusBox('Waste heat',wasteHeat.toFixed(1) + ' kW','Electronics and crew work become heat.','#f97316'), statusBox('Rejected heat',rejectedHeat.toFixed(1) + ' kW','Radiators emit infrared energy to space.','#38bdf8'), statusBox('Modeled cabin',cabinTemp.toFixed(1) + ' °C','Comfort band: 18–27 °C. ',cabinTemp > 18 && cabinTemp < 27 ? '#4ade80' : '#f87171')), opsMeter('Thermal margin',thermalScore,cabinTemp > 18 && cabinTemp < 27 ? '#4ade80' : '#f87171','Balance heat collected with heat rejected'), opsSpark('Cabin temperature stability',thermalScore,'#fb923c',6));
+          return h('div', null, renderSystemSchematic(systemById('thermal')), h('div', { className: 'iss-ops-grid' }, opsControl('iss-thermal-rad','Radiator deployment',radiator,30,100,1,'%','#fb923c','opsRadiator'), opsControl('iss-thermal-flow','Cooling-loop flow',cooling,40,100,1,'%','#38bdf8','opsCooling'), opsControl('iss-thermal-research','Heat-producing research',research,0,100,5,'%','#a78bfa','opsResearch'), statusBox('Waste heat',wasteHeat.toFixed(1) + ' kW','Electronics and crew work become heat.','#f97316'), statusBox('Rejected heat',rejectedHeat.toFixed(1) + ' kW','Radiators emit infrared energy to space.','#38bdf8'), statusBox('Modeled cabin',cabinTemp.toFixed(1) + ' °C','Comfort band: 18–27 °C. ',cabinTemp > 18 && cabinTemp < 27 ? '#4ade80' : '#f87171')), opsMeter('Thermal margin',thermalScore,cabinTemp > 18 && cabinTemp < 27 ? '#4ade80' : '#f87171','Balance heat collected with heat rejected'), opsSpark('Cabin temperature stability',thermalScore,'#fb923c',6));
         }
         function renderAttitude() {
           var wheelColor = nextCmg < 80 ? '#a78bfa' : '#f87171';
@@ -2811,7 +2856,7 @@
         }
         function renderHuman() {
           var exerciseProtection = opsClamp(exercise / 2.5 * 100,0,100);
-          return h('div', null, renderSystemSchematic(SYSTEMS[6]), h('div',{className:'iss-ops-grid'},opsControl('iss-human-days','Mission duration',missionDays,30,900,30,' days','#e879f9','opsMissionDays'),opsControl('iss-human-exercise','Daily exercise',exercise,0,3,.25,' h','#4ade80','opsExercise'),statusBox('Modeled bone loss',boneLoss.toFixed(1)+'%','Simplified from ~1–1.5% per month without countermeasures.',boneLoss<5?'#4ade80':'#fbbf24'),statusBox('Radiation exposure',(missionDays*.7).toFixed(0)+' mSv','Uses a midrange 0.7 mSv/day estimate.','#f97316')),opsMeter('Exercise protection',exerciseProtection,'#4ade80','ARED, treadmill, and cycle loading'),opsSpark('Musculoskeletal resilience',opsClamp(100-boneLoss*5,0,100),'#e879f9',7));
+          return h('div', null, renderSystemSchematic(systemById('body')), h('div',{className:'iss-ops-grid'},opsControl('iss-human-days','Mission duration',missionDays,30,900,30,' days','#e879f9','opsMissionDays'),opsControl('iss-human-exercise','Daily exercise',exercise,0,3,.25,' h','#4ade80','opsExercise'),statusBox('Modeled bone loss',boneLoss.toFixed(1)+'%','Simplified from ~1–1.5% per month without countermeasures.',boneLoss<5?'#4ade80':'#fbbf24'),statusBox('Radiation exposure',(missionDays*.7).toFixed(0)+' mSv','Uses a midrange 0.7 mSv/day estimate.','#f97316')),opsMeter('Exercise protection',exerciseProtection,'#4ade80','ARED, treadmill, and cycle loading'),opsSpark('Musculoskeletal resilience',opsClamp(100-boneLoss*5,0,100),'#e879f9',7));
         }
         function renderEmergency() {
           var scenarios = {
@@ -3206,6 +3251,7 @@
           thermal: { upstream: ['CABIN HEAT', 'PUMP POWER'], downstream: ['RADIATORS', 'STABLE LABS'], note: 'Heat moves through linked fluid loops before radiating to space.' },
           attitude: { upstream: ['STAR SENSORS', 'ELECTRIC POWER'], downstream: ['SUN TRACKING', 'EARTH COMMS'], note: 'Orientation couples arrays, radiators, antennas, and visiting vehicles.' },
           debris: { upstream: ['GROUND RADAR', 'ORBIT DATA'], downstream: ['MANEUVER PLAN', 'HULL SHIELDS'], note: 'Tracking handles large threats; layered structure handles small ones.' },
+          comms: { upstream: ['ELECTRIC POWER', 'ANTENNA POINTING'], downstream: ['GROUND CONTROL', 'SCIENCE DATA'], note: 'Pointing an antenna at a relay satellite depends on knowing the station’s orientation, so attitude control and talking to the ground are the same problem.' },
           body: { upstream: ['AIR + WATER', 'EXERCISE LOAD'], downstream: ['CREW HEALTH', 'MISSION DATA'], note: 'Life support sustains the crew; crew measurements refine future missions.' }
         }[sys.id];
         var aria = sys.name + ' coupling map. Inputs: ' + coupling.upstream.join(' and ') + '. Outputs: ' + coupling.downstream.join(' and ') + '. ' + coupling.note;
@@ -3246,6 +3292,7 @@
           thermal: { nodes: [['CABIN', 'collect heat'], ['WATER', 'internal loop'], ['AMMONIA', 'external loop'], ['RADIATORS', 'infrared to space']], loop: false, caption: 'In vacuum, the final heat-transfer step must be radiation.' },
           attitude: { nodes: [['SENSORS', 'measure pose'], ['COMPUTER', 'calculate torque'], ['CMGs', 'exchange momentum'], ['STATION', 'hold orientation']], loop: true, caption: 'A feedback loop continually senses, corrects, and verifies.' },
           debris: { nodes: [['TRACK', 'ground radar'], ['ASSESS', 'predict miss distance'], ['MANEUVER', 'burn if needed'], ['SHIELD', 'stop small debris']], loop: false, caption: 'Risk is managed differently depending on particle size.' },
+          comms: { nodes: [['STATION', 'transmit upward'], ['RELAY', 'geostationary satellite'], ['TERMINAL', 'New Mexico dish'], ['CONTROL', 'Houston']], loop: false, caption: 'Up 35,800 km and back down — the long way round to a room in Texas' },
           body: { nodes: [['MICRO-G', 'remove loading'], ['CHANGE', 'bone + muscle loss'], ['COUNTER', 'exercise + diet'], ['MEASURE', 'adapt the plan']], loop: true, caption: 'Each astronaut is both crew member and longitudinal study.' }
         };
         var flow = flows[sys.id] || flows.water;
@@ -3285,9 +3332,12 @@
         var referenceScale = (referenceAlt - 200) / 1800;
         var referenceRx = 194 + referenceScale * 46;
         var referenceRy = 73 + referenceScale * 24;
-        var referenceR = 6371 + referenceAlt;
-        var referenceV = Math.sqrt(GM / referenceR);
-        var referenceT = 2 * Math.PI * Math.sqrt(Math.pow(referenceR, 3) / GM) / 60;
+        // Same single orbit implementation as everything else — this block used
+        // to re-derive v and T from its own copies of GM and Earth's radius.
+        var _refOrbit = issOrbit(referenceAlt);
+        var referenceR = _refOrbit.r;
+        var referenceV = _refOrbit.v;
+        var referenceT = _refOrbit.minutes;
         var speedDelta = orbitV - referenceV;
         var periodDelta = orbitT - referenceT;
         var atReference = orbitAlt === referenceAlt;

@@ -1864,7 +1864,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               ),
               d.activePreset && React.createElement("span", { className: "px-2 py-0.5 bg-amber-100 text-amber-700 text-[11px] font-bold rounded-full" }, "\u2B50 " + d.activePreset),
               // Tab selector
-              React.createElement("div", { className: "flex flex-wrap gap-0.5 ml-auto bg-slate-100 rounded-lg p-0.5" },
+              React.createElement("div", { role: "tablist", "aria-label": __alloT('stem.music.synth_sections', "Synth sections"), className: "flex flex-wrap gap-0.5 ml-auto bg-slate-100 rounded-lg p-0.5" },
                 [{ id: 'play', icon: '\uD83C\uDFB9', label: t('stem.synth.play') }, { id: 'scales', icon: '\uD83C\uDFB5', label: t('stem.synth.scales') }, { id: 'chords', icon: '\uD83C\uDFB6', label: t('stem.synth.chords') }, { id: 'harmonypad', icon: '\uD83C\uDF1F', label: t('stem.synth.harmonypad') }, { id: 'beatpad', icon: '\uD83E\uDD41', label: t('stem.synth.beatpad') || 'Beat Pad' }, { id: 'theory', icon: '\uD83D\uDCDA', label: t('stem.synth.theory') }, { id: 'timbreHunt', icon: '\u2696\uFE0F', label: __alloT('stem.music.timbre', 'Timbre') }].map(function (tab) {
                   return React.createElement("button", { key: tab.id, role: "tab", "aria-selected": synthTab === tab.id,
                     onClick: function () { upd('synthTab', tab.id); },
@@ -2676,6 +2676,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 }),
                 React.createElement("span", { className: "text-[11px] font-bold text-indigo-400 ml-auto" }, "Scale:"),
                 React.createElement("select", { value: d.xyScale || 'chromatic',
+                  'aria-label': __alloT('stem.music.scale', "Scale"),
                   onChange: function(e) { upd('xyScale', e.target.value); },
                   className: "px-2 py-0.5 rounded text-[11px] font-bold bg-white/10 text-indigo-300 border border-indigo-500/30"
                 },

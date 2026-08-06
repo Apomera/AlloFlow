@@ -211,7 +211,7 @@
       React.createElement("button", {
         ref: helpButtonRef,
         type: "button",
-        "aria-controls": helpId,
+        "aria-controls": showKeyboardHelp ? helpId : undefined,
         "aria-expanded": showKeyboardHelp ? "true" : "false",
         onClick: function() { setShowKeyboardHelp(function(value) { return !value; }); },
         className: "absolute right-2 top-2 z-20 min-h-11 rounded-lg border border-indigo-300/50 bg-slate-800/95 px-3 py-2 text-xs font-bold text-indigo-100 shadow-lg hover:bg-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-300"
@@ -2532,7 +2532,7 @@
                   key: tab.key,
                   type: "button",
                   "aria-pressed": active,
-                  "aria-controls": tab.key === 'inquiry' ? 'coding-inquiry-panel' : undefined,
+                  "aria-controls": (tab.key === 'inquiry' && active) ? 'coding-inquiry-panel' : undefined,
                   onClick: function() { upd('workspaceTab', tab.key); },
                   className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " +
                     (active ? "bg-white text-indigo-700 shadow-sm" : "bg-white/10 text-white/75 hover:bg-white/20 hover:text-white")

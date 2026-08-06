@@ -1,21 +1,21 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-08-04T02:41:38.816Z
+Generated: 2026-08-06T01:24:12.127Z
 
 ## Scope
 
-- Registered STEM tools audited: 137
-- Plugin files loaded: 134
-- Shared shell coverage: 137/137 tools
+- Registered STEM tools audited: 140
+- Plugin files loaded: 137
+- Shared shell coverage: 140/140 tools
 - Light-background opt-outs: 0
 
 ## Summary
 
 | Metric | Count |
 | --- | ---: |
-| Total findings | 35 |
+| Total findings | 39 |
 | High-confidence errors | 0 |
-| Tool-level warnings | 17 |
+| Tool-level warnings | 21 |
 | Review notices | 18 |
 | Tools with any finding | 26 |
 | Tools with high-confidence errors | 0 |
@@ -25,9 +25,9 @@ Generated: 2026-08-04T02:41:38.816Z
 
 | Severity | Code | Findings | Tools | Example tools | Recommendation |
 | --- | --- | ---: | ---: | --- | --- |
-| warning | `canvas-focus` | 8 | 4 | beehive, heatLab, moonMission, nuclearLab | Make interactive canvases keyboard-focusable. For static output, use role=img, a meaningful name and description, plus data-a11y-static=true. |
-| warning | `inline-contrast` | 5 | 4 | galaxy, heatLab, lifeSkills, nuclearLab | Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text. |
+| warning | `canvas-focus` | 13 | 4 | beehive, heatLab, moonMission, nuclearLab | Make interactive canvases keyboard-focusable. For static output, use role=img, a meaningful name and description, plus data-a11y-static=true. |
 | warning | `tiny-text` | 4 | 4 | beehive, dnaLab, lifeSkills, probability | Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height. |
+| warning | `inline-contrast` | 4 | 3 | galaxy, heatLab, lifeSkills | Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text. |
 | notice | `metadata` | 16 | 16 | accessLens, archStudio, circuitShelf, codingPlayground, cyberDefense, dataLab, dinoLab, evoLab, geologyExplorer, geometryWorld, moleculeShelf, nutritionLab | Fill in label, description, category, and aliases so discovery and context labels stay clear. |
 | notice | `horizontal-overflow-risk` | 2 | 2 | areaPerimeter, throwlab | Review fixed-width elements at 360px and 768px widths so panels and canvases do not overflow. |
 
@@ -89,6 +89,7 @@ Generated: 2026-08-04T02:41:38.816Z
 | `dataPlot` Data Plotter | creative | standard | 30 | 10 | 0 | 0 | 0 | 0 |  |
 | `dataStudio` Charts & Graphs | creative | standard | 36 | 22 | 0 | 0 | 0 | 0 |  |
 | `decomposer` Material Decomposer | science | standard | 30 | 0 | 0 | 0 | 0 | 0 |  |
+| `diagnosisEligibility` Diagnosis vs. Eligibility | applied | standard | 4 | 1 | 0 | 0 | 0 | 0 |  |
 | `dinoLab` Dino Lab | explore | standard | 408 | 1 | 0 | 0 | 0 | 1 | metadata x1 |
 | `dissection` Virtual Dissection Lab | science | standard | 82 | 11 | 1 | 0 | 0 | 0 |  |
 | `dnaLab` DNA Lab | biology | standard | 94 | 1 | 1 | 0 | 1 | 0 | tiny-text x1 |
@@ -119,6 +120,7 @@ Generated: 2026-08-04T02:41:38.816Z
 | `heatLab` Heat & Thermodynamics Lab | science | standard | 105 | 15 | 4 | 0 | 4 | 0 | canvas-focus x3, inline-contrast x1 |
 | `inequality` Inequality Grapher | math | standard | 30 | 8 | 0 | 0 | 0 | 0 |  |
 | `kitchenLab` Kitchen Lab | applied | standard | 8 | 1 | 0 | 0 | 0 | 0 |  |
+| `lawNavigator` Education Law Navigator | applied | standard | 1 | 0 | 0 | 0 | 0 | 0 |  |
 | `learningLab` Learning Lab | life-skills | standard | 22 | 0 | 0 | 0 | 0 | 0 |  |
 | `lifeSkills` Life Skills Lab | Life Skills | standard | 65 | 3 | 0 | 0 | 3 | 0 | inline-contrast x2, tiny-text x1 |
 | `llmLiteracy` AI Literacy Lab | technology | standard | 12 | 0 | 0 | 0 | 0 | 0 |  |
@@ -133,11 +135,12 @@ Generated: 2026-08-04T02:41:38.816Z
 | `moonMission` Moon Mission | science | standard | 8 | 5 | 1 | 0 | 1 | 0 | canvas-focus x1 |
 | `multtable` Multiplication Table | math | standard | 22 | 5 | 0 | 0 | 0 | 0 |  |
 | `musicSynth` Music Synthesizer | creative | standard | 94 | 19 | 2 | 0 | 0 | 0 |  |
-| `nuclearLab` Nuclear & Radiation Lab | science | standard | 126 | 9 | 3 | 0 | 4 | 0 | canvas-focus x3, inline-contrast x1 |
+| `nuclearLab` Nuclear & Radiation Lab | science | standard | 196 | 16 | 8 | 0 | 8 | 0 | canvas-focus x8 |
 | `numberline` Number Line | math | standard | 21 | 5 | 0 | 0 | 0 | 0 |  |
 | `nutritionLab` NutritionLab — Nutrition Science | general | standard | 19 | 0 | 0 | 0 | 0 | 1 | metadata x1 |
 | `opticsLab` Optics Lab | science | standard | 34 | 0 | 0 | 0 | 0 | 0 |  |
 | `oratory` Oratory Lab | science | standard | 16 | 0 | 4 | 0 | 0 | 0 |  |
+| `paperTrail` PaperTrail: Official Documents | applied | standard | 10 | 0 | 0 | 0 | 0 | 0 |  |
 | `parentingLab` Science of Parenting Lab | science | standard | 10 | 0 | 0 | 0 | 0 | 0 |  |
 | `particleLab3d` Particle Lab 3D | science | standard | 42 | 10 | 1 | 0 | 0 | 0 |  |
 | `petsLab` Science of Pets Lab | life-earth-science | standard | 36 | 7 | 0 | 0 | 0 | 0 |  |

@@ -19,6 +19,11 @@
     const VERSION = 'alloflow-standards-snapshot/v1';
     const MAX_TEXT = 600;
     const MAX_RESULTS = 50;
+    // Minimum matched information for a hit to be offered at all. Tuned
+    // against the 2,345 shipped standards: at 4 a context seed with no lexical
+    // hook ("Geckos", "camouflage") correctly returns nothing, while a goal
+    // sentence still finds its standard.
+    const MIN_QUERY_WEIGHT = 4;
     const MAX_NODES = 100;
     const MAX_EDGES = 200;
     const MAX_DEPTH = 4;
@@ -247,7 +252,30 @@
             || idToken(a.record.id).localeCompare(idToken(b.record.id));
     }
 
-    function queryScore(record, query) {
+    // Words a teacher says AROUND a goal rather than in it. They must be
+    // dropped BEFORE rarity weighting, not after: they are rare in standards
+    // prose — "students" occurs in 3 of 2345 shipped standards and "will" in
+    // 15 — so inverse-document-frequency hands them more weight than any real
+    // term. Measured: with "will" left in, "students will compare two
+    // fractions" ranked a two-way-frequency-table standard above every
+    // fraction standard in the corpus.
+    const QUERY_FRAMING_WORDS = new Set([
+        'students', 'student', 'teach', 'teaching', 'taught', 'lesson', 'lessons',
+        'class', 'classroom', 'kids', 'children', 'want', 'wants', 'need', 'needs',
+        'help', 'going', 'will', 'shall', 'would', 'could', 'should', 'able',
+        'them', 'they', 'their', 'this', 'that', 'with', 'from', 'have', 'has', 'had',
+        'about', 'what', 'when', 'where', 'why', 'how', 'the', 'and', 'for', 'are',
+        'can', 'into', 'unit', 'plan', 'planning', 'activity', 'activities',
+        'learn', 'learning', 'learners', 'cover', 'covering', 'doing', 'make',
+        'making', 'get', 'getting', 'also', 'some', 'more', 'than', 'been', 'being'
+    ]);
+
+    // Rank by how much INFORMATION matched, not by what fraction of the query
+    // matched. Coverage scoring rewards a standard for containing the query's
+    // junk words, which is how a sentence-shaped goal used to land on the wrong
+    // standard. `idf` is supplied by the provider, which alone can see the
+    // corpus; without it this falls back to presence-only scoring.
+    function queryScore(record, query, idf) {
         if (!query) return 0;
         const code = codeToken(record.code);
         const id = idToken(record.id);
@@ -257,11 +285,26 @@
         if (id === query) return 950;
         if (label === query) return 900;
         if (label.indexOf(query) === 0) return 800;
-        const queryParts = query.split(/[^a-z0-9]+/).filter(Boolean);
-        const matchingParts = queryParts.filter((part) => body.indexOf(part) >= 0).length;
-        if (queryParts.length && matchingParts === queryParts.length) return 650;
-        if (body.indexOf(query) >= 0) return 400;
-        return 0;
+        const parts = query.split(/[^a-z0-9]+/).filter(Boolean);
+        // Tokens under 3 characters occur almost everywhere — splitting
+        // "3.OA.A.1" yields parts present in 1613 / 91 / 2344 / 2311 standards
+        // — so a query made only of fragments has no lexical signal at all and
+        // must fall through to substring matching rather than fuzzy scoring.
+        const terms = parts.filter((p) => p.length >= 3 && !QUERY_FRAMING_WORDS.has(p));
+        if (!terms.length) return body.indexOf(query) >= 0 ? 400 : 0;
+        const weigh = typeof idf === 'function' ? idf : () => 1;
+        let weight = 0;
+        let hits = 0;
+        for (const term of terms) {
+            if (body.indexOf(term) >= 0) { weight += weigh(term); hits += 1; }
+        }
+        if (!hits) return body.indexOf(query) >= 0 ? 400 : 0;
+        // One incidental word is not a match. Without this, "our school
+        // garden" pulled in 133 standards on the strength of "school" alone.
+        if (terms.length >= 2 && hits < 2) return 0;
+        if (weight < MIN_QUERY_WEIGHT) return 0;
+        if (hits === terms.length) return 650;
+        return Math.min(649, 400 + Math.round(weight * 18));
     }
 
     function makeError(message, report) {
@@ -280,6 +323,18 @@
             byId.set(idToken(record.id), record);
             adjacency.set(idToken(record.id), []);
         }
+        // Document frequency over the snapshot, built once. queryScore needs
+        // to know which words are common HERE — "fractions" is rare and
+        // meaningful, "text" is everywhere — and only this scope can see the
+        // whole corpus.
+        const docFreq = new Map();
+        for (const record of value.standards) {
+            const seen = new Set(token(`${record.label} ${record.text}`).split(/[^a-z0-9]+/).filter((w) => w.length >= 3));
+            for (const word of seen) docFreq.set(word, (docFreq.get(word) || 0) + 1);
+        }
+        const corpusSize = Math.max(1, value.standards.length);
+        const idf = (term) => Math.log(corpusSize / (1 + (docFreq.get(term) || 0)));
+
         for (const relationship of value.relationships) {
             const from = idToken(relationship.fromId);
             const to = idToken(relationship.toId);
@@ -300,7 +355,7 @@
             for (const record of value.standards) {
                 if (record.resolvable === false) continue;
                 if (!matchesFilters(record, normalizedFilters)) continue;
-                const score = queryScore(record, normalizedQuery);
+                const score = queryScore(record, normalizedQuery, idf);
                 if (normalizedQuery && score === 0) continue;
                 scored.push({ record, score });
             }

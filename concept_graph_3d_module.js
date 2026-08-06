@@ -409,7 +409,7 @@
     ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); ctx.fill();
   }
   function makeLabelSprite(THREE, text, hex) {
-    var canvas = document.createElement('canvas'); canvas.setAttribute('aria-hidden', 'true'); c.setAttribute('aria-hidden', 'true');
+    var canvas = document.createElement('canvas'); canvas.setAttribute('aria-hidden', 'true');
     var ctx = canvas.getContext('2d');
     var font = 26, padX = 14, padY = 9;
     ctx.font = '600 ' + font + 'px sans-serif';
@@ -798,6 +798,11 @@
       });
     }
     buildEdges();
+    // Publish onto state so render()'s handle can reach it. applyConstellation is
+    // scoped to mountGL, which runs LATER (inside the loadThree promise chain) than
+    // render()'s synchronous return, so the handle cannot close over it directly —
+    // same reason state.snapshot is wired this way rather than returned.
+    state.applyConstellation = applyConstellation;
     if (_constelState) applyConstellation(_constelState);              // (never true here; kept for symmetry)
     if (opts.constellation) applyConstellation(opts.constellation);
 
@@ -1851,7 +1856,11 @@
     });
 
     return { destroy: destroy, update: function () {}, fellBack: false, flagNodes: flagNodes, setNodeImage: artApi.setNodeImage, setNodeObject: artApi.setNodeObject, clearNodeArt: artApi.clearNodeArt,
-      coverNodes: artApi.coverNodes, revealNode: artApi.revealNode, uncoverAll: artApi.uncoverAll, setConstellation: applyConstellation,
+      coverNodes: artApi.coverNodes, revealNode: artApi.revealNode, uncoverAll: artApi.uncoverAll,
+      // Forwarded through state, not closed over: applyConstellation belongs to
+      // mountGL and does not exist yet when this object is built. Referencing it
+      // directly threw a ReferenceError out of every successful render() call.
+      setConstellation: function (con) { return state.applyConstellation ? state.applyConstellation(con) : undefined; },
       snapshot: function () { return state.snapshot ? state.snapshot() : null; } };
   }
 

@@ -14,7 +14,10 @@ describe('Cephalopod Lab bioluminescence tabs accessibility', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
     expect(source).toContain("role: 'tablist', 'aria-label': __alloT('stem.cephalopodlab.bioluminescence_sub_sections'");
     expect(source).toContain("id: 'cephalopod-biolux-tab-' + s.id");
-    expect(source).toContain("'aria-controls': 'cephalopod-biolux-panel-' + s.id");
+        // Conditional on purpose: only the selected tab's panel is rendered, so an
+    // unconditional aria-controls names an element that is not in the document.
+    // The reference is kept where it is real and dropped where it is not.
+    expect(source).toContain("'aria-controls': active ? 'cephalopod-biolux-panel-' + s.id : undefined");
     expect(source).toContain("tabIndex: active ? 0 : -1");
     expect(source).toContain('onKeyDown: function(e) { bioluxTabKeyDown(e, si); }');
     expect(source).toContain("e.key === 'ArrowRight' || e.key === 'ArrowDown'");
