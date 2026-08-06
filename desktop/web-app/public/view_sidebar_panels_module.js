@@ -144,9 +144,9 @@ function ResourceCustomInstructions({ value, onChange, t, helpKey, ariaFallback,
   ));
 }
 const SurpriseMeEngine = {
-  // Exactly the values the Tone/Style select offers. A proposal outside this
-  // set cannot be applied, so the model is given the list and anything else it
-  // returns is dropped rather than coerced.
+  // Exactly the values the Tone/Style select offers. A proposal outside
+  // this set cannot be applied, so the model is given the list and anything
+  // else it returns is dropped rather than coerced.
   TONES: ["Informative", "Narrative", "Dialogue", "Persuasive", "Humorous", "Step-by-Step"],
   brief: function(rec) {
     return (rec.code ? rec.code + " " : "") + String(rec.label || rec.text || "").slice(0, 160);
@@ -192,7 +192,7 @@ const SurpriseMeEngine = {
       '"title" (<=10 words), "phenomenon" (real-world hook, <=25 words), "essentialQuestion" (<=20 words), ',
       '"activity" (one concrete suggested activity, <=35 words), "evidence" (proposed evidence of learning, <=25 words), ',
       '"udlSupports" (array of 2-3 short supports), ',
-      '"tone" (EXACTLY one of: ' + SurpriseMeEngine.TONES.join(", ") + ' — whichever suits this direction), ',
+      '"tone" (EXACTLY one of: ' + SurpriseMeEngine.TONES.join(", ") + " \u2014 whichever suits this direction), ",
       '"vocabulary" (array of 3-5 key terms a student meets in this direction).'
     ].filter(Boolean).join("\n");
   },
@@ -207,7 +207,8 @@ const SurpriseMeEngine = {
       activity: clamp(d.activity, 300),
       evidence: clamp(d.evidence, 220),
       udlSupports: (Array.isArray(d.udlSupports) ? d.udlSupports : []).slice(0, 3).map((u) => clamp(u, 90)),
-      // Anything not on the TONES list is dropped, not coerced.
+      // Anything not on the TONES list is dropped, not coerced: a tone the
+      // select cannot show is worse than no proposal at all.
       tone: SurpriseMeEngine.TONES.indexOf(clamp(d.tone, 40)) >= 0 ? clamp(d.tone, 40) : "",
       vocabulary: (Array.isArray(d.vocabulary) ? d.vocabulary : []).slice(0, 5).map((v) => clamp(v, 60)).filter(Boolean)
     })).filter((d) => d.title && d.essentialQuestion);
@@ -1850,7 +1851,6 @@ function SourceInputPanel(props) {
     t("wizard.fetch_action")
   )), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-600 mt-1" }, t("wizard.fetch_note")))), showSourceGen && window.AlloModules && window.AlloModules.SourceGenPanel && React.createElement(window.AlloModules.SourceGenPanel, {
     addToast,
-    studentInterests,
     aiStandardQuery,
     aiStandardRegion,
     gradeLevel,
@@ -1884,6 +1884,7 @@ function SourceInputPanel(props) {
     sourceVocabulary,
     standardInputValue,
     standardMode,
+    studentInterests: props.studentInterests,
     suggestedStandards,
     t,
     targetStandards

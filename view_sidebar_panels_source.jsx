@@ -2045,7 +2045,7 @@ function SourceInputPanel(props) {
           setAiStandardRegion, setIncludeSourceCitations, setSourceCustomInstructions, setSourceLength, setSourceLevel,
           setSourceTone, setSourceTopic, setSourceVocabulary, setStandardInputValue, setTargetStandards,
           showSourceGen, sourceCustomInstructions, sourceLength, sourceLevel, sourceTone,
-          sourceTopic, sourceVocabulary, standardInputValue, standardMode, studentInterests, suggestedStandards,
+          sourceTopic, sourceVocabulary, standardInputValue, standardMode, studentInterests: props.studentInterests, suggestedStandards,
           t, targetStandards
                 })}
                 <div className="p-4 relative">
