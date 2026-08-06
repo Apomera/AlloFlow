@@ -37,7 +37,8 @@ describe('teacher host liveness lease', () => {
     expect(phase).toContain('hostPresence,');
     expect(anti).toContain('const _mbEmptySessionShape = () => {');
     expect(anti).toContain("writeToSession(sessionRef, { hostPresence: buildLiveHostPresence(leaseId, now) })");
-    expect(anti).toContain('setInterval(beat, LIVE_HOST_HEARTBEAT_INTERVAL_MS + Math.floor(Math.random() * 5000))');
+    expect(anti).toContain('setInterval(beat, beatMs + Math.floor(Math.random() * 5000))');
+    expect(anti).toContain('const beatMs = onMailbox ? 45 * 1000 : LIVE_HOST_HEARTBEAT_INTERVAL_MS;');
     expect(anti).toContain("document.addEventListener('visibilitychange', onVisible)");
   });
 
@@ -57,3 +58,35 @@ describe('teacher host liveness lease', () => {
     expect(anti.slice(staleIdx, staleIdx + 1800)).not.toContain('updateDoc(sessionRef, { isActive: false');
   });
 });
+
+
+describe('host lease on the MAILBOX pathway', () => {
+  it('the mailbox pathway also heartbeats — it has no Firebase user to gate on', () => {
+    // The bug: auth is deliberately skipped on the mailbox pathway (`user` is
+    // set to null), so a `!user?.uid` gate meant the lease was stamped once at
+    // session creation and never refreshed. Students saw 'Teacher connection is
+    // unavailable' ~135s in, permanently, while resources kept arriving.
+    expect(anti).toContain('const hostUid = user?.uid || (_alloMbBridgeState && _alloMbBridgeState.uid) || null;');
+    expect(anti).toContain('if (!isTeacherMode || !activeSessionCode || !hostUid || sessionData?.isLocalOnly)');
+    expect(anti).not.toContain('if (!isTeacherMode || !activeSessionCode || !user?.uid || sessionData?.isLocalOnly)');
+  });
+
+  it('beats less often on the mailbox, because Apps Script quota is finite', () => {
+    expect(anti).toContain('const onMailbox = !user?.uid && _alloMbBridgeActive();');
+    // Two beats inside one 90s lease: a whole beat of margin before a student
+    // would see anything, at 1.3 writes/min instead of 3.
+    expect(anti).toContain('const beatMs = onMailbox ? 45 * 1000 : LIVE_HOST_HEARTBEAT_INTERVAL_MS;');
+  });
+
+  it('the beat interval stays INSIDE the lease the server will accept', () => {
+    // Code.gs rejects any presence whose expiresAt - heartbeatAt exceeds
+    // LIVE_HOST_LEASE_TTL_MS + 10s, so the TTL cannot be lengthened to buy a
+    // slower beat. The beat must therefore stay comfortably under the TTL.
+    const gs = read('apps_script/session_mailbox/Code.gs');
+    expect(gs).toContain('if (value.expiresAt - value.heartbeatAt > LIVE_HOST_LEASE_TTL_MS + 10000) return false;');
+    const ttl = Number((anti.match(/const LIVE_HOST_LEASE_TTL_MS = (\d+) \* 1000/) || [])[1]);
+    expect(ttl).toBe(90);
+    expect(45 * 2).toBeLessThanOrEqual(ttl);   // two beats fit inside one lease
+  });
+});
+
