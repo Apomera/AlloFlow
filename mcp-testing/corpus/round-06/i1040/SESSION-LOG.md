@@ -2253,23 +2253,59 @@ gives 13a nothing, exactly as it gives Schedule 1 no instruction for lines 25
 or 26 (tranche 40) and reserves Schedule 2 line 10 and Schedule 3 line 6e for
 future use.
 
-### NEXT: page 118 onward - THE BACK MATTER
+### Session 58 (2026-08-05) - pages 118-119 - tranche-58 - 38 blocks - VALIDATED (merged)
 
-**All schedule instructions are done.** What remains is 9 pages of back
-matter, and it is a different kind of work from everything before it:
+Tax Topics: **121 topics in 17 categories**, MECHANICAL. `merge-plans
+t01..t58` -> 1,999 blocks, `ok: true`, **pages 1-119 covered**, zero heading
+skips. **Recall 0.9955 with every missing token page furniture** - the two
+folios, the "(Continued)" marker, and the second "List of Tax Topics" (the
+running heading page 119 repeats).
 
-* **118-119 Tax Topics** - a long two-column NUMBER/SUBJECT list under
-  category sub-heads ("IRS help available", "IRS procedures", ...). This is
-  MECHANICAL: derive it from geometry like the EIC and Tax tables, do not
-  hand-transcribe. Page 118 opens "You can read these Tax Topics at
-  IRS.gov/TaxTopics" - check that link's annotation.
+Parsed out of per-item geometry, not transcribed. The generator refuses to
+write a plan unless six assertions hold; the load-bearing one is that **topic
+numbers strictly increase down the whole list**, since the three columns flow
+left to right across two pages and the numbers only ever climb, so a column
+read out of order cannot pass.
+
+> **THE ASSERTIONS EARNED THEIR KEEP THREE TIMES, AND ONE OF THEM WAS ITSELF
+> WRONG.** In order:
+>
+> 1. *"topic Tax Topics appears before any category sub-head"* - the 18pt page
+>    title sits at the topic-number x, so it parsed as a topic. Fixed by
+>    parsing only BELOW each column's own "Topic No. / Subject" header.
+> 2. *"continuation line with no open row: '356'"* - the subject column had no
+>    right edge, so column 1 swallowed column 2's topic numbers. Fixed by
+>    bounding each column before the next column's number.
+> 3. *"topic 118 has no subject"* - the FOLIO, at x=42 below the header cut.
+>    Fixed by restricting the parse to the body and sub-head faces.
+> 4. *"subject for topic 424 starts with a number: '401(k) plans'"* - **this
+>    one was the gate being wrong, not the parse.** A genuinely merged row
+>    reads "356 Decedents": digits then a SPACE. The check used `` and fired
+>    on a legitimate subject; requiring the separator a merged row would
+>    actually carry fixes it. **An assertion that fires is not automatically a
+>    defect - check which side is wrong.**
+
+Structure: each category is a level-4 heading with its own two-column table,
+so a reader navigates to a category instead of scrolling one 121-row table. A
+category can continue across a column OR page break and the parser carries the
+open category across both. Sub-heads that wrap over two or three bands are
+joined before the category opens ("Electronic media filers—1099 series and
+related information returns"). Captions are deliberately terse: a caption is
+ADDED wording and this one is emitted 17 times, so it does not repeat the
+IRS.gov address the page already gives once.
+
+The geometry cache lives in the TEMP DIR, as tranches 17 and 21 do - a dump is
+a build artifact, not source, and the first draft wrote it into the repo.
+
+### NEXT: pages 120-122, then the Index
+
 * **120-121** the Disclosure, Privacy Act, and Paperwork Reduction Act notice.
-* **122** Major Categories of Federal Income and Outlays (a figure plus
-  table).
+* **122** Major Categories of Federal Income and Outlays (figure plus table).
 * **123-126 the Index** - MECHANICAL, three columns of entries with page
   numbers and sub-entries. **Do not hand-author it.** Build a generator from
-  the per-item geometry and assert its way to a plan, as tranches 17 and 21
-  did.
+  the per-item geometry and assert its way to a plan, as tranches 17, 21 and
+  58 did. Tranche 58's shape is the closest model: a column-bounded parse with
+  a header cut, a body-face filter, and an ordering invariant.
 
 ## Run-in level audit (2026-08-05) - the session-49 concern, checked and CLOSED
 

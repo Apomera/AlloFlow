@@ -1,0 +1,849 @@
+{
+ "schema_version": "1.0",
+ "document": {
+  "title": "2025 Instructions for Form 1040 (and 1040-SR)",
+  "language": "en",
+  "source_page_count": 126,
+  "source_sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a",
+  "document_type": "booklet",
+  "subject": "Internal Revenue Service instructions for the 2025 Form 1040 and Form 1040-SR, including the instructions for Schedules 1 through 3.",
+  "variant": "original"
+ },
+ "blocks": [
+  {
+   "type": "heading",
+   "level": 2,
+   "text": "Tax Topics",
+   "source_page": 118
+  },
+  {
+   "type": "paragraph",
+   "text": "You can read these Tax Topics at IRS.gov/TaxTopics.",
+   "source_page": 118,
+   "runs": [
+    {
+     "text": "You can read these Tax Topics at ",
+     "style": "normal"
+    },
+    {
+     "text": "IRS.gov/TaxTopics",
+     "style": "emphasis",
+     "href": "https://www.irs.gov/taxtopics/"
+    },
+    {
+     "text": ".",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "List of Tax Topics",
+   "source_page": 118
+  },
+  {
+   "type": "paragraph",
+   "text": "All topics are also available in Spanish (and most topics are available in Chinese, Korean, Vietnamese, and Russian).",
+   "source_page": 118
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "IRS help available",
+   "source_page": 118
+  },
+  {
+   "type": "table",
+   "caption": "Tax Topics under “IRS help available”: topic number and subject.",
+   "columns": [
+    "Topic No.",
+    "Subject"
+   ],
+   "rows": [
+    [
+     "101",
+     "IRS services—Volunteer tax assistance, outreach programs, and identity theft"
+    ],
+    [
+     "102",
+     "Tax assistance for individuals with disabilities"
+    ],
+    [
+     "103",
+     "Tax help for small businesses and the self-employed"
+    ],
+    [
+     "104",
+     "Taxpayer Advocate Service—Your voice at the IRS"
+    ],
+    [
+     "105",
+     "Armed Forces tax information"
+    ],
+    [
+     "107",
+     "Tax relief in disaster situations"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 118
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "IRS procedures",
+   "source_page": 118
+  },
+  {
+   "type": "table",
+   "caption": "Tax Topics under “IRS procedures”: topic number and subject.",
+   "columns": [
+    "Topic No.",
+    "Subject"
+   ],
+   "rows": [
+    [
+     "151",
+     "Your appeal rights"
+    ],
+    [
+     "154",
+     "Form W-2 and Form 1099-R (What to do if incorrect or not received)"
+    ],
+    [
+     "155",
+     "Obtaining forms and publications"
+    ],
+    [
+     "156",
+     "How to get a transcript or copy of your tax return"
+    ],
+    [
+     "157",
+     "Change your address—How to notify the IRS"
+    ],
+    [
+     "158",
+     "Paying your taxes and ensuring proper credit of payments"
+    ],
+    [
+     "159",
+     "How to get a wage and income transcript or copy of Form W-2"
+    ],
+    [
+     "161",
+     "Returning an erroneous refund—Paper check or direct deposit"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 118
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Collection",
+   "source_page": 118
+  },
+  {
+   "type": "table",
+   "caption": "Tax Topics under “Collection”: topic number and subject.",
+   "columns": [
+    "Topic No.",
+    "Subject"
+   ],
+   "rows": [
+    [
+     "201",
+     "The collection process"
+    ],
+    [
+     "202",
+     "Tax payment options"
+    ],
+    [
+     "203",
+     "Reduced refund"
+    ],
+    [
+     "204",
+     "Offers in compromise"
+    ],
+    [
+     "206",
+     "Dishonored payments"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 118
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Alternative filing methods",
+   "source_page": 118
+  },
+  {
+   "type": "table",
+   "caption": "Tax Topics under “Alternative filing methods”: topic number and subject.",
+   "columns": [
+    "Topic No.",
+    "Subject"
+   ],
+   "rows": [
+    [
+     "253",
+     "Substitute tax forms"
+    ],
+    [
+     "254",
+     "How to choose a tax return preparer"
+    ],
+    [
+     "255",
+     "Signing your return electronically"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 118
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "General information",
+   "source_page": 118
+  },
+  {
+   "type": "table",
+   "caption": "Tax Topics under “General information”: topic number and subject.",
+   "columns": [
+    "Topic No.",
+    "Subject"
+   ],
+   "rows": [
+    [
+     "301",
+     "When, how, and where to file"
+    ],
+    [
+     "303",
+     "Checklist of common errors when preparing your tax return"
+    ],
+    [
+     "304",
+     "Extensions of time to file your tax return"
+    ],
+    [
+     "305",
+     "Recordkeeping"
+    ],
+    [
+     "306",
+     "Penalty for underpayment of estimated tax"
+    ],
+    [
+     "307",
+     "Backup withholding"
+    ],
+    [
+     "308",
+     "Amended returns"
+    ],
+    [
+     "309",
+     "Roth IRA contributions"
+    ],
+    [
+     "310",
+     "Coverdell education savings accounts"
+    ],
+    [
+     "311",
+     "Power of attorney information"
+    ],
+    [
+     "312",
+     "Disclosure authorizations"
+    ],
+    [
+     "313",
+     "Qualified tuition programs (QTPs)"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 118
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Which forms to file",
+   "source_page": 118
+  },
+  {
+   "type": "table",
+   "caption": "Tax Topics under “Which forms to file”: topic number and subject.",
+   "columns": [
+    "Topic No.",
+    "Subject"
+   ],
+   "rows": [
+    [
+     "356",
+     "Decedents"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 118
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Types of income",
+   "source_page": 119
+  },
+  {
+   "type": "table",
+   "caption": "Tax Topics under “Types of income”: topic number and subject.",
+   "columns": [
+    "Topic No.",
+    "Subject"
+   ],
+   "rows": [
+    [
+     "401",
+     "Wages and salaries"
+    ],
+    [
+     "403",
+     "Interest received"
+    ],
+    [
+     "404",
+     "Dividends and other corporate distributions"
+    ],
+    [
+     "407",
+     "Business income"
+    ],
+    [
+     "409",
+     "Capital gains and losses"
+    ],
+    [
+     "410",
+     "Pensions and annuities"
+    ],
+    [
+     "411",
+     "Pensions—The general rule and the simplified method"
+    ],
+    [
+     "412",
+     "Lump-sum distributions"
+    ],
+    [
+     "413",
+     "Rollovers from retirement plans"
+    ],
+    [
+     "414",
+     "Rental income and expenses"
+    ],
+    [
+     "415",
+     "Renting residential and vacation property"
+    ],
+    [
+     "416",
+     "Farming and fishing income"
+    ],
+    [
+     "417",
+     "Earnings for clergy"
+    ],
+    [
+     "418",
+     "Unemployment compensation"
+    ],
+    [
+     "419",
+     "Gambling income and losses"
+    ],
+    [
+     "420",
+     "Bartering income"
+    ],
+    [
+     "421",
+     "Scholarships, fellowship grants, and other grants"
+    ],
+    [
+     "423",
+     "Social Security and equivalent railroad retirement benefits"
+    ],
+    [
+     "424",
+     "401(k) plans"
+    ],
+    [
+     "425",
+     "Passive activities—Losses and credits"
+    ],
+    [
+     "427",
+     "Stock options"
+    ],
+    [
+     "429",
+     "Traders in securities (Information for Form 1040 or 1040-SR filers)"
+    ],
+    [
+     "430",
+     "Receipt of stock in a demutualization"
+    ],
+    [
+     "431",
+     "Canceled debt—Is it taxable or not?"
+    ],
+    [
+     "432",
+     "Form 1099-A (Acquisition or Abandonment of Secured Property) and Form 1099-C (Cancellation of Debt)"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 119
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Adjustments to income",
+   "source_page": 119
+  },
+  {
+   "type": "table",
+   "caption": "Tax Topics under “Adjustments to income”: topic number and subject.",
+   "columns": [
+    "Topic No.",
+    "Subject"
+   ],
+   "rows": [
+    [
+     "451",
+     "Individual retirement arrangements (IRAs)"
+    ],
+    [
+     "452",
+     "Alimony and separate maintenance"
+    ],
+    [
+     "453",
+     "Bad debt deduction"
+    ],
+    [
+     "455",
+     "Moving expenses for members of the Armed Forces"
+    ],
+    [
+     "456",
+     "Student loan interest deduction"
+    ],
+    [
+     "458",
+     "Educator expense deduction"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 119
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Itemized deductions",
+   "source_page": 119
+  },
+  {
+   "type": "table",
+   "caption": "Tax Topics under “Itemized deductions”: topic number and subject.",
+   "columns": [
+    "Topic No.",
+    "Subject"
+   ],
+   "rows": [
+    [
+     "501",
+     "Should I itemize?"
+    ],
+    [
+     "502",
+     "Medical and dental expenses"
+    ],
+    [
+     "503",
+     "Deductible taxes"
+    ],
+    [
+     "504",
+     "Home mortgage points"
+    ],
+    [
+     "505",
+     "Interest expense"
+    ],
+    [
+     "506",
+     "Charitable contributions"
+    ],
+    [
+     "509",
+     "Business use of home"
+    ],
+    [
+     "510",
+     "Business use of car"
+    ],
+    [
+     "511",
+     "Business travel expenses"
+    ],
+    [
+     "513",
+     "Work-related education expenses"
+    ],
+    [
+     "515",
+     "Casualty, disaster, and theft losses"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 119
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Tax computation",
+   "source_page": 119
+  },
+  {
+   "type": "table",
+   "caption": "Tax Topics under “Tax computation”: topic number and subject.",
+   "columns": [
+    "Topic No.",
+    "Subject"
+   ],
+   "rows": [
+    [
+     "551",
+     "Standard deduction"
+    ],
+    [
+     "552",
+     "Tax and credits figured by the IRS"
+    ],
+    [
+     "553",
+     "Tax on a child's investment and other unearned income (Kiddie tax)"
+    ],
+    [
+     "554",
+     "Self-employment tax"
+    ],
+    [
+     "556",
+     "Alternative minimum tax"
+    ],
+    [
+     "557",
+     "Additional tax on early distributions from traditional and Roth IRAs"
+    ],
+    [
+     "558",
+     "Additional tax on early distributions from retirement plans other than IRAs"
+    ],
+    [
+     "559",
+     "Net investment income tax"
+    ],
+    [
+     "560",
+     "Additional Medicare Tax"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 119
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Tax credits",
+   "source_page": 119
+  },
+  {
+   "type": "table",
+   "caption": "Tax Topics under “Tax credits”: topic number and subject.",
+   "columns": [
+    "Topic No.",
+    "Subject"
+   ],
+   "rows": [
+    [
+     "601",
+     "Earned Income Credit"
+    ],
+    [
+     "602",
+     "Child and Dependent Care Credit"
+    ],
+    [
+     "608",
+     "Excess Social Security and RRTA tax withheld"
+    ],
+    [
+     "610",
+     "Retirement Savings Contributions Credit"
+    ],
+    [
+     "612",
+     "The Premium Tax Credit"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 119
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "IRS notices",
+   "source_page": 119
+  },
+  {
+   "type": "table",
+   "caption": "Tax Topics under “IRS notices”: topic number and subject.",
+   "columns": [
+    "Topic No.",
+    "Subject"
+   ],
+   "rows": [
+    [
+     "651",
+     "Notices—What to do"
+    ],
+    [
+     "652",
+     "Notice of underreported income—CP2000"
+    ],
+    [
+     "653",
+     "IRS notices and bills, penalties, and interest charges"
+    ],
+    [
+     "654",
+     "Understanding your CP75 or CP75A notice, Request for Supporting Documentation"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 119
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Basis of assets, depreciation, and sale of assets",
+   "source_page": 119
+  },
+  {
+   "type": "table",
+   "caption": "Tax Topics under “Basis of assets, depreciation, and sale of assets”: topic number and subject.",
+   "columns": [
+    "Topic No.",
+    "Subject"
+   ],
+   "rows": [
+    [
+     "701",
+     "Sale of your home"
+    ],
+    [
+     "703",
+     "Basis of assets"
+    ],
+    [
+     "704",
+     "Depreciation"
+    ],
+    [
+     "705",
+     "Installment sales"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 119
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Employer tax information",
+   "source_page": 119
+  },
+  {
+   "type": "table",
+   "caption": "Tax Topics under “Employer tax information”: topic number and subject.",
+   "columns": [
+    "Topic No.",
+    "Subject"
+   ],
+   "rows": [
+    [
+     "751",
+     "Social Security and Medicare withholding rates"
+    ],
+    [
+     "752",
+     "Filing Forms W-2 and W-3"
+    ],
+    [
+     "753",
+     "Form W-4—Employee's Withholding Certificate"
+    ],
+    [
+     "756",
+     "Employment taxes for household employees"
+    ],
+    [
+     "757",
+     "Forms 941 and 944—Deposit requirements"
+    ],
+    [
+     "758",
+     "Form 941—Employer's Quarterly Federal Tax Return and Form 944—Employer's Annual Federal Tax Return"
+    ],
+    [
+     "759",
+     "Form 940—Employer's Annual Federal Unemployment (FUTA) Tax Return—Filing and deposit requirements"
+    ],
+    [
+     "760",
+     "Form 943—Reporting and deposit requirements for agricultural employers"
+    ],
+    [
+     "761",
+     "Tips—Withholding and reporting"
+    ],
+    [
+     "762",
+     "Independent contractor vs. employee"
+    ],
+    [
+     "763",
+     "The Affordable Care Act"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 119
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Electronic media filers—1099 series and related information returns",
+   "source_page": 119
+  },
+  {
+   "type": "table",
+   "caption": "Tax Topics under “Electronic media filers—1099 series and related information returns”: topic number and subject.",
+   "columns": [
+    "Topic No.",
+    "Subject"
+   ],
+   "rows": [
+    [
+     "801",
+     "Who must file information returns electronically"
+    ],
+    [
+     "802",
+     "Applying to file information returns electronically"
+    ],
+    [
+     "803",
+     "Electronic filing waivers or exemptions and filing extensions"
+    ],
+    [
+     "804",
+     "FIRE system test files and combined Federal/State Filing (CF/SF) program"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 119
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Tax information for U.S. resident aliens and citizens living abroad",
+   "source_page": 119
+  },
+  {
+   "type": "table",
+   "caption": "Tax Topics under “Tax information for U.S. resident aliens and citizens living abroad”: topic number and subject.",
+   "columns": [
+    "Topic No.",
+    "Subject"
+   ],
+   "rows": [
+    [
+     "851",
+     "Resident and nonresident aliens"
+    ],
+    [
+     "856",
+     "Foreign tax credit"
+    ],
+    [
+     "857",
+     "Individual taxpayer identification number (ITIN)"
+    ],
+    [
+     "858",
+     "Alien tax clearance"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 119
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "Tax information for residents of Puerto Rico",
+   "source_page": 119
+  },
+  {
+   "type": "table",
+   "caption": "Tax Topics under “Tax information for residents of Puerto Rico”: topic number and subject.",
+   "columns": [
+    "Topic No.",
+    "Subject"
+   ],
+   "rows": [
+    [
+     "901",
+     "Is a person with income from sources within Puerto Rico required to file a U.S. federal income tax return?"
+    ],
+    [
+     "902",
+     "Credits and deductions for taxpayers with Puerto Rican source income exempt from U.S. tax"
+    ],
+    [
+     "903",
+     "U.S. employment tax in Puerto Rico"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 119
+  }
+ ],
+ "review_notes": [
+  "TRANCHE 58 OF A MULTI-SESSION REBUILD. This plan covers printed pages 118-119, Tax Topics: 121 topics in 17 categories. It carries no document title by design — only tranche 1 does — so this file validates through merge-plans rather than standalone. No partial rebuild is delivered.",
+  "MECHANICAL, NOT TRANSCRIBED. The list is parsed out of per-item page geometry (mcp-testing/tools/page_items.cjs) and the generator REFUSES TO WRITE A PLAN unless six assertions hold: every category is named and non-empty; every topic number is digits only; every topic has a subject; **the topic numbers strictly increase down the whole list**; no subject begins with a three-digit number (which is what a mis-set column x would produce); and the totals clear 120 topics in 8 categories. The strictly-increasing check is the one that matters — the three columns flow left to right across two pages and the numbers only ever climb, so a column read out of order cannot pass.",
+  "THE COLUMN GEOMETRY WAS MEASURED, NOT GUESSED. The x histogram over both pages has exactly six spikes — 42/67, 221/247, 401/426 — being the topic number and subject of each of the three columns. Subjects wrap onto continuation lines that carry no number, and those are appended to the row above rather than becoming rows of their own.",
+  "CATEGORY SUB-HEADS AND COLUMN HEADERS SHARE ONE FACE, and are separated by their text rather than their typography. Face g_d0_f5 carries both the category names (“IRS help available”, “IRS procedures”, …) and the “Topic No. / Subject” header that repeats at the top of every column. The header is dropped as furniture by matching its exact words; sub-heads that wrap over two or three bands are joined before the category opens.",
+  "A CATEGORY CAN CONTINUE ACROSS A COLUMN OR PAGE BREAK, and the parser carries the open category across both — topics appearing at the top of a column before any sub-head belong to the category above. Each category becomes a level-4 heading with its own two-column table, so a reader can navigate to a category rather than scrolling one 130-row table.",
+  "THE ONE LINK IS READ FROM ITS ANNOTATION: “IRS.gov/TaxTopics” → https://www.irs.gov/taxtopics/. It is set in the italic face, so it is authored as an italic link with the [[«text»|url]] form introduced in tranche 55. PAGE FURNITURE OMITTED: both printed page numbers, the “(Continued)” marker at the top of page 119, and the repeated column headers. The em dashes inside subjects (“IRS services—Volunteer tax assistance…”) are the source's own."
+ ]
+}
