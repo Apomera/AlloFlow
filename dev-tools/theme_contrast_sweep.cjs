@@ -8,10 +8,12 @@
 // of the gap but not all of it, and the only way to know which tools are still
 // affected is to render each one in BOTH themes and diff the counts.
 //
-// It reports three outcomes per tool:
+// It reports four outcomes per tool:
 //   DARK-SPECIFIC          dark is worse than light — the dark gap, still open
 //   pre-existing in BOTH   a plain contrast bug, nothing to do with the theme
-//   clean                  no colour-contrast violations either way
+//   UNMEASURED             axe could not resolve the background (gradient/image),
+//                          so the zero is meaningless — go and look at it
+//   clean                  no violations AND nothing left unresolved
 //
 // TRAPS, both of which produced numbers I briefly believed:
 //   * ONE TOOL PER PAGE. Loading several tool scripts into one document lets
@@ -29,6 +31,40 @@ const OUT = process.argv[2];
 const ROOT = process.cwd();
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const axe = read('node_modules/axe-core/axe.min.js');
+
+// ── STEM palette variables (added 2026-08-05) ───────────────────────────────
+// WHY THIS EXISTS. This sweep used to render tools with the --allo-stem-*
+// variables UNDEFINED. Tools write `var(--allo-stem-text, #cbd5e1)`, so every
+// one of those silently fell back to the light-on-dark fallback — which looks
+// correct on a dark surface no matter which theme is being measured. The sweep
+// therefore could not see the entire class of "surface and text described by
+// different palettes", and reported stem_tool_kitchenlab as "light 0, dark 0,
+// clean" while its body text was #0f172a on #1c1410 = 1.02:1, invisible.
+// Measured on fireecology the same day: 8 violations without these variables,
+// 22 with them.
+//
+// The block is read from AlloFlowANTI.txt rather than copied, so it cannot drift
+// from what the app ships. If extraction ever fails this ABORTS rather than
+// quietly reverting to the blind behaviour that hid the bug.
+//
+// NOTE: counts from this tool are NOT comparable to runs before this date — the
+// light theme in particular will report more, because it is finally being
+// measured with the palette the app actually applies.
+function extractStemPalette() {
+  const anti = read('AlloFlowANTI.txt');
+  const start = anti.indexOf(':root, .theme-default {');
+  if (start === -1) throw new Error('STEM palette block not found in AlloFlowANTI.txt (looked for ":root, .theme-default {")');
+  const anchor = anti.indexOf('.theme-contrast {', start);
+  if (anchor === -1) throw new Error('.theme-contrast block not found after :root/.theme-default');
+  const end = anti.indexOf('}', anti.indexOf('--allo-stem-button-border', anchor));
+  if (end === -1) throw new Error('could not find the end of the .theme-contrast block');
+  const css = anti.slice(start, end + 1);
+  for (const needle of ['--allo-stem-text:', '.theme-dark', '.theme-contrast']) {
+    if (!css.includes(needle)) throw new Error('extracted palette is missing ' + needle);
+  }
+  return css;
+}
+const STEM_PALETTE = extractStemPalette();
 const react = read('desktop/web-app/node_modules/react/umd/react.production.min.js');
 const reactDom = read('desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js');
 
@@ -47,6 +83,11 @@ window.__mount = function (theme) {
   var ids = Object.keys(window.StemLab._registry);
   var toolId = ids[0];
   if (!toolId) return 'not-registered';
+  // Put the theme CLASS on <html>, which is what the palette block selects on
+  // (":root, .theme-default" / ".theme-dark"). Without this the variables never
+  // resolve to the theme being measured and every var() falls back — the blind
+  // spot this sweep had until 2026-08-05.
+  document.documentElement.className = (theme === 'dark') ? 'theme-dark' : 'theme-default';
   var Icons = new Proxy({}, { get: function () { return function () { return React.createElement('span'); }; } });
   var store = {};
   var ctx = { React: React, toolData: store, setToolData: function(){}, setStemLabTool: function(){},
@@ -86,6 +127,7 @@ window.__unmount = function () { ReactDOM.unmountComponentAtNode(document.getEle
     const page = OUT + '-' + id + '.html';
     fs.writeFileSync(page, `<!doctype html><html lang="en"><head><meta charset="utf-8">
 <script src="https://cdn.tailwindcss.com"><\/script>
+<style>${STEM_PALETTE}</style>
 <style>body{margin:0;padding:10px;background:#020617;font-family:system-ui}</style></head>
 <body><main id="slot"></main>
 <script>${axe}<\/script><script>${react}<\/script><script>${reactDom}<\/script>
@@ -95,7 +137,7 @@ window.__unmount = function () { ReactDOM.unmountComponentAtNode(document.getEle
     const pg = await b.newPage({ viewport: { width: 1100, height: 900 } });
     await pg.goto('file://' + page.replace(/\\/g, '/'));
     await pg.waitForTimeout(3200);
-    const row = { id, light: [], dark: [], note: '' };
+    const row = { id, light: [], dark: [], lightIncomplete: [], darkIncomplete: [], note: '' };
     // REPEAT each theme. A single reading is not trustworthy: the Tailwind CDN
     // compiles classes on demand, so a run can be audited before every rule
     // exists. Measured on `calculus`, the light count came back 5, 9, 11 and 11
@@ -118,9 +160,19 @@ window.__unmount = function () { ReactDOM.unmountComponentAtNode(document.getEle
         if (broken) { row.note = 'renders an error card — not measurable here'; break; }
         const n = await pg.evaluate(async () => {
           const r = await window.axe.run('#slot', { runOnly: { type: 'rule', values: ['color-contrast'] } });
-          return r.violations.reduce((a, v) => a + v.nodes.length, 0);
+          return {
+            v: r.violations.reduce((a, x) => a + x.nodes.length, 0),
+            // INCOMPLETE is not noise, it is "axe could not compute this". A
+            // gradient or image background defeats the rule entirely, so a tool
+            // painted on one returns 0 violations no matter how bad it is.
+            // kitchenlab measured 0 violations / 150 incomplete both BEFORE and
+            // AFTER its 1.02:1 invisible-text bug was fixed — the violation count
+            // carried no information about it at all.
+            i: r.incomplete.reduce((a, x) => a + x.nodes.length, 0),
+          };
         });
-        row[theme === 'dark' ? 'dark' : 'light'].push(n);
+        row[theme === 'dark' ? 'dark' : 'light'].push(n.v);
+        row[theme === 'dark' ? 'darkIncomplete' : 'lightIncomplete'].push(n.i);
         await pg.evaluate(() => window.__unmount());
         await pg.waitForTimeout(80);
       }
@@ -139,8 +191,14 @@ window.__unmount = function () { ReactDOM.unmountComponentAtNode(document.getEle
       // if dark loses even when light is given every benefit of the doubt.
       const darkMin = lo(row.dark), lightMax = hi(row.light);
       const unstable = (hi(row.light) - lo(row.light)) + (hi(row.dark) - lo(row.dark));
+      const maxIncomplete = Math.max(hi(row.lightIncomplete.length ? row.lightIncomplete : [0]),
+                                     hi(row.darkIncomplete.length ? row.darkIncomplete : [0]));
       if (darkMin > lightMax) verdict = 'DARK-SPECIFIC (+' + (darkMin - lightMax) + ')';
       else if (hi(row.light) > 0 || hi(row.dark) > 0) verdict = 'pre-existing in BOTH themes';
+      // A zero violation count is only "clean" if axe could actually SEE the
+      // elements. With unresolved elements it means "not measured", and saying
+      // clean there is the false assurance that let kitchenlab ship invisible.
+      else if (maxIncomplete > 0) verdict = 'UNMEASURED — ' + maxIncomplete + ' element(s) axe could not resolve (gradient/image bg): screenshot it';
       else verdict = 'clean';
       if (unstable) verdict += '   [unstable spread ' + unstable + ']';
     }
