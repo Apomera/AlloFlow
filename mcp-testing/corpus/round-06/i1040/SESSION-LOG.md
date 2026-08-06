@@ -2377,20 +2377,64 @@ income was $4.920 trillion..." never closes the bracket. Same call as line 24z
 (tranche 40), the two worksheet line 2 instructions (48), and "net earning"
 (52).
 
-### NEXT: pages 123-126 - THE INDEX, and then the end
+### Session 61 (2026-08-05) - pages 123-124 - tranche-61 - 44 blocks - VALIDATED (merged)
 
-**This is the last tranche.** The Index is MECHANICAL: three columns of
-entries with page numbers and sub-entries. **Do not hand-author it.** Tranche
-58 is the model - a column-bounded parse with a header cut, a body-face
-filter, and an ordering invariant. The natural invariant here is that entries
-are ALPHABETICAL within each letter section, the equivalent of tranche 58's
-strictly-increasing topic numbers. Sub-entries are indented under their parent
-and will need the same fold-or-nest decision the worksheets needed.
+The Index: **220 entries in 21 letter sections**, MECHANICAL. `merge-plans
+t01..t61` -> 2,077 blocks, `ok: true`, **pages 1-124 covered**, zero heading
+skips. **Recall 0.9980 - the only two missing tokens are the folios.** The
+cleanest recall of the rebuild.
 
-**After the Index the rebuild is complete at 126 pages**, and the full
-end-to-end pass should be re-run: `merge-plans` all 61 tranches ->
-`remediate` -> `verify-init`. Note that `verify-check` still needs a
-fresh-context reader who never saw the plan; it must not be self-attested.
+> **THE INDEX IS PAGES 123-124, NOT 123-126.** Every NEXT section in this log
+> from session 44 onward said 123-126, and it was wrong. Page 125 is "Your
+> Rights as a Taxpayer" and page 126 is "Where Do You File?" - both still
+> unauthored. The error survived seventeen sessions because it was copied
+> forward from one NEXT block to the next without being re-measured. **A plan
+> repeated is not a plan checked.**
+
+This was much harder than tranche 58 and every difficulty was found by an
+assertion rather than by reading the output:
+
+1. **Sub-entry labels are set in the VALUE face, not the entry face.** Only
+   top-level labels use `g_d0_f4`; a sub-entry's words are `g_d0_f1`, the same
+   face as its page numbers, so a face split alone yields "Standard
+   deduction35" with the label swallowed. Sub-entry bands are split at the
+   first purely numeric item instead. The parent's colon is `g_d0_f1` too, so
+   "Education:" arrives as label "Education" plus value ":". Found because the
+   scale assertion reported 180 entries against 196 label-bearing bands.
+2. **An indented line is ambiguous and needs TWO signals.** It is either a
+   sub-entry or the tail of an over-long label, and x cannot separate them.
+   Neither can capitalisation - "Disclosure, Privacy Act, and Paperwork" wraps
+   to "Reduction Act Notice". What works: a wrapped line RAN OUT OF ROOM (right
+   edge within 60pt of the column edge) **and** is followed by exactly ONE
+   indented line. "Individual retirement arrangements (IRAs)" also reaches the
+   edge but has four children.
+3. **A parent need not be childless or colon-terminated.** "Dependents" carries
+   its own pages (16, 17) AND parents "Standard deduction", so it appears both
+   as an entry and as a stem.
+4. **Sub-entry labels wrap too** ("Penalty:" / "Others (including late filing
+   and late" / "payment) 86"), caught by the every-entry-has-a-value assertion.
+5. **The value joiner needed a word-boundary rule**: a space only between two
+   WORD characters, so "92,112" and "63-65" survive while "(" + "See" + "Tax
+   help)" becomes "(See Tax help)" instead of "(SeeTax help)".
+
+Sub-entries are folded as "Parent: Sub" so every row stands on its own - a bare
+"Credits | 61, 115" tells a reader nothing - and the colon is normalised, since
+some parents print one and some do not.
+
+### NEXT: pages 125-126, and then the end
+
+**Two pages remain.**
+
+* **125 Your Rights as a Taxpayer** - the Taxpayer Bill of Rights, ten numbered
+  rights in two columns. The detector reports 1 column and interleaves them, so
+  read it per column from geometry.
+* **126 Where Do You File?** - the mailing-address table, plus a TIP and a
+  CAUTION. Reports 5 columns; check the geometry first.
+
+**Then the rebuild is complete at 126 pages** and the full end-to-end pass
+should be re-run: `merge-plans` all 63 tranches -> `remediate` -> `verify-init`.
+`verify-check` still needs a fresh-context reader who never saw the plan; it
+must not be self-attested.
 
 ## Run-in level audit (2026-08-05) - the session-49 concern, checked and CLOSED
 

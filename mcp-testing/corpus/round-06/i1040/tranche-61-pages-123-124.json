@@ -1,0 +1,1293 @@
+{
+ "schema_version": "1.0",
+ "document": {
+  "title": "2025 Instructions for Form 1040 (and 1040-SR)",
+  "language": "en",
+  "source_page_count": 126,
+  "source_sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a",
+  "document_type": "booklet",
+  "subject": "Internal Revenue Service instructions for the 2025 Form 1040 and Form 1040-SR, including the instructions for Schedules 1 through 3.",
+  "variant": "original"
+ },
+ "blocks": [
+  {
+   "type": "heading",
+   "level": 2,
+   "text": "Index to Instructions",
+   "source_page": 123
+  },
+  {
+   "type": "paragraph",
+   "text": "Index entries give the printed page number in these instructions. A sub-entry is written with its parent, so every row stands on its own.",
+   "source_page": 123
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "A",
+   "source_page": 123
+  },
+  {
+   "type": "table",
+   "caption": "Index entries beginning with A, and their pages.",
+   "columns": [
+    "Entry",
+    "Pages"
+   ],
+   "rows": [
+    [
+     "ABLE account",
+     "92, 112"
+    ],
+    [
+     "Additional deductions",
+     "34"
+    ],
+    [
+     "Additional Medicare Tax",
+     "113"
+    ],
+    [
+     "Additions to tax",
+     "111"
+    ],
+    [
+     "Address change",
+     "12"
+    ],
+    [
+     "Adjusted gross income",
+     "33"
+    ],
+    [
+     "Adoption",
+     "61"
+    ],
+    [
+     "Adoption credit",
+     "116"
+    ],
+    [
+     "Adoption taxpayer identification number",
+     "20"
+    ],
+    [
+     "Aliens",
+     "8"
+    ],
+    [
+     "Alimony paid",
+     "95"
+    ],
+    [
+     "Alimony received",
+     "89"
+    ],
+    [
+     "Alternative minimum tax",
+     "112"
+    ],
+    [
+     "Amended return",
+     "83"
+    ],
+    [
+     "Amount you owe",
+     "63-65"
+    ],
+    [
+     "Annuities",
+     "28-30"
+    ],
+    [
+     "Applicable passenger vehicle",
+     "109"
+    ],
+    [
+     "Archer MSAs",
+     "91, 112, 113"
+    ],
+    [
+     "Artists",
+     "93"
+    ],
+    [
+     "Assistance",
+     "(See Tax help)"
+    ],
+    [
+     "Attachments to the return",
+     "67"
+    ],
+    [
+     "Awards",
+     "91"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 123
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "B",
+   "source_page": 123
+  },
+  {
+   "type": "table",
+   "caption": "Index entries beginning with B, and their pages.",
+   "columns": [
+    "Entry",
+    "Pages"
+   ],
+   "rows": [
+    [
+     "Bankruptcy cases, chapter 11",
+     "23"
+    ],
+    [
+     "Bequests",
+     "93"
+    ],
+    [
+     "Blindness",
+     "33, 35"
+    ],
+    [
+     "Business income or loss",
+     "89"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 123
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "C",
+   "source_page": 123
+  },
+  {
+   "type": "table",
+   "caption": "Index entries beginning with C, and their pages.",
+   "columns": [
+    "Entry",
+    "Pages"
+   ],
+   "rows": [
+    [
+     "Canceled debt",
+     "91"
+    ],
+    [
+     "Capital gain distributions",
+     "31"
+    ],
+    [
+     "Capital gain or loss",
+     "31"
+    ],
+    [
+     "Child and dependent care expenses, credit for",
+     "115"
+    ],
+    [
+     "Child custody",
+     "20"
+    ],
+    [
+     "Child support",
+     "93"
+    ],
+    [
+     "Child tax credits",
+     "17, 61"
+    ],
+    [
+     "Child’s requirement to file",
+     "9, 10"
+    ],
+    [
+     "Community property states",
+     "23"
+    ],
+    [
+     "Contributions to reduce debt held by the public",
+     "82"
+    ],
+    [
+     "Corrective distributions",
+     "25"
+    ],
+    [
+     "Credits",
+     "61"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 123
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "D",
+   "source_page": 123
+  },
+  {
+   "type": "table",
+   "caption": "Index entries beginning with D, and their pages.",
+   "columns": [
+    "Entry",
+    "Pages"
+   ],
+   "rows": [
+    [
+     "Daycare center expenses",
+     "115"
+    ],
+    [
+     "Death of a taxpayer",
+     "12"
+    ],
+    [
+     "Death of spouse",
+     "12"
+    ],
+    [
+     "Dependent care benefits",
+     "24"
+    ],
+    [
+     "Dependents",
+     "16, 17"
+    ],
+    [
+     "Dependents: Standard deduction",
+     "35"
+    ],
+    [
+     "Direct deposit of refund",
+     "62, 63"
+    ],
+    [
+     "Disability expenses",
+     "92"
+    ],
+    [
+     "Disclosure, Privacy Act, and Paperwork Reduction Act Notice",
+     "120"
+    ],
+    [
+     "Dividends: Nondividend distributions",
+     "26"
+    ],
+    [
+     "Dividends: Ordinary dividends",
+     "26"
+    ],
+    [
+     "Dividends: Qualified dividends",
+     "25, 38"
+    ],
+    [
+     "Divorced parents",
+     "20"
+    ],
+    [
+     "Dual-status aliens",
+     "8, 13"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 123
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "E",
+   "source_page": 123
+  },
+  {
+   "type": "table",
+   "caption": "Index entries beginning with E, and their pages.",
+   "columns": [
+    "Entry",
+    "Pages"
+   ],
+   "rows": [
+    [
+     "Earned income credit (EIC)",
+     "40"
+    ],
+    [
+     "Earned income credit (EIC): Combat pay, nontaxable",
+     "43"
+    ],
+    [
+     "Education: Credits",
+     "61, 115"
+    ],
+    [
+     "Education: Expenses",
+     "61, 115"
+    ],
+    [
+     "Education: Recapture of education credits",
+     "34"
+    ],
+    [
+     "Education: Savings accounts",
+     "93, 112"
+    ],
+    [
+     "Educator expenses",
+     "93"
+    ],
+    [
+     "Elderly persons: Credit for",
+     "116"
+    ],
+    [
+     "Elderly persons: Standard deduction",
+     "35"
+    ],
+    [
+     "Electric vehicles",
+     "116"
+    ],
+    [
+     "Electronic filing (e-file)",
+     "62, 63, 66, 67"
+    ],
+    [
+     "Enhanced deduction for seniors",
+     "110"
+    ],
+    [
+     "Estimated tax",
+     "39, 65, 82"
+    ],
+    [
+     "Excess deferrals",
+     "24"
+    ],
+    [
+     "Excess social security and tier 1 RRTA tax withheld",
+     "117"
+    ],
+    [
+     "Extension of time to file",
+     "8, 117"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 123
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "F",
+   "source_page": 123
+  },
+  {
+   "type": "table",
+   "caption": "Index entries beginning with F, and their pages.",
+   "columns": [
+    "Entry",
+    "Pages"
+   ],
+   "rows": [
+    [
+     "Filing requirements",
+     "11"
+    ],
+    [
+     "Filing status, which box to check",
+     "13-15"
+    ],
+    [
+     "Foreign accounts and trusts",
+     "23"
+    ],
+    [
+     "Foreign tax credit",
+     "115"
+    ],
+    [
+     "Foreign-source income",
+     "23"
+    ],
+    [
+     "Form W-2",
+     "25"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 123
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "G",
+   "source_page": 123
+  },
+  {
+   "type": "table",
+   "caption": "Index entries beginning with G, and their pages.",
+   "columns": [
+    "Entry",
+    "Pages"
+   ],
+   "rows": [
+    [
+     "Gambling",
+     "91"
+    ],
+    [
+     "General business credit",
+     "116"
+    ],
+    [
+     "Gifts",
+     "93"
+    ],
+    [
+     "Golden parachute payments",
+     "114"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 123
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "H",
+   "source_page": 123
+  },
+  {
+   "type": "table",
+   "caption": "Index entries beginning with H, and their pages.",
+   "columns": [
+    "Entry",
+    "Pages"
+   ],
+   "rows": [
+    [
+     "Head of household",
+     "14"
+    ],
+    [
+     "Health insurance deduction, self-employed",
+     "94"
+    ],
+    [
+     "Health insurance premiums, credit for",
+     "116"
+    ],
+    [
+     "Health savings accounts",
+     "91, 93, 112, 113"
+    ],
+    [
+     "Household employment taxes",
+     "113"
+    ],
+    [
+     "How to comment on forms",
+     "120"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 123
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "I",
+   "source_page": 123
+  },
+  {
+   "type": "table",
+   "caption": "Index entries beginning with I, and their pages.",
+   "columns": [
+    "Entry",
+    "Pages"
+   ],
+   "rows": [
+    [
+     "Identity Protection PIN",
+     "66"
+    ],
+    [
+     "Identity theft",
+     "82"
+    ],
+    [
+     "Income",
+     "23-89"
+    ],
+    [
+     "Income tax withholding (federal)",
+     "39, 82"
+    ],
+    [
+     "Individual retirement arrangements (IRAs): Contributions to",
+     "95, 97"
+    ],
+    [
+     "Individual retirement arrangements (IRAs): Credit for contributions to",
+     "115"
+    ],
+    [
+     "Individual retirement arrangements (IRAs): Distributions from",
+     "26"
+    ],
+    [
+     "Individual retirement arrangements (IRAs): Nondeductible contributions to",
+     "26, 95-97"
+    ],
+    [
+     "Individual taxpayer identification numbers",
+     "13"
+    ],
+    [
+     "Injured spouse",
+     "62"
+    ],
+    [
+     "Innocent spouse relief",
+     "81"
+    ],
+    [
+     "Installment payments",
+     "64"
+    ],
+    [
+     "Interest income: Tax-exempt",
+     "25"
+    ],
+    [
+     "Interest income: Taxable",
+     "25"
+    ],
+    [
+     "Interest on taxes",
+     "86"
+    ],
+    [
+     "Investment income, tax on",
+     "113"
+    ],
+    [
+     "Itemized deductions or standard deduction",
+     "35"
+    ],
+    [
+     "ITINs for aliens",
+     "13"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 123
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "J",
+   "source_page": 123
+  },
+  {
+   "type": "table",
+   "caption": "Index entries beginning with J, and their pages.",
+   "columns": [
+    "Entry",
+    "Pages"
+   ],
+   "rows": [
+    [
+     "Jury duty pay",
+     "91"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 123
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "L",
+   "source_page": 123
+  },
+  {
+   "type": "table",
+   "caption": "Index entries beginning with L, and their pages.",
+   "columns": [
+    "Entry",
+    "Pages"
+   ],
+   "rows": [
+    [
+     "Life insurance",
+     "93"
+    ],
+    [
+     "Line instructions for Forms 1040 and 1040-SR",
+     "67"
+    ],
+    [
+     "Living abroad, U.S. citizens and resident aliens",
+     "8, 23"
+    ],
+    [
+     "Long-term care insurance",
+     "94"
+    ],
+    [
+     "Lump-sum distributions",
+     "30"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 123
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "M",
+   "source_page": 123
+  },
+  {
+   "type": "table",
+   "caption": "Index entries beginning with M, and their pages.",
+   "columns": [
+    "Entry",
+    "Pages"
+   ],
+   "rows": [
+    [
+     "Market discount on bonds",
+     "25"
+    ],
+    [
+     "Married persons: Filing joint returns",
+     "13"
+    ],
+    [
+     "Married persons: Filing separate returns",
+     "14"
+    ],
+    [
+     "Married persons: Living apart",
+     "15"
+    ],
+    [
+     "Medical insurance premiums, credit for",
+     "116"
+    ],
+    [
+     "Medicare tax, additional",
+     "113"
+    ],
+    [
+     "Mortgage interest credit",
+     "116"
+    ],
+    [
+     "Moving expenses",
+     "93"
+    ],
+    [
+     "Multiple support agreement",
+     "21"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 123
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "N",
+   "source_page": 123
+  },
+  {
+   "type": "table",
+   "caption": "Index entries beginning with N, and their pages.",
+   "columns": [
+    "Entry",
+    "Pages"
+   ],
+   "rows": [
+    [
+     "Name change",
+     "12"
+    ],
+    [
+     "Net Investment Income Tax",
+     "113"
+    ],
+    [
+     "Net operating loss",
+     "91"
+    ],
+    [
+     "No tax on: Car loan interest",
+     "109"
+    ],
+    [
+     "No tax on: Overtime",
+     "106"
+    ],
+    [
+     "No tax on: Tips",
+     "101"
+    ],
+    [
+     "No tax on car loan interest",
+     "109"
+    ],
+    [
+     "No tax on tips",
+     "101 (See also Qualified tips)"
+    ],
+    [
+     "Nonresident aliens",
+     "8, 13"
+    ],
+    [
+     "Not qualified tips",
+     "102"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 123
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "O",
+   "source_page": 123
+  },
+  {
+   "type": "table",
+   "caption": "Index entries beginning with O, and their pages.",
+   "columns": [
+    "Entry",
+    "Pages"
+   ],
+   "rows": [
+    [
+     "Offsets",
+     "61"
+    ],
+    [
+     "Other gains or losses",
+     "89"
+    ],
+    [
+     "Other income",
+     "89, 91"
+    ],
+    [
+     "Other taxes",
+     "113"
+    ],
+    [
+     "Overtime: Not qualified",
+     "106"
+    ],
+    [
+     "Overtime: Qualified",
+     "106"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 123
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "P",
+   "source_page": 123
+  },
+  {
+   "type": "table",
+   "caption": "Index entries beginning with P, and their pages.",
+   "columns": [
+    "Entry",
+    "Pages"
+   ],
+   "rows": [
+    [
+     "Parents, divorced or separated",
+     "20"
+    ],
+    [
+     "Pay taxes electronically",
+     "63"
+    ],
+    [
+     "Payments",
+     "39-117"
+    ],
+    [
+     "Penalty: Early withdrawal of savings",
+     "95"
+    ],
+    [
+     "Penalty: Estimated tax",
+     "65"
+    ],
+    [
+     "Penalty: Others (including late filing and late payment)",
+     "86"
+    ],
+    [
+     "Penalty on early withdrawal of savings",
+     "95"
+    ],
+    [
+     "Pensions and annuities",
+     "28-30"
+    ],
+    [
+     "Premium tax credit",
+     "116"
+    ],
+    [
+     "Presidential election $3 check-off",
+     "13"
+    ],
+    [
+     "Private delivery services",
+     "9"
+    ],
+    [
+     "Prizes",
+     "91"
+    ],
+    [
+     "Public debt, gift to reduce the",
+     "82"
+    ],
+    [
+     "Publications",
+     "(See Tax help)"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 123
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Q",
+   "source_page": 123
+  },
+  {
+   "type": "table",
+   "caption": "Index entries beginning with Q, and their pages.",
+   "columns": [
+    "Entry",
+    "Pages"
+   ],
+   "rows": [
+    [
+     "Qualified business income deduction",
+     "34"
+    ],
+    [
+     "Qualified dividends",
+     "25, 38"
+    ],
+    [
+     "Qualified dividends and capital gain tax worksheet",
+     "38"
+    ],
+    [
+     "Qualified overtime",
+     "106"
+    ],
+    [
+     "Qualified overtime: Determine amount",
+     "106"
+    ],
+    [
+     "Qualified passenger vehicle loan interest: deduction",
+     "109"
+    ],
+    [
+     "Qualified passenger vehicle loan interest: Applicable passenger vehicle",
+     "109"
+    ],
+    [
+     "Qualified passenger vehicle loan interest: Final assembly",
+     "109"
+    ],
+    [
+     "Qualified passenger vehicle loan interest: Qualified passenger vehicle loan interest",
+     "109"
+    ],
+    [
+     "Qualified retirement plans, deduction for",
+     "93"
+    ],
+    [
+     "Qualified tips",
+     "101, 102 (See also Not qualified tips)"
+    ],
+    [
+     "Qualified tips: Cash tips",
+     "102"
+    ],
+    [
+     "Qualified tips: Determine amount for : Employee",
+     "103"
+    ],
+    [
+     "Qualified tips: Non-employee",
+     "103"
+    ],
+    [
+     "Qualified tips: GITCA",
+     "102"
+    ],
+    [
+     "Qualified tips: Tips paid voluntarily",
+     "102"
+    ],
+    [
+     "Qualified tips: TRDA",
+     "102"
+    ],
+    [
+     "Qualified tips: Treasury Tipped Occupation Code (TTOC)",
+     "102"
+    ],
+    [
+     "Qualified tuition program earnings",
+     "93, 112"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 123
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "R",
+   "source_page": 124
+  },
+  {
+   "type": "table",
+   "caption": "Index entries beginning with R, and their pages.",
+   "columns": [
+    "Entry",
+    "Pages"
+   ],
+   "rows": [
+    [
+     "Railroad retirement benefits: Treated as a pension",
+     "28"
+    ],
+    [
+     "Railroad retirement benefits: Treated as social security",
+     "31"
+    ],
+    [
+     "Records, how long to keep",
+     "82"
+    ],
+    [
+     "Refund",
+     "61-63"
+    ],
+    [
+     "Refund information",
+     "87"
+    ],
+    [
+     "Refund offset",
+     "61"
+    ],
+    [
+     "Refundable",
+     "61"
+    ],
+    [
+     "Refunds, credits, or offsets of state and local taxes",
+     "88"
+    ],
+    [
+     "Reservists, expenses of",
+     "93"
+    ],
+    [
+     "Residency",
+     "13"
+    ],
+    [
+     "Resident aliens",
+     "8"
+    ],
+    [
+     "Residential energy efficient property credit",
+     "116"
+    ],
+    [
+     "Retirement plan deduction, self-employed",
+     "93"
+    ],
+    [
+     "Retirement savings contributions credit",
+     "115"
+    ],
+    [
+     "Rollovers",
+     "26, 30"
+    ],
+    [
+     "Roth IRAs",
+     "26, 95"
+    ],
+    [
+     "Rounding off to whole dollars",
+     "23"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 124
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "S",
+   "source_page": 124
+  },
+  {
+   "type": "table",
+   "caption": "Index entries beginning with S, and their pages.",
+   "columns": [
+    "Entry",
+    "Pages"
+   ],
+   "rows": [
+    [
+     "Saver’s credit",
+     "115"
+    ],
+    [
+     "Self-employment tax: Deduction for part of",
+     "93"
+    ],
+    [
+     "Seniors: Enhanced deduction for",
+     "110"
+    ],
+    [
+     "Separated parents",
+     "20"
+    ],
+    [
+     "Signing your return",
+     "65"
+    ],
+    [
+     "Single person",
+     "13"
+    ],
+    [
+     "Social security and equivalent railroad retirement benefits",
+     "31, 32"
+    ],
+    [
+     "Social security number",
+     "12, 22"
+    ],
+    [
+     "Standard deduction or itemized deductions",
+     "35"
+    ],
+    [
+     "State and local taxes, taxable refunds, credits, or offsets of",
+     "88"
+    ],
+    [
+     "Statutory employees",
+     "25"
+    ],
+    [
+     "Student loan interest deduction",
+     "99"
+    ],
+    [
+     "Student loan interest deduction: Expenses",
+     "98"
+    ],
+    [
+     "Surviving spouse, qualifying",
+     "15"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 124
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "T",
+   "source_page": 124
+  },
+  {
+   "type": "table",
+   "caption": "Index entries beginning with T, and their pages.",
+   "columns": [
+    "Entry",
+    "Pages"
+   ],
+   "rows": [
+    [
+     "Tax and credits",
+     "33-113"
+    ],
+    [
+     "Tax and credits: Figured by the IRS",
+     "36, 43"
+    ],
+    [
+     "Tax and credits: Other taxes : Alternative minimum tax",
+     "112"
+    ],
+    [
+     "Tax and credits: IRAs and other tax-favored accounts",
+     "112"
+    ],
+    [
+     "Tax and credits: Lump-sum distributions",
+     "30"
+    ],
+    [
+     "Tax and credits: Recapture",
+     "113"
+    ],
+    [
+     "Tax computation worksheet",
+     "80"
+    ],
+    [
+     "Tax help",
+     "83"
+    ],
+    [
+     "Tax table",
+     "68-79"
+    ],
+    [
+     "Tax Topics",
+     "118"
+    ],
+    [
+     "Taxpayer Advocate Service (TAS)",
+     "4"
+    ],
+    [
+     "Third party designee",
+     "65"
+    ],
+    [
+     "Tip income",
+     "112"
+    ],
+    [
+     "Tuition program earnings",
+     "93, 112"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 124
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "U",
+   "source_page": 124
+  },
+  {
+   "type": "table",
+   "caption": "Index entries beginning with U, and their pages.",
+   "columns": [
+    "Entry",
+    "Pages"
+   ],
+   "rows": [
+    [
+     "Unemployment compensation",
+     "89"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 124
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "W",
+   "source_page": 124
+  },
+  {
+   "type": "table",
+   "caption": "Index entries beginning with W, and their pages.",
+   "columns": [
+    "Entry",
+    "Pages"
+   ],
+   "rows": [
+    [
+     "Wages",
+     "23"
+    ],
+    [
+     "What if you can’t pay?",
+     "64"
+    ],
+    [
+     "What’s new",
+     "6"
+    ],
+    [
+     "When and where should you file?",
+     "8"
+    ],
+    [
+     "Who must file",
+     "9, 10"
+    ],
+    [
+     "Who should file",
+     "8"
+    ],
+    [
+     "Winnings, prizes, gambling, and lotteries (other income)",
+     "91"
+    ],
+    [
+     "Withholding, federal income tax",
+     "39, 82"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 124
+  }
+ ],
+ "review_notes": [
+  "TRANCHE 61 OF A MULTI-SESSION REBUILD, AND THE LAST OF THE INDEX. This plan covers printed pages 123-124: 220 entries in 21 letter sections. It carries no document title by design — only tranche 1 does — so this file validates through merge-plans rather than standalone.",
+  "THE INDEX IS PAGES 123-124, NOT 123-126. Earlier NEXT sections in the session log said 123-126, which was wrong and was corrected by measuring: page 125 is “Your Rights as a Taxpayer” and page 126 is “Where Do You File?”. **Those two pages still need authoring** and are not covered here.",
+  "MECHANICAL, NOT TRANSCRIBED, and gated by six assertions: every section head is a single letter with entries; every entry has a label and a value; **the letter sections run in alphabetical order across the whole index**; every page number cited is between 1 and 126; every entry starts with its own section's letter; and the totals clear 200 entries in 20 sections. The alphabetical-order check plays the role the strictly-increasing topic numbers played in tranche 58 — it is what catches a column read out of order.",
+  "SUB-ENTRY LABELS ARE SET IN THE **VALUE** FACE, NOT THE ENTRY FACE. Only top-level labels use g_d0_f4; a sub-entry's words are g_d0_f1, the same face as its page numbers, so splitting a band by face alone produces “Standard deduction35” with the label swallowed into the value. A sub-entry band is therefore split at the first purely numeric item instead. The parent's colon is g_d0_f1 too, so “Education:” arrives as label “Education” plus value “:”. Found because the scale assertion reported 180 entries against 196 label-bearing bands.",
+  "AN INDENTED LINE IS AMBIGUOUS AND NEEDS TWO SIGNALS. It is either a sub-entry or the tail of a label too long for one line, and x cannot tell them apart. Neither can capitalisation: “Disclosure, Privacy Act, and Paperwork” wraps to “Reduction Act Notice”. What works is a wrapped line having RUN OUT OF ROOM (its right edge within 60pt of the column edge) **and** being followed by exactly ONE indented line. “Individual retirement arrangements (IRAs)” also reaches the column edge but has four children, so the child count is what separates it from a wrap.",
+  "A PARENT NEED NOT BE CHILDLESS OR COLON-TERMINATED. “Dependents” carries its own pages (16, 17) AND parents “Standard deduction”, so it appears both as its own entry and as the stem of a sub-entry. Sub-entry labels wrap as well (“Penalty:” / “Others (including late filing and late” / “payment)  86”), which the every-entry-has-a-value assertion caught. **Sub-entries are folded as “Parent: Sub”** so every row stands on its own — a bare “Credits | 61, 115” tells a reader nothing — and the colon is normalised, since some parents print one and some do not.",
+  "PAGE NUMBERS AND CROSS-REFERENCES ARE REJOINED WITHOUT INVENTED SPACING. The separators arrive as their own items, so a space is inserted only between two WORD characters: “92” + “,” + “112” stays “92,112” and is re-spaced to “92, 112”, ranges come out as “63-65”, and “(” + “See” + “Tax help)” becomes “(See Tax help)” rather than the “(SeeTax help)” the first version produced. Italic “See”/“See also” references are kept in the Pages column as printed, and a bare “(See also …)” on its own line is appended to the entry above rather than becoming an entry.",
+  "PAGE FURNITURE OMITTED: both printed page numbers and the running title. One short paragraph is ADDED under the heading to say that entries cite printed page numbers and that sub-entries are written with their parent; that is disclosure of this tranche's own transformation, and it is the only added wording."
+ ]
+}
