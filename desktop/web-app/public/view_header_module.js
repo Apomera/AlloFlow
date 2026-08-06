@@ -205,6 +205,33 @@ function HeaderBar(props) {
     voiceVolume
   } = props;
   const [showSetupPathMenu, setShowSetupPathMenu] = React.useState(false);
+  const [pollAsk, setPollAsk] = React.useState("");
+  const [pollAiBusy, setPollAiBusy] = React.useState(false);
+  const suggestPollTimes = async () => {
+    const ask = String(pollAsk || "").trim();
+    if (!ask || pollAiBusy) return;
+    if (typeof window.callGemini !== "function") {
+      if (typeof addToast === "function") addToast("The assistant is not available right now. You can still type the options yourself.", "info");
+      return;
+    }
+    setPollAiBusy(true);
+    try {
+      const reply = await window.callGemini(
+        "A teacher is scheduling something and needs the OPTIONS for an availability poll. Return ONE option per line. No numbering, no bullets, no commentary, no heading. At most 12 lines, each under 60 characters. Write times the way a person says them and include the day. Do NOT convert time zones or add a time zone unless the request mentions one. Do not invent attendees or any other detail. Request: " + ask
+      );
+      const lines = String(reply || "").split(/\r?\n/).map((line) => line.replace(/^[\s\-*\u2022]*\d*[.)]?\s*/, "").replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, 80)).filter(Boolean).slice(0, 12);
+      if (!lines.length) {
+        if (typeof addToast === "function") addToast("The assistant did not suggest any times. Try describing the window you have in mind.", "info");
+        return;
+      }
+      setSharedAssignmentActivity((previous) => ({ ...previous || {}, optionsText: lines.join("\n") }));
+      if (typeof addToast === "function") addToast("Suggested " + lines.length + " options. Edit them before you share.", "success");
+    } catch (error) {
+      if (typeof addToast === "function") addToast("Could not suggest times: " + (error && error.message || "unknown"), "error");
+    } finally {
+      setPollAiBusy(false);
+    }
+  };
   const _setupMenuRef = React.useRef(null);
   const _textSettingsRef = React.useRef(null);
   const _voiceSettingsRef = React.useRef(null);
@@ -1031,7 +1058,25 @@ function HeaderBar(props) {
     /* @__PURE__ */ React.createElement("option", { value: "word_cloud" }, "Word Cloud"),
     /* @__PURE__ */ React.createElement("option", { value: "rating" }, "Rating scale (not scored)"),
     /* @__PURE__ */ React.createElement("option", { value: "availability" }, "Availability poll (find a time)")
-  )), sharedAssignmentActivity?.type === "availability" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "mt-2 block text-[11px] font-black text-slate-700" }, "Options, one per line", /* @__PURE__ */ React.createElement(
+  )), sharedAssignmentActivity?.type === "availability" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded-md border border-sky-200 bg-sky-50 p-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-black text-slate-700" }, "Describe when it needs to happen (optional)", /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      type: "text",
+      value: pollAsk,
+      onChange: (event) => setPollAsk(event.target.value.slice(0, 160)),
+      placeholder: "45 minutes next week, weekday afternoons",
+      className: "mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800"
+    }
+  )), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: suggestPollTimes,
+      disabled: pollAiBusy || !pollAsk.trim(),
+      className: "mt-2 rounded-md bg-sky-700 px-2 py-1 text-[11px] font-black text-white disabled:opacity-50"
+    },
+    pollAiBusy ? "Thinking..." : "Suggest times"
+  ), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-600" }, "Suggestions land in the box below for you to edit. Nothing is shared until you create the assignment.")), /* @__PURE__ */ React.createElement("label", { className: "mt-2 block text-[11px] font-black text-slate-700" }, "Options, one per line", /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: String(sharedAssignmentActivity?.optionsText || ""),
