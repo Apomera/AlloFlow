@@ -100,6 +100,36 @@ describe('there is a front door', () => {
   });
 });
 
+describe('the dialog does not close by accident', () => {
+  for (const f of COPIES) {
+    it(`${f} only closes when the whole gesture was on the backdrop`, () => {
+      const src = readFileSync(f, 'utf8');
+      // It holds a FORM now. Drag to select text in the options box, release a
+      // few pixels outside, and a plain backdrop onClick would discard
+      // everything typed. stopPropagation cannot help: the click target really
+      // is the backdrop, and only the press ORIGIN distinguishes the two.
+      expect(src).toContain('const recentQrBackdropPressRef = useRef(false);');
+      expect(src).toContain('recentQrBackdropPressRef.current = event.target === event.currentTarget;');
+      expect(src, 'a bare close-on-any-backdrop-click must not return').not.toContain('aria-labelledby="assignment-control-center-title" onClick={() => setShowRecentQrShares(false)}');
+    });
+
+    it(`${f} still closes deliberately, by button and by Escape`, () => {
+      const src = readFileSync(f, 'utf8');
+      // Hardening dismissal must not strip the ways out that people expect.
+      expect(src).toContain('aria-label="Close Share & Collect"');
+      expect(src).toContain('useFocusTrap(recentQrSharesDialogRef, showRecentQrShares');
+    });
+
+    it(`${f} is named for what it does now`, () => {
+      const src = readFileSync(f, 'utf8');
+      // "Assignment Control Center" described an archive of past links, not a
+      // place to set up a poll.
+      expect(src).toContain('>Share & Collect</h2>');
+      expect(src).not.toContain('>Assignment Control Center</h2>');
+    });
+  }
+});
+
 describe('an activity can be sent on its own', () => {
   for (const f of COPIES) {
     it(`${f} does not require a resource pack`, () => {

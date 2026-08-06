@@ -21885,6 +21885,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [qrShareError, setQrShareError] = useState(false);
   const homeworkQrDialogRef = useRef(null);
   const recentQrSharesDialogRef = useRef(null);
+  // True only while a press that BEGAN on the backdrop is in flight. Without
+  // it, releasing a text-selection drag outside the panel closes the dialog
+  // and throws away whatever was being typed.
+  const recentQrBackdropPressRef = useRef(false);
   useFocusTrap(recentQrSharesDialogRef, showRecentQrShares, () => setShowRecentQrShares(false));
   const [pendingQrAssignmentResource, setPendingQrAssignmentResource] = useState(null);
   const buildAlloShareUrl = useCallback((params = {}) => {
@@ -42630,11 +42634,19 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         ))}
       </div>
       {showRecentQrShares && (
-        <div className="fixed inset-0 z-[151] flex items-center justify-center bg-slate-950/80 p-4 no-print" role="dialog" aria-modal="true" aria-labelledby="assignment-control-center-title" onClick={() => setShowRecentQrShares(false)}>
+        <div className="fixed inset-0 z-[151] flex items-center justify-center bg-slate-950/80 p-4 no-print" role="dialog" aria-modal="true" aria-labelledby="assignment-control-center-title"
+          onPointerDown={(event) => { recentQrBackdropPressRef.current = event.target === event.currentTarget; }}
+          onClick={(event) => {
+            // Close only when the whole gesture happened on the backdrop.
+            if (event.target !== event.currentTarget) return;
+            if (!recentQrBackdropPressRef.current) { recentQrBackdropPressRef.current = false; return; }
+            recentQrBackdropPressRef.current = false;
+            setShowRecentQrShares(false);
+          }}>
           <div ref={recentQrSharesDialogRef} className="relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl" onClick={event => event.stopPropagation()}>
-            <button onClick={() => setShowRecentQrShares(false)} className="absolute right-3 top-3 rounded-full p-2 text-slate-600 hover:bg-slate-100" aria-label="Close Assignment Control Center"><X size={20}/></button>
+            <button onClick={() => setShowRecentQrShares(false)} className="absolute right-3 top-3 rounded-full p-2 text-slate-600 hover:bg-slate-100" aria-label="Close Share & Collect"><X size={20}/></button>
             <div className="pr-12">
-              <h2 id="assignment-control-center-title" className="text-xl font-black text-slate-900">Assignment Control Center</h2>
+              <h2 id="assignment-control-center-title" className="text-xl font-black text-slate-900">Share & Collect</h2>
               <p className="mt-1 text-xs text-slate-600">Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.</p>
               {/* Set-up lives WITH the results. It used to sit inside the
                   Documents dropdown, where role="menu" arrow-key handling
