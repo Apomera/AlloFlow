@@ -7601,6 +7601,32 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       return 'retry';                                      // network/5xx/timeout → bounded retry
                     };
                     const _stopped = () => !!(pdfAutoContinueAbortRef && pdfAutoContinueAbortRef.current); // user pressed Stop
+                    // (2026-08-05) EVERY hands-off decision is logged, not just toasted. A restart
+                    // loop was reported from a run nobody was watching: the log showed one pipeline
+                    // finish and another start three seconds later, with NOTHING in between saying
+                    // which branch decided that. The toasts said it, but a toast is gone in five
+                    // seconds and is not in the log the teacher can send back. These lines make the
+                    // branch recoverable after the fact.
+                    const _handsLog = (stage, detail) => {
+                      try {
+                        warnLog('[Hands-off][' + stage + '] ' + JSON.stringify(detail || {}));
+                      } catch (_) { try { warnLog('[Hands-off][' + stage + ']'); } catch (__) {} }
+                    };
+                    // What a result looks like to the decision code. Recorded rather than inferred:
+                    // the guard below reads afterScore/axeAudit/_aiVerificationIncomplete off the
+                    // RETURNED object, and whether the pipeline populated them is exactly what a
+                    // reader of the log needs to know.
+                    const _handsShape = (x, from) => (!x ? { from, present: false } : {
+                      from,
+                      present: true,
+                      afterScore: (x.afterScore === null || x.afterScore === undefined) ? null : x.afterScore,
+                      target: pdfTargetScore,
+                      hasAxeAudit: !!x.axeAudit,
+                      axeViolations: x.axeAudit ? x.axeAudit.totalViolations : null,
+                      aiVerificationIncomplete: !!x._aiVerificationIncomplete,
+                      scoreSource: x._scoreSource || null,
+                      htmlChars: x.accessibleHtml ? x.accessibleHtml.length : 0,
+                    });
                     let _handsErr = null, _res = null;
                     // Capture the RETURN value (no 250ms ref-timing race) and fall back to the ref if the
                     // pipeline doesn't return it — but NEVER adopt a stale ref after a FAILED run (the ref
@@ -7621,11 +7647,27 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     };
                     await _runFix();
                     if (!_oneClickDocumentIsCurrent()) return;
+                    _handsLog('run-1-returned', {
+                      returned: _handsShape(_res, 'pipeline-return'),
+                      refHeld: _handsShape(pdfFixResultRef.current, 'state-ref'),
+                      threw: _handsErr ? String((_handsErr && _handsErr.message) || _handsErr).slice(0, 200) : null,
+                    });
                     let _fixTries = 0;
                     // (1) Re-run the whole fix only if it produced NO result — bounded, disposition-gated,
                     // never after the user pressed Stop.
                     while (!_res && _fixTries < _HANDSOFF_MAX && !_stopped() && _oneClickDocumentIsCurrent()) {
                       const _disp = _handsDisposition(_handsErr);
+                      // THE LINE THAT WAS MISSING. A whole-pipeline re-run starts here, and until
+                      // now the log recorded only the new run's Init — indistinguishable from a
+                      // user pressing Fix & Verify again.
+                      _handsLog('whole-run-retry', {
+                        why: 'the pipeline produced no result object',
+                        disposition: _disp,
+                        attempt: _fixTries + 1,
+                        max: _HANDSOFF_MAX,
+                        threw: _handsErr ? String((_handsErr && _handsErr.message) || _handsErr).slice(0, 200) : null,
+                        note: _handsErr ? 'run rejected' : 'run RESOLVED but returned nothing and the state ref was empty',
+                      });
                       if (_disp === 'never' || _disp === 'stop-silent') break;
                       if (_disp === 'pause-daily') {
                         addToast('⏸ ' + (t('toasts.handsoff_daily_quota') || 'Daily AI quota reached — the run is paused, your progress is preserved. Re-run after the quota resets (midnight Pacific).'), 'warning');
@@ -7655,6 +7697,20 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     // instead of looping. (The pipeline now sets afterScore to the deterministic score under
                     // degradation, so this is the one residual case where the loop would otherwise still run.)
                     const _aiThrottledClean = !!(r && r._aiVerificationIncomplete && r.axeAudit && r.axeAudit.totalViolations === 0);
+                    // Record the GATE and its inputs. A degraded audit lowers the headline without
+                    // the document getting worse, so "score < target" is not on its own a reason to
+                    // spend another full pipeline; this is the guard that decides, and it needs to
+                    // be legible in the log rather than only in a toast.
+                    _handsLog('continue-decision', {
+                      result: _handsShape(r, _res ? 'pipeline-return' : 'state-ref'),
+                      aiThrottledClean: _aiThrottledClean,
+                      willLoop: !!(!_aiThrottledClean && r && r.axeAudit
+                        && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0)),
+                      blockedBy: _aiThrottledClean ? 'ai-throttled-clean (shipping structural result)'
+                        : (!r ? 'no result'
+                          : (!r.axeAudit ? 'no axeAudit on the result — auto-continue unavailable'
+                            : null)),
+                    });
                     if (_aiThrottledClean) addToast(t('toasts.ai_throttled_shipped') || '⚠ The AI service is throttled, so the AI semantic score is incomplete — but the structural/automated checks are clean. Shipped the structural result; re-run in a few minutes for a full AI-verified score.', 'warning');
                     while (!_aiThrottledClean && r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0) && _loopTries < _HANDSOFF_MAX && !_stopped() && _oneClickDocumentIsCurrent()) {
                       let _loopOutcome;
@@ -7676,6 +7732,17 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       if (_stopped()) break; // user pressed Stop during the loop — honor it, don't relaunch
                       r = pdfFixResultRef.current;
                       const _s = r ? (r.afterScore || 0) : 0;
+                      _handsLog('loop-round', {
+                        round: _loopTries + 1,
+                        max: _HANDSOFF_MAX,
+                        score: _s,
+                        previousScore: _prevScore,
+                        target: pdfTargetScore,
+                        aiVerificationIncomplete: !!(r && r._aiVerificationIncomplete),
+                        stopping: (!r || _s >= pdfTargetScore || _s <= _prevScore),
+                        stopReason: !r ? 'no result' : (_s >= pdfTargetScore ? 'target reached'
+                          : (_s <= _prevScore ? 'no improvement over the previous round' : null)),
+                      });
                       if (!r || _s >= pdfTargetScore || _s <= _prevScore) break; // target reached or progress plateaued; axe-clean alone does not resolve AI/EA review work
                       _prevScore = _s; _loopTries++;
                       addToast('🔁 ' + (t('toasts.handsoff_retry_loop') || 'Hands-off mode — below target; retrying the loop') + ' (' + _loopTries + '/' + _HANDSOFF_MAX + ', ' + _s + '/100, target ' + pdfTargetScore + ')…', 'info');

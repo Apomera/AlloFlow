@@ -980,8 +980,16 @@ describe('L9/L3 — the re-OCR flag and the re-audit abort signal', () => {
     // It was the THIRD argument to a two-parameter function, so it was dropped and the audit fell
     // back to the global signal — a superseded operation kept burning the most expensive call in
     // the flow to completion.
-    expect(view).toContain('auditOutputAccessibility(newHtml, { signal: _reauditSignal })');
+    //
+    // 2026-08-05: this assertion used to be the exact string
+    // 'auditOutputAccessibility(newHtml, { signal: _reauditSignal })'. Adding a `trigger:` label to
+    // the SAME options object broke it, so a green fix read as a live regression — and cost a
+    // diagnosis session that started from "the cancellation bug is confirmed" when the code had
+    // been correct all along. Assert the BEHAVIOUR (the signal is in the options object) and let
+    // the object carry whatever else it needs.
+    expect(view).toMatch(/auditOutputAccessibility\(newHtml,\s*\{[^}]*\bsignal:\s*_reauditSignal\b/);
     expect(view).not.toContain('auditOutputAccessibility(newHtml, undefined,');
+    expect(view).not.toMatch(/auditOutputAccessibility\(newHtml,\s*[^{][^)]*,\s*_reauditSignal/);
   });
 });
 

@@ -23638,8 +23638,22 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
         return;
       }
       if (_otherRunOwnsHost || _otherAbortOwner) {
-        warnLog('[PdfFix] Ignoring superseded remediation watchdog timeout; a newer run owns the host.');
-        try { if (typeof _docPipeline?.logHostDiagnostic === 'function') _docPipeline.logHostDiagnostic('Watchdog', 'Idle timeout ignored — a newer run owns the host.', { runId: watchdogRunId, documentEpoch: watchdogEpoch }); } catch (_) {}
+        // (2026-08-05) Log the OWNER as well as the watchdog. This line repeats every IDLE_LIMIT
+        // for as long as the mismatch lasts, and it used to print only the watchdog's own stamp —
+        // so a field log showed eleven identical `{runId: null, documentEpoch: 0}` lines over 80
+        // minutes with no way to tell WHICH run held the host, whether it was the same one each
+        // time, or why the watchdog could never match. Recording both sides makes the line
+        // self-diagnosing: if `owner` never changes and `selectionEpoch` never reaches
+        // `watchdog.documentEpoch`, this watchdog can never resolve and is pure noise.
+        const _wdDetail = {
+          watchdog: { runId: watchdogRunId, documentEpoch: watchdogEpoch },
+          owner: liveOwner ? { runId: liveOwner.runId || null, documentEpoch: liveOwner.documentEpoch } : null,
+          abortOwner: liveAbortOwner ? { runId: liveAbortOwner.runId || null, documentEpoch: liveAbortOwner.documentEpoch } : null,
+          selectionEpoch: pdfDocumentSelectionEpochRef.current,
+          reason: _otherRunOwnsHost ? 'another run owns the host' : 'another run owns the abort controller',
+        };
+        warnLog('[PdfFix] Ignoring superseded remediation watchdog timeout; a newer run owns the host. ' + (() => { try { return JSON.stringify(_wdDetail); } catch (_) { return ''; } })());
+        try { if (typeof _docPipeline?.logHostDiagnostic === 'function') _docPipeline.logHostDiagnostic('Watchdog', 'Idle timeout ignored — a newer run owns the host.', _wdDetail); } catch (_) {}
         arm(); // this one CAN resolve: the newer run may finish and strand the flag in turn
         return;
       }
