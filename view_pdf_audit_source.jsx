@@ -3442,9 +3442,32 @@ function PdfAuditView(props) {
       }
     } catch (_) {}
   };
+  // (2026-08-05) Ticket lifecycle events reach the copyable Log panel. Superseding and
+  // cancelling were both entirely silent: a teacher clicking Translate mid-sweep took the
+  // ticket away from the running remediation, and the only trace was the sweep's own work
+  // quietly ceasing to commit. "It restarted" and "something took it over" look identical
+  // in a log that records neither.
+  const _remOpLog = (event, detail) => {
+    try {
+      if (_docPipeline && typeof _docPipeline.logHostDiagnostic === 'function') {
+        let json = '';
+        try { json = JSON.stringify(detail || {}); } catch (_) { json = ''; }
+        _docPipeline.logHostDiagnostic('Operation', event + (json ? ' ' + json : ''), detail || null);
+      }
+    } catch (_) {}
+  };
+  const _remOpKind = (ticket) => (ticket && ticket.metadata && String(ticket.metadata.kind || '')) || null;
   const _beginRemediationOperation = (kind, ownsPdfFixLoading, metadata) => {
     const previous = _remediationOperationOwnerRef.current.getCurrent();
-    if (previous) _releaseRemediationOperationUi(previous);
+    if (previous) {
+      _remOpLog('Superseded — a new operation took the remediation ticket from a running one.', {
+        supersededKind: _remOpKind(previous),
+        newKind: String(kind || 'remediation'),
+        supersededOwnedPdfFixLoading: !(previous.metadata && previous.metadata.ownsPdfFixLoading === false),
+        documentEpoch: pdfDocumentEpoch,
+      });
+      _releaseRemediationOperationUi(previous);
+    }
     return _remediationOperationOwnerRef.current.begin({
       ...(metadata || {}),
       kind: String(kind || 'remediation'),
@@ -3473,7 +3496,13 @@ function PdfAuditView(props) {
   const _cancelRemediationOperation = (ticket) => {
     const owned = _remediationOperationOwnerRef.current.getCurrent();
     const cancelled = _remediationOperationOwnerRef.current.cancel(ticket);
-    if (cancelled) _releaseRemediationOperationUi(owned);
+    if (cancelled) {
+      _remOpLog('Cancelled — the running operation was called off.', {
+        kind: _remOpKind(owned) || _remOpKind(ticket),
+        documentEpoch: pdfDocumentEpoch,
+      });
+      _releaseRemediationOperationUi(owned);
+    }
     return cancelled;
   };
   const _cancelRemediationOperationKind = (kind) => {
@@ -7607,10 +7636,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     // which branch decided that. The toasts said it, but a toast is gone in five
                     // seconds and is not in the log the teacher can send back. These lines make the
                     // branch recoverable after the fact.
+                    // BOTH sinks, deliberately. warnLog reaches DevTools; only logHostDiagnostic
+                    // reaches window._alloflowPipelineWarnings, which is what the in-app Log panel
+                    // renders and the one thing a teacher can actually copy and send back. A
+                    // decision recorded only in DevTools is not in the log Aaron pastes.
                     const _handsLog = (stage, detail) => {
+                      let _json = '';
+                      try { _json = JSON.stringify(detail || {}); } catch (_) { _json = '(detail not serializable)'; }
+                      try { warnLog('[Hands-off][' + stage + '] ' + _json); } catch (_) {}
                       try {
-                        warnLog('[Hands-off][' + stage + '] ' + JSON.stringify(detail || {}));
-                      } catch (_) { try { warnLog('[Hands-off][' + stage + ']'); } catch (__) {} }
+                        if (_docPipeline && typeof _docPipeline.logHostDiagnostic === 'function') {
+                          _docPipeline.logHostDiagnostic('Hands-off', stage + ' — ' + _json, detail || null);
+                        }
+                      } catch (_) {}
                     };
                     // What a result looks like to the decision code. Recorded rather than inferred:
                     // the guard below reads afterScore/axeAudit/_aiVerificationIncomplete off the
@@ -11497,7 +11535,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="sticky -top-5 -mx-5 px-5 py-2.5 bg-indigo-600 text-white z-30 flex items-center gap-2 flex-wrap rounded-t-2xl" role="status" aria-live="polite">
                               <span className="inline-block w-3 h-3 rounded-full bg-white animate-ping shrink-0" aria-hidden="true"></span>
                               <span className="text-xs font-bold flex-1 min-w-0">⏳ {t('pdf_audit.running.lead') || 'STILL WORKING'} — {pdfFixStep || (t('pdf_audit.running.generic') || 'improving toward the target score')}. {t('pdf_audit.running.note') || 'Results below update live; keep this open.'}</span>
-                              <button onClick={() => { try { pdfAutoContinueAbortRef.current = true; } catch (_) {} addToast(t('toasts.stopping_after_round') || 'Stopping after the current round — what’s done is kept.', 'info'); }} className="px-2.5 py-1 bg-white/20 border border-white/50 rounded-full text-[11px] font-bold hover:bg-white/30 shrink-0">⏹ {t('pdf_audit.running.stop') || 'Stop after this round'}</button>
+                              <button onClick={() => { try { pdfAutoContinueAbortRef.current = true; } catch (_) {} _remOpLog('Stop pressed — finishing the current round, then stopping.', { button: 'stop-after-round', documentEpoch: pdfDocumentEpoch }); addToast(t('toasts.stopping_after_round') || 'Stopping after the current round — what’s done is kept.', 'info'); }} className="px-2.5 py-1 bg-white/20 border border-white/50 rounded-full text-[11px] font-bold hover:bg-white/30 shrink-0">⏹ {t('pdf_audit.running.stop') || 'Stop after this round'}</button>
                             </div>
                           )}
                           <div data-help-key="pdf_audit_dashboard_bar" className="sticky -top-5 -mx-5 px-5 py-2 bg-white/95 backdrop-blur border-b border-emerald-200 rounded-t-2xl z-20 flex items-center gap-1.5 flex-wrap" role="navigation" aria-label={t('pdf_audit.dashboard.aria') || 'Remediation results overview and section navigation'}>
@@ -11643,7 +11681,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             there's no reset-while-running resurrection race.) */}
                         {pdfAutoContinueRunning ? (
                           <button
-                            onClick={() => { try { pdfAutoContinueAbortRef.current = true; } catch (_) {} addToast(t('toasts.stopping_after_round') || 'Stopping after the current round — what’s done is kept.', 'info'); }}
+                            onClick={() => { try { pdfAutoContinueAbortRef.current = true; } catch (_) {} _remOpLog('Stop pressed — finishing the current round, then stopping.', { button: 'stop-after-round', documentEpoch: pdfDocumentEpoch }); addToast(t('toasts.stopping_after_round') || 'Stopping after the current round — what’s done is kept.', 'info'); }}
                             className="text-[11px] px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-400 rounded-md font-bold inline-flex items-center gap-1 hover:bg-amber-100"
                             title={t('pdf_audit.stop_then_new_title') || 'Remediation is still improving the document. Stop it (keeps what’s done) — then this becomes “Start New Audit”.'}
                           >
@@ -12420,7 +12458,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               </details>
                             )}
                             {pdfAutoContinueRunning && (
-                              <button onClick={() => { pdfAutoContinueAbortRef.current = true; try { pdfAutoContinueAbortCtrlRef.current?.abort(); } catch(_) {} addToast(t('toasts.stopping_aborting_flight_gemini_call'), 'info'); }} className="text-[11px] bg-red-100 text-red-700 border border-red-300 px-2.5 py-1 rounded-full font-bold hover:bg-red-200 transition-colors" aria-label={t('pdf_audit.auto_fix.stop_aria') || 'Stop auto-continue remediation'}>
+                              <button onClick={() => { pdfAutoContinueAbortRef.current = true; try { pdfAutoContinueAbortCtrlRef.current?.abort(); } catch(_) {} _remOpLog('Stop pressed — aborting the in-flight AI call immediately.', { button: 'stop-abort-in-flight', documentEpoch: pdfDocumentEpoch }); addToast(t('toasts.stopping_aborting_flight_gemini_call'), 'info'); }} className="text-[11px] bg-red-100 text-red-700 border border-red-300 px-2.5 py-1 rounded-full font-bold hover:bg-red-200 transition-colors" aria-label={t('pdf_audit.auto_fix.stop_aria') || 'Stop auto-continue remediation'}>
                                 ⏸ Stop auto-continue
                               </button>
                             )}
