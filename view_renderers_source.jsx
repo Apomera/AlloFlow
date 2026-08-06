@@ -2013,7 +2013,7 @@ const renderOutlineContent = (deps) => {
                             )}
                         </div>
                     )}
-                    <KeyConceptMapView branches={branches} main={main} main_en={main_en} BranchItem={BranchItem} />
+                    <KeyConceptMapView branches={branches} main={main} main_en={main_en} BranchItem={BranchItem} t={t} />
                 </div>
             );
         }

@@ -1401,7 +1401,7 @@ const renderOutlineContent = (deps) => {
     ), isInteractiveConceptMapSort && isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 ml-2", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-1 rounded-full" }, "\u{1F3AF} Live for students"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       setIsInteractiveConceptMapSort(false);
       _broadcastInteractiveOrganizer(null);
-    }, className: "text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full", "aria-label": t("a11y.stop_interactive_activity") }, "\u23F9 Stop Activity"))), /* @__PURE__ */ React.createElement(KeyConceptMapView, { branches, main, main_en, BranchItem }));
+    }, className: "text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-300 px-2 py-1 rounded-full", "aria-label": t("a11y.stop_interactive_activity") }, "\u23F9 Stop Activity"))), /* @__PURE__ */ React.createElement(KeyConceptMapView, { branches, main, main_en, BranchItem, t }));
   }
   if (type === "Frayer Model" && !isEditingOutline) {
     if (branches.length !== 4) {

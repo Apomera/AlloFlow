@@ -22,7 +22,76 @@ const _CONCEPT_ACCENTS = [
 ];
 const _conceptAccentFor = (i) => _CONCEPT_ACCENTS[i % _CONCEPT_ACCENTS.length];
 
-const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem }) => {
+// Optional-t resolver. The host passes ctx.t, which is SINGLE-ARG and returns the
+// key itself (or undefined) when a string is missing, so a bare t(k) can render
+// "undefined" into the a11y tree. Always go through this.
+const _kcmT = (t, key, fallback) => {
+    try {
+        const v = t && t(key);
+        return (v && v !== key) ? v : fallback;
+    } catch (_) { return fallback; }
+};
+
+// ── Accessible spine ────────────────────────────────────────────────────────
+// Every other organizer view (Throughline, ConceptGraph3D, Memory Palace) treats a
+// linear reading order as its accessible source of truth. This view had none: the
+// SVG is aria-hidden and the branch cards sit in two flex columns, so a screen
+// reader hears the LEFT half of the branches, then the hub, then the right half —
+// i.e. the main concept is announced midway, after half the content it explains.
+// The spine states the whole up front and fixes that ordering.
+//
+// The acg engine owns the canonical order (deriveOutline = cycle-safe topo sort),
+// so use it when loaded — that also makes branch `connectsTo` links order the
+// spine by dependency rather than by column position. KeyConceptMap is lazily
+// loaded and does NOT depend on the engine, so a document-order fallback keeps the
+// spine working standalone. Never throws: a spine failure must not take the map down.
+//
+// Deliberately lists the main concept and branch TITLES (plus each branch's detail
+// count), not every item. The items are already reachable in the cards, so
+// repeating them here would double the reading length for no new information.
+const _deriveSpine = (main, branches) => {
+    const list = Array.isArray(branches) ? branches : [];
+    const countOf = (b) => (b && Array.isArray(b.items)) ? b.items.length : 0;
+    const engine = (typeof window !== 'undefined') && window.AlloModules && window.AlloModules.ConceptGraphEngine;
+
+    if (engine && typeof engine.adaptGenerated === 'function' && typeof engine.deriveOutline === 'function') {
+        try {
+            const graph = engine.adaptGenerated({ main, branches: list, structureType: 'Key Concept Map' });
+            const byId = {};
+            graph.nodes.forEach((n) => { byId[n.id] = n; });
+            const derived = engine.deriveOutline(graph);
+            const order = (derived && Array.isArray(derived.order)) ? derived.order : [];
+            const rows = [];
+            order.forEach((id) => {
+                const n = byId[id];
+                if (!n || n.type === 'item') return;
+                // adaptGenerated names branch nodes 'b<index>' — recover the index so the
+                // spine's detail counts stay aligned with the source branch.
+                const bi = (n.type === 'branch' && /^b(\d+)$/.test(n.id)) ? Number(n.id.slice(1)) : -1;
+                rows.push({
+                    id: n.id,
+                    type: n.type,
+                    label: n.label || '',
+                    items: bi >= 0 ? countOf(list[bi]) : 0,
+                });
+            });
+            if (rows.length) return rows;
+        } catch (_) { /* fall through to document order */ }
+    }
+
+    const rows = [{ id: 'root', type: 'main', label: main == null ? '' : String(main), items: 0 }];
+    list.forEach((b, bi) => {
+        rows.push({
+            id: 'b' + bi,
+            type: 'branch',
+            label: (b && b.title != null) ? String(b.title) : '',
+            items: countOf(b),
+        });
+    });
+    return rows;
+};
+
+const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem, t }) => {
     const containerRef = useRef(null);
     const centerRef = useRef(null);
     const leftRefs = useRef([]);
@@ -33,6 +102,9 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem }) =
     const mid = Math.ceil(branches.length / 2);
     const left = branches.slice(0, mid);
     const right = branches.slice(mid);
+
+    const spine = React.useMemo(() => _deriveSpine(main, branches), [main, branches]);
+    const branchWord = _kcmT(t, 'a11y.branch', 'Branch');
 
     React.useLayoutEffect(() => {
         const compute = () => {
@@ -86,7 +158,27 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem }) =
     }, [branches.length, main, main_en, mid]);
 
     return (
-        <div ref={containerRef} className="max-w-7xl mx-auto relative my-12 px-4 flex flex-col md:flex-row items-stretch justify-center">
+        <div
+            ref={containerRef}
+            role="group"
+            aria-label={`${_kcmT(t, 'a11y.concept_map', 'Concept map')}: ${main || ''}`}
+            className="max-w-7xl mx-auto relative my-12 px-4 flex flex-col md:flex-row items-stretch justify-center"
+        >
+            {/* Accessible spine — see _deriveSpine. First in DOM so the main concept is
+                announced before any branch, which the two-column visual order otherwise
+                prevents. Visually hidden only; it is real text, not an aria-label, so it
+                survives translation and copy/paste. */}
+            <div className="sr-only">
+                <p>{`${_kcmT(t, 'a11y.concept_map', 'Concept map')}: ${main || ''}${main_en ? ` (${main_en})` : ''}. ${branches.length} ${_kcmT(t, 'a11y.branches', 'branches')}.`}</p>
+                <ol>
+                    {spine.filter(r => r.type === 'branch').map((r, i) => (
+                        <li key={r.id}>
+                            {`${branchWord} ${i + 1}: ${r.label}${r.items ? ` (${r.items} ${_kcmT(t, 'a11y.details', 'details')})` : ''}`}
+                        </li>
+                    ))}
+                </ol>
+            </div>
+
             {/* One-off keyframes for line-draw + bubble breathe. Scoped via unique prefix so
                 this doesn't clash with any other animation in the app. */}
             <style>{`
@@ -224,7 +316,7 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem }) =
                             <div
                                 tabIndex={0}
                                 role="group"
-                                aria-label={`Branch ${i + 1}: ${b.title || ''}`}
+                                aria-label={`${branchWord} ${i + 1}: ${b.title || ''}`}
                                 className="w-full max-w-xs relative rounded-2xl transition-all duration-200 hover:scale-[1.02] focus:outline-none focus:ring-4"
                                 style={{ boxShadow: `0 0 0 0 ${a.ring}`, '--tw-ring-color': a.ring }}
                                 onMouseEnter={(e) => { e.currentTarget.style.boxShadow = `0 0 0 4px ${a.ring}`; }}
@@ -248,8 +340,12 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem }) =
 
             {/* Center bubble */}
             <div className="flex items-center justify-center px-8 z-20 my-4 md:my-0 shrink-0">
+                {/* aria-hidden: the hub's text is already carried by the sr-only spine above,
+                    where it lands BEFORE the branches. Leaving it exposed would announce the
+                    main concept a second time, halfway through the branch list. */}
                 <div
                     ref={centerRef}
+                    aria-hidden="true"
                     className="alloflow-concept-bubble relative w-52 h-52 rounded-full flex flex-col items-center justify-center text-center border-[6px] border-white transition-transform duration-500 hover:scale-105"
                     style={{
                         background: 'radial-gradient(circle at 30% 30%, #818cf8 0%, #6366f1 45%, #4338ca 100%)',
@@ -278,7 +374,7 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem }) =
                             <div
                                 tabIndex={0}
                                 role="group"
-                                aria-label={`Branch ${idx + 1}: ${b.title || ''}`}
+                                aria-label={`${branchWord} ${idx + 1}: ${b.title || ''}`}
                                 className="w-full max-w-xs relative rounded-2xl transition-all duration-200 hover:scale-[1.02] focus:outline-none focus:ring-4"
                                 style={{ boxShadow: `0 0 0 0 ${a.ring}`, '--tw-ring-color': a.ring }}
                                 onMouseEnter={(e) => { e.currentTarget.style.boxShadow = `0 0 0 4px ${a.ring}`; }}
