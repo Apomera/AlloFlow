@@ -8,22 +8,23 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 
-const SRC = readFileSync('view_header_source.jsx', 'utf8');
-const MODULE = readFileSync('view_header_module.js', 'utf8');
+// Setup moved to the Assignment Control Center, which lives in the monolith.
+const SRC = readFileSync('AlloFlowANTI.txt', 'utf8');
+const MIRROR = readFileSync('desktop/web-app/src/AlloFlowANTI.txt', 'utf8');
 
 // The handler body, so assertions are about the suggestion path and not the
 // rest of a 1200-line header.
 const handler = (() => {
-  const start = SRC.indexOf('const suggestPollTimes = async () => {');
+  const start = SRC.indexOf('const suggestPollTimes = useCallback(async () => {');
   if (start < 0) throw new Error('suggestPollTimes not found');
-  const end = SRC.indexOf('\n  };', start);
+  const end = SRC.indexOf('\n  }, [', start);
   if (end < 0) throw new Error('could not find the end of suggestPollTimes');
   return SRC.slice(start, end);
 })();
 
 describe('the model proposes, it does not decide', () => {
   it('writes only the options box', () => {
-    expect(handler).toContain('optionsText: lines.join');
+    expect(handler, 'writes the drafted lines into the options box').toMatch(/optionsText: \w+\.join/);
     // Anything else it could set would be the model making a decision that is
     // not its to make.
     for (const field of ['identityMode', 'enabled', 'allowMaybe', 'multiSelect', 'minParticipants']) {
@@ -38,7 +39,7 @@ describe('the model proposes, it does not decide', () => {
   });
 
   it('tells the user the suggestion is a draft', () => {
-    expect(SRC).toMatch(/Nothing is shared until you create the assignment/);
+    expect(SRC).toMatch(/Nothing is shared until you create the link/);
   });
 });
 
@@ -63,14 +64,14 @@ describe('a bad generation is bounded, not trusted', () => {
   });
 
   it('says so rather than silently doing nothing on an empty reply', () => {
-    expect(handler).toContain('if (!lines.length)');
-    expect(handler).toMatch(/did not suggest any times/);
+    expect(handler, 'checks for an empty draft').toMatch(/if \(!\w+\.length\)/);
+    expect(handler).toMatch(/did not suggest any (times|options)/);
   });
 
   it('always clears its busy flag', () => {
     // A stuck spinner on a network hiccup reads as a broken button.
-    expect(handler).toContain('} finally {');
-    expect(handler).toContain('setPollAiBusy(false);');
+    // A stuck spinner on a network hiccup reads as a broken button.
+    expect(handler, 'clears busy in a finally').toMatch(/finally\s*\{[\s\S]{0,80}setPollAiBusy\(false\)/);
   });
 });
 
@@ -88,11 +89,13 @@ describe('the prompt refuses the traps this feature invites', () => {
   });
 });
 
-describe('it reaches the shipped module', () => {
-  it('is present in the built header, not just the source', () => {
-    // view_header is hand-authored source plus a build step; a source-only
-    // change would never appear in the app.
-    expect(MODULE).toContain('suggestPollTimes');
-    expect(MODULE).toContain('Suggest times');
+describe('it reaches both copies of the monolith', () => {
+  it('is mirrored, since App.jsx is generated from these', () => {
+    // The monolith exists twice and both are built from; a one-copy edit ships
+    // to one surface and not the other.
+    expect(SRC).toContain('const suggestPollTimes = useCallback(');
+    expect(MIRROR).toContain('const suggestPollTimes = useCallback(');
+    expect(SRC).toContain('Suggest options');
+    expect(MIRROR).toContain('Suggest options');
   });
 });

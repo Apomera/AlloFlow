@@ -21985,6 +21985,41 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, [addToast]);
   const [mbStatus, setMbStatus] = useState('');
   const [mbBusy, setMbBusy] = useState(false);
+  const [pollAsk, setPollAsk] = useState('');
+  const [pollAiBusy, setPollAiBusy] = useState(false);
+  // Drafts option labels into the form. It never shares, never chooses who is
+  // voting, and its output is clamped exactly like typing.
+  const suggestPollTimes = useCallback(async () => {
+    const ask = String(pollAsk || '').trim();
+    if (!ask || pollAiBusy) return;
+    if (typeof window.callGemini !== 'function') {
+      addToast('The assistant is not available right now. You can still type the options yourself.', 'info');
+      return;
+    }
+    setPollAiBusy(true);
+    try {
+      const reply = await window.callGemini(
+        'A teacher is scheduling something and needs the OPTIONS for a poll or sign-up sheet. '
+        + 'Return ONE option per line. No numbering, no bullets, no commentary, no heading. '
+        + 'At most 12 lines, each under 60 characters. Write times the way a person says them and include the day. '
+        + 'Do NOT convert time zones or add a time zone unless the request mentions one. '
+        + 'Do not invent attendees or any other detail. Request: ' + ask
+      );
+      const drafted = String(reply || '')
+        .split(/\r?\n/)
+        .map(line => line.replace(/^[\s\-*\u2022]*\d*[.)]?\s*/, '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80))
+        .filter(Boolean)
+        .slice(0, 12);
+      if (!drafted.length) {
+        addToast('The assistant did not suggest any options. Try describing the window you have in mind.', 'info');
+        return;
+      }
+      setSharedAssignmentActivity(previous => ({ ...(previous || {}), optionsText: drafted.join('\n') }));
+      addToast('Suggested ' + drafted.length + ' options. Edit them before you share.', 'success');
+    } catch (error) { addToast('Could not suggest options: ' + ((error && error.message) || 'unknown'), 'error'); }
+    finally { setPollAiBusy(false); }
+  }, [pollAsk, pollAiBusy, addToast]);
+
   const refreshAssignmentCenter = useCallback(async () => {
       const epoch = assignmentCenterRefreshEpochRef.current + 1;
       assignmentCenterRefreshEpochRef.current = epoch;
@@ -23518,14 +23553,20 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // Shared packet builder for full packs and explicitly selected follow-up resources.
   const buildAssignmentPackEncoded = useCallback(async ({ includeSharedActivity = false, resourceIds = null } = {}) => {
       const resourcesToAssign = resolveAssignmentResources(resourceIds);
-      if (!resourcesToAssign.length) {
-          addToast('Create or restore a teacher resource before making a homework link.', 'info');
+      // An activity can stand ALONE. A scheduling poll or sign-up sheet has no
+      // lesson attached, so requiring a resource pack made the whole feature
+      // unreachable for the case it exists to serve.
+      const activityOnly = includeSharedActivity
+          && sharedAssignmentActivity?.enabled === true
+          && !resourcesToAssign.length;
+      if (!resourcesToAssign.length && !activityOnly) {
+          addToast('Create or restore a teacher resource before making a homework link, or add a shared activity to send on its own.', 'info');
           return null;
       }
       const explicitSelection = Array.isArray(resourceIds);
-      const title = String((explicitSelection ? resourcesToAssign[0]?.title : (sourceTopic || generatedContent?.title)) || resourcesToAssign[0]?.title || 'AlloFlow homework').trim().slice(0, 140) || 'AlloFlow homework';
+      const title = String((activityOnly ? (sharedAssignmentActivity?.prompt || 'Shared activity') : null) || (explicitSelection ? resourcesToAssign[0]?.title : (sourceTopic || generatedContent?.title)) || resourcesToAssign[0]?.title || 'AlloFlow homework').trim().slice(0, 140) || 'AlloFlow homework';
       const resources = resourcesToAssign.map(item => _alloSerializeResourceForStudentPack(item)).filter(Boolean);
-      if (!resources.length) {
+      if (!resources.length && !activityOnly) {
           addToast('None of the selected resources can be shared with students. Choose a different History resource.', 'info');
           return null;
       }
@@ -42578,6 +42619,130 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             <div className="pr-12">
               <h2 id="assignment-control-center-title" className="text-xl font-black text-slate-900">Assignment Control Center</h2>
               <p className="mt-1 text-xs text-slate-600">Lifecycle and anonymous activity status from assignments saved on this teacher device.</p>
+              {/* Set-up lives WITH the results. It used to sit inside the
+                  Documents dropdown, where role="menu" arrow-key handling
+                  fought the textarea and there was no room for the fields. */}
+              <section className="mt-4 rounded-xl border border-sky-200 bg-sky-50 p-4" aria-labelledby="activity-setup-title">
+                <h3 id="activity-setup-title" className="text-sm font-black text-slate-900">Add a shared activity</h3>
+                <p className="mt-1 text-[11px] leading-relaxed text-slate-600">
+                  Attached to the next assignment link or QR code you create. People answer without an account.
+                </p>
+                <label className="mt-3 block text-[11px] font-black text-slate-700">
+                  Activity
+                  <select
+                    value={sharedAssignmentActivity?.enabled === true ? (sharedAssignmentActivity?.type || 'word_cloud') : ''}
+                    onChange={event => {
+                      const nextType = event.target.value;
+                      const prompts = {
+                        word_cloud: 'What word or short phrase best captures your thinking?',
+                        rating: 'How would you rate your understanding?',
+                        availability: 'Which of these times could you make?',
+                        signup: 'Choose a time that works for you',
+                      };
+                      setSharedAssignmentActivity(previous => ({
+                        ...(previous || {}),
+                        // Choosing a type IS the enable. The old separate
+                        // checkbox meant nothing was visible until two
+                        // disclosures had been opened.
+                        enabled: !!nextType,
+                        type: nextType || (previous && previous.type),
+                        prompt: nextType ? (prompts[nextType] || (previous && previous.prompt)) : (previous && previous.prompt),
+                      }));
+                    }}
+                    className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800"
+                  >
+                    <option value="">None</option>
+                    <option value="word_cloud">Word Cloud</option>
+                    <option value="rating">Rating scale (not scored)</option>
+                    <option value="availability">Availability poll (find a time)</option>
+                    <option value="signup">Sign-up sheet (claim a slot)</option>
+                  </select>
+                </label>
+                {sharedAssignmentActivity?.enabled === true && (<>
+                  <label className="mt-3 block text-[11px] font-black text-slate-700">
+                    What people see
+                    <input
+                      type="text"
+                      value={String(sharedAssignmentActivity?.prompt || '')}
+                      onChange={event => setSharedAssignmentActivity(previous => ({ ...(previous || {}), prompt: event.target.value.slice(0, 240) }))}
+                      className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800"
+                    />
+                  </label>
+                  {(sharedAssignmentActivity?.type === 'availability' || sharedAssignmentActivity?.type === 'signup') && (<>
+                    <div className="mt-3 rounded-lg border border-sky-200 bg-white p-3">
+                      <label className="block text-[11px] font-black text-slate-700">
+                        Describe when it needs to happen (optional)
+                        <input
+                          type="text"
+                          value={pollAsk}
+                          onChange={event => setPollAsk(event.target.value.slice(0, 160))}
+                          placeholder="45 minutes next week, weekday afternoons"
+                          className="mt-1 w-full rounded-md border border-sky-300 px-2 py-2 text-sm font-semibold text-slate-800"
+                        />
+                      </label>
+                      <button type="button" onClick={suggestPollTimes} disabled={pollAiBusy || !pollAsk.trim()}
+                        className="mt-2 rounded-md bg-sky-700 px-3 py-1.5 text-xs font-black text-white disabled:opacity-50">
+                        {pollAiBusy ? 'Thinking...' : 'Suggest options'}
+                      </button>
+                      <p className="mt-1 text-[10px] leading-relaxed text-slate-600">Suggestions land in the box below for you to edit. Nothing is shared until you create the link.</p>
+                    </div>
+                    <label className="mt-3 block text-[11px] font-black text-slate-700">
+                      Options, one per line
+                      <textarea
+                        value={String(sharedAssignmentActivity?.optionsText || '')}
+                        onChange={event => setSharedAssignmentActivity(previous => ({ ...(previous || {}), optionsText: event.target.value }))}
+                        rows={6}
+                        placeholder={"Tue Mar 4, 3:15pm\nWed Mar 5, 3:15pm\nThu Mar 6, 3:15pm"}
+                        className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800"
+                      />
+                    </label>
+                    <p className="mt-1 text-[10px] leading-relaxed text-slate-600">
+                      Write times however you say them. AlloFlow does not convert time zones, so put the zone in the label if people are in more than one.
+                      {sharedAssignmentActivity?.type === 'signup' && ' Add "x 2" at the end of a line to give that slot two places.'}
+                    </p>
+                    <label className="mt-3 block text-[11px] font-black text-slate-700">
+                      Who is voting
+                      <select
+                        value={String(sharedAssignmentActivity?.identityMode || '')}
+                        onChange={event => setSharedAssignmentActivity(previous => ({ ...(previous || {}), identityMode: event.target.value }))}
+                        className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800"
+                      >
+                        <option value="">Choose before sharing...</option>
+                        <option value="real_name">Real names (staff, families)</option>
+                        <option value="codename">Codenames (students)</option>
+                        <option value="anonymous">Anonymous (counts only)</option>
+                      </select>
+                    </label>
+                    {!sharedAssignmentActivity?.identityMode && (
+                      <p className="mt-1 text-[10px] font-bold text-amber-700">Pick who is voting before you share this.</p>
+                    )}
+                    {sharedAssignmentActivity?.type === 'signup' ? (
+                      <label className="mt-3 block text-[11px] font-black text-slate-700">
+                        Slots one person may take
+                        <input type="number" min={1} max={10}
+                          value={Number(sharedAssignmentActivity?.maxPerPerson) || 1}
+                          onChange={event => setSharedAssignmentActivity(previous => ({ ...(previous || {}), maxPerPerson: Math.max(1, Math.min(10, parseInt(event.target.value, 10) || 1)) }))}
+                          className="mt-1 w-32 rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800" />
+                      </label>
+                    ) : (<>
+                      <label className="mt-3 flex items-center gap-2 text-[11px] font-bold text-slate-700">
+                        <input type="checkbox" checked={sharedAssignmentActivity?.allowMaybe !== false}
+                          onChange={event => setSharedAssignmentActivity(previous => ({ ...(previous || {}), allowMaybe: event.target.checked }))} />
+                        Allow "maybe" as well as yes and no
+                      </label>
+                      <label className="mt-1 flex items-center gap-2 text-[11px] font-bold text-slate-700">
+                        <input type="checkbox" checked={sharedAssignmentActivity?.multiSelect !== false}
+                          onChange={event => setSharedAssignmentActivity(previous => ({ ...(previous || {}), multiSelect: event.target.checked }))} />
+                        People can pick more than one
+                      </label>
+                    </>)}
+                  </>)}
+                  <button type="button" onClick={() => { if (typeof createHomeworkAssignmentLink === 'function') createHomeworkAssignmentLink(); }}
+                    className="mt-4 w-full rounded-lg bg-sky-700 px-3 py-2 text-sm font-black text-white">
+                    Create the link and QR code
+                  </button>
+                </>)}
+              </section>
             </div>
             <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Assignment status summary">
               <div className="rounded-xl bg-emerald-50 p-3 text-center"><div className="text-lg font-black text-emerald-900">{assignmentCenterRows.filter(row => row.lifecycle === 'active').length}</div><div className="text-[10px] font-black uppercase text-emerald-700">Active</div></div>
