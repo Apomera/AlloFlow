@@ -2421,20 +2421,59 @@ Sub-entries are folded as "Parent: Sub" so every row stands on its own - a bare
 "Credits | 61, 115" tells a reader nothing - and the colon is normalised, since
 some parents print one and some do not.
 
-### NEXT: pages 125-126, and then the end
+### Session 62 (2026-08-05) - page 125 - tranche-62 - 23 blocks - VALIDATED (merged)
 
-**Two pages remain.**
+Your Rights as a Taxpayer: the ten rights of the Taxpayer Bill of Rights.
+Recall **0.9983 - the only missing token is the folio**.
 
-* **125 Your Rights as a Taxpayer** - the Taxpayer Bill of Rights, ten numbered
-  rights in two columns. The detector reports 1 column and interleaves them, so
-  read it per column from geometry.
-* **126 Where Do You File?** - the mailing-address table, plus a TIP and a
-  CAUTION. Reports 5 columns; check the geometry first.
+Read per column from geometry: the detector reports this page as 1 column and
+interleaves the two, so "1. The Right to Be Informed" runs straight into "6.
+The Right to Finality". Same failure shape as page 121 - very little running
+prose on a page that is mostly display type. The numbering is part of each
+printed heading and is kept rather than regenerated, so a reader told to
+consult "the fourth right" finds it. "Learn more at IRS.gov/TaxpayerRights."
+is placed after all ten rights rather than after right 5 where it is printed;
+it sits at the foot of the left column because that is where the column ends.
+**No Link annotation on the address**, checked, so no URL was invented.
 
-**Then the rebuild is complete at 126 pages** and the full end-to-end pass
-should be re-run: `merge-plans` all 63 tranches -> `remediate` -> `verify-init`.
-`verify-check` still needs a fresh-context reader who never saw the plan; it
-must not be self-attested.
+### Session 63 (2026-08-05) - page 126 - tranche-63 - 6 blocks - VALIDATED (merged)
+
+Where Do You File?, the mailing-address table. Recall **0.9971 - the only
+missing token is the folio**.
+
+**The addresses were split by COLUMN POSITION, never by reading order.** The
+three columns sit at x=46, 288, and 436. Getting a row's two addresses the
+wrong way round would misdirect a tax return - the second column is for a
+refund or no payment, the third for an enclosed check - and no downstream check
+could catch it, because every token would be present and only the pairing
+wrong. Same hazard as the pie charts in tranche 60. Four assertions guard it,
+the load-bearing one being that **every address ends in a "ST 12345-6789"
+city/state/ZIP**, which a crossed column or a row-spanning join would fail.
+
+## THE REBUILD IS COMPLETE - 126 OF 126 PAGES
+
+`merge-plans t01..t63` -> **2,106 blocks, `ok: true`, `pagesWithoutBlocks: []`**,
+zero heading skips. Sixty-three tranches, sixty-three sessions.
+
+### What remains before anything is delivered
+
+1. **Re-run the end-to-end pass on the complete plan**: `remediate` ->
+   `validate-pdf` -> `verify-init`. The 2026-08-05 run at 104 pages proved the
+   path works and left ONE unresolved PDF/UA-1 clause 7.2 failure that is
+   pagination-dependent and not root-caused; it needs re-checking at 126 pages.
+   `sourceTextRecall` should now be near 1.0 rather than 0.835, since that
+   figure only ever tracked the fraction of pages authored.
+2. **`verify-check` still needs a fresh-context reader** who never saw the
+   plan. It must not be self-attested - the worksheet is ~1,344 items and the
+   two-model rule exists precisely to stop the generator grading itself.
+3. **The splitter has four catalogued failure shapes** and none is fixed:
+   crossers stranded mid-region (p108), a band emitted in the wrong place
+   (p116), too little prose for the gutter search (p121, p125), and the
+   round-9 peel's own limit. Every one was worked around by reading geometry
+   per column. A round 10 has a ready-made fixture set.
+4. **The display-face rule goes blind on a page whose full-page table is set
+   in the display face** (p105). Face distribution wants measuring per REGION,
+   not per page.
 
 ## Run-in level audit (2026-08-05) - the session-49 concern, checked and CLOSED
 

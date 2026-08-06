@@ -1,0 +1,128 @@
+{
+ "schema_version": "1.0",
+ "document": {
+  "title": "2025 Instructions for Form 1040 (and 1040-SR)",
+  "language": "en",
+  "source_page_count": 126,
+  "source_sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a",
+  "document_type": "booklet",
+  "subject": "Internal Revenue Service instructions for the 2025 Form 1040 and Form 1040-SR, including the instructions for Schedules 1 through 3.",
+  "variant": "original"
+ },
+ "blocks": [
+  {
+   "type": "heading",
+   "level": 2,
+   "text": "Where Do You File?",
+   "source_page": 126
+  },
+  {
+   "type": "paragraph",
+   "text": "Mail your return to the address shown below that applies to you. If you want to use a private delivery service, see Private Delivery Services under Filing Requirements, earlier.",
+   "source_page": 126,
+   "runs": [
+    {
+     "text": "Mail your return to the address shown below that applies to you. If you want to use a private delivery service, see ",
+     "style": "normal"
+    },
+    {
+     "text": "Private Delivery Services",
+     "style": "emphasis"
+    },
+    {
+     "text": " under ",
+     "style": "normal"
+    },
+    {
+     "text": "Filing Requirements",
+     "style": "emphasis"
+    },
+    {
+     "text": ", earlier.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "Tip. Envelopes without enough postage will be returned to you by the post office. Your envelope may need additional postage if it contains more than five pages or is oversized (for example, it is over 1/4″ thick). Also include your complete return address.",
+   "runs": [
+    {
+     "text": "Tip.",
+     "style": "strong"
+    },
+    {
+     "text": " Envelopes without enough postage will be returned to you by the post office. Your envelope may need additional postage if it contains more than five pages or is oversized (for example, it is over 1/4″ thick). Also include your complete return address.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 126
+  },
+  {
+   "type": "paragraph",
+   "text": "Caution. Only the U.S. Postal Service can deliver to P.O. boxes. You can't use a private delivery service to make tax payments required to be sent to a P.O. box.",
+   "runs": [
+    {
+     "text": "Caution.",
+     "style": "strong"
+    },
+    {
+     "text": " Only the U.S. Postal Service can deliver to P.O. boxes. You can't use a private delivery service to make tax payments required to be sent to a P.O. box.",
+     "style": "normal"
+    }
+   ],
+   "source_page": 126
+  },
+  {
+   "type": "table",
+   "caption": "Where to mail your return. Find the row for where you live, then use the address in the second column if you are requesting a refund or are not enclosing a check or money order, or the address in the third column if you are enclosing a check or money order. The printed table sets “THEN use this address if you:” as a head spanning both address columns; it is folded into each column name here because the plan's table has one header row. Each address is written on one line with commas where the form breaks lines.",
+   "columns": [
+    "IF you live in...",
+    "THEN use this address if you: Are requesting a refund or are not enclosing a check or money order...",
+    "THEN use this address if you: Are enclosing a check or money order..."
+   ],
+   "rows": [
+    [
+     "Alabama, Florida, Georgia, Louisiana, Mississippi, North Carolina, South Carolina, Tennessee, Texas",
+     "Department of the Treasury, Internal Revenue Service, Austin, TX 73301-0002",
+     "Internal Revenue Service, P.O. Box 1214, Charlotte, NC 28201-1214"
+    ],
+    [
+     "Alaska, California, Colorado, Hawaii, Idaho, Kansas, Michigan, Montana, Nebraska, Nevada, North Dakota, Ohio, Oregon, South Dakota, Utah, Washington, Wyoming",
+     "Department of the Treasury, Internal Revenue Service, Ogden, UT 84201-0002",
+     "Internal Revenue Service, P.O. Box 931000, Louisville, KY 40293-1000"
+    ],
+    [
+     "Arizona, Arkansas, New Mexico, Oklahoma",
+     "Department of the Treasury, Internal Revenue Service, Austin, TX 73301-0002",
+     "Internal Revenue Service, P.O. Box 931000, Louisville, KY 40293-1000"
+    ],
+    [
+     "Connecticut, Delaware, District of Columbia, Illinois, Indiana, Iowa, Kentucky, Maine, Maryland, Massachusetts, Minnesota, Missouri, New Hampshire, New Jersey, New York, Pennsylvania, Rhode Island, Vermont, Virginia, West Virginia, Wisconsin",
+     "Department of the Treasury, Internal Revenue Service, Kansas City, MO 64999-0002",
+     "Internal Revenue Service, P.O. Box 931000, Louisville, KY 40293-1000"
+    ],
+    [
+     "A foreign country, U.S. territory*, or use an APO or FPO address, or file Form 2555 or 4563, or are a dual-status alien",
+     "Department of the Treasury, Internal Revenue Service, Austin, TX 73301-0215",
+     "Internal Revenue Service, P.O. Box 1303, Charlotte, NC 28201-1303"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 126
+  },
+  {
+   "type": "paragraph",
+   "text": "* If you live in American Samoa, Puerto Rico, Guam, the U.S. Virgin Islands, or the Northern Mariana Islands, see Pub. 570.",
+   "source_page": 126
+  }
+ ],
+ "review_notes": [
+  "TRANCHE 63 OF A MULTI-SESSION REBUILD, AND THE LAST PAGE. This plan covers printed page 126, Where Do You File?. It carries no document title by design — only tranche 1 does — so this file validates through merge-plans rather than standalone. Nothing is carried in or out. **With this tranche the rebuild covers all 126 printed pages.**",
+  "THE ADDRESSES WERE SPLIT BY COLUMN POSITION, NEVER BY READING ORDER. The three columns sit at x=46, 288, and 436, and each row's lines were joined within their own column. **Getting a row's two addresses the wrong way round would misdirect a tax return** — the second column is for a refund or no payment and the third is for an enclosed check — and no downstream check could catch it, because every token would be present and only the pairing wrong. Same hazard as the two pie charts in tranche 60.",
+  "FOUR ASSERTIONS GUARD THE TABLE: every row is complete; **every address ends in a “ST 12345-6789” city/state/ZIP**, which a row whose columns were crossed or whose lines were joined across rows would fail; the two addresses in a row are never identical; and no state list repeats. Note the limit, as in tranche 60: swapping the two ADDRESSES within one row would still satisfy all four, so the column split was done by x and not left to the arithmetic.",
+  "THE SPANNING HEADER IS FOLDED INTO BOTH COLUMN NAMES. The printed table sets “THEN use this address if you:” across both address columns, above “Are requesting a refund or are not enclosing a check or money order…” and “Are enclosing a check or money order…”. The plan's table has one header row, so the spanning text is repeated in each name rather than dropped — without it, a reader of the flat table has two address columns and no statement of which to use. Same handling as the burden table in tranche 59.",
+  "EACH ADDRESS IS ONE LINE WITH COMMAS where the form breaks lines: “Department of the Treasury, Internal Revenue Service, Austin, TX 73301-0002”. The commas are the rebuild's own, added because a postal address run together without them (“Department of the TreasuryInternal Revenue ServiceAustin, TX 73301-0002”) is unreadable and because the table cell cannot carry the line breaks the form uses. This is disclosed in the caption.",
+  "“can't” IS A STRAIGHT APOSTROPHE and is the ONLY apostrophe on the page; reproduced as printed. The fraction in the TIP is written “1/4″ thick” — the source sets the 1 and 4 as superscript and subscript around a solidus and follows them with a double-prime inch mark, and there is no way to carry that typography in the plan, so the ordinary form is used. PAGE FURNITURE OMITTED: the printed page number. THE PAGE CARRIES NO LINK ANNOTATIONS, checked rather than assumed."
+ ]
+}
