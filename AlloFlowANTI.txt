@@ -10089,6 +10089,16 @@ const LIVE_SIGNAL_FRESH_MS = 10 * 60 * 1000;
 // Teacher liveness lease (2026-08-01): a small Tier-1 envelope lets students
 // distinguish a teacher reconnect from a terminally stale tab without storing
 // student work or creating a second session transport.
+// How recent a teacher bridge message must be for a student device to display
+// it. The only staleness rule used to be the 24h server cleanup, and the
+// seen-marker is a ref that resets on reload — so a student who reloaded or
+// rejoined got a message from hours earlier popped into their face as though it
+// had just arrived. Ten minutes is long enough for a student joining late to
+// catch what the class was just told, and short enough that yesterday's
+// 'line up for lunch' never reappears.
+const BRIDGE_MESSAGE_FRESH_MS = 10 * 60 * 1000;
+// How long a delivered message stays on screen before it clears itself.
+const BRIDGE_MESSAGE_VISIBLE_MS = 3 * 60 * 1000;
 const LIVE_HOST_HEARTBEAT_INTERVAL_MS = 20 * 1000;
 const LIVE_HOST_LEASE_TTL_MS = 90 * 1000;
 const LIVE_HOST_RECONNECT_GRACE_MS = 45 * 1000;
@@ -16687,6 +16697,20 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [resourceCount, setResourceCount] = useState('Auto');
   const [fullPackTargetGroup, setFullPackTargetGroup] = useState('none');
   const [bridgeMessage, setBridgeMessage] = useState(null);
+  // A teacher message is an announcement, not a document: it should not sit on
+  // a student's screen until they think to dismiss it. Clears itself after a
+  // few minutes, and only while the tab is visible — a message that expired
+  // while the device was asleep was never actually delivered to anyone.
+  useEffect(() => {
+      if (!bridgeMessage) return undefined;
+      let elapsed = 0;
+      const tick = setInterval(() => {
+          if (typeof document !== 'undefined' && document.hidden) return;
+          elapsed += 5000;
+          if (elapsed >= BRIDGE_MESSAGE_VISIBLE_MS) setBridgeMessage(null);
+      }, 5000);
+      return () => clearInterval(tick);
+  }, [bridgeMessage]);
   const [bridgeKaraokeIndex, setBridgeKaraokeIndex] = useState(-1);
   const [bridgeActiveLanguage, setBridgeActiveLanguage] = useState(null);
   const [bridgeTtsPlaying, setBridgeTtsPlaying] = useState(false);
@@ -20485,7 +20509,11 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                   }
                   if (data.bridgePayload && data.bridgePayload.timestamp) {
                     const payloadTs = data.bridgePayload.timestamp;
-                    if (payloadTs > lastBridgeTimestampRef.current) {
+                    // Both conditions matter: NEWER than the last one seen (so a
+                    // re-render never replays it) and RECENT in absolute terms (so
+                    // a fresh page load never resurrects an old one).
+                    const bridgeIsFresh = (Date.now() - payloadTs) <= BRIDGE_MESSAGE_FRESH_MS;
+                    if (payloadTs > lastBridgeTimestampRef.current && bridgeIsFresh) {
                       lastBridgeTimestampRef.current = payloadTs;
                       const bp = data.bridgePayload;
                       const myGroupId = data.roster?.[user?.uid]?.groupId;
@@ -20495,7 +20523,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                     if (data.bridgeChat && data.bridgeChat.active && data.bridgeChat.lastMessage) {
                       const chatMsg = data.bridgeChat.lastMessage;
                       const chatTs = chatMsg.timestamp || 0;
-                      if (chatTs > (window.__lastBridgeChatTs || 0)) {
+                      // Same reasoning as the payload branch above.
+                      if (chatTs > (window.__lastBridgeChatTs || 0)
+                          && (Date.now() - chatTs) <= BRIDGE_MESSAGE_FRESH_MS) {
                         window.__lastBridgeChatTs = chatTs;
                         const myGroupId2 = data.roster?.[user?.uid]?.groupId;
                         const myProfile2 = myGroupId2 && data.groups?.[myGroupId2]?.profile
@@ -49205,7 +49235,11 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             onMicClick={handleBotMicClick}
             onToggleMute={handleToggleMute}
             isListening={isDictationMode}
-            isIdleDisabled={showUDLGuide}
+            // In a live session the student's AlloBot is the TEACHER's voice, not
+            // its own. Unprompted idle tips while a class is running read as
+            // interruption from a character with no idea what the room is doing,
+            // and they compete with whatever the teacher just sent.
+            isIdleDisabled={showUDLGuide || (!isTeacherMode && !!activeSessionCode)}
             disableAnimations={disableAnimations}
             stemLabTool={stemLabTool}
             showStemLab={showStemLab}
