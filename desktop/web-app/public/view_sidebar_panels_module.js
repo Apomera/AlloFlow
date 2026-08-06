@@ -149,7 +149,11 @@ const SurpriseMeEngine = {
   // else it returns is dropped rather than coerced.
   TONES: ["Informative", "Narrative", "Dialogue", "Persuasive", "Humorous", "Step-by-Step"],
   brief: function(rec) {
-    return (rec.code ? rec.code + " " : "") + String(rec.label || rec.text || "").slice(0, 160);
+    // Map TeX before truncating: slicing raw TeX at 160 can cut a command in
+    // half and hand the model a fragment.
+    const api = typeof window !== "undefined" && window.AlloModules ? window.AlloModules.StandardsProvider : null;
+    const body = api && typeof api.toPlainMath === "function" ? api.toPlainMath(rec.label || rec.text) : String(rec.label || rec.text || "");
+    return (rec.code ? rec.code + " " : "") + body.slice(0, 160);
   },
   buildHood: function(provider, id) {
     const grab = (fn, key) => {

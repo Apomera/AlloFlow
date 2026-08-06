@@ -1801,6 +1801,15 @@ function FluencyModePanel(props) {
 }
 
 // ── SourceGenPanel: JSX from AlloFlowANTI.txt L22863-L23109 ──
+// Standard text carries TeX in 84 of the 2,345 shipped standards. Map it to
+// plain glyphs for display; the stored record and the search index keep the
+// original. Truncate after mapping so a slice cannot cut a command in half.
+function plainStandardText(value, limit) {
+  const api = (typeof window !== 'undefined' && window.AlloModules) ? window.AlloModules.StandardsProvider : null;
+  const mapped = api && typeof api.toPlainMath === 'function' ? api.toPlainMath(value) : String(value == null ? '' : value);
+  return limit && mapped.length > limit ? mapped.slice(0, limit) : mapped;
+}
+
 // ── SurpriseTopicLauncher: Surprise Me entry at the topic field ──
 // Peer entry to the resolver flow in UniversalSettingsPanel, sharing
 // AlloModules.SurpriseMeEngine so both surfaces keep the same division of
@@ -1811,6 +1820,10 @@ function FluencyModePanel(props) {
 function SurpriseTopicLauncher(props) {
   const { addToast, gradeLevel, setSourceTopic, setSourceTone, setSourceVocabulary, setStandardInputValue, sourceVocabulary, studentInterests } = props;
   const [surpriseQuery, setSurpriseQuery] = React.useState('');
+  // The seed box is the OTHER feature that lived here: it resolves a code or
+  // skill to a standard, which Target Standard already does. It stays for the
+  // teacher who wants it, but it no longer occupies the panel by default.
+  const [seedOpen, setSeedOpen] = React.useState(false);
   const [resolution, setResolution] = React.useState(null);
   const [surpriseState, setSurpriseState] = React.useState('idle'); // idle | loading | ready | error
   const [directions, setDirections] = React.useState([]);
@@ -1842,13 +1855,41 @@ function SurpriseTopicLauncher(props) {
       if (addToast) addToast('Could not propose lesson directions. Try again.', 'error');
     }
   };
+  // A surprise the teacher had to describe first is not a surprise. Draw a
+  // standard they did not name, from their own grade where the snapshot has
+  // coverage, and propose directions straight from it.
+  const rollTheDice = () => {
+    if (typeof provider.sampleStandards !== 'function') return;
+    try {
+      const drawn = provider.sampleStandards({ gradeLevel: gradeLevel, count: 1 });
+      const match = drawn && drawn.standards && drawn.standards[0];
+      if (!match) {
+        if (addToast) addToast('No standards are loaded to draw from.', 'error');
+        return;
+      }
+      setResolution({ status: 'resolved', match: match, candidates: [] });
+      setCodeState('idle');
+      setCodeHits([]);
+      setCodeMisses([]);
+      proposeFor(match);
+    } catch (error) {
+      if (addToast) addToast('Could not draw a standard.', 'error');
+    }
+  };
   const resolveAndPropose = () => {
     const query = String(surpriseQuery || '').trim();
     if (!query) return;
     try {
       const next = provider.resolveStandard(query);
       setResolution(next);
+      setCodeState('idle');
+      setCodeHits([]);
+      setCodeMisses([]);
       if (next && next.status === 'resolved' && next.match) proposeFor(next.match);
+      // Nothing lexical to work with. That is the normal outcome for a seed
+      // written as prose, so go straight to the lookup instead of reporting a
+      // dead end and waiting for a second click.
+      else if (next && !(next.candidates || []).length) askForCodes();
     } catch (e) {
       setResolution({ status: 'error', match: null, candidates: [] });
     }
@@ -1934,8 +1975,18 @@ function SurpriseTopicLauncher(props) {
   const resolvedMatch = resolution && resolution.status === 'resolved' && resolution.match;
   return (
     <div className="rounded border border-violet-200 bg-violet-50/70 p-2 text-[11px] text-slate-700">
-      <div className="font-bold text-violet-900">Not sure what to write? Surprise me</div>
-      <div className="mt-1 flex gap-1">
+      <div className="flex flex-wrap items-center gap-2">
+        <button type="button" onClick={rollTheDice} disabled={surpriseState === 'loading'}
+          className="rounded bg-violet-700 px-2 py-1 font-bold text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50">
+          {surpriseState === 'loading' ? 'Drawing…' : '✨ Surprise me'}
+        </button>
+        <span className="text-slate-600">a standard{gradeLevel ? ' for ' + gradeLevel : ''}, at random</span>
+        <button type="button" onClick={() => setSeedOpen(!seedOpen)} aria-expanded={seedOpen}
+          className="ml-auto underline text-violet-800 hover:text-violet-900">
+          {seedOpen ? 'Hide' : 'Start from a standard or idea'}
+        </button>
+      </div>
+      {seedOpen && <div className="mt-1 flex gap-1">
         <input
           type="text"
           value={surpriseQuery}
@@ -1947,9 +1998,9 @@ function SurpriseTopicLauncher(props) {
         />
         <button type="button" onClick={resolveAndPropose} disabled={surpriseState === 'loading' || !surpriseQuery.trim()}
           className="rounded bg-violet-700 px-2 py-1 font-bold text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50">
-          {surpriseState === 'loading' ? 'Proposing…' : '✨ Propose 3 directions'}
+          {surpriseState === 'loading' ? 'Proposing…' : 'Propose 3 directions'}
         </button>
-      </div>
+      </div>}
       {resolution && resolution.status === 'ambiguous' && (
         <div role="status" className="mt-1">Multiple exact matches — choose one:
           {(resolution.candidates || []).slice(0, 4).map((candidate) => (
@@ -1969,7 +2020,7 @@ function SurpriseTopicLauncher(props) {
           {(resolution.candidates || []).slice(0, 4).map((candidate) => (
             <button type="button" key={candidate.id} onClick={() => chooseCandidate(candidate)}
               className="ml-1 mt-1 rounded border border-violet-300 bg-white px-1.5 py-0.5 text-left font-bold hover:bg-violet-100">
-              {candidate.code}<span className="font-normal"> · {String(candidate.label || candidate.text || '').slice(0, 60)}</span>
+              {candidate.code}<span className="font-normal"> · {plainStandardText(candidate.label || candidate.text, 60)}</span>
             </button>
           ))}
         </div>
@@ -1980,12 +2031,13 @@ function SurpriseTopicLauncher(props) {
           teacher typed something wrong. */}
       {resolution && resolution.status === 'not-found' && !(resolution.candidates || []).length && (
         <div role="status" className="mt-1">
-          Nothing in the loaded snapshots matches that word-for-word. If it is a <strong>context</strong> — a gecko, a World Cup,
-          a school garden — put it in the topic field above and choose a standard; the proposals will use it as the hook.
+          No word-for-word match in the loaded snapshots, so I asked the AI which standard this is. If it turns out to be a
+          <strong>context</strong> rather than a skill — a gecko, a World Cup, a school garden — put it in the topic field above
+          and choose a standard; the proposals will use it as the hook.
           <div className="mt-1">
             <button type="button" onClick={askForCodes} disabled={codeState === 'loading'}
               className="rounded border border-violet-400 bg-white px-2 py-1 font-bold hover:bg-violet-100 disabled:opacity-50">
-              {codeState === 'loading' ? 'Looking…' : 'Or ask AI which standard this is'}
+              {codeState === 'loading' ? 'Looking…' : 'Ask again'}
             </button>
           </div>
         </div>
@@ -1998,7 +2050,7 @@ function SurpriseTopicLauncher(props) {
           {codeHits.map((hit) => (
             <button type="button" key={hit.match.id} onClick={() => chooseCandidate(hit.match)}
               className="ml-1 mt-1 rounded border border-violet-300 bg-white px-1.5 py-0.5 text-left font-bold hover:bg-violet-100">
-              {hit.match.code}<span className="font-normal"> · {String(hit.match.label || '').slice(0, 55)}</span>
+              {hit.match.code}<span className="font-normal"> · {plainStandardText(hit.match.label, 55)}</span>
             </button>
           ))}
         </div>

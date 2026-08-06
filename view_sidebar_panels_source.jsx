@@ -157,7 +157,13 @@ const SurpriseMeEngine = {
   // this set cannot be applied, so the model is given the list and anything
   // else it returns is dropped rather than coerced.
   TONES: ['Informative', 'Narrative', 'Dialogue', 'Persuasive', 'Humorous', 'Step-by-Step'],
-  brief: function (rec) { return (rec.code ? rec.code + ' ' : '') + String(rec.label || rec.text || '').slice(0, 160); },
+  brief: function (rec) {
+    // Map TeX before truncating: slicing raw TeX at 160 can cut a command in
+    // half and hand the model a fragment.
+    const api = (typeof window !== 'undefined' && window.AlloModules) ? window.AlloModules.StandardsProvider : null;
+    const body = api && typeof api.toPlainMath === 'function' ? api.toPlainMath(rec.label || rec.text) : String(rec.label || rec.text || '');
+    return (rec.code ? rec.code + ' ' : '') + body.slice(0, 160);
+  },
   buildHood: function (provider, id) {
     const grab = (fn, key) => { try { const r = provider[fn](id, { maxResults: 6 }); return (r && r[key]) || []; } catch (e) { return []; } };
     const pre = (() => { try { return provider.getPrerequisites(id, { maxResults: 6 }); } catch (e) { return null; } })();

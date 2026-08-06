@@ -79,8 +79,11 @@ describe('the engine proposes the settings a teacher would re-derive', () => {
 describe('rung 3: the model may name a code, but only the snapshot may confirm it', () => {
   const misc = readFileSync('view_misc_panels_module.js', 'utf8');
 
-  it('offers the lookup only when the snapshot found nothing', () => {
-    expect(misc).toContain('Or ask AI which standard this is');
+  it('runs the lookup automatically when the snapshot found nothing', () => {
+    // A seed written as prose normally has no lexical hook, so reporting a
+    // dead end and waiting for a second click was the wrong default.
+    expect(misc).toContain('else if (next && !(next.candidates || []).length) askForCodes();');
+    expect(misc).toContain('Ask again');
   });
 
   it('verifies every proposed code against the snapshot before using it', () => {

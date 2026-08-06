@@ -24,6 +24,17 @@
     // hook ("Geckos", "camouflage") correctly returns nothing, while a goal
     // sentence still finds its standard.
     const MIN_QUERY_WEIGHT = 4;
+
+    // Singular/plural only. "fractions" must match a standard that says
+    // "fraction" — that mismatch alone made correct seeds return nothing.
+    // Deliberately not a full stemmer: aggressive stemming conflates unrelated
+    // words, and this corpus is small enough that the simple case is the case.
+    function stemWord(word) {
+        if (word.length > 4 && /ies$/.test(word)) return word.slice(0, -3) + 'y';
+        if (word.length > 4 && /(ches|shes|sses|xes)$/.test(word)) return word.slice(0, -2);
+        if (word.length > 3 && /s$/.test(word) && !/ss$/.test(word)) return word.slice(0, -1);
+        return word;
+    }
     const MAX_NODES = 100;
     const MAX_EDGES = 200;
     const MAX_DEPTH = 4;
@@ -136,6 +147,65 @@
         const out = Object.assign({}, relationship);
         delete out._path;
         return out;
+    }
+
+
+    // Every TeX command that appears in the shipped snapshots, with its count
+    // at the time of writing. Anything outside this list is left alone rather
+    // than guessed at, so an unknown command degrades to its own source text.
+    const TEX_SYMBOLS = [
+        ['times', '\u00d7'],   // 82
+        ['div', '\u00f7'],     // 32
+        ['theta', '\u03b8'],   // 16
+        ['pi', '\u03c0'],      // 14
+        ['degree', '\u00b0'],  // 8
+        ['circ', '\u00b0'],    // 2
+        ['Box', '\u25a1'],     // 6
+        ['neq', '\u2260'],     // 6
+        ['approx', '\u2248'],  // 2
+        ['geq', '\u2265'],     // 2
+        ['sin', 'sin'],         // 8
+        ['cos', 'cos'],         // 6
+        ['tan', 'tan'],         // 4
+        ['left', ''],           // 6 — sizing hints, no glyph
+        ['right', '']           // 6
+    ];
+    // \frac{1}{2} -> 1/2. Run to a fixed point so a nested numerator resolves
+    // from the inside out; the loop is bounded because each pass removes a
+    // \frac, and the snapshots never nest more than one deep.
+    function expandFractions(source) {
+        let out = String(source);
+        for (let pass = 0; pass < 6; pass += 1) {
+            const next = out.replace(/\\frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g, (all, top, bottom) => {
+                const a = top.trim();
+                const b = bottom.trim();
+                // Parenthesise anything that is not a bare term, so
+                // \frac{a+b}{c} does not silently become a+b/c.
+                const wrap = (part) => (/^[A-Za-z0-9.]+$/.test(part) ? part : '(' + part + ')');
+                return wrap(a) + '/' + wrap(b);
+            });
+            if (next === out) break;
+            out = next;
+        }
+        return out;
+    }
+    // Turn the TeX that appears in standard text into readable plain text.
+    // This is a DISPLAY helper: it never touches stored records, and the
+    // search index still runs over the original text.
+    function toPlainMath(value) {
+        if (value == null) return '';
+        let out = String(value);
+        if (out.indexOf('\\') < 0 && out.indexOf('$') < 0) return out;
+        out = expandFractions(out);
+        out = out.replace(/\\sqrt\s*\{([^{}]*)\}/g, (all, inner) => '\u221a' + inner.trim());
+        for (const [name, glyph] of TEX_SYMBOLS) {
+            // (?![a-zA-Z]) so \circ is not eaten by a \c rule and \times does
+            // not match inside a longer command name.
+            out = out.replace(new RegExp('\\\\' + name + '(?![a-zA-Z])', 'g'), glyph);
+        }
+        // Delimiters last: by here the content between them is already plain.
+        out = out.replace(/\$/g, '');
+        return out.replace(/\s+/g, ' ').trim();
     }
 
     function validateSnapshot(input) {
@@ -275,7 +345,7 @@
     // junk words, which is how a sentence-shaped goal used to land on the wrong
     // standard. `idf` is supplied by the provider, which alone can see the
     // corpus; without it this falls back to presence-only scoring.
-    function queryScore(record, query, idf) {
+    function queryScore(record, query, index) {
         if (!query) return 0;
         const code = codeToken(record.code);
         const id = idToken(record.id);
@@ -290,13 +360,17 @@
         // "3.OA.A.1" yields parts present in 1613 / 91 / 2344 / 2311 standards
         // — so a query made only of fragments has no lexical signal at all and
         // must fall through to substring matching rather than fuzzy scoring.
-        const terms = parts.filter((p) => p.length >= 3 && !QUERY_FRAMING_WORDS.has(p));
+        const terms = Array.from(new Set(parts.filter((p) => p.length >= 3 && !QUERY_FRAMING_WORDS.has(p)).map(stemWord)));
         if (!terms.length) return body.indexOf(query) >= 0 ? 400 : 0;
-        const weigh = typeof idf === 'function' ? idf : () => 1;
+        const weigh = (index && typeof index.idf === 'function') ? index.idf : () => 1;
+        const stems = (index && typeof index.stemsFor === 'function') ? index.stemsFor(record) : null;
         let weight = 0;
         let hits = 0;
         for (const term of terms) {
-            if (body.indexOf(term) >= 0) { weight += weigh(term); hits += 1; }
+            // Stem set first (whole-word, plural-tolerant), raw substring as
+            // a fallback so partial words like "fraction" in "fractional" are
+            // not lost.
+            if ((stems && stems.has(term)) || body.indexOf(term) >= 0) { weight += weigh(term); hits += 1; }
         }
         if (!hits) return body.indexOf(query) >= 0 ? 400 : 0;
         // One incidental word is not a match. Without this, "our school
@@ -328,12 +402,18 @@
         // meaningful, "text" is everywhere — and only this scope can see the
         // whole corpus.
         const docFreq = new Map();
+        const stemIndex = new Map();
         for (const record of value.standards) {
-            const seen = new Set(token(`${record.label} ${record.text}`).split(/[^a-z0-9]+/).filter((w) => w.length >= 3));
+            const seen = new Set(token(`${record.label} ${record.text}`).split(/[^a-z0-9]+/)
+                .filter((w) => w.length >= 3).map(stemWord));
+            stemIndex.set(idToken(record.id), seen);
             for (const word of seen) docFreq.set(word, (docFreq.get(word) || 0) + 1);
         }
         const corpusSize = Math.max(1, value.standards.length);
-        const idf = (term) => Math.log(corpusSize / (1 + (docFreq.get(term) || 0)));
+        const searchIndex = {
+            idf: (term) => Math.log(corpusSize / (1 + (docFreq.get(term) || 0))),
+            stemsFor: (record) => stemIndex.get(idToken(record && record.id)) || null
+        };
 
         for (const relationship of value.relationships) {
             const from = idToken(relationship.fromId);
@@ -355,7 +435,7 @@
             for (const record of value.standards) {
                 if (record.resolvable === false) continue;
                 if (!matchesFilters(record, normalizedFilters)) continue;
-                const score = queryScore(record, normalizedQuery, idf);
+                const score = queryScore(record, normalizedQuery, searchIndex);
                 if (normalizedQuery && score === 0) continue;
                 scored.push({ record, score });
             }
@@ -661,6 +741,59 @@
             };
         }
 
+
+        // A zero-input "surprise me" needs a standard nobody named for it.
+        // Sampling belongs to the provider because only the provider holds the
+        // records; handing the array out instead would let a caller mutate the
+        // loaded snapshot.
+        // CCSS puts the grade in the code and nowhere else, in three shapes:
+        // leading (3.MD.A.1), embedded (RI.3.1), and banded (RST.11-12.7).
+        function gradeOfCode(code) {
+            const text = String(code || '');
+            // HSA-SSE.B.3.c is high-school algebra, not grade 3 — the embedded
+            // number there is a sub-part index. Only the HS prefix says so.
+            if (/^HS/i.test(text)) return null;
+            const hit = text.match(/^(K|\d{1,2}(?:-\d{1,2})?)\./) || text.match(/\.(K|\d{1,2}(?:-\d{1,2})?)\./);
+            return hit ? hit[1].toUpperCase() : null;
+        }
+        function codeCoversGrade(code, wanted) {
+            const found = gradeOfCode(code);
+            if (!found || !wanted) return false;
+            if (found === wanted) return true;
+            // A band standard genuinely applies to every grade it spans, so
+            // grade 11 must be able to draw an 11-12 standard.
+            const band = found.match(/^(\d{1,2})-(\d{1,2})$/);
+            const asNumber = Number(wanted);
+            return Boolean(band) && Number.isFinite(asNumber)
+                && asNumber >= Number(band[1]) && asNumber <= Number(band[2]);
+        }
+        // The grade selector hands over free text: "Grade 3", "5th", "K",
+        // "Kindergarten". Word boundaries alone do not cut those apart.
+        function wantedGrade(raw) {
+            const text = String(raw || '');
+            if (/kinder/i.test(text) || /(^|\W)k(\W|$)/i.test(text)) return 'K';
+            const digits = text.match(/\d{1,2}/);
+            return digits ? digits[0] : null;
+        }
+        function sampleStandards(options) {
+            const opts = options || {};
+            const want = Math.max(1, Math.min(20, Number(opts.count) || 1));
+            const wanted = wantedGrade(opts.gradeLevel);
+            const usable = value.standards.filter((r) => r.resolvable !== false && String(r.code || '').trim());
+            // Fall back to the whole corpus rather than returning nothing: a
+            // grade with no coverage is a reason to widen, not to fail.
+            const graded = wanted ? usable.filter((r) => codeCoversGrade(r.code, wanted)) : [];
+            const pool = graded.length ? graded : usable;
+            const picked = [];
+            const taken = new Set();
+            for (let guard = 0; picked.length < Math.min(want, pool.length) && guard < pool.length * 8; guard += 1) {
+                const at = Math.floor(Math.random() * pool.length);
+                if (taken.has(at)) continue;
+                taken.add(at);
+                picked.push(publicRecord(pool[at]));
+            }
+            return { standards: picked, pool: pool.length, gradeFiltered: graded.length > 0 };
+        }
         function getComponentCoverage(queries, options) {
             // Component-level alignment by SET MEMBERSHIP, the same spine as
             // getPrerequisiteGaps: resolve the audited standards, then for each
@@ -723,7 +856,8 @@
             getRelatedStandards,
             getLearningComponents,
             getPrerequisiteGaps,
-            getComponentCoverage
+            getComponentCoverage,
+            sampleStandards
         };
     }
 
@@ -835,6 +969,7 @@
 
     return {
         VERSION,
+        toPlainMath,
         validateSnapshot,
         createLocalProvider,
         registerLocalSnapshot,

@@ -1447,9 +1447,16 @@ function FluencyModePanel(props) {
     )))
   ));
 }
+function plainStandardText(value, limit) {
+  const api = typeof window !== "undefined" && window.AlloModules ? window.AlloModules.StandardsProvider : null;
+  const mapped = api && typeof api.toPlainMath === "function" ? api.toPlainMath(value) : String(value == null ? "" : value);
+  return limit && mapped.length > limit ? mapped.slice(0, limit) : mapped;
+}
+
 function SurpriseTopicLauncher(props) {
   const { addToast, gradeLevel, setSourceTopic, setSourceTone, setSourceVocabulary, setStandardInputValue, sourceVocabulary, studentInterests } = props;
   const [surpriseQuery, setSurpriseQuery] = React.useState("");
+  const [seedOpen, setSeedOpen] = React.useState(false);
   const [resolution, setResolution] = React.useState(null);
   const [surpriseState, setSurpriseState] = React.useState("idle");
   const [directions, setDirections] = React.useState([]);
@@ -1479,13 +1486,35 @@ function SurpriseTopicLauncher(props) {
       if (addToast) addToast("Could not propose lesson directions. Try again.", "error");
     }
   };
+  const rollTheDice = () => {
+    if (typeof provider.sampleStandards !== "function") return;
+    try {
+      const drawn = provider.sampleStandards({ gradeLevel, count: 1 });
+      const match = drawn && drawn.standards && drawn.standards[0];
+      if (!match) {
+        if (addToast) addToast("No standards are loaded to draw from.", "error");
+        return;
+      }
+      setResolution({ status: "resolved", match, candidates: [] });
+      setCodeState("idle");
+      setCodeHits([]);
+      setCodeMisses([]);
+      proposeFor(match);
+    } catch (error) {
+      if (addToast) addToast("Could not draw a standard.", "error");
+    }
+  };
   const resolveAndPropose = () => {
     const query = String(surpriseQuery || "").trim();
     if (!query) return;
     try {
       const next = provider.resolveStandard(query);
       setResolution(next);
+      setCodeState("idle");
+      setCodeHits([]);
+      setCodeMisses([]);
       if (next && next.status === "resolved" && next.match) proposeFor(next.match);
+      else if (next && !(next.candidates || []).length) askForCodes();
     } catch (e) {
       setResolution({ status: "error", match: null, candidates: [] });
     }
@@ -1549,7 +1578,7 @@ function SurpriseTopicLauncher(props) {
     if (addToast) addToast("Set " + changed.join(", ") + ". The standard code is prefilled in Universal Settings.", "success");
   };
   const resolvedMatch = resolution && resolution.status === "resolved" && resolution.match;
-  return /* @__PURE__ */ React.createElement("div", { className: "rounded border border-violet-200 bg-violet-50/70 p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-violet-900" }, "Not sure what to write? Surprise me"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex gap-1" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "rounded border border-violet-200 bg-violet-50/70 p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: rollTheDice, disabled: surpriseState === "loading", className: "rounded bg-violet-700 px-2 py-1 font-bold text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50" }, surpriseState === "loading" ? "Drawing\u2026" : "\u2728 Surprise me"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "a standard" + (gradeLevel ? " for " + gradeLevel : "") + ", at random"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setSeedOpen(!seedOpen), "aria-expanded": seedOpen, className: "ml-auto underline text-violet-800 hover:text-violet-900" }, seedOpen ? "Hide" : "Start from a standard or idea")), seedOpen && /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex gap-1" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
@@ -1568,7 +1597,7 @@ function SurpriseTopicLauncher(props) {
       disabled: surpriseState === "loading" || !surpriseQuery.trim(),
       className: "rounded bg-violet-700 px-2 py-1 font-bold text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50"
     },
-    surpriseState === "loading" ? "Proposing\u2026" : "\u2728 Propose 3 directions"
+    surpriseState === "loading" ? "Proposing\u2026" : "Propose 3 directions"
   )), resolution && resolution.status === "ambiguous" && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mt-1" }, "Multiple exact matches \u2014 choose one:", (resolution.candidates || []).slice(0, 4).map((candidate) => /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -1580,7 +1609,7 @@ function SurpriseTopicLauncher(props) {
     candidate.code,
     " \xB7 ",
     candidate.framework || candidate.jurisdiction || candidate.id
-  ))), resolution && resolution.status === "not-found" && (resolution.candidates || []).length > 0 && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mt-1" }, "Closest standards in the loaded snapshots \u2014 pick one to ground the proposals:", (resolution.candidates || []).slice(0, 4).map((candidate) => /* @__PURE__ */ React.createElement("button", { type: "button", key: candidate.id, onClick: () => chooseCandidate(candidate), className: "ml-1 mt-1 rounded border border-violet-300 bg-white px-1.5 py-0.5 text-left font-bold hover:bg-violet-100" }, candidate.code, /* @__PURE__ */ React.createElement("span", { className: "font-normal" }, " \u00b7 " + String(candidate.label || candidate.text || "").slice(0, 60))))), resolution && resolution.status === "not-found" && !(resolution.candidates || []).length && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mt-1" }, "Nothing in the loaded snapshots matches that word-for-word. If it is a ", /* @__PURE__ */ React.createElement("strong", null, "context"), " \u2014 a gecko, a World Cup, a school garden \u2014 put it in the topic field above and choose a standard; the proposals will use it as the hook.", /* @__PURE__ */ React.createElement("div", { className: "mt-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: askForCodes, disabled: codeState === "loading", className: "rounded border border-violet-400 bg-white px-2 py-1 font-bold hover:bg-violet-100 disabled:opacity-50" }, codeState === "loading" ? "Looking\u2026" : "Or ask AI which standard this is"))), codeState === "done" && codeHits.length > 0 && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mt-1" }, "Found in the loaded snapshots \u2014 pick one to ground the proposals:", codeHits.map((hit) => /* @__PURE__ */ React.createElement("button", { type: "button", key: hit.match.id, onClick: () => chooseCandidate(hit.match), className: "ml-1 mt-1 rounded border border-violet-300 bg-white px-1.5 py-0.5 text-left font-bold hover:bg-violet-100" }, hit.match.code, /* @__PURE__ */ React.createElement("span", { className: "font-normal" }, " \u00b7 " + String(hit.match.label || "").slice(0, 55))))), codeState === "done" && codeMisses.length > 0 && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mt-1 text-slate-600" }, "Also suggested, but ", /* @__PURE__ */ React.createElement("strong", null, "not in the loaded snapshots"), " \u2014 unverified, check before relying on it:", codeMisses.map((miss) => /* @__PURE__ */ React.createElement("button", { type: "button", key: miss.code, onClick: () => { if (setStandardInputValue) setStandardInputValue(miss.code); if (addToast) addToast("Code " + miss.code + " prefilled in Universal Settings \u2014 verify it before use.", "info"); }, className: "ml-1 mt-1 rounded border border-slate-300 bg-white px-1.5 py-0.5 font-bold hover:bg-slate-100" }, miss.code)), /* @__PURE__ */ React.createElement("span", { className: "block mt-0.5" }, "No graph is available for these, so no grounded directions can be proposed from them.")), codeState === "done" && !codeHits.length && !codeMisses.length && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mt-1 text-slate-600" }, "No standard code came back for that seed either."), resolution && resolution.status === "error" && /* @__PURE__ */ React.createElement("div", { role: "alert", className: "mt-1 text-red-700" }, "The local snapshot could not resolve this entry."), surpriseState === "ready" && resolvedMatch && hood && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-violet-900" }, "Graph context: ", hood.prerequisites.length, " prerequisite(s), ", hood.leadsTo.length, " next, ", hood.related.length, " related", hood.dataset && hood.dataset.provider ? " \u2014 " + hood.dataset.provider : "", ". Directions are AI proposals grounded in these source edges, for educator judgment \u2014 not certification."), surpriseState === "ready" && directions.length > 0 && window.AlloModules && window.AlloModules.SurpriseMeCompare && React.createElement(window.AlloModules.SurpriseMeCompare, { directions, hood, onUse: useDirection }));
+  ))), resolution && resolution.status === "not-found" && (resolution.candidates || []).length > 0 && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mt-1" }, "Closest standards in the loaded snapshots \u2014 pick one to ground the proposals:", (resolution.candidates || []).slice(0, 4).map((candidate) => /* @__PURE__ */ React.createElement("button", { type: "button", key: candidate.id, onClick: () => chooseCandidate(candidate), className: "ml-1 mt-1 rounded border border-violet-300 bg-white px-1.5 py-0.5 text-left font-bold hover:bg-violet-100" }, candidate.code, /* @__PURE__ */ React.createElement("span", { className: "font-normal" }, " \u00b7 " + plainStandardText(candidate.label || candidate.text, 60))))), resolution && resolution.status === "not-found" && !(resolution.candidates || []).length && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mt-1" }, "No word-for-word match in the loaded snapshots, so I asked the AI which standard this is. If it turns out to be a ", /* @__PURE__ */ React.createElement("strong", null, "context"), " \u2014 a gecko, a World Cup, a school garden \u2014 put it in the topic field above and choose a standard; the proposals will use it as the hook.", /* @__PURE__ */ React.createElement("div", { className: "mt-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: askForCodes, disabled: codeState === "loading", className: "rounded border border-violet-400 bg-white px-2 py-1 font-bold hover:bg-violet-100 disabled:opacity-50" }, codeState === "loading" ? "Looking\u2026" : "Ask again"))), codeState === "done" && codeHits.length > 0 && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mt-1" }, "Found in the loaded snapshots \u2014 pick one to ground the proposals:", codeHits.map((hit) => /* @__PURE__ */ React.createElement("button", { type: "button", key: hit.match.id, onClick: () => chooseCandidate(hit.match), className: "ml-1 mt-1 rounded border border-violet-300 bg-white px-1.5 py-0.5 text-left font-bold hover:bg-violet-100" }, hit.match.code, /* @__PURE__ */ React.createElement("span", { className: "font-normal" }, " \u00b7 " + plainStandardText(hit.match.label, 55))))), codeState === "done" && codeMisses.length > 0 && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mt-1 text-slate-600" }, "Also suggested, but ", /* @__PURE__ */ React.createElement("strong", null, "not in the loaded snapshots"), " \u2014 unverified, check before relying on it:", codeMisses.map((miss) => /* @__PURE__ */ React.createElement("button", { type: "button", key: miss.code, onClick: () => { if (setStandardInputValue) setStandardInputValue(miss.code); if (addToast) addToast("Code " + miss.code + " prefilled in Universal Settings \u2014 verify it before use.", "info"); }, className: "ml-1 mt-1 rounded border border-slate-300 bg-white px-1.5 py-0.5 font-bold hover:bg-slate-100" }, miss.code)), /* @__PURE__ */ React.createElement("span", { className: "block mt-0.5" }, "No graph is available for these, so no grounded directions can be proposed from them.")), codeState === "done" && !codeHits.length && !codeMisses.length && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mt-1 text-slate-600" }, "No standard code came back for that seed either."), resolution && resolution.status === "error" && /* @__PURE__ */ React.createElement("div", { role: "alert", className: "mt-1 text-red-700" }, "The local snapshot could not resolve this entry."), surpriseState === "ready" && resolvedMatch && hood && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-violet-900" }, "Graph context: ", hood.prerequisites.length, " prerequisite(s), ", hood.leadsTo.length, " next, ", hood.related.length, " related", hood.dataset && hood.dataset.provider ? " \u2014 " + hood.dataset.provider : "", ". Directions are AI proposals grounded in these source edges, for educator judgment \u2014 not certification."), surpriseState === "ready" && directions.length > 0 && window.AlloModules && window.AlloModules.SurpriseMeCompare && React.createElement(window.AlloModules.SurpriseMeCompare, { directions, hood, onUse: useDirection }));
 }
 function SourceGenPanel(props) {
   const {
