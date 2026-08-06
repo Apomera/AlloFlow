@@ -2213,15 +2213,63 @@ is "...—Schedule 2 (Line 17z)" and this one "...—Schedule 3 (Line 6l)", and
 each one's footnote names the other in full. The source's own suffixes do the
 work.
 
-### NEXT: page 117 onward
+### Session 57 (2026-08-05) - page 117 - tranche-57 - 18 blocks - VALIDATED (merged)
 
-**Tranche 57 must open at "Eligible individuals may have advance payments..."**
-- line 9's paragraph begins in page 116's last column and finishes at the top
-of 117. Page 117 completes Schedule 3.
+Schedule 3 lines 10, 11, 12, and 13a through 13z. **This completes the
+Instructions for Schedule 3** (pages 115-117) **and with it every schedule in
+the document** - Schedule 1 (88-100), Schedule 1-A (101-110), Schedule 2
+(111-114), Schedule 3. `merge-plans t01..t57` -> 1,961 blocks, `ok: true`,
+**pages 1-117 covered**, zero heading skips. Recall 0.8251 raw; carried-block
+check against tranche 56: **117 shortfall instances = 110 carried + 7
+furniture + 0 unexplained**. The raw number is meaningless here - a short page
+receiving a large carried block, the case session 32 first hit.
 
-Then the back matter: Tax Topics (118), the Disclosure/Privacy Act notice
-(120), Major Categories of Federal Income and Outlays (122), and the MECHANICAL
-Index (123-126). Do not hand-author the Index.
+> **A TRANCHE-56 BLOCK BOUNDARY WAS WRONG AND WAS CORRECTED WHILE AUTHORING
+> THIS PAGE.** Line 9's discussion is a SINGLE paragraph running from page
+> 116's last column to "...see the Instructions for Form 8962." near the top
+> of page 117. **Page 117's column 1 carries no first-line indent anywhere**,
+> so none of the three sentence groups that read as separate paragraphs in the
+> column-aware text actually starts one. Tranche 56's first pass ended the
+> block at "...through the Marketplace." and would have split one source
+> paragraph across the tranche boundary. Corrected in `gen_tranche_56.py` and
+> regenerated before this tranche was merged.
+>
+> **Reading the RECEIVING page's geometry is what caught it.** The sending
+> page cannot show where a paragraph ends - it only shows that the text runs
+> off the bottom. Every handoff so far has been decided from the sending side;
+> this is the first time that was not enough, and the rule to carry forward is:
+> **check the receiving page's indents before fixing a carried block's
+> extent.**
+
+**"Line 13z" merges its run-in name**, as Line 13 did in tranche 53: it
+carries no display title, and "Other refundable credits." is a bold run-in in
+a different face (`g_d0_f4` against the `g_d0_f3` of every display heading on
+the page). Lines 13b, 13c, and 13d have no title at all and stay bare numbers,
+as lines 24f-24z did in tranche 40.
+
+**There is no "Line 13a" instruction and none was dropped.** The section
+heading reads "Lines 13a Through 13z" and the text jumps to 13b; the source
+gives 13a nothing, exactly as it gives Schedule 1 no instruction for lines 25
+or 26 (tranche 40) and reserves Schedule 2 line 10 and Schedule 3 line 6e for
+future use.
+
+### NEXT: page 118 onward - THE BACK MATTER
+
+**All schedule instructions are done.** What remains is 9 pages of back
+matter, and it is a different kind of work from everything before it:
+
+* **118-119 Tax Topics** - a long two-column NUMBER/SUBJECT list under
+  category sub-heads ("IRS help available", "IRS procedures", ...). This is
+  MECHANICAL: derive it from geometry like the EIC and Tax tables, do not
+  hand-transcribe. Page 118 opens "You can read these Tax Topics at
+  IRS.gov/TaxTopics" - check that link's annotation.
+* **120-121** the Disclosure, Privacy Act, and Paperwork Reduction Act notice.
+* **122** Major Categories of Federal Income and Outlays (a figure plus
+  table).
+* **123-126 the Index** - MECHANICAL, three columns of entries with page
+  numbers and sub-entries. **Do not hand-author it.** Build a generator from
+  the per-item geometry and assert its way to a plan, as tranches 17 and 21
+  did.
 
 ## Run-in level audit (2026-08-05) - the session-49 concern, checked and CLOSED
 

@@ -286,12 +286,28 @@ heading("Line 6z", 5)
 para("Leave line 6z blank.")
 
 heading("Line 9. Net Premium Tax Credit", 4)
-# Spans the 116-117 break; authored whole here. Tranche 57 must not repeat it.
+# Spans the 116-117 break; authored WHOLE here. Tranche 57 must not repeat it.
+#
+# CORRECTED after page 117's geometry was read: this is ONE paragraph running
+# from this page's last column to "...Instructions for Form 8962." near the top
+# of page 117. Column 1 of page 117 carries NO first-line indent anywhere, so
+# none of the three sentence groups that look like separate paragraphs in the
+# column-aware text actually starts one. The first pass ended this block at
+# "...through the Marketplace." and would have split a single source paragraph
+# across the tranche boundary.
 para(
     "The premium tax credit helps pay for health insurance purchased through "
     "the Marketplace. You may be eligible to claim the premium tax credit if "
     "you, your spouse, or a dependent enrolled in health insurance through the "
-    "Marketplace."
+    "Marketplace. Eligible individuals may have advance payments of the "
+    "premium tax credit made on their behalf directly to the insurance "
+    "company. You (or whoever enrolled you) should have received Form 1095-A "
+    "from the Marketplace with information about your coverage and any advance "
+    "credit payments. Complete Form 8962 to determine the amount of your "
+    "premium tax credit, if any. If the premium tax credit you can claim "
+    "exceeds your advance credit payments, your net premium tax credit will be "
+    "shown on Form 8962, line 26. Enter that amount, if any, on line 9. For "
+    "more information, see the Instructions for Form 8962."
 )
 
 # ------------------------------------------------------------- review notes
@@ -308,8 +324,12 @@ review_notes = [
     "paragraph ends “…if either of the following applies.” and the two "
     "numbered items are printed wholly here. ONE BLOCK IS CARRIED OUT: line "
     "9's paragraph begins in this page's last column and finishes at the top "
-    "of page 117, so it is authored whole here and **tranche 57 must open at "
-    "“Eligible individuals may have advance payments…”**.",
+    "of page 117 — and it is ONE PARAGRAPH, not the two or three the "
+    "column-aware text suggests, because page 117's column 1 carries no "
+    "first-line indent anywhere. A first pass ended the block at “…through the "
+    "Marketplace.” and would have split a single source paragraph across the "
+    "tranche boundary; reading page 117's geometry before authoring it caught "
+    "that. It is authored whole here and **tranche 57 must open at “Line 10”**.",
 
     "THE READING ORDER WAS REBUILT FROM GEOMETRY. The column-aware text places "
     "the full-width worksheet BETWEEN column 2 and column 3 — “Line 6f.” is "
