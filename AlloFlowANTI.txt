@@ -8213,6 +8213,98 @@ const _alloLoadScriptGlobal = (url, readGlobal, options = {}) => {
   return sharedOperation;
 };
 
+// ── Mailbox config: durable storage + portability ─────────────────────────
+// The config lived in localStorage, which does not survive AlloFlow's primary
+// surface: allo_device_storage_module.js exists precisely because "the app's
+// own origin is ephemeral (localStorage/IndexedDB vanish between sessions)" in
+// the Canvas iframe. A teacher who set up a mailbox would find it gone next
+// session and have to re-enter a URL and an admin token they probably never
+// kept. The bridge is now the source of truth and localStorage is a cache.
+//
+// The bridge is not guaranteed either: on Canvas it may need a user gesture,
+// or fall back to memory. That is why export exists (§12) and why it must work
+// even when nothing durable does.
+const ALLO_MB_CONFIG_NAMESPACE = 'mailbox_config';
+const ALLO_MB_CONFIG_KEY = 'session_mailbox';
+
+// Pure so it can be tested without a bridge or a browser.
+function alloMailboxConfigExportPayload(config, nowIso) {
+  if (!config || !config.url) return null;
+  return {
+    v: 1,
+    kind: 'alloflow-session-mailbox',
+    url: String(config.url),
+    admin: String(config.admin || ''),
+    scriptVersion: Number(config.v) || 0,
+    exportedAt: String(nowIso || '')
+  };
+}
+
+// Import is a trust boundary: the file may have been edited by hand. The URL
+// goes through the same validator as manual entry, so an import can never
+// point AlloFlow at an arbitrary origin.
+function alloParseMailboxConfigImport(raw) {
+  let parsed = raw;
+  if (typeof parsed === 'string') { try { parsed = JSON.parse(parsed); } catch (_) { return null; } }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+  const url = _alloCleanMailboxUrl(parsed.url);
+  if (!url) return null;
+  const admin = String(parsed.admin || '').trim().slice(0, 200);
+  return { url, admin, v: Number(parsed.scriptVersion) || 0 };
+}
+
+// Reads the cache synchronously so the UI has something immediately; the
+// bridge hydrate below corrects it when it arrives.
+function alloReadMailboxConfigCache() {
+  try {
+    const url = _alloCleanMailboxUrl(localStorage.getItem(ALLO_MB_URL_KEY) || '');
+    const admin = localStorage.getItem(ALLO_MB_ADMIN_KEY) || '';
+    const v = Number(localStorage.getItem(ALLO_MB_VERSION_KEY) || 0);
+    return url ? { url, admin, v } : null;
+  } catch (_) { return null; }
+}
+
+function alloWriteMailboxConfigCache(config) {
+  try {
+    if (!config || !config.url) {
+      localStorage.removeItem(ALLO_MB_URL_KEY);
+      localStorage.removeItem(ALLO_MB_ADMIN_KEY);
+      localStorage.removeItem(ALLO_MB_VERSION_KEY);
+      return;
+    }
+    localStorage.setItem(ALLO_MB_URL_KEY, config.url);
+    localStorage.setItem(ALLO_MB_ADMIN_KEY, config.admin || '');
+    localStorage.setItem(ALLO_MB_VERSION_KEY, String(Number(config.v) || 0));
+  } catch (_) {}
+}
+
+// Durable write. Never throws: a bridge in memory mode, or blocked behind a
+// gesture, must not stop a teacher configuring their mailbox.
+async function alloPersistMailboxConfig(config) {
+  alloWriteMailboxConfigCache(config);
+  try {
+    const deviceStorage = await _alloGetCanvasDeviceStorage();
+    if (!config || !config.url) {
+      await deviceStorage.remove(ALLO_MB_CONFIG_NAMESPACE, ALLO_MB_CONFIG_KEY);
+      return true;
+    }
+    await deviceStorage.set(ALLO_MB_CONFIG_NAMESPACE, ALLO_MB_CONFIG_KEY, JSON.stringify({
+      v: 1, url: config.url, admin: config.admin || '', scriptVersion: Number(config.v) || 0
+    }));
+    return true;
+  } catch (_) { return false; }
+}
+
+// Durable read, used to correct the cache once the bridge is reachable.
+async function alloLoadMailboxConfigDurable() {
+  try {
+    const deviceStorage = await _alloGetCanvasDeviceStorage();
+    const raw = await deviceStorage.get(ALLO_MB_CONFIG_NAMESPACE, ALLO_MB_CONFIG_KEY);
+    if (!raw) return null;
+    return alloParseMailboxConfigImport(raw);
+  } catch (_) { return null; }
+}
+
 const _alloClearCachedDeviceStoragePromises = () => {
   try { delete window.__alloDeviceStoragePromise; } catch (_) { window.__alloDeviceStoragePromise = null; }
   try { delete window.__alloDeviceStorageReadyPromise; } catch (_) { window.__alloDeviceStorageReadyPromise = null; }
@@ -21058,14 +21150,22 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       return () => { dialog.removeEventListener('keydown', onKeyDown); if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus(); };
   }, [qrShareModal]);
   const [mbUrlInput, setMbUrlInput] = useState('');
-  const [mbConfig, setMbConfig] = useState(() => {
-      try {
-          const url = _alloCleanMailboxUrl(localStorage.getItem(ALLO_MB_URL_KEY) || '');
-          const admin = localStorage.getItem(ALLO_MB_ADMIN_KEY) || '';
-          const v = Number(localStorage.getItem(ALLO_MB_VERSION_KEY) || 0);
-          return url ? { url, admin, v } : null;
-      } catch (_) { return null; }
-  });
+  // Seed from the cache so the UI is not blank while the bridge loads, then
+  // correct from the bridge, which is the durable copy (§11.1). On Canvas the
+  // cache is usually EMPTY, so the hydrate below is the one that matters.
+  const [mbConfig, setMbConfig] = useState(() => alloReadMailboxConfigCache());
+  useEffect(() => {
+      let cancelled = false;
+      alloLoadMailboxConfigDurable().then((durable) => {
+          if (cancelled || !durable || !durable.url) return;
+          setMbConfig((prev) => {
+              if (prev && prev.url === durable.url && prev.admin === durable.admin) return prev;
+              alloWriteMailboxConfigCache(durable);
+              return durable;
+          });
+      });
+      return () => { cancelled = true; };
+  }, []);
   const [mbStatus, setMbStatus] = useState('');
   const [mbBusy, setMbBusy] = useState(false);
   const refreshAssignmentCenter = useCallback(async () => {
@@ -21606,6 +21706,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               }
           }
           try {
+              alloPersistMailboxConfig({ url: execUrl, admin, v: Number(mbHello && mbHello.v) || 0 });
               localStorage.setItem(ALLO_MB_URL_KEY, execUrl);
               if (admin) localStorage.setItem(ALLO_MB_ADMIN_KEY, admin);
               localStorage.setItem(ALLO_MB_VERSION_KEY, String(Number(mbHello && mbHello.v) || 0));
