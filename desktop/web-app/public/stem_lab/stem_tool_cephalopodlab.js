@@ -1184,7 +1184,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         function renderGroupBtn(g, gi) {
           var on = g.id === openGroup.id;
           return h('button', { key: g.id, id: 'cephalopod-group-tab-' + g.id, type: 'button', role: 'tab',
-            'aria-selected': on ? 'true' : 'false', 'aria-controls': 'cephalopod-group-panel-' + g.id,
+            'aria-selected': on ? 'true' : 'false', 'aria-controls': on ? 'cephalopod-group-panel-' + g.id : undefined,
             tabIndex: on ? 0 : -1, onKeyDown: function(e) { groupTabKeyDown(e, gi); },
             'aria-label': g.label + ' (' + g.tabs.length + ' section' + (g.tabs.length === 1 ? '' : 's') + ')',
             onClick: function() { setSection(g.tabs[0].id); awardXP(1); },
@@ -1203,7 +1203,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         function renderTab(t, accentColor, ti) {
           var active = section === t.id;
           return h('button', { key: t.id, id: 'cephalopod-section-tab-' + t.id, type: 'button', role: 'tab',
-            'aria-selected': active ? 'true' : 'false', 'aria-controls': 'cephalopod-section-panel-' + t.id,
+            'aria-selected': active ? 'true' : 'false', 'aria-controls': active ? 'cephalopod-section-panel-' + t.id : undefined,
             tabIndex: active ? 0 : -1, onKeyDown: function(e) { sectionTabKeyDown(e, ti); },
             onClick: function() { setSection(t.id); awardXP(2); },
             style: {
@@ -1229,7 +1229,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 onChange: function(e) { setCL({ sectionSearch: e.target.value }); },
                 placeholder: __alloT('stem.cephalopodlab.search_sections_placeholder', 'Search camouflage, anatomy, ethics, lessons...'),
                 autoComplete: 'off',
-                'aria-controls': 'cl-section-search-results',
+                'aria-controls': sectionSearchQuery ? 'cl-section-search-results' : undefined,
                 'aria-describedby': 'cl-section-search-status',
                 style: { width: '100%', boxSizing: 'border-box', padding: '7px 34px 7px 10px', borderRadius: 7, border: '1px solid rgba(148,163,184,0.5)', background: 'rgba(15,23,42,0.78)', color: '#f1f5f9', fontSize: 12, fontFamily: 'inherit' }
               }),
@@ -15714,7 +15714,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             SUBS.map(function(s, si) {
               var active = view === s.id;
               return h('button', { key: s.id, id: 'cephalopod-biolux-tab-' + s.id, role: 'tab',
-                'aria-selected': active ? 'true' : 'false', 'aria-controls': 'cephalopod-biolux-panel-' + s.id,
+                'aria-selected': active ? 'true' : 'false', 'aria-controls': active ? 'cephalopod-biolux-panel-' + s.id : undefined,
                 tabIndex: active ? 0 : -1, onKeyDown: function(e) { bioluxTabKeyDown(e, si); },
                 onClick: function() { setCL({ bioluxView: s.id }); awardXP(1); },
                 style: { padding: '8px 12px',

@@ -1842,8 +1842,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
             visibleRenewablesTiles.map(function(tile) {
               var visited = !!modulesVisited[tile.id];
-              return h('button', { key: tile.id, role: 'listitem',
-                'data-rn-focusable': true,
+              return h('div', { key: tile.id, role: 'listitem' }, h('button', { 'data-rn-focusable': true,
                 'aria-label': tile.label + (visited ? ' (visited)' : ''),
                 onClick: function() {
                   upd('view', tile.id);
@@ -1863,7 +1862,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
                   visited && h('span', { 'aria-hidden': 'true', style: { color: T.accent, fontSize: 14 } }, '✓')
                 ),
                 h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.45 } }, tile.desc)
-              );
+              ));
             })
           ),
           // Maine flavor card
@@ -4084,8 +4083,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
               style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 8 } },
               AI_SCENARIOS.map(function(s) {
                 var picked = aiScenarioId === s.id;
-                return h('button', { key: s.id, role: 'listitem',
-                  'data-rn-focusable': true,
+                return h('div', { key: s.id, role: 'listitem' }, h('button', { 'data-rn-focusable': true,
                   'aria-label': s.title + (picked ? ' (selected)' : ''),
                   'aria-pressed': picked ? 'true' : 'false',
                   onClick: function() { selectScenario(s.id); },
@@ -4100,7 +4098,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
                     h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, s.icon),
                     h('span', { style: { fontWeight: 700, fontSize: 13 } }, s.title)
                   )
-                );
+                ));
               })
             )
           ),

@@ -10092,17 +10092,15 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
             h('div', { className: 'p-4' },
               h('div', { className: 'grid gap-2 sm:grid-cols-2', role: 'list', 'aria-label': band + ' classroom mission choices' }, missions.map(function (item) {
                 var selected = item.id === mission.id;
-                return h('button', {
-                  key: item.id,
+                return h('div', { key: item.id, role: 'listitem' }, h('button', {
                   type: 'button',
-                  role: 'listitem',
                   onClick: function () { update({ teacherMissionId: item.id }); },
                   'aria-pressed': selected,
                   className: 'min-h-16 rounded-xl border p-3 text-left transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 ' + (selected ? (dark ? 'border-sky-300 bg-sky-900 text-white' : 'border-sky-600 bg-sky-100 text-sky-950') : (dark ? 'border-slate-700 bg-slate-950/60 hover:bg-slate-800' : 'border-slate-200 bg-white hover:bg-sky-50'))
                 },
                   h('span', { className: 'mr-2 text-lg', 'aria-hidden': true }, item.icon),
                   h('span', { className: 'text-sm font-black' }, item.title)
-                );
+                ));
               })),
               h('div', { className: 'mt-4 grid gap-3 sm:grid-cols-3' },
                 selectField('weather-mission-duration', 'Lesson length', durationId, [

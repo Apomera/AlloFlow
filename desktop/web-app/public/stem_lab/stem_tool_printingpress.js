@@ -1258,8 +1258,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                           stripe === '#7fb069' ? '127,176,105' :
                           stripe === '#b87333' ? '184,115,51' : '201,161,74';
           var tintBg = 'radial-gradient(ellipse at 100% 0%, rgba(' + stripeRgb + ',0.10) 0%, transparent 50%), ' + (emphasized ? T.cardAlt : T.card);
-          return h('button', { key: tile.id, role: 'listitem',
-            className: 'printingpress-tile',
+          return h('div', { key: tile.id, role: 'listitem' }, h('button', { className: 'printingpress-tile',
             'aria-label': tile.label + (visited ? ' (visited)' : '') + (emphasized ? ' — start here' : ''),
             onClick: function() {
               upd('view', tile.id);
@@ -1282,7 +1281,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               visited && h('span', { 'aria-hidden': 'true', style: { color: T.ok, fontSize: 14 } }, '✓')
             ),
             h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.45 } }, tile.desc)
-          );
+          ));
         }
         // All-modules-visited celebration. Counts only the 8 educational
         // modules (cumulative quiz / AI tutor / resources are excluded).

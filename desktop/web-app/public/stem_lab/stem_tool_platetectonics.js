@@ -388,7 +388,7 @@
           ctx.arc(fit.x, fit.y, 6, 0, Math.PI * 2);
           ctx.stroke();
           ctx.globalAlpha = 1;
-          ctx.fillStyle = isDark ? '#22d3ee' : '#0891b2';
+          ctx.fillStyle = isDark ? '#22d3ee' : '#0e7490';
           ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'left';
           ctx.fillText('triangulated', fit.x + 12, fit.y - 6);
         }
@@ -1369,7 +1369,7 @@
       ctx.strokeRect(bx + rightOff, plateY, W - (bx + rightOff), plateH);
 
       // Continental labels
-      ctx.fillStyle = isDark ? '#e0e7ff' : '#fef3c7';
+      ctx.fillStyle = isDark ? '#e0e7ff' : '#fffbeb';
       ctx.font = 'bold 11px sans-serif';
       ctx.textAlign = 'center';
       var leftMotionLabel = cur.mode === 'divergent' ? '<- PLATE A' : (cur.mode === 'transform' ? 'PLATE A ↑' : 'PLATE A ->');

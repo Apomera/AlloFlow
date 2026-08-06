@@ -1587,10 +1587,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           h('div', { className: 'grid grid-cols-2 gap-2', role: 'list', 'aria-label': t('stem.spaceexplorer.available_mission_destinations', 'Available mission destinations') },
             DESTINATIONS.map(function(dest) {
               var locked = dest.unlockAt > completedMissions;
-              return h('button', {
-                key: dest.id,
+              return h('div', { key: dest.id, role: 'listitem' }, h('button', {
                 type: 'button',
-                role: 'listitem',
                 disabled: locked,
                 'aria-label': dest.name + '. Difficulty ' + dest.difficulty + ' of 5. ' + (locked ? 'Locked. Complete ' + dest.unlockAt + ' missions to unlock.' : dest.desc),
                 onClick: function() { startMission(dest); },
@@ -1617,7 +1615,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                     stats.totalScience > 0 && h('span', null, '\uD83D\uDD2C ' + stats.totalScience)
                   );
                 })()
-              );
+              ));
             })
           )
         );

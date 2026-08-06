@@ -4806,8 +4806,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 8 } },
             AI_SCENARIOS.map(function(s) {
               var picked = aiScenarioId === s.id;
-              return h('button', { key: s.id, role: 'listitem',
-                'data-pets-focusable': true,
+              return h('div', { key: s.id, role: 'listitem' }, h('button', { 'data-pets-focusable': true,
                 'aria-label': s.title + (picked ? ' (selected)' : ''),
                 'aria-pressed': picked ? 'true' : 'false',
                 onClick: function() { selectScenario(s.id); },
@@ -4820,7 +4819,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
                   h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, s.icon),
-                  h('span', { style: { fontWeight: 700, fontSize: 13 } }, s.title)));
+                  h('span', { style: { fontWeight: 700, fontSize: 13 } }, s.title))));
             }))),
         scenario && h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
           h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, scenario.icon + ' ' + scenario.title),

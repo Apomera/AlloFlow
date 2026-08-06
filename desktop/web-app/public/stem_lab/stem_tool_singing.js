@@ -718,7 +718,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       // Label on C notes
       if (n.note === 'C') {
         c.font = '7px sans-serif';
-        c.fillStyle = isDark ? '#1e293b' : '#94a3b8';
+        c.fillStyle = (isHighlighted && isDark) ? '#dcfce7' : '#334155';
         c.textAlign = 'center';
         c.fillText(n.str, x + keyW / 2, keyH - 4);
       }
@@ -785,7 +785,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       var refNote = midiToNoteName(refMidi);
       drawNoteOnStaff(c, W * 0.35, refNote.note, refNote.octave, staffTop, lineGap, isDark ? '#3b82f6' : '#2563eb');
       c.font = '10px sans-serif';
-      c.fillStyle = isDark ? '#3b82f6' : '#2563eb';
+      c.fillStyle = isDark ? '#60a5fa' : '#2563eb';
       c.textAlign = 'center';
       c.fillText('Reference', W * 0.35, H - 4);
       c.fillText(refNote.str, W * 0.35, staffTop - 8);
@@ -796,7 +796,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       var targetNote = midiToNoteName(targetMidi);
       drawNoteOnStaff(c, W * 0.6, targetNote.note, targetNote.octave, staffTop, lineGap, isDark ? '#22c55e' : '#16a34a');
       c.font = '10px sans-serif';
-      c.fillStyle = isDark ? '#22c55e' : '#16a34a';
+      c.fillStyle = isDark ? '#22c55e' : '#15803d';
       c.textAlign = 'center';
       c.fillText('Target', W * 0.6, H - 4);
       c.fillText(targetNote.str, W * 0.6, staffTop - 8);

@@ -4680,7 +4680,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             h('span', { 'aria-hidden': 'true', className: 'ar-pulse-ring' }, '🏅 '),
             h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.badges_earned', 'Badges earned: ')), String(badgeCount), __alloT('stem.autorepair.tap_to_view_gallery', ' — tap to view gallery →')
           ),
-          h('div', { id: 'ar-menu-categories', tabIndex: -1, 'aria-label': __alloT('stem.autorepair.module_categories', 'Auto Repair module categories') }),
+          h('div', { id: 'ar-menu-categories', role: 'group', tabIndex: -1, 'aria-label': __alloT('stem.autorepair.module_categories', 'Auto Repair module categories') }),
           categories.map(function(cat) {
             var collapsed = !!collapsedCats[cat.id];
             return h('div', { key: cat.id, style: { marginBottom: 14 } },
@@ -5214,7 +5214,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                 pickedRepair.steps.map(function(s) {
                   var viewed = !!viewedForThis[s.n];
-                  return h('button', { key: s.n, role: 'listitem', 'data-ar-focusable': true,
+                  return h('div', { key: s.n, role: 'listitem' }, h('button', { 'data-ar-focusable': true,
                     'aria-label': 'Step ' + s.n + (viewed ? ' (viewed)' : ''),
                     onClick: function() {
                       var nv = Object.assign({}, viewedForThis); nv[s.n] = true;
@@ -5227,7 +5227,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                     style: { textAlign: 'left', padding: 10, borderRadius: 8, background: viewed ? T.cardAlt : T.bg, border: '1px solid ' + (viewed ? T.accent : T.border), color: T.text, cursor: 'pointer', display: 'flex', gap: 10, alignItems: 'flex-start' } },
                     h('span', { 'aria-hidden': 'true', style: { background: viewed ? T.accent : T.dim, color: '#0f172a', borderRadius: 999, width: 26, height: 26, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, flexShrink: 0 } }, s.n),
                     h('span', { style: { fontSize: 13, lineHeight: 1.5, color: T.text } }, s.do)
-                  );
+                  ));
                 })
               )
             ),
@@ -6167,7 +6167,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               USED_CAR_CHECK.walkaround.map(function(s) {
                 var isChecked = !!checked[s.step];
-                return h('button', { key: s.step, role: 'listitem', 'data-ar-focusable': true,
+                return h('div', { key: s.step, role: 'listitem' }, h('button', { 'data-ar-focusable': true,
                   'aria-label': 'Step ' + s.step + (isChecked ? ' (done)' : ''),
                   'aria-pressed': isChecked ? 'true' : 'false',
                   onClick: function() {
@@ -6177,7 +6177,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   style: { textAlign: 'left', padding: 10, borderRadius: 8, background: isChecked ? T.cardAlt : T.bg, border: '1px solid ' + (isChecked ? T.accent : T.border), color: T.text, cursor: 'pointer', display: 'flex', gap: 10, alignItems: 'flex-start' } },
                   h('span', { 'aria-hidden': 'true', style: { background: isChecked ? T.accent : T.dim, color: '#0f172a', borderRadius: 999, width: 26, height: 26, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, flexShrink: 0 } }, s.step),
                   h('span', { style: { fontSize: 13, lineHeight: 1.5, color: T.text } }, s.do)
-                );
+                ));
               })
             )
           );
@@ -6437,7 +6437,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
             COLD_WEATHER_CHECKLIST.map(function(item) {
               var isChecked = !!checked[item.id];
-              return h('button', { key: item.id, role: 'listitem', 'data-ar-focusable': true,
+              return h('div', { key: item.id, role: 'listitem' }, h('button', { 'data-ar-focusable': true,
                 'aria-label': item.task + (isChecked ? ' (done)' : ''),
                 'aria-pressed': isChecked ? 'true' : 'false',
                 onClick: function() {
@@ -6454,7 +6454,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5, marginBottom: 4 } }, __alloT('stem.autorepair.' + (item.id) + '_detail', item.detail)),
                 h('div', { style: { fontSize: 12, color: isChecked ? '#a7f3d0' : T.text, lineHeight: 1.5 } },
                   h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.action', '🎯 Action: ')), item.action)
-              );
+              ));
             })
           ),
           disclaimerFooter()
@@ -6760,7 +6760,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   w.tasks.map(function(t, i) {
                     var key = 'w' + w.week + '-' + i;
                     var isDone = !!done[key];
-                    return h('button', { key: key, role: 'listitem', 'data-ar-focusable': true,
+                    return h('div', { key: key, role: 'listitem' }, h('button', { 'data-ar-focusable': true,
                       'aria-label': t.do + (isDone ? ' (done)' : ''),
                       'aria-pressed': isDone ? 'true' : 'false',
                       onClick: function() {
@@ -6774,7 +6774,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                       ),
                       h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5, marginLeft: 22 } },
                         h('strong', { style: { color: T.dim } }, 'Why: '), t.why)
-                    );
+                    ));
                   })
                 )
               );
@@ -7905,7 +7905,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 pickedPhase.tasks.map(function(t, i) {
                   var key = pickedPhase.id + '-' + i;
                   var isDone = !!done[key];
-                  return h('button', { key: key, role: 'listitem', 'data-ar-focusable': true,
+                  return h('div', { key: key, role: 'listitem' }, h('button', { 'data-ar-focusable': true,
                     'aria-label': t.do + (isDone ? ' (done)' : ''),
                     'aria-pressed': isDone ? 'true' : 'false',
                     onClick: function() {
@@ -7919,7 +7919,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                     ),
                     h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5, marginLeft: 22 } },
                       h('strong', { style: { color: T.dim } }, 'Why: '), t.why)
-                  );
+                  ));
                 })
               )
             )
@@ -8328,7 +8328,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   var key = 'w' + w.week + '-' + m.id;
                   var isDone = !!done[key];
                   var label = MOD_LABELS[m.id] || m.id;
-                  return h('button', { key: key, role: 'listitem', 'data-ar-focusable': true,
+                  return h('div', { key: key, role: 'listitem' }, h('button', { 'data-ar-focusable': true,
                     'aria-label': label + (isDone ? ' (done)' : ''),
                     onClick: function() {
                       var nv = Object.assign({}, done); nv[key] = !nv[key];
@@ -8345,7 +8345,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                       h('a', { href: '#', onClick: function(e) { e.preventDefault(); e.stopPropagation(); setView(m.id); },
                         style: { fontSize: 11, color: T.link, textDecoration: 'underline' } },
                         '🔗 Open ' + label + ' →'))
-                  );
+                  ));
                 })
               ),
               h('div', { style: { padding: 10, borderRadius: 6, background: T.cardAlt, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
@@ -8542,7 +8542,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
             WALK_AROUND_STEPS.map(function(s) {
               var isChecked = !!checked[s.n];
-              return h('button', { key: s.n, role: 'listitem', 'data-ar-focusable': true,
+              return h('div', { key: s.n, role: 'listitem' }, h('button', { 'data-ar-focusable': true,
                 'aria-label': 'Step ' + s.n + ': ' + s.area + (isChecked ? ' (checked)' : ''),
                 'aria-pressed': isChecked ? 'true' : 'false',
                 onClick: function() {
@@ -8560,7 +8560,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.check_2', '👀 Check: ')), s.check),
                 h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5, padding: 6, borderRadius: 4, background: T.bg } },
                   h('strong', { style: { color: T.warn } }, __alloT('stem.autorepair.flag', '🚩 Flag: ')), s.flag)
-              );
+              ));
             })
           ),
           disclaimerFooter()

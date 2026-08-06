@@ -8858,7 +8858,7 @@ return { destroy: __clabDestroy };
         style: { position: 'relative', height: '78vh', minHeight: 540, borderRadius: 12, overflow: 'hidden', border: '1px solid #334155', background: '#0f151c' }
       },
         h('style', { dangerouslySetInnerHTML: { __html: CLAB_CSS } }),
-        h('div', { ref: refCb, 'aria-label': 'Coaster Lab 3-D designer', style: { position: 'absolute', inset: 0, outline: 'none' } })
+        h('div', { ref: refCb, role: 'group', 'aria-label': 'Coaster Lab 3-D designer', style: { position: 'absolute', inset: 0, outline: 'none' } })
       );
     }
   });

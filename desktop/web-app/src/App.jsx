@@ -4846,8 +4846,18 @@ if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
     window.addEventListener('alloflow-mute-changed', (e) => {
         if (e.detail && e.detail.muted) _stop();
     });
+    // §15.6 tier 1. AlloSpeechPlayer already exists to be the single front door
+    // for read-aloud (it replaced ~20 scattered speak() sites), so instrumenting
+    // HERE covers browser TTS, Kokoro, Piper and Gemini TTS at once. Recording
+    // must never delay or alter playback, hence the try/catch and no await.
+    const _instrumentedSpeak = function () {
+        try {
+            if (window.__alloNoteSupport) window.__alloNoteSupport('read_aloud', 'none', { assistiveTech: true });
+        } catch (_) {}
+        return speak.apply(this, arguments);
+    };
     window.AlloSpeechPlayer = {
-        speak,
+        speak: _instrumentedSpeak,
         stop: _stop,
         isPlaying: () => _state.isPlaying,
         getCurrentText: () => _state.currentText,
@@ -5176,6 +5186,70 @@ function _alloNextSharedActivitySummaryOrder(currentValue, result, requestSequen
 }
 
 
+// ── Shared-activity credentials, one per RESPONDENT (not per device) ──────
+// A device may be handed round a staffroom or a classroom. Keeping a single
+// credential per activity meant the second person to answer inherited the
+// first person's identity and overwrote their row. These helpers keep a map
+// of credentials so each respondent gets their own, and are pure so they can
+// be tested without React or a network.
+const ALLO_ACTIVITY_CRED_VERSION = 2;
+
+// Accepts the legacy v1 shape ({uid, pt}) and migrates it into slot "s1", so
+// an in-flight respondent is never logged out by the upgrade.
+function alloNormalizeCredentialStore(raw) {
+  let parsed = raw;
+  if (typeof parsed === 'string') { try { parsed = JSON.parse(parsed); } catch (_) { parsed = null; } }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return { v: ALLO_ACTIVITY_CRED_VERSION, active: '', slots: {} };
+  if (parsed.uid && parsed.pt) {
+    return { v: ALLO_ACTIVITY_CRED_VERSION, active: 's1', slots: { s1: { uid: String(parsed.uid), pt: String(parsed.pt), label: '' } } };
+  }
+  const slots = {};
+  const rawSlots = parsed.slots && typeof parsed.slots === 'object' && !Array.isArray(parsed.slots) ? parsed.slots : {};
+  Object.keys(rawSlots).forEach((key) => {
+    const slot = rawSlots[key];
+    if (!slot || !slot.uid || !slot.pt) return;
+    slots[key] = { uid: String(slot.uid), pt: String(slot.pt), label: String(slot.label || '') };
+  });
+  const active = slots[parsed.active] ? String(parsed.active) : (Object.keys(slots)[0] || '');
+  return { v: ALLO_ACTIVITY_CRED_VERSION, active, slots };
+}
+
+// A named respondent keys on their own name so returning to edit finds their
+// row. Anonymous cannot: linking a return visit to an earlier row is exactly
+// the linkage that mode promises not to keep, so each start is a new slot.
+function alloCredentialSlotKey(identityMode, label, store) {
+  const cleaned = String(label || '').trim().toLowerCase().slice(0, 40);
+  if (identityMode !== 'anonymous' && cleaned) return 'n:' + cleaned;
+  const taken = store && store.slots ? store.slots : {};
+  let n = 1;
+  while (taken['s' + n]) n++;
+  return 's' + n;
+}
+
+function alloCredentialStoreWith(store, slotKey, credential, label) {
+  const base = alloNormalizeCredentialStore(store);
+  const slots = Object.assign({}, base.slots);
+  slots[slotKey] = { uid: String(credential.uid), pt: String(credential.pt), label: String(label || '') };
+  return { v: ALLO_ACTIVITY_CRED_VERSION, active: slotKey, slots };
+}
+
+function alloActiveCredential(store) {
+  const base = alloNormalizeCredentialStore(store);
+  const slot = base.slots[base.active];
+  return slot && slot.uid && slot.pt ? { uid: slot.uid, pt: slot.pt, label: slot.label } : null;
+}
+
+// Who has already answered on THIS device, so the client can offer "continue
+  // as Sam instead of assuming the person holding it is whoever typed last.
+function alloCredentialRoster(store) {
+  const base = alloNormalizeCredentialStore(store);
+  return Object.keys(base.slots).map((key) => ({
+    key,
+    label: base.slots[key].label,
+    active: key === base.active
+  }));
+}
+
 const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivityPanel({
     activity,
     mailbox,
@@ -5188,6 +5262,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     // here rather than at the call sites means both places that already open
     // this panel support boards without either being touched.
     const isQuestionBoard = activity?.type === 'question_board';
+    const isPoll = activity?.type === 'availability';
     const ratingActivity = _alloNormalizeSharedRatingActivity(activity);
     const effectiveActivity = ratingActivity || activity;
     const activityMeta = _alloSharedActivityUiMeta(effectiveActivity);
@@ -5204,6 +5279,11 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     const [summary, setSummary] = React.useState(null);
     const [term, setTerm] = React.useState('');
     const [ratingValue, setRatingValue] = React.useState(null);
+    // Availability poll. Declared here with every other hook: the type-based
+    // dispatch lower down is deliberately placed after all hooks, and adding
+    // state below it would change hook order when the activity type changes.
+    const [pollPicks, setPollPicks] = React.useState({});
+    const [pollName, setPollName] = React.useState('');
     const [busy, setBusy] = React.useState(false);
     const [error, setError] = React.useState('');
     const [lastUpdatedAt, setLastUpdatedAt] = React.useState(0);
@@ -5221,11 +5301,41 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
         setLastUpdatedAt(0);
     }, [activityScope]);
 
-    const rememberCredential = React.useCallback((credential) => {
+    // Writes into the respondent MAP, never over it, so one person answering
+    // does not evict another who used the same device.
+    const rememberCredential = React.useCallback((credential, slotKey, label) => {
         credentialRef.current = credential;
-        try { localStorage.setItem(storageKey, JSON.stringify(credential)); } catch (_) {}
+        try {
+            const next = alloCredentialStoreWith(localStorage.getItem(storageKey), slotKey, credential, label);
+            localStorage.setItem(storageKey, JSON.stringify(next));
+        } catch (_) {}
         return credential;
     }, [storageKey]);
+
+    // "Someone else is answering": mint a FRESH identity rather than reusing
+    // whatever is cached. The server issues a new uid per join, so this is the
+    // whole fix.
+    const startNewRespondent = React.useCallback(async (identityMode, label) => {
+        credentialRef.current = null;
+        let store = null;
+        try { store = alloNormalizeCredentialStore(localStorage.getItem(storageKey)); } catch (_) {}
+        const slotKey = alloCredentialSlotKey(identityMode, label, store);
+        const existing = store && store.slots ? store.slots[slotKey] : null;
+        if (existing && existing.uid && existing.pt) {
+            // A named respondent returning to change their answer keeps their
+            // row instead of appearing twice in the tally.
+            credentialRef.current = { uid: existing.uid, pt: existing.pt };
+            try {
+                const reactivated = alloCredentialStoreWith(localStorage.getItem(storageKey), slotKey, existing, label || existing.label);
+                localStorage.setItem(storageKey, JSON.stringify(reactivated));
+            } catch (_) {}
+            return credentialRef.current;
+        }
+        const joined = await _alloMailboxCallWithRetry(mailboxUrl, {
+            a: 'joinactivity', id: packId, k: packSecret, aid: activityId,
+        });
+        return rememberCredential({ uid: joined.uid, pt: joined.pt }, slotKey, label);
+    }, [activityId, mailboxUrl, packId, packSecret, rememberCredential, storageKey]);
 
     const clearCredential = React.useCallback(() => {
         credentialRef.current = null;
@@ -5237,8 +5347,8 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
         const current = credentialRef.current;
         if (current?.uid && current?.pt) return current;
         try {
-            const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
-            if (saved?.uid && saved?.pt) {
+            const saved = alloActiveCredential(localStorage.getItem(storageKey));
+            if (saved) {
                 credentialRef.current = saved;
                 return saved;
             }
@@ -5246,7 +5356,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
         const joined = await _alloMailboxCallWithRetry(mailboxUrl, {
             a: 'joinactivity', id: packId, k: packSecret, aid: activityId,
         });
-        return rememberCredential({ uid: joined.uid, pt: joined.pt });
+        return rememberCredential({ uid: joined.uid, pt: joined.pt }, 's1', '');
     }, [activityId, isTeacher, mailboxUrl, packId, packSecret, rememberCredential, storageKey]);
 
     const callStudentUpdate = React.useCallback(async (payload) => {
@@ -5510,7 +5620,136 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
           </form>
         )}
 
-        {!isTeacher && !isRating && (
+        {isPoll && !isTeacher && (
+          <form
+            className="mt-4 rounded-xl border border-sky-100 bg-white p-3"
+            onSubmit={async (event) => {
+              event.preventDefault();
+              if (busy) return;
+              const marks = {};
+              (summary?.options || []).forEach((opt) => { if (pollPicks[opt.id]) marks[opt.id] = pollPicks[opt.id]; });
+              if (!Object.keys(marks).length) { addToast('Mark at least one option first.', 'info'); return; }
+              if (summary?.identityMode === 'real_name' && !pollName.trim()) { addToast('Add your name so the organizer knows who can make it.', 'info'); return; }
+              try {
+                await callStudentUpdate({ picks: marks, nm: summary?.identityMode === 'real_name' ? pollName.trim().slice(0, 40) : '' });
+                addToast('Your availability was saved. You can change it until the poll closes.', 'success');
+              } catch (submitError) { addToast('That did not save: ' + ((submitError && submitError.message) || 'unknown'), 'error'); }
+            }}
+          >
+            <fieldset disabled={busy || summary?.closed}>
+              <legend className="block text-xs font-black text-slate-800">
+                {summary?.closed ? 'This poll has closed' : 'Which of these could you make?'}
+              </legend>
+              {summary?.identityMode === 'real_name' && (
+                <label className="mt-2 block text-[11px] font-black text-slate-700">
+                  Your name
+                  <input
+                    type="text"
+                    value={pollName}
+                    onChange={(event) => setPollName(event.target.value.slice(0, 40))}
+                    className="mt-1 w-full rounded-md border border-sky-300 px-2 py-1.5 text-xs font-semibold text-slate-800"
+                  />
+                </label>
+              )}
+              {summary?.identityMode === 'anonymous' && (
+                <p className="mt-1 text-[11px] font-bold text-slate-600">You are answering anonymously. The organizer sees totals only.</p>
+              )}
+              <div className="mt-3 space-y-2">
+                {(summary?.options || []).map((opt) => (
+                  <div key={opt.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 px-2 py-1.5">
+                    <span className="text-xs font-bold text-slate-800">{opt.label}</span>
+                    <div role="group" aria-label={opt.label} className="flex gap-1">
+                      {['yes', summary?.allowMaybe === false ? null : 'maybe', 'no'].filter(Boolean).map((mark) => (
+                        <button
+                          key={mark}
+                          type="button"
+                          aria-pressed={pollPicks[opt.id] === mark}
+                          onClick={() => setPollPicks((previous) => {
+                            const next = { ...previous };
+                            // Single-choice polls behave like a radio group: one yes,
+                            // and choosing another moves it rather than adding a second.
+                            if (summary?.multiSelect === false && mark === 'yes') {
+                              Object.keys(next).forEach((key) => { if (next[key] === 'yes') delete next[key]; });
+                            }
+                            next[opt.id] = mark;
+                            return next;
+                          })}
+                          className={`rounded-md px-2 py-1 text-[11px] font-black ${pollPicks[opt.id] === mark ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700'}`}
+                        >
+                          {mark === 'yes' ? 'Yes' : mark === 'maybe' ? 'Maybe' : 'No'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button type="submit" className="mt-3 rounded-lg bg-sky-700 px-3 py-1.5 text-xs font-black text-white disabled:opacity-50">
+                {busy ? 'Saving...' : 'Save my availability'}
+              </button>
+            </fieldset>
+          </form>
+        )}
+
+        {isPoll && isTeacher && (
+          <div className="mt-4 rounded-xl border border-sky-100 bg-white p-3">
+            <p className="text-xs font-black text-slate-800">
+              {summary?.participantCount || 0} {(summary?.participantCount === 1) ? 'response' : 'responses'}
+              {summary?.closed ? ' - closed' : ''}
+            </p>
+            {!(summary?.tally || []).length && (
+              <p className="mt-2 text-[11px] font-bold text-slate-600">
+                {summary?.identityMode === 'anonymous'
+                  ? `Totals appear once ${summary?.minParticipants || 3} people have answered, so no single answer can be picked out.`
+                  : 'No responses yet.'}
+              </p>
+            )}
+            <div className="mt-2 space-y-1">
+              {(summary?.tally || []).map((opt) => {
+                const isBest = (summary?.best || []).indexOf(opt.id) >= 0;
+                return (
+                  <div key={opt.id} className={`flex flex-wrap items-center justify-between gap-2 rounded-lg px-2 py-1.5 ${isBest ? 'bg-emerald-50 ring-1 ring-emerald-300' : 'bg-slate-50'}`}>
+                    <span className="text-xs font-bold text-slate-800">
+                      {opt.label}{isBest ? ' - best so far' : ''}
+                    </span>
+                    <span className="text-[11px] font-black text-slate-700">{opt.yes} yes / {opt.maybe} maybe / {opt.no} no</span>
+                  </div>
+                );
+              })}
+            </div>
+            {(summary?.best || []).length > 1 && (
+              <p className="mt-2 text-[11px] font-bold text-amber-700">Those options are tied. Pick whichever suits you.</p>
+            )}
+            {!!(summary?.rows || []).length && (
+              <div className="mt-3 overflow-x-auto">
+                <table className="w-full text-left text-[11px]">
+                  <caption className="sr-only">Who chose what</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col" className="px-2 py-1 font-black text-slate-700">Name</th>
+                      {(summary?.options || []).map((opt) => (
+                        <th key={opt.id} scope="col" className="px-2 py-1 font-black text-slate-700">{opt.label}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(summary?.rows || []).map((row, index) => (
+                      <tr key={`${row.label}-${index}`} className="border-t border-slate-200">
+                        <th scope="row" className="px-2 py-1 font-bold text-slate-800">{row.label || 'Someone'}</th>
+                        {(summary?.options || []).map((opt) => (
+                          <td key={opt.id} className="px-2 py-1 text-slate-700">
+                            {row.picks?.[opt.id] === 'yes' ? 'Yes' : row.picks?.[opt.id] === 'maybe' ? 'Maybe' : row.picks?.[opt.id] === 'no' ? 'No' : '-'}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {!isTeacher && !isRating && !isPoll && (
           <form onSubmit={submitTerm} className="mt-4 rounded-xl border border-sky-100 bg-white p-3">
             <label htmlFor={`shared-word-cloud-${activityId}`} className="block text-xs font-black text-slate-800">Your word or short phrase</label>
             <div className="mt-2 flex flex-col gap-2 sm:flex-row">
@@ -5579,7 +5818,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
           </div>
         )}
 
-        {isTeacher && !isRating && (
+        {isTeacher && !isRating && !isPoll && (
           <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3">
             <div className="flex flex-wrap gap-2 text-[11px] font-black">
               <span className="rounded-full bg-amber-100 px-2 py-1 text-amber-900">Held {heldCount}</span>
@@ -8109,6 +8348,98 @@ const _alloLoadScriptGlobal = (url, readGlobal, options = {}) => {
   return sharedOperation;
 };
 
+// ── Mailbox config: durable storage + portability ─────────────────────────
+// The config lived in localStorage, which does not survive AlloFlow's primary
+// surface: allo_device_storage_module.js exists precisely because "the app's
+// own origin is ephemeral (localStorage/IndexedDB vanish between sessions)" in
+// the Canvas iframe. A teacher who set up a mailbox would find it gone next
+// session and have to re-enter a URL and an admin token they probably never
+// kept. The bridge is now the source of truth and localStorage is a cache.
+//
+// The bridge is not guaranteed either: on Canvas it may need a user gesture,
+// or fall back to memory. That is why export exists (§12) and why it must work
+// even when nothing durable does.
+const ALLO_MB_CONFIG_NAMESPACE = 'mailbox_config';
+const ALLO_MB_CONFIG_KEY = 'session_mailbox';
+
+// Pure so it can be tested without a bridge or a browser.
+function alloMailboxConfigExportPayload(config, nowIso) {
+  if (!config || !config.url) return null;
+  return {
+    v: 1,
+    kind: 'alloflow-session-mailbox',
+    url: String(config.url),
+    admin: String(config.admin || ''),
+    scriptVersion: Number(config.v) || 0,
+    exportedAt: String(nowIso || '')
+  };
+}
+
+// Import is a trust boundary: the file may have been edited by hand. The URL
+// goes through the same validator as manual entry, so an import can never
+// point AlloFlow at an arbitrary origin.
+function alloParseMailboxConfigImport(raw) {
+  let parsed = raw;
+  if (typeof parsed === 'string') { try { parsed = JSON.parse(parsed); } catch (_) { return null; } }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+  const url = _alloCleanMailboxUrl(parsed.url);
+  if (!url) return null;
+  const admin = String(parsed.admin || '').trim().slice(0, 200);
+  return { url, admin, v: Number(parsed.scriptVersion) || 0 };
+}
+
+// Reads the cache synchronously so the UI has something immediately; the
+// bridge hydrate below corrects it when it arrives.
+function alloReadMailboxConfigCache() {
+  try {
+    const url = _alloCleanMailboxUrl(localStorage.getItem(ALLO_MB_URL_KEY) || '');
+    const admin = localStorage.getItem(ALLO_MB_ADMIN_KEY) || '';
+    const v = Number(localStorage.getItem(ALLO_MB_VERSION_KEY) || 0);
+    return url ? { url, admin, v } : null;
+  } catch (_) { return null; }
+}
+
+function alloWriteMailboxConfigCache(config) {
+  try {
+    if (!config || !config.url) {
+      localStorage.removeItem(ALLO_MB_URL_KEY);
+      localStorage.removeItem(ALLO_MB_ADMIN_KEY);
+      localStorage.removeItem(ALLO_MB_VERSION_KEY);
+      return;
+    }
+    localStorage.setItem(ALLO_MB_URL_KEY, config.url);
+    localStorage.setItem(ALLO_MB_ADMIN_KEY, config.admin || '');
+    localStorage.setItem(ALLO_MB_VERSION_KEY, String(Number(config.v) || 0));
+  } catch (_) {}
+}
+
+// Durable write. Never throws: a bridge in memory mode, or blocked behind a
+// gesture, must not stop a teacher configuring their mailbox.
+async function alloPersistMailboxConfig(config) {
+  alloWriteMailboxConfigCache(config);
+  try {
+    const deviceStorage = await _alloGetCanvasDeviceStorage();
+    if (!config || !config.url) {
+      await deviceStorage.remove(ALLO_MB_CONFIG_NAMESPACE, ALLO_MB_CONFIG_KEY);
+      return true;
+    }
+    await deviceStorage.set(ALLO_MB_CONFIG_NAMESPACE, ALLO_MB_CONFIG_KEY, JSON.stringify({
+      v: 1, url: config.url, admin: config.admin || '', scriptVersion: Number(config.v) || 0
+    }));
+    return true;
+  } catch (_) { return false; }
+}
+
+// Durable read, used to correct the cache once the bridge is reachable.
+async function alloLoadMailboxConfigDurable() {
+  try {
+    const deviceStorage = await _alloGetCanvasDeviceStorage();
+    const raw = await deviceStorage.get(ALLO_MB_CONFIG_NAMESPACE, ALLO_MB_CONFIG_KEY);
+    if (!raw) return null;
+    return alloParseMailboxConfigImport(raw);
+  } catch (_) { return null; }
+}
+
 const _alloClearCachedDeviceStoragePromises = () => {
   try { delete window.__alloDeviceStoragePromise; } catch (_) { window.__alloDeviceStoragePromise = null; }
   try { delete window.__alloDeviceStorageReadyPromise; } catch (_) { window.__alloDeviceStorageReadyPromise = null; }
@@ -10500,8 +10831,20 @@ const AlloFlowContent = () => {
               const saved = safeGetItem('allo_voice_preference');
               if (saved) {
                   if (AVAILABLE_VOICES.length === 0 && KOKORO_VOICES.length === 0) return saved;
+                  // A Kokoro voice is ALWAYS valid: the engine is local and
+                  // needs no backend or key (same reasoning as the desktop
+                  // branch below). Checking the CATALOG here was the bug —
+                  // KOKORO_VOICES fills from a CDN module, so during the window
+                  // where the Gemini list has loaded and the Kokoro list has
+                  // not, a saved af_/am_ voice matched neither test and was
+                  // silently reset to Kore on every refresh.
+                  if (/^(af_|am_)/.test(saved)) return saved;
                   if (AVAILABLE_VOICES.map(v => v.toLowerCase()).includes(saved.toLowerCase())) return saved;
                   if (KOKORO_VOICES.some(v => v.id === saved)) return saved;
+                  // Catalogs are still loading and the id is not Kokoro-shaped:
+                  // keep the saved value rather than overwriting a real
+                  // preference with a default we cannot yet validate.
+                  if (AVAILABLE_VOICES.length === 0 || KOKORO_VOICES.length === 0) return saved;
               }
               return 'Kore'; // Gemini TTS default — bright, clear female voice
           }
@@ -10534,6 +10877,13 @@ const AlloFlowContent = () => {
       return 'Kore';
   });
   useEffect(() => {
+      // Never let a transient default overwrite a stored preference. If the
+      // catalogs have not loaded yet, a validator fallback can equal 'Kore'
+      // while storage holds the user's real pick; writing here would make that
+      // reset permanent instead of recoverable on the next load.
+      const storedVoice = safeGetItem('allo_voice_preference');
+      const catalogsReady = (AVAILABLE_VOICES.length > 0 || KOKORO_VOICES.length > 0);
+      if (storedVoice && storedVoice !== selectedVoice && !catalogsReady) return;
       safeSetItem('allo_voice_preference', selectedVoice);
   }, [selectedVoice]);
   useEffect(() => {
@@ -11690,7 +12040,6 @@ Return ONLY JSON in this shape:
   // Hard constraint 2 (student owns the log) is why the panel, the consent,
   // and these hooks all land together.
   const _alloLedgerRef = useRef(null);
-  const [workStoryIncluded, setWorkStoryIncluded] = useState(false);
   const [workStoryModel, setWorkStoryModel] = useState(null);
   const _alloProvenanceApi = () => (window.AlloModules && window.AlloModules.Provenance) || null;
   const _alloEnsureLedger = () => {
@@ -11739,10 +12088,167 @@ Return ONLY JSON in this shape:
   // which is a ref, so it can never go stale. Re-running on mode change bought
   // nothing.
   useEffect(() => { window.__alloNoteAiUse = (s, lv) => _alloNoteAiUse(s, lv); return () => { try { delete window.__alloNoteAiUse; } catch (_) { window.__alloNoteAiUse = null; } }; }, []);
+  // Exposed on window because the tools that know they gave a scaffold are
+  // loaded modules and plugins, not this component.
+  useEffect(() => { window.__alloNoteSupport = (k, lv, o) => _alloNoteSupport(k, lv, o); return () => { try { delete window.__alloNoteSupport; } catch (_) { window.__alloNoteSupport = null; } }; }, []);
+  // §15: any tool names its own support. Bucketed in the ledger (~15s), so a
+  // student who plays read-aloud on twelve paragraphs produces a couple of
+  // rows, not twelve. Silent no-op when no ledger exists, which is the normal
+  // case: collection only runs when a teacher enabled it for the assignment.
+  const _alloNoteSupport = (kind, promptLevel, options) => {
+      // Collected even when no ledger exists, because the check-in record is a
+      // separate artifact from the ledger and must not depend on it.
+      if (_alloCheckpointSupportsRef.current && kind) {
+          try { _alloCheckpointSupportsRef.current.add(String(kind)); } catch (_) {}
+      }
+      const led = _alloLedgerRef.current;
+      if (!led || typeof led.noteSupport !== 'function') return;
+      try { led.noteSupport(kind, promptLevel || 'none', options || {}); } catch (_) {}
+  };
   const _alloNoteAiUse = (support, promptLevel) => {
       const led = _alloLedgerRef.current;
       if (!led) return;
       try { led.append('ai', { support: String(support || 'ai'), promptLevel: promptLevel || 'none' }); } catch (_) {}
+  };
+  // ── P3: comprehension checkpoints ──────────────────────────────────────
+  // Questions about the student's OWN writing, answered by them, read by the
+  // teacher. §13.5 binds this to a CARD, never a modal, and it must never
+  // block: it lives in the sidebar beside the Work Story, and submitting is
+  // unaffected whether it is answered, deferred, or ignored entirely.
+  const [checkpointState, setCheckpointState] = useState({ status: 'idle', questions: [], index: 0 });
+  const _alloCheckpointRecordsRef = useRef([]);
+  const _alloCheckpointSaltRef = useRef('');
+
+  // The artifact is the student's own writing, concatenated. Teacher-provided
+  // text is passed SEPARATELY so the module can exclude it: a question about a
+  // sentence frame would be a question about something the student never wrote.
+  const _alloCheckpointArtifact = () => {
+      const parts = [];
+      const provided = [];
+      try {
+          Object.keys(studentResponses || {}).forEach(resourceId => {
+              const answers = studentResponses[resourceId] || {};
+              Object.keys(answers).forEach(k => {
+                  const v = answers[k];
+                  if (typeof v === 'string' && v.trim()) parts.push(v.trim());
+              });
+          });
+          (generatedContent?.data || []).forEach(item => {
+              ['question', 'prompt', 'frame', 'starter', 'text'].forEach(key => {
+                  const v = item && item[key];
+                  if (typeof v === 'string' && v.trim()) provided.push(v.trim());
+              });
+          });
+          if (assignmentDirections) provided.push(String(assignmentDirections));
+      } catch (_) {}
+      // Blank line between answers so the module's sentence splitter never
+      // fuses the end of one response onto the start of the next.
+      return { text: parts.join(String.fromCharCode(10, 10)), providedTexts: provided };
+  };
+
+  // AI-off is not a degraded mode, it is a different generator. The no-egress
+  // rule is absolute: when the assignment forbids sending student writing out,
+  // nothing is sent, and the deterministic templates run locally instead.
+  const _alloGenerateCheckpoints = async () => {
+      const P = _alloProvenanceApi();
+      if (!P) return;
+      const { text, providedTexts } = _alloCheckpointArtifact();
+      if (text.replace(/\s+/g, ' ').trim().length < 120) {
+          setCheckpointState({ status: 'too-little', questions: [], index: 0 });
+          return;
+      }
+      setCheckpointState(prev => ({ ...prev, status: 'working' }));
+      const aiAllowed = !_isQrStudentAiDisabled()
+          && !(window.__alloQrStudentMode && window.__alloQrStudentMode.studentAi === 'off');
+      let questions = [];
+      if (aiAllowed) {
+          try {
+              // Arity 3, artifact text only. The firewall is the SIGNATURE:
+              // there is no parameter through which the ledger could reach a
+              // question, so a question can never be aimed at a doubted span.
+              const raw = await callGemini(
+                  P.buildCheckpointPrompt(text, studentProjectSettings?.readingLevel || 'grade 5', currentUiLanguage),
+                  true
+              );
+              questions = P.sanitizeCheckpointQuestions(JSON.parse(cleanJson(String(raw || '[]'))), text, { providedTexts });
+          } catch (_) { questions = []; }
+      }
+      // Fallback covers BOTH the policy case and any generation failure. A
+      // student never sees an error where a question should be.
+      if (!questions.length) questions = P.templateCheckpoints(text, { providedTexts });
+      if (!_alloCheckpointSaltRef.current) _alloCheckpointSaltRef.current = P.makeCheckpointSalt();
+      _alloCheckpointSupportsRef.current = new Set();
+      setCheckpointState({
+          status: questions.length ? 'ready' : 'too-little',
+          questions,
+          index: 0,
+          artifact: text,
+          providedTexts,
+          generatorSource: aiAllowed && questions.length ? 'ai' : 'template'
+      });
+  };
+
+  // One outcome per question, whatever the student chose to do. 'skipped' and
+  // 'deferred' are first-class results, not failures — §13.5 requires the
+  // escape hatches to be real, which means they must record as themselves.
+  const _alloRecordCheckpoint = async (outcome, answerText, responseMode) => {
+      const P = _alloProvenanceApi();
+      const st = checkpointState;
+      const q = st.questions[st.index];
+      if (!P || !q) return;
+      const aiState = _isQrStudentAiDisabled() ? 'off' : 'on';
+      _alloCheckpointRecordsRef.current.push(P.buildCheckpointRecord(q, answerText || '', {
+          outcome,
+          responseMode: responseMode || 'text',
+          aiState,
+          answerLanguage: currentUiLanguage,
+          generatorSource: st.generatorSource
+      }));
+      // The LEDGER gets metadata only — never the answer. A salted hash means
+      // two students who write the same sentence never collide, so the record
+      // cannot become an accidental plagiarism detector.
+      const led = _alloLedgerRef.current;
+      if (led) {
+          try {
+              const answerHash = answerText
+                  ? await P.hashCheckpointAnswer(_alloCheckpointSaltRef.current, answerText)
+                  : '';
+              await led.append('checkpoint', {
+                  id: q.id,
+                  aiState,
+                  outcome,
+                  responseMode: responseMode || 'text',
+                  answerHash,
+                  generatedFrom: q.sourceFieldId || '',
+                  // Provision, never a tally (§15.7). Which accommodations were
+                  // available during the check-in, so nobody can later ask
+                  // whether it ran under the student's normal conditions.
+                  supportsProvided: _alloCheckpointSupports()
+              });
+          } catch (_) {}
+      }
+      // Fresh set per question: one check-in's supports must not bleed onto
+      // the next, or the last record would accumulate the whole session.
+      _alloCheckpointSupportsRef.current = new Set();
+      setCheckpointState(prev => ({ ...prev, index: prev.index + 1 }));
+  };
+
+  // Access supports stay ON during a checkpoint by design: the AI-off state
+  // pauses generative answer-production, never read-aloud or a glossary.
+  //
+  // What gets RECORDED is which of them the student actually reached for while
+  // this check-in was open — named, never counted (§15.7). Listing the whole
+  // always-allowed set instead would be the same eight names on every record:
+  // no information, and an implied claim about a plan we cannot see.
+  const _alloCheckpointSupportsRef = useRef(null);
+  const _alloCheckpointSupports = () => {
+      const seen = _alloCheckpointSupportsRef.current;
+      if (!seen) return [];
+      const P = _alloProvenanceApi();
+      const allowed = (P && P.CHECKPOINT_ALWAYS_ALLOWED) || [];
+      // Only access supports belong on a check-in record. A generative helper
+      // during a checkpoint is a policy question, not an accommodation note.
+      return Array.from(seen).filter(k => allowed.indexOf(k) >= 0).sort();
   };
   const _alloRefreshWorkStory = () => {
       const led = _alloLedgerRef.current;
@@ -11753,13 +12259,10 @@ Return ONLY JSON in this shape:
           return exported;
       }).catch(() => null);
   };
-  const _alloClearWorkStory = () => {
-      _alloLedgerRef.current = null;
-      _alloLastLenRef.current = {};
-      setWorkStoryModel(null);
-      setWorkStoryIncluded(false);
-      addToast(t('work_story.cleared') || 'Your Work Story was deleted from this device.', 'info');
-  };
+  // _alloClearWorkStory removed with the consent checkbox (constraint 2 as
+  // amended): a student-facing delete is the same opt-out in another coat, and
+  // it had already gone stale — it called setWorkStoryIncluded, which no longer
+  // exists. Amendment and deletion run through the district under FERPA.
   const handleStudentInput = (resourceId, questionKey, value) => {
       _alloNoteStudentText(resourceId, questionKey, value);
       setStudentResponses(prev => ({
@@ -12238,7 +12741,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = '8fe7bfd3d';
+    var pluginCdnVersion = '793610106';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -12541,28 +13044,28 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=8fe7bfd3d');
-    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=8fe7bfd3d');
-    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=8fe7bfd3d');
-    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=8fe7bfd3d');
+    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=793610106');
+    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=793610106');
+    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=793610106');
+    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=793610106');
     // Shared quest/goal vocabulary for directions goals, STEM Lab and SEL Hub
     // quests. Tiny and dependency-free; every consumer degrades gracefully if it
     // has not landed yet, so load order is not load-bearing.
     loadModule('AlloQuestContract', 'https://alloflow-cdn.pages.dev/allo_quest_contract_module.js?v=355fa3d9a');
-    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=8fe7bfd3d');
+    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=793610106');
     loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=ce049d79');
-    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=8fe7bfd3d');
-    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=8fe7bfd3d');
-    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=8fe7bfd3d');
-    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=8fe7bfd3d');
-    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=8fe7bfd3d');
-    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=8fe7bfd3d');
+    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=793610106');
+    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=793610106');
+    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=793610106');
+    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=793610106');
+    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=793610106');
+    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=793610106');
     loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=74a5ce6a');
     loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=0e96a73e');
     loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=4ced3dc7');
-    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=8fe7bfd3d');
-    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=8fe7bfd3d');
-    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=8fe7bfd3d');
+    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=793610106');
+    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=793610106');
+    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=793610106');
     // Word Sounds is the largest CDN module in the app (~744KB) and was loaded
     // eagerly here for EVERY user at boot, including the majority who never open
     // it. It registers exactly one component, WordSoundsModal, and the only
@@ -12575,29 +13078,29 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // The render site already has a "Loading Word Sounds..." fallback with a
     // Close escape, and the module registry re-renders the app when the load
     // lands, so the fallback resolves on its own.
-    window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=8fe7bfd3d'); }; })();
-    loadModule('AlloSheetTransferAdapter', 'https://alloflow-cdn.pages.dev/allo_sheet/transfer_adapter.js?v=8fe7bfd3d');
-    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=8fe7bfd3d');
-    loadModule('AlloSheetHostBridge', 'https://alloflow-cdn.pages.dev/allo_sheet/host_bridge.js?v=8fe7bfd3d');
-    loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=8fe7bfd3d');
-    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=8fe7bfd3d');
-    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=8fe7bfd3d');
-    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=8fe7bfd3d');
+    window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=793610106'); }; })();
+    loadModule('AlloSheetTransferAdapter', 'https://alloflow-cdn.pages.dev/allo_sheet/transfer_adapter.js?v=793610106');
+    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=793610106');
+    loadModule('AlloSheetHostBridge', 'https://alloflow-cdn.pages.dev/allo_sheet/host_bridge.js?v=793610106');
+    loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=793610106');
+    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=793610106');
+    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=793610106');
+    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=793610106');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
     // window.__alloLazyPyodide() as soon as the user clicks Generate.
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
-    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=8fe7bfd3d'); }; })();
+    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=793610106'); }; })();
     window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TutorialCompilerModule', 'https://alloflow-cdn.pages.dev/tutorial_compiler_module.js?v=1e5f07c6'); loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
-    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=8fe7bfd3d'); }; })();
-    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=8fe7bfd3d'); }; })();
+    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=793610106'); }; })();
+    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=793610106'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
     window.__alloLazyDynamicAssessment = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DynamicAssessment', 'https://alloflow-cdn.pages.dev/dynamic_assessment_module.js'); }; })();
     // Seating Chart (Ring 0+1, July 21 2026) — teacher-only roster tool,
     // lazy-loaded from the Roster panel's Seating Chart button.
-    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', 'https://alloflow-cdn.pages.dev/seating_chart_module.js?v=8fe7bfd3d'); }; })();
+    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', 'https://alloflow-cdn.pages.dev/seating_chart_module.js?v=793610106'); }; })();
     // UDL Walkthrough (Aug 3 2026) — admin/coach classroom-visit tool,
     // lazy-loaded from the Educator Hub card.
     window.__alloLazyUdlWalkthrough = (function() { var L=false; return function() { if(L)return; L=true; loadModule('UdlWalkthrough', 'https://alloflow-cdn.pages.dev/udl_walkthrough_module.js?v=uw080306'); }; })();
@@ -12615,89 +13118,89 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=8fe7bfd3d');
-    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=8fe7bfd3d');
-    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=8fe7bfd3d');
-    loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=8fe7bfd3d');
-    loadModule('AccessibilityEvidence', 'https://alloflow-cdn.pages.dev/accessibility_evidence_module.js?v=8fe7bfd3d');
-    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=8fe7bfd3d');
-    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=8fe7bfd3d');
-    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=8fe7bfd3d');
-    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=8fe7bfd3d');
-    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=8fe7bfd3d');
-    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=8fe7bfd3d');
-    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=8fe7bfd3d');
-    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=8fe7bfd3d');
-    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=8fe7bfd3d');
-    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=8fe7bfd3d'); }; })();
-    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=8fe7bfd3d'); }; })();
-    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=8fe7bfd3d'); }; })();
-    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=8fe7bfd3d'); }; })();
+    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=793610106');
+    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=793610106');
+    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=793610106');
+    loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=793610106');
+    loadModule('AccessibilityEvidence', 'https://alloflow-cdn.pages.dev/accessibility_evidence_module.js?v=793610106');
+    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=793610106');
+    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=793610106');
+    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=793610106');
+    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=793610106');
+    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=793610106');
+    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=793610106');
+    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=793610106');
+    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=793610106');
+    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=793610106');
+    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=793610106'); }; })();
+    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=793610106'); }; })();
+    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=793610106'); }; })();
+    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=793610106'); }; })();
     window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
-    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=8fe7bfd3d');
-    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=8fe7bfd3d');
-    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=8fe7bfd3d');
+    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=793610106');
+    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=793610106');
+    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=793610106');
     loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=216a1867');
-    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=8fe7bfd3d');
-    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=8fe7bfd3d');
-    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=8fe7bfd3d');
-    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=8fe7bfd3d');
-    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=8fe7bfd3d');
+    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=793610106');
+    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=793610106');
+    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=793610106');
+    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=793610106');
+    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=793610106');
     // ── Lazy-loaded modal modules (May 12 2026) ──
     // Each modal is gated by a wrapped setter that fires its ensure-loader on
     // first true. Until that happens the script is not fetched, cutting ~9
     // requests off cold boot. The embedded loadModule(...) call still matches
     // build.js's URL rewriter regex, so hashes auto-update on deploy.
-    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=8fe7bfd3d'); }; })();
+    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=793610106'); }; })();
     // Process Provenance (Work Story). Stable label pin, like the storage
     // module: this file is not in build.js MODULES, so a hash pin would freeze.
     window.__alloLazyProvenance = (function() { var L=false; return function() { if(L)return; L=true; loadModule('Provenance', 'https://alloflow-cdn.pages.dev/allo_provenance_module.js?v=prov-p1'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
-    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=8fe7bfd3d');
+    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=793610106');
     // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
-    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=8fe7bfd3d');
-    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=8fe7bfd3d'); }; })();
-    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=8fe7bfd3d'); }; })();
+    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=793610106');
+    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=793610106'); }; })();
+    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=793610106'); }; })();
     window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=059104c5'); }; })();
-    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=8fe7bfd3d'); }; })();
-    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=8fe7bfd3d'); }; })();
+    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=793610106'); }; })();
+    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=793610106'); }; })();
     window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=0b3560bb'); }; })();
-    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=8fe7bfd3d'); }; })();
-    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=8fe7bfd3d');
-    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=8fe7bfd3d');
-    loadModule('LiveLessonRun', 'https://alloflow-cdn.pages.dev/view_live_lesson_run_module.js?v=8fe7bfd3d');
+    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=793610106'); }; })();
+    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=793610106');
+    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=793610106');
+    loadModule('LiveLessonRun', 'https://alloflow-cdn.pages.dev/view_live_lesson_run_module.js?v=793610106');
     loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=d4463f3d');
     loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=1bec0c44');
-    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=8fe7bfd3d');
-    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=8fe7bfd3d');
-    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=8fe7bfd3d');
-    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=8fe7bfd3d');
-    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=8fe7bfd3d');
-    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=8fe7bfd3d'); }; })();
-    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=8fe7bfd3d'); }; })();
-    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=8fe7bfd3d'); }; })();
-    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=8fe7bfd3d'); }; })();
-    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=8fe7bfd3d'); }; })();
-    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=8fe7bfd3d'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=8fe7bfd3d'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=8fe7bfd3d'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=8fe7bfd3d'); }; })();
-    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=8fe7bfd3d'); }; })();
-    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=8fe7bfd3d'); }; })();
-    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=8fe7bfd3d'); }; })();
-    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=8fe7bfd3d');
-    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=8fe7bfd3d');
-    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=8fe7bfd3d');
+    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=793610106');
+    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=793610106');
+    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=793610106');
+    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=793610106');
+    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=793610106');
+    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=793610106'); }; })();
+    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=793610106'); }; })();
+    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=793610106'); }; })();
+    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=793610106'); }; })();
+    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=793610106'); }; })();
+    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=793610106'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=793610106'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=793610106'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=793610106'); }; })();
+    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=793610106'); }; })();
+    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=793610106'); }; })();
+    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=793610106'); }; })();
+    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=793610106');
+    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=793610106');
+    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=793610106');
     // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
     loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
-    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=8fe7bfd3d');
-    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=8fe7bfd3d');
-    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=8fe7bfd3d');
-    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=8fe7bfd3d');
-    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=8fe7bfd3d');
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=8fe7bfd3d');
-    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=8fe7bfd3d');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=8fe7bfd3d');
-    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=8fe7bfd3d');
-    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=8fe7bfd3d');
-    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=8fe7bfd3d');
+    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=793610106');
+    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=793610106');
+    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=793610106');
+    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=793610106');
+    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=793610106');
+    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=793610106');
+    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=793610106');
+    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=793610106');
+    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=793610106');
+    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=793610106');
+    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=793610106');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // The generic loadModule() doesn't accept post-load callbacks, and the
     // upgrade-on-parse calls at lines ~693 and ~2002 fire before the CDN script
@@ -12735,12 +13238,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
     loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=fdf46ad3');
-    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=8fe7bfd3d');
-    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=8fe7bfd3d');
+    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=793610106');
+    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=793610106');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=8fe7bfd3d');
-    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=8fe7bfd3d');
-    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=8fe7bfd3d');
+    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=793610106');
+    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=793610106');
+    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=793610106');
     // Capability index (dev-tools/build_tool_index.cjs): what each STEM tool
     // actually DOES, ~110 KB for 139 tools. The lesson-plan prompt ranks and
     // caps against this instead of dumping every tool name, and unlike
@@ -12763,15 +13266,15 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           .catch(function () {});
       } catch (_) {}
     })();
-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=8fe7bfd3d');
-    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=8fe7bfd3d');
-    loadModule('StandardsContext', 'https://alloflow-cdn.pages.dev/standards_context_module.js?v=8fe7bfd3d');
-    loadModule('StandardsProvider', 'https://alloflow-cdn.pages.dev/standards_provider_module.js?v=8fe7bfd3d');
+    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=793610106');
+    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=793610106');
+    loadModule('StandardsContext', 'https://alloflow-cdn.pages.dev/standards_context_module.js?v=793610106');
+    loadModule('StandardsProvider', 'https://alloflow-cdn.pages.dev/standards_provider_module.js?v=793610106');
     // Driving Questions Board. The contract carries the invariants both
     // transports enforce; the view module is inert until a surface mounts it.
-    loadModule('QuestionBoardContract', 'https://alloflow-cdn.pages.dev/question_board_contract_module.js?v=8fe7bfd3d');
-    loadModule('QuestionBoardView', 'https://alloflow-cdn.pages.dev/question_board_view_module.js?v=8fe7bfd3d');
-    loadModule('QuestionBoardTransport', 'https://alloflow-cdn.pages.dev/question_board_transport_module.js?v=8fe7bfd3d');
+    loadModule('QuestionBoardContract', 'https://alloflow-cdn.pages.dev/question_board_contract_module.js?v=793610106');
+    loadModule('QuestionBoardView', 'https://alloflow-cdn.pages.dev/question_board_view_module.js?v=793610106');
+    loadModule('QuestionBoardTransport', 'https://alloflow-cdn.pages.dev/question_board_transport_module.js?v=793610106');
 
     // Reviewed local standards snapshots (Learning Commons v1.11.0, CC BY 4.0).
     // DELIBERATE enablement per LEARNING_COMMONS_SNAPSHOT_IMPORT.md: publishing a
@@ -12783,14 +13286,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('StandardsSnapshotMaScienceG5', 'https://alloflow-cdn.pages.dev/standards_snapshots/ma-science-grade-5.js?v=e805fe3c7');
     loadModule('StandardsSnapshotCcssMath', 'https://alloflow-cdn.pages.dev/standards_snapshots/ccss-math.js?v=e805fe3c7');
     loadModule('StandardsSnapshotCcssEla', 'https://alloflow-cdn.pages.dev/standards_snapshots/ccss-ela.js?v=e805fe3c7');
-    loadModule('AgentCoreContracts', 'https://alloflow-cdn.pages.dev/agent_core_contracts_module.js?v=8fe7bfd3d');
-    loadModule('AgentCoreBlueprintService', 'https://alloflow-cdn.pages.dev/agent_core_blueprint_service_module.js?v=8fe7bfd3d');
-    loadModule('AgentCoreUIAdapter', 'https://alloflow-cdn.pages.dev/agent_core_ui_adapter_module.js?v=8fe7bfd3d');
-    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=8fe7bfd3d');
-    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=8fe7bfd3d');
-    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=8fe7bfd3d');
-    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=8fe7bfd3d');
-    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=8fe7bfd3d');
+    loadModule('AgentCoreContracts', 'https://alloflow-cdn.pages.dev/agent_core_contracts_module.js?v=793610106');
+    loadModule('AgentCoreBlueprintService', 'https://alloflow-cdn.pages.dev/agent_core_blueprint_service_module.js?v=793610106');
+    loadModule('AgentCoreUIAdapter', 'https://alloflow-cdn.pages.dev/agent_core_ui_adapter_module.js?v=793610106');
+    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=793610106');
+    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=793610106');
+    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=793610106');
+    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=793610106');
+    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=793610106');
     loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=398e7a6a');
     // Word-by-word karaoke timing (deterministic envelope + valley snapping).
     loadModule('WordTimingModule', 'https://alloflow-cdn.pages.dev/word_timing_module.js?v=df764e1d');
@@ -12800,49 +13303,49 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=501639a2');
     loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659');
     loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=b41bcb0a');
-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=8fe7bfd3d');
-    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=8fe7bfd3d');
-    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=8fe7bfd3d');
-    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=8fe7bfd3d');
-    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=8fe7bfd3d');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=8fe7bfd3d');
+    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=793610106');
+    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=793610106');
+    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=793610106');
+    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=793610106');
+    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=793610106');
+    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=793610106');
     loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=72c923fc');
-    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=8fe7bfd3d');
-    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=8fe7bfd3d');
-    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=8fe7bfd3d');
-    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=8fe7bfd3d');
-    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=8fe7bfd3d');
-    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=8fe7bfd3d');
+    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=793610106');
+    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=793610106');
+    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=793610106');
+    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=793610106');
+    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=793610106');
+    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=793610106');
     loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=7c43afe4');
-    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=8fe7bfd3d');
-    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=8fe7bfd3d');
-    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=8fe7bfd3d');
-    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=8fe7bfd3d');
-    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=8fe7bfd3d');
+    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=793610106');
+    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=793610106');
+    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=793610106');
+    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=793610106');
+    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=793610106');
     loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=0315c93c');
-    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=8fe7bfd3d');
-    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=8fe7bfd3d');
-    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=8fe7bfd3d');
-    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=8fe7bfd3d');
-    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=8fe7bfd3d');
-    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=8fe7bfd3d');
+    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=793610106');
+    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=793610106');
+    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=793610106');
+    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=793610106');
+    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=793610106');
+    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=793610106');
     loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=fb834a79');
-    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=8fe7bfd3d');
-    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=8fe7bfd3d');
-    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=8fe7bfd3d');
+    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=793610106');
+    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=793610106');
+    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=793610106');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
-    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=8fe7bfd3d');
-    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=8fe7bfd3d');
-    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=8fe7bfd3d');
-    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=8fe7bfd3d');
-    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=8fe7bfd3d');
-    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=8fe7bfd3d');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=8fe7bfd3d');
-    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=8fe7bfd3d');
-    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=8fe7bfd3d');
-    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=8fe7bfd3d');
+    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=793610106');
+    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=793610106');
+    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=793610106');
+    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=793610106');
+    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=793610106');
+    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=793610106');
+    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=793610106');
+    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=793610106');
+    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=793610106');
+    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=793610106');
     (function() {
       var s = document.createElement('script');
       s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.2.0/math.min.js';
@@ -13126,6 +13629,15 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       window.__kokoroTTSScriptInjected = true;
       window.__loadKokoroTTS = async (onProgress) => {
         if (window._kokoroTTS?.ready) return true;
+        // A refresh clears window._kokoroTTS, so the model is re-read from the
+        // durable cache and loaded into WASM — a real wait, but NOT a
+        // download. Saying "Downloading (~88MB)" there is what makes an
+        // already-cached model look like it is fetching again.
+        let _kokoroCached = false;
+        try {
+          const _mc = window.AlloModules && window.AlloModules.AlloCommands && window.AlloModules.AlloCommands.modelCache;
+          if (_mc && typeof _mc.hasKokoro === 'function') _kokoroCached = await _mc.hasKokoro();
+        } catch (_) {}
         const loadTTSScript = (url) => new Promise((resolve) => {
           if (document.querySelector(`script[src="${url}"]`)) { resolve(true); return; }
           const s = document.createElement('script');
@@ -13139,6 +13651,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           try {
             await window._kokoroTTS.init((progress) => {
               if (onProgress) onProgress(progress);
+              if (_kokoroCached && progress && typeof progress.stage === 'string' && /download/i.test(progress.stage)) {
+                progress = Object.assign({}, progress, { stage: t('voice_engine.preparing_saved_model') || 'Preparing the saved voice model' });
+              }
               setKokoroLoadState({ loading: true, stage: progress.stage || (progress.pct < 0.95 ? (t('voice_engine.downloading_model') || 'Downloading voice model') : (t('voice_engine.loading_memory') || 'Loading into memory')), pct: progress.pct });
             });
             setKokoroLoadState(null);
@@ -20682,6 +21197,13 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       minValue: 1,
       maxValue: 5,
       labels: [],
+      // Availability poll (docs/availability_poll_spec.md). identityMode has no
+      // default on purpose: it is a privacy decision, so the creator must pick
+      // it before the poll can be shared.
+      optionsText: '',
+      identityMode: '',
+      allowMaybe: true,
+      multiSelect: true,
   });
   const [recentQrShares, setRecentQrShares] = useState(() => {
       try {
@@ -20770,14 +21292,57 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       return () => { dialog.removeEventListener('keydown', onKeyDown); if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus(); };
   }, [qrShareModal]);
   const [mbUrlInput, setMbUrlInput] = useState('');
-  const [mbConfig, setMbConfig] = useState(() => {
+  // Seed from the cache so the UI is not blank while the bridge loads, then
+  // correct from the bridge, which is the durable copy (§11.1). On Canvas the
+  // cache is usually EMPTY, so the hydrate below is the one that matters.
+  const [mbConfig, setMbConfig] = useState(() => alloReadMailboxConfigCache());
+  useEffect(() => {
+      let cancelled = false;
+      alloLoadMailboxConfigDurable().then((durable) => {
+          if (cancelled || !durable || !durable.url) return;
+          setMbConfig((prev) => {
+              if (prev && prev.url === durable.url && prev.admin === durable.admin) return prev;
+              alloWriteMailboxConfigCache(durable);
+              return durable;
+          });
+      });
+      return () => { cancelled = true; };
+  }, []);
+
+  // Portability (spec §12). A FILE, not a QR: the payload carries the mailbox
+  // admin token, a credential that never expires, and a QR is something anyone
+  // in the room can photograph off a projector.
+  const exportMailboxConfig = useCallback(() => {
+      const payload = alloMailboxConfigExportPayload(mbConfig, new Date().toISOString());
+      if (!payload) { addToast('Connect a mailbox first, then you can save a copy of its setup.', 'info'); return; }
       try {
-          const url = _alloCleanMailboxUrl(localStorage.getItem(ALLO_MB_URL_KEY) || '');
-          const admin = localStorage.getItem(ALLO_MB_ADMIN_KEY) || '';
-          const v = Number(localStorage.getItem(ALLO_MB_VERSION_KEY) || 0);
-          return url ? { url, admin, v } : null;
-      } catch (_) { return null; }
-  });
+          const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'alloflow-mailbox-' + new Date().toISOString().slice(0, 10) + '.json';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+          addToast('Saved. This file contains an access key for your mailbox, so keep it like a password.', 'success');
+      } catch (error) { addToast('Could not save the file: ' + ((error && error.message) || 'unknown'), 'error'); }
+  }, [mbConfig, addToast]);
+
+  const importMailboxConfig = useCallback(async (file) => {
+      if (!file) return;
+      try {
+          const text = await file.text();
+          const parsed = alloParseMailboxConfigImport(text);
+          // Import is a trust boundary: the file may have been hand-edited, so
+          // the URL goes through the same validator as manual entry.
+          if (!parsed) { addToast('That file is not a valid AlloFlow mailbox setup.', 'error'); return; }
+          await alloPersistMailboxConfig(parsed);
+          setMbConfig(parsed);
+          setMbStatus('Mailbox setup restored from a file.');
+          addToast('Mailbox restored on this device.', 'success');
+      } catch (error) { addToast('Could not read that file: ' + ((error && error.message) || 'unknown'), 'error'); }
+  }, [addToast]);
   const [mbStatus, setMbStatus] = useState('');
   const [mbBusy, setMbBusy] = useState(false);
   const refreshAssignmentCenter = useCallback(async () => {
@@ -21318,6 +21883,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               }
           }
           try {
+              alloPersistMailboxConfig({ url: execUrl, admin, v: Number(mbHello && mbHello.v) || 0 });
               localStorage.setItem(ALLO_MB_URL_KEY, execUrl);
               if (admin) localStorage.setItem(ALLO_MB_ADMIN_KEY, admin);
               localStorage.setItem(ALLO_MB_VERSION_KEY, String(Number(mbHello && mbHello.v) || 0));
@@ -22324,7 +22890,18 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           return null;
       }
       const expiresAt = new Date(Date.now() + homeworkExpiryDays * 24 * 60 * 60 * 1000).toISOString();
-      const sharedActivityType = sharedAssignmentActivity.type === 'rating' ? 'rating' : 'word_cloud';
+      const ALLO_ACTIVITY_TYPES = ['rating', 'availability', 'word_cloud'];
+      const sharedActivityType = ALLO_ACTIVITY_TYPES.indexOf(sharedAssignmentActivity.type) >= 0
+          ? sharedAssignmentActivity.type
+          : 'word_cloud';
+      // One label per line is the whole authoring story for slots: no date
+      // parsing and no timezones, which is a deliberate non-goal (spec §8).
+      const pollOptions = String(sharedAssignmentActivity.optionsText || '')
+          .split(/\r?\n/)
+          .map(line => line.replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80))
+          .filter(Boolean)
+          .slice(0, 50)
+          .map((label, index) => ({ id: `o${index + 1}`, label }));
       const ratingMin = Math.max(1, Math.min(9, Math.trunc(Number(sharedAssignmentActivity.minValue) || 1)));
       const ratingMax = Math.max(ratingMin + 1, Math.min(10, Math.trunc(Number(sharedAssignmentActivity.maxValue) || 5)));
       const ratingLabels = Array.from({ length: ratingMax - ratingMin + 1 }, (_, index) => (
@@ -22338,7 +22915,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               type: sharedActivityType,
               delivery: 'shared_async',
               prompt: String(sharedAssignmentActivity.prompt || '').replace(/\s+/g, ' ').trim().slice(0, 240)
-                  || (sharedActivityType === 'rating' ? 'How would you rate your understanding?' : 'What word or short phrase best captures your thinking?'),
+                  || (sharedActivityType === 'rating' ? 'How would you rate your understanding?'
+                      : sharedActivityType === 'availability' ? 'Which of these times could you make?'
+                      : 'What word or short phrase best captures your thinking?'),
               minParticipants: Math.max(3, Math.min(10, Number(sharedAssignmentActivity.minParticipants) || 3)),
               revealPolicy: sharedActivityType === 'word_cloud'
                   ? (sharedAssignmentActivity.revealPolicy === 'auto_publish' ? 'auto_publish' : 'teacher_review')
@@ -22346,6 +22925,17 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               minValue: sharedActivityType === 'rating' ? ratingMin : undefined,
               maxValue: sharedActivityType === 'rating' ? ratingMax : undefined,
               labels: sharedActivityType === 'rating' ? ratingLabels : undefined,
+              identityMode: sharedActivityType === 'availability' ? String(sharedAssignmentActivity.identityMode || '') : undefined,
+              options: sharedActivityType === 'availability' ? pollOptions : undefined,
+              allowMaybe: sharedActivityType === 'availability' ? sharedAssignmentActivity.allowMaybe !== false : undefined,
+              multiSelect: sharedActivityType === 'availability' ? sharedAssignmentActivity.multiSelect !== false : undefined,
+              // Voting closes when the assignment link does; the rows are erased a
+              // week later. Two dates, because "stop collecting" and "stop
+              // existing" are different events for a scheduling poll (spec §4).
+              closesAt: sharedActivityType === 'availability' ? expiresAt : undefined,
+              deleteAt: sharedActivityType === 'availability'
+                  ? new Date(Date.parse(expiresAt) + 7 * 24 * 60 * 60 * 1000).toISOString()
+                  : undefined,
           })
           : null;
       const sharedActivities = sharedActivity ? [sharedActivity] : [];
@@ -24931,6 +25521,13 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                     rec = null;
                     if (isDictationActiveRef.current && !intentionallyStopped) setTimeout(() => { try { api.start(); } catch (e) {} }, 250);
                 };
+                // §15.6 tier 1. Dictation is an access support and an input
+                // method; it is also the one that most often looks like a paste
+                // (a flush arrives as a length jump), so naming it here is what
+                // keeps that burst from reading as an anomaly later.
+                try {
+                    if (window.__alloNoteSupport) window.__alloNoteSupport('speech_to_text', 'none', { assistiveTech: true });
+                } catch (_) {}
                 rec.start();
                 return true;
             },
@@ -33525,9 +34122,18 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           responses: studentResponses,
           gameCompletions: gameCompletions,
       };
-      // Work Story rides ONLY with live consent (constraint 2). No tick, no
-      // ledger in the payload — and the teacher panel simply shows nothing.
-      if (workStoryIncluded && _alloLedgerRef.current) {
+      // Work Story rides whenever the TEACHER enabled it for this assignment
+      // (studentProjectSettings.workStoryEnabled), which is the gate that now
+      // governs collection. It is no longer gated on a student tick: constraint
+      // 2 as amended says the student sees the log rather than gating it, since
+      // minors give assent and parents give consent, both outside the app.
+      if (_alloCheckpointRecordsRef.current.length) {
+          // Answers live in project.checkpoints[], NEVER in the ledger, beside
+          // the question and source excerpt the teacher has to read to make
+          // any sense of them.
+          submissionData.checkpoints = _alloCheckpointRecordsRef.current.slice(0, 10);
+      }
+      if (_alloLedgerRef.current) {
           try {
               const _P = _alloProvenanceApi();
               const _exported = await _alloRefreshWorkStory();
@@ -36861,6 +37467,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // handleSendUDLMessage (below) can reach it after the command preview/confirm
   // step, and so a "just chat" reply can re-send the original text as normal chat.
   const _sendUdlToChat = (manualText = null) => {
+    // §15.6 tier 2. The one delivery path into the chat module, so a single
+    // edit covers every route a student takes to the bot. Logged as 'guided'
+    // rather than 'model': AlloBot is Socratic by design, and recording it at
+    // the level that means "wrote it for them" would misstate what happened.
+    // A turn that DID produce inserted text is recorded by the AI wrapper.
+    try { if (window.__alloNoteSupport) window.__alloNoteSupport('allobot', 'guided'); } catch (_) {}
     const _m = window.AlloModules && window.AlloModules.UdlChat;
     if (_m && typeof _m.handleSendUDLMessage === "function") return _m.handleSendUDLMessage(manualText, {
       activeBlueprint, activeView, alloBotRef, currentUiLanguage, guidedFlowState,
@@ -41631,9 +42243,24 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 <button onClick={startMailboxLiveSession} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-sm font-black text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl p-3 transition-all disabled:opacity-60">
                   {mbBusy ? 'Starting…' : 'Start live session'}
                 </button>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <button onClick={exportMailboxConfig} className="flex-1 text-[11px] font-bold text-sky-700 underline underline-offset-2 hover:text-sky-900">Save setup to a file</button>
+                  <label className="flex-1 cursor-pointer text-center text-[11px] font-bold text-sky-700 underline underline-offset-2 hover:text-sky-900">
+                    Restore from a file
+                    <input
+                      type="file"
+                      accept="application/json,.json"
+                      className="sr-only"
+                      onChange={(event) => { const file = event.target.files && event.target.files[0]; event.target.value = ''; importMailboxConfig(file); }}
+                    />
+                  </label>
+                </div>
+                <p className="mt-1 text-[10px] leading-relaxed text-slate-500">
+                  The saved file holds an access key for your mailbox. Keep it somewhere you would keep a password, and it will restore this setup on another device or after storage is cleared.
+                </p>
                 <div className="flex gap-2 mt-2">
                   <button onClick={() => { setMbUrlInput(mbConfig.url); setMbConfig(null); setMbStatus(''); }} className="flex-1 text-[11px] font-bold text-slate-500 hover:text-slate-700 underline underline-offset-2">Change mailbox</button>
-                  <button onClick={() => { try { localStorage.removeItem(ALLO_MB_URL_KEY); localStorage.removeItem(ALLO_MB_ADMIN_KEY); localStorage.removeItem(ALLO_MB_VERSION_KEY); } catch (_) {} setMbConfig(null); setMbUrlInput(''); setMbStatus('Mailbox forgotten on this device. To reconnect later you may need to reset the admin token (see the setup guide).'); }} className="flex-1 text-[11px] font-bold text-rose-500 hover:text-rose-700 underline underline-offset-2">Forget mailbox</button>
+                  <button onClick={() => { /* Clears the BRIDGE as well as the cache. Without this the hydrate on next load would resurrect a mailbox the teacher just forgot. */ alloPersistMailboxConfig(null); setMbConfig(null); setMbUrlInput(''); setMbStatus('Mailbox forgotten on this device. To reconnect later you may need to reset the admin token (see the setup guide).'); }} className="flex-1 text-[11px] font-bold text-rose-500 hover:text-rose-700 underline underline-offset-2">Forget mailbox</button>
                 </div>
               </div>
             )}
@@ -43855,9 +44482,48 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 </div>
             )}
             {!isTeacherMode && isStudentLinkMode && workStoryModel && window.AlloModules && window.AlloModules.WorkStoryPanel && React.createElement(window.AlloModules.WorkStoryPanel, {
-              t, model: workStoryModel, included: workStoryIncluded,
-              onToggle: setWorkStoryIncluded, onClear: _alloClearWorkStory
+              t, model: workStoryModel
           })}
+            {!isTeacherMode && isStudentLinkMode && workStoryModel && checkpointState.status === 'idle' && (
+              <button
+                type="button"
+                onClick={_alloGenerateCheckpoints}
+                className="w-full mb-4 rounded-2xl border border-slate-300 bg-white dark:bg-slate-800 dark:border-slate-700 p-3 text-left text-xs font-bold hover:border-indigo-400"
+              >
+                💬 {t('checkpoint.offer', 'Talk about your work') }
+                <span className="block font-normal opacity-75 mt-0.5">
+                  {t('checkpoint.offer_sub', 'A couple of questions about what you wrote. You can skip them.')}
+                </span>
+              </button>
+            )}
+            {!isTeacherMode && isStudentLinkMode && checkpointState.status === 'working' && (
+              <p role="status" className="mb-4 text-xs opacity-75">{t('checkpoint.working', 'Getting a question ready...')}</p>
+            )}
+            {!isTeacherMode && isStudentLinkMode && checkpointState.status === 'too-little' && (
+              <p role="status" className="mb-4 text-xs opacity-75">
+                {t('checkpoint.too_little', 'Write a bit more first, then this can ask you about it.')}
+              </p>
+            )}
+            {/* One question at a time. When the last is done the card simply
+                stops appearing — no completion badge, because finishing is not
+                an achievement and not finishing is not a failure. */}
+            {!isTeacherMode && isStudentLinkMode && checkpointState.status === 'ready'
+              && checkpointState.questions[checkpointState.index]
+              && window.AlloModules && window.AlloModules.CheckpointPanel
+              && React.createElement(window.AlloModules.CheckpointPanel, {
+                t,
+                question: checkpointState.questions[checkpointState.index],
+                language: currentUiLanguage,
+                choices: (window.AlloModules.Provenance && checkpointState.artifact)
+                  ? window.AlloModules.Provenance.buildCheckpointChoices(
+                      checkpointState.artifact,
+                      checkpointState.questions[checkpointState.index].sourceExcerpt,
+                      checkpointState.providedTexts)
+                  : [],
+                onAnswer: (text, mode) => _alloRecordCheckpoint('answered', text, mode),
+                onDefer: () => _alloRecordCheckpoint('deferred', '', 'text'),
+                onMisfit: () => _alloRecordCheckpoint('skipped', '', 'text')
+            })}
           {!isTeacherMode && <StudentSaveAdventurePanel activeSessionCode={activeSessionCode} globalPoints={globalPoints} handleResumeAdventure={handleResumeAdventure} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleStartAdventure={handleStartAdventure} hasSavedAdventure={hasSavedAdventure} initiateSaveStudentProject={initiateSaveStudentProject} isResumingAdventure={isResumingAdventure} isSaveActionPulsing={isSaveActionPulsing} projectFileInputRef={projectFileInputRef} sessionData={sessionData} studentProjectSettings={studentProjectSettings} t={t} />}
             {isTeacherMode && activeSidebarTab === 'history' && !isIndependentMode && !isParentMode && <TeacherHistoryTab handleApplyRosterGroup={handleApplyRosterGroup} hasSourceOrAnalysis={hasSourceOrAnalysis} rosterKey={rosterKey} setIsRosterKeyOpen={setIsRosterKeyOpen} t={t} />}
             {(!isTeacherMode || activeSidebarTab === 'history') && <HistoryPanel activeSidebarTab={activeSidebarTab} activeStation={activeStation} activeUnitId={activeUnitId} addToast={addToast} cloudSyncStatus={cloudSyncStatus} editTitle={editTitle} editingId={editingId} generatedContent={generatedContent} getDefaultTitle={getDefaultTitle} getFilteredHistory={getFilteredHistory} getIconForType={getIconForType} handleCancelEdit={handleCancelEdit} handleClearHistory={handleClearHistory} handleCreateUnit={handleCreateUnit} handleDeleteHistoryItem={handleDeleteHistoryItem} handleDeleteUnit={handleDeleteUnit} handleDragEnd={handleDragEnd} handleDragEnter={handleDragEnter} handleDragStart={handleDragStart} handleLoadProject={handleLoadProject} handleMoveToUnit={handleMoveToUnit} handleRestoreView={handleRestoreView} handleSaveEdit={handleSaveEdit} handleSetIsProjectSettingsOpenToTrue={handleSetIsProjectSettingsOpenToTrue} handleSetIsUnitModalOpenToFalse={handleSetIsUnitModalOpenToFalse} handleSetIsUnitModalOpenToTrue={handleSetIsUnitModalOpenToTrue} handleSetMovingItemIdToNull={handleSetMovingItemIdToNull} handleStartEdit={handleStartEdit} handleToggleIsHistoryMaximized={handleToggleIsHistoryMaximized} history={history} initiateSaveStudentProject={initiateSaveStudentProject} initiateSaveTeacherProject={initiateSaveTeacherProject} isCloudSyncEnabled={isCloudSyncEnabled} isCanvas={isCanvas} canvasRecoverySaveStatus={canvasRecoverySaveStatus} canvasRecoverySnapshotCount={canvasRecoveryStore.snapshots.length} onOpenDeviceRecovery={openCanvasRecoveryManager} isHistoryMaximized={isHistoryMaximized} isIndependentMode={isIndependentMode} isParentMode={isParentMode} isSaveActionPulsing={isSaveActionPulsing} isStorageDisabled={isStorageDisabled} isSyncMode={isSyncMode} isTeacherMode={isTeacherMode} isUnitModalOpen={isUnitModalOpen} lastSaved={lastSaved} moveItem={moveItem} movingItemId={movingItemId} newUnitName={newUnitName} pendingSync={pendingSync} projectFileInputRef={projectFileInputRef} sanitizeString={sanitizeString} activeSelStation={activeSelStation} setActiveSelStation={setActiveSelStation} setActiveStation={setActiveStation} setActiveUnitId={setActiveUnitId} setEditTitle={setEditTitle} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setMovingItemId={setMovingItemId} setNewUnitName={setNewUnitName} setSelHubTab={setSelHubTab} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTab={setStemLabTab} t={t} onVisualizeUnit={openThroughlineForUnit} units={units} />}

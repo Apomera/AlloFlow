@@ -952,8 +952,7 @@ window.StemLab = window.StemLab || {
               : null,
             h('div', { className: 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3', role: 'list' },
               FF_SCAFFOLDS.map(function(sc) {
-                return h('button', {
-                  key: sc.type, role: 'listitem',
+                return h('div', { key: sc.type, role: 'listitem' }, h('button', {
                   className: 'ff-card text-left bg-slate-800/70 border-2 border-slate-700 rounded-2xl p-4 min-h-[44px]',
                   onClick: function() { chooseScaffold(sc.type); },
                   'aria-label': sc.name + '. ' + sc.grammar
@@ -961,7 +960,7 @@ window.StemLab = window.StemLab || {
                   h('div', { className: 'text-3xl mb-2', 'aria-hidden': 'true' }, sc.icon),
                   h('div', { className: 'font-black text-slate-100 text-sm mb-1' }, sc.name),
                   h('div', { className: 'text-[11px] leading-snug text-slate-400' }, sc.grammar)
-                );
+                ));
               })
             )
           )

@@ -1039,7 +1039,7 @@ window.StemLab = window.StemLab || {
             )
           )
         ),
-        h('div', { className: 'flex flex-wrap items-center gap-2 rounded-xl border border-pink-100 bg-white/80 p-2', 'aria-expanded': String(multTableHidden) },
+        h('div', { className: 'flex flex-wrap items-center gap-2 rounded-xl border border-pink-100 bg-white/80 p-2' },
             h('button', { 'aria-expanded': String(multTableHidden), 'aria-label': t('stem.multtable.toggle_hidden_mode_h', 'Toggle hidden mode (H)'),
               onClick: function() { setMultTableHidden(!multTableHidden); setMultTableRevealed(new Set()); },
               className: 'text-[11px] font-bold px-2.5 py-0.5 rounded-full border transition-all ' +
