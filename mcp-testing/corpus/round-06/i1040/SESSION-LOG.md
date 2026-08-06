@@ -2335,16 +2335,62 @@ Two paragraphs span column breaks and one spans the page break, all authored
 whole; the folio sits *between the halves* of "If you do not file a return..."
 in the column flow.
 
-### NEXT: page 122, then the Index
+### Session 60 (2026-08-05) - page 122 - tranche-60 - 11 blocks - VALIDATED (merged)
 
-* **122** Major Categories of Federal Income and Outlays (figure plus table).
-  Nothing is carried into it.
-* **123-126 the Index** - MECHANICAL, three columns of entries with page
-  numbers and sub-entries. **Do not hand-author it.** Tranche 58's shape is
-  the model: a column-bounded parse with a header cut, a body-face filter, and
-  an ordering invariant. For the Index the natural invariant is that entries
-  are ALPHABETICAL within each letter section, which is the equivalent of
-  tranche 58's strictly-increasing topic numbers.
+Major Categories of Federal Income and Outlays for Fiscal Year 2024.
+`merge-plans t01..t60` -> 2,033 blocks, `ok: true`, **pages 1-122 covered**,
+zero heading skips. Recall 0.9574, and the shortfall is degraded source again -
+cross-column glue (`environoutlays`, `forarmed`, `milihealth`, `procredit`,
+`prodisabled`, `protary`, `supplewere`, `trilcountries`) plus hyphen halves
+(`lion`, `ment`, `mental`, `merly`, `posit`, `vide`, `grams` twice) and three
+generated list markers. Verified: the plan holds every correct form and zero
+glue strings.
+
+> **THE TWO PIE CHARTS BECOME DATA TABLES, AND THE PAIRING HAD TO COME FROM
+> GEOMETRY.** A pie chart carries its meaning entirely in numbers a screen
+> reader cannot see, so each becomes a Category/Percentage table. The text
+> layer interleaves the two charts completely - "IncomeOutlays Net Law
+> Physical, Social security, Medicare, Personal income ... retirement taxes36%
+> retirement debt 3 government development 25% 37% 13% 2% 10%" - so reading
+> percentages off it would have mispaired label and value. **That is a factual
+> error in a tax document that NOTHING downstream could catch**: every token
+> present, every number correct, only the pairing wrong. Recall would score it
+> 1.0. Each label was matched to its percentage by x-position within its own
+> chart.
+
+**Both tables are asserted to sum to 100%** and the generator refuses to write
+a plan otherwise - income 25+36+8+4+27, outlays 37+18+10+20+13+2. Two further
+gates check the footnote markers run 1-4 in order and that four footnotes
+exist to match. Worth being honest about the limit: **a swap of two
+percentages WITHIN one chart would still sum to 100 and pass**, which is why
+the x-clustering was done carefully rather than leaning on the arithmetic.
+
+**The footnote superscripts become their own column.** The chart prints a small
+1-4 beside four of the six outlay categories; there is no superscript style in
+the schema, and appending a bare digit would read as "...and other retirement
+1". A "Footnote" column says it unambiguously, and the four footnotes below are
+an ordered list whose generated numbers match.
+
+**An unclosed parenthesis is reproduced as printed**: "In fiscal year 2024
+(which began on October 1, 2023, and ended on September 30, 2024, federal
+income was $4.920 trillion..." never closes the bracket. Same call as line 24z
+(tranche 40), the two worksheet line 2 instructions (48), and "net earning"
+(52).
+
+### NEXT: pages 123-126 - THE INDEX, and then the end
+
+**This is the last tranche.** The Index is MECHANICAL: three columns of
+entries with page numbers and sub-entries. **Do not hand-author it.** Tranche
+58 is the model - a column-bounded parse with a header cut, a body-face
+filter, and an ordering invariant. The natural invariant here is that entries
+are ALPHABETICAL within each letter section, the equivalent of tranche 58's
+strictly-increasing topic numbers. Sub-entries are indented under their parent
+and will need the same fold-or-nest decision the worksheets needed.
+
+**After the Index the rebuild is complete at 126 pages**, and the full
+end-to-end pass should be re-run: `merge-plans` all 61 tranches ->
+`remediate` -> `verify-init`. Note that `verify-check` still needs a
+fresh-context reader who never saw the plan; it must not be self-attested.
 
 ## Run-in level audit (2026-08-05) - the session-49 concern, checked and CLOSED
 

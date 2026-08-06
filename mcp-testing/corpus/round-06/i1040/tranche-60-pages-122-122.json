@@ -1,0 +1,215 @@
+{
+ "schema_version": "1.0",
+ "document": {
+  "title": "2025 Instructions for Form 1040 (and 1040-SR)",
+  "language": "en",
+  "source_page_count": 126,
+  "source_sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a",
+  "document_type": "booklet",
+  "subject": "Internal Revenue Service instructions for the 2025 Form 1040 and Form 1040-SR, including the instructions for Schedules 1 through 3.",
+  "variant": "original"
+ },
+ "blocks": [
+  {
+   "type": "heading",
+   "level": 2,
+   "text": "Major Categories of Federal Income and Outlays for Fiscal Year 2024",
+   "source_page": 122
+  },
+  {
+   "type": "paragraph",
+   "text": "Income and Outlays. These pie charts show the relative sizes of the major categories of federal income and outlays for fiscal year 2024.",
+   "source_page": 122,
+   "runs": [
+    {
+     "text": "Income and Outlays.",
+     "style": "strong"
+    },
+    {
+     "text": " These pie charts show the relative sizes of the major categories of federal income and outlays for fiscal year 2024.",
+     "style": "normal"
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Income",
+   "source_page": 122
+  },
+  {
+   "type": "table",
+   "caption": "Income for fiscal year 2024 by major category, as a percentage of total income. This is the “Income” pie chart rendered as a table; the five slices sum to 100%.",
+   "columns": [
+    "Category",
+    "Percentage of total income"
+   ],
+   "rows": [
+    [
+     "Social security, Medicare, and unemployment and other retirement taxes",
+     "25%"
+    ],
+    [
+     "Personal income taxes",
+     "36%"
+    ],
+    [
+     "Corporate income taxes",
+     "8%"
+    ],
+    [
+     "Excise, customs, estate, gift, and miscellaneous taxes",
+     "4%"
+    ],
+    [
+     "Borrowing to cover deficit",
+     "27%"
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 122
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Outlays",
+   "source_page": 122
+  },
+  {
+   "type": "table",
+   "caption": "Outlays for fiscal year 2024 by major category, as a percentage of total outlays. This is the “Outlays” pie chart rendered as a table; the six slices sum to 100%. The Footnote column carries the superscript the chart prints beside four of the categories, and those footnotes follow under “Footnotes for Certain Federal Outlays”.",
+   "columns": [
+    "Category",
+    "Percentage of total outlays",
+    "Footnote"
+   ],
+   "rows": [
+    [
+     "Social security, Medicare, and other retirement",
+     "37%",
+     "1"
+    ],
+    [
+     "National defense, veterans, and foreign affairs",
+     "18%",
+     "2"
+    ],
+    [
+     "Physical, human, and community development",
+     "10%",
+     "3"
+    ],
+    [
+     "Social programs",
+     "20%",
+     "4"
+    ],
+    [
+     "Net interest on the debt",
+     "13%",
+     ""
+    ],
+    [
+     "Law enforcement and general government",
+     "2%",
+     ""
+    ]
+   ],
+   "row_headers": true,
+   "source_page": 122
+  },
+  {
+   "type": "paragraph",
+   "text": "On or before the first Monday in February of each year, the President is required by law to submit to the Congress a budget proposal for the fiscal year that begins the following October. The budget plan sets forth the President’s proposed receipts, spending, and the surplus or deficit for the federal government. The plan includes recommendations for new legislation as well as recommendations to change, eliminate, and add programs. After receipt of the President’s proposal, the Congress reviews the proposal and makes changes. It first passes a budget resolution setting its own targets for receipts, outlays, and surplus or deficit. Next, individual spending and revenue bills that are consistent with the goals of the budget resolution are enacted.",
+   "source_page": 122
+  },
+  {
+   "type": "paragraph",
+   "text": "In fiscal year 2024 (which began on October 1, 2023, and ended on September 30, 2024, federal income was $4.920 trillion and outlays were $6.751 trillion, leaving a deficit of $1.831 trillion.",
+   "source_page": 122
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "Footnotes for Certain Federal Outlays",
+   "source_page": 122
+  },
+  {
+   "type": "list",
+   "ordered": true,
+   "items": [
+    "Social security, Medicare, and other retirement: These programs provide income support for the retired and disabled and medical care for the elderly.",
+    "National defense, veterans, and foreign affairs: About 13% of outlays were to equip, modernize, and pay our armed forces and to fund national defense activities; about 5% were for veterans benefits and services; and about 1% were for international activities, including military and economic assistance to foreign countries and the maintenance of U.S. embassies abroad.",
+    "Physical, human, and community development: These outlays were for agriculture; natural resources; environment; transportation; aid for elementary and secondary education and direct assistance to college students; job training; deposit insurance, commerce and housing credit, and community development; and space, energy, and general science programs.",
+    "Social programs: About 14% of total outlays were for Medicaid, Supplemental Nutrition Assistance Program (formerly food stamps), temporary assistance for needy families, supplemental security income, and related programs; and 6% for health research and public health programs, unemployment compensation, assisted housing, and social services."
+   ],
+   "source_page": 122,
+   "item_runs": [
+    [
+     {
+      "text": "Social security, Medicare, and other retirement:",
+      "style": "strong"
+     },
+     {
+      "text": " These programs provide income support for the retired and disabled and medical care for the elderly.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "National defense, veterans, and foreign affairs:",
+      "style": "strong"
+     },
+     {
+      "text": " About 13% of outlays were to equip, modernize, and pay our armed forces and to fund national defense activities; about 5% were for veterans benefits and services; and about 1% were for international activities, including military and economic assistance to foreign countries and the maintenance of U.S. embassies abroad.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "Physical, human, and community development:",
+      "style": "strong"
+     },
+     {
+      "text": " These outlays were for agriculture; natural resources; environment; transportation; aid for elementary and secondary education and direct assistance to college students; job training; deposit insurance, commerce and housing credit, and community development; and space, energy, and general science programs.",
+      "style": "normal"
+     }
+    ],
+    [
+     {
+      "text": "Social programs:",
+      "style": "strong"
+     },
+     {
+      "text": " About 14% of total outlays were for Medicaid, Supplemental Nutrition Assistance Program (formerly food stamps), temporary assistance for needy families, supplemental security income, and related programs; and 6% for health research and public health programs, unemployment compensation, assisted housing, and social services.",
+      "style": "normal"
+     }
+    ]
+   ]
+  },
+  {
+   "type": "paragraph",
+   "text": "Note. The percentages shown here exclude undistributed offsetting receipts, which were $147 billion in fiscal year 2024. In the budget, these receipts are offset against spending in figuring the outlay totals shown above. These receipts are for the U.S. Government's share of its employee retirement programs, rents and royalties on the Outer Continental Shelf, and proceeds from the sale of assets.",
+   "source_page": 122,
+   "runs": [
+    {
+     "text": "Note.",
+     "style": "strong"
+    },
+    {
+     "text": " The percentages shown here exclude undistributed offsetting receipts, which were $147 billion in fiscal year 2024. In the budget, these receipts are offset against spending in figuring the outlay totals shown above. These receipts are for the U.S. Government's share of its employee retirement programs, rents and royalties on the Outer Continental Shelf, and proceeds from the sale of assets.",
+     "style": "normal"
+    }
+   ]
+  }
+ ],
+ "review_notes": [
+  "TRANCHE 60 OF A MULTI-SESSION REBUILD. This plan covers printed page 122, Major Categories of Federal Income and Outlays for Fiscal Year 2024. It carries no document title by design — only tranche 1 does — so this file validates through merge-plans rather than standalone. No partial rebuild is delivered. Nothing is carried in or out.",
+  "THE TWO PIE CHARTS BECOME DATA TABLES. A pie chart carries its meaning entirely in numbers a screen reader cannot see, so each is rendered as a Category/Percentage table — the standard accessible equivalent, and the only form in which the figures survive at all. This is the largest deliberate transformation in the rebuild so far and it is disclosed in both captions.",
+  "THE SLICES WERE PAIRED TO THEIR PERCENTAGES BY X-CLUSTER IN THE PAGE GEOMETRY, NOT READ OFF THE TEXT LAYER. The text layer interleaves the two charts completely — “IncomeOutlays Net Law Physical, Social security, Medicare, Personal income Social security, interest enforcement human, and … retirement taxes36% retirement debt 3 government development 25% 37% 13% 2% 10%” — so reading percentages off it would have mispaired them. **That would be a factual error in a tax document and nothing downstream could catch it**: every token would be present, every number correct, and only the pairing wrong. Each label and its percentage were matched by x-position within its own chart.",
+  "BOTH TABLES ARE ASSERTED TO SUM TO 100%, and the generator refuses to write a plan otherwise: income 25 + 36 + 8 + 4 + 27 = 100, outlays 37 + 18 + 10 + 20 + 13 + 2 = 100. Two further gates check that the four footnote markers appear in order 1-4 and that there are exactly four footnotes to match. A mispairing that swapped two percentages between charts would break the sums; one that swapped two within a chart would not, which is why the x-clustering was done carefully rather than relying on the arithmetic alone.",
+  "THE FOOTNOTE SUPERSCRIPTS BECOME THEIR OWN COLUMN. The chart prints a small 1, 2, 3, or 4 beside four of the six outlay categories. There is no superscript style in the plan schema, and appending a bare digit to the category name would read as “…and other retirement 1”. A “Footnote” column says the same thing unambiguously, and the four footnotes below are an ORDERED LIST whose generated numbers match.",
+  "THE SECOND BODY PARAGRAPH REPRODUCES AN UNCLOSED PARENTHESIS. The source reads “In fiscal year 2024 (which began on October 1, 2023, and ended on September 30, 2024, federal income was $4.920 trillion…” — the bracket opened after “2024” is never closed. Reproduced as printed rather than silently repaired, the same call made for line 24z in tranche 40, the two worksheet line 2 instructions in tranche 48, and “net earning” in tranche 52.",
+  "PAGE FURNITURE OMITTED: the printed page number. The straight apostrophe in “U.S. Government's share” is the source's own and is kept; every other apostrophe on the page is curly. Soft hyphens removed and line-break hyphens closed (“elim-inate” → “eliminate”, “communi-ty” → “community”, “as-sisted” → “assisted”), while genuine compounds are kept."
+ ]
+}
