@@ -1062,113 +1062,8 @@ describe('P7 — the ai/support population asymmetry is documented, not hidden',
   });
 });
 
-describe('P6 — the support-fade lane', () => {
-  async function period(level, n) {
-    const led = P.createLedger({ now: mkClock().now, bucketMs: 15000 });
-    for (let i = 0; i < n; i++) await led.append('ai', { support: 'allobot', promptLevel: level });
-    return led.exportForSupport();
-  }
-
-  it('sees a fade that a raw COUNT would miss entirely', async () => {
-    const m = P.buildSupportFadeModel([await period('model', 4), await period('hint', 4)]);
-    // Same number of interactions both times. Counting alone says 'no change';
-    // intensity says the scaffolding dropped from modelling to hinting, which
-    // is the entire thing a fade plan is trying to observe.
-    expect(m.periods[0].supports).toBe(m.periods[1].supports);
-    expect(m.periods[0].intensity).toBe(3);
-    expect(m.periods[1].intensity).toBe(1);
-    expect(m.change.direction).toBe('less');
-  });
-
-  it('refuses to read a trend from one point', async () => {
-    const m = P.buildSupportFadeModel([await period('model', 3)]);
-    expect(m.change.direction).toBe('insufficient');
-    expect(m.change.text).toContain('snapshot, not a trend');
-  });
-
-  it('calls a small wobble steady rather than manufacturing a direction', async () => {
-    const m = P.buildSupportFadeModel([await period('guided', 4), await period('guided', 4)]);
-    expect(m.change.direction).toBe('steady');
-  });
-
-  it('reports MORE support without alarm, and without blaming the student', async () => {
-    const m = P.buildSupportFadeModel([await period('hint', 4), await period('model', 4)]);
-    expect(m.change.direction).toBe('more');
-    // A student whose needs increased is a student whose plan may need to
-    // change. It is not a failing, and the text must not read like one.
-    expect(m.change.text).toContain('harder material');
-    for (const w of ['regress', 'decline', 'concern', 'fail', 'worse', 'problem']) {
-      expect(m.change.text.toLowerCase()).not.toContain(w);
-    }
-  });
-
-  it('names which scaffold moved, not just the total', async () => {
-    const a = P.createLedger({ now: mkClock().now, bucketMs: 15000 });
-    a.noteSupport('read_aloud', 'none'); a.noteSupport('read_aloud', 'none');
-    a.noteSupport('allobot', 'model');
-    await a.flush();
-    const b = P.createLedger({ now: mkClock().now, bucketMs: 15000 });
-    b.noteSupport('read_aloud', 'none'); b.noteSupport('read_aloud', 'none');
-    await b.flush();
-    const m = P.buildSupportFadeModel([await a.exportForSupport(), await b.exportForSupport()]);
-    const rows = P.fadeBySupport(m);
-    // A team fading ONE support needs to see that support, not an aggregate
-    // that hides it behind an unchanged one.
-    expect(rows).toContainEqual({ support: 'allobot', from: 1, to: 0 });
-    expect(rows).toContainEqual({ support: 'read_aloud', from: 2, to: 2 });
-  });
-});
-
-describe('P6 — the lane decides nothing and never crosses the wall', () => {
-  async function supportExport() {
-    const led = P.createLedger({ now: mkClock().now });
-    await led.append('ai', { support: 'allobot', promptLevel: 'model' });
-    return led.exportForSupport();
-  }
-
-  it('REFUSES an integrity export instead of silently showing nothing', async () => {
-    const led = P.createLedger({ now: mkClock().now });
-    await led.append('ai', { support: 'allobot', promptLevel: 'model' });
-    const m = P.buildSupportFadeModel([await led.exportForSubmission()]);
-    // An empty fade line reads as 'this student used no support', which is the
-    // most misleading empty state this lane can have. Guarded at the INPUT.
-    expect(m.ok).toBe(false);
-    expect(m.reason).toBe('wrong-lens');
-  });
-
-  it('carries no integrity data whatsoever', async () => {
-    const m = P.buildSupportFadeModel([await supportExport(), await supportExport()]);
-    const flat = JSON.stringify(m).toLowerCase();
-    for (const k of ['paste', 'checkpoint', 'answerhash', 'verified', 'tamper', 'chain']) {
-      expect(flat).not.toContain(k);
-    }
-  });
-
-  it('makes no intervention decision — the Dispro precedent is binding here', async () => {
-    const m = P.buildSupportFadeModel([await supportExport(), await supportExport()]);
-    const flat = JSON.stringify(m).toLowerCase();
-    for (const w of ['tier 2', 'tier 3', 'responding', 'not responding', 'on track',
-                     'at risk', 'refer', 'eligible', 'recommend', 'intervention']) {
-      expect(flat).not.toContain(w);
-    }
-    expect(m.teamNote).toContain('decides nothing');
-  });
-
-  it('states its own coverage, so a thin line is not read as little support', async () => {
-    const m = P.buildSupportFadeModel([await supportExport()]);
-    expect(m.coverage).toBe(P.COVERAGE_NOTE);
-    expect(m.neverObservable).toEqual(['spellcheck', 'word_prediction']);
-  });
-
-  it('says support is not a deficit, in the data rather than the styling', async () => {
-    const m = P.buildSupportFadeModel([await supportExport()]);
-    // teamNote ships as DATA so no future panel can style it away or forget it.
-    expect(m.teamNote).toContain('does not measure learning');
-  });
-});
-
-describe('P6 — accommodation use must never move the fade read', () => {
-  async function ledgerOf(spec) {
+describe('P6 — the fade lane is PER SUPPORT, not an aggregate', () => {
+  async function sessionOf(spec) {
     const clock = mkClock();
     const led = P.createLedger({ now: clock.now, bucketMs: 15000 });
     for (const [kind, level, n] of spec) {
@@ -1176,44 +1071,194 @@ describe('P6 — accommodation use must never move the fade read', () => {
     }
     return led.exportForSupport();
   }
+  async function history(specs) {
+    let store = {};
+    for (let i = 0; i < specs.length; i++) {
+      const rec = P.buildFadeRecord(await sessionOf(specs[i]), {
+        codename: 'Falcon 7', sessionId: 's' + i, timestamp: '2026-0' + (i + 1) + '-01',
+      });
+      store = P.mergeFadeRecord(store, rec);
+    }
+    return P.readFadeHistory(store, 'Falcon 7', { purpose: 'test' });
+  }
 
-  it('using an accommodation MORE does not read as needing less support', async () => {
-    // The defect this pins: intensity averaged access supports (level 'none',
-    // weight 0) into the mean, so heavier read-aloud use dragged it down. A
-    // student leaning harder on their accommodation read as FADING, in the one
-    // lane whose output could contribute to withdrawing that accommodation.
-    const sept = await ledgerOf([['allobot', 'model', 5], ['read_aloud', 'none', 8]]);
-    const dec  = await ledgerOf([['allobot', 'model', 5], ['read_aloud', 'none', 30]]);
-    const m = P.buildSupportFadeModel([sept, dec]);
-    expect(m.periods[0].intensity).toBe(m.periods[1].intensity);
-    expect(m.change.direction).toBe('steady');
+  it('tells three different stories instead of one flattened number', async () => {
+    const m = P.buildSupportFadeModel(await history([
+      [['allobot', 'model', 5], ['read_aloud', 'none', 8], ['glossary', 'none', 3]],
+      [['allobot', 'hint', 3], ['read_aloud', 'none', 9]],
+    ]));
+    const by = Object.fromEntries(m.supports.map((r) => [r.support, r]));
+    // The aggregate said 'scaffolding is lighter' and hid all of this.
+    expect(by.allobot.change.text).toContain('prompting got lighter');
+    expect(by.glossary.change.text).toContain('3 to 0');
+    expect(by.read_aloud.change.text).toContain('more often');
+    // And there is no overall number left to read instead.
+    expect(m.intensity).toBeUndefined();
   });
 
-  it('counts access use instead, reported beside the fade and never inside it', async () => {
-    const sept = await ledgerOf([['allobot', 'model', 5], ['read_aloud', 'none', 8]]);
-    const dec  = await ledgerOf([['allobot', 'model', 5], ['read_aloud', 'none', 30]]);
-    const m = P.buildSupportFadeModel([sept, dec]);
-    // Access use is a COUNT question ('how often did they need it?');
-    // scaffolding is an INTENSITY question ('how much was done for them?').
-    expect(m.periods.map(p => p.accessUses)).toEqual([8, 30]);
-    expect(m.periods.map(p => p.scaffoldUses)).toEqual([5, 5]);
+  it('never reports a LEVEL fade for an access support', async () => {
+    const m = P.buildSupportFadeModel(await history([
+      [['read_aloud', 'none', 8]],
+      [['read_aloud', 'none', 30]],
+    ]));
+    const row = m.supports.find((r) => r.support === 'read_aloud');
+    expect(row.kind).toBe('access');
+    // An accommodation has no prompting level to fade. Inventing one is how
+    // heavier accommodation use previously read as 'needs less support'.
+    expect(row.change.text).not.toContain('prompting');
+    expect(row.change.text).toContain('more often');
   });
 
-  it('still sees a real fade in the scaffolding itself', async () => {
-    const a = await ledgerOf([['allobot', 'model', 4], ['read_aloud', 'none', 10]]);
-    const b = await ledgerOf([['allobot', 'hint', 4], ['read_aloud', 'none', 10]]);
-    const m = P.buildSupportFadeModel([a, b]);
-    expect(m.change.direction).toBe('less');
+  it('a scaffold fade is unaffected by how much the accommodation was used', async () => {
+    const light = P.buildSupportFadeModel(await history([
+      [['allobot', 'model', 4], ['read_aloud', 'none', 5]],
+      [['allobot', 'hint', 4], ['read_aloud', 'none', 5]],
+    ]));
+    const heavy = P.buildSupportFadeModel(await history([
+      [['allobot', 'model', 4], ['read_aloud', 'none', 5]],
+      [['allobot', 'hint', 4], ['read_aloud', 'none', 40]],
+    ]));
+    const pick = (m) => m.supports.find((r) => r.support === 'allobot').change;
+    expect(pick(light).text).toBe(pick(heavy).text);
   });
 
-  it('says so plainly when there is no scaffolding to read a fade from', async () => {
-    const a = await ledgerOf([['read_aloud', 'none', 6]]);
-    const b = await ledgerOf([['read_aloud', 'none', 9]]);
-    const m = P.buildSupportFadeModel([a, b]);
-    // Reporting 0 -> 0 as 'steady scaffolding' would imply a measurement that
-    // never happened.
-    expect(m.change.direction).toBe('no-scaffolds');
-    expect(m.change.text).toContain('no fade to read');
+  it('refuses a direction from a single session', async () => {
+    const m = P.buildSupportFadeModel(await history([[['allobot', 'model', 3]]]));
+    expect(m.supports[0].change.direction).toBe('insufficient');
+  });
+
+  it('carries a support through a session where it was not used', async () => {
+    const m = P.buildSupportFadeModel(await history([
+      [['glossary', 'none', 4]],
+      [['allobot', 'hint', 2]],
+    ]));
+    // Dropping the row would make an abandoned support invisible, and
+    // abandonment is exactly what a fade plan is watching for.
+    const g = m.supports.find((r) => r.support === 'glossary');
+    expect(g.points.map((p) => p.uses)).toEqual([4, 0]);
+  });
+});
+
+describe('P6 — the read chokepoint (Option B)', () => {
+  const store = { 'Falcon 7': [{ sessionId: 's1', timestamp: '2026-09-01', bySupport: {} }] };
+
+  it('refuses a read with no access assertion at all', () => {
+    expect(P.readFadeHistory(store, 'Falcon 7', null).reason).toBe('no-access-assertion');
+    expect(P.readFadeHistory(store, 'Falcon 7').reason).toBe('no-access-assertion');
+  });
+
+  it('refuses a read with no stated purpose', () => {
+    // Naming the purpose turns an incidental read into a deliberate one, and
+    // gives a future audit something to record.
+    expect(P.readFadeHistory(store, 'Falcon 7', {}).reason).toBe('no-purpose');
+  });
+
+  it('allows a deliberate read and carries the purpose through', () => {
+    const out = P.readFadeHistory(store, 'Falcon 7', { purpose: 'IEP goal review' });
+    expect(out.ok).toBe(true);
+    expect(out.purpose).toBe('IEP goal review');
+    expect(out.periods).toHaveLength(1);
+  });
+
+  it('a refused read reaches the panel as a refusal, not as an empty history', () => {
+    const m = P.buildSupportFadeModel(P.readFadeHistory(store, 'Falcon 7', null));
+    // An empty fade view reads as 'this student used no support' — the most
+    // misleading thing this surface could imply.
+    expect(m.ok).toBe(false);
+    expect(m.reason).toBe('no-access-assertion');
+  });
+});
+
+describe('P6 — the store stays out of progressHistory (Option B)', () => {
+  it('keys by codename, matching the roster, and never by a real name', async () => {
+    const led = P.createLedger({ now: mkClock().now });
+    await led.append('ai', { support: 'allobot', promptLevel: 'hint' });
+    const rec = P.buildFadeRecord(await led.exportForSupport(), { codename: 'Falcon 7', sessionId: 's1' });
+    const store = P.mergeFadeRecord({}, rec);
+    expect(Object.keys(store)).toEqual(['Falcon 7']);
+  });
+
+  it('dedupes by sessionId and honours retention', async () => {
+    const led = P.createLedger({ now: mkClock().now });
+    await led.append('ai', { support: 'allobot', promptLevel: 'hint' });
+    const ex = await led.exportForSupport();
+    let store = {};
+    // Same session twice must not double-count.
+    store = P.mergeFadeRecord(store, P.buildFadeRecord(ex, { codename: 'A', sessionId: 's1' }));
+    store = P.mergeFadeRecord(store, P.buildFadeRecord(ex, { codename: 'A', sessionId: 's1' }));
+    expect(store.A).toHaveLength(1);
+    for (let i = 0; i < 40; i++) {
+      store = P.mergeFadeRecord(store, P.buildFadeRecord(ex, { codename: 'A', sessionId: 'x' + i }), 30);
+    }
+    expect(store.A).toHaveLength(30);
+  });
+
+  it('does not mutate the store it was handed', async () => {
+    const led = P.createLedger({ now: mkClock().now });
+    await led.append('ai', { support: 'allobot', promptLevel: 'hint' });
+    const ex = await led.exportForSupport();
+    const before = { A: [] };
+    P.mergeFadeRecord(before, P.buildFadeRecord(ex, { codename: 'A', sessionId: 's1' }));
+    expect(before.A).toHaveLength(0);
+  });
+
+  it('refuses to build a record from an integrity export', async () => {
+    const led = P.createLedger({ now: mkClock().now });
+    await led.append('ai', { support: 'allobot', promptLevel: 'model' });
+    const rec = P.buildFadeRecord(await led.exportForSubmission(), { codename: 'A', sessionId: 's1' });
+    expect(rec).toMatchObject({ ok: false, reason: 'wrong-lens' });
+    // And a refused record must not slip into the store.
+    expect(P.mergeFadeRecord({}, rec)).toEqual({});
+  });
+});
+
+describe('P6 — the lane still decides nothing', () => {
+  async function model() {
+    const led = P.createLedger({ now: mkClock().now });
+    await led.append('ai', { support: 'allobot', promptLevel: 'model' });
+    const ex = await led.exportForSupport();
+    let store = P.mergeFadeRecord({}, P.buildFadeRecord(ex, { codename: 'A', sessionId: 's1' }));
+    store = P.mergeFadeRecord(store, P.buildFadeRecord(ex, { codename: 'A', sessionId: 's2' }));
+    return P.buildSupportFadeModel(P.readFadeHistory(store, 'A', { purpose: 'test' }));
+  }
+
+  it('makes no intervention decision — the Dispro precedent is binding', async () => {
+    const flat = JSON.stringify(await model()).toLowerCase();
+    for (const w of ['tier 2', 'tier 3', 'responding', 'not responding', 'on track',
+                     'at risk', 'refer', 'eligible', 'recommend', 'intervention']) {
+      expect(flat).not.toContain(w);
+    }
+  });
+
+  it('carries no integrity data whatsoever', async () => {
+    const flat = JSON.stringify(await model()).toLowerCase();
+    for (const k of ['paste', 'checkpoint', 'answerhash', 'verified', 'tamper', 'chain']) {
+      expect(flat).not.toContain(k);
+    }
+  });
+
+  it('reports heavier prompting without alarm or blame', async () => {
+    const clock = mkClock();
+    const mk = async (level) => {
+      const led = P.createLedger({ now: clock.now });
+      await led.append('ai', { support: 'allobot', promptLevel: level });
+      return led.exportForSupport();
+    };
+    let store = P.mergeFadeRecord({}, P.buildFadeRecord(await mk('hint'), { codename: 'A', sessionId: 's1' }));
+    store = P.mergeFadeRecord(store, P.buildFadeRecord(await mk('model'), { codename: 'A', sessionId: 's2' }));
+    const m = P.buildSupportFadeModel(P.readFadeHistory(store, 'A', { purpose: 'test' }));
+    const text = m.supports[0].change.text;
+    expect(text).toContain('harder material');
+    for (const w of ['regress', 'decline', 'concern', 'fail', 'worse', 'problem']) {
+      expect(text.toLowerCase()).not.toContain(w);
+    }
+  });
+
+  it('states coverage and what can never be observed', async () => {
+    const m = await model();
+    expect(m.coverage).toBe(P.COVERAGE_NOTE);
+    expect(m.neverObservable).toEqual(['spellcheck', 'word_prediction']);
+    expect(m.teamNote).toContain('decides nothing');
   });
 });
 

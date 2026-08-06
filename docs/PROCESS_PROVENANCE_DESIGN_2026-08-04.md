@@ -616,14 +616,18 @@ module with 10 tests. Nothing renders them yet, and that is a stop, not an overs
 
 ### 16.1 What it does
 
-Takes N support-lens exports, oldest first, and reports **support intensity** per period
-(0-3, weighted by the errorless-learning hierarchy) plus a per-scaffold first-to-last
-comparison.
+> **Superseded by §16.5.** The aggregate-intensity design described here was built, then
+> replaced the same day on Aaron's review. Kept for the reasoning, which still explains
+> *why* a raw count is insufficient.
 
-Intensity rather than count, because counting misses the thing being monitored. A student
-with four AlloBot turns in September and four in December looks unchanged by count; if
-those turns went from model-level to hint-level, the scaffolding faded substantially.
-That case is the lane's first test.
+Takes a codename's session history and reports, **per support**, how often it was used and
+at what level of prompting, across sessions.
+
+Counting alone misses the thing being monitored: a student with four AlloBot turns in
+September and four in December looks unchanged by count, but if those went from
+model-level to hint-level the scaffolding faded substantially. The original design answered
+that with an aggregate intensity score; §16.5 replaces it with the same insight expressed
+per support, because the aggregate flattened distinct stories into one line.
 
 ### 16.2 What it refuses to do
 
@@ -700,6 +704,73 @@ in this system should be asked, first, *whose population is this over?*
 It surfaced only because the lane was run on a realistic arc rather than a unit fixture.
 Fixture-shaped data would have hidden it indefinitely.
 
+
+
+### 16.5 Rebuilt on Aaron's corrections (2026-08-05)
+
+Three corrections, all of which held up against the code:
+
+**Codenames, not an invented access scheme.** `identityMode` (`real_name | codename |
+anonymous`, deliberate no-default) and `rosterKey` already carry the mapping, and codename
+keying is the established convention for per-student longitudinal data — BehaviorLens
+uses it throughout, including in the prompts it sends to AI. The fade lane keys by
+codename and never sees a real name.
+
+**A longitudinal pathway already exists.** `rosterKey.progressHistory[codename]` is a
+per-codename time series with retention, written by `saveRosterSessionSummary`, rendered by
+`LongitudinalProgressChart` and `LearnerProgressView`. The earlier claim that nothing
+aggregated submissions was simply wrong.
+
+**Aggregate intensity was too general.** It flattened three different stories into one
+line. Replaced by per-support quantification, which is how fading is documented against a
+goal. Periods are sessions with timestamps, matching progressHistory's cadence, which also
+removes the Unit-1-to-Unit-3 confound between fade and material getting harder.
+
+### 16.6 Why the store sits ALONGSIDE progressHistory (Option B)
+
+Two findings decided this.
+
+**Blast radius.** `student_analytics_module.js` reads `progressHistory` in roughly eight
+places. Writing scaffolding data into that structure would place the support lens inside a
+general teacher analytics surface — constraint 8 lost at the data layer, which is the only
+layer it has ever held at.
+
+**A shape collision that already exists.** `progressHistory[codename]` is written by TWO
+producers with incompatible record shapes:
+
+| Writer | Shape | Dedupe key |
+|---|---|---|
+| `saveRosterSessionSummary` (ANTI) | `{sessionId, timestamp, responseCount, liveActivityCount…}` | `sessionId` |
+| `student_analytics_module` import | `{date, quizAvg, wsAccuracy, fluencyWCPM…}` | `date` |
+
+Readers assume the second. `student_analytics_module.js:4109` sorts with
+`new Date(a.date) - new Date(b.date)`; session-shaped entries have no `date`, so the
+comparator yields `NaN` and the ordering of the whole array becomes undefined. Those
+entries also inflate the `snapshots.length < 2` guard that decides whether insights are
+generated at all.
+
+**That is a pre-existing defect in another module, not introduced here and not fixed here.**
+It is recorded because it is decisive: adding a third record shape would compound a
+collision that already produces wrong output.
+
+### 16.7 The chokepoint, described honestly
+
+Every read goes through `readFadeHistory(store, codename, access)`, which refuses without an
+access object and refuses again without a stated `purpose`.
+
+This is **not a security boundary** — anything that can call it can pass the assertion.
+What it guarantees is that a fade history cannot be read *by accident*, and that there is
+exactly ONE named seam to attach a real gate to once the access question is answered
+(§16.3, Howorth §12.11). It is the same shape as `visibleBody`: one place where a rule
+lives, rather than a rule repeated at every call site and eventually forgotten at one.
+
+A refused read reaches the panel as a *refusal*, never as an empty history, because an
+empty fade view reads as "this student used no support".
+
+### 16.8 Still not mounted
+
+Unchanged from §16.3. The lane is built, tested, and reachable only through a deliberate
+call. Who may make that call is still the open question.
 
 ---
 

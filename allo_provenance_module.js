@@ -570,151 +570,188 @@
 
   // ── P6: the support-fade lane (MTSS/RTI) ─────────────────────────────────
   // The consumer that makes the support lens worth collecting. A team asking
-  // "is this student needing less scaffolding over time?" needs MORE THAN ONE
-  // point, so this takes a list of support-lens exports — one per assignment,
-  // oldest first — and reports the shape of the change.
+  // "is this student needing less scaffolding over time?" needs more than one
+  // point, so this works over a SERIES of session records.
   //
-  // Three things it deliberately does NOT do:
-  //  · It never decides. No 'responding', 'not responding', 'on track', no tier
-  //    recommendation. Those are team decisions about a child, and the Dispro
-  //    Analyzer precedent is binding here: thresholds and decisions are never
-  //    ours. What it reports is arithmetic, stated as arithmetic.
-  //  · It never touches the integrity lens. No paste counts, no checkpoint
-  //    outcomes, no chain verification. Constraint 8 is a separation of
-  //    POPULATIONS (§15.4), and this side sees only what helped the student.
-  //  · It never treats support as a deficit. Fewer scaffolds is not 'better'
-  //    and more is not 'worse' — a student whose needs increased is a student
-  //    whose plan may need to change, which is the point of monitoring.
-  function fadeWeight(level) {
-    // Errorless-learning ordering: a model-level prompt is more support than a
-    // hint. Weights make a mixed period comparable to another mixed period;
-    // they are NOT a score and are never shown.
-    if (level === 'model') return 3;
-    if (level === 'guided') return 2;
-    if (level === 'hint') return 1;
-    return 0;
-  }
+  // Three shape decisions, all from review (§16.5):
+  //
+  //  · PER-SUPPORT, not aggregate. An overall 'intensity' number flattened three
+  //    different stories into one line — AlloBot fading, glossary abandoned,
+  //    read-aloud rising — and fading is documented per support against a goal,
+  //    not as a mean. Per-support quantification is the product.
+  //  · SESSION periods, not 'assignment N'. Matches the cadence
+  //    rosterKey.progressHistory already uses, and stops a Unit-1-to-Unit-3
+  //    comparison confounding fade with material getting harder.
+  //  · CODENAME keyed. The app's established identity for per-student
+  //    longitudinal data (BehaviorLens, the roster, identityMode). The teacher
+  //    holds the mapping in rosterKey; this side never sees a real name.
+  //
+  // It lives ALONGSIDE progressHistory rather than inside it (Option B). That
+  // structure is read in ~8 places by student_analytics_module, so writing
+  // scaffolding data into it would put the support lens inside a general
+  // teacher analytics surface — constraint 8 lost at the data layer, where it
+  // is the only place it has ever held. It also already carries two
+  // incompatible record shapes; a third would compound that.
 
-  function buildSupportFadeModel(supportExports, options) {
-    var opts = options || {};
-    var list = Array.isArray(supportExports) ? supportExports : [supportExports];
-    var labels = Array.isArray(opts.labels) ? opts.labels : [];
-    var periods = [];
-    for (var i = 0; i < list.length; i++) {
-      var ex = list[i];
-      if (!ex) continue;
-      // Guard the wall at the INPUT. Handing this an integrity export would
-      // silently produce an empty fade line that looks like 'no support used',
-      // which is the most misleading empty state this lane can have.
-      if (ex.lens === 'integrity') {
-        return { ok: false, reason: 'wrong-lens', periods: [], coverage: COVERAGE_NOTE };
-      }
-      var sum = summarizeSupport(ex);
-      // ★ Intensity is computed over SCAFFOLDS ONLY, never over access
-      // supports. An access support has no prompt level — it is binary, used
-      // or not — so averaging it in drags the mean toward zero. That made a
-      // student who leaned harder on read-aloud read as FADING while their
-      // generative scaffolding was identical, in the one lane whose output
-      // could contribute to withdrawing that accommodation. Populations again
-      // (§15.4): the same mistake, one layer up.
-      var total = 0, weighted = 0, scaffoldUses = 0, accessUses = 0;
-      var evts = (ex.events || []);
-      for (var j = 0; j < evts.length; j++) {
-        var ev = evts[j];
-        if (ev.type !== 'ai' && ev.type !== 'support') continue;
-        var n = ev.type === 'support' ? Math.max(1, parseInt(ev.count, 10) || 1) : 1;
-        var who = classifySupport(ev.type === 'support' ? ev.kind : ev.support);
-        total += n;
-        if (who === 'access') { accessUses += n; continue; }
-        var lvl = PROMPT_LEVELS.indexOf(ev.promptLevel) >= 0 ? ev.promptLevel : 'none';
-        scaffoldUses += n;
-        weighted += fadeWeight(lvl) * n;
-      }
-      periods.push({
-        label: clampStr(labels[i] || ('Assignment ' + (i + 1)), 80),
-        startedWallClock: String(ex.startedWallClock || ''),
-        supports: total,
-        // Reported SEPARATELY, never averaged together. Access use is a count
-        // question ('how often did they need it?'); scaffolding is an
-        // intensity question ('how much was done for them?'). Collapsing the
-        // two answers neither.
-        accessUses: accessUses,
-        scaffoldUses: scaffoldUses,
-        byLevel: sum.promptLevelCounts,
-        bySupport: sum.bySupport,
-        // Mean scaffold intensity, 0-3, over scaffold events only. Comparable
-        // across periods of different length, which a raw count is not.
-        intensity: scaffoldUses ? Math.round((weighted / scaffoldUses) * 100) / 100 : 0
+  // One period: what each support was used for, and at what levels.
+  // No mean, no score, no total-that-looks-like-a-grade.
+  function buildFadeRecord(supportExport, meta) {
+    var m = meta || {};
+    if (!supportExport || supportExport.lens === 'integrity') {
+      return { ok: false, reason: 'wrong-lens' };
+    }
+    var evts = supportExport.events || [];
+    var bySupport = {};
+    for (var i = 0; i < evts.length; i++) {
+      var e = evts[i];
+      if (e.type !== 'ai' && e.type !== 'support') continue;
+      var name = String(e.type === 'support' ? e.kind : e.support) || 'unspecified';
+      var n = e.type === 'support' ? Math.max(1, parseInt(e.count, 10) || 1) : 1;
+      var level = PROMPT_LEVELS.indexOf(e.promptLevel) >= 0 ? e.promptLevel : 'none';
+      var row = bySupport[name] || (bySupport[name] = {
+        uses: 0, kind: classifySupport(name),
+        levels: { model: 0, guided: 0, hint: 0, none: 0 }
       });
+      row.uses += n;
+      row.levels[level] += n;
     }
     return {
       ok: true,
-      periods: periods,
-      change: describeFadeChange(periods),
+      codename: clampStr(m.codename, 60),
+      sessionId: clampStr(m.sessionId, 80),
+      timestamp: clampStr(m.timestamp || supportExport.startedWallClock, 40),
+      bySupport: bySupport
+    };
+  }
+
+  // The store: codename -> records, newest last, deduped by sessionId. Shaped
+  // like progressHistory on purpose (same keying, same retention idea) so the
+  // join is a lookup rather than a translation — but kept in its own object so
+  // nothing that reads progressHistory can reach it.
+  function mergeFadeRecord(store, record, retentionLimit) {
+    var limit = Math.max(1, parseInt(retentionLimit, 10) || 30);
+    var next = {};
+    var src = store && typeof store === 'object' ? store : {};
+    Object.keys(src).forEach(function (k) { next[k] = (src[k] || []).slice(); });
+    if (!record || record.ok === false || !record.codename) return next;
+    var list = (next[record.codename] || []).filter(function (r) {
+      return !record.sessionId || r.sessionId !== record.sessionId;
+    });
+    list.push({
+      sessionId: record.sessionId,
+      timestamp: record.timestamp,
+      bySupport: record.bySupport
+    });
+    next[record.codename] = list.slice(-limit);
+    return next;
+  }
+
+  // ★ THE CHOKEPOINT. Every read of a student's fade history goes through here,
+  // which is what makes Option B worth its extra cost: there is exactly ONE
+  // place to attach an access rule, the way visibleBody is the one place the
+  // population rule lives.
+  //
+  // Be honest about what this is. It is not a security boundary — anything that
+  // can call it can pass the assertion. It is a structural guarantee that a fade
+  // history cannot be read BY ACCIDENT, and a single named seam for a real gate
+  // when the access question is answered (§16.3, Howorth §12.11).
+  function readFadeHistory(store, codename, access) {
+    if (!access || typeof access !== 'object') {
+      return { ok: false, reason: 'no-access-assertion', periods: [] };
+    }
+    if (!access.purpose) {
+      // Naming the purpose is the point: it makes an incidental read into a
+      // deliberate one, and gives an audit something to record later.
+      return { ok: false, reason: 'no-purpose', periods: [] };
+    }
+    var key = String(codename || '');
+    if (!key) return { ok: false, reason: 'no-codename', periods: [] };
+    var list = (store && store[key]) || [];
+    return { ok: true, codename: key, purpose: String(access.purpose).slice(0, 120), periods: list.slice() };
+  }
+
+  // The model a team reads: every support, every period, plus a plain statement
+  // of what moved. No overall number.
+  function buildSupportFadeModel(history, options) {
+    var opts = options || {};
+    if (history && history.ok === false) {
+      return { ok: false, reason: history.reason, supports: [], coverage: COVERAGE_NOTE };
+    }
+    var periods = (history && history.periods) || [];
+    var names = {};
+    periods.forEach(function (p) {
+      Object.keys((p && p.bySupport) || {}).forEach(function (n) { names[n] = true; });
+    });
+    var supports = Object.keys(names).sort().map(function (name) {
+      var points = periods.map(function (p) {
+        var row = (p.bySupport || {})[name] || { uses: 0, levels: { model: 0, guided: 0, hint: 0, none: 0 }, kind: classifySupport(name) };
+        return { timestamp: p.timestamp, sessionId: p.sessionId, uses: row.uses, levels: row.levels };
+      });
+      return {
+        support: name,
+        kind: classifySupport(name),
+        points: points,
+        change: describeSupportChange(name, points)
+      };
+    });
+    return {
+      ok: true,
+      codename: (history && history.codename) || '',
+      periods: periods.length,
+      supports: supports,
       coverage: COVERAGE_NOTE,
       neverObservable: NEVER_OBSERVABLE.slice(),
-      // Shipped as data so no future panel can style it away or forget it.
-      teamNote: 'This shows which supports were used and how strong they were. '
+      teamNote: 'This shows which supports were used and how strong the prompting was. '
         + 'It is one source among many, it does not measure learning, and it '
         + 'decides nothing about services or tiers.'
     };
   }
 
-  // Arithmetic, phrased as arithmetic. A team reads direction; it does not read
-  // a verdict, because there is none to read.
-  function describeFadeChange(periods) {
-    if (!periods || periods.length < 2) {
+  // Per support, in words, as arithmetic. Access supports get a USE statement;
+  // scaffolds also get a LEVEL statement, because for a scaffold the level is
+  // the thing being faded and the count is not.
+  function describeSupportChange(name, points) {
+    if (!points || points.length < 2) {
+      return { direction: 'insufficient', text: 'Not enough sessions yet to read a direction.' };
+    }
+    var first = points[0], last = points[points.length - 1];
+    var kind = classifySupport(name);
+    var useDelta = last.uses - first.uses;
+    var useWord = useDelta < 0 ? 'less often' : useDelta > 0 ? 'more often' : 'about as often';
+    if (kind === 'access') {
+      // An access support has no level to fade. Reporting one would invent a
+      // measurement, and reporting MORE use as a problem would be wrong: an
+      // accommodation used more is an accommodation doing its job.
       return {
-        direction: 'insufficient',
-        text: 'One assignment is a snapshot, not a trend. Two or more are needed before '
-          + 'any direction can be read.'
+        direction: useDelta < 0 ? 'less' : useDelta > 0 ? 'more' : 'steady',
+        text: 'Used ' + useWord + ' than at the start (' + first.uses + ' to ' + last.uses + ').'
       };
     }
-    var first = periods[0], last = periods[periods.length - 1];
-    // Scaffolding only. Access use is reported beside this, never folded in.
-    if (!first.scaffoldUses && !last.scaffoldUses) {
-      return {
-        direction: 'no-scaffolds',
-        delta: 0,
-        text: 'No scaffolding was recorded in either assignment, so there is no fade to read. '
-          + 'Access supports, if any, are listed separately.'
-      };
-    }
-    var delta = Math.round((last.intensity - first.intensity) * 100) / 100;
-    var direction = delta < -0.25 ? 'less' : delta > 0.25 ? 'more' : 'steady';
-    var text;
-    if (direction === 'less') {
-      text = 'Scaffolding is lighter than at the start (' + first.intensity + ' to ' + last.intensity + ').';
-    } else if (direction === 'more') {
-      // Phrased without alarm. More support is information, not a problem, and
-      // certainly not the student's failing.
-      text = 'Scaffolding is heavier than at the start (' + first.intensity + ' to ' + last.intensity + '). '
-        + 'That may reflect harder material as much as anything about the student.';
-    } else {
-      text = 'Scaffolding is about the same as at the start (' + first.intensity + ' to ' + last.intensity + ').';
-    }
-    return { direction: direction, delta: delta, text: text };
+    var heaviestFirst = heaviestLevel(first.levels);
+    var heaviestLast = heaviestLevel(last.levels);
+    var rank = { model: 3, guided: 2, hint: 1, none: 0 };
+    var levelDelta = rank[heaviestLast] - rank[heaviestFirst];
+    var text = 'Used ' + useWord + ' than at the start (' + first.uses + ' to ' + last.uses + ')';
+    if (levelDelta < 0) text += ', and the prompting got lighter (' + heaviestFirst + ' to ' + heaviestLast + ').';
+    else if (levelDelta > 0) text += ', and the prompting got heavier (' + heaviestFirst + ' to ' + heaviestLast + '). '
+      + 'That may reflect harder material as much as anything about the student.';
+    else text += ', at about the same level of prompting (' + heaviestLast + ').';
+    return { direction: levelDelta < 0 ? 'less' : levelDelta > 0 ? 'more' : 'steady', text: text };
   }
 
-  // Which scaffolds moved, named. A team fading a specific support needs to
-  // know whether THAT support faded, not whether the total did.
-  function fadeBySupport(model) {
-    var periods = (model && model.periods) || [];
-    if (periods.length < 2) return [];
-    var first = periods[0].bySupport || {};
-    var last = periods[periods.length - 1].bySupport || {};
-    var names = {};
-    Object.keys(first).forEach(function (k) { names[k] = true; });
-    Object.keys(last).forEach(function (k) { names[k] = true; });
-    return Object.keys(names).sort().map(function (name) {
-      return { support: name, from: first[name] || 0, to: last[name] || 0 };
-    });
+  function heaviestLevel(levels) {
+    var order = ['model', 'guided', 'hint', 'none'];
+    for (var i = 0; i < order.length; i++) if ((levels || {})[order[i]] > 0) return order[i];
+    return 'none';
   }
 
   // The team-facing surface. Deliberately plain: no chart, no colour coding, no
   // arrows. A red down-arrow beside a child's scaffolding turns monitoring into
   // scoring, and the visual register is exactly what constraint 8 says these two
   // lenses may never share.
+  //
+  // One row per SUPPORT, because that is the unit a team fades against a goal.
+  // There is no overall number to read instead.
   function SupportFadePanel(props) {
     var React = GLOBAL.React;
     if (!React || !React.createElement) return null;
@@ -723,55 +760,49 @@
     var model = props && props.model;
     if (!model) return null;
     if (model.ok === false) {
-      // The wrong-lens case is worth SAYING. An empty fade line reads as 'this
-      // student used no support', which is the most misleading thing this
-      // panel could imply.
-      return h('p', { role: 'status', style: { fontSize: '0.8rem', color: '#475569' } },
-        t('fade.wrong_lens', 'This record is the submission copy, which does not carry support details. Open the support copy to see them.'));
+      // Say WHY. An empty fade view reads as 'this student used no support',
+      // which is the most misleading thing this panel could imply.
+      var why = model.reason === 'wrong-lens'
+        ? t('fade.wrong_lens', 'This is the submission copy, which does not carry support details.')
+        : model.reason === 'no-access-assertion' || model.reason === 'no-purpose'
+          ? t('fade.no_access', 'A support history is only opened deliberately, with a stated purpose.')
+          : t('fade.unavailable', 'No support history is available here.');
+      return h('p', { role: 'status', style: { fontSize: '0.8rem', color: '#475569' } }, why);
     }
-    var rows = fadeBySupport(model);
+    if (!model.supports.length) {
+      return h('p', { role: 'status', style: { fontSize: '0.8rem', color: '#475569' } }, [
+        h('span', { key: 'a' }, t('fade.none_recorded', 'No supports were recorded in these sessions. ')),
+        h('span', { key: 'b' }, model.coverage)
+      ]);
+    }
     return h('section', { 'aria-labelledby': 'allo-fade-title', style: { border: '1px solid #e2e8f0', borderRadius: 8, padding: 10 } }, [
       h('h3', { key: 'h', id: 'allo-fade-title', style: { fontSize: '0.9rem', fontWeight: 700, margin: 0 } },
-        t('fade.title', 'Support over time')),
+        t('fade.title', 'Support over time') + (model.codename ? ' — ' + model.codename : '')),
       h('p', { key: 'note', style: { fontSize: '0.78rem', color: '#475569', marginTop: 6 } }, model.teamNote),
-      h('p', { key: 'change', style: { fontSize: '0.82rem', marginTop: 8 } }, model.change.text),
-      h('table', { key: 'periods', style: { width: '100%', marginTop: 8, fontSize: '0.78rem', borderCollapse: 'collapse' } }, [
+      h('table', { key: 'tbl', style: { width: '100%', marginTop: 8, fontSize: '0.78rem', borderCollapse: 'collapse' } }, [
         h('caption', { key: 'cap', style: { captionSide: 'top', textAlign: 'left', fontSize: '0.75rem', color: '#475569' } },
-          t('fade.periods_caption', 'Access supports are counted, not scored. Scaffold intensity runs 0-3 and covers only scaffolding.')),
+          t('fade.caption', 'Each support across ' + model.periods + ' session' + (model.periods === 1 ? '' : 's'))),
         h('thead', { key: 'th' }, h('tr', null, [
-          h('th', { key: 'a', scope: 'col', style: { textAlign: 'left' } }, t('fade.assignment', 'Assignment')),
-          h('th', { key: 'b', scope: 'col', style: { textAlign: 'left' } }, t('fade.access', 'Access supports used')),
-          h('th', { key: 'c', scope: 'col', style: { textAlign: 'left' } }, t('fade.scaffolds', 'Scaffolds used')),
-          h('th', { key: 'd', scope: 'col', style: { textAlign: 'left' } }, t('fade.intensity', 'Scaffold intensity'))
+          h('th', { key: 'a', scope: 'col', style: { textAlign: 'left' } }, t('fade.support', 'Support')),
+          h('th', { key: 'b', scope: 'col', style: { textAlign: 'left' } }, t('fade.kind', 'Kind')),
+          h('th', { key: 'c', scope: 'col', style: { textAlign: 'left' } }, t('fade.what_changed', 'What changed'))
         ])),
-        h('tbody', { key: 'tb' }, model.periods.map(function (p, i) {
-          return h('tr', { key: i }, [
-            h('th', { key: 'a', scope: 'row', style: { textAlign: 'left', fontWeight: 400 } }, p.label),
-            h('td', { key: 'b' }, String(p.accessUses)),
-            h('td', { key: 'c' }, String(p.scaffoldUses)),
-            h('td', { key: 'd' }, String(p.intensity))
+        h('tbody', { key: 'tb' }, model.supports.map(function (row, i) {
+          return h('tr', { key: i, style: { verticalAlign: 'top' } }, [
+            h('th', { key: 'a', scope: 'row', style: { textAlign: 'left', fontWeight: 400 } }, row.support),
+            // 'access' vs 'scaffold' in words, so a reader is never left to
+            // infer that an accommodation is a scaffold being faded.
+            h('td', { key: 'b' }, row.kind === 'access'
+              ? t('fade.kind_access', 'access')
+              : row.kind === 'generative' ? t('fade.kind_scaffold', 'scaffold') : t('fade.kind_unknown', 'not identified')),
+            h('td', { key: 'c' }, row.change.text)
           ]);
         }))
       ]),
-      rows.length ? h('table', { key: 'bysupport', style: { width: '100%', marginTop: 10, fontSize: '0.78rem', borderCollapse: 'collapse' } }, [
-        h('caption', { key: 'cap', style: { captionSide: 'top', textAlign: 'left', fontSize: '0.75rem', color: '#475569' } },
-          t('fade.by_support_caption', 'Each support, first assignment to last')),
-        h('thead', { key: 'th' }, h('tr', null, [
-          h('th', { key: 'a', scope: 'col', style: { textAlign: 'left' } }, t('fade.support', 'Support')),
-          h('th', { key: 'b', scope: 'col', style: { textAlign: 'left' } }, t('fade.first', 'First')),
-          h('th', { key: 'c', scope: 'col', style: { textAlign: 'left' } }, t('fade.last', 'Last'))
-        ])),
-        h('tbody', { key: 'tb' }, rows.map(function (r, i) {
-          return h('tr', { key: i }, [
-            h('th', { key: 'a', scope: 'row', style: { textAlign: 'left', fontWeight: 400 } }, r.support),
-            h('td', { key: 'b' }, String(r.from)),
-            h('td', { key: 'c' }, String(r.to))
-          ]);
-        }))
-      ]) : null,
       h('p', { key: 'cov', style: { fontSize: '0.75rem', color: '#475569', marginTop: 10 } }, model.coverage)
     ]);
   }
+
   // ── P3: comprehension checkpoints ────────────────────────────────────────
   // Questions generated FROM the student's own artifact, answered by the
   // student, read by the TEACHER. The safety rules below came out of an
@@ -1271,9 +1302,11 @@
     summarizeProcess: summarizeProcess,
     summarizeSupport: summarizeSupport,
     // ── P6 ──
+    buildFadeRecord: buildFadeRecord,
+    mergeFadeRecord: mergeFadeRecord,
+    readFadeHistory: readFadeHistory,
     buildSupportFadeModel: buildSupportFadeModel,
     SupportFadePanel: SupportFadePanel,
-    fadeBySupport: fadeBySupport,
     sanitizeEvent: sanitizeEvent,
     stableStringify: stableStringify,
     // Exported for checkpoint answer fingerprints (P3): the ledger stores a
