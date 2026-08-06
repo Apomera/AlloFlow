@@ -1,0 +1,149 @@
+{
+ "schema_version": "1.0",
+ "document": {
+  "title": "2025 Instructions for Form 1040 (and 1040-SR)",
+  "language": "en",
+  "source_page_count": 126,
+  "source_sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a",
+  "document_type": "booklet",
+  "subject": "Internal Revenue Service instructions for the 2025 Form 1040 and Form 1040-SR, including the instructions for Schedules 1 through 3.",
+  "variant": "original"
+ },
+ "blocks": [
+  {
+   "type": "heading",
+   "level": 2,
+   "text": "Your Rights as a Taxpayer",
+   "source_page": 125
+  },
+  {
+   "type": "heading",
+   "level": 3,
+   "text": "The Taxpayer Bill of Rights",
+   "source_page": 125
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "1. The Right to Be Informed",
+   "source_page": 125
+  },
+  {
+   "type": "paragraph",
+   "text": "Taxpayers have the right to know what they need to do to comply with the tax laws. They are entitled to clear explanations of the laws and IRS procedures in all tax forms, instructions, publications, notices, and correspondence. They have the right to be informed of IRS decisions about their tax accounts and to receive clear explanations of the outcomes.",
+   "source_page": 125
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "2. The Right to Quality Service",
+   "source_page": 125
+  },
+  {
+   "type": "paragraph",
+   "text": "Taxpayers have the right to receive prompt, courteous, and professional assistance in their dealings with the IRS, to be spoken to in a way they can easily understand, to receive clear and easily understandable communications from the IRS, and to speak to a supervisor about inadequate service.",
+   "source_page": 125
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "3. The Right to Pay No More than the Correct Amount of Tax",
+   "source_page": 125
+  },
+  {
+   "type": "paragraph",
+   "text": "Taxpayers have the right to pay only the amount of tax legally due, including interest and penalties, and to have the IRS apply all tax payments properly.",
+   "source_page": 125
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "4. The Right to Challenge the IRS’s Position and Be Heard",
+   "source_page": 125
+  },
+  {
+   "type": "paragraph",
+   "text": "Taxpayers have the right to raise objections and provide additional documentation in response to formal IRS actions or proposed actions, to expect that the IRS will consider their timely objections and documentation promptly and fairly, and to receive a response if the IRS does not agree with their position.",
+   "source_page": 125
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "5. The Right to Appeal an IRS Decision in an Independent Forum",
+   "source_page": 125
+  },
+  {
+   "type": "paragraph",
+   "text": "Taxpayers are entitled to a fair and impartial administrative appeal of most IRS decisions, including many penalties, and have the right to receive a written response regarding the IRS Independent Office of Appeals’ decision. Taxpayers generally have the right to take their cases to court.",
+   "source_page": 125
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "6. The Right to Finality",
+   "source_page": 125
+  },
+  {
+   "type": "paragraph",
+   "text": "Taxpayers have the right to know the maximum amount of time they have to challenge the IRS’s position as well as the maximum amount of time the IRS has to audit a particular tax year or collect a tax debt. Taxpayers have the right to know when the IRS has finished an audit.",
+   "source_page": 125
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "7. The Right to Privacy",
+   "source_page": 125
+  },
+  {
+   "type": "paragraph",
+   "text": "Taxpayers have the right to expect that any IRS inquiry, examination, or enforcement action will comply with the law and be no more intrusive than necessary, and will respect all due process rights, including search and seizure protections, and will provide, where applicable, a collection due process hearing.",
+   "source_page": 125
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "8. The Right to Confidentiality",
+   "source_page": 125
+  },
+  {
+   "type": "paragraph",
+   "text": "Taxpayers have the right to expect that any information they provide to the IRS will not be disclosed unless authorized by the taxpayer or by law. Taxpayers have the right to expect appropriate action will be taken against employees, return preparers, and others who wrongfully use or disclose taxpayer return information.",
+   "source_page": 125
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "9. The Right to Retain Representation",
+   "source_page": 125
+  },
+  {
+   "type": "paragraph",
+   "text": "Taxpayers have the right to retain an authorized representative of their choice to represent them in their dealings with the IRS. Taxpayers have the right to seek assistance from a Low Income Taxpayer Clinic if they cannot afford representation.",
+   "source_page": 125
+  },
+  {
+   "type": "heading",
+   "level": 4,
+   "text": "10. The Right to a Fair and Just Tax System",
+   "source_page": 125
+  },
+  {
+   "type": "paragraph",
+   "text": "Taxpayers have the right to expect the tax system to consider facts and circumstances that might affect their underlying liabilities, ability to pay, or ability to provide information timely. Taxpayers have the right to receive assistance from the Taxpayer Advocate Service if they are experiencing financial difficulty or if the IRS has not resolved their tax issues properly and timely through its normal channels.",
+   "source_page": 125
+  },
+  {
+   "type": "paragraph",
+   "text": "Learn more at IRS.gov/TaxpayerRights.",
+   "source_page": 125
+  }
+ ],
+ "review_notes": [
+  "TRANCHE 62 OF A MULTI-SESSION REBUILD. This plan covers printed page 125, Your Rights as a Taxpayer: the ten rights of the Taxpayer Bill of Rights. It carries no document title by design — only tranche 1 does — so this file validates through merge-plans rather than standalone. Nothing is carried in or out.",
+  "THE READING ORDER WAS REBUILT FROM GEOMETRY. The column detector reports this page as **1 column** and interleaves the two: “1. The Right to Be Informed 6. The Right to FinalityTaxpayers have the right to know what they need to do to Taxpayers have the right to know the maximum amount of…”. The page is two columns at x=59 and x=316 carrying rights 1-5 and 6-10, and each was read top to bottom. Same failure shape as page 121 — very little running prose for the gutter search to work with, on a page that is mostly display type.",
+  "THE NUMBERING IS PART OF EACH PRINTED HEADING and is kept rather than regenerated as an ordered list. A reader who is told elsewhere to consult “the fourth right” needs the number to be in the heading, and the source prints it there. Two assertions check the ten titles are intact and run 1-10 in order, which is the failure a per-column read could produce — rights 6-10 landing among 1-5.",
+  "TWO HEADINGS WRAP OVER TWO PRINTED LINES and are joined: “3. The Right to Pay No More than the / Correct Amount of Tax”, “4. The Right to Challenge the IRS’s Position / and Be Heard”, and “5. The Right to Appeal an IRS Decision in an / Independent Forum”. The wrap is typographic, not structural.",
+  "“Learn more at IRS.gov/TaxpayerRights.” IS PLACED AFTER ALL TEN RIGHTS, not after right 5 where it is printed. It sits at the foot of the LEFT column because that is where the column ends, but it closes the whole list rather than right 5 — leaving it in print position would file it under “5. The Right to Appeal an IRS Decision in an Independent Forum”, where it does not belong. Same test as tranches 45, 54, and 56. **The address carries NO Link annotation on this page**, checked rather than assumed, so it is left as plain text and no URL was invented for it; the closing period is the rebuild's own, since the printed line ends without one.",
+  "PAGE FURNITURE OMITTED: the printed page number. The two curly apostrophes (“IRS’s”, “Appeals’”) are the source's own. No soft hyphens or line-break hyphens appear on this page — it is set ragged-right without hyphenation, the only page in the rebuild for which that is true."
+ ]
+}
