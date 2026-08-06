@@ -2297,15 +2297,54 @@ IRS.gov address the page already gives once.
 The geometry cache lives in the TEMP DIR, as tranches 17 and 21 do - a dump is
 a build artifact, not source, and the first draft wrote it into the repo.
 
-### NEXT: pages 120-122, then the Index
+### Session 59 (2026-08-05) - pages 120-121 - tranche-59 - 23 blocks - VALIDATED (merged)
 
-* **120-121** the Disclosure, Privacy Act, and Paperwork Reduction Act notice.
+The Disclosure, Privacy Act, and Paperwork Reduction Act Notice, and the
+Estimated Average Taxpayer Burden table. `merge-plans t01..t59` -> 2,022
+blocks, `ok: true`, **pages 1-121 covered**, zero heading skips. Recall 0.9896.
+
+**The shortfall is degraded SOURCE, not lost content** - the third clear case
+after pages 88 and 108. Eleven of the thirteen tokens are cross-column glue
+(`burpending`, `comer`, `deone`, `estireturn`, `locaments`, `recordtax`,
+`taxpaywelcome`) and hyphen halves orphaned in another column (`den`,
+`keeping`, `mates`, `tion`); the other two are the folios. None of those
+strings exists in the printed document. Verified explicitly: the plan contains
+"the geographic location", "For more information on taxpayer burden, see Pub.
+5743", "time and cost estimates below", "vary extensively depending on the tax
+situation", "recordkeeping representing the largest component", and **zero**
+glue strings.
+
+> **PAGE 121 IS A NEW FAILURE SHAPE FOR THE SPLITTER: TOO LITTLE PROSE.** It
+> reports **1 column** and interleaves all three. The page is three short
+> columns above a full-width table, and **only nine text lines sit above the
+> table** - not enough for the gutter search to work with. Page 120, by
+> contrast, reports 4 columns and is entirely correct: a title band over three
+> columns, the round-9 peel working. Two adjacent pages, the same layout
+> family, opposite outcomes, and the difference is how much prose there is.
+
+**The burden table has a two-level spanning header and the plan's table has
+one header row.** The printed table groups columns 3-8 under "Average Burden"
+and 3-7 under "Average Time (Hours)". Those group names are FOLDED INTO each
+column name ("Average Time (Hours): Recordkeeping") rather than dropped,
+because a reader of the flat table would otherwise have no way to know
+"Recordkeeping" is measured in hours. **"Type of taxpayer" is kept as a row
+with no figures**, as printed - a grouping label with seven empty cells, the
+shape the renderer's zero-width-space fix now handles.
+
+Two paragraphs span column breaks and one spans the page break, all authored
+whole; the folio sits *between the halves* of "If you do not file a return..."
+in the column flow.
+
+### NEXT: page 122, then the Index
+
 * **122** Major Categories of Federal Income and Outlays (figure plus table).
+  Nothing is carried into it.
 * **123-126 the Index** - MECHANICAL, three columns of entries with page
-  numbers and sub-entries. **Do not hand-author it.** Build a generator from
-  the per-item geometry and assert its way to a plan, as tranches 17, 21 and
-  58 did. Tranche 58's shape is the closest model: a column-bounded parse with
-  a header cut, a body-face filter, and an ordering invariant.
+  numbers and sub-entries. **Do not hand-author it.** Tranche 58's shape is
+  the model: a column-bounded parse with a header cut, a body-face filter, and
+  an ordering invariant. For the Index the natural invariant is that entries
+  are ALPHABETICAL within each letter section, which is the equivalent of
+  tranche 58's strictly-increasing topic numbers.
 
 ## Run-in level audit (2026-08-05) - the session-49 concern, checked and CLOSED
 
