@@ -1484,8 +1484,21 @@ function normalizeStandardsDimension(rawReports, configuredStandards, options) {
 
 
 const handleGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, switchView = true, deps) => {
-  const { gradeLevel, outlineType, visualStyle, visualCustomStyle, visualLayoutMode, quizMcqCount, persistedLessonDNA, leveledTextCustomInstructions, quizCustomInstructions, glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, lessonCustomAdditions, timelineTopic, sourceTopic, history, inputText, differentiationRange, leveledTextLanguage, selectedLanguages, studentInterests: _ambientStudentInterests, guidedMode, guidedStep, standardsInput, standardsContext: _ambientStandardsContext, targetStandards, dokLevel, sourceLength, sourceTone, textFormat, useEmojis, fullPackTargetGroup, rosterKey, imageGenerationStyle, imageAspectRatio, enableEmojiInline, cellGameDifficulty, includeSourceCitations, includeBibliography, currentUiLanguage, sourceCustomInstructions, sourceVocabulary, sourceLevel, generatedContent, mathSubject, mathMode, mathInput, mathQuantity, isAutoConfigEnabled, resourceCount, isParentMode, isIndependentMode, isTeacherMode, frameType, fillInTheBlank, vocabularyType, enableFactionResources, factionResourceMode, isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode, adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode, apiKey, setIsMapLocked, setIsProcessing, setGenerationStep, setInteractionMode, setDefinitionData, setSelectionMenu, setRevisionData, setIsReviewGame, setReviewGameState, setGuidedStep, setGeneratedContent, setActiveView, setHistory, setError, setShowKokoroOfferModal, alloBotRef, pdfFixResult, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, callImagen, extractSourceTextForProcessing, formatLessonDNA, getDifferentiationGrades, getGroupDifferentiationContext, flyToElement, fisherYatesShuffle, sanitizeTruncatedCitations, normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString, processGrounding, parseFlowChartData, verifyMathProblems, normalizeResourceLinks, detectClimaxArchetype, handleGenerateLessonPlan, handleGenerateMath, handleGenerateSource, autoConfigureSettings, applyDetailedAutoConfig, getAssetManifest, getLessonContext, buildLessonPlanPrompt, buildStudyGuidePrompt, buildParentGuidePrompt, GUIDED_STEPS, LENGTH_THRESHOLDS, TIMELINE_MODE_DEFINITIONS, audioRef, autoRemoveWords, bridgeSimType, bridgeStepCount, conceptImageMode, conceptItemCount, conceptSortImageStyle, creativeMode, faqCount, glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count, glossaryTier3Count, includeCharts, includeEtymology, includeTimelineVisuals, isBotVisible, isMathGraphEnabled, keepCitations, leveledTextLength, noText, passAnalysisToQuiz, quizReflectionCount, selectedConcepts: _ambientSelectedConcepts, standardsPromptString: _ambientStandardsPromptString, timelineImageStyle, timelineItemCount, timelineMode, useLowQualityVisuals, setGameMode, setGlossarySearchTerm, setIsConceptMapReady, setIsEditingAnalysis, setIsEditingBrainstorm, setIsEditingFaq, setIsEditingGlossary, setIsEditingLeveledText, setIsEditingOutline, setIsEditingQuiz, setIsEditingScaffolds, setIsGeneratingPersona, setIsInteractiveVenn, setIsMatchingGame, setIsMemoryGame, setIsPlaying, setIsPresentationMode, setIsSideBySide, setIsStudentBingoGame, setIsVennPlaying, setPersonaState, setPresentationState, setProcessingProgress, setShowQuizAnswers, setStickers, calculateReadability, callGeminiImageEdit, checkAccuracyWithSearch, chunkText, countWords, executeVisualPlan, filterEducationalSources, formatMathQuestion, generateHelpfulHint, generateVisualPlan, getDefaultTitle, performDeepVerification, repairGeneratedText, resetPersonaInterviewState, validateSequenceStructure, universalImageStyle, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, personaCustomInstructions, differentiationTypes, differentiationCustomGrades } = deps;
+  const { gradeLevel, outlineType, visualStyle, visualCustomStyle, visualLayoutMode, quizMcqCount, persistedLessonDNA, leveledTextCustomInstructions, quizCustomInstructions, glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, lessonCustomAdditions, timelineTopic, sourceTopic, history, inputText, differentiationRange, leveledTextLanguage, selectedLanguages, studentInterests: _ambientStudentInterests, guidedMode, guidedStep, standardsInput, standardsContext: _ambientStandardsContext, targetStandards, dokLevel, sourceLength, sourceTone, textFormat, useEmojis, fullPackTargetGroup, rosterKey, imageGenerationStyle, imageAspectRatio, enableEmojiInline, cellGameDifficulty, includeSourceCitations, includeBibliography, currentUiLanguage, sourceCustomInstructions, sourceVocabulary, sourceLevel, generatedContent, mathSubject, mathMode, mathInput, mathQuantity, isAutoConfigEnabled, resourceCount, isParentMode, isIndependentMode, isTeacherMode, frameType, fillInTheBlank, vocabularyType, enableFactionResources, factionResourceMode, isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode, adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode, apiKey, setIsMapLocked, setIsProcessing, setGenerationStep, setInteractionMode, setDefinitionData, setSelectionMenu, setRevisionData, setIsReviewGame, setReviewGameState, setGuidedStep, setGeneratedContent, setActiveView, setHistory, setError, setShowKokoroOfferModal, alloBotRef, pdfFixResult, addToast, t, warnLog, debugLog, callGemini: callGeminiBase, cleanJson, safeJsonParse, callImagen, extractSourceTextForProcessing, formatLessonDNA, getDifferentiationGrades, getGroupDifferentiationContext, flyToElement, fisherYatesShuffle, sanitizeTruncatedCitations, normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString, processGrounding, parseFlowChartData, verifyMathProblems, normalizeResourceLinks, detectClimaxArchetype, handleGenerateLessonPlan, handleGenerateMath, handleGenerateSource, autoConfigureSettings, applyDetailedAutoConfig, getAssetManifest, getLessonContext, buildLessonPlanPrompt, buildStudyGuidePrompt, buildParentGuidePrompt, GUIDED_STEPS, LENGTH_THRESHOLDS, TIMELINE_MODE_DEFINITIONS, audioRef, autoRemoveWords, bridgeSimType, bridgeStepCount, conceptImageMode, conceptItemCount, conceptSortImageStyle, creativeMode, faqCount, glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count, glossaryTier3Count, includeCharts, includeEtymology, includeTimelineVisuals, isBotVisible, isMathGraphEnabled, keepCitations, leveledTextLength, noText, passAnalysisToQuiz, quizReflectionCount, selectedConcepts: _ambientSelectedConcepts, standardsPromptString: _ambientStandardsPromptString, timelineImageStyle, timelineItemCount, timelineMode, useLowQualityVisuals, setGameMode, setGlossarySearchTerm, setIsConceptMapReady, setIsEditingAnalysis, setIsEditingBrainstorm, setIsEditingFaq, setIsEditingGlossary, setIsEditingLeveledText, setIsEditingOutline, setIsEditingQuiz, setIsEditingScaffolds, setIsGeneratingPersona, setIsInteractiveVenn, setIsMatchingGame, setIsMemoryGame, setIsPlaying, setIsPresentationMode, setIsSideBySide, setIsStudentBingoGame, setIsVennPlaying, setPersonaState, setPresentationState, setProcessingProgress, setShowQuizAnswers, setStickers, calculateReadability, callGeminiImageEdit, checkAccuracyWithSearch, chunkText, countWords, executeVisualPlan, filterEducationalSources, formatMathQuestion, generateHelpfulHint, generateVisualPlan, getDefaultTitle, performDeepVerification, repairGeneratedText, resetPersonaInterviewState, validateSequenceStructure, universalImageStyle, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, personaCustomInstructions, differentiationTypes, differentiationCustomGrades } = deps;
   try { if (window._DEBUG_GEN_DISPATCHER) console.log("[GenDispatcher] handleGenerate fired:", type); } catch(_) {}
+    // Batch callers pass a run-local history snapshot so later resources see
+    // earlier resources even though React state updates are asynchronous.
+    const generationHistory = Array.isArray(configOverride && configOverride.historyOverride)
+        ? configOverride.historyOverride
+        : (Array.isArray(history) ? history : []);
+    // Batch runners use one cooperative signal for every resource. Keep the
+    // existing call sites stable while ensuring text requests can be cancelled
+    // between resources instead of waiting for the full retry budget.
+    const generationSignal = deps && deps.generationSignal;
+    const callGemini = (...args) => {
+        if (generationSignal && args[5] == null) args[5] = generationSignal;
+        return callGeminiBase(...args);
+    };
     // ── DA CLINICAL ISOLATION ────────────────────────────────────────────
     // Dynamic Assessment supports (visual organizers, sentence frames) route
     // through this shared dispatcher and pass { isolatedContext: true }. A DA
@@ -1650,7 +1663,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
     let textToProcess = textOverride;
     let carriedInputReferences = '';
     if (textToProcess === null) {
-        const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
+        const latestAnalysis = generationHistory.slice().reverse().find(h => h && h.type === 'analysis');
         if (type !== 'analysis' && latestAnalysis?.data?.originalText) {
             const rawText = latestAnalysis.data.originalText;
             const analysisReferenceParts = splitAdaptationReferences(rawText);
@@ -1660,7 +1673,15 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             textToProcess = inputText;
         }
     }
-    if (!textToProcess || !textToProcess.trim()) return;
+    if (!textToProcess || !textToProcess.trim()) {
+        const noSourceError = new Error('No source text is available for ' + type + ' generation.');
+        noSourceError.code = 'allo/source-missing';
+        // Interactive buttons keep the old fail-soft behavior. Unattended
+        // blueprint/pack callers opt in to rethrow so the exact row is logged
+        // instead of being reported as a successful no-op.
+        if (configOverride && configOverride.rethrowErrors) throw noSourceError;
+        return;
+    }
     if (textToProcess.includes('--- ENGLISH TRANSLATION ---')) {
         const bilingualReferenceParts = splitAdaptationReferences(textToProcess);
         if (!carriedInputReferences && bilingualReferenceParts.references) {
@@ -2863,7 +2884,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         // earlier history items rather than today's source.
         let analysisContext = "";
         if (passAnalysisToQuiz || _quizMode === 'pre-check' || _quizMode === 'review') {
-             const analysisItem = history.slice().reverse().find(h => h && h.type === 'analysis');
+             const analysisItem = generationHistory.slice().reverse().find(h => h && h.type === 'analysis');
              if (analysisItem && analysisItem.data) {
                  const { concepts, readingLevel } = analysisItem.data;
                  const levelStr = typeof readingLevel === 'object' ? readingLevel.range : readingLevel;
@@ -2871,7 +2892,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                      analysisContext = `\n                 SOURCE ANALYSIS (for prerequisite identification):\n                 - Key Concepts the Lesson Will Teach: ${concepts ? concepts.join(', ') : 'N/A'}\n                 - Lesson Reading Level: ${levelStr}\n                 INSTRUCTION: For EACH key concept above, identify ONE source-specific prerequisite the student should already know to access that concept, then write a probe testing that prerequisite. Probes should test PRIOR knowledge while making the connection to the source concept obvious (e.g., for "photosynthesis" the prerequisite might be "what plants need to grow"). Do not assess full lesson outcomes directly.\n                 `;
                  } else if (_quizMode === 'review') {
                      // Pull historical concepts from prior history items too (multiple analyses)
-                     const allAnalyses = history.filter(h => h && h.type === 'analysis');
+                     const allAnalyses = generationHistory.filter(h => h && h.type === 'analysis');
                      const allConcepts = allAnalyses.flatMap(h => (h.data && h.data.concepts) || []).filter(Boolean);
                      analysisContext = `\n                 PRIOR LESSON CONCEPTS FOR SPACED RETRIEVAL:\n                 - Earlier Concepts Across History: ${allConcepts.length > 0 ? allConcepts.join(', ') : 'N/A (use today\'s source as fallback)'}\n                 - Today's Concepts: ${concepts ? concepts.join(', ') : 'N/A'}\n                 INSTRUCTION: Probe retention of EARLIER concepts when available. If only today's concepts are available, quiz today's source directly from a spaced-review angle. Do not switch to unrelated review topics.\n                 `;
                  } else {
@@ -2915,8 +2936,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             if (_explicitMcqCount > 0) _resolvedMix.mcq = _explicitMcqCount;
             else delete _resolvedMix.mcq;
         }
-        const _hasTimelineArtifact = Array.isArray(history) && history.some(function (h) { return h && h.type === 'timeline'; });
-        const _hasGlossaryArtifact = Array.isArray(history) && history.some(function (h) { return h && h.type === 'glossary'; });
+        const _hasTimelineArtifact = Array.isArray(generationHistory) && generationHistory.some(function (h) { return h && h.type === 'timeline'; });
+        const _hasGlossaryArtifact = Array.isArray(generationHistory) && generationHistory.some(function (h) { return h && h.type === 'glossary'; });
         const _smartSkips = [];
         if (!_hasExplicitItemTypes && _hasTimelineArtifact && _resolvedMix['sequence-sense']) {
             delete _resolvedMix['sequence-sense'];
@@ -3959,7 +3980,7 @@ ${_itemsBlock}`;
          // Plan O Step 1.5: ungated. The audit runs even without target standards
          // — the standards-alignment LLM call is skipped (see line 1935 below)
          // and the comprehensive dimensions still produce a meaningful report.
-         const auditScopeSelection = selectCurriculumArtifacts(history, configOverride || {});
+         const auditScopeSelection = selectCurriculumArtifacts(generationHistory, configOverride || {});
          const artifactsToAudit = auditScopeSelection.artifacts;
          if (artifactsToAudit.length === 0) {
              throw new Error("No resources found to audit. Please generate a Lesson Plan, Text, or Quiz first.");
@@ -5776,7 +5797,7 @@ Return ONLY JSON:
       }
       let itemTitle = getDefaultTitle(type);
       if (type === 'analysis') {
-          const existingCount = history.filter(h => h.type === 'analysis').length;
+          const existingCount = generationHistory.filter(h => h.type === 'analysis').length;
           if (existingCount > 0) {
               itemTitle += ` (V${existingCount + 1})`;
           }

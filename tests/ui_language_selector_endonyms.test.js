@@ -21,14 +21,11 @@ import { resolve } from 'node:path';
 let manifest, generator, source, module_, launchSource, launchModule, quickstart, ui;
 
 // Same rule the component uses.
-const NON_LATIN = /[^ -ɏḀ-ỿ\s().,'’-]/;
 function optionLabel(entry) {
   const endonym = entry.endonym || entry.value;
   if (endonym === entry.value) return entry.value;
-  const needsGloss = NON_LATIN.test(endonym) && !/[()]/.test(entry.value);
-  return needsGloss ? `${endonym} (${entry.value})` : endonym;
+  return endonym + ' — ' + entry.value;
 }
-
 beforeAll(() => {
   manifest = JSON.parse(readFileSync(resolve(process.cwd(), 'lang/manifest.json'), 'utf8'));
   generator = readFileSync(resolve(process.cwd(), 'dev-tools/update_lang_manifest.cjs'), 'utf8');
@@ -90,22 +87,30 @@ describe('the picker renders endonyms', () => {
     expect(source).toContain("{ value: 'English', endonym: 'English' }");
   });
 
-  it('produces a readable label for every language, with no nested brackets', () => {
+  it('produces a readable native-plus-English label for every language', () => {
     const opts = [{ value: 'English', endonym: 'English' },
       ...manifest.available.map((e) => ({ value: e.display, endonym: e.endonym }))];
     for (const o of opts) {
       const label = optionLabel(o);
-      expect(label.trim().length, `${o.value} produced an empty label`).toBeGreaterThan(0);
-      const opens = (label.match(/\(/g) || []).length;
-      expect(opens, `${o.value} -> "${label}" has nested brackets`).toBeLessThanOrEqual(1);
+      expect(label.trim().length, o.value + ' produced an empty label').toBeGreaterThan(0);
+      if (o.endonym === o.value) {
+        expect(label).toBe(o.value);
+      } else {
+        expect(label).toContain(o.endonym);
+        expect(label).toContain(o.value);
+        expect(label).toContain(' — ');
+      }
+      const firstOpen = label.indexOf('(');
+      const firstClose = label.indexOf(')', firstOpen);
+      const secondOpen = label.indexOf('(', firstOpen + 1);
+      expect(firstOpen === -1 || secondOpen === -1 || secondOpen > firstClose).toBe(true);
     }
   });
-
-  it('glosses non-Latin endonyms so a teacher can still find them', () => {
+  it('shows the English name for Latin and non-Latin endonyms', () => {
     const amharic = manifest.available.find((e) => e.slug === 'amharic');
-    expect(optionLabel({ value: amharic.display, endonym: amharic.endonym })).toBe('አማርኛ (Amharic)');
+    expect(optionLabel({ value: amharic.display, endonym: amharic.endonym })).toBe('አማርኛ — Amharic');
     const french = manifest.available.find((e) => e.slug === 'french');
-    expect(optionLabel({ value: french.display, endonym: french.endonym })).toBe('Français');
+    expect(optionLabel({ value: french.display, endonym: french.endonym })).toBe('Français — French');
   });
 });
 
@@ -130,15 +135,23 @@ describe('BOTH UI-language pickers use endonyms', () => {
     expect(launchModule).toContain('lpCurrentLabel');
   });
 
-  it('both pickers apply the SAME gloss rule, so they cannot drift', () => {
-    const rule = /NON_LATIN.*=.*\/\[\^/;
-    expect(source, 'header picker gloss rule').toMatch(rule);
-    expect(launchSource, 'launch pad gloss rule').toMatch(rule);
-    for (const src of [source, launchSource]) {
-      expect(src).toContain("!/[()]/.test(entry.value)");
-    }
+  it('both pickers use the local manifest before remote fallbacks', () => {
+    expect(source.indexOf('./lang/manifest.json')).toBeGreaterThanOrEqual(0);
+    expect(launchSource.indexOf('./lang/manifest.json')).toBeGreaterThanOrEqual(0);
   });
 
+  it('both pickers keep a complete object-shaped fallback offline', () => {
+    const fallbackBlock = (text) => text.match(/(?:const|var) FALLBACK_LANGUAGE_OPTIONS = \[[\s\S]*?\];/)?.[0] || '';
+    const expectedCount = manifest.available.length + 1; // English plus every manifest entry
+    expect((fallbackBlock(source).match(/\{ value:/g) || []).length).toBe(expectedCount);
+    expect((fallbackBlock(launchSource).match(/\{ value:/g) || []).length).toBe(expectedCount);
+    expect(launchSource).toContain('useState(FALLBACK_LANGUAGE_OPTIONS)');
+  });
+
+  it('both pickers use the same native-plus-English separator', () => {
+    expect(source).toContain("return endonym + ' — ' + entry.value + suffix;");
+    expect(launchSource).toContain("return endonym + ' — ' + entry.value + suffix;");
+  });
   it('every surface that calls setUiLanguage is one of these two', () => {
     // If a third UI-language switcher appears, it needs the same treatment.
     const known = ['ui_language_selector_source.jsx', 'view_launch_pad_source.jsx'];

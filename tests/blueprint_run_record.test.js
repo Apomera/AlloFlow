@@ -200,6 +200,26 @@ describe('no-source-text runs do not fail silently', () => {
     expect(failed[0].failReason).toMatch(/threw: quota exhausted/);
   });
 
+  it('continues after a recoverable resource exception', async () => {
+    const calls = [];
+    const gen = vi.fn(async (type) => {
+      calls.push(type);
+      if (type === 'image') throw new Error('malformed JSON from resource parser');
+      return { id: 'r-' + type, type, data: {} };
+    });
+    const out = await PhaseO.executeOneBlueprint(PLAN, { handleGenerate: gen, historyOverride: [] });
+    expect(calls).toEqual(['analysis', 'image', 'image', 'quiz']);
+    expect(out.items).toHaveLength(2);
+    expect(out.failedRows).toHaveLength(2);
+    expect(out.failedRows.every(row => row.reason.includes('malformed JSON'))).toBe(true);
+  });
+
+  it('passes one immutable settings snapshot to every dispatcher call', async () => {
+    const snapshot = Object.freeze({ gradeLevel: '8th Grade', leveledTextLanguage: 'Spanish', useEmojis: true });
+    const gen = vi.fn(async (type) => ({ id: 'r-' + type, type, data: {} }));
+    await PhaseO.executeOneBlueprint(PLAN, { handleGenerate: gen, historyOverride: [], settingsSnapshot: snapshot });
+    expect(gen.mock.calls.every(call => call[6] === snapshot)).toBe(true);
+  });
   it('logs a diagnostic naming the row, reason and dispatcher state', async () => {
     const lines = [];
     await PhaseO.executeOneBlueprint(PLAN, {
@@ -210,6 +230,24 @@ describe('no-source-text runs do not fail silently', () => {
     expect(line).toContain('row-image-2');
     expect(line).toContain('tool=image');
     expect(line).toContain('dispatcherLoaded=');
+  });
+  it('records the failed resource in the visible Error Reporter', async () => {
+    const prior = window.AlloModules.ErrorReporter;
+    const record = vi.fn();
+    window.AlloModules.ErrorReporter = { record };
+    try {
+      await PhaseO.executeOneBlueprint(PLAN, {
+        handleGenerate: makeGen(['second']), historyOverride: [], warnLog: () => {},
+      });
+    } finally {
+      window.AlloModules.ErrorReporter = prior;
+    }
+    expect(record).toHaveBeenCalled();
+    const [level, message] = record.mock.calls[0];
+    expect(level).toBe('error');
+    expect(message).toContain('tool=image');
+    expect(message).toContain('uiId=row-image-2');
+    expect(message).toContain('returned no resource');
   });
 });
 
@@ -268,7 +306,11 @@ describe('stopped-run accounting guardrails', () => {
   });
   it('a stopped run is marked done+stopped and demotes unreached rows', () => {
     const src = rd('phase_o_misc_handlers_source.jsx');
-    expect(src).toContain("{ rows: rows, done: true, stopped: true }");
+    // Pin the INVARIANT, not the spelling. This asserted the exact literal
+    // "{ rows: rows, done: true, stopped: true }" and so failed the moment the
+    // record grew `status` and `finishedAt` — a strict improvement the test had
+    // no business blocking.
+    expect(src).toMatch(/rows:\s*rows,\s*done:\s*true,\s*stopped:\s*true/);
     expect(src).toContain('const _wasStopped');
   });
   it('the controller slot is cleared in the same finally as the run mutex', () => {

@@ -961,6 +961,19 @@
     // report.)" when the buffer is empty, so we don't need to inject anything.
     openManualReport: openPanel
   };
+  // Generation modules can finish before this async reporter script arrives.
+  // Drain their bounded hand-off queue so the first failed pack is not lost.
+  try {
+    var pendingReports = window.__alloPendingErrorReports;
+    if (Array.isArray(pendingReports)) {
+      pendingReports.slice().forEach(function (entry) {
+        if (!entry || !entry.message) return;
+        record(entry.level || 'error', entry.message, entry.stack || '', entry.source || 'pending-diagnostic', 0, 0);
+      });
+      delete window.__alloPendingErrorReports;
+    }
+  } catch (_) {}
+
   // Global convenience hook for host surfaces (settings panels, help flows).
   try { window.__alloOpenDiagnosticsLog = function (tab) { openPanel(tab === 'tts' || tab === 'session' || tab === 'search' ? tab : 'errors'); }; } catch (_) {}
 

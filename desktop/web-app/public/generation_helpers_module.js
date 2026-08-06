@@ -4,6 +4,33 @@ if (window.AlloModules && window.AlloModules.GenerationHelpersModule) { console.
 // generation_helpers_source.jsx - Phase H.2 of CDN modularization.
 // handleGenerateMath + handleGenerateFullPack + handleComplexityAdjustment
 // extracted from AlloFlowANTI.txt 2026-04-25.
+const FULL_PACK_FALLBACK_TYPES = new Set([
+  'analysis', 'simplified', 'glossary', 'image', 'outline', 'sentence-frames',
+  'faq', 'timeline', 'persona', 'concept-sort', 'brainstorm', 'quiz',
+  'lesson-plan', 'adventure', 'dbq', 'note-taking', 'anchor-chart',
+  'alignment-report', 'math', 'gemini-bridge'
+]);
+const getFullPackKnownTypes = () => {
+  try {
+    const catalog = typeof window !== 'undefined' && Array.isArray(window.TOOL_CATALOG)
+      ? window.TOOL_CATALOG.map(item => item && (item.id || item.type)).filter(Boolean)
+      : [];
+    return new Set(catalog.length ? catalog : Array.from(FULL_PACK_FALLBACK_TYPES));
+  } catch (_) { return new Set(Array.from(FULL_PACK_FALLBACK_TYPES)); }
+};
+const isUsableGeneratedResource = (item, expectedType) => {
+  if (!item || typeof item !== 'object') return false;
+  if (expectedType && item.type && item.type !== expectedType) return false;
+  if (item.data === null || item.data === undefined) return false;
+  if (typeof item.data === 'string' && !item.data.trim()) return false;
+  if (Array.isArray(item.data) && item.data.length === 0) return false;
+  return true;
+};
+let _fullPackAbortCtl = null;
+const handleStopFullPack = () => {
+  try { if (_fullPackAbortCtl) _fullPackAbortCtl.abort(); } catch (_) {}
+  return !!_fullPackAbortCtl;
+};
 
 const handleGenerateMath = async (inputOverride = null, switchView = true, modeOverride = null, deps) => {
   const { mathInput, history, inputText, useMathSourceContext, studentInterests, gradeLevel, mathMode, mathSubject, mathQuantity, autoAttachManipulatives, leveledTextLanguage, isMathGraphEnabled, autoSnapshotManipulatives, setIsProcessing, setGenerationStep, setError, setGeneratedContent, setActiveView, setShowMathAnswers, setHistory, setToolSnapshots, addToast, t, callGemini, cleanJson, safeJsonParse, warnLog, verifyMathProblems, flyToElement } = deps;
@@ -291,9 +318,58 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
 };
 
 const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
-  const { isProcessing, fullPackTargetGroup, rosterKey, gradeLevel, leveledTextLanguage, studentInterests, dokLevel, leveledTextCustomInstructions, selectedLanguages, targetStandards, useEmojis, textFormat, history, inputText, sourceTopic, standardsInput, standardsContext, resourceCount, isAutoConfigEnabled, quizCustomInstructions, adventureCustomInstructions, frameCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, timelineTopic, lessonCustomAdditions, conceptInput, glossaryCustomInstructions, personaCustomInstructions, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, setIsProcessing, setGenerationStep, setFullPackTargetGroup, setGradeLevel, setLeveledTextLanguage, setStudentInterests, setDokLevel, setLeveledTextCustomInstructions, setSelectedLanguages, setTargetStandards, setUseEmojis, setTextFormat, setPersistedLessonDNA, setError, addToast, t, warnLog, handleApplyRosterGroup, handleGenerate, autoConfigureSettings, applyDetailedAutoConfig, getGroupDifferentiationContext, getAssetManifest } = deps;
+  const { isProcessing, fullPackTargetGroup, rosterKey, gradeLevel, leveledTextLanguage, studentInterests, dokLevel, differentiationRange, differentiationTypes, differentiationCustomGrades, generationSignal, leveledTextCustomInstructions, selectedLanguages, targetStandards, useEmojis, textFormat, history, inputText, sourceTopic, standardsInput, standardsContext, resourceCount, isAutoConfigEnabled, quizCustomInstructions, adventureCustomInstructions, frameCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, timelineTopic, lessonCustomAdditions, conceptInput, glossaryCustomInstructions, personaCustomInstructions, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, setIsProcessing, setGenerationStep, setFullPackTargetGroup, setGradeLevel, setLeveledTextLanguage, setStudentInterests, setDokLevel, setLeveledTextCustomInstructions, setSelectedLanguages, setTargetStandards, setUseEmojis, setTextFormat, setPersistedLessonDNA, setFullPackRun, setError, addToast, t, warnLog, handleApplyRosterGroup, handleGenerate, autoConfigureSettings, applyDetailedAutoConfig, getGroupDifferentiationContext, getAssetManifest } = deps;
   try { if (window._DEBUG_GEN_HELPERS) console.log("[GenerationHelpers] handleGenerateFullPack fired"); } catch(_) {}
+    const recordFullPackFailure = (details) => {
+        const d = details || {};
+        const reason = String(d.reason || 'unknown generation failure');
+        const message = '[FullPack] resource generation failed'
+            + ' resource=' + String(d.type || 'unknown')
+            + ' step=' + String(Number.isFinite(d.index) ? d.index + 1 : '?')
+            + ' reason=' + reason
+            + ' sourceTextChars=' + String(Number.isFinite(d.sourceTextChars) ? d.sourceTextChars : 0);
+        try { if (typeof warnLog === 'function') warnLog(message); else if (typeof console !== 'undefined' && console.warn) console.warn(message); } catch (_) {}
+        const stack = d.error && d.error.stack ? String(d.error.stack) : '';
+        try {
+            const reporter = typeof window !== 'undefined'
+                && window.AlloModules
+                && window.AlloModules.ErrorReporter;
+            if (reporter && typeof reporter.record === 'function') {
+                reporter.record('error', message, stack, 'full-pack-resource-generation', 0, 0);
+            } else if (typeof window !== 'undefined') {
+                const pending = window.__alloPendingErrorReports = window.__alloPendingErrorReports || [];
+                pending.push({ level: 'error', message: message, stack: stack, source: 'full-pack-resource-generation' });
+                while (pending.length > 20) pending.shift();
+            }
+        } catch (_) {}
+        return message;
+    };
     if (isProcessing) return;
+    const _ownsFullPackAbort = !generationSignal;
+    const _fullPackRunAbortCtl = _ownsFullPackAbort && typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const _fullPackSignal = generationSignal || (_fullPackRunAbortCtl && _fullPackRunAbortCtl.signal) || null;
+    if (_fullPackRunAbortCtl) _fullPackAbortCtl = _fullPackRunAbortCtl;
+    const _fullPackRunId = 'full-pack-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+    const _fullPackSettingsSnapshot = Object.freeze({
+        gradeLevel,
+        leveledTextLanguage,
+        studentInterests: Array.isArray(studentInterests) ? studentInterests.slice() : studentInterests,
+        dokLevel,
+        selectedLanguages: Array.isArray(selectedLanguages) ? selectedLanguages.slice() : selectedLanguages,
+        targetStandards: Array.isArray(targetStandards) ? targetStandards.slice() : targetStandards,
+        useEmojis,
+        textFormat,
+        differentiationRange,
+        differentiationTypes: Array.isArray(differentiationTypes) ? differentiationTypes.slice() : differentiationTypes,
+        differentiationCustomGrades: Array.isArray(differentiationCustomGrades) ? differentiationCustomGrades.slice() : differentiationCustomGrades,
+    });
+    const updateFullPackRun = (mutator) => {
+        if (typeof setFullPackRun !== 'function') return;
+        setFullPackRun(prev => mutator(prev || {}));
+    };
+    if (typeof setFullPackRun === 'function') {
+        setFullPackRun({ runId: _fullPackRunId, status: 'running', startedAt: new Date().toISOString(), settingsSnapshot: _fullPackSettingsSnapshot, resources: {} });
+    }
     const targetGroup = fullPackTargetGroup;
     if (targetGroup === 'all' && rosterKey?.groups && Object.keys(rosterKey.groups).length > 0) {
         const groupEntries = Object.entries(rosterKey.groups);
@@ -305,16 +381,39 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
         };
         setIsProcessing(true);
         try {
-            for (let gi = 0; gi < groupEntries.length; gi++) {
+            for (let gi = 0; gi < groupEntries.length && !(_fullPackSignal && _fullPackSignal.aborted); gi++) {
                 const [gid, group] = groupEntries[gi];
+                const profile = (group && group.profile) || {};
                 setGenerationStep(`Generating full pack for ${group.name} (${gi+1}/${groupEntries.length})...`);
                 handleApplyRosterGroup(gid);
                 await new Promise(r => setTimeout(r, 150));
                 setFullPackTargetGroup('none');
-                setIsProcessing(false);
-                await handleGenerateFullPack(chatContextOverride, deps);
+                // React setters above are asynchronous. Pass the profile values
+                // directly to the child run so the next pack cannot race with
+                // the previous render and silently use the wrong group settings.
+                const groupDeps = Object.assign({}, deps, {
+                    isProcessing: false,
+                    fullPackTargetGroup: 'none',
+                    gradeLevel: profile.gradeLevel || gradeLevel,
+                    leveledTextLanguage: profile.leveledTextLanguage || leveledTextLanguage,
+                    studentInterests: profile.studentInterests
+                        ? (Array.isArray(profile.studentInterests) ? profile.studentInterests : String(profile.studentInterests).split(',').map(s => s.trim()).filter(Boolean))
+                        : studentInterests,
+                    dokLevel: profile.dokLevel || dokLevel,
+                    leveledTextCustomInstructions: profile.leveledTextCustomInstructions || leveledTextCustomInstructions,
+                    selectedLanguages: Array.isArray(profile.selectedLanguages) ? profile.selectedLanguages : selectedLanguages,
+                    targetStandards: Array.isArray(profile.targetStandards) ? profile.targetStandards : targetStandards,
+                    useEmojis: profile.useEmojis === undefined ? useEmojis : profile.useEmojis,
+                    textFormat: profile.textFormat || textFormat,
+                    generationSignal: _fullPackSignal,
+                });
+                await handleGenerateFullPack(chatContextOverride, groupDeps);
             }
-            addToast(`Generated full packs for ${groupEntries.length} groups!`, 'success');
+            const _allStopped = !!(_fullPackSignal && _fullPackSignal.aborted);
+            updateFullPackRun(prev => Object.assign({}, prev, { status: _allStopped ? 'stopped' : 'completed', finishedAt: new Date().toISOString() }));
+            addToast(_allStopped
+                ? `Stopped after the current group. ${groupEntries.length} group${groupEntries.length === 1 ? '' : 's'} were requested.`
+                : `Generated full packs for ${groupEntries.length} groups!`, _allStopped ? 'info' : 'success');
         } finally {
             setGradeLevel(savedSettings.grade);
             setLeveledTextLanguage(savedSettings.lang);
@@ -338,9 +437,13 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
     const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
     let batchSourceText = (latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)
         ? latestAnalysis.data.originalText
-        : inputText.trim();
+        : (typeof inputText === 'string' ? inputText.trim() : '');
     if (!batchSourceText) {
+        const noSourceError = new Error('No source text is available for Full Pack generation.');
+        recordFullPackFailure({ type: 'preflight', index: 0, reason: noSourceError.message, error: noSourceError, sourceTextChars: 0 });
         addToast(t('process.source_missing'), "error");
+        updateFullPackRun(prev => Object.assign({}, prev, { status: 'failed', finishedAt: new Date().toISOString() }));
+        if (_fullPackAbortCtl === _fullPackRunAbortCtl) _fullPackAbortCtl = null;
         return;
     }
     setIsProcessing(true);
@@ -348,19 +451,19 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
     addToast(t('fullpack.status_start'), "info");
     try {
         const standardsContextModule = typeof window !== 'undefined' && window.AlloModules
-        ? window.AlloModules.StandardsContext
-        : null;
-    const resolvedStandardsContext = standardsContext && Array.isArray(standardsContext.standards)
-        ? standardsContext
-        : (standardsContextModule && typeof standardsContextModule.resolve === 'function'
-            ? standardsContextModule.resolve(standardsInput || targetStandards)
-            : null);
-    const activeStandardsContext = resolvedStandardsContext
-        && Array.isArray(resolvedStandardsContext.standards)
-        && resolvedStandardsContext.standards.length
-        ? resolvedStandardsContext
-        : null;
-    const lessonDNA = {
+            ? window.AlloModules.StandardsContext
+            : null;
+        const resolvedStandardsContext = standardsContext && Array.isArray(standardsContext.standards)
+            ? standardsContext
+            : (standardsContextModule && typeof standardsContextModule.resolve === 'function'
+                ? standardsContextModule.resolve(standardsInput || targetStandards)
+                : null);
+        const activeStandardsContext = resolvedStandardsContext
+            && Array.isArray(resolvedStandardsContext.standards)
+            && resolvedStandardsContext.standards.length
+            ? resolvedStandardsContext
+            : null;
+        const lessonDNA = {
             grade: gradeLevel,
             topic: sourceTopic || "General Topic",
             standard: (activeStandardsContext && activeStandardsContext.promptText) || standardsInput || '',
@@ -453,11 +556,33 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                 resourcesToGen.push(...planItems);
             }
         }
+        const fullPackFailures = [];
+        const planFailures = [];
+        const knownTypes = getFullPackKnownTypes();
+        const normalizedResources = [];
+        resourcesToGen.forEach((item, planIndex) => {
+            const type = item && typeof item.type === 'string' ? item.type.trim() : '';
+            if (!type) {
+                planFailures.push({ type: 'plan', index: planIndex, reason: 'Full Pack plan item has no resource type', sourceTextChars: batchSourceText.length });
+                return;
+            }
+            if (!knownTypes.has(type)) {
+                planFailures.push({ type, index: planIndex, reason: 'Unsupported Full Pack resource type: ' + type, sourceTextChars: batchSourceText.length });
+                return;
+            }
+            normalizedResources.push(Object.assign({}, item, { type }));
+        });
+        planFailures.forEach(failure => { fullPackFailures.push(failure); recordFullPackFailure(failure); });
+        const runnableResources = normalizedResources.filter(item => !(item.type === 'timeline' && batchConfig.hasTimeline === false));
+        if (runnableResources.length === 0) {
+            throw new Error('Full Pack auto-configuration produced no runnable resources.');
+        }
         let currentSessionHistory = [...history];
-        addToast(t('process.gen_batch', { count: resourcesToGen.length }), "info");
-        for (let i = 0; i < resourcesToGen.length; i++) {
-            const { type, directive } = resourcesToGen[i];
-            if (type === 'timeline' && batchConfig.hasTimeline === false) continue;
+        addToast(t('process.gen_batch', { count: runnableResources.length }), "info");
+        for (let i = 0; i < runnableResources.length && !(_fullPackSignal && _fullPackSignal.aborted); i++) {
+            const { type, directive } = runnableResources[i];
+            const resourceKey = String(runnableResources[i].uiId || (type + '-' + i));
+            updateFullPackRun(prev => Object.assign({}, prev, { resources: Object.assign({}, prev.resources, { [resourceKey]: { key: resourceKey, type, index: i, status: 'running' } }) }));
             let userOverride = "";
             switch(type) {
                 case 'simplified': userOverride = leveledTextCustomInstructions; break;
@@ -488,7 +613,10 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                 lessonDNA: lessonDNA,
                 customInstructions: combinedInstructions,
                 standardsContext: activeStandardsContext,
-                historyOverride: currentSessionHistory
+                historyOverride: currentSessionHistory,
+                // Full Pack is unattended: do not turn a rejected, throttled,
+                // or malformed resource into a false success/no-op.
+                rethrowErrors: true,
                 // Differentiation is deliberately NOT suppressed here (Aaron,
                 // 2026-07-29): differentiationTypes is opt-in per resource, so a
                 // pack only multiplies for the types the teacher explicitly
@@ -508,9 +636,48 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                  const upToDateManifest = getAssetManifest(currentSessionHistory);
                  stepConfig.assetManifest = upToDateManifest;
             }
-            const isLast = i === resourcesToGen.length - 1;
-            const resultItem = await handleGenerate(type, null, !isLast, batchSourceText, stepConfig, false);
+            const isLast = i === runnableResources.length - 1;
+            const effectiveDokLevel = (batchConfig && batchConfig.quizConfig && batchConfig.quizConfig.dok) || dokLevel;
+            const generationLanguageOverride = leveledTextLanguage === 'All Selected Languages' ? null : leveledTextLanguage;
+            const generationDepsOverride = {
+                // Full Pack can be invoked for roster groups while the React
+                // render still contains the previous group's settings. These
+                // values are explicit inputs for the dispatcher, not UI state.
+                gradeLevel,
+                leveledTextLanguage,
+                studentInterests,
+                dokLevel: effectiveDokLevel,
+                selectedLanguages,
+                targetStandards,
+                useEmojis,
+                textFormat,
+                differentiationRange,
+                differentiationTypes,
+                differentiationCustomGrades,
+                generationSignal: _fullPackSignal,
+            };
+            let resultItem = null;
+            try {
+                resultItem = await handleGenerate(type, generationLanguageOverride, !isLast, batchSourceText, stepConfig, false, generationDepsOverride);
+                if (!isUsableGeneratedResource(resultItem, type)) throw new Error('handleGenerate returned an unusable ' + type + ' resource');
+            } catch (error) {
+                const failure = {
+                    type,
+                    index: i,
+                    reason: (error && (error.message || error.name)) || String(error),
+                    error,
+                    sourceTextChars: batchSourceText ? batchSourceText.length : 0,
+                };
+                fullPackFailures.push(failure);
+                recordFullPackFailure(failure);
+                updateFullPackRun(prev => Object.assign({}, prev, { resources: Object.assign({}, prev.resources, { [resourceKey]: Object.assign({}, prev.resources && prev.resources[resourceKey], { key: resourceKey, type, index: i, status: 'failed', reason: failure.reason }) }) }));
+                // Keep the pack moving: a single optional resource should not
+                // discard the resources already generated or prevent the final
+                // lesson plan from being attempted.
+                resultItem = null;
+            }
             if (resultItem) {
+                updateFullPackRun(prev => Object.assign({}, prev, { resources: Object.assign({}, prev.resources, { [resourceKey]: Object.assign({}, prev.resources && prev.resources[resourceKey], { key: resourceKey, type, index: i, status: 'landed', resourceId: resultItem.id || null }) }) }));
                 currentSessionHistory.push(resultItem);
                 if (resultItem.data) {
                     if (type === 'analysis') {
@@ -534,15 +701,31 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                     }
                 }
             }
-            if (!isLast) await new Promise(r => setTimeout(r, 800));
+            if (!isLast && !(_fullPackSignal && _fullPackSignal.aborted)) await new Promise(r => setTimeout(r, 800));
         }
         setPersistedLessonDNA(lessonDNA);
-        addToast(t('process.pack_complete'), "success");
+        const _fullPackStopped = !!(_fullPackSignal && _fullPackSignal.aborted);
+        if (_fullPackStopped) {
+            updateFullPackRun(prev => Object.assign({}, prev, { status: 'stopped', finishedAt: new Date().toISOString() }));
+            addToast('Full Pack stopped after the current resource. Finished resources were kept.', 'info');
+        } else if (fullPackFailures.length > 0) {
+            const failedTypes = fullPackFailures.map(f => f.type).join(', ');
+            const partialMessage = `Full Pack finished with ${fullPackFailures.length} failed resource${fullPackFailures.length === 1 ? '' : 's'}: ${failedTypes}. See Diagnostics & Logs for details.`;
+            updateFullPackRun(prev => Object.assign({}, prev, { status: 'partial', finishedAt: new Date().toISOString(), failureCount: fullPackFailures.length }));
+            warnLog('[FullPack] completed with failures=' + fullPackFailures.length + ' types=' + failedTypes);
+            addToast(partialMessage, "warning");
+        } else {
+            updateFullPackRun(prev => Object.assign({}, prev, { status: 'completed', finishedAt: new Date().toISOString() }));
+            addToast(t('process.pack_complete'), "success");
+        }
     } catch (e) {
-        warnLog("Full pack generation interrupted", e);
+        updateFullPackRun(prev => Object.assign({}, prev, { status: 'failed', finishedAt: new Date().toISOString(), reason: (e && (e.message || e.name)) || String(e) }));
+        recordFullPackFailure({ type: 'run', index: 0, reason: (e && (e.message || e.name)) || String(e), error: e, sourceTextChars: batchSourceText ? batchSourceText.length : 0 });
         setError(t('errors.default_desc'));
+        addToast(t('errors.default_desc'), "error");
     } finally {
         setIsProcessing(false);
+        if (_fullPackAbortCtl === _fullPackRunAbortCtl) _fullPackAbortCtl = null;
     }
 };
 
@@ -821,6 +1004,7 @@ window.AlloModules = window.AlloModules || {};
 window.AlloModules.GenerationHelpers = {
   handleGenerateMath,
   handleGenerateFullPack,
+  handleStopFullPack,
   handleComplexityAdjustment,
 };
 

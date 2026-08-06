@@ -5,7 +5,7 @@ if(window.AlloModules&&window.AlloModules.PhaseOHandlersModule){console.log("[CD
 // lookup, wizard flow, blueprint execution.
 
 const startClassSession = async (deps) => {
-  const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, standardsInput, targetStandards, dokLevel, rosterKey, sessionData, studentAiPolicyForShare, user, appId, activeSessionAppId, activeSessionCode, studentNickname, sourceLength, sourceTone, textFormat, fullPackTargetGroup, isAutoConfigEnabled, resourceCount, creativeMode, noText, fillInTheBlank, imageGenerationStyle, imageAspectRatio, useLowQualityVisuals, autoRemoveWords, globalPoints, wizardData, isWizardOpen, standardsLookupRegion, standardsLookupGoal, pdfFixResult, showExportPreview, aiStandardQuery, aiStandardRegion, imageRefinementInput, activeBlueprint, ai, webSearchProvider, alloBotRef, pdfPreviewRef, exportPreviewRef, setError, setIsProcessing, setGenerationStep, setGeneratedContent, setHistory, setActiveView, setActiveSessionCode, setActiveSessionAppId, setStudentNickname, setIsWizardOpen, setShowSourceGen, setSourceTopic, setSourceCustomInstructions, setSourceLength, setSourceTone, setTextFormat, setSelectedLanguages, setGradeLevel, setStandardsInput, setTargetStandards, setDokLevel, setStudentInterests, setSuggestedStandards, setIsLookingUpStandards, setStandardsLookupGoal, setStandardsLookupRegion, setExpandedTools, setShowUDLGuide, setUdlMessages, setGuidedFlowState, setIsRefiningImage, setShowImageRefineModal, setIsExecutingBlueprint, setBlueprintExecutionResult, setShowExportPreview, setInputText, setIsTeacherMode, setIsParentMode, setIsIndependentMode, setActiveSidebarTab, setDoc, setSessionData, setShowSessionModal, setImageRefinementInput, setIsFindingStandards, setShowWizard, setSourceLevel, setSourceVocabulary, setIncludeSourceCitations, setLeveledTextLanguage, setActiveBlueprint, setPersistedLessonDNA, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, flyToElement, getDefaultTitle, storageDB, updateDoc, doc, db, playSound, playAdventureEventSound, generateSessionCode, stripUndefined, uploadSessionAssets, safeSetItem, handleGenerateSource, applyDetailedAutoConfig, handleGenerate, fileInputRef } = deps;
+  const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, standardsInput, targetStandards, dokLevel, rosterKey, sessionData, studentAiPolicyForShare, user, appId, activeSessionAppId, activeSessionCode, studentNickname, sourceLength, sourceTone, textFormat, differentiationRange, differentiationTypes, differentiationCustomGrades, fullPackTargetGroup, isAutoConfigEnabled, resourceCount, creativeMode, noText, fillInTheBlank, imageGenerationStyle, imageAspectRatio, useLowQualityVisuals, autoRemoveWords, globalPoints, wizardData, isWizardOpen, standardsLookupRegion, standardsLookupGoal, pdfFixResult, showExportPreview, aiStandardQuery, aiStandardRegion, imageRefinementInput, activeBlueprint, ai, webSearchProvider, alloBotRef, pdfPreviewRef, exportPreviewRef, setError, setIsProcessing, setGenerationStep, setGeneratedContent, setHistory, setActiveView, setActiveSessionCode, setActiveSessionAppId, setStudentNickname, setIsWizardOpen, setShowSourceGen, setSourceTopic, setSourceCustomInstructions, setSourceLength, setSourceTone, setTextFormat, setSelectedLanguages, setGradeLevel, setStandardsInput, setTargetStandards, setDokLevel, setStudentInterests, setSuggestedStandards, setIsLookingUpStandards, setStandardsLookupGoal, setStandardsLookupRegion, setExpandedTools, setShowUDLGuide, setUdlMessages, setGuidedFlowState, setIsRefiningImage, setShowImageRefineModal, setIsExecutingBlueprint, setBlueprintExecutionResult, setShowExportPreview, setInputText, setIsTeacherMode, setIsParentMode, setIsIndependentMode, setActiveSidebarTab, setDoc, setSessionData, setShowSessionModal, setImageRefinementInput, setIsFindingStandards, setShowWizard, setSourceLevel, setSourceVocabulary, setIncludeSourceCitations, setLeveledTextLanguage, setActiveBlueprint, setPersistedLessonDNA, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, flyToElement, getDefaultTitle, storageDB, updateDoc, doc, db, playSound, playAdventureEventSound, generateSessionCode, stripUndefined, uploadSessionAssets, safeSetItem, handleGenerateSource, applyDetailedAutoConfig, handleGenerate, fileInputRef } = deps;
   try { if (window._DEBUG_PHASE_O) console.log("[PhaseO] startClassSession fired"); } catch(_) {}
     if (history.length === 0) {
         addToast(t('session.error_no_resources'), "error");
@@ -146,7 +146,7 @@ const startClassSession = async (deps) => {
 };
 
 const handleRefineImage = async (deps) => {
-  const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, standardsInput, targetStandards, dokLevel, rosterKey, sessionData, user, appId, activeSessionAppId, activeSessionCode, studentNickname, sourceLength, sourceTone, textFormat, fullPackTargetGroup, isAutoConfigEnabled, resourceCount, creativeMode, noText, fillInTheBlank, imageGenerationStyle, imageAspectRatio, useLowQualityVisuals, autoRemoveWords, globalPoints, wizardData, isWizardOpen, standardsLookupRegion, standardsLookupGoal, pdfFixResult, showExportPreview, aiStandardQuery, aiStandardRegion, imageRefinementInput, activeBlueprint, ai, webSearchProvider, alloBotRef, pdfPreviewRef, exportPreviewRef, setError, setIsProcessing, setGenerationStep, setGeneratedContent, setHistory, setActiveView, setActiveSessionCode, setActiveSessionAppId, setStudentNickname, setIsWizardOpen, setShowSourceGen, setSourceTopic, setSourceCustomInstructions, setSourceLength, setSourceTone, setTextFormat, setSelectedLanguages, setGradeLevel, setStandardsInput, setTargetStandards, setDokLevel, setStudentInterests, setSuggestedStandards, setIsLookingUpStandards, setStandardsLookupGoal, setStandardsLookupRegion, setExpandedTools, setShowUDLGuide, setUdlMessages, setGuidedFlowState, setIsRefiningImage, setShowImageRefineModal, setIsExecutingBlueprint, setBlueprintExecutionResult, setShowExportPreview, setInputText, setIsTeacherMode, setIsParentMode, setIsIndependentMode, setActiveSidebarTab, setDoc, setSessionData, setShowSessionModal, setImageRefinementInput, setIsFindingStandards, setShowWizard, setSourceLevel, setSourceVocabulary, setIncludeSourceCitations, setLeveledTextLanguage, setActiveBlueprint, setPersistedLessonDNA, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, flyToElement, getDefaultTitle, storageDB, updateDoc, doc, db, playSound, playAdventureEventSound, generateSessionCode, stripUndefined, uploadSessionAssets, safeSetItem, handleGenerateSource, applyDetailedAutoConfig, handleGenerate, fileInputRef } = deps;
+  const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, standardsInput, targetStandards, dokLevel, rosterKey, sessionData, user, appId, activeSessionAppId, activeSessionCode, studentNickname, sourceLength, sourceTone, textFormat, differentiationRange, differentiationTypes, differentiationCustomGrades, fullPackTargetGroup, isAutoConfigEnabled, resourceCount, creativeMode, noText, fillInTheBlank, imageGenerationStyle, imageAspectRatio, useLowQualityVisuals, autoRemoveWords, globalPoints, wizardData, isWizardOpen, standardsLookupRegion, standardsLookupGoal, pdfFixResult, showExportPreview, aiStandardQuery, aiStandardRegion, imageRefinementInput, activeBlueprint, ai, webSearchProvider, alloBotRef, pdfPreviewRef, exportPreviewRef, setError, setIsProcessing, setGenerationStep, setGeneratedContent, setHistory, setActiveView, setActiveSessionCode, setActiveSessionAppId, setStudentNickname, setIsWizardOpen, setShowSourceGen, setSourceTopic, setSourceCustomInstructions, setSourceLength, setSourceTone, setTextFormat, setSelectedLanguages, setGradeLevel, setStandardsInput, setTargetStandards, setDokLevel, setStudentInterests, setSuggestedStandards, setIsLookingUpStandards, setStandardsLookupGoal, setStandardsLookupRegion, setExpandedTools, setShowUDLGuide, setUdlMessages, setGuidedFlowState, setIsRefiningImage, setShowImageRefineModal, setIsExecutingBlueprint, setBlueprintExecutionResult, setShowExportPreview, setInputText, setIsTeacherMode, setIsParentMode, setIsIndependentMode, setActiveSidebarTab, setDoc, setSessionData, setShowSessionModal, setImageRefinementInput, setIsFindingStandards, setShowWizard, setSourceLevel, setSourceVocabulary, setIncludeSourceCitations, setLeveledTextLanguage, setActiveBlueprint, setPersistedLessonDNA, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, flyToElement, getDefaultTitle, storageDB, updateDoc, doc, db, playSound, playAdventureEventSound, generateSessionCode, stripUndefined, uploadSessionAssets, safeSetItem, handleGenerateSource, applyDetailedAutoConfig, handleGenerate, fileInputRef } = deps;
   try { if (window._DEBUG_PHASE_O) console.log("[PhaseO] handleRefineImage fired"); } catch(_) {}
     if (!imageRefinementInput.trim() || !generatedContent?.data?.imageUrl) return;
     setIsProcessing(true);
@@ -241,7 +241,7 @@ const handleRefineImage = async (deps) => {
 };
 
 const handleFindStandards = async (gradeContext = null, deps) => {
-  const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, standardsInput, targetStandards, dokLevel, rosterKey, sessionData, user, appId, activeSessionAppId, activeSessionCode, studentNickname, sourceLength, sourceTone, textFormat, fullPackTargetGroup, isAutoConfigEnabled, resourceCount, creativeMode, noText, fillInTheBlank, imageGenerationStyle, imageAspectRatio, useLowQualityVisuals, autoRemoveWords, globalPoints, wizardData, isWizardOpen, standardsLookupRegion, standardsLookupGoal, pdfFixResult, showExportPreview, aiStandardQuery, aiStandardRegion, imageRefinementInput, activeBlueprint, ai, webSearchProvider, alloBotRef, pdfPreviewRef, exportPreviewRef, setError, setIsProcessing, setGenerationStep, setGeneratedContent, setHistory, setActiveView, setActiveSessionCode, setActiveSessionAppId, setStudentNickname, setIsWizardOpen, setShowSourceGen, setSourceTopic, setSourceCustomInstructions, setSourceLength, setSourceTone, setTextFormat, setSelectedLanguages, setGradeLevel, setStandardsInput, setTargetStandards, setDokLevel, setStudentInterests, setSuggestedStandards, setIsLookingUpStandards, setStandardsLookupGoal, setStandardsLookupRegion, setExpandedTools, setShowUDLGuide, setUdlMessages, setGuidedFlowState, setIsRefiningImage, setShowImageRefineModal, setIsExecutingBlueprint, setBlueprintExecutionResult, setShowExportPreview, setInputText, setIsTeacherMode, setIsParentMode, setIsIndependentMode, setActiveSidebarTab, setDoc, setSessionData, setShowSessionModal, setImageRefinementInput, setIsFindingStandards, setShowWizard, setSourceLevel, setSourceVocabulary, setIncludeSourceCitations, setLeveledTextLanguage, setActiveBlueprint, setPersistedLessonDNA, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, flyToElement, getDefaultTitle, storageDB, updateDoc, doc, db, playSound, playAdventureEventSound, generateSessionCode, stripUndefined, uploadSessionAssets, safeSetItem, handleGenerateSource, applyDetailedAutoConfig, handleGenerate, fileInputRef } = deps;
+  const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, standardsInput, targetStandards, dokLevel, rosterKey, sessionData, user, appId, activeSessionAppId, activeSessionCode, studentNickname, sourceLength, sourceTone, textFormat, differentiationRange, differentiationTypes, differentiationCustomGrades, fullPackTargetGroup, isAutoConfigEnabled, resourceCount, creativeMode, noText, fillInTheBlank, imageGenerationStyle, imageAspectRatio, useLowQualityVisuals, autoRemoveWords, globalPoints, wizardData, isWizardOpen, standardsLookupRegion, standardsLookupGoal, pdfFixResult, showExportPreview, aiStandardQuery, aiStandardRegion, imageRefinementInput, activeBlueprint, ai, webSearchProvider, alloBotRef, pdfPreviewRef, exportPreviewRef, setError, setIsProcessing, setGenerationStep, setGeneratedContent, setHistory, setActiveView, setActiveSessionCode, setActiveSessionAppId, setStudentNickname, setIsWizardOpen, setShowSourceGen, setSourceTopic, setSourceCustomInstructions, setSourceLength, setSourceTone, setTextFormat, setSelectedLanguages, setGradeLevel, setStandardsInput, setTargetStandards, setDokLevel, setStudentInterests, setSuggestedStandards, setIsLookingUpStandards, setStandardsLookupGoal, setStandardsLookupRegion, setExpandedTools, setShowUDLGuide, setUdlMessages, setGuidedFlowState, setIsRefiningImage, setShowImageRefineModal, setIsExecutingBlueprint, setBlueprintExecutionResult, setShowExportPreview, setInputText, setIsTeacherMode, setIsParentMode, setIsIndependentMode, setActiveSidebarTab, setDoc, setSessionData, setShowSessionModal, setImageRefinementInput, setIsFindingStandards, setShowWizard, setSourceLevel, setSourceVocabulary, setIncludeSourceCitations, setLeveledTextLanguage, setActiveBlueprint, setPersistedLessonDNA, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, flyToElement, getDefaultTitle, storageDB, updateDoc, doc, db, playSound, playAdventureEventSound, generateSessionCode, stripUndefined, uploadSessionAssets, safeSetItem, handleGenerateSource, applyDetailedAutoConfig, handleGenerate, fileInputRef } = deps;
   try { if (window._DEBUG_PHASE_O) console.log("[PhaseO] handleFindStandards fired"); } catch(_) {}
       if (!aiStandardQuery.trim()) return;
             const effectiveGrade = (typeof gradeContext === 'string' && gradeContext) ? gradeContext : gradeLevel;
@@ -378,7 +378,7 @@ const handleFindStandards = async (gradeContext = null, deps) => {
 };
 
 const handleWizardComplete = (data, deps) => {
-  const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, standardsInput, targetStandards, dokLevel, rosterKey, sessionData, user, appId, activeSessionAppId, activeSessionCode, studentNickname, sourceLength, sourceTone, textFormat, fullPackTargetGroup, isAutoConfigEnabled, resourceCount, creativeMode, noText, fillInTheBlank, imageGenerationStyle, imageAspectRatio, useLowQualityVisuals, autoRemoveWords, globalPoints, wizardData, isWizardOpen, standardsLookupRegion, standardsLookupGoal, pdfFixResult, showExportPreview, aiStandardQuery, aiStandardRegion, imageRefinementInput, activeBlueprint, ai, webSearchProvider, alloBotRef, pdfPreviewRef, exportPreviewRef, setError, setIsProcessing, setGenerationStep, setGeneratedContent, setHistory, setActiveView, setActiveSessionCode, setActiveSessionAppId, setStudentNickname, setIsWizardOpen, setShowSourceGen, setSourceTopic, setSourceCustomInstructions, setSourceLength, setSourceTone, setTextFormat, setSelectedLanguages, setGradeLevel, setStandardsInput, setTargetStandards, setDokLevel, setStudentInterests, setSuggestedStandards, setIsLookingUpStandards, setStandardsLookupGoal, setStandardsLookupRegion, setExpandedTools, setShowUDLGuide, setUdlMessages, setGuidedFlowState, setIsRefiningImage, setShowImageRefineModal, setIsExecutingBlueprint, setBlueprintExecutionResult, setShowExportPreview, setInputText, setIsTeacherMode, setIsParentMode, setIsIndependentMode, setActiveSidebarTab, setDoc, setSessionData, setShowSessionModal, setImageRefinementInput, setIsFindingStandards, setShowWizard, setSourceLevel, setSourceVocabulary, setIncludeSourceCitations, setLeveledTextLanguage, setActiveBlueprint, setPersistedLessonDNA, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, flyToElement, getDefaultTitle, storageDB, updateDoc, doc, db, playSound, playAdventureEventSound, generateSessionCode, stripUndefined, uploadSessionAssets, safeSetItem, handleGenerateSource, applyDetailedAutoConfig, handleGenerate, fileInputRef } = deps;
+  const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, standardsInput, targetStandards, dokLevel, rosterKey, sessionData, user, appId, activeSessionAppId, activeSessionCode, studentNickname, sourceLength, sourceTone, textFormat, differentiationRange, differentiationTypes, differentiationCustomGrades, fullPackTargetGroup, isAutoConfigEnabled, resourceCount, creativeMode, noText, fillInTheBlank, imageGenerationStyle, imageAspectRatio, useLowQualityVisuals, autoRemoveWords, globalPoints, wizardData, isWizardOpen, standardsLookupRegion, standardsLookupGoal, pdfFixResult, showExportPreview, aiStandardQuery, aiStandardRegion, imageRefinementInput, activeBlueprint, ai, webSearchProvider, alloBotRef, pdfPreviewRef, exportPreviewRef, setError, setIsProcessing, setGenerationStep, setGeneratedContent, setHistory, setActiveView, setActiveSessionCode, setActiveSessionAppId, setStudentNickname, setIsWizardOpen, setShowSourceGen, setSourceTopic, setSourceCustomInstructions, setSourceLength, setSourceTone, setTextFormat, setSelectedLanguages, setGradeLevel, setStandardsInput, setTargetStandards, setDokLevel, setStudentInterests, setSuggestedStandards, setIsLookingUpStandards, setStandardsLookupGoal, setStandardsLookupRegion, setExpandedTools, setShowUDLGuide, setUdlMessages, setGuidedFlowState, setIsRefiningImage, setShowImageRefineModal, setIsExecutingBlueprint, setBlueprintExecutionResult, setShowExportPreview, setInputText, setIsTeacherMode, setIsParentMode, setIsIndependentMode, setActiveSidebarTab, setDoc, setSessionData, setShowSessionModal, setImageRefinementInput, setIsFindingStandards, setShowWizard, setSourceLevel, setSourceVocabulary, setIncludeSourceCitations, setLeveledTextLanguage, setActiveBlueprint, setPersistedLessonDNA, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, flyToElement, getDefaultTitle, storageDB, updateDoc, doc, db, playSound, playAdventureEventSound, generateSessionCode, stripUndefined, uploadSessionAssets, safeSetItem, handleGenerateSource, applyDetailedAutoConfig, handleGenerate, fileInputRef } = deps;
   try { if (window._DEBUG_PHASE_O) console.log("[PhaseO] handleWizardComplete fired"); } catch(_) {}
     const finalData = data;
     if (finalData.grade) {
@@ -479,7 +479,7 @@ const handleWizardComplete = (data, deps) => {
 };
 
 const handleWizardStandardLookup = async (grade, goal, region, deps) => {
-  const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, standardsInput, targetStandards, dokLevel, rosterKey, sessionData, user, appId, activeSessionAppId, activeSessionCode, studentNickname, sourceLength, sourceTone, textFormat, fullPackTargetGroup, isAutoConfigEnabled, resourceCount, creativeMode, noText, fillInTheBlank, imageGenerationStyle, imageAspectRatio, useLowQualityVisuals, autoRemoveWords, globalPoints, wizardData, isWizardOpen, standardsLookupRegion, standardsLookupGoal, pdfFixResult, showExportPreview, aiStandardQuery, aiStandardRegion, imageRefinementInput, activeBlueprint, ai, webSearchProvider, alloBotRef, pdfPreviewRef, exportPreviewRef, setError, setIsProcessing, setGenerationStep, setGeneratedContent, setHistory, setActiveView, setActiveSessionCode, setActiveSessionAppId, setStudentNickname, setIsWizardOpen, setShowSourceGen, setSourceTopic, setSourceCustomInstructions, setSourceLength, setSourceTone, setTextFormat, setSelectedLanguages, setGradeLevel, setStandardsInput, setTargetStandards, setDokLevel, setStudentInterests, setSuggestedStandards, setIsLookingUpStandards, setStandardsLookupGoal, setStandardsLookupRegion, setExpandedTools, setShowUDLGuide, setUdlMessages, setGuidedFlowState, setIsRefiningImage, setShowImageRefineModal, setIsExecutingBlueprint, setBlueprintExecutionResult, setShowExportPreview, setInputText, setIsTeacherMode, setIsParentMode, setIsIndependentMode, setActiveSidebarTab, setDoc, setSessionData, setShowSessionModal, setImageRefinementInput, setIsFindingStandards, setShowWizard, setSourceLevel, setSourceVocabulary, setIncludeSourceCitations, setLeveledTextLanguage, setActiveBlueprint, setPersistedLessonDNA, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, flyToElement, getDefaultTitle, storageDB, updateDoc, doc, db, playSound, playAdventureEventSound, generateSessionCode, stripUndefined, uploadSessionAssets, safeSetItem, handleGenerateSource, applyDetailedAutoConfig, handleGenerate, fileInputRef } = deps;
+  const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, standardsInput, targetStandards, dokLevel, rosterKey, sessionData, user, appId, activeSessionAppId, activeSessionCode, studentNickname, sourceLength, sourceTone, textFormat, differentiationRange, differentiationTypes, differentiationCustomGrades, fullPackTargetGroup, isAutoConfigEnabled, resourceCount, creativeMode, noText, fillInTheBlank, imageGenerationStyle, imageAspectRatio, useLowQualityVisuals, autoRemoveWords, globalPoints, wizardData, isWizardOpen, standardsLookupRegion, standardsLookupGoal, pdfFixResult, showExportPreview, aiStandardQuery, aiStandardRegion, imageRefinementInput, activeBlueprint, ai, webSearchProvider, alloBotRef, pdfPreviewRef, exportPreviewRef, setError, setIsProcessing, setGenerationStep, setGeneratedContent, setHistory, setActiveView, setActiveSessionCode, setActiveSessionAppId, setStudentNickname, setIsWizardOpen, setShowSourceGen, setSourceTopic, setSourceCustomInstructions, setSourceLength, setSourceTone, setTextFormat, setSelectedLanguages, setGradeLevel, setStandardsInput, setTargetStandards, setDokLevel, setStudentInterests, setSuggestedStandards, setIsLookingUpStandards, setStandardsLookupGoal, setStandardsLookupRegion, setExpandedTools, setShowUDLGuide, setUdlMessages, setGuidedFlowState, setIsRefiningImage, setShowImageRefineModal, setIsExecutingBlueprint, setBlueprintExecutionResult, setShowExportPreview, setInputText, setIsTeacherMode, setIsParentMode, setIsIndependentMode, setActiveSidebarTab, setDoc, setSessionData, setShowSessionModal, setImageRefinementInput, setIsFindingStandards, setShowWizard, setSourceLevel, setSourceVocabulary, setIncludeSourceCitations, setLeveledTextLanguage, setActiveBlueprint, setPersistedLessonDNA, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, flyToElement, getDefaultTitle, storageDB, updateDoc, doc, db, playSound, playAdventureEventSound, generateSessionCode, stripUndefined, uploadSessionAssets, safeSetItem, handleGenerateSource, applyDetailedAutoConfig, handleGenerate, fileInputRef } = deps;
   try { if (window._DEBUG_PHASE_O) console.log("[PhaseO] handleWizardStandardLookup fired"); } catch(_) {}
       try {
           const regionText = region ? `Constraint (Region or Framework): ${region}` : "Context: General/US";
@@ -655,10 +655,46 @@ const getBlueprintResourcePlan = (blueprint) => {
     }).filter(Boolean);
 };
 
+// Generation failures need to be useful in two places: the in-app diagnostics
+// ring (via warnLog) and the user-facing Error Reporter (via record). The latter
+// does not capture console.warn unless the teacher opts in, so unattended
+// blueprint failures must record themselves explicitly.
+const recordBlueprintResourceFailure = (details, warnLog) => {
+    const d = details || {};
+    const reason = String(d.reason || 'unknown generation failure');
+    const message = '[Blueprint] resource generation failed'
+        + ' tool=' + String(d.tool || 'unknown')
+        + ' uiId=' + String(d.uiId || 'unknown')
+        + ' step=' + String((Number.isFinite(d.index) ? d.index + 1 : '?'))
+        + ' reason=' + reason
+        + ' dispatcherLoaded=' + String(d.dispatcherLoaded == null ? 'unknown' : d.dispatcherLoaded)
+        + ' sourceTextChars=' + String(Number.isFinite(d.sourceTextChars) ? d.sourceTextChars : 0);
+    try {
+        if (typeof warnLog === 'function') warnLog(message);
+        else if (typeof console !== 'undefined' && console.warn) console.warn(message);
+    } catch (_) {}
+    const stack = d.error && d.error.stack ? String(d.error.stack) : '';
+    try {
+        const reporter = typeof window !== 'undefined'
+            && window.AlloModules
+            && window.AlloModules.ErrorReporter;
+        if (reporter && typeof reporter.record === 'function') {
+            reporter.record('error', message, stack, 'blueprint-resource-generation', 0, 0);
+        } else if (typeof window !== 'undefined') {
+            // ErrorReporter is loaded asynchronously. Keep a small hand-off
+            // queue so a fast first run is not lost before that module arrives.
+            const pending = window.__alloPendingErrorReports = window.__alloPendingErrorReports || [];
+            pending.push({ level: 'error', message: message, stack: stack, source: 'blueprint-resource-generation' });
+            while (pending.length > 20) pending.shift();
+        }
+    } catch (_) {}
+    return message;
+};
+
 const executeOneBlueprint = async (blueprint, ctx) => {
     // onStep is ADDITIVE and optional — onResource stays exactly as it was
     // because Throughline's Generate-Unit driver consumes it.
-    const { handleGenerate, historyOverride, dna, initialSourceText, onResource, onStep, signal, warnLog } = ctx || {};
+    const { handleGenerate, historyOverride, dna, initialSourceText, onResource, onStep, signal, warnLog, settingsSnapshot } = ctx || {};
     const emitStep = (payload) => { if (typeof onStep === 'function') { try { onStep(payload); } catch (_) {} } };
     // Blueprint failures used to be INVISIBLE. A row was marked 'failed' purely
     // because handleGenerate returned falsy — no exception, no capture, no log.
@@ -666,9 +702,7 @@ const executeOneBlueprint = async (blueprint, ctx) => {
     // and no way to tell "the model refused" from "the dispatcher never loaded"
     // from "this tool type isn't handled". Diagnostics are not optional here:
     // this is the one path where the app does real work unattended.
-    const _diag = (msg) => {
-        try { if (typeof warnLog === 'function') warnLog(msg); else if (typeof console !== 'undefined') console.warn(msg); } catch (_) {}
-    };
+
     const finalResources = getBlueprintResourcePlan(blueprint);
     const lessonDNA = dna || { grade: "", topic: "", standard: "", concepts: [], keyTerms: [], visualContext: "", essentialQuestion: "" };
     // NULL, not "". This is a SENTINEL, not a default.
@@ -726,7 +760,7 @@ const executeOneBlueprint = async (blueprint, ctx) => {
         let failReason = null;
         let threw = null;
         try {
-            resultItem = await handleGenerate(type, null, i < finalResources.length - 1, currentSourceText, stepConfig, false);
+            resultItem = await handleGenerate(type, null, i < finalResources.length - 1, currentSourceText, stepConfig, false, settingsSnapshot || null);
             if (!resultItem) failReason = 'handleGenerate returned no resource (it did not throw)';
         } catch (err) {
             threw = err;
@@ -738,11 +772,15 @@ const executeOneBlueprint = async (blueprint, ctx) => {
             // missing GenDispatcher nulls EVERY row and is otherwise silent).
             let dispatcherLoaded = 'unknown';
             try { dispatcherLoaded = String(!!(typeof window !== 'undefined' && window.AlloModules && window.AlloModules.GenDispatcher)); } catch (_) {}
-            _diag('[Blueprint] step ' + (i + 1) + '/' + finalResources.length + ' FAILED'
-                + ' — tool=' + type + ' uiId=' + stepUiId
-                + ' reason=' + failReason
-                + ' dispatcherLoaded=' + dispatcherLoaded
-                + ' sourceTextChars=' + (currentSourceText ? currentSourceText.length : 0));
+            recordBlueprintResourceFailure({
+                tool: type,
+                uiId: stepUiId,
+                index: i,
+                reason: failReason,
+                error: threw,
+                dispatcherLoaded: dispatcherLoaded,
+                sourceTextChars: currentSourceText ? currentSourceText.length : 0,
+            }, warnLog);
         }
         emitStep({ uiId: stepUiId, tool: type, index: i,
                    status: resultItem ? 'landed' : 'failed',
@@ -782,11 +820,15 @@ const executeOneBlueprint = async (blueprint, ctx) => {
             // failedRows is the row-accurate record ("which image failed").
             nulls.push(type);
             failedRows.push({ uiId: stepUiId, tool: type, index: i, reason: failReason });
-            // Control flow is UNCHANGED: a thrown error still aborts the run, so
-            // the caller's catch marks the remaining rows interrupted and toasts
-            // as before. Only the capture and the log above are new — the reason
-            // is recorded first so it survives the abort.
-            if (threw) throw threw;
+            // Resource-specific parse/shape failures should not strand the rest
+            // of a plan. Preserve abort semantics for errors that make every
+            // following step unsafe or impossible: cancellation, auth, quota,
+            // safety/policy blocks, missing modules, and explicit fatal errors.
+            const message = threw && String(threw.message || threw.name || threw);
+            const fatal = !!(threw && (threw.isFatal || threw.isAuth
+                || threw.name === 'AbortError'
+                || /abort|cancel|auth|api key|quota|permission|forbidden|not loaded|safety|policy|blocked|no source/i.test(message)));
+            if (threw && fatal) throw threw;
         }
         if (i < finalResources.length - 1) await new Promise(r => setTimeout(r, 1000));
     }
@@ -815,7 +857,7 @@ const handleStopBlueprintRun = () => {
     return !!_blueprintAbortCtl;
 };
 const handleExecuteBlueprint = async (deps) => {
-  const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, standardsInput, targetStandards, dokLevel, rosterKey, sessionData, user, appId, activeSessionAppId, activeSessionCode, studentNickname, sourceLength, sourceTone, textFormat, fullPackTargetGroup, isAutoConfigEnabled, resourceCount, creativeMode, noText, fillInTheBlank, imageGenerationStyle, imageAspectRatio, useLowQualityVisuals, autoRemoveWords, globalPoints, wizardData, isWizardOpen, standardsLookupRegion, standardsLookupGoal, pdfFixResult, showExportPreview, aiStandardQuery, aiStandardRegion, imageRefinementInput, activeBlueprint, ai, webSearchProvider, alloBotRef, pdfPreviewRef, exportPreviewRef, setError, setIsProcessing, setGenerationStep, setGeneratedContent, setHistory, setActiveView, setActiveSessionCode, setActiveSessionAppId, setStudentNickname, setIsWizardOpen, setShowSourceGen, setSourceTopic, setSourceCustomInstructions, setSourceLength, setSourceTone, setTextFormat, setSelectedLanguages, setGradeLevel, setStandardsInput, setTargetStandards, setDokLevel, setStudentInterests, setSuggestedStandards, setIsLookingUpStandards, setStandardsLookupGoal, setStandardsLookupRegion, setExpandedTools, setShowUDLGuide, setUdlMessages, setGuidedFlowState, setIsRefiningImage, setShowImageRefineModal, setIsExecutingBlueprint, setBlueprintExecutionResult, setShowExportPreview, setInputText, setIsTeacherMode, setIsParentMode, setIsIndependentMode, setActiveSidebarTab, setDoc, setSessionData, setShowSessionModal, setImageRefinementInput, setIsFindingStandards, setShowWizard, setSourceLevel, setSourceVocabulary, setIncludeSourceCitations, setLeveledTextLanguage, setActiveBlueprint, setPersistedLessonDNA, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, flyToElement, getDefaultTitle, storageDB, updateDoc, doc, db, playSound, playAdventureEventSound, generateSessionCode, stripUndefined, uploadSessionAssets, safeSetItem, handleGenerateSource, applyDetailedAutoConfig, handleGenerate, fileInputRef } = deps;
+  const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, standardsInput, targetStandards, dokLevel, rosterKey, sessionData, user, appId, activeSessionAppId, activeSessionCode, studentNickname, sourceLength, sourceTone, textFormat, differentiationRange, differentiationTypes, differentiationCustomGrades, fullPackTargetGroup, isAutoConfigEnabled, resourceCount, creativeMode, noText, fillInTheBlank, imageGenerationStyle, imageAspectRatio, useLowQualityVisuals, autoRemoveWords, globalPoints, wizardData, isWizardOpen, standardsLookupRegion, standardsLookupGoal, pdfFixResult, showExportPreview, aiStandardQuery, aiStandardRegion, imageRefinementInput, activeBlueprint, ai, webSearchProvider, alloBotRef, pdfPreviewRef, exportPreviewRef, setError, setIsProcessing, setGenerationStep, setGeneratedContent, setHistory, setActiveView, setActiveSessionCode, setActiveSessionAppId, setStudentNickname, setIsWizardOpen, setShowSourceGen, setSourceTopic, setSourceCustomInstructions, setSourceLength, setSourceTone, setTextFormat, setSelectedLanguages, setGradeLevel, setStandardsInput, setTargetStandards, setDokLevel, setStudentInterests, setSuggestedStandards, setIsLookingUpStandards, setStandardsLookupGoal, setStandardsLookupRegion, setExpandedTools, setShowUDLGuide, setUdlMessages, setGuidedFlowState, setIsRefiningImage, setShowImageRefineModal, setIsExecutingBlueprint, setBlueprintExecutionResult, setShowExportPreview, setInputText, setIsTeacherMode, setIsParentMode, setIsIndependentMode, setActiveSidebarTab, setDoc, setSessionData, setShowSessionModal, setImageRefinementInput, setIsFindingStandards, setShowWizard, setSourceLevel, setSourceVocabulary, setIncludeSourceCitations, setLeveledTextLanguage, setActiveBlueprint, setPersistedLessonDNA, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, flyToElement, getDefaultTitle, storageDB, updateDoc, doc, db, playSound, playAdventureEventSound, generateSessionCode, stripUndefined, uploadSessionAssets, safeSetItem, handleGenerateSource, applyDetailedAutoConfig, handleGenerate, fileInputRef } = deps;
   try { if (window._DEBUG_PHASE_O) console.log("[PhaseO] handleExecuteBlueprint fired"); } catch(_) {}
     if (!activeBlueprint) return;
     const finalResources = getBlueprintResourcePlan(activeBlueprint);
@@ -844,6 +886,24 @@ const handleExecuteBlueprint = async (deps) => {
         if (activeBlueprint.globalSettings.tone) setSourceTone(activeBlueprint.globalSettings.tone);
     }
     applyDetailedAutoConfig(activeBlueprint);
+    // React setters above are asynchronous. Freeze the values used by this
+    // run so Universal Settings cannot change between plan approval and the
+    // first request, or leak into a later request while the run is active.
+    const _globalSettings = activeBlueprint.globalSettings || {};
+    const _blueprintSettingsSnapshot = Object.freeze({
+        gradeLevel: _globalSettings.gradeLevel || gradeLevel,
+        leveledTextLanguage: _globalSettings.language || _globalSettings.leveledTextLanguage || leveledTextLanguage,
+        selectedLanguages: Array.isArray(selectedLanguages) ? selectedLanguages.slice() : selectedLanguages,
+        studentInterests: Array.isArray(studentInterests) ? studentInterests.slice() : studentInterests,
+        standardsInput,
+        targetStandards: Array.isArray(targetStandards) ? targetStandards.slice() : targetStandards,
+        dokLevel: _globalSettings.dokLevel || dokLevel,
+        useEmojis: _globalSettings.useEmojis === undefined ? useEmojis : _globalSettings.useEmojis,
+        textFormat: _globalSettings.textFormat || textFormat,
+        differentiationRange,
+        differentiationTypes: Array.isArray(differentiationTypes) ? differentiationTypes.slice() : differentiationTypes,
+        differentiationCustomGrades: Array.isArray(differentiationCustomGrades) ? differentiationCustomGrades.slice() : differentiationCustomGrades,
+    });
     const lessonDNA = {
         grade: activeBlueprint.globalSettings?.gradeLevel || gradeLevel,
         topic: sourceTopic || "",
@@ -861,7 +921,8 @@ const handleExecuteBlueprint = async (deps) => {
         _runRows[key] = { uiId: key, tool: r && r.type, status: 'planned', index: i };
     });
     setIsExecutingBlueprint(true);
-    setBlueprintExecutionResult({ startedAt: null, rows: _runRows, done: false });
+    const _blueprintRunId = 'blueprint-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+    setBlueprintExecutionResult({ runId: _blueprintRunId, status: 'running', startedAt: new Date().toISOString(), settingsSnapshot: _blueprintSettingsSnapshot, rows: _runRows, done: false });
     // The chat panel used to be force-closed here, which threw away the
     // conversation the plan came out of — and, because the guided-flow stage
     // was never cleared, reopening it stranded every later message in the
@@ -904,6 +965,7 @@ const handleExecuteBlueprint = async (deps) => {
             signal: _blueprintAbortCtl ? _blueprintAbortCtl.signal : null,
             historyOverride: [...history],
             dna: lessonDNA,                       // mutated in place — faithful to the original loop
+            settingsSnapshot: _blueprintSettingsSnapshot,
             initialSourceText: currentSourceText,
             onStep: (step) => {
                 if (!step || !step.uiId) return;
@@ -953,7 +1015,7 @@ const handleExecuteBlueprint = async (deps) => {
                     rows[k] = (r && (r.status === 'running' || r.status === 'planned'))
                         ? Object.assign({}, r, { status: 'interrupted' }) : r;
                 });
-                return Object.assign({}, prev, { rows: rows, done: true, stopped: true });
+                return Object.assign({}, prev, { rows: rows, done: true, stopped: true, status: 'stopped', finishedAt: new Date().toISOString() });
             });
             // COUNT LANDED ITEMS, not total-minus-failed: rows the stop never
             // reached are in neither list, so `total - nulls.length` would
@@ -988,9 +1050,11 @@ const handleExecuteBlueprint = async (deps) => {
                 warnLog('[Blueprint] ALL ' + total + ' steps failed — this is systemic, not per-resource.'
                     + ' Distinct reasons: ' + (reasons.length ? reasons.join(' | ') : '(none captured)'));
             }
+            setBlueprintExecutionResult(prev => prev ? Object.assign({}, prev, { status: 'partial', finishedAt: new Date().toISOString() }) : prev);
             addToast(warnMsg, "warning");
             setUdlMessages(prev => [...prev, { role: 'model', text: warnMsg }]);
         } else {
+            setBlueprintExecutionResult(prev => prev ? Object.assign({}, prev, { status: 'completed', finishedAt: new Date().toISOString() }) : prev);
             addToast(t('blueprint.execution_complete'), "success");
             setUdlMessages(prev => [...prev, {
                 role: 'model',
@@ -1013,14 +1077,14 @@ const handleExecuteBlueprint = async (deps) => {
                 rows[k] = (r && (r.status === 'running' || r.status === 'planned'))
                     ? Object.assign({}, r, { status: 'interrupted' }) : r;
             });
-            return Object.assign({}, prev, { rows: rows, done: true });
+            return Object.assign({}, prev, { rows: rows, done: true, status: 'failed', finishedAt: new Date().toISOString() });
         });
     } finally {
         _blueprintRunInFlight = false;
         _blueprintAbortCtl = null;   // a Stop pressed after this is a harmless no-op
         setIsProcessing(false);
         setIsExecutingBlueprint(false);
-        setBlueprintExecutionResult(prev => prev ? Object.assign({}, prev, { done: true }) : prev);
+        setBlueprintExecutionResult(prev => prev ? Object.assign({}, prev, { done: true, status: prev.status || 'completed', finishedAt: prev.finishedAt || new Date().toISOString() }) : prev);
     }
 };
 
@@ -1064,7 +1128,7 @@ const handleRebuildBlueprintStep = async (deps, uiId) => {
       customInstructions: row.directive || '',
       historyOverride: Array.isArray(history) ? history.slice() : [],
       lessonDNA: persistedLessonDNA || null,
-    }, false);
+    }, false, (blueprintExecutionResult && blueprintExecutionResult.settingsSnapshot) || null);
     patch({ status: resultItem ? 'landed' : 'failed',
             resourceId: (resultItem && resultItem.id) || null,
             rebuilt: true });

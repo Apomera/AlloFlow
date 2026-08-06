@@ -8133,6 +8133,8 @@ const MAX_OFFLINE_ITEMS = 50;
 // make a future bump unreadable instead of upgradable.
 const ALLO_BLUEPRINT_STORE_KEY = 'alloflow-blueprint-run-v1';
 const ALLO_BLUEPRINT_STORE_VERSION = 1;
+const ALLO_FULL_PACK_STORE_KEY = 'alloflow-full-pack-run-v1';
+const ALLO_FULL_PACK_STORE_VERSION = 1;
 const ALLO_WORKSPACE_RECOVERY_NAMESPACE = 'workspace_recovery';
 const ALLO_WORKSPACE_RECOVERY_KEY = 'store_v1';
 const ALLO_WORKSPACE_RECOVERY = (() => {
@@ -12397,6 +12399,9 @@ Return ONLY JSON in this shape:
       sourceLength,
       sourceTone,
       textFormat,
+      differentiationRange,
+      differentiationTypes,
+      differentiationCustomGrades,
       fullPackTargetGroup,
       isAutoConfigEnabled,
       resourceCount,
@@ -18997,7 +19002,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       if (Array.isArray(branches)) {
           // Create all branch nodes first
           branches.forEach((branch, idx) => {
-              const branchId = `node-b-${idx}`;
+              const branchId = 
+ode-b-${idx}`;
               const isDecision = branch.title.includes('?') || (Array.isArray(branch.connectsTo) && branch.connectsTo.length > 1);
               const type = isDecision ? 'flow-decision' : 'flow-process';
               nodes.push({
@@ -19010,7 +19016,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               yOffset += 120;
               if (branch.items && branch.items.length > 0) {
                    branch.items.forEach((item, iIdx) => {
-                        const itemId = `node-i-${idx}-${iIdx}`;
+                        const itemId = 
+ode-i-${idx}-${iIdx}`;
                         nodes.push({
                             id: itemId,
                             type: 'flow-note',
@@ -19027,10 +19034,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               // Connect main to first branch
               edges.push({ id: `e-main-b0`, fromId: mainId, toId: 'node-b-0' });
               branches.forEach((branch, idx) => {
-                  const branchId = `node-b-${idx}`;
+                  const branchId = 
+ode-b-${idx}`;
                   if (Array.isArray(branch.connectsTo) && branch.connectsTo.length > 0) {
                       branch.connectsTo.forEach(target => {
-                          const targetId = `node-b-${target}`;
+                          const targetId = 
+ode-b-${target}`;
                           edges.push({ id: `e-${branchId}-${targetId}`, fromId: branchId, toId: targetId });
                       });
                   }
@@ -19040,7 +19049,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               // Linear fallback
               let previousId = mainId;
               branches.forEach((branch, idx) => {
-                  const branchId = `node-b-${idx}`;
+                  const branchId = 
+ode-b-${idx}`;
                   edges.push({ id: `e-${previousId}-${branchId}`, fromId: previousId, toId: branchId });
                   previousId = branchId;
               });
@@ -19057,11 +19067,13 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           branches.forEach((branch, idx) => {
               const hasOutgoing = Array.isArray(branch.connectsTo) && branch.connectsTo.length > 0;
               if (!hasOutgoing) {
-                  edges.push({ id: `e-b${idx}-end`, fromId: `node-b-${idx}`, toId: endId });
+                  edges.push({ id: `e-b${idx}-end`, fromId: 
+ode-b-${idx}`, toId: endId });
               }
           });
       } else {
-          const lastBranchId = Array.isArray(branches) && branches.length > 0 ? `node-b-${branches.length - 1}` : mainId;
+          const lastBranchId = Array.isArray(branches) && branches.length > 0 ? 
+ode-b-${branches.length - 1}` : mainId;
           edges.push({ id: `e-${lastBranchId}-end`, fromId: lastBranchId, toId: endId });
       }
       return { nodes, edges };
@@ -26406,6 +26418,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // a fresh object literal and would silently drop anything hung on it.
   const [isExecutingBlueprint, setIsExecutingBlueprint] = useState(false);
   const [blueprintExecutionResult, setBlueprintExecutionResult] = useState(null);
+  const [fullPackRun, setFullPackRun] = useState(null);
   // A row frozen at 'running' is a spinner that never resolves on a row that
   // can never be rebuilt. EVERY path that installs a run record from storage
   // must demote in-flight rows, not just the boot hydrate — extracted so the
@@ -26469,6 +26482,44 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     } catch (e) { warnLog('[Blueprint] could not save plan:', e?.message || e); }
   }, [activeBlueprint, blueprintExecutionResult]);
   // ── Stage 6: in-place resource preview ────────────────────────────────
+  // Full Pack durability mirrors Blueprint durability: a reload demotes any
+  // resource that was in flight so diagnostics never show a permanent spinner.
+  const _fullPackHydratedRef = useRef(false);
+  const _demoteFullPackResources = (resourcesIn) => {
+    const out = {};
+    Object.keys(resourcesIn || {}).forEach((k) => {
+      const r = resourcesIn[k];
+      out[k] = (r && r.status === 'running') ? Object.assign({}, r, { status: 'interrupted' }) : r;
+    });
+    return out;
+  };
+  useEffect(() => {
+    if (_fullPackHydratedRef.current) return;
+    _fullPackHydratedRef.current = true;
+    try {
+      const raw = localStorage.getItem(ALLO_FULL_PACK_STORE_KEY);
+      if (!raw) return;
+      const env = JSON.parse(raw);
+      if (!env || env.v !== ALLO_FULL_PACK_STORE_VERSION || !env.run) return;
+      const wasRunning = env.run.status === 'running';
+      setFullPackRun(Object.assign({}, env.run, {
+        status: wasRunning ? 'interrupted' : env.run.status,
+        resources: _demoteFullPackResources(env.run.resources),
+        restored: true,
+      }));
+    } catch (e) { warnLog('[FullPack] could not restore saved run:', e?.message || e); }
+  }, []);
+  useEffect(() => {
+    if (!_fullPackHydratedRef.current) return;
+    try {
+      if (!fullPackRun) { safeRemoveItem(ALLO_FULL_PACK_STORE_KEY); return; }
+      safeSetItem(ALLO_FULL_PACK_STORE_KEY, JSON.stringify({
+        v: ALLO_FULL_PACK_STORE_VERSION,
+        savedAt: new Date().toISOString(),
+        run: fullPackRun,
+      }));
+    } catch (e) { warnLog('[FullPack] could not save run:', e?.message || e); }
+  }, [fullPackRun]);
   // Renders one generated resource beside its plan row, so the teacher can
   // check what landed without navigating away and losing the plan.
   //
@@ -27409,9 +27460,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       verifyMathProblems,
       flyToElement,
       isProcessing,
+      fullPackRun,
+      setFullPackRun,
       fullPackTargetGroup,
       rosterKey,
       dokLevel,
+      differentiationRange,
+      differentiationTypes,
+      differentiationCustomGrades,
       leveledTextCustomInstructions,
       selectedLanguages,
       targetStandards,
@@ -39185,10 +39241,10 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
     }, 1000);
     return () => clearInterval(interval);
   }, [isEscapeTimerRunning, escapeTimeLeft, t, addToast]);
-  const handleGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, switchView = true) => {
+  const handleGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, switchView = true, generationDepsOverride = null) => {
     const _m = window.AlloModules && window.AlloModules.GenDispatcher;
     console.log('[VisualDebug] handleGenerate shim called with type=', type, 'module loaded?', !!_m);
-    if (_m && typeof _m.handleGenerate === "function") return _m.handleGenerate(type, langOverride, keepLoading, textOverride, configOverride, switchView, {
+    if (_m && typeof _m.handleGenerate === "function") return _m.handleGenerate(type, langOverride, keepLoading, textOverride, configOverride, switchView, Object.assign({
         gradeLevel,
         outlineType,
         visualStyle,
@@ -39395,7 +39451,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         repairGeneratedText,
         resetPersonaInterviewState,
         validateSequenceStructure,
-      });
+      }, generationDepsOverride || {}));
     throw new Error("[handleGenerate] GenDispatcher module not loaded - reload the page");
   };
   const GUIDED_RETRY_TYPES = {
@@ -39504,6 +39560,11 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
     const _m = window.AlloModules && window.AlloModules.GenerationHelpers;
     if (_m && typeof _m.handleGenerateFullPack === "function") return _m.handleGenerateFullPack(chatContextOverride, _alloGenerationHelpersDeps());
     throw new Error("[handleGenerateFullPack] GenerationHelpers module not loaded - reload the page");
+  };
+  const handleStopFullPack = () => {
+    const _m = window.AlloModules && window.AlloModules.GenerationHelpers;
+    if (_m && typeof _m.handleStopFullPack === "function") return _m.handleStopFullPack();
+    return false;
   };
   const handleAutoCorrectSource = async () => {
     const _m = window.AlloModules && window.AlloModules.CmapHandlers;
@@ -45302,6 +45363,17 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     </div>
                     <ArrowRight size={16} className="text-indigo-300 group-hover:text-indigo-600" />
                 </button>
+                {fullPackRun?.status === 'running' && (
+                    <button
+                        type="button"
+                        onClick={handleStopFullPack}
+                        className="mt-2 w-full rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 flex items-center justify-center gap-2"
+                        title="Stop after the current resource"
+                    >
+                        <StopCircle size={15} />
+                        Stop after current resource
+                    </button>
+                )}
             </div>
             <div style={{display: (!guidedMode || guidedActiveSteps[guidedStep]?.id === 'alignment') ? undefined : 'none'}} id="tour-tool-alignment" data-help-key="tool_alignment" className="bg-gradient-to-r from-teal-500 to-emerald-500 p-1 rounded-3xl shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 transition-all group">
                 <button
