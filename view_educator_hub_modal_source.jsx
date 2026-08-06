@@ -79,6 +79,7 @@ function EducatorHubModal(props) {
     setIsAccessibilityLabOpen, setIsCommunityCatalogOpen, setIsSymbolStudioOpen,
     setPdfAuditResult, setPdfBatchMode, setPendingPdfBase64, setPendingPdfFile,
     setShowBehaviorLens, setShowEducatorHub, setShowReportWriter, setShowCinematicStudio = (() => {}), showEducatorHub, t,
+    setShowRecentQrShares = (() => {}),
     beginPdfDocumentIntake = (() => null),
     isPdfDocumentIntakeCurrent = (() => true),
     // Video Studio launcher (2026-07-02): companion-window screen recorder/editor.
@@ -342,6 +343,17 @@ function EducatorHubModal(props) {
               {/* Bridge card removed 2026-07-02 (Aaron): the header Bridge button is the
                   single entry point now. setBridgeSendOpen prop stays accepted (unused)
                   so hosts that still pass it render unchanged. */}
+              {/* Polls, sign-up sheets and class activities. Their working
+                  surface is the Assignment Control Center; this is the front
+                  door, because a submenu item called "Recent homework links"
+                  is not where anyone looks to CREATE something. */}
+              <button type="button" data-help-key="educator_hub_activities_card" onClick={() => { setShowEducatorHub(false); setShowRecentQrShares(true); }} className="flex items-start gap-3 rounded-xl border border-teal-200 bg-teal-50 p-4 text-left transition-colors hover:bg-teal-100">
+                <span className="text-3xl mt-1" aria-hidden="true">🗓️</span>
+                <div>
+                  <h3 className="font-bold text-teal-800">{t('educator_hub.activities_title') || 'Polls & Sign-ups'}</h3>
+                  <p className="text-xs text-teal-600 mt-1">{t('educator_hub.activities_desc') || 'Find a meeting time, run a sign-up sheet, or collect a word cloud or rating. Share by link or QR; people answer without an account.'}</p>
+                </div>
+              </button>
               <button type="button" data-help-key="educator_hub_behavior_lens_card" onClick={() => { setShowEducatorHub(false); setShowBehaviorLens(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">🧠</span>
                 <div>

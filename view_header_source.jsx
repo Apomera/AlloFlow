@@ -1107,7 +1107,7 @@ function HeaderBar(props) {
                                         Set up a poll, sign-up sheet or class activity
                                       </button>
                                       <button type="button" onClick={() => { if (typeof openRecentQrShares === 'function') openRecentQrShares(); setShowExportMenu(false); }} className="mt-2 flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 hover:border-cyan-400 hover:text-cyan-800">
-                                        <History size={14}/> Recent homework links{recentQrShareCount ? ` (${recentQrShareCount})` : ''}
+                                        <History size={14}/> Polls, sign-ups & shared links{recentQrShareCount ? ` (${recentQrShareCount})` : ''}
                                       </button>
                                     </div>
                                     <p className="px-3 pb-2 text-[11px] leading-snug text-slate-500">{studentAiPolicyForShare === 'student-byok' ? 'Teacher-prepared resources open with optional personal AI. Students supply and test their own provider.' : 'Teacher-prepared resources open for students with AI generation off.'}</p>

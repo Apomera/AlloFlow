@@ -68,6 +68,38 @@ describe('setup lives with the results', () => {
   }
 });
 
+describe('there is a front door', () => {
+  const HUB = readFileSync('view_educator_hub_modal_source.jsx', 'utf8');
+  const HUB_MODULE = readFileSync('view_educator_hub_modal_module.js', 'utf8');
+
+  it('has an Educator Hub card, which is how every other tool is found', () => {
+    expect(HUB).toContain('educator_hub_activities_card');
+    expect(HUB).toMatch(/Polls & Sign-ups/);
+    // It opens the working surface rather than duplicating it.
+    expect(HUB).toContain('setShowRecentQrShares(true)');
+  });
+
+  it('defaults the opener so a host that does not pass it still renders', () => {
+    // Same defaulting the file already uses for setShowCinematicStudio; without
+    // it, an older host would throw on click.
+    expect(HUB).toContain('setShowRecentQrShares = (() => {})');
+  });
+
+  it('is wired from the host and reaches the built module', () => {
+    for (const f of COPIES) {
+      expect(readFileSync(f, 'utf8'), f).toContain('<EducatorHubModal setShowRecentQrShares={setShowRecentQrShares}');
+    }
+    expect(HUB_MODULE, 'a source-only change would never ship').toContain('educator_hub_activities_card');
+  });
+
+  it('no longer calls the entry point "recent homework links"', () => {
+    // The dialog now creates as well as lists, so the old name described only
+    // half of it and sent people looking in the wrong place.
+    expect(HEADER).not.toContain('Recent homework links');
+    expect(HEADER).toContain('Polls, sign-ups & shared links');
+  });
+});
+
 describe('an activity can be sent on its own', () => {
   for (const f of COPIES) {
     it(`${f} does not require a resource pack`, () => {
