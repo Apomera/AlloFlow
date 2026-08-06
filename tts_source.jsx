@@ -572,7 +572,13 @@ const createTTS = (deps) => {
         });
     };
 
-    let piperLoadPromise = null;
+    // Piper is the MULTILINGUAL fallback. For English the ladder is Gemini ->
+// Kokoro -> the browser voice, and the browser voice is always present and
+// needs no download, so pulling a Piper model mid-read only adds a failure
+// surface (and a large fetch) on the one language that never needed it.
+// Flip to true to restore Piper as an English fallback.
+const PIPER_HANDLES_ENGLISH = false;
+let piperLoadPromise = null;
     const ensurePiperTts = async () => {
         try {
             if (window._piperTTS) return window._piperTTS;
@@ -788,7 +794,7 @@ const createTTS = (deps) => {
             }
             const localTtsText = cleanTextForLocalTTS(text);
             const ttsLang = languageToTTSCode(_language);
-            if (!window._piperTTS && (ttsLang !== 'en' || !window._kokoroTTS?.ready)) {
+            if (!window._piperTTS && ttsLang !== 'en') {
                 await ensurePiperTts();
             }
             if (ttsLang === 'en') {
@@ -836,7 +842,7 @@ const createTTS = (deps) => {
                     _ttsTrace('calltts:kokoro-fallback-fail', { error: String(e?.message || e).substring(0, 100) });
                 }
                 try {
-                    if (window._piperTTS) {
+                    if (PIPER_HANDLES_ENGLISH && window._piperTTS) {
                         const url = await window._piperTTS.speak(localTtsText, 'en', speed, { signal: _signal });
                         if (url) { _ttsTrace('calltts:piper-fallback-ok', null); return url; }
                     }
@@ -1131,7 +1137,7 @@ const createTTS = (deps) => {
                 }
             }
             const ttsLang = languageToTTSCode(_directLanguage);
-            if (!window._piperTTS && (ttsLang !== 'en' || !window._kokoroTTS?.ready)) {
+            if (!window._piperTTS && ttsLang !== 'en') {
                 await ensurePiperTts();
             }
             const cleanedText = cleanTextForLocalTTS(text);
@@ -1143,7 +1149,7 @@ const createTTS = (deps) => {
                     }
                 } catch (e) { if (_isDirectAbortError(e)) throw e; console.warn('[callTTSDirect] Kokoro failed:', e?.message); }
                 try {
-                    if (window._piperTTS) {
+                    if (PIPER_HANDLES_ENGLISH && window._piperTTS) {
                         const url = await window._piperTTS.speak(cleanedText, 'en', speed, { signal: _directSignal });
                         if (url) return url;
                     }
