@@ -1035,15 +1035,16 @@ function HeaderBar(props) {
   ), /* @__PURE__ */ React.createElement("span", null, "Add a shared asynchronous activity")), sharedAssignmentActivity?.enabled === true && /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-2 border-t border-sky-200 pt-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[10px] font-bold text-sky-900" }, "Activity type", /* @__PURE__ */ React.createElement(
     "select",
     {
-      value: ["rating", "availability", "word_cloud"].indexOf(sharedAssignmentActivity?.type) >= 0 ? sharedAssignmentActivity.type : "word_cloud",
+      value: ["rating", "availability", "signup", "word_cloud"].indexOf(sharedAssignmentActivity?.type) >= 0 ? sharedAssignmentActivity.type : "word_cloud",
       onChange: (event) => {
-        const nextType = ["rating", "availability", "word_cloud"].indexOf(event.target.value) >= 0 ? event.target.value : "word_cloud";
+        const nextType = ["rating", "availability", "signup", "word_cloud"].indexOf(event.target.value) >= 0 ? event.target.value : "word_cloud";
         setSharedAssignmentActivity((previous) => {
-          const currentType = ["rating", "availability", "word_cloud"].indexOf(previous?.type) >= 0 ? previous.type : "word_cloud";
+          const currentType = ["rating", "availability", "signup", "word_cloud"].indexOf(previous?.type) >= 0 ? previous.type : "word_cloud";
           const defaults = {
             word_cloud: "What word or short phrase best captures your thinking?",
             rating: "How would you rate your understanding?",
-            availability: "Which of these times could you make?"
+            availability: "Which of these times could you make?",
+            signup: "Choose a time that works for you"
           };
           const currentPrompt = String(previous?.prompt || "");
           return {
@@ -1057,8 +1058,9 @@ function HeaderBar(props) {
     },
     /* @__PURE__ */ React.createElement("option", { value: "word_cloud" }, "Word Cloud"),
     /* @__PURE__ */ React.createElement("option", { value: "rating" }, "Rating scale (not scored)"),
-    /* @__PURE__ */ React.createElement("option", { value: "availability" }, "Availability poll (find a time)")
-  )), sharedAssignmentActivity?.type === "availability" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded-md border border-sky-200 bg-sky-50 p-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-black text-slate-700" }, "Describe when it needs to happen (optional)", /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("option", { value: "availability" }, "Availability poll (find a time)"),
+    /* @__PURE__ */ React.createElement("option", { value: "signup" }, "Sign-up sheet (claim a slot)")
+  )), (sharedAssignmentActivity?.type === "availability" || sharedAssignmentActivity?.type === "signup") && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded-md border border-sky-200 bg-sky-50 p-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-black text-slate-700" }, "Describe when it needs to happen (optional)", /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
@@ -1085,7 +1087,7 @@ function HeaderBar(props) {
       placeholder: "Tue Mar 4, 3:15pm\nWed Mar 5, 3:15pm\nThu Mar 6, 3:15pm",
       className: "mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800"
     }
-  )), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-500" }, "Write times however you say them. AlloFlow does not convert time zones, so put the zone in the label if people are in more than one."), /* @__PURE__ */ React.createElement("label", { className: "mt-2 block text-[11px] font-black text-slate-700" }, "Who is voting", /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-500" }, "Write times however you say them. AlloFlow does not convert time zones, so put the zone in the label if people are in more than one.", sharedAssignmentActivity?.type === "signup" && ' Add "x 2" at the end of a line to give that slot two places.'), /* @__PURE__ */ React.createElement("label", { className: "mt-2 block text-[11px] font-black text-slate-700" }, "Who is voting", /* @__PURE__ */ React.createElement(
     "select",
     {
       value: String(sharedAssignmentActivity?.identityMode || ""),
@@ -1096,7 +1098,17 @@ function HeaderBar(props) {
     /* @__PURE__ */ React.createElement("option", { value: "real_name" }, "Real names (staff, families)"),
     /* @__PURE__ */ React.createElement("option", { value: "codename" }, "Codenames (students)"),
     /* @__PURE__ */ React.createElement("option", { value: "anonymous" }, "Anonymous (counts only)")
-  )), /* @__PURE__ */ React.createElement("label", { className: "mt-2 flex items-center gap-2 text-[11px] font-bold text-slate-700" }, /* @__PURE__ */ React.createElement(
+  )), sharedAssignmentActivity?.type === "signup" && /* @__PURE__ */ React.createElement("label", { className: "mt-2 block text-[11px] font-black text-slate-700" }, "Slots one person may take", /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      type: "number",
+      min: 1,
+      max: 10,
+      value: Number(sharedAssignmentActivity?.maxPerPerson) || 1,
+      onChange: (event) => setSharedAssignmentActivity((previous) => ({ ...previous || {}, maxPerPerson: Math.max(1, Math.min(10, parseInt(event.target.value, 10) || 1)) })),
+      className: "mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800"
+    }
+  )), sharedAssignmentActivity?.type === "availability" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "mt-2 flex items-center gap-2 text-[11px] font-bold text-slate-700" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "checkbox",
@@ -1110,7 +1122,7 @@ function HeaderBar(props) {
       checked: sharedAssignmentActivity?.multiSelect !== false,
       onChange: (event) => setSharedAssignmentActivity((previous) => ({ ...previous || {}, multiSelect: event.target.checked }))
     }
-  ), "People can pick more than one"), !sharedAssignmentActivity?.identityMode && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[10px] font-bold text-amber-700" }, "Pick who is voting before you share this poll.")), /* @__PURE__ */ React.createElement("label", { className: "block text-[10px] font-bold text-sky-900" }, "Prompt", /* @__PURE__ */ React.createElement(
+  ), "People can pick more than one")), !sharedAssignmentActivity?.identityMode && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[10px] font-bold text-amber-700" }, "Pick who is voting before you share this poll.")), /* @__PURE__ */ React.createElement("label", { className: "block text-[10px] font-bold text-sky-900" }, "Prompt", /* @__PURE__ */ React.createElement(
     "textarea",
     {
       rows: 2,

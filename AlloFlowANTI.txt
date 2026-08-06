@@ -5263,6 +5263,9 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     // this panel support boards without either being touched.
     const isQuestionBoard = activity?.type === 'question_board';
     const isPoll = activity?.type === 'availability';
+    const isSignup = activity?.type === 'signup';
+    const [signupClaims, setSignupClaims] = React.useState([]);
+    const [signupName, setSignupName] = React.useState('');
     const ratingActivity = _alloNormalizeSharedRatingActivity(activity);
     const effectiveActivity = ratingActivity || activity;
     const activityMeta = _alloSharedActivityUiMeta(effectiveActivity);
@@ -5749,7 +5752,104 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
           </div>
         )}
 
-        {!isTeacher && !isRating && !isPoll && (
+        {isSignup && !isTeacher && (
+          <form
+            className="mt-4 rounded-xl border border-sky-100 bg-white p-3"
+            onSubmit={async (event) => {
+              event.preventDefault();
+              if (busy) return;
+              if (summary?.identityMode === 'real_name' && !signupName.trim() && signupClaims.length) {
+                addToast('Add your name so the organizer knows who has the slot.', 'info');
+                return;
+              }
+              try {
+                await callStudentUpdate({ claims: signupClaims, nm: summary?.identityMode === 'real_name' ? signupName.trim().slice(0, 40) : '' });
+                addToast(signupClaims.length ? 'You are signed up.' : 'Your slot was released.', 'success');
+              } catch (submitError) {
+                // The server refuses the WHOLE submission if a slot filled up
+                // while this page was open, so say which one went.
+                const code = String(submitError?.code || submitError?.message || '');
+                addToast(code.includes('slot-full')
+                  ? 'Someone just took that slot. Pick another one.'
+                  : 'That did not save: ' + (submitError?.message || 'unknown'), 'error');
+              }
+            }}
+          >
+            <fieldset disabled={busy || summary?.closed}>
+              <legend className="block text-xs font-black text-slate-800">
+                {summary?.closed ? 'Sign-ups have closed' : 'Choose a slot'}
+              </legend>
+              {summary?.identityMode === 'real_name' && (
+                <label className="mt-2 block text-[11px] font-black text-slate-700">
+                  Your name
+                  <input type="text" value={signupName} onChange={(event) => setSignupName(event.target.value.slice(0, 40))}
+                    className="mt-1 w-full rounded-md border border-sky-300 px-2 py-1.5 text-xs font-semibold text-slate-800" />
+                </label>
+              )}
+              <div className="mt-3 space-y-2">
+                {(summary?.slots || []).map((slot) => {
+                  const mine = signupClaims.indexOf(slot.id) >= 0;
+                  const gone = slot.remaining <= 0 && !mine;
+                  const limit = summary?.maxPerPerson || 1;
+                  return (
+                    <div key={slot.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 px-2 py-1.5">
+                      <span className={`text-xs font-bold ${gone ? 'text-slate-400' : 'text-slate-800'}`}>
+                        {slot.label}
+                        <span className="ml-2 text-[10px] font-black uppercase tracking-wide">
+                          {gone ? 'Full' : slot.remaining + ' of ' + slot.capacity + ' left'}
+                        </span>
+                      </span>
+                      <button
+                        type="button"
+                        disabled={gone}
+                        aria-pressed={mine}
+                        onClick={() => setSignupClaims((previous) => {
+                          if (previous.indexOf(slot.id) >= 0) return previous.filter((id) => id !== slot.id);
+                          // At the limit, taking another slot REPLACES the
+                          // oldest rather than silently failing on submit.
+                          const next = previous.concat([slot.id]);
+                          return next.length > limit ? next.slice(next.length - limit) : next;
+                        })}
+                        className={`rounded-md px-2 py-1 text-[11px] font-black disabled:opacity-40 ${mine ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-700'}`}
+                      >
+                        {mine ? 'Mine - tap to release' : gone ? 'Full' : 'Take it'}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+              <button type="submit" className="mt-3 rounded-lg bg-sky-700 px-3 py-1.5 text-xs font-black text-white disabled:opacity-50">
+                {busy ? 'Saving...' : 'Save my choice'}
+              </button>
+              <p className="mt-1 text-[10px] text-slate-500">
+                {(summary?.maxPerPerson || 1) > 1 ? 'You can take up to ' + summary.maxPerPerson + ' slots.' : 'You can hold one slot at a time.'}
+              </p>
+            </fieldset>
+          </form>
+        )}
+
+        {isSignup && isTeacher && (
+          <div className="mt-4 rounded-xl border border-sky-100 bg-white p-3">
+            <div className="space-y-2">
+              {(summary?.slots || []).map((slot) => (
+                <div key={slot.id} className="rounded-lg bg-slate-50 px-2 py-1.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-xs font-bold text-slate-800">{slot.label}</span>
+                    <span className="text-[11px] font-black text-slate-700">{slot.taken} of {slot.capacity} taken</span>
+                  </div>
+                  {!!(slot.who || []).length && (
+                    <p className="mt-1 text-[11px] text-slate-600">{slot.who.map((person) => person.label || 'Someone').join(', ')}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+            {summary?.identityMode === 'anonymous' && (
+              <p className="mt-2 text-[10px] text-slate-500">This sheet is anonymous, so you see counts but not names.</p>
+            )}
+          </div>
+        )}
+
+        {!isTeacher && !isRating && !isPoll && !isSignup && (
           <form onSubmit={submitTerm} className="mt-4 rounded-xl border border-sky-100 bg-white p-3">
             <label htmlFor={`shared-word-cloud-${activityId}`} className="block text-xs font-black text-slate-800">Your word or short phrase</label>
             <div className="mt-2 flex flex-col gap-2 sm:flex-row">
@@ -5818,7 +5918,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
           </div>
         )}
 
-        {isTeacher && !isRating && !isPoll && (
+        {isTeacher && !isRating && !isPoll && !isSignup && (
           <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3">
             <div className="flex flex-wrap gap-2 text-[11px] font-black">
               <span className="rounded-full bg-amber-100 px-2 py-1 text-amber-900">Held {heldCount}</span>
@@ -22890,7 +22990,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           return null;
       }
       const expiresAt = new Date(Date.now() + homeworkExpiryDays * 24 * 60 * 60 * 1000).toISOString();
-      const ALLO_ACTIVITY_TYPES = ['rating', 'availability', 'word_cloud'];
+      const ALLO_ACTIVITY_TYPES = ['rating', 'availability', 'signup', 'word_cloud'];
       const sharedActivityType = ALLO_ACTIVITY_TYPES.indexOf(sharedAssignmentActivity.type) >= 0
           ? sharedAssignmentActivity.type
           : 'word_cloud';
@@ -22901,7 +23001,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           .map(line => line.replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80))
           .filter(Boolean)
           .slice(0, 50)
-          .map((label, index) => ({ id: `o${index + 1}`, label }));
+          .map((label, index) => {
+            // "Tue 3:15pm x 2" gives that slot two seats. A bare line is one
+            // seat, so the common case needs no syntax at all.
+            const seats = label.match(/\s+x\s*(\d{1,3})\s*$/i);
+            const capacity = seats ? Math.max(1, Math.min(500, parseInt(seats[1], 10))) : 1;
+            const clean = seats ? label.slice(0, seats.index).trim() : label;
+            return { id: `o${index + 1}`, label: clean, capacity };
+          });
       const ratingMin = Math.max(1, Math.min(9, Math.trunc(Number(sharedAssignmentActivity.minValue) || 1)));
       const ratingMax = Math.max(ratingMin + 1, Math.min(10, Math.trunc(Number(sharedAssignmentActivity.maxValue) || 5)));
       const ratingLabels = Array.from({ length: ratingMax - ratingMin + 1 }, (_, index) => (
@@ -22917,6 +23024,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               prompt: String(sharedAssignmentActivity.prompt || '').replace(/\s+/g, ' ').trim().slice(0, 240)
                   || (sharedActivityType === 'rating' ? 'How would you rate your understanding?'
                       : sharedActivityType === 'availability' ? 'Which of these times could you make?'
+                      : sharedActivityType === 'signup' ? 'Choose a time that works for you'
                       : 'What word or short phrase best captures your thinking?'),
               minParticipants: Math.max(3, Math.min(10, Number(sharedAssignmentActivity.minParticipants) || 3)),
               revealPolicy: sharedActivityType === 'word_cloud'
@@ -22925,15 +23033,18 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               minValue: sharedActivityType === 'rating' ? ratingMin : undefined,
               maxValue: sharedActivityType === 'rating' ? ratingMax : undefined,
               labels: sharedActivityType === 'rating' ? ratingLabels : undefined,
-              identityMode: sharedActivityType === 'availability' ? String(sharedAssignmentActivity.identityMode || '') : undefined,
-              options: sharedActivityType === 'availability' ? pollOptions : undefined,
+              identityMode: (sharedActivityType === 'availability' || sharedActivityType === 'signup') ? String(sharedAssignmentActivity.identityMode || '') : undefined,
+              options: (sharedActivityType === 'availability' || sharedActivityType === 'signup') ? pollOptions : undefined,
               allowMaybe: sharedActivityType === 'availability' ? sharedAssignmentActivity.allowMaybe !== false : undefined,
               multiSelect: sharedActivityType === 'availability' ? sharedAssignmentActivity.multiSelect !== false : undefined,
+              maxPerPerson: sharedActivityType === 'signup'
+                  ? Math.max(1, Math.min(10, Number(sharedAssignmentActivity.maxPerPerson) || 1))
+                  : undefined,
               // Voting closes when the assignment link does; the rows are erased a
               // week later. Two dates, because "stop collecting" and "stop
               // existing" are different events for a scheduling poll (spec §4).
-              closesAt: sharedActivityType === 'availability' ? expiresAt : undefined,
-              deleteAt: sharedActivityType === 'availability'
+              closesAt: (sharedActivityType === 'availability' || sharedActivityType === 'signup') ? expiresAt : undefined,
+              deleteAt: (sharedActivityType === 'availability' || sharedActivityType === 'signup')
                   ? new Date(Date.parse(expiresAt) + 7 * 24 * 60 * 60 * 1000).toISOString()
                   : undefined,
           })

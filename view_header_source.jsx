@@ -1122,15 +1122,16 @@ function HeaderBar(props) {
                                             <label className="block text-[10px] font-bold text-sky-900">
                                               Activity type
                                               <select
-                                                value={['rating', 'availability', 'word_cloud'].indexOf(sharedAssignmentActivity?.type) >= 0 ? sharedAssignmentActivity.type : 'word_cloud'}
+                                                value={['rating', 'availability', 'signup', 'word_cloud'].indexOf(sharedAssignmentActivity?.type) >= 0 ? sharedAssignmentActivity.type : 'word_cloud'}
                                                 onChange={event => {
-                                                  const nextType = ['rating', 'availability', 'word_cloud'].indexOf(event.target.value) >= 0 ? event.target.value : 'word_cloud';
+                                                  const nextType = ['rating', 'availability', 'signup', 'word_cloud'].indexOf(event.target.value) >= 0 ? event.target.value : 'word_cloud';
                                                   setSharedAssignmentActivity(previous => {
-                                                    const currentType = ['rating', 'availability', 'word_cloud'].indexOf(previous?.type) >= 0 ? previous.type : 'word_cloud';
+                                                    const currentType = ['rating', 'availability', 'signup', 'word_cloud'].indexOf(previous?.type) >= 0 ? previous.type : 'word_cloud';
                                                     const defaults = {
                                                       word_cloud: 'What word or short phrase best captures your thinking?',
                                                       rating: 'How would you rate your understanding?',
                                                       availability: 'Which of these times could you make?',
+                                                      signup: 'Choose a time that works for you',
                                                     };
                                                     const currentPrompt = String(previous?.prompt || '');
                                                     return {
@@ -1145,9 +1146,10 @@ function HeaderBar(props) {
                                                 <option value="word_cloud">Word Cloud</option>
                                                 <option value="rating">Rating scale (not scored)</option>
                                                 <option value="availability">Availability poll (find a time)</option>
+                                                <option value="signup">Sign-up sheet (claim a slot)</option>
                                               </select>
                                             </label>
-                                            {sharedAssignmentActivity?.type === 'availability' && (
+                                            {(sharedAssignmentActivity?.type === 'availability' || sharedAssignmentActivity?.type === 'signup') && (
                                               <>
                                                 <div className="mt-2 rounded-md border border-sky-200 bg-sky-50 p-2">
                                                   <label className="block text-[11px] font-black text-slate-700">
@@ -1184,6 +1186,7 @@ function HeaderBar(props) {
                                                 </label>
                                                 <p className="mt-1 text-[10px] leading-relaxed text-slate-500">
                                                   Write times however you say them. AlloFlow does not convert time zones, so put the zone in the label if people are in more than one.
+                                                  {sharedAssignmentActivity?.type === 'signup' && ' Add "x 2" at the end of a line to give that slot two places.'}
                                                 </p>
                                                 <label className="mt-2 block text-[11px] font-black text-slate-700">
                                                   Who is voting
@@ -1199,6 +1202,21 @@ function HeaderBar(props) {
                                                     <option value="anonymous">Anonymous (counts only)</option>
                                                   </select>
                                                 </label>
+                                                {sharedAssignmentActivity?.type === 'signup' && (
+                                                  <label className="mt-2 block text-[11px] font-black text-slate-700">
+                                                    Slots one person may take
+                                                    <input
+                                                      type="number"
+                                                      min={1}
+                                                      max={10}
+                                                      value={Number(sharedAssignmentActivity?.maxPerPerson) || 1}
+                                                      onChange={event => setSharedAssignmentActivity(previous => ({ ...(previous || {}), maxPerPerson: Math.max(1, Math.min(10, parseInt(event.target.value, 10) || 1)) }))}
+                                                      className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800"
+                                                    />
+                                                  </label>
+                                                )}
+                                                {sharedAssignmentActivity?.type === 'availability' && (
+                                                <>
                                                 <label className="mt-2 flex items-center gap-2 text-[11px] font-bold text-slate-700">
                                                   <input
                                                     type="checkbox"
@@ -1215,6 +1233,8 @@ function HeaderBar(props) {
                                                   />
                                                   People can pick more than one
                                                 </label>
+                                                </>
+                                                )}
                                                 {!sharedAssignmentActivity?.identityMode && (
                                                   <p className="mt-1 text-[10px] font-bold text-amber-700">Pick who is voting before you share this poll.</p>
                                                 )}
