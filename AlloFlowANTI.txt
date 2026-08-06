@@ -3886,6 +3886,70 @@ function _alloWrapCallGeminiForProvenance(fn) {
     wrapped._alloProvWrapped = true;
     return wrapped;
 }
+// ── Shell configuration (deployment-level defaults) ─────────────────────────
+// A teacher hosting their own copy on Cloudflare Pages can drop an
+// /allo-shell-config.json beside the app to pin a role and seed defaults,
+// without rebuilding.
+//
+// ★★ THE RULE: shell config may TIGHTEN, never LOOSEN. It is a static file on
+// a public host, and a student can read it and edit their own client. So it is
+// treated exactly like the URL: 'only a routing hint'. Anything that GRANTS a
+// capability must still come from the assignment packet or the live-session
+// document, which are the only sources the app authenticates. Everything here
+// can do is narrow what those sources already allow.
+const ALLO_AI_POLICY_RANK = { 'off': 0, 'pending': 1, 'student-byok': 2 };
+function _alloTightenAiPolicy(packetPolicy, shellCeiling) {
+    const rank = (v) => (Object.prototype.hasOwnProperty.call(ALLO_AI_POLICY_RANK, v) ? ALLO_AI_POLICY_RANK[v] : 0);
+    // No ceiling declared: the packet stands unchanged.
+    if (shellCeiling === undefined || shellCeiling === null || shellCeiling === '') return packetPolicy;
+    // An unrecognized ceiling is a typo in a hand-edited file. Collapse it to
+    // 'off' rather than returning the junk string as a policy: it fails closed
+    // either way, but a garbage value should not travel onward as if it were a
+    // policy any consumer could match on.
+    const ceiling = Object.prototype.hasOwnProperty.call(ALLO_AI_POLICY_RANK, shellCeiling) ? shellCeiling : 'off';
+    // The MINIMUM of the two, always. A shell asking for 'student-byok' over a
+    // packet that said 'off' therefore changes nothing, which is the whole
+    // point — a config file cannot hand a student AI their teacher disabled.
+    return rank(ceiling) < rank(packetPolicy) ? ceiling : packetPolicy;
+}
+const ALLO_SHELL_ROLES = ['student', 'parent', 'independent'];
+function _alloNormalizeShellConfig(raw) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    const out = {};
+    // 'teacher' is deliberately NOT selectable. A shell file that could force
+    // teacher mode would be a way to hand teacher tools to anyone who loads the
+    // page, which is the opposite of narrowing.
+    if (ALLO_SHELL_ROLES.indexOf(raw.forceRole) >= 0) out.forceRole = raw.forceRole;
+    if (raw.hideRoleWizard === true) out.hideRoleWizard = true;
+    if (raw.defaults && typeof raw.defaults === 'object' && !Array.isArray(raw.defaults)) {
+        // Defaults seed settings a later project JSON simply overrides, so they
+        // carry no authority and need no ceiling treatment.
+        out.defaults = {};
+        if (typeof raw.defaults.readingLevel === 'string') out.defaults.readingLevel = raw.defaults.readingLevel.slice(0, 40);
+        if (typeof raw.defaults.workStoryEnabled === 'boolean') out.defaults.workStoryEnabled = raw.defaults.workStoryEnabled;
+    }
+    if (raw.ceilings && typeof raw.ceilings === 'object' && !Array.isArray(raw.ceilings)) {
+        out.ceilings = {};
+        if (Object.prototype.hasOwnProperty.call(ALLO_AI_POLICY_RANK, raw.ceilings.studentAi)) {
+            out.ceilings.studentAi = raw.ceilings.studentAi;
+        }
+    }
+    return Object.keys(out).length ? out : null;
+}
+let _alloShellConfig = null;
+async function _alloLoadShellConfig() {
+    if (typeof fetch !== 'function') return null;
+    try {
+        // Same-origin only, and a miss is the normal case: almost every
+        // deployment has no such file and must behave exactly as before.
+        const res = await fetch('/allo-shell-config.json', { cache: 'no-store' });
+        if (!res.ok) return null;
+        _alloShellConfig = _alloNormalizeShellConfig(await res.json());
+        if (typeof window !== 'undefined') window.__alloShellConfig = _alloShellConfig;
+        return _alloShellConfig;
+    } catch (_) { return null; }
+}
+if (typeof window !== 'undefined') window.__alloTightenAiPolicy = _alloTightenAiPolicy;
 function _isQrStudentAiDisabled() {
     if (typeof window === 'undefined') return false;
     try {
@@ -4026,7 +4090,13 @@ function _alloDisconnectStudentAi(options = {}) {
 }
 function _alloSetQrStudentAiPolicy(policy, modePatch = {}, options = {}) {
     if (typeof window === 'undefined') return false;
-    const normalized = policy === 'student-byok' ? 'student-byok' : (policy === 'pending' ? 'pending' : 'off');
+    let normalized = policy === 'student-byok' ? 'student-byok' : (policy === 'pending' ? 'pending' : 'off');
+    // Shell ceiling applies HERE, at the single point the effective policy is
+    // decided, so every consumer inherits it and none has to remember to ask.
+    // Tighten-only: a shell cannot raise what the packet authorized.
+    const _shellCeiling = (typeof window !== 'undefined' && window.__alloShellConfig && window.__alloShellConfig.ceilings)
+        ? window.__alloShellConfig.ceilings.studentAi : null;
+    normalized = _alloTightenAiPolicy(normalized, _shellCeiling);
     if (options.clearCredentials === true || (normalized === 'off' && options.authoritative === true)) {
         _alloClearQrStudentAiConfig({ dispatch: false });
     }
@@ -17328,6 +17398,35 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       } else {
           executeRoleSelect('parent');
       }
+  }, [hasSelectedRole]);
+  // ── Shell-configured role (/allo-shell-config.json) ─────────────────────
+  // Same shape as the family deep link above, and deliberately the WEAKEST
+  // signal of the three: student-entry params win, a family link wins, and a
+  // role the user already picked wins. A deployment default should never
+  // override something more specific that the situation already decided.
+  //
+  // It is a DEFAULT, not a lock. A student with devtools can change client
+  // state, so this must never be the only thing between a student and
+  // anything harmful. The teacher password gate is honored exactly as a
+  // manual card click would honor it.
+  const _alloShellRoleHandledRef = useRef(false);
+  useEffect(() => {
+      if (_alloShellRoleHandledRef.current || hasSelectedRole) return undefined;
+      if (_alloHasAnyStudentEntry()) return undefined;
+      let cancelled = false;
+      _alloLoadShellConfig().then((cfg) => {
+          if (cancelled || !cfg || !cfg.forceRole) return;
+          if (_alloShellRoleHandledRef.current || hasSelectedRole) return;
+          _alloShellRoleHandledRef.current = true;
+          setHasSelectedMode(true);
+          if (APP_CONFIG._cfg_validation_key) {
+              setPendingRole(cfg.forceRole);
+              setIsGateOpen(true);
+          } else {
+              executeRoleSelect(cfg.forceRole);
+          }
+      });
+      return () => { cancelled = true; };
   }, [hasSelectedRole]);
   const handleStudentEntryConfirm = (name, mode) => {
       setStudentNickname(name);
