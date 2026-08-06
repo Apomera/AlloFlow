@@ -21308,6 +21308,41 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       });
       return () => { cancelled = true; };
   }, []);
+
+  // Portability (spec §12). A FILE, not a QR: the payload carries the mailbox
+  // admin token, a credential that never expires, and a QR is something anyone
+  // in the room can photograph off a projector.
+  const exportMailboxConfig = useCallback(() => {
+      const payload = alloMailboxConfigExportPayload(mbConfig, new Date().toISOString());
+      if (!payload) { addToast('Connect a mailbox first, then you can save a copy of its setup.', 'info'); return; }
+      try {
+          const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'alloflow-mailbox-' + new Date().toISOString().slice(0, 10) + '.json';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+          addToast('Saved. This file contains an access key for your mailbox, so keep it like a password.', 'success');
+      } catch (error) { addToast('Could not save the file: ' + ((error && error.message) || 'unknown'), 'error'); }
+  }, [mbConfig, addToast]);
+
+  const importMailboxConfig = useCallback(async (file) => {
+      if (!file) return;
+      try {
+          const text = await file.text();
+          const parsed = alloParseMailboxConfigImport(text);
+          // Import is a trust boundary: the file may have been hand-edited, so
+          // the URL goes through the same validator as manual entry.
+          if (!parsed) { addToast('That file is not a valid AlloFlow mailbox setup.', 'error'); return; }
+          await alloPersistMailboxConfig(parsed);
+          setMbConfig(parsed);
+          setMbStatus('Mailbox setup restored from a file.');
+          addToast('Mailbox restored on this device.', 'success');
+      } catch (error) { addToast('Could not read that file: ' + ((error && error.message) || 'unknown'), 'error'); }
+  }, [addToast]);
   const [mbStatus, setMbStatus] = useState('');
   const [mbBusy, setMbBusy] = useState(false);
   const refreshAssignmentCenter = useCallback(async () => {
@@ -42208,9 +42243,24 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 <button onClick={startMailboxLiveSession} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-sm font-black text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl p-3 transition-all disabled:opacity-60">
                   {mbBusy ? 'Starting…' : 'Start live session'}
                 </button>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <button onClick={exportMailboxConfig} className="flex-1 text-[11px] font-bold text-sky-700 underline underline-offset-2 hover:text-sky-900">Save setup to a file</button>
+                  <label className="flex-1 cursor-pointer text-center text-[11px] font-bold text-sky-700 underline underline-offset-2 hover:text-sky-900">
+                    Restore from a file
+                    <input
+                      type="file"
+                      accept="application/json,.json"
+                      className="sr-only"
+                      onChange={(event) => { const file = event.target.files && event.target.files[0]; event.target.value = ''; importMailboxConfig(file); }}
+                    />
+                  </label>
+                </div>
+                <p className="mt-1 text-[10px] leading-relaxed text-slate-500">
+                  The saved file holds an access key for your mailbox. Keep it somewhere you would keep a password, and it will restore this setup on another device or after storage is cleared.
+                </p>
                 <div className="flex gap-2 mt-2">
                   <button onClick={() => { setMbUrlInput(mbConfig.url); setMbConfig(null); setMbStatus(''); }} className="flex-1 text-[11px] font-bold text-slate-500 hover:text-slate-700 underline underline-offset-2">Change mailbox</button>
-                  <button onClick={() => { try { localStorage.removeItem(ALLO_MB_URL_KEY); localStorage.removeItem(ALLO_MB_ADMIN_KEY); localStorage.removeItem(ALLO_MB_VERSION_KEY); } catch (_) {} setMbConfig(null); setMbUrlInput(''); setMbStatus('Mailbox forgotten on this device. To reconnect later you may need to reset the admin token (see the setup guide).'); }} className="flex-1 text-[11px] font-bold text-rose-500 hover:text-rose-700 underline underline-offset-2">Forget mailbox</button>
+                  <button onClick={() => { /* Clears the BRIDGE as well as the cache. Without this the hydrate on next load would resurrect a mailbox the teacher just forgot. */ alloPersistMailboxConfig(null); setMbConfig(null); setMbUrlInput(''); setMbStatus('Mailbox forgotten on this device. To reconnect later you may need to reset the admin token (see the setup guide).'); }} className="flex-1 text-[11px] font-bold text-rose-500 hover:text-rose-700 underline underline-offset-2">Forget mailbox</button>
                 </div>
               </div>
             )}

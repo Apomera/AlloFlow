@@ -119,6 +119,33 @@ describe('the monolith wires it up', () => {
     }
   });
 
+  it('forgetting a mailbox clears the DURABLE copy, not just the cache', () => {
+    // The bug the bridge work would otherwise have introduced: Forget cleared
+    // localStorage only, so the next load's hydrate would restore the mailbox
+    // from the bridge and it would come back from the dead.
+    for (const f of COPIES) {
+      const src = readFileSync(f, 'utf8');
+      const forgetAt = src.indexOf('Forget mailbox');
+      expect(forgetAt, f).toBeGreaterThan(0);
+      // Look back at the handler that precedes the button label.
+      const handler = src.slice(Math.max(0, forgetAt - 1200), forgetAt);
+      expect(handler, f).toContain('alloPersistMailboxConfig(null)');
+      expect(handler, f).not.toContain('localStorage.removeItem(ALLO_MB_URL_KEY)');
+    }
+  });
+
+  it('offers a file export, and does not default to a QR', () => {
+    for (const f of COPIES) {
+      const src = readFileSync(f, 'utf8');
+      expect(src, f).toContain('const exportMailboxConfig = useCallback(');
+      expect(src, f).toContain('const importMailboxConfig = useCallback(');
+      // The payload carries a never-expiring credential, and a QR is something
+      // anyone in the room can photograph off a projector.
+      expect(src, f).toContain('alloflow-mailbox-');
+      expect(src, f).toMatch(/access key for your mailbox/);
+    }
+  });
+
   it('uses its own namespace so the config is visible and erasable', () => {
     for (const f of COPIES) {
       const src = readFileSync(f, 'utf8');
