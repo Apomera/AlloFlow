@@ -27822,7 +27822,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           <div className="leading-relaxed">
              {renderFormattedText(targetText)}
           </div>
-          <div className="relative mt-2 ps-4 border-s-4 border-indigo-300 bg-slate-50 p-4 rounded-e-xl">
+          {/* An English translation is English, whatever the source language
+              was. Without an explicit dir it inherits rtl from the content
+              wrapper (dir={getContentDirection(...)}), which right-aligns the
+              English and pushes its full stops to the left. text-left is belt
+              and braces in case an ancestor sets alignment by class rather
+              than by direction. The logical ps/border-s/rounded-e utilities
+              resolve against THIS dir, so they land correctly too. */}
+          <div dir="ltr" className="relative mt-2 ps-4 border-s-4 border-indigo-300 bg-slate-50 p-4 rounded-e-xl text-left">
              <div className="text-[11px] font-black text-indigo-500 uppercase tracking-widest mb-2 border-b border-indigo-100 pb-1 inline-block">
                {t('output.english_translation') || 'English Translation'}
              </div>
