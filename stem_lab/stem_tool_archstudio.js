@@ -1651,12 +1651,37 @@
 
     return el('div', {
       key: 'archStudio',
+      id: 'arch-studio-region',
       style: { display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 16, overflow: 'hidden' },
       role: 'region',
       'aria-label': t('stem.archstudio.architecture_studio_keyboard_shortcuts', 'Architecture Studio. Keyboard shortcuts: P Place, E Erase, A Paint, R Rotate.'),
       tabIndex: 0,
       onKeyDown: onArchKey
     },
+
+      // ── Light-mode readability (2026-08-05) ─────────────────────────────
+      // This tool is DARK-DESIGNED: every fallback in it is a dark-theme value
+      // (canvas #0f172a, panel #1e293b) and its text/chrome are hardcoded
+      // dark-theme colours (slate-400 labels, #e2e8f0 body, dark tooltips). But
+      // the surfaces read var(--allo-stem-canvas/panel), which the light palette
+      // flips to #ffffff/#f8fafc while the text does NOT flip — so light mode put
+      // slate-400 on #f8fafc (2.45:1, x20 by axe), a #475569 tooltip on #333a4a
+      // (1.5:1), and light-on-light chips. axe measured 35 violations in light
+      // against 1 in dark: a light-specific break, not a pre-existing one.
+      //
+      // Pin the palette to its DARK values for this subtree so the surfaces match
+      // the colours the tool actually draws. Dark theme already supplies exactly
+      // these values, so it renders identically; the second rule preserves the
+      // high-contrast palette, which must keep winning here.
+      el('style', null,
+        '#arch-studio-region{'
+        + '--allo-stem-canvas:#0f172a;--allo-stem-panel:#1e293b;--allo-stem-deeper:#020617;'
+        + '--allo-stem-text:#e2e8f0;--allo-stem-text-soft:#94a3b8;--allo-stem-border:#334155;'
+        + '--allo-stem-button-bg:#1e293b;--allo-stem-button-text:#e2e8f0;--allo-stem-button-border:#334155;}'
+        + '.theme-contrast #arch-studio-region{'
+        + '--allo-stem-canvas:#000000;--allo-stem-panel:#000000;--allo-stem-deeper:#000000;'
+        + '--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;--allo-stem-border:#ffff00;'
+        + '--allo-stem-button-bg:#000000;--allo-stem-button-text:#00ff00;--allo-stem-button-border:#00ff00;}'),
 
       // ── Header bar ──
       el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', background: 'linear-gradient(90deg,var(--allo-stem-panel, #1e293b),var(--allo-stem-canvas, #0f172a))', borderBottom: '1px solid var(--allo-stem-border, #334155)', flexWrap: 'wrap' } },
@@ -2376,7 +2401,11 @@
             // contradicted them; now that the panel actually responds, an
             // unlisted gesture is better than an advertised one that does
             // nothing. Blocks are placed from the side panel.
-            el('div', { style: { opacity: 0.65 } }, '\uD83E\uDDF1 Place blocks from the panel'),
+            // opacity 0.65 dimmed the soft text to an effective #657286 on the
+            // #0f172a overlay = 3.65:1, under the 4.5:1 AA floor for 11px text.
+            // 0.85 keeps this line visually subordinate to the two gestures above
+            // it while measuring 5.41:1.
+            el('div', { style: { opacity: 0.85 } }, '\uD83E\uDDF1 Place blocks from the panel'),
             symmetryMode && el('div', { style: { color: '#f9a8d4', fontWeight: 700 } }, '\uD83E\uDE9E Symmetry ON')
           ),
 
