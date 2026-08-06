@@ -1729,6 +1729,31 @@
       if (composer && composer.setSize) composer.setSize(W, H);
     };
     window.addEventListener('resize', state.onResize);
+
+    // A container-only resize — a panel or modal expanding while the window stays
+    // put — fires no window resize, so the canvas kept whatever size it had at
+    // mount. memory_palace_module.js already guards this with a ResizeObserver;
+    // this view is mounted into exactly those panels, so it needs the same.
+    // The refit is deferred to the next frame: calling renderer.setSize() straight
+    // out of the observer callback can re-enter layout and trip the browser's
+    // "ResizeObserver loop completed with undelivered notifications" error.
+    if (typeof ResizeObserver === 'function') {
+      var roPending = 0;
+      var raf = window.requestAnimationFrame || function (f) { return setTimeout(f, 16); };
+      var cancelRaf = window.cancelAnimationFrame || clearTimeout;
+      var ro = new ResizeObserver(function () {
+        if (state.disposed || roPending) return;
+        roPending = raf(function () {
+          roPending = 0;
+          if (!state.disposed && state.onResize) state.onResize();
+        });
+      });
+      try { ro.observe(holder); } catch (e) {}
+      state.cleanup.push(function () {
+        if (roPending) { try { cancelRaf(roPending); } catch (e) {} roPending = 0; }
+        try { ro.disconnect(); } catch (e) {}
+      });
+    }
   }
 
   // ── normalizeNodeArt — PURE: untrusted per-node art map → safe map ──

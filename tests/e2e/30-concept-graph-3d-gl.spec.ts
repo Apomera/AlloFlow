@@ -139,12 +139,6 @@ test.describe('ConceptGraph3D — real WebGL', () => {
     expect(gl.h).toBeGreaterThan(400);
   });
 
-  // NOTE ON SCOPE: this module refits on WINDOW resize only (one
-  // addEventListener('resize') at concept_graph_3d_module.js:1731). Memory Palace,
-  // its sibling, uses a ResizeObserver and so also refits when its CONTAINER
-  // changes size with the window untouched — which is what happens when a panel or
-  // modal expands. That gap is real and deliberately not fixed here; this test pins
-  // the contract that actually exists rather than asserting one that does not.
   test('refits the canvas when the window resizes', async ({ page }) => {
     await mount(page);
     await page.waitForSelector('#wrap canvas', { timeout: 20000 });
@@ -157,6 +151,36 @@ test.describe('ConceptGraph3D — real WebGL', () => {
     const after = await page.evaluate(() => (window as any).__glLive());
     expect(after.w).toBeLessThan(540);
     expect(after.w).toBeGreaterThan(500);
+    expect(after.lost).toBe(false);
+  });
+
+  // The container-only case: the window never changes, so this passes ONLY via the
+  // ResizeObserver. Before that was added the canvas kept its mount-time width,
+  // which is how a panel or modal expansion left the scene rendering at the old size.
+  test('refits when only its container resizes, window untouched', async ({ page }) => {
+    await mount(page);
+    await page.waitForSelector('#wrap canvas', { timeout: 20000 });
+    await page.waitForTimeout(900);
+    const before = await page.evaluate(() => (window as any).__glLive());
+    expect(before.w).toBeGreaterThan(880);
+    await page.evaluate(() => { (document.getElementById('wrap') as HTMLElement).style.width = '520px'; });
+    await page.waitForTimeout(800);   // observer + the deferred next-frame refit
+    const after = await page.evaluate(() => (window as any).__glLive());
+    expect(after.w).toBeLessThan(540);
+    expect(after.w).toBeGreaterThan(500);
+    expect(after.lost).toBe(false);
+  });
+
+  test('grows back when the container expands again', async ({ page }) => {
+    await mount(page);
+    await page.waitForSelector('#wrap canvas', { timeout: 20000 });
+    await page.waitForTimeout(900);
+    await page.evaluate(() => { (document.getElementById('wrap') as HTMLElement).style.width = '480px'; });
+    await page.waitForTimeout(800);
+    await page.evaluate(() => { (document.getElementById('wrap') as HTMLElement).style.width = '860px'; });
+    await page.waitForTimeout(800);
+    const after = await page.evaluate(() => (window as any).__glLive());
+    expect(after.w).toBeGreaterThan(840);
     expect(after.lost).toBe(false);
   });
 
