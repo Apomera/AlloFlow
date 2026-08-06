@@ -4,20 +4,21 @@ A free, unlimited-slot scheduling poll: propose a set of options, share a link o
 QR, collect availability, see the winner. Doodle's free tier caps how many slots
 you can offer; this has no such cap because there is no vendor in the middle.
 
-**Status (2026-08-05): server half BUILT, client half not started.**
+**Status (2026-08-05): FEATURE COMPLETE, never run in a browser.**
 
-Built in `apps_script/session_mailbox/Code.gs`, pinned by
-`tests/availability_poll_contract.test.js` (26 tests): config normalizer, pick
-validation, tally and winner selection, identity-mode enforcement, closesAt
-refusal, and deleteAt retention.
+Built, with tests:
 
-Not built yet, in the order I would do them:
-1. The two prerequisites in §11 and §12: per-respondent credentials on a shared
-   device, and moving the mailbox config to the device-storage bridge with
-   export/import.
-2. Firestore adapter parity with the mailbox behaviour above.
-3. Client: the create form, the respondent ballot, the organizer grid.
-4. AI authoring of the option list (§7).
+| piece | where | tests |
+|---|---|---|
+| server rules | `apps_script/session_mailbox/Code.gs` | 26 |
+| backend conformance | `availability_poll_contract_module.js` | 7 |
+| per-respondent credentials (§11.3) | monolith | 13 |
+| durable config + portability (§11.1, §12) | monolith | 13 |
+| authoring, ballot, organizer grid | `view_header_source.jsx` + monolith | - |
+| AI option drafting (§7) | `view_header_source.jsx` | 12 |
+
+★ The whole client is UNVERIFIED. The server logic is well covered, but no part
+of the UI has rendered once. Expect the first run to surface something.
 
 ---
 
