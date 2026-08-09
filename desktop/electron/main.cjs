@@ -4,7 +4,7 @@ const path = require('path');
 const crypto = require('crypto');
 const fs = require('fs');
 const os = require('os');
-const { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, Menu, safeStorage, shell } = require('electron');
 const runtime = require('../runtime/alloflow-desktop-runtime.cjs');
 const {
   applyAlloSheetRequestAuth,
@@ -513,6 +513,129 @@ function openExternalIfSafe(url) {
   logLine('Blocked external open for non-web URL: ' + String(url).slice(0, 200));
   return false;
 }
+
+// Electron exposes Chromium's spelling results through the WebContents
+// `context-menu` event, but does not provide a default menu for them. Keep the
+// handler at the shell boundary so editable content in the app frame, nested
+// document-preview iframes, and child BrowserWindows all receive the same
+// native correction and editing behavior.
+const editableContextMenuWebContents = new WeakSet();
+
+function canUseContextFrame(frame) {
+  if (!frame) return false;
+  try {
+    return typeof frame.isDestroyed !== 'function' || !frame.isDestroyed();
+  } catch (_) {
+    return false;
+  }
+}
+
+function editFlag(params, name, fallback = false) {
+  const flags = params && params.editFlags;
+  return flags && Object.prototype.hasOwnProperty.call(flags, name)
+    ? Boolean(flags[name])
+    : Boolean(fallback);
+}
+
+function buildNativeEditableMenuTemplate(contents, params) {
+  const isEditable = Boolean(params && params.isEditable);
+  const hasSelection = Boolean(String(params && params.selectionText || ''));
+  if (!isEditable && !hasSelection) return [];
+
+  const template = [];
+  const misspelledWord = String(params && params.misspelledWord || '').trim();
+  const suggestions = Array.from(new Set(
+    (Array.isArray(params && params.dictionarySuggestions)
+      ? params.dictionarySuggestions
+      : [])
+      .map((suggestion) => String(suggestion || '').trim())
+      .filter(Boolean)
+  )).slice(0, 8);
+
+  if (isEditable && params.spellcheckEnabled !== false && misspelledWord) {
+    if (suggestions.length) {
+      for (const suggestion of suggestions) {
+        template.push({
+          label: suggestion.replace(/&/g, '&&'),
+          click: () => {
+            if (!contents.isDestroyed()) contents.replaceMisspelling(suggestion);
+          },
+        });
+      }
+    } else {
+      template.push({ label: 'No spelling suggestions', enabled: false });
+    }
+    template.push({
+      label: 'Add to dictionary',
+      click: () => {
+        if (!contents.isDestroyed()) {
+          contents.session.addWordToSpellCheckerDictionary(misspelledWord);
+        }
+      },
+    });
+    template.push({ type: 'separator' });
+  }
+
+  if (isEditable) {
+    template.push(
+      { role: 'undo', enabled: editFlag(params, 'canUndo') },
+      { role: 'redo', enabled: editFlag(params, 'canRedo') },
+      { type: 'separator' },
+      { role: 'cut', enabled: editFlag(params, 'canCut') },
+      { role: 'copy', enabled: editFlag(params, 'canCopy', hasSelection) },
+      { role: 'paste', enabled: editFlag(params, 'canPaste') },
+      { role: 'delete', enabled: editFlag(params, 'canDelete') },
+      { type: 'separator' },
+      { role: 'selectAll', enabled: editFlag(params, 'canSelectAll', true) }
+    );
+  } else {
+    template.push(
+      { role: 'copy', enabled: editFlag(params, 'canCopy', hasSelection) },
+      { type: 'separator' },
+      { role: 'selectAll', enabled: editFlag(params, 'canSelectAll', true) }
+    );
+  }
+
+  return template;
+}
+
+function installNativeEditableContextMenu(targetWindow, contents = targetWindow && targetWindow.webContents) {
+  if (
+    !targetWindow
+    || targetWindow.isDestroyed()
+    || !contents
+    || contents.isDestroyed()
+    || editableContextMenuWebContents.has(contents)
+  ) return;
+
+  editableContextMenuWebContents.add(contents);
+  contents.on('context-menu', (event, params = {}) => {
+    const template = buildNativeEditableMenuTemplate(contents, params);
+    if (!template.length || targetWindow.isDestroyed() || contents.isDestroyed()) return;
+
+    event.preventDefault();
+    const menu = Menu.buildFromTemplate(template);
+    const contextFrame = canUseContextFrame(params.frame)
+      ? params.frame
+      : (canUseContextFrame(contents.focusedFrame) ? contents.focusedFrame : undefined);
+    menu.popup({
+      window: targetWindow,
+      frame: contextFrame,
+      sourceType: params.menuSourceType,
+    });
+  });
+
+  // A <webview> owns separate WebContents, unlike an iframe. The app does not
+  // currently depend on webviews, but covering attached guests here prevents a
+  // future embedded editor from silently losing the native menu.
+  contents.on('did-attach-webview', (_event, guestContents) => {
+    installNativeEditableContextMenu(targetWindow, guestContents);
+  });
+}
+
+app.on('browser-window-created', (_event, targetWindow) => {
+  installNativeEditableContextMenu(targetWindow);
+});
 
 function isAllowedAlloSheetPopup(url) {
   try {

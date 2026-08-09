@@ -13,18 +13,20 @@
 // no document text ever leaves the device (FERPA posture), and over
 // write-good/retext because Harper does real grammar (subject–verb
 // agreement, homophones, repeated words) rather than style lint. English-
-// only; the first run downloads the ~10 MB WASM (browser-cached after) —
+// only; the first run downloads the ~18 MB WASM (browser-cached after) —
 // both disclosed in the UI. Harper's SpellCheck rule is kept explicitly on so
 // corrections remain available through AlloFlow's Apply buttons even when a
-// host iframe does not expose the browser's native spelling menu. Function-
-// wrapped dynamic import so esbuild doesn't resolve the remote URL at build.
+// host iframe does not expose the browser's native spelling menu. The pinned
+// ESM + WASM runtime is served as versioned static assets from AlloFlow's Pages
+// CDN; the function-wrapped import keeps esbuild from resolving it at build.
 let _harperPromise = null;
 function _ensureHarper() {
   if (_harperPromise) return _harperPromise;
   _harperPromise = (async () => {
     const _imp = new Function('u', 'return import(u)');
-    const mod = await _imp('https://cdn.jsdelivr.net/npm/harper.js@2.4.0/+esm');
-    const binary = await mod.createBinaryModuleFromUrl('https://cdn.jsdelivr.net/npm/harper.js@2.4.0/dist/harper_wasm_bg.wasm');
+    const assetRoot = 'https://alloflow-cdn.pages.dev/vendor/harper/2.4.0';
+    const mod = await _imp(assetRoot + '/index.js');
+    const binary = await mod.createBinaryModuleFromUrl(assetRoot + '/harper_wasm_full_bg.wasm', 'full');
     const linter = new mod.LocalLinter({ binary });
     if (linter.setup) await linter.setup();
     if (linter.getLintConfig && linter.setLintConfig) {
@@ -39,6 +41,33 @@ function _ensureHarper() {
   return _harperPromise;
 }
 // end _ensureHarper
+
+// Shared by both Writing Check panels and directly exercised by the nested-
+// iframe browser sentinel. Using insertText preserves the editable preview's
+// native undo stack; the direct write is a compatibility fallback.
+function _applyHarperTextReplacement(doc, textNode, localStart, badLength, replacement) {
+  if (!doc || !textNode || textNode.nodeType !== 3 || !Number.isInteger(localStart) || !Number.isInteger(badLength)) return false;
+  const raw = textNode.textContent || '';
+  if (localStart < 0 || badLength < 0 || localStart + badLength > raw.length) return false;
+  let applied = false;
+  try {
+    const range = doc.createRange();
+    range.setStart(textNode, localStart);
+    range.setEnd(textNode, localStart + badLength);
+    const selection = doc.getSelection ? doc.getSelection() : doc.defaultView?.getSelection?.();
+    if (selection) {
+      selection.removeAllRanges();
+      selection.addRange(range);
+      applied = Boolean(doc.execCommand?.('insertText', false, String(replacement)));
+    }
+  } catch (_) { applied = false; }
+  if (!applied) {
+    textNode.textContent = raw.slice(0, localStart) + String(replacement) + raw.slice(localStart + badLength);
+  }
+  try { doc.body?.setAttribute('data-allo-user-edited', '1'); } catch (_) {}
+  return true;
+}
+// end _applyHarperTextReplacement
 const _BUILDER_STYLE_GALLERY = Object.freeze([
   { id: 'normal', label: 'Normal', tag: 'p', style: {} },
   { id: 'title', label: 'Title', tag: 'h1', style: { fontSize: '2.25em', lineHeight: '1.1', marginBottom: '0.35em', letterSpacing: '-0.02em' } },
@@ -5961,7 +5990,7 @@ function ExportPreviewView(props) {
                         for (const l of lints) {
                           try {
                             const span = l.span();
-                            const sugg = (l.suggestions ? l.suggestions() : []).map((s) => (s.get_replacement_text ? s.get_replacement_text() : '')).filter(Boolean).slice(0, 3);
+                            const sugg = (l.suggestions ? l.suggestions() : []).map((s) => (s && s.get_replacement_text ? s.get_replacement_text() : null)).filter((value, index, all) => value != null && all.indexOf(value) === index).slice(0, 3);
                             items.push({ blockIndex: bi, message: l.message ? l.message() : 'Possible issue', start: span.start, end: span.end, bad: blockText.slice(span.start, span.end), snippet: (span.start > 20 ? '...' : '') + blockText.slice(Math.max(0, span.start - 20), Math.min(blockText.length, span.end + 24)) + (span.end + 24 < blockText.length ? '...' : ''), suggestions: sugg });
                           } catch (_) {}
                           if (items.length >= 150) { capped = true; break; }
@@ -6003,20 +6032,9 @@ function ExportPreviewView(props) {
                       }
                       if (!hit) { _locate(item, true); addToast(t('toasts.writing_spans_markup') || 'This suggestion spans formatting (a link or bold text) — fix it by hand at the highlighted spot.', 'info'); return; }
                       const _badLen = item.end - item.start;
-                      // Apply via the editable doc's insertText so the browser's NATIVE undo stack (and
-                      // the toolbar Undo) can reverse it — a raw textContent assignment is not recorded,
-                      // which is why Undo didn't work. Fall back to a direct write if execCommand can't run.
-                      let _ok = false;
-                      try {
-                        const _range = doc.createRange();
-                        _range.setStart(hit.node, hit.local);
-                        _range.setEnd(hit.node, hit.local + _badLen);
-                        const _sel = (doc.defaultView || window).getSelection();
-                        _sel.removeAllRanges(); _sel.addRange(_range);
-                        _ok = doc.execCommand('insertText', false, replacement);
-                      } catch (_) { _ok = false; }
-                      if (!_ok) { const raw = hit.node.textContent; hit.node.textContent = raw.slice(0, hit.local) + replacement + raw.slice(hit.local + _badLen); }
-                      try { if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1'); } catch (_) {}
+                      if (!_applyHarperTextReplacement(doc, hit.node, hit.local, _badLen, replacement)) {
+                        throw new Error('The correction could not be applied.');
+                      }
                       // Drop the applied card AND keep the OTHER suggestions valid: the edit shifts later
                       // offsets in the SAME block by (replacement − bad) length and invalidates overlaps —
                       // without this, sibling cards' frozen offsets drifted and every later Apply false-
@@ -6041,7 +6059,7 @@ function ExportPreviewView(props) {
                   <button onClick={runWritingCheck} data-help-key="doc_builder_writing_check_btn" disabled={wc && wc.status === 'loading'} aria-busy={!!(wc && wc.status === 'loading')} className="w-full px-3 py-2 bg-teal-100 text-teal-800 rounded-lg text-xs font-bold hover:bg-teal-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5">
                     {wc && wc.status === 'loading' ? (t('export_preview.writing.checking') || '⏳ Checking… (first run downloads the checker)') : (t('export_preview.writing.run') || '📝 Check spelling & grammar (English)')}
                   </button>
-                  <p className="text-[10px] text-slate-500 mt-1">{t('export_preview.writing.disclosure') || 'Runs entirely on this device — no text leaves the browser. English only; the ~10 MB checker downloads on first use, then checks both spelling and grammar.'}</p>
+                  <p className="text-[10px] text-slate-500 mt-1">{t('export_preview.writing.disclosure') || 'Runs entirely on this device — no text leaves the browser. English only; the ~18 MB checker downloads on first use, then checks both spelling and grammar.'}</p>
                   <p className="text-[10px] text-slate-500 mt-1">{t('export_preview.writing.spell_hint') || '💡 Browser correction menus can be limited in embedded previews. Run Writing Check to see spelling corrections here as Apply buttons.'}</p>
                   {exportPreviewSource === 'remediation' && wc && (
                     <p className="text-[10px] text-amber-700 mt-1">{t('export_preview.writing.remediation_caution') || '⚠ This is a remediated document — its wording comes from the source PDF. Apply spelling or grammar changes thoughtfully; the original author’s phrasing may be intentional.'}</p>
@@ -6059,7 +6077,7 @@ function ExportPreviewView(props) {
                           </button>
                           <div className="flex gap-1 mt-1 flex-wrap items-center">
                             {item.suggestions.map((s, si) => (
-                              <button key={si} onClick={() => _apply(item, s)} className="px-1.5 py-0.5 bg-teal-50 border border-teal-300 text-teal-800 rounded text-[10px] font-bold hover:bg-teal-100" title={(t('export_preview.writing.apply_title') || 'Replace') + ' "' + item.bad + '"'}>→ {s || '(remove)'}</button>
+                              <button key={si} onClick={() => _apply(item, s)} className="px-1.5 py-0.5 bg-teal-50 border border-teal-300 text-teal-800 rounded text-[10px] font-bold hover:bg-teal-100" title={(t('export_preview.writing.apply_title') || 'Replace') + ' "' + item.bad + '"'}>→ {s || (t('export_preview.writing.remove') || '(remove)')}</button>
                             ))}
                             <button onClick={() => _dismiss(item)} className="px-1.5 py-0.5 bg-slate-50 border border-slate-300 text-slate-600 rounded text-[10px] font-bold hover:bg-slate-100 ml-auto" title={t('export_preview.writing.keep_title') || 'Keep the original wording and dismiss this suggestion'}>✓ {t('export_preview.writing.keep') || 'Keep as-is'}</button>
                           </div>

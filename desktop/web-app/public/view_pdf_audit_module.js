@@ -2121,8 +2121,9 @@ function _ensurePdfHarper() {
   if (_pdfHarperPromise) return _pdfHarperPromise;
   _pdfHarperPromise = (async () => {
     const _imp = new Function("u", "return import(u)");
-    const mod = await _imp("https://cdn.jsdelivr.net/npm/harper.js@2.4.0/+esm");
-    const binary = await mod.createBinaryModuleFromUrl("https://cdn.jsdelivr.net/npm/harper.js@2.4.0/dist/harper_wasm_bg.wasm");
+    const assetRoot = "https://alloflow-cdn.pages.dev/vendor/harper/2.4.0";
+    const mod = await _imp(assetRoot + "/index.js");
+    const binary = await mod.createBinaryModuleFromUrl(assetRoot + "/harper_wasm_full_bg.wasm", "full");
     const linter = new mod.LocalLinter({ binary });
     if (linter.setup) await linter.setup();
     if (linter.getLintConfig && linter.setLintConfig) {
@@ -2137,6 +2138,33 @@ function _ensurePdfHarper() {
     _pdfHarperPromise = null;
   });
   return _pdfHarperPromise;
+}
+function _applyHarperTextReplacement(doc, textNode, localStart, badLength, replacement) {
+  if (!doc || !textNode || textNode.nodeType !== 3 || !Number.isInteger(localStart) || !Number.isInteger(badLength)) return false;
+  const raw = textNode.textContent || "";
+  if (localStart < 0 || badLength < 0 || localStart + badLength > raw.length) return false;
+  let applied = false;
+  try {
+    const range = doc.createRange();
+    range.setStart(textNode, localStart);
+    range.setEnd(textNode, localStart + badLength);
+    const selection = doc.getSelection ? doc.getSelection() : doc.defaultView?.getSelection?.();
+    if (selection) {
+      selection.removeAllRanges();
+      selection.addRange(range);
+      applied = Boolean(doc.execCommand?.("insertText", false, String(replacement)));
+    }
+  } catch (_) {
+    applied = false;
+  }
+  if (!applied) {
+    textNode.textContent = raw.slice(0, localStart) + String(replacement) + raw.slice(localStart + badLength);
+  }
+  try {
+    doc.body?.setAttribute("data-allo-user-edited", "1");
+  } catch (_) {
+  }
+  return true;
 }
 function _ensurePptxLib() {
   if (typeof window === "undefined") return Promise.resolve(null);
@@ -13614,7 +13642,7 @@ Return ONLY the plain-language summary.`, false));
               for (const l of lints) {
                 try {
                   const span = l.span();
-                  const sugg = (l.suggestions ? l.suggestions() : []).map((s) => s.get_replacement_text ? s.get_replacement_text() : "").filter(Boolean).slice(0, 3);
+                  const sugg = (l.suggestions ? l.suggestions() : []).map((s) => s && s.get_replacement_text ? s.get_replacement_text() : null).filter((value, index, all) => value != null && all.indexOf(value) === index).slice(0, 3);
                   items.push({ blockIndex: bi, message: l.message ? l.message() : "Possible issue", start: span.start, end: span.end, bad: text.slice(span.start, span.end), snippet: (span.start > 20 ? "\u2026" : "") + text.slice(Math.max(0, span.start - 20), Math.min(text.length, span.end + 24)) + (span.end + 24 < text.length ? "\u2026" : ""), suggestions: sugg });
                 } catch (_) {
                 }
@@ -13679,25 +13707,8 @@ Return ONLY the plain-language summary.`, false));
               return;
             }
             const _badLen = item.end - item.start;
-            let _ok = false;
-            try {
-              const _range = doc.createRange();
-              _range.setStart(hit.node, hit.local);
-              _range.setEnd(hit.node, hit.local + _badLen);
-              const _sel = (doc.defaultView || window).getSelection();
-              _sel.removeAllRanges();
-              _sel.addRange(_range);
-              _ok = doc.execCommand("insertText", false, replacement);
-            } catch (_) {
-              _ok = false;
-            }
-            if (!_ok) {
-              const raw = hit.node.textContent;
-              hit.node.textContent = raw.slice(0, hit.local) + replacement + raw.slice(hit.local + _badLen);
-            }
-            try {
-              if (doc.body) doc.body.setAttribute("data-allo-user-edited", "1");
-            } catch (_) {
+            if (!_applyHarperTextReplacement(doc, hit.node, hit.local, _badLen, replacement)) {
+              throw new Error("The correction could not be applied.");
             }
             try {
               if (typeof window.__alloflowOnPdfPreviewMutated === "function") window.__alloflowOnPdfPreviewMutated();
@@ -13721,7 +13732,7 @@ Return ONLY the plain-language summary.`, false));
         const _dismiss = (item) => {
           setWritingCheck((p) => p && p.items ? { ...p, items: p.items.filter((x) => x !== item) } : p);
         };
-        return /* @__PURE__ */ React.createElement("div", { className: "bg-teal-50/60 border border-teal-300 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-teal-800 uppercase mb-1.5" }, "\u{1F4DD} ", t("export_preview.writing.heading") || "Writing Check"), /* @__PURE__ */ React.createElement("button", { onClick: runWritingCheck, "data-help-key": "pdf_audit_writing_check_btn", disabled: wc && wc.status === "loading", "aria-busy": !!(wc && wc.status === "loading"), className: "w-full px-3 py-2 bg-teal-100 text-teal-800 rounded-lg text-xs font-bold hover:bg-teal-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5" }, wc && wc.status === "loading" ? t("export_preview.writing.checking") || "\u23F3 Checking\u2026 (first run downloads the checker)" : t("export_preview.writing.run") || "\u{1F4DD} Check spelling & grammar (English)"), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("export_preview.writing.disclosure") || "Runs entirely on this device \u2014 no text leaves the browser. English only; the ~10 MB checker downloads on first use, then checks both spelling and grammar."), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-amber-700 mt-1" }, t("export_preview.writing.remediation_caution") || "\u26A0 This wording comes from the source document \u2014 apply spelling or grammar changes thoughtfully; the original author\u2019s phrasing may be intentional."), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("export_preview.writing.spell_hint") || "\u{1F4A1} Browser correction menus can be limited in embedded previews. Run Writing Check to see spelling corrections here as Apply buttons."), wc && wc.status === "error" && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 text-[11px] text-red-700 bg-red-50 border border-red-200 rounded p-1.5" }, wc.error), wc && wc.status === "done" && wc.items.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 text-[11px] text-green-700 bg-green-50 border border-green-200 rounded p-1.5" }, "\u2713 ", t("export_preview.writing.clean") || "No spelling or grammar suggestions found."), wc && wc.status === "done" && wc.items.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 space-y-1.5 max-h-64 overflow-y-auto" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600" }, wc.items.length, " ", t("export_preview.writing.suggestions") || "suggestion(s)", wc.capped ? " (first 150 shown)" : "", " \u2014 ", t("export_preview.writing.suggestions_note") || "nothing is changed unless you Apply it", ":"), wc.items.map((item, ii) => /* @__PURE__ */ React.createElement("div", { key: ii, className: "bg-white border border-slate-200 rounded-lg p-1.5 text-[11px]" }, /* @__PURE__ */ React.createElement("button", { onClick: () => _locate(item, true), className: "text-left w-full hover:underline", title: t("export_preview.writing.locate_title") || "Scroll the preview to this spot" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-700" }, item.message), /* @__PURE__ */ React.createElement("span", { className: "block text-slate-500 italic mt-0.5" }, item.snippet)), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1 mt-1 flex-wrap items-center" }, item.suggestions.map((s, si) => /* @__PURE__ */ React.createElement("button", { key: si, onClick: () => _apply(item, s), className: "px-1.5 py-0.5 bg-teal-50 border border-teal-300 text-teal-800 rounded text-[10px] font-bold hover:bg-teal-100", title: (t("export_preview.writing.apply_title") || "Replace") + ' "' + item.bad + '"' }, "\u2192 ", s || "(remove)")), /* @__PURE__ */ React.createElement("button", { onClick: () => _dismiss(item), className: "px-1.5 py-0.5 bg-slate-50 border border-slate-300 text-slate-600 rounded text-[10px] font-bold hover:bg-slate-100 ml-auto", title: t("export_preview.writing.keep_title") || "Keep the original wording and dismiss this suggestion" }, "\u2713 ", t("export_preview.writing.keep") || "Keep as-is"))))));
+        return /* @__PURE__ */ React.createElement("div", { className: "bg-teal-50/60 border border-teal-300 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-teal-800 uppercase mb-1.5" }, "\u{1F4DD} ", t("export_preview.writing.heading") || "Writing Check"), /* @__PURE__ */ React.createElement("button", { onClick: runWritingCheck, "data-help-key": "pdf_audit_writing_check_btn", disabled: wc && wc.status === "loading", "aria-busy": !!(wc && wc.status === "loading"), className: "w-full px-3 py-2 bg-teal-100 text-teal-800 rounded-lg text-xs font-bold hover:bg-teal-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5" }, wc && wc.status === "loading" ? t("export_preview.writing.checking") || "\u23F3 Checking\u2026 (first run downloads the checker)" : t("export_preview.writing.run") || "\u{1F4DD} Check spelling & grammar (English)"), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("export_preview.writing.disclosure") || "Runs entirely on this device \u2014 no text leaves the browser. English only; the ~18 MB checker downloads on first use, then checks both spelling and grammar."), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-amber-700 mt-1" }, t("export_preview.writing.remediation_caution") || "\u26A0 This wording comes from the source document \u2014 apply spelling or grammar changes thoughtfully; the original author\u2019s phrasing may be intentional."), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("export_preview.writing.spell_hint") || "\u{1F4A1} Browser correction menus can be limited in embedded previews. Run Writing Check to see spelling corrections here as Apply buttons."), wc && wc.status === "error" && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 text-[11px] text-red-700 bg-red-50 border border-red-200 rounded p-1.5" }, wc.error), wc && wc.status === "done" && wc.items.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 text-[11px] text-green-700 bg-green-50 border border-green-200 rounded p-1.5" }, "\u2713 ", t("export_preview.writing.clean") || "No spelling or grammar suggestions found."), wc && wc.status === "done" && wc.items.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 space-y-1.5 max-h-64 overflow-y-auto" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600" }, wc.items.length, " ", t("export_preview.writing.suggestions") || "suggestion(s)", wc.capped ? " (first 150 shown)" : "", " \u2014 ", t("export_preview.writing.suggestions_note") || "nothing is changed unless you Apply it", ":"), wc.items.map((item, ii) => /* @__PURE__ */ React.createElement("div", { key: ii, className: "bg-white border border-slate-200 rounded-lg p-1.5 text-[11px]" }, /* @__PURE__ */ React.createElement("button", { onClick: () => _locate(item, true), className: "text-left w-full hover:underline", title: t("export_preview.writing.locate_title") || "Scroll the preview to this spot" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-700" }, item.message), /* @__PURE__ */ React.createElement("span", { className: "block text-slate-500 italic mt-0.5" }, item.snippet)), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1 mt-1 flex-wrap items-center" }, item.suggestions.map((s, si) => /* @__PURE__ */ React.createElement("button", { key: si, onClick: () => _apply(item, s), className: "px-1.5 py-0.5 bg-teal-50 border border-teal-300 text-teal-800 rounded text-[10px] font-bold hover:bg-teal-100", title: (t("export_preview.writing.apply_title") || "Replace") + ' "' + item.bad + '"' }, "\u2192 ", s || (t("export_preview.writing.remove") || "(remove)"))), /* @__PURE__ */ React.createElement("button", { onClick: () => _dismiss(item), className: "px-1.5 py-0.5 bg-slate-50 border border-slate-300 text-slate-600 rounded text-[10px] font-bold hover:bg-slate-100 ml-auto", title: t("export_preview.writing.keep_title") || "Keep the original wording and dismiss this suggestion" }, "\u2713 ", t("export_preview.writing.keep") || "Keep as-is"))))));
       })(), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-1" }, "Style"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-1" }, t("pdf_audit.preview.wcag_guaranteed") || "Text contrast is re-verified by the deterministic sanitizer on every style change (contrast only \u2014 not a full WCAG audit)."), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-1" }, Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars || s.name === "Match Original").map(([key, s]) => /* @__PURE__ */ React.createElement(
         "button",
         {
