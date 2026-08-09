@@ -9651,6 +9651,8 @@
     "current_run": "Current Run",
     "daily_streak": "Daily Streak",
     "ws_accuracy": "Word Sounds Accuracy",
+    "ws_first_try_accuracy": "Right First Try",
+    "ws_practice_only_note": "Practice activities that never mark an answer wrong are not counted here.",
     "coming_up": "Coming Up",
     "xp_earned": "XP Earned",
     "words_today": "Words Today",

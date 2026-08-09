@@ -5349,8 +5349,13 @@
       const quizzes = (sessionData?.history || []).filter(h => h.type === 'quiz');
       const avgQuizScore = quizzes.length > 0 ? Math.round(quizzes.reduce((sum, q) => sum + (q.score || 0), 0) / quizzes.length) : null;
       const wsHistory = sessionData?.wordSoundsHistory || [];
-      const wsCorrect = wsHistory.filter(h => h.correct).length;
-      const wsAccuracy = wsHistory.length > 0 ? Math.round(wsCorrect / wsHistory.length * 100) : null;
+      // Coach-until-right activities (Letter Trace) write practiceOnly rows that
+      // are always correct:true — they measure practice volume, not accuracy, so
+      // they stay out of the percentage. The activity test covers rows saved
+      // before the flag existed.
+      const wsGraded = wsHistory.filter(h => h && h.practiceOnly !== true && h.activity !== 'letter_tracing');
+      const wsCorrect = wsGraded.filter(h => h.correct).length;
+      const wsAccuracy = wsGraded.length > 0 ? Math.round(wsCorrect / wsGraded.length * 100) : null;
       const xp = sessionData?.globalPoints || 0;
       const level = sessionData?.globalLevel || 1;
       const badges = sessionData?.wordSoundsBadges || {};

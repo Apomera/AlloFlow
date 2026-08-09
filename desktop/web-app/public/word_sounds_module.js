@@ -139,6 +139,21 @@
     const debugLog = (...args) => {
       if (typeof console !== "undefined") console.log("[WS-DBG]", ...args);
     };
+    // Activities that resolve to "correct" or keep-trying and NEVER mark a
+    // response wrong. Letter Trace is deliberate practice, not an item: it
+    // coaches until the formation score passes, so every row it writes is
+    // correct:true. Pooled into an accuracy stream those rows read as a child
+    // getting everything right — which then adapts difficulty UP, suppresses
+    // the low-accuracy text scaffold, and inflates the teacher's accuracy bar.
+    // Rows from these activities are stamped practiceOnly:true and excluded
+    // from anything that MEASURES; they still carry their own signal
+    // (formationScore) and still count toward practice volume and badges.
+    const WS_NON_GRADED_ACTIVITIES = new Set(["letter_tracing"]);
+    // One rule, one place: a row is graded unless the activity never grades.
+    // The `activity` test is the back-compat half — rows written before the
+    // flag existed carry no practiceOnly.
+    const wsIsGradedRow = (h) =>
+      !!h && h.practiceOnly !== true && !WS_NON_GRADED_ACTIVITIES.has(h.activity);
     // Maps each phoneme/letter to a concrete "key word" for Imagen generation
     // in AAC mode on the isolation activity (mirrors Jolly Phonics key-word approach).
     const PHONEME_KEYWORDS = {
@@ -6694,7 +6709,10 @@
       }, []);
       const getEffectiveDifficulty = React.useCallback(() => {
         if (wordSoundsDifficulty !== "auto") return wordSoundsDifficulty;
-        const hist = wordSoundsHistory || [];
+        // Only graded rows may drive difficulty. Letter Trace is coach-until-
+        // right, so its rows are always correct:true — left in the pooled
+        // fallback they push a struggling child straight to "hard".
+        const hist = (wordSoundsHistory || []).filter(wsIsGradedRow);
         // Adapt per-activity, not on a pooled window: a learner who is strong at
         // blending but weak at segmentation shouldn't get one averaged difficulty
         // that fits neither. Fall back to the pooled window until this activity
@@ -6706,8 +6724,18 @@
         const recentHistory =
           perActivity.length >= 4 ? perActivity : hist.slice(-10);
         if (recentHistory.length < 3) return "easy";
-        const correctCount = recentHistory.filter((h) => h.correct).length;
-        const accuracy = correctCount / recentHistory.length;
+        // Right on the second try is not the same as right first time. The row
+        // has carried `attempts` (1 = first presentation) since the grading
+        // tests landed, but nothing weighted it, so a child who needed a retry
+        // on every item still read as 100% and was adapted UP. A retry now
+        // counts half. Rows written before `attempts` existed default to 1 and
+        // are read as first-try, which is what they were recorded as.
+        const WS_RETRY_CREDIT = 0.5;
+        const weighted = recentHistory.reduce((sum, h) => {
+          if (!h || !h.correct) return sum;
+          return sum + ((h.attempts || 1) > 1 ? WS_RETRY_CREDIT : 1);
+        }, 0);
+        const accuracy = weighted / recentHistory.length;
         const levelBoost = Math.min((wordSoundsLevel - 1) * 0.05, 0.15);
         if (accuracy >= 0.85 - levelBoost) return "hard";
         if (accuracy >= 0.6 - levelBoost) return "medium";
@@ -11722,7 +11750,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             // mid-probe (it changes what the probe measures; items would be
             // logged mode:"visual" while scored as a sound-only CBM).
             if (!isCorrect && !showLetterHints && !isProbeMode && newStreak === 0) {
-              const recentHistory = (wordSoundsHistory || []).slice(-5);
+              // Graded rows only: a Letter Trace block sits in history as five
+              // correct answers, which used to mask a child who was actually
+              // missing everything and withhold this scaffold from them.
+              const recentHistory = (wordSoundsHistory || [])
+                .filter(wsIsGradedRow)
+                .slice(-5);
               const recentAccuracy =
                 recentHistory.length > 0
                   ? recentHistory.filter((h) => h.correct).length /
@@ -11791,6 +11824,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               // things. Recording only — nothing weights it yet, because how
               // much a retry should count is a pedagogical call, not a refactor.
               attempts: attempts + 1,
+              // Integrity flag: Letter Trace (and any future coach-until-right
+              // activity) never marks a response wrong, so its rows are
+              // practice, not measurement. Everything that computes an accuracy
+              // filters on wsIsGradedRow; volume and badges still count them.
+              ...(WS_NON_GRADED_ACTIVITIES.has(wordSoundsActivity)
+                ? { practiceOnly: true }
+                : {}),
               // Integrity flag: with the AAC symbol overlay on, picture-
               // supported responding changes what the item measures (access
               // vs. unassisted phonological work) — analytics must be able
