@@ -4,7 +4,7 @@
 //   (b) Undo bug: apply via execCommand('insertText') so the browser's native undo / toolbar Undo can
 //       reverse it (a raw textContent write wasn't recorded), AND shift sibling-card offsets after an
 //       apply so the "text changed" guard stops false-tripping on the rest of the block.
-//   (c) A hint that spelling underlines are fixed by right-clicking (native browser menu).
+//   (c) App-owned spelling suggestions so host iframes never make correction inaccessible.
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -34,9 +34,31 @@ for (const [name, src] of Object.entries(files)) {
       expect(src).toContain('onClick={() => _dismiss(item)}');
     });
 
-    it('(c) shows the right-click-to-fix-spelling hint', () => {
+    it('(c) keeps Harper spelling enabled and offers an app-owned correction path', () => {
+      expect(src).toContain('SpellCheck: true');
+      expect(src).toContain("language: 'plaintext'");
       expect(src).toContain("t('export_preview.writing.spell_hint')");
-      expect(src).toContain('right-click the word in the preview');
+      expect(src).toContain('Check spelling & grammar (English)');
+      expect(src).toContain('spelling corrections here as Apply buttons');
+      expect(src).toContain('No spelling or grammar suggestions found.');
+      expect(src).not.toContain('right-click the word in the preview');
     });
   });
 }
+
+describe('shipped writing-check artifacts', () => {
+  const artifacts = [
+    ['export-preview', 'view_export_preview_module.js', 'desktop/web-app/public/view_export_preview_module.js'],
+    ['pdf-audit', 'view_pdf_audit_module.js', 'desktop/web-app/public/view_pdf_audit_module.js'],
+  ];
+  for (const [name, rootPath, mirrorPath] of artifacts) {
+    it(`${name} ships the app-owned spelling path in a byte-identical mirror`, () => {
+      const root = readFileSync(resolve(process.cwd(), rootPath), 'utf8');
+      const mirror = readFileSync(resolve(process.cwd(), mirrorPath), 'utf8');
+      expect(root).toContain('SpellCheck: true');
+      expect(root).toContain('Check spelling & grammar (English)');
+      expect(root).toContain('spelling corrections here as Apply buttons');
+      expect(mirror).toBe(root);
+    });
+  }
+});

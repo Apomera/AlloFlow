@@ -2168,12 +2168,13 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
 
 // ── Writing check (Harper) ── (2026-06-13: ported from the export builder so
 // grammar checking is reachable in the MAIN document builder, not only the
-// export view). Open-source grammar checker (Rust→WASM, Apache-2.0, Automattic)
+// export view). Open-source spelling and grammar checker (Rust→WASM,
+// Apache-2.0, Automattic)
 // that runs ENTIRELY in the browser — no document text ever leaves the device
 // (FERPA posture). English-only; first run downloads ~10 MB WASM (browser-cached
-// after). Spelling stays with the browser's native checker (spellcheck=true is
-// already on in the editable preview). Function-wrapped dynamic import so
-// esbuild doesn't resolve the remote URL at build time.
+// after). Harper's SpellCheck rule is kept explicitly on so corrections remain
+// available in AlloFlow when a host iframe does not expose the browser's native
+// spelling menu. Function-wrapped dynamic import keeps esbuild from resolving it.
 let _pdfHarperPromise = null;
 function _ensurePdfHarper() {
   if (_pdfHarperPromise) return _pdfHarperPromise;
@@ -2183,6 +2184,12 @@ function _ensurePdfHarper() {
     const binary = await mod.createBinaryModuleFromUrl('https://cdn.jsdelivr.net/npm/harper.js@2.4.0/dist/harper_wasm_bg.wasm');
     const linter = new mod.LocalLinter({ binary });
     if (linter.setup) await linter.setup();
+    if (linter.getLintConfig && linter.setLintConfig) {
+      const config = await linter.getLintConfig();
+      if (!config || config.SpellCheck !== true) {
+        await linter.setLintConfig({ ...(config || {}), SpellCheck: true });
+      }
+    }
     return linter;
   })();
   _pdfHarperPromise.catch(() => { _pdfHarperPromise = null; }); // failed load → allow retry
@@ -15766,9 +15773,9 @@ Return ONLY the plain-language summary.`, false));
                 📄 {t('pdf_audit.preview.tag_now') || 'Generate Tagged PDF'}
               </button>
 
-              {/* ── Writing check (Harper — local grammar, suggestions-only) ──
-                  Top of the editor controls so it's easy to find; browser native
-                  spellcheck (red squiggles) is already on in the preview. */}
+              {/* ── Writing check (Harper — local spelling + grammar) ──
+                  Top of the editor controls so corrections stay reachable even
+                  when the browser's native menu is hidden by a host iframe. */}
               {(() => {
                 const wc = writingCheck;
                 const _leafBlocks = () => {
@@ -15789,7 +15796,7 @@ Return ONLY the plain-language summary.`, false));
                   // is treated as English (conservative; no false block).
                   const _docLang = (() => { try { const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument; return (d && d.documentElement && (d.documentElement.getAttribute('lang') || '').toLowerCase()) || ''; } catch (_) { return ''; } })();
                   if (_docLang && _docLang.split('-')[0] !== 'en') {
-                    setWritingCheck({ status: 'error', error: (t('export_preview.writing.non_english') || ('Writing Check is English-only — this document is set to language "' + _docLang + '". Your browser still underlines spelling as you type.')) });
+                    setWritingCheck({ status: 'error', error: (t('export_preview.writing.non_english') || ('Writing Check is English-only — this document is set to language "' + _docLang + '".')) });
                     return;
                   }
                   setWritingCheck({ status: 'loading' });
@@ -15802,7 +15809,7 @@ Return ONLY the plain-language summary.`, false));
                       if (items.length >= 150) { capped = true; break; }
                       const text = blocks[bi].textContent || '';
                       let lints = [];
-                      try { lints = await linter.lint(text); } catch (_) { continue; }
+                      try { lints = await linter.lint(text, { language: 'plaintext' }); } catch (_) { continue; }
                       for (const l of lints) {
                         try {
                           const span = l.span();
@@ -15871,13 +15878,13 @@ Return ONLY the plain-language summary.`, false));
                   <div className="bg-teal-50/60 border border-teal-300 rounded-lg p-2">
                     <div className="text-[11px] font-bold text-teal-800 uppercase mb-1.5">📝 {t('export_preview.writing.heading') || 'Writing Check'}</div>
                     <button onClick={runWritingCheck} data-help-key="pdf_audit_writing_check_btn" disabled={wc && wc.status === 'loading'} aria-busy={!!(wc && wc.status === 'loading')} className="w-full px-3 py-2 bg-teal-100 text-teal-800 rounded-lg text-xs font-bold hover:bg-teal-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5">
-                      {wc && wc.status === 'loading' ? (t('export_preview.writing.checking') || '⏳ Checking… (first run downloads the checker)') : (t('export_preview.writing.run') || '📝 Check grammar (English)')}
+                      {wc && wc.status === 'loading' ? (t('export_preview.writing.checking') || '⏳ Checking… (first run downloads the checker)') : (t('export_preview.writing.run') || '📝 Check spelling & grammar (English)')}
                     </button>
-                    <p className="text-[10px] text-slate-500 mt-1">{t('export_preview.writing.disclosure') || 'Runs entirely on this device — no text leaves the browser. English only; the checker is a ~10 MB download on first use (instant once loaded). Spelling is underlined by your browser as you type.'}</p>
-                    <p className="text-[10px] text-amber-700 mt-1">{t('export_preview.writing.remediation_caution') || '⚠ This wording comes from the source document — apply grammar changes thoughtfully; the original author’s phrasing may be intentional.'}</p>
-                    <p className="text-[10px] text-slate-500 mt-1">{t('export_preview.writing.spell_hint') || '💡 To fix a spelling underline, right-click the word in the preview — your browser lists corrections.'}</p>
+                    <p className="text-[10px] text-slate-500 mt-1">{t('export_preview.writing.disclosure') || 'Runs entirely on this device — no text leaves the browser. English only; the ~10 MB checker downloads on first use, then checks both spelling and grammar.'}</p>
+                    <p className="text-[10px] text-amber-700 mt-1">{t('export_preview.writing.remediation_caution') || '⚠ This wording comes from the source document — apply spelling or grammar changes thoughtfully; the original author’s phrasing may be intentional.'}</p>
+                    <p className="text-[10px] text-slate-500 mt-1">{t('export_preview.writing.spell_hint') || '💡 Browser correction menus can be limited in embedded previews. Run Writing Check to see spelling corrections here as Apply buttons.'}</p>
                     {wc && wc.status === 'error' && <div className="mt-1.5 text-[11px] text-red-700 bg-red-50 border border-red-200 rounded p-1.5">{wc.error}</div>}
-                    {wc && wc.status === 'done' && wc.items.length === 0 && <div className="mt-1.5 text-[11px] text-green-700 bg-green-50 border border-green-200 rounded p-1.5">✓ {t('export_preview.writing.clean') || 'No grammar suggestions found.'}</div>}
+                    {wc && wc.status === 'done' && wc.items.length === 0 && <div className="mt-1.5 text-[11px] text-green-700 bg-green-50 border border-green-200 rounded p-1.5">✓ {t('export_preview.writing.clean') || 'No spelling or grammar suggestions found.'}</div>}
                     {wc && wc.status === 'done' && wc.items.length > 0 && (
                       <div className="mt-1.5 space-y-1.5 max-h-64 overflow-y-auto">
                         <div className="text-[10px] font-bold text-slate-600">{wc.items.length} {t('export_preview.writing.suggestions') || 'suggestion(s)'}{wc.capped ? ' (first 150 shown)' : ''} — {t('export_preview.writing.suggestions_note') || 'nothing is changed unless you Apply it'}:</div>

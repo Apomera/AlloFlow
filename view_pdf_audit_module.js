@@ -2125,6 +2125,12 @@ function _ensurePdfHarper() {
     const binary = await mod.createBinaryModuleFromUrl("https://cdn.jsdelivr.net/npm/harper.js@2.4.0/dist/harper_wasm_bg.wasm");
     const linter = new mod.LocalLinter({ binary });
     if (linter.setup) await linter.setup();
+    if (linter.getLintConfig && linter.setLintConfig) {
+      const config = await linter.getLintConfig();
+      if (!config || config.SpellCheck !== true) {
+        await linter.setLintConfig({ ...config || {}, SpellCheck: true });
+      }
+    }
     return linter;
   })();
   _pdfHarperPromise.catch(() => {
@@ -3494,29 +3500,29 @@ function PdfAuditView(props) {
     } catch (_) {
     }
   };
-  // (2026-08-05) Ticket lifecycle events reach the copyable Log panel. Superseding and
-  // cancelling were both entirely silent: a teacher clicking Translate mid-sweep took the
-  // ticket away from the running remediation, and the only trace was the sweep's own work
-  // quietly ceasing to commit. "It restarted" and "something took it over" look identical
-  // in a log that records neither.
   const _remOpLog = (event, detail) => {
     try {
-      if (_docPipeline && typeof _docPipeline.logHostDiagnostic === 'function') {
-        let json = '';
-        try { json = JSON.stringify(detail || {}); } catch (_) { json = ''; }
-        _docPipeline.logHostDiagnostic('Operation', event + (json ? ' ' + json : ''), detail || null);
+      if (_docPipeline && typeof _docPipeline.logHostDiagnostic === "function") {
+        let json = "";
+        try {
+          json = JSON.stringify(detail || {});
+        } catch (_) {
+          json = "";
+        }
+        _docPipeline.logHostDiagnostic("Operation", event + (json ? " " + json : ""), detail || null);
       }
-    } catch (_) {}
+    } catch (_) {
+    }
   };
-  const _remOpKind = (ticket) => (ticket && ticket.metadata && String(ticket.metadata.kind || '')) || null;
+  const _remOpKind = (ticket) => ticket && ticket.metadata && String(ticket.metadata.kind || "") || null;
   const _beginRemediationOperation = (kind, ownsPdfFixLoading, metadata) => {
     const previous = _remediationOperationOwnerRef.current.getCurrent();
     if (previous) {
-      _remOpLog('Superseded — a new operation took the remediation ticket from a running one.', {
+      _remOpLog("Superseded \u2014 a new operation took the remediation ticket from a running one.", {
         supersededKind: _remOpKind(previous),
-        newKind: String(kind || 'remediation'),
+        newKind: String(kind || "remediation"),
         supersededOwnedPdfFixLoading: !(previous.metadata && previous.metadata.ownsPdfFixLoading === false),
-        documentEpoch: pdfDocumentEpoch,
+        documentEpoch: pdfDocumentEpoch
       });
       _releaseRemediationOperationUi(previous);
     }
@@ -3548,9 +3554,9 @@ function PdfAuditView(props) {
     const owned = _remediationOperationOwnerRef.current.getCurrent();
     const cancelled = _remediationOperationOwnerRef.current.cancel(ticket);
     if (cancelled) {
-      _remOpLog('Cancelled — the running operation was called off.', {
+      _remOpLog("Cancelled \u2014 the running operation was called off.", {
         kind: _remOpKind(owned) || _remOpKind(ticket),
-        documentEpoch: pdfDocumentEpoch,
+        documentEpoch: pdfDocumentEpoch
       });
       _releaseRemediationOperationUi(owned);
     }
@@ -7903,38 +7909,35 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
           return "retry";
         };
         const _stopped = () => !!(pdfAutoContinueAbortRef && pdfAutoContinueAbortRef.current);
-        // (2026-08-05) EVERY hands-off decision is logged to BOTH sinks, not just toasted.
-        // Only logHostDiagnostic reaches the in-app Log panel a teacher can copy. A restart
-        // loop was reported from a run nobody was watching: the log showed one pipeline
-        // finish and another start three seconds later, with NOTHING in between saying
-        // which branch decided that. The toasts said it, but a toast is gone in five
-        // seconds and is not in the log the teacher can send back. These lines make the
-        // branch recoverable after the fact.
         const _handsLog = (stage, detail) => {
-          let _json = '';
-          try { _json = JSON.stringify(detail || {}); } catch (_) { _json = '(detail not serializable)'; }
-          try { warnLog('[Hands-off][' + stage + '] ' + _json); } catch (_) {}
+          let _json = "";
           try {
-            if (_docPipeline && typeof _docPipeline.logHostDiagnostic === 'function') {
-              _docPipeline.logHostDiagnostic('Hands-off', stage + ' — ' + _json, detail || null);
+            _json = JSON.stringify(detail || {});
+          } catch (_) {
+            _json = "(detail not serializable)";
+          }
+          try {
+            warnLog("[Hands-off][" + stage + "] " + _json);
+          } catch (_) {
+          }
+          try {
+            if (_docPipeline && typeof _docPipeline.logHostDiagnostic === "function") {
+              _docPipeline.logHostDiagnostic("Hands-off", stage + " \u2014 " + _json, detail || null);
             }
-          } catch (_) {}
+          } catch (_) {
+          }
         };
-        // What a result looks like to the decision code. Recorded rather than inferred:
-        // the guard below reads afterScore/axeAudit/_aiVerificationIncomplete off the
-        // RETURNED object, and whether the pipeline populated them is exactly what a
-        // reader of the log needs to know.
-        const _handsShape = (x, from) => (!x ? { from, present: false } : {
+        const _handsShape = (x, from) => !x ? { from, present: false } : {
           from,
           present: true,
-          afterScore: (x.afterScore === null || x.afterScore === undefined) ? null : x.afterScore,
+          afterScore: x.afterScore === null || x.afterScore === void 0 ? null : x.afterScore,
           target: pdfTargetScore,
           hasAxeAudit: !!x.axeAudit,
           axeViolations: x.axeAudit ? x.axeAudit.totalViolations : null,
           aiVerificationIncomplete: !!x._aiVerificationIncomplete,
           scoreSource: x._scoreSource || null,
-          htmlChars: x.accessibleHtml ? x.accessibleHtml.length : 0,
-        });
+          htmlChars: x.accessibleHtml ? x.accessibleHtml.length : 0
+        };
         let _handsErr = null, _res = null;
         const _runFix = async () => {
           if (!_oneClickDocumentIsCurrent()) return;
@@ -7961,24 +7964,21 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
         };
         await _runFix();
         if (!_oneClickDocumentIsCurrent()) return;
-        _handsLog('run-1-returned', {
-          returned: _handsShape(_res, 'pipeline-return'),
-          refHeld: _handsShape(pdfFixResultRef.current, 'state-ref'),
-          threw: _handsErr ? String((_handsErr && _handsErr.message) || _handsErr).slice(0, 200) : null,
+        _handsLog("run-1-returned", {
+          returned: _handsShape(_res, "pipeline-return"),
+          refHeld: _handsShape(pdfFixResultRef.current, "state-ref"),
+          threw: _handsErr ? String(_handsErr && _handsErr.message || _handsErr).slice(0, 200) : null
         });
         let _fixTries = 0;
         while (!_res && _fixTries < _HANDSOFF_MAX && !_stopped() && _oneClickDocumentIsCurrent()) {
           const _disp = _handsDisposition(_handsErr);
-          // THE LINE THAT WAS MISSING. A whole-pipeline re-run starts here, and until
-          // now the log recorded only the new run's Init — indistinguishable from a
-          // user pressing Fix & Verify again.
-          _handsLog('whole-run-retry', {
-            why: 'the pipeline produced no result object',
+          _handsLog("whole-run-retry", {
+            why: "the pipeline produced no result object",
             disposition: _disp,
             attempt: _fixTries + 1,
             max: _HANDSOFF_MAX,
-            threw: _handsErr ? String((_handsErr && _handsErr.message) || _handsErr).slice(0, 200) : null,
-            note: _handsErr ? 'run rejected' : 'run RESOLVED but returned nothing and the state ref was empty',
+            threw: _handsErr ? String(_handsErr && _handsErr.message || _handsErr).slice(0, 200) : null,
+            note: _handsErr ? "run rejected" : "run RESOLVED but returned nothing and the state ref was empty"
           });
           if (_disp === "never" || _disp === "stop-silent") break;
           if (_disp === "pause-daily") {
@@ -8006,19 +8006,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
         }
         let _loopTries = 0, _prevScore = -1;
         const _aiThrottledClean = !!(r && r._aiVerificationIncomplete && r.axeAudit && r.axeAudit.totalViolations === 0);
-        // Record the GATE and its inputs. A degraded audit lowers the headline without
-        // the document getting worse, so "score < target" is not on its own a reason to
-        // spend another full pipeline; this is the guard that decides, and it needs to
-        // be legible in the log rather than only in a toast.
-        _handsLog('continue-decision', {
-          result: _handsShape(r, _res ? 'pipeline-return' : 'state-ref'),
+        _handsLog("continue-decision", {
+          result: _handsShape(r, _res ? "pipeline-return" : "state-ref"),
           aiThrottledClean: _aiThrottledClean,
-          willLoop: !!(!_aiThrottledClean && r && r.axeAudit
-            && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0)),
-          blockedBy: _aiThrottledClean ? 'ai-throttled-clean (shipping structural result)'
-            : (!r ? 'no result'
-              : (!r.axeAudit ? 'no axeAudit on the result — auto-continue unavailable'
-                : null)),
+          willLoop: !!(!_aiThrottledClean && r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0)),
+          blockedBy: _aiThrottledClean ? "ai-throttled-clean (shipping structural result)" : !r ? "no result" : !r.axeAudit ? "no axeAudit on the result \u2014 auto-continue unavailable" : null
         });
         if (_aiThrottledClean) addToast(t("toasts.ai_throttled_shipped") || "\u26A0 The AI service is throttled, so the AI semantic score is incomplete \u2014 but the structural/automated checks are clean. Shipped the structural result; re-run in a few minutes for a full AI-verified score.", "warning");
         while (!_aiThrottledClean && r && r.axeAudit && ((r.afterScore || 0) < pdfTargetScore || r.axeAudit.totalViolations > 0) && _loopTries < _HANDSOFF_MAX && !_stopped() && _oneClickDocumentIsCurrent()) {
@@ -8037,16 +8029,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
           if (_stopped()) break;
           r = pdfFixResultRef.current;
           const _s = r ? r.afterScore || 0 : 0;
-          _handsLog('loop-round', {
+          _handsLog("loop-round", {
             round: _loopTries + 1,
             max: _HANDSOFF_MAX,
             score: _s,
             previousScore: _prevScore,
             target: pdfTargetScore,
             aiVerificationIncomplete: !!(r && r._aiVerificationIncomplete),
-            stopping: (!r || _s >= pdfTargetScore || _s <= _prevScore),
-            stopReason: !r ? 'no result' : (_s >= pdfTargetScore ? 'target reached'
-              : (_s <= _prevScore ? 'no improvement over the previous round' : null)),
+            stopping: !r || _s >= pdfTargetScore || _s <= _prevScore,
+            stopReason: !r ? "no result" : _s >= pdfTargetScore ? "target reached" : _s <= _prevScore ? "no improvement over the previous round" : null
           });
           if (!r || _s >= pdfTargetScore || _s <= _prevScore) break;
           _prevScore = _s;
@@ -10198,7 +10189,7 @@ Return ONLY JSON:
           pdfAutoContinueAbortRef.current = true;
         } catch (_) {
         }
-        _remOpLog('Stop pressed — finishing the current round, then stopping.', { button: 'stop-after-round', documentEpoch: pdfDocumentEpoch });
+        _remOpLog("Stop pressed \u2014 finishing the current round, then stopping.", { button: "stop-after-round", documentEpoch: pdfDocumentEpoch });
         addToast(t("toasts.stopping_after_round") || "Stopping after the current round \u2014 what\u2019s done is kept.", "info");
       }, className: "px-2.5 py-1 bg-white/20 border border-white/50 rounded-full text-[11px] font-bold hover:bg-white/30 shrink-0" }, "\u23F9 ", t("pdf_audit.running.stop") || "Stop after this round")), /* @__PURE__ */ React.createElement("div", { "data-help-key": "pdf_audit_dashboard_bar", className: "sticky -top-5 -mx-5 px-5 py-2 bg-white/95 backdrop-blur border-b border-emerald-200 rounded-t-2xl z-20 flex items-center gap-1.5 flex-wrap", role: "navigation", "aria-label": t("pdf_audit.dashboard.aria") || "Remediation results overview and section navigation" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-black whitespace-nowrap " + (pdfFixResult._aiVerificationIncomplete ? "text-slate-500" : "text-emerald-800"), title: (pdfFixResult._aiVerificationIncomplete ? (t("pdf_audit.dashboard.score_incomplete_title") || "Structural/automated checks only \u2014 the AI semantic audit was throttled and did not finish, so this is NOT a verified content score.") + " " : "") + (t("pdf_audit.dashboard.score_title") || "Content audit score (HTML reconstruction: AI rubric + axe), before \u2192 after. This is NOT PDF/UA conformance of the exported PDF \u2014 see the PDF/UA chip.") }, pdfFixResult.beforeScore ?? pdfAuditResult?.score ?? "\u2013", " \u2192 ", pdfFixResult._aiVerificationIncomplete ? /* @__PURE__ */ React.createElement("span", { className: "text-slate-500" }, "\u2014") : /* @__PURE__ */ React.createElement(React.Fragment, null, pdfFixResult.afterScore ?? "\u2013", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-500" }, "/100")), " ", pdfFixResult._aiVerificationIncomplete && Number.isFinite(pdfFixResult._estimatedMinimumScore) ? /* @__PURE__ */ React.createElement(_AlloQualifier, { className: "ml-1 px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[9px] font-bold uppercase tracking-wide", text: t("pdf_audit.dashboard.estimated_min_title") || "Lower-confidence estimate: the lower of the last successful AI audit and the current automated checks. Complete the final audit for a verified score." }, t("pdf_audit.dashboard.estimated_min") || "est. min", " ", pdfFixResult._estimatedMinimumScore, "/100") : null, " ", _govTag === (t("pdf_audit.dashboard.automated_tag") || "automated") ? /* @__PURE__ */ React.createElement(_AlloQualifier, { className: "font-normal text-slate-400 text-[9px] uppercase tracking-wide", text: t("pdf_audit.dashboard.automated_tag_title") || "Headline governed by the automated layer (axe-core / IBM Equal Access) \u2014 the lower of the engines. The AI content rubric may be higher; see the breakdown below." }, _govTag) : /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-400 text-[9px] uppercase tracking-wide" }, _govTag), pdfFixResult.fidelityLimited ? /* @__PURE__ */ React.createElement(_AlloQualifier, { className: "text-amber-600 font-bold", text: t("pdf_audit.dashboard.fidelity_limited_title") || "Asterisk: content fidelity is limited on this run (reduced coverage or fidelity notes) \u2014 a high score must not be read as \u201Call good\u201D. See the fidelity panel below for the specifics." }, "*") : null), pdfFixResult.fidelityLimited && /* @__PURE__ */ React.createElement(
         "span",
@@ -10306,7 +10297,7 @@ Return ONLY JSON:
             pdfAutoContinueAbortRef.current = true;
           } catch (_) {
           }
-          _remOpLog('Stop pressed — finishing the current round, then stopping.', { button: 'stop-after-round', documentEpoch: pdfDocumentEpoch });
+          _remOpLog("Stop pressed \u2014 finishing the current round, then stopping.", { button: "stop-after-round", documentEpoch: pdfDocumentEpoch });
           addToast(t("toasts.stopping_after_round") || "Stopping after the current round \u2014 what\u2019s done is kept.", "info");
         },
         className: "text-[11px] px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-400 rounded-md font-bold inline-flex items-center gap-1 hover:bg-amber-100",
@@ -10639,7 +10630,7 @@ Return ONLY JSON:
         pdfAutoContinueAbortCtrlRef.current?.abort();
       } catch (_) {
       }
-      _remOpLog('Stop pressed — aborting the in-flight AI call immediately.', { button: 'stop-abort-in-flight', documentEpoch: pdfDocumentEpoch });
+      _remOpLog("Stop pressed \u2014 aborting the in-flight AI call immediately.", { button: "stop-abort-in-flight", documentEpoch: pdfDocumentEpoch });
       addToast(t("toasts.stopping_aborting_flight_gemini_call"), "info");
     }, className: "text-[11px] bg-red-100 text-red-700 border border-red-300 px-2.5 py-1 rounded-full font-bold hover:bg-red-200 transition-colors", "aria-label": t("pdf_audit.auto_fix.stop_aria") || "Stop auto-continue remediation" }, "\u23F8 Stop auto-continue"), pdfFixLoading && pdfFixStep.includes("Auto-fix") && /* @__PURE__ */ React.createElement("div", { className: "basis-full mt-2", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "animate-spin text-sm", "aria-hidden": "true" }, "\u23F3"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-indigo-700" }, pdfFixStep)), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-indigo-100 rounded-full h-2 overflow-hidden", role: "progressbar", "aria-label": t("pdf_audit.auto_fix.progress_aria") || "Auto-fix progress", "aria-valuenow": pdfFixStep.includes("pass 2") ? 70 : pdfFixStep.includes("Re-check") || pdfFixStep.includes("Re-verif") ? 85 : 40, "aria-valuemin": 0, "aria-valuemax": 100 }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full transition-all duration-700", style: { width: pdfFixStep.includes("pass 2") ? "70%" : pdfFixStep.includes("Re-check") || pdfFixStep.includes("Re-verif") ? "85%" : "40%" } }))))), !pdfFixResult.axeAudit && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-lg p-2 border border-slate-400 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600" }, "axe-core automated check could not run (CDN may be blocked). AI verification above is still valid.")), pdfFixResult.chunkState && pdfFixResult.chunkState.chunkResults && pdfFixResult.chunkState.chunkResults.length > 1 && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-slate-50 to-blue-50 rounded-xl border-2 border-slate-200 p-3 space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-lg" }, "\u{1F9E9}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-800" }, t("pdf_audit.section_map.heading") || "Document Section Map"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600" }, pdfFixResult.chunkState.chunkResults.length, " sections \u2014 re-fix individual sections without affecting others"))), pdfFixResult.chunkWeightedScore != null && /* @__PURE__ */ React.createElement("div", { className: `text-sm font-black ${pdfFixResult.chunkWeightedScore >= 80 ? "text-green-600" : pdfFixResult.chunkWeightedScore >= 60 ? "text-amber-600" : "text-red-600"}` }, pdfFixResult.chunkWeightedScore, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] opacity-60" }, "/100 avg"))), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, pdfFixResult.chunkState.chunkResults.map((cr, ci) => /* @__PURE__ */ React.createElement("div", { key: ci, className: `flex items-center gap-2 p-1.5 rounded-lg border ${cr.score >= 80 ? "bg-green-50 border-green-200" : cr.score >= 60 ? "bg-amber-50 border-amber-200" : "bg-red-50 border-red-200"} transition-all` }, /* @__PURE__ */ React.createElement("div", { className: `w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black text-white shrink-0 ${cr.score >= 80 ? "bg-green-500" : cr.score >= 60 ? "bg-amber-500" : "bg-red-500"}` }, ci + 1), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-slate-700" }, "Section ", ci + 1), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, cr.sizeKB || "?", "KB"), cr.deterministicFixes > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-blue-100 text-blue-600 px-1 rounded font-bold", title: t("pdf_audit.section_map.rule_based_title") || "Rule-based (deterministic) fixes applied" }, cr.deterministicFixes, " rule-based"), cr.surgicalFixes > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-purple-100 text-purple-600 px-1 rounded font-bold", title: t("pdf_audit.section_map.targeted_title") || "AI-diagnosed targeted micro-fixes" }, cr.surgicalFixes, " targeted"), cr.usedOriginal && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-amber-100 text-amber-700 px-1 rounded font-bold", title: t("pdf_audit.section_map.ai_skipped_title") || "AI rewrite was rejected \u2014 only rule-based fixes applied" }, t("pdf_audit.section_map.ai_skipped") || "AI skipped"), cr.wasRetried && !cr.usedOriginal && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-slate-100 text-slate-600 px-1 rounded font-bold" }, "retried")), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-200 rounded-full h-1.5 mt-0.5", role: "progressbar", "aria-label": `Section ${ci + 1} score: ${cr.score}/100`, "aria-valuenow": cr.score, "aria-valuemin": 0, "aria-valuemax": 100 }, /* @__PURE__ */ React.createElement("div", { className: `h-full rounded-full transition-all duration-500 ${cr.score >= 80 ? "bg-green-500" : cr.score >= 60 ? "bg-amber-500" : "bg-red-500"}`, style: { width: `${cr.score}%` } }))), /* @__PURE__ */ React.createElement("div", { className: `text-sm font-black shrink-0 ${cr.score >= 80 ? "text-green-600" : cr.score >= 60 ? "text-amber-600" : "text-red-600"}` }, cr.score), cr.score < 80 && !pdfFixLoading && /* @__PURE__ */ React.createElement(
       "button",
@@ -13595,7 +13586,7 @@ Return ONLY the plain-language summary.`, false));
             }
           })();
           if (_docLang && _docLang.split("-")[0] !== "en") {
-            setWritingCheck({ status: "error", error: t("export_preview.writing.non_english") || 'Writing Check is English-only \u2014 this document is set to language "' + _docLang + '". Your browser still underlines spelling as you type.' });
+            setWritingCheck({ status: "error", error: t("export_preview.writing.non_english") || 'Writing Check is English-only \u2014 this document is set to language "' + _docLang + '".' });
             return;
           }
           setWritingCheck({ status: "loading" });
@@ -13616,7 +13607,7 @@ Return ONLY the plain-language summary.`, false));
               const text = blocks[bi].textContent || "";
               let lints = [];
               try {
-                lints = await linter.lint(text);
+                lints = await linter.lint(text, { language: "plaintext" });
               } catch (_) {
                 continue;
               }
@@ -13730,7 +13721,7 @@ Return ONLY the plain-language summary.`, false));
         const _dismiss = (item) => {
           setWritingCheck((p) => p && p.items ? { ...p, items: p.items.filter((x) => x !== item) } : p);
         };
-        return /* @__PURE__ */ React.createElement("div", { className: "bg-teal-50/60 border border-teal-300 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-teal-800 uppercase mb-1.5" }, "\u{1F4DD} ", t("export_preview.writing.heading") || "Writing Check"), /* @__PURE__ */ React.createElement("button", { onClick: runWritingCheck, "data-help-key": "pdf_audit_writing_check_btn", disabled: wc && wc.status === "loading", "aria-busy": !!(wc && wc.status === "loading"), className: "w-full px-3 py-2 bg-teal-100 text-teal-800 rounded-lg text-xs font-bold hover:bg-teal-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5" }, wc && wc.status === "loading" ? t("export_preview.writing.checking") || "\u23F3 Checking\u2026 (first run downloads the checker)" : t("export_preview.writing.run") || "\u{1F4DD} Check grammar (English)"), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("export_preview.writing.disclosure") || "Runs entirely on this device \u2014 no text leaves the browser. English only; the checker is a ~10 MB download on first use (instant once loaded). Spelling is underlined by your browser as you type."), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-amber-700 mt-1" }, t("export_preview.writing.remediation_caution") || "\u26A0 This wording comes from the source document \u2014 apply grammar changes thoughtfully; the original author\u2019s phrasing may be intentional."), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("export_preview.writing.spell_hint") || "\u{1F4A1} To fix a spelling underline, right-click the word in the preview \u2014 your browser lists corrections."), wc && wc.status === "error" && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 text-[11px] text-red-700 bg-red-50 border border-red-200 rounded p-1.5" }, wc.error), wc && wc.status === "done" && wc.items.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 text-[11px] text-green-700 bg-green-50 border border-green-200 rounded p-1.5" }, "\u2713 ", t("export_preview.writing.clean") || "No grammar suggestions found."), wc && wc.status === "done" && wc.items.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 space-y-1.5 max-h-64 overflow-y-auto" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600" }, wc.items.length, " ", t("export_preview.writing.suggestions") || "suggestion(s)", wc.capped ? " (first 150 shown)" : "", " \u2014 ", t("export_preview.writing.suggestions_note") || "nothing is changed unless you Apply it", ":"), wc.items.map((item, ii) => /* @__PURE__ */ React.createElement("div", { key: ii, className: "bg-white border border-slate-200 rounded-lg p-1.5 text-[11px]" }, /* @__PURE__ */ React.createElement("button", { onClick: () => _locate(item, true), className: "text-left w-full hover:underline", title: t("export_preview.writing.locate_title") || "Scroll the preview to this spot" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-700" }, item.message), /* @__PURE__ */ React.createElement("span", { className: "block text-slate-500 italic mt-0.5" }, item.snippet)), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1 mt-1 flex-wrap items-center" }, item.suggestions.map((s, si) => /* @__PURE__ */ React.createElement("button", { key: si, onClick: () => _apply(item, s), className: "px-1.5 py-0.5 bg-teal-50 border border-teal-300 text-teal-800 rounded text-[10px] font-bold hover:bg-teal-100", title: (t("export_preview.writing.apply_title") || "Replace") + ' "' + item.bad + '"' }, "\u2192 ", s || "(remove)")), /* @__PURE__ */ React.createElement("button", { onClick: () => _dismiss(item), className: "px-1.5 py-0.5 bg-slate-50 border border-slate-300 text-slate-600 rounded text-[10px] font-bold hover:bg-slate-100 ml-auto", title: t("export_preview.writing.keep_title") || "Keep the original wording and dismiss this suggestion" }, "\u2713 ", t("export_preview.writing.keep") || "Keep as-is"))))));
+        return /* @__PURE__ */ React.createElement("div", { className: "bg-teal-50/60 border border-teal-300 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-teal-800 uppercase mb-1.5" }, "\u{1F4DD} ", t("export_preview.writing.heading") || "Writing Check"), /* @__PURE__ */ React.createElement("button", { onClick: runWritingCheck, "data-help-key": "pdf_audit_writing_check_btn", disabled: wc && wc.status === "loading", "aria-busy": !!(wc && wc.status === "loading"), className: "w-full px-3 py-2 bg-teal-100 text-teal-800 rounded-lg text-xs font-bold hover:bg-teal-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5" }, wc && wc.status === "loading" ? t("export_preview.writing.checking") || "\u23F3 Checking\u2026 (first run downloads the checker)" : t("export_preview.writing.run") || "\u{1F4DD} Check spelling & grammar (English)"), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("export_preview.writing.disclosure") || "Runs entirely on this device \u2014 no text leaves the browser. English only; the ~10 MB checker downloads on first use, then checks both spelling and grammar."), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-amber-700 mt-1" }, t("export_preview.writing.remediation_caution") || "\u26A0 This wording comes from the source document \u2014 apply spelling or grammar changes thoughtfully; the original author\u2019s phrasing may be intentional."), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("export_preview.writing.spell_hint") || "\u{1F4A1} Browser correction menus can be limited in embedded previews. Run Writing Check to see spelling corrections here as Apply buttons."), wc && wc.status === "error" && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 text-[11px] text-red-700 bg-red-50 border border-red-200 rounded p-1.5" }, wc.error), wc && wc.status === "done" && wc.items.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 text-[11px] text-green-700 bg-green-50 border border-green-200 rounded p-1.5" }, "\u2713 ", t("export_preview.writing.clean") || "No spelling or grammar suggestions found."), wc && wc.status === "done" && wc.items.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 space-y-1.5 max-h-64 overflow-y-auto" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600" }, wc.items.length, " ", t("export_preview.writing.suggestions") || "suggestion(s)", wc.capped ? " (first 150 shown)" : "", " \u2014 ", t("export_preview.writing.suggestions_note") || "nothing is changed unless you Apply it", ":"), wc.items.map((item, ii) => /* @__PURE__ */ React.createElement("div", { key: ii, className: "bg-white border border-slate-200 rounded-lg p-1.5 text-[11px]" }, /* @__PURE__ */ React.createElement("button", { onClick: () => _locate(item, true), className: "text-left w-full hover:underline", title: t("export_preview.writing.locate_title") || "Scroll the preview to this spot" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-700" }, item.message), /* @__PURE__ */ React.createElement("span", { className: "block text-slate-500 italic mt-0.5" }, item.snippet)), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1 mt-1 flex-wrap items-center" }, item.suggestions.map((s, si) => /* @__PURE__ */ React.createElement("button", { key: si, onClick: () => _apply(item, s), className: "px-1.5 py-0.5 bg-teal-50 border border-teal-300 text-teal-800 rounded text-[10px] font-bold hover:bg-teal-100", title: (t("export_preview.writing.apply_title") || "Replace") + ' "' + item.bad + '"' }, "\u2192 ", s || "(remove)")), /* @__PURE__ */ React.createElement("button", { onClick: () => _dismiss(item), className: "px-1.5 py-0.5 bg-slate-50 border border-slate-300 text-slate-600 rounded text-[10px] font-bold hover:bg-slate-100 ml-auto", title: t("export_preview.writing.keep_title") || "Keep the original wording and dismiss this suggestion" }, "\u2713 ", t("export_preview.writing.keep") || "Keep as-is"))))));
       })(), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-1" }, "Style"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-1" }, t("pdf_audit.preview.wcag_guaranteed") || "Text contrast is re-verified by the deterministic sanitizer on every style change (contrast only \u2014 not a full WCAG audit)."), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-1" }, Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars || s.name === "Match Original").map(([key, s]) => /* @__PURE__ */ React.createElement(
         "button",
         {
