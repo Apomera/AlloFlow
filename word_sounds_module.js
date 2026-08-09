@@ -6349,8 +6349,16 @@
         const correct = wordSoundsScore.correct;
         const total = wordSoundsScore.total;
         const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
+        // CORRECT per minute, not items attempted per minute. This panel used
+        // `total / minutes` while the two checkAnswer completion paths bank
+        // `correct / minutes` under the same field name and the same "Items /
+        // Min" label — so the number on screen (and in this panel's CSV, and in
+        // the payload it sends) disagreed with the number in the child's
+        // probeHistory, by more the less accurate the child was. Correct-per-
+        // minute is the CBM convention and the one the aimline consumes, so the
+        // panel moved to match the banked figure rather than the other way.
         const itemsPerMin =
-          totalTime > 0 ? Math.round((total / totalTime) * 60 * 10) / 10 : 0;
+          totalTime > 0 ? Math.round((correct / totalTime) * 60 * 10) / 10 : 0;
         // Per-word-difficulty breakdown so a difficulty shift between probes
         // is visible rather than mistaken for a skill change. Built from this
         // probe's history items (each tagged with wordDifficulty at answer time).
@@ -6412,6 +6420,10 @@
               accuracy,
               itemsPerMin,
               duration: totalTime,
+              // The other two completion paths send `elapsed` in whole seconds.
+              // A consumer reading one field name got nothing from this path.
+              elapsed: Math.round(totalTime),
+              activity: wordSoundsActivity,
               byDifficulty: { easy: { ..._byBand.easy }, medium: { ..._byBand.medium }, hard: { ..._byBand.hard } },
             });
           onClose();

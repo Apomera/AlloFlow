@@ -47280,6 +47280,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                        configSummary: configSummary || (t('output.quick_practice_mode') || 'Quick Practice Mode'),
                        isProbeMode: _isProbe,
                        probeActivity: _isProbe ? (_probeAct || null) : null,
+                       probeStudent: _isProbe ? ((probeOptions && probeOptions.student) || null) : null,
                        _fingerprint: _wsFingerprint,
                    };
                    setGeneratedContent(wordSoundsResource);
@@ -47298,6 +47299,21 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                    setWsPreloadedWords(words);
                    if (sequence && sequence.length > 0) setWsActivitySequence(sequence);
                    setIsProbeMode(_isProbe);
+                   // Whose record this probe belongs in. probeTargetStudent is a
+                   // single sticky value that only the Assessment Center's Active
+                   // Student selector ever wrote, and nothing cleared — so a probe
+                   // started from the Word Sounds setup screen was filed under
+                   // whichever child the teacher had selected over there earlier in
+                   // the sitting, or (with none selected) banked nowhere at all
+                   // while still showing a result toast. Setting it explicitly here,
+                   // including to null, closes both. Only on a probe launch: the
+                   // Assessment Center launches its own probes without passing
+                   // through here and relies on the selector's value surviving.
+                   if (_isProbe) {
+                       setProbeTargetStudent(
+                           (probeOptions && probeOptions.student) || null,
+                       );
+                   }
                    let initialActivity;
                    if (_isProbe && _probeAct) {
                        setProbeActivity(_probeAct);
@@ -49332,6 +49348,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               isProbeMode={isProbeMode}
               setIsProbeMode={setIsProbeMode}
               probeTargetStudent={probeTargetStudent}
+              probeStudentNames={Object.keys(probeHistory || {})}
               saveProbeResult={saveProbeResult}
               setProbeTargetStudent={setProbeTargetStudent}
               setWsPreloadedWords={setWsPreloadedWords}

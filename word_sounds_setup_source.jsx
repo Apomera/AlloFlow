@@ -838,7 +838,7 @@
         );
     };
 
-    const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview , onMinimize, onExpand, isProbeMode, probeActivity, selectedVoice, setSelectedVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage}) => {
+    const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview , onMinimize, onExpand, isProbeMode, probeActivity, selectedVoice, setSelectedVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage, probeStudentNames = []}) => {
         // t-with-fallback: the host's t(key, params) returns UNDEFINED on a
         // missing key and treats a string second argument as params — so every
         // `tf('word_sounds.x', 'English text')` call below rendered an EMPTY
@@ -897,6 +897,20 @@
         const [probeActivitySel, setProbeActivitySel] = React.useState(
             probeActivity && probeActivity !== 'orf' ? probeActivity : 'segmentation'
         );
+        // Who this probe is FOR. The host banks a completed probe under
+        // `probeTargetStudent`, which until now was only ever set by the
+        // Assessment Center's Active Student selector and never cleared — so a
+        // probe launched from this screen either banked nowhere (no student
+        // selected) or, worse, banked under whichever child the teacher had
+        // last picked over there. Naming the child here is what makes the host
+        // set the target explicitly, in both directions.
+        //
+        // probeHistory is keyed by a plain name string, so a typo silently
+        // opens a second bucket for the same child. The datalist below offers
+        // the names that already have probe data, which is what makes picking
+        // an existing child a click instead of a re-typing exercise.
+        const [probeStudent, setProbeStudent] = React.useState('');
+        const probeStudentTrimmed = String(probeStudent || '').trim();
         const [includeLessonPlan, setIncludeLessonPlan] = React.useState(false);
         const [lessonPlan, setLessonPlan] = React.useState({
             isolation: { enabled: false, count: 5 },
@@ -1690,11 +1704,16 @@
                  totalItems: sequence.length,
                  estimatedMinutes: Math.ceil(sequence.length * 0.5)
              } : null;
+             // `student` is deliberately sent even when blank: the host reads it
+             // as "no student", which is what clears a target left over from an
+             // Assessment Center run instead of misfiling this child's probe
+             // under that one.
              const probeOptions = isAssessment
-                 ? { isProbe: true, activity: probeActivitySel }
+                 ? { isProbe: true, activity: probeActivitySel, student: probeStudentTrimmed || null }
                  : { isProbe: false };
              const configSummary = isAssessment
-                 ? `📊 Assessment · ${String(probeActivitySel).replace(/_/g, ' ')} probe (timed, no hints)`
+                 ? `📊 Assessment · ${String(probeActivitySel).replace(/_/g, ' ')} probe (timed, no hints)` +
+                   (probeStudentTrimmed ? ` · ${probeStudentTrimmed}` : '')
                  : (lessonPlanConfig
                      ? `Mastery: ${lessonPlanConfig.masteryThreshold} consecutive • ` +
                        enabledActivities.map(a => `${a.id.replace('_', ' ')} (${a.count})`).join(' → ') +
@@ -1890,6 +1909,30 @@
                                             <option value="rhyming">{tf('word_sounds.act_rhyming', 'Rhyming')}</option>
                                             <option value="counting">{tf('word_sounds.act_counting', 'Sound Counting')}</option>
                                         </select>
+                                        <label className="block text-xs font-bold text-amber-900" htmlFor="ws-probe-student">
+                                            {tf('word_sounds.probe_student', 'Student (for records)')}
+                                        </label>
+                                        <input id="ws-probe-student" type="text"
+                                            list={probeStudentNames.length > 0 ? 'ws-probe-student-names' : undefined}
+                                            value={probeStudent}
+                                            onChange={(e) => setProbeStudent(e.target.value)}
+                                            placeholder={tf('word_sounds.probe_student_placeholder', 'Name or nickname')}
+                                            autoComplete="off"
+                                            className="w-full px-2 py-1.5 rounded-lg border border-amber-300 bg-white text-sm font-semibold text-slate-700" />
+                                        {probeStudentNames.length > 0 && (
+                                            <datalist id="ws-probe-student-names">
+                                                {probeStudentNames.map((n) => <option key={n} value={n} />)}
+                                            </datalist>
+                                        )}
+                                        {/* Say plainly where the result goes. A probe that banks
+                                            nowhere still looks identical while the child takes it,
+                                            so the only honest place to tell the teacher is here,
+                                            before they start. */}
+                                        <p className="text-[11px] font-semibold text-amber-800 leading-snug" role="note">
+                                            {probeStudentTrimmed
+                                                ? tf('word_sounds.probe_student_saved', 'Saved to the progress-monitoring record for {name}.', { name: probeStudentTrimmed })
+                                                : tf('word_sounds.probe_student_unsaved', 'No student named. This run is scored on screen only, and is NOT saved to any record.')}
+                                        </p>
                                     </div>
                                 )}
                             </div>
