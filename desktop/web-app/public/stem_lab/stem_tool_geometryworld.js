@@ -1853,6 +1853,78 @@
       ]
     }
   };
+  // The authored lessons put the correct choice first in 82 of 83 questions,
+  // so a student could clear a lesson by always tapping the top button.
+  // Rotate each question by a per-question offset.
+  //
+  // Questions form a TREE: npcs[].question plus a recursive followUp chain,
+  // so every node is walked and counted, giving neighbouring steps different
+  // shifts. Deterministic and applied once at module scope, because a step is
+  // re-read by index on every render (a Math.random() there would re-deal the
+  // choices under the student mid-question).
+  //
+  // Grading is `ci === curQ.correct` (INDEX) and there is no per-option
+  // feedback array, so only choices + correct move. validateLesson() is NOT a
+  // hook point: it sanitises AI-generated lessons, not this authored data.
+  function gwRotateQuestionTree(node, counter) {
+    if (!node || !Array.isArray(node.choices) || typeof node.correct !== "number") return node;
+    var n = node.choices.length;
+    var out = Object.assign({}, node);
+    var shift = ((counter.i++ * 7) + 3) % n;
+    if (n > 1 && shift !== 0) {
+      var moved = new Array(n);
+      for (var i = 0; i < n; i++) moved[(i + shift) % n] = node.choices[i];
+      out.choices = moved;
+      out.correct = (node.correct + shift) % n;
+    }
+    if (Array.isArray(node.followUp)) {
+      out.followUp = node.followUp.map(function (fu) { return gwRotateQuestionTree(fu, counter); });
+    }
+    return out;
+  }
+  (function rotateAuthoredLessonQuestions() {
+    var counter = { i: 0 };
+    Object.keys(SAMPLE_LESSONS).forEach(function (key) {
+      var lesson = SAMPLE_LESSONS[key];
+      if (!lesson || !Array.isArray(lesson.npcs)) return;
+      lesson.npcs = lesson.npcs.map(function (npc) {
+        if (!npc || !npc.question) return npc;
+        return Object.assign({}, npc, { question: gwRotateQuestionTree(npc.question, counter) });
+      });
+    });
+  })();
+
+
+  // 34 of the 35 built-in NPC questions authored the correct answer in slot 1
+  // (measured 82/0/1 — 99% by the position-bias scanner), so every quiz could
+  // be passed by always picking the first choice. Rotate each question (and
+  // its follow-ups) ONCE here by a deterministic per-question offset: the
+  // dialogue re-reads the lesson config on every render, so a random shuffle
+  // would deal new options mid-question. Grading is by index
+  // (ci === curQ.correct) and the wrong-answer log reads choices[correct], so
+  // `correct` is remapped with the choices. NPC translations cover dialogue
+  // and question TEXT only, never choices, so rotation cannot desync them.
+  // User-authored lessons from the in-app editor are untouched.
+  (function () {
+    var seed = 0;
+    var rotate = function (q) {
+      if (!q || !Array.isArray(q.choices) || q.choices.length < 2 || typeof q.correct !== 'number') { seed++; return; }
+      var n = q.choices.length;
+      var shift = ((seed++ * 7) + 3) % n;
+      if (shift === 0) return;
+      var moved = new Array(n);
+      for (var i = 0; i < n; i++) moved[(i + shift) % n] = q.choices[i];
+      q.choices = moved;
+      q.correct = (q.correct + shift) % n;
+    };
+    Object.keys(SAMPLE_LESSONS).forEach(function (key) {
+      (SAMPLE_LESSONS[key].npcs || []).forEach(function (npc) {
+        if (!npc.question) return;
+        rotate(npc.question);
+        (npc.question.followUp || []).forEach(rotate);
+      });
+    });
+  })();
 
   var LESSON_ORDER = ['volumeExplorer', 'areaSurface', 'buildChallenge', 'realWorld', 'geometryGarden', 'compositeVolume', 'fractionVolume', 'volumeEstimation', 'fractionBuilder', 'base10Blocks', 'fluencyMaze'];
   var MAX_BLOCKS = 1500; // Performance safety limit
