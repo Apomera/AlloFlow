@@ -1,0 +1,98 @@
+{"report":{"buildInformation":{"releaseDetails":[{
+  "id" : "core",
+  "version" : "1.30.2",
+  "buildDate" : 1780497780000
+},{
+  "id" : "validation-model",
+  "version" : "1.30.2",
+  "buildDate" : 1780497960000
+},{
+  "id" : "apps",
+  "version" : "1.30.2",
+  "buildDate" : 1780498380000
+}]},"jobs":[{"itemDetails":{
+  "name" : "C:\\Users\\cabba\\AppData\\Local\\Temp\\claude\\C--Users-cabba\\aefc1e38-6677-43ac-b1d1-09a9cd0b5164\\scratchpad\\i1040\\out\\irs-i1040-instructions-alloflow-accessible.pdf",
+  "size" : 13340541
+},"validationResult":[ {
+  "details" : {
+    "passedRules" : 104,
+    "failedRules" : 2,
+    "passedChecks" : 2024062,
+    "failedChecks" : 2,
+    "tags" : [ "metadata", "structure", "table" ],
+    "ruleSummaries" : [ {
+      "ruleStatus" : "FAILED",
+      "specification" : "ISO 14289-1:2014",
+      "clause" : "5",
+      "testNumber" : 1,
+      "status" : "failed",
+      "failedChecks" : 1,
+      "tags" : [ "metadata" ],
+      "description" : "The PDF/UA version and conformance level of a file shall be specified using the PDF/UA Identification extension schema",
+      "object" : "MainXMPPackage",
+      "test" : "containsPDFUAIdentification == true",
+      "checks" : [ {
+        "status" : "failed",
+        "context" : "root/document[0]/metadata[0](70668 0 obj PDMetadata)/XMPPackage[0]",
+        "errorMessage" : "The document metadata stream doesn't contain PDF/UA Identification Schema",
+        "errorArguments" : [ ]
+      } ]
+    }, {
+      "ruleStatus" : "FAILED",
+      "specification" : "ISO 14289-1:2014",
+      "clause" : "7.2",
+      "testNumber" : 43,
+      "status" : "failed",
+      "failedChecks" : 1,
+      "tags" : [ "structure", "table" ],
+      "description" : "Table rows shall have the same number of columns (taking into account column spans)",
+      "object" : "SETable",
+      "test" : "numberOfRowWithWrongColumnSpan == null || wrongColumnSpan == null",
+      "checks" : [ {
+        "status" : "failed",
+        "context" : "root/document[0]/StructTreeRoot[0](835 0 obj PDStructTreeRoot)/K[0](836 0 obj SEDocument Document)/K[0](837 0 obj SENonStruct NonStruct)/K[1483](64540 0 obj SETable Table)",
+        "errorMessage" : "Table rows 1 and 2 span different number of columns (4 and 3 respectively)",
+        "errorArguments" : [ "2", "4", "3" ]
+      } ]
+    } ]
+  },
+  "jobEndStatus" : "normal",
+  "profileName" : "PDF/UA-1 validation profile",
+  "statement" : "PDF file is not compliant with Validation Profile requirements.",
+  "compliant" : false
+} ],"processingTime":{
+  "start" : 1786328155073,
+  "finish" : 1786328180205,
+  "duration" : "00:00:25.132",
+  "difference" : 25132
+}}],"batchSummary":{
+  "duration" : {
+    "start" : 1786328153363,
+    "finish" : 1786328180456,
+    "duration" : "00:00:27.093",
+    "difference" : 27093
+  },
+  "totalJobs" : 1,
+  "outOfMemory" : 0,
+  "veraExceptions" : 0,
+  "validationSummary" : {
+    "compliantPdfaCount" : 0,
+    "nonCompliantPdfaCount" : 1,
+    "totalJobCount" : 1,
+    "failedJobCount" : 0,
+    "successfulJobCount" : 1
+  },
+  "failedEncryptedJobs" : 0,
+  "failedParsingJobs" : 0,
+  "featuresSummary" : {
+    "totalJobCount" : 0,
+    "failedJobCount" : 0,
+    "successfulJobCount" : 0
+  },
+  "repairSummary" : {
+    "totalJobCount" : 0,
+    "failedJobCount" : 0,
+    "successfulJobCount" : 0
+  },
+  "multiJob" : false
+}}}

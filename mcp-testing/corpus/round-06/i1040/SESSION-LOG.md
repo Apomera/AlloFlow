@@ -2535,3 +2535,29 @@ reports its flush run-ins as `g_d0_f4`; the same page inside a 22-page dump
 reports them as `g_d0_f6`. IDs are consistent within one dump and meaningless
 across dumps, so never carry a face ID from one session's notes into another
 without re-deriving it.
+
+## Full-document end-to-end pass (2026-08-09) - item 1 of "what remains" DONE
+
+`runs/2026-08-09_i1040-126pp_portable/` — the complete 126-page plan through
+`merge-plans` -> `remediate --verapdf auto` -> `verify-init`.
+
+- `outputTextRecall` **1.0** (129,785 plan tokens). `sourceTextRecall` 0.9349,
+  and the miss is furniture-shaped: every top missing token counts ~126 or
+  ~252 — the per-page IRS print-production slug plus folio, ~69 tokens/page.
+  The 08-05 prediction of "near 1.0" undercounted the slug; ~0.935 is this
+  document's ceiling.
+- veraPDF UA-1: 104 rules pass, 2,024,062 checks pass, **the clause 7.2
+  failure persists — and is now ROOT-CAUSED to one table.** veraPDF names
+  struct elem 64540; a full 319-page struct-tree walk finds exactly one
+  malformed table: output page 259, rows `[4,3,3,3,3,3,3]` — the **IRA
+  Deduction Worksheet part 2 of 2** (Schedule 1 line 20, lines 7-12). The
+  authored HTML is correct (all 105 tables span-consistent; blank entry cells
+  carry the ZWSP filler), but in the tagged PDF each body row lost exactly ONE
+  of its two ZWSP cells. Part 1 — same shape, same fillers — passes on page
+  258. The defect is Chromium-tagging/finalizer-side and pagination-dependent,
+  which is exactly why the 104pp bisect saw halves pass and the union fail.
+  Next step and fix options are in the run NOTES.
+- Clause 5 remains the withheld-identifier consequence, correct behaviour.
+- `verify-init` derived the **1,664-item** worksheet (committed in the run
+  dir). Item 2 of "what remains" — `verify-check` by a fresh-context reader —
+  is still open and still must not be filled by the tranche author.
