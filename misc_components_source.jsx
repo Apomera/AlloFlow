@@ -244,12 +244,12 @@ const WordSoundsReviewPanel = ({
     // fix the teacher pressed reports an outcome.
     const [fixingGap, setFixingGap] = React.useState(null);
     const [gapFixResult, setGapFixResult] = React.useState(null);
-    // A fix the teacher has asked for but not yet confirmed. Anything that
-    // spends generation calls asks first and says how many words it will run
-    // on, because the bill and the wait both scale with that number and
-    // neither is visible from the button.
-    const [pendingGapFix, setPendingGapFix] = React.useState(null);
     const unmountedRef = React.useRef(false);
+    // The runner reads words through a ref, not the prop it closed over: a fix
+    // updates host state, and the async loop needs to see the result to know
+    // whether the gap actually closed.
+    const latestWordsRef = React.useRef(preloadedWords);
+    latestWordsRef.current = preloadedWords;
     // Synchronous lock. `fixingGap` drives the UI, but a state value read
     // inside an async loop is the value from the render that created the
     // closure, so it cannot serialise anything. The ref can.
@@ -258,74 +258,101 @@ const WordSoundsReviewPanel = ({
     // Runs one gap and RETURNS its tally. It does not write the outcome line,
     // so the same function serves a single fix and a combined run without the
     // second one overwriting its own result at every step.
+    // How many words in a row may come back unchanged before the run gives up.
+    // The dominant cause of a run of failures is the service rate-limiting
+    // (Gemini imposes a 60-second cooldown), and hammering it makes the whole
+    // session worse, including the audio prewarm.
+    const GAP_FIX_GIVE_UP_AFTER = 3;
     const runOneGapFix = React.useCallback(async (gap) => {
-        let done = 0;
-        let failed = 0;
-        if (!gap) return { done, failed };
+        let fixed = 0;
+        let unchanged = 0;
+        let requested = 0;
+        let stalled = false;
+        if (!gap) return { fixed, unchanged, requested, stalled };
         setFixingGap(gap.key);
         if (gap.batch) {
-            // One call that re-arms every affected word at once.
+            // Re-arms the prefetch for every affected word at once; the clips
+            // then arrive in the background, so nothing here can be verified
+            // yet. Reported as requested, which is what actually happened.
             try {
                 await gap.batch();
-                done = gap.indices.length;
+                requested = gap.indices.length;
             } catch (e) {
-                failed = gap.indices.length;
+                unchanged = gap.indices.length;
             }
         } else if (gap.each) {
+            let inARow = 0;
             // Sequential on purpose: the host tracks a single
             // regeneratingIndex, and firing these in parallel would both
-            // scramble that indicator and burst the AI rate limit that
-            // already costs this panel 401s.
+            // scramble that indicator and burst the rate limit that already
+            // costs this panel 401s.
             for (const idx of gap.indices) {
                 if (unmountedRef.current) break;
                 try {
                     await gap.each(idx);
-                    done += 1;
                 } catch (e) {
-                    failed += 1;
+                    // Rare: the host fixers catch their own errors. Falls
+                    // through to the same verification either way.
+                }
+                // Let the host's state update land before reading it.
+                await new Promise((r) => setTimeout(r, 0));
+                const after = (latestWordsRef.current || [])[idx];
+                // VERIFY, do not assume. Every host fixer toasts its own
+                // failure and resolves normally, so "the call returned" says
+                // nothing. The gap predicate is the only honest signal.
+                if (after && !gap.test(after)) {
+                    fixed += 1;
+                    inARow = 0;
+                } else {
+                    unchanged += 1;
+                    inARow += 1;
+                    if (inARow >= GAP_FIX_GIVE_UP_AFTER) { stalled = true; break; }
                 }
             }
         }
-        return { done, failed };
+        return { fixed, unchanged, requested, stalled };
     }, []);
-    // Say what actually happened, including the failures: a silent return
-    // reads as success for words that did not change.
-    const describeGapFix = (done, failed) => (failed > 0
-        ? `${done} fixed, ${failed} could not be fixed. Try again, or edit those words by hand.`
-        : `${done} fixed.`);
+    // Say what actually happened. A count of calls made would read as success
+    // for words that did not change.
+    const describeGapFix = ({ fixed, unchanged, requested, stalled }) => {
+        const parts = [];
+        if (fixed) parts.push(`${fixed} fixed`);
+        if (requested) parts.push(`audio requested for ${requested} (arrives in the background)`);
+        if (unchanged) parts.push(`${unchanged} unchanged`);
+        if (!parts.length) return 'Nothing to do.';
+        const summary = parts.join(', ') + '.';
+        if (stalled) {
+            return `${summary} Stopped early: the service is refusing requests, which usually means a rate-limit cooldown. Try again in a minute.`;
+        }
+        return unchanged
+            ? `${summary} Try again, or edit those words by hand.`
+            : summary;
+    };
     const runGapFixes = React.useCallback(async (gaps) => {
         const list = (Array.isArray(gaps) ? gaps : [gaps]).filter(Boolean);
         if (!list.length || gapBusyRef.current) return;
         gapBusyRef.current = true;
-        setPendingGapFix(null);
         setGapFixResult(null);
-        let done = 0;
-        let failed = 0;
+        const total = { fixed: 0, unchanged: 0, requested: 0, stalled: false };
         try {
             for (const gap of list) {
                 if (unmountedRef.current) return;
                 const tally = await runOneGapFix(gap);
-                done += tally.done;
-                failed += tally.failed;
+                total.fixed += tally.fixed;
+                total.unchanged += tally.unchanged;
+                total.requested += tally.requested;
+                // One stalled gap stops the whole run. If the service is in a
+                // cooldown, the next gap would only extend it.
+                if (tally.stalled) { total.stalled = true; break; }
             }
         } finally {
             gapBusyRef.current = false;
             if (!unmountedRef.current) {
                 setFixingGap(null);
-                setGapFixResult(describeGapFix(done, failed));
+                setGapFixResult(describeGapFix(total));
             }
         }
     }, [runOneGapFix]);
-    // Free fixes run on click. Anything that spends generation calls asks
-    // first, because the bill and the wait both scale with the word count and
-    // neither is visible from the button.
-    const requestGapFix = React.useCallback((gapOrGaps) => {
-        if (gapBusyRef.current) return;
-        const list = (Array.isArray(gapOrGaps) ? gapOrGaps : [gapOrGaps]).filter(Boolean);
-        if (!list.length) return;
-        if (list.some((g) => g.spendsAi)) setPendingGapFix(list);
-        else runGapFixes(list);
-    }, [runGapFixes]);
     const [imageRefinementInputs, setImageRefinementInputs] = React.useState({});
     const [draggedPhoneme, setDraggedPhoneme] = React.useState(null);
     const [dragOverIndex, setDragOverIndex] = React.useState(null);
@@ -594,48 +621,63 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                             const w = norm(item && (item.targetWord || item.word || item.term));
                             if (w && item.image) imageKeys.add(w);
                         });
-                        // Each gap carries the indices it applies to, so a fix
-                        // runs over exactly those words instead of the whole
-                        // pack. `fix` is null where no fixer exists yet, and
-                        // `spendsAi` marks the ones that cost calls, so a
-                        // teacher on a metered plan can tell them apart.
+                        // Each gap carries the PREDICATE that defines it, and
+                        // its indices are derived from that same predicate, so
+                        // the two cannot drift. The runner re-tests the
+                        // predicate after each fix, because every host fixer
+                        // swallows its own errors and resolves normally on
+                        // failure — the only trustworthy signal that a fix
+                        // landed is that the gap closed.
+                        //
+                        // `needsNetwork` means the fix calls out and will fail
+                        // offline. It is NOT a cost warning: in Canvas the
+                        // calls are environment-provided, and Kokoro TTS is a
+                        // free on-device voice. What is actually scarce here is
+                        // the rate limit, which the runner handles by stopping
+                        // when the service starts refusing.
                         const gaps = [];
-                        const indicesWhere = (pred) => preloadedWords
-                            .map((w, i) => (pred(w) ? i : -1))
-                            .filter((i) => i >= 0);
+                        const addGap = (gap) => {
+                            const indices = preloadedWords
+                                .map((w, i) => (gap.test(w) ? i : -1))
+                                .filter((i) => i >= 0);
+                            if (!indices.length) return;
+                            gaps.push({ ...gap, indices, text: gap.text(indices.length) });
+                        };
+                        // Kokoro is local, free and rate-limit-free, so on a
+                        // Kokoro setup this fix touches no network at all.
+                        const ttsIsLocal = typeof window !== 'undefined' && !!(window._kokoroTTS && window._kokoroTTS.ready);
 
-                        const noAudioIdx = indicesWhere((w) => w && !w.ttsReady && !portableKeys.has(norm(w.targetWord || w.word || w.term)));
-                        if (noAudioIdx.length) gaps.push({
+                        addGap({
                             key: 'audio',
-                            text: `🔇 ${noAudioIdx.length} word${noAudioIdx.length === 1 ? '' : 's'} without portable audio`,
-                            indices: noAudioIdx,
+                            test: (w) => w && !w.ttsReady && !portableKeys.has(norm(w.targetWord || w.word || w.term)),
+                            text: (n) => `🔇 ${n} word${n === 1 ? '' : 's'} without portable audio`,
                             label: t('word_sounds.fix_audio') || 'Retry audio',
-                            spendsAi: true,
+                            needsNetwork: !ttsIsLocal,
                             // Batch by nature: it re-arms the prefetch for every
-                            // word at once rather than taking an index.
+                            // word at once rather than taking an index. The
+                            // clips then arrive in the background, so this one
+                            // is reported as requested, not as fixed.
                             batch: onRetryFailedTTS,
                         });
 
-                        const noRhymeIdx = indicesWhere((w) => w && !(w.rhymeWord || (w.rhymes || [])[0]));
-                        if (noRhymeIdx.length) gaps.push({
+                        addGap({
                             key: 'rhyme',
-                            text: `🎵 ${noRhymeIdx.length} without a rhyme answer (board is built on-device)`,
-                            indices: noRhymeIdx,
+                            test: (w) => w && !(w.rhymeWord || (w.rhymes || [])[0]),
+                            text: (n) => `🎵 ${n} without a rhyme answer (board is built on-device)`,
                             // The player derives one at runtime, so this is a
                             // completeness note, not a broken board. Fixing it
                             // means regenerating the whole word.
                             label: t('word_sounds.fix_regenerate') || 'Regenerate',
-                            spendsAi: true,
+                            needsNetwork: true,
                             each: onRegenerateWord,
                         });
 
-                        const noTaskIdx = indicesWhere((w) => w && !(w.manipulationTask && w.manipulationTask.answer));
-                        if (noTaskIdx.length) gaps.push({
+                        addGap({
                             key: 'task',
-                            text: `🔁 ${noTaskIdx.length} without a Sound Swap task (fallback task used)`,
-                            indices: noTaskIdx,
+                            test: (w) => w && !(w.manipulationTask && w.manipulationTask.answer),
+                            text: (n) => `🔁 ${n} without a Sound Swap task (fallback task used)`,
                             label: t('word_sounds.fix_tasks') || 'Build tasks',
-                            spendsAi: true,
+                            needsNetwork: true,
                             each: onRegenerateManipulationTask,
                         });
 
@@ -644,40 +686,37 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                             if (!Array.isArray(choices)) return sum;
                             return sum + choices.filter((c) => !imageKeys.has(norm(c))).length;
                         }, 0);
-                        const noImageIdx = indicesWhere((w) => {
-                            const choices = w && w.activityItems && w.activityItems.decoding && w.activityItems.decoding.choices;
-                            return Array.isArray(choices) && choices.some((c) => !imageKeys.has(norm(c)));
-                        });
-                        if (missingDecodingImgs > 0) gaps.push({
+                        addGap({
                             key: 'images',
-                            text: `🖼️ ${missingDecodingImgs} Read & Match picture${missingDecodingImgs === 1 ? '' : 's'} missing`,
-                            indices: noImageIdx,
+                            test: (w) => {
+                                const choices = w && w.activityItems && w.activityItems.decoding && w.activityItems.decoding.choices;
+                                return Array.isArray(choices) && choices.some((c) => !imageKeys.has(norm(c)));
+                            },
+                            text: () => `🖼️ ${missingDecodingImgs} Read & Match picture${missingDecodingImgs === 1 ? '' : 's'} missing`,
                             label: t('word_sounds.fix_images') || 'Generate pictures',
-                            spendsAi: true,
+                            needsNetwork: true,
                             each: onGenerateImage ? ((i) => onGenerateImage(i, preloadedWords[i] && (preloadedWords[i].targetWord || preloadedWords[i].word))) : null,
                         });
 
-                        const editedIdx = indicesWhere((w) => w && w._packEdited);
-                        if (editedIdx.length) gaps.push({
+                        addGap({
                             key: 'edited',
-                            text: `✏️ ${editedIdx.length} word${editedIdx.length === 1 ? '' : 's'} edited since preparation (boards rebuild from your edits)`,
-                            indices: editedIdx,
+                            test: (w) => w && w._packEdited,
+                            text: (n) => `✏️ ${n} word${n === 1 ? '' : 's'} edited since preparation (boards rebuild from your edits)`,
                             // Re-packing an edited word is not built yet, so
                             // there is deliberately no button here rather than
                             // one that quietly does something else.
                             each: null,
                         });
 
-                        const estimatedIdx = indicesWhere((w) => w && w._fallbackUsed);
-                        if (estimatedIdx.length) gaps.push({
+                        addGap({
                             key: 'phonemes',
+                            test: (w) => w && w._fallbackUsed,
                             // Generation now tries eSpeak before the spelling
                             // heuristic, so this means a real G2P engine could
                             // not do the word either.
-                            text: `⚠️ ${estimatedIdx.length} with sounds estimated from spelling`,
-                            indices: estimatedIdx,
+                            text: (n) => `⚠️ ${n} with sounds estimated from spelling`,
                             label: t('word_sounds.fix_phonemes') || 'Re-check sounds',
-                            spendsAi: true,
+                            needsNetwork: true,
                             each: onCheckPhonemes,
                         });
 
@@ -692,14 +731,14 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                     {fixable.length > 1 && (
                                         <button
                                             type="button"
-                                            onClick={() => requestGapFix(fixable)}
+                                            onClick={() => runGapFixes(fixable)}
                                             disabled={busy}
                                             aria-busy={busy}
                                             className={`shrink-0 px-2 py-0.5 rounded-full font-bold border transition-colors motion-reduce:transition-none ${busy ? 'bg-white/60 text-amber-800 border-amber-200' : 'bg-amber-600 text-white border-amber-600 hover:bg-amber-700'}`}
                                         >
                                             {busy
                                                 ? (t('word_sounds.fixing') || 'Fixing…')
-                                                : `✨ ${t('word_sounds.fix_all') || 'Fix all'} (${fixableWords})`}
+                                                : `${t('word_sounds.fix_all') || 'Fix all'} (${fixableWords})`}
                                         </button>
                                     )}
                                 </div>
@@ -710,50 +749,32 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                             {(g.each || g.batch) && (
                                                 <button
                                                     type="button"
-                                                    onClick={() => requestGapFix(g)}
+                                                    onClick={() => runGapFixes(g)}
                                                     disabled={busy}
                                                     aria-busy={fixingGap === g.key}
                                                     className={`shrink-0 px-2 py-0.5 rounded-full font-bold border transition-colors motion-reduce:transition-none ${busy ? 'bg-white/60 text-amber-800 border-amber-200' : 'bg-white text-amber-900 border-amber-400 hover:bg-amber-100'}`}
-                                                    title={g.spendsAi
-                                                        ? (t('word_sounds.fix_uses_ai_tooltip') || 'Uses AI generation for these words only')
+                                                    // Not a cost warning. It marks the fixes that
+                                                    // call out, so a teacher on school wifi knows
+                                                    // which ones need a connection to work.
+                                                    title={g.needsNetwork
+                                                        ? (t('word_sounds.fix_needs_connection') || 'Needs an internet connection')
                                                         : undefined}
                                                 >
                                                     {fixingGap === g.key
                                                         ? (t('word_sounds.fixing') || 'Fixing…')
-                                                        : `${g.spendsAi ? '✨ ' : ''}${g.label} (${g.indices.length})`}
+                                                        : `${g.needsNetwork ? '☁️ ' : ''}${g.label} (${g.indices.length})`}
                                                 </button>
                                             )}
                                         </li>
                                     ))}
                                 </ul>
-                                {/* Confirm before spending generation calls. The
-                                    word count is the part a teacher cannot see
-                                    from the button, and it drives both the bill
-                                    and how long they will be waiting. */}
-                                {pendingGapFix && (() => {
-                                    const list = pendingGapFix;
-                                    const words = new Set(list.flatMap((g) => g.indices)).size;
-                                    const images = list.some((g) => g.key === 'images');
-                                    return (
-                                        <div role="alertdialog" aria-labelledby="ws-gap-confirm-title" className="mt-2 rounded-lg border border-amber-400 bg-white p-2">
-                                            <p id="ws-gap-confirm-title" className="font-bold">
-                                                {(t('word_sounds.fix_confirm') || 'Generate for {n} word(s)?').replace('{n}', String(words))}
-                                            </p>
-                                            <p className="mt-0.5">
-                                                {list.map((g) => g.label).join(', ')}
-                                                {images ? ` — ${t('word_sounds.fix_images_cost') || 'pictures are the slowest and most expensive of these'}` : ''}
-                                            </p>
-                                            <div className="mt-2 flex gap-2">
-                                                <button type="button" onClick={() => runGapFixes(list)} className="px-2 py-0.5 rounded-full font-bold bg-amber-600 text-white border border-amber-600 hover:bg-amber-700 transition-colors motion-reduce:transition-none">
-                                                    {t('word_sounds.fix_confirm_go') || 'Generate'}
-                                                </button>
-                                                <button type="button" onClick={() => setPendingGapFix(null)} className="px-2 py-0.5 rounded-full font-bold bg-white text-amber-900 border border-amber-400 hover:bg-amber-100 transition-colors motion-reduce:transition-none">
-                                                    {t('common.cancel') || 'Cancel'}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    );
-                                })()}
+                                {/* No confirmation step. These calls are
+                                    environment-provided in Canvas and Kokoro TTS
+                                    is a free on-device voice, so there is no bill
+                                    to warn about; what is actually scarce is the
+                                    rate limit, and a dialog cannot prevent that.
+                                    The runner stops when the service starts
+                                    refusing and says so instead. */}
                                 {/* Outcome is reported only for a fix the teacher
                                     pressed. Nothing is announced for work the
                                     pipeline did on its own before they got here. */}

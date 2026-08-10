@@ -10,7 +10,7 @@ describe('Misc Components WCAG behavior', () => {
     expect(source).toContain("window.matchMedia('(prefers-reduced-motion: reduce)')");
     expect(source).toContain('disableAnimations || prefersReducedMotion');
     expect(source.match(/motion-reduce:animate-none/g)).toHaveLength(26);
-    expect(source.match(/motion-reduce:transition-none/g)).toHaveLength(37);
+    expect(source.match(/motion-reduce:transition-none/g)).toHaveLength(35);
   });
 
   it('announces Cloze validation without relying on color or animation', () => {
@@ -22,7 +22,7 @@ describe('Misc Components WCAG behavior', () => {
 
   it('uses explicit non-submit types for every native button', () => {
     const buttons = source.match(/<button\b[\s\S]*?>/g) || [];
-    expect(buttons).toHaveLength(42);
+    expect(buttons).toHaveLength(40);
     for (const button of buttons) expect(button).toContain('type="button"');
   });
 
