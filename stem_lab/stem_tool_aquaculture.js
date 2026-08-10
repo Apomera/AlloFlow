@@ -6961,6 +6961,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       explain: 'Spat fall = wild larvae settling on substrate (cultch). Hatcheries induce this with control; growers can also catch wild spat by deploying clean substrate at the right time.' }
   ];
 
+  // The authored bank put 77% of correct answers in slot 2 (measured
+  // 2/53/12/2) — passable by position. Rotate each question ONCE here: the
+  // checkpoint quiz re-reads checkpointQuestions[quizState.idx] (a slice of
+  // this bank) on every render, so a random shuffle would deal new options
+  // mid-question, while a fixed per-question rotation is stable. Grading is
+  // by index (picked === question.correct) and review reads a[correct], so
+  // `correct` is remapped with the options; `explain` is one string.
+  (function () {
+    for (var qi = 0; qi < QUIZ_QUESTIONS.length; qi++) {
+      var q = QUIZ_QUESTIONS[qi];
+      if (!q || !Array.isArray(q.a) || q.a.length < 2 || typeof q.correct !== 'number') continue;
+      var n = q.a.length;
+      var shift = ((qi * 7) + 3) % n;
+      if (shift === 0) continue;
+      var moved = new Array(n);
+      for (var i = 0; i < n; i++) moved[(i + shift) % n] = q.a[i];
+      q.a = moved;
+      q.correct = (q.correct + shift) % n;
+    }
+  })();
+
   // ───────────────────────────────────────────────────────────
   // DATA: MISSIONS
   // ───────────────────────────────────────────────────────────

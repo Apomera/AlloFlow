@@ -7828,6 +7828,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       explain: 'Tide rips form at strong-current locations meeting opposing wind or bottom features. Rough water + good fishing simultaneously (predators feed on disoriented prey). Examples: Reversing Falls + Pemaquid Point.' }
   ];
 
+  // The authored bank put 66% of correct answers in slot 2 (measured
+  // 2/46/22/0, slot 4 never) — passable by position. Rotate each question
+  // ONCE here: the quiz re-reads QUIZ_QUESTIONS[quizState.idx] on every
+  // render, so a random shuffle would deal new options mid-question, while
+  // a fixed per-question rotation is stable. Grading is by index
+  // (picked === q.correct) and the review screen reads q.a[q.correct], so
+  // `correct` is remapped with the options; `explain` is one string.
+  (function () {
+    for (var qi = 0; qi < QUIZ_QUESTIONS.length; qi++) {
+      var q = QUIZ_QUESTIONS[qi];
+      if (!q || !Array.isArray(q.a) || q.a.length < 2 || typeof q.correct !== 'number') continue;
+      var n = q.a.length;
+      var shift = ((qi * 7) + 3) % n;
+      if (shift === 0) continue;
+      var moved = new Array(n);
+      for (var i = 0; i < n; i++) moved[(i + shift) % n] = q.a[i];
+      q.a = moved;
+      q.correct = (q.correct + shift) % n;
+    }
+  })();
+
   // ───────────────────────────────────────────────────────────
   // DATA: MISSIONS
   // ───────────────────────────────────────────────────────────

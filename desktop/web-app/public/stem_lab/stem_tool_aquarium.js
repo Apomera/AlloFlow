@@ -8014,6 +8014,29 @@ window.StemLab = window.StemLab || {
     }
   ]);
 
+  // The authored bank put 75% of correct answers in slot 2 (measured
+  // 12/75/10/3 by the position-bias scanner), so the structured quiz could
+  // be passed by position. Rotate each question ONCE here, after both bank
+  // segments: the quiz re-reads filteredQuiz[quizCurrent] on every render,
+  // so a random shuffle would deal new options mid-question, while a fixed
+  // per-question rotation is stable. Grading is by index (i === correct),
+  // so `correct` is remapped with the options; `explanation` is one string,
+  // not per-option. (The species-ID quiz is separate and already shuffles
+  // at generation time.)
+  (function () {
+    for (var qi = 0; qi < AQUARIUM_QUIZ_BANK.length; qi++) {
+      var q = AQUARIUM_QUIZ_BANK[qi];
+      if (!q || !Array.isArray(q.options) || q.options.length < 2 || typeof q.correct !== 'number') continue;
+      var n = q.options.length;
+      var shift = ((qi * 7) + 3) % n;
+      if (shift === 0) continue;
+      var moved = new Array(n);
+      for (var i = 0; i < n; i++) moved[(i + shift) % n] = q.options[i];
+      q.options = moved;
+      q.correct = (q.correct + shift) % n;
+    }
+  })();
+
   // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
   // SCENARIO RECIPES \u2014 extended (advanced parameter combinations)
   // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550

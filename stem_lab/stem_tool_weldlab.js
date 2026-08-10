@@ -7057,6 +7057,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           { q: 'What is "burn-through"?', opts: ['Burning a hole through the base metal', 'Burning your skin from arc flash', 'Burning out a welding machine', 'Burning consumables'], correct: 0, explain: 'Burn-through = melted hole punched through the base metal due to excessive heat input on thin material. Visible as a sag or hole in the bead. Caused by too much amperage, too slow travel, or insufficient base metal thickness for the chosen procedure.' },
           { q: 'What is "essential variable" in a WPS?', opts: ['Optional setting', 'Variable that requires re-qualification if changed beyond limits', 'Welder personality trait', 'Inspector requirement'], correct: 1, explain: 'Essential variables per ASME IX include: base metal class, filler classification, electrical characteristics, joint design, position, technique. Changing any essential variable beyond ranges requires WPS requalification. Non-essential variables can be changed without re-qualifying.' }
         ];
+        // The authored exam put 61% of correct answers in slot 2 (measured
+        // 11/30/8/0 with slot 4 never) — passable by position. Deterministic
+        // per-question rotation: the exam re-reads examQuestions[quizIdx] on
+        // every render, so a random shuffle would deal new options
+        // mid-question. Grading is by index (oi === current.correct), so
+        // `correct` is remapped with the options; `explain` is one string.
+        examQuestions = examQuestions.map(function(q, qi) {
+          if (!q || !Array.isArray(q.opts) || q.opts.length < 2 || typeof q.correct !== 'number') return q;
+          var n = q.opts.length;
+          var shift = ((qi * 7) + 3) % n;
+          if (shift === 0) return q;
+          var moved = new Array(n);
+          for (var i = 0; i < n; i++) moved[(i + shift) % n] = q.opts[i];
+          return Object.assign({}, q, { opts: moved, correct: (q.correct + shift) % n });
+        });
 
         if (qpView === 'overview') {
           return h('div', { className: 'min-h-screen bg-slate-50' },
@@ -9203,6 +9218,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             explain: 'Half-V shape (⌶) = bevel groove. Only ONE plate is prepared (beveled); the other stays square. Used when only one piece can be machined easily — common for plate-to-pipe.'
           }
         ];
+        // Same slot-2 pile-up as the cert exam; same deterministic rotation
+        // (symbolQuestions[mbQIdx] is re-read every render, graded by index).
+        symbolQuestions = symbolQuestions.map(function(q, qi) {
+          if (!q || !Array.isArray(q.options) || q.options.length < 2 || typeof q.correct !== 'number') return q;
+          var n = q.options.length;
+          var shift = ((qi * 7) + 3) % n;
+          if (shift === 0) return q;
+          var moved = new Array(n);
+          for (var i = 0; i < n; i++) moved[(i + shift) % n] = q.options[i];
+          return Object.assign({}, q, { options: moved, correct: (q.correct + shift) % n });
+        });
 
         function renderSymbolViz(viz) {
           // Visual approximation of an AWS weld symbol: reference line
