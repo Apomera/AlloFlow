@@ -88,7 +88,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     { id: 'first_contact', name: 'First Contact', icon: '\uD83D\uDEF8', desc: 'Complete your first mission' },
     { id: 'scientist', name: 'Chief Scientist', icon: '\uD83D\uDD2C', desc: 'Earn 500 total science points' },
     { id: 'perfect_run', name: 'Flawless Commander', icon: '\u2B50', desc: 'Achieve 100% optimal decisions on any mission' },
-    { id: 'explorer', name: 'Solar System Explorer', icon: '\uD83C\uDF0C', desc: 'Complete all 6 destinations' },
+    { id: 'explorer', name: 'Solar System Explorer', icon: '\uD83C\uDF0C', desc: 'Complete every destination' },
     { id: 'techmaster', name: 'Tech Master', icon: '\u26A1', desc: 'Unlock all 8 technologies' },
     { id: 'survivor', name: 'Survivor', icon: '\uD83D\uDEE1\uFE0F', desc: 'Complete a mission with O\u2082 below 10%' },
     { id: 'marathon', name: 'Marathon', icon: '\uD83C\uDFC3', desc: 'Complete 10 total missions' },
@@ -141,7 +141,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     },
     {
       id: 'proxima', name: 'Proxima Centauri b', emoji: '\u2728', difficulty: 5,
-      gravity: 11.0, atmosphere: 'Unknown — possibly tidally locked', temp: 'Variable',
+      gravity: 11.0, atmosphere: 'Unknown', temp: 'Variable (likely tidally locked)',
       travelDays: 73000, color: '#8e44ad', desc: 'The nearest exoplanet — 4.24 light-years away.',
       hazards: ['stellar flares', 'unknown biology', 'tidal locking', 'generation ship psychology'],
       scienceFocus: ['astrophysics', 'exoplanetology', 'generation ship sociology'],
@@ -165,8 +165,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     },
     {
       id: 'asteroid', name: 'Asteroid 16 Psyche', emoji: '\u2604\uFE0F', difficulty: 3,
-      gravity: 0.06, atmosphere: 'None', temp: '-93\u00B0C avg',
-      travelDays: 700, color: '#71717a', desc: 'A metallic asteroid worth $10,000 quadrillion \u2014 possibly a protoplanet core.',
+      gravity: 0.14, atmosphere: 'None', temp: '-93\u00B0C avg',
+      travelDays: 700, color: '#71717a', desc: 'A metal-rich asteroid \u2014 possibly the exposed core of a protoplanet. (The famous "$10,000 quadrillion" price tag is a thought experiment, not a real valuation.)',
       hazards: ['microgravity', 'tumbling rotation', 'collision debris', 'communication blackouts'],
       scienceFocus: ['metallurgy', 'orbital mechanics', 'mining engineering'],
       unlockAt: 2
