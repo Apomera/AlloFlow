@@ -88,8 +88,17 @@ describe('each gap that has a fixer gets a scoped button', () => {
 
   it('does not set state after the panel closes mid-fix', () => {
     // A batch of 20 regenerations outlives an impatient teacher.
-    expect(SOURCE).toMatch(/if \(gapFixRef\.current\) return;/);
-    expect(SOURCE).toMatch(/if \(!gapFixRef\.current\) \{/);
+    expect(SOURCE).toMatch(/if \(unmountedRef\.current\) break;/);
+    expect(SOURCE).toMatch(/if \(unmountedRef\.current\) return;/);
+    expect(SOURCE).toMatch(/if \(!unmountedRef\.current\) \{/);
+  });
+
+  it('serialises on a ref, not on state', () => {
+    // A state value read inside an async loop is the value from the render
+    // that created the closure, so it cannot serialise anything. This is what
+    // stops a second click, or a combined run, overlapping the first.
+    expect(SOURCE).toMatch(/const gapBusyRef = React\.useRef\(false\)/);
+    expect(SOURCE).toMatch(/if \(!list\.length \|\| gapBusyRef\.current\) return;/);
   });
 });
 
@@ -104,13 +113,80 @@ describe('outcome is reported for pressed fixes, and includes failures', () => {
   });
 
   it('one word failing does not abandon the rest of the batch', () => {
-    const runner = SOURCE.slice(SOURCE.indexOf('const runGapFix'), SOURCE.indexOf('const [imageRefinementInputs'));
-    expect(runner).toMatch(/catch \(e\) \{\s*\n\s*failed \+= 1;/);
+    const runner = SOURCE.slice(SOURCE.indexOf('const runOneGapFix'), SOURCE.indexOf('const describeGapFix'));
+    expect(runner).toMatch(/catch \(e\) \{[\s\S]{0,40}failed \+= 1;/);
+  });
+
+  it('a combined run reports one tally, not the last gap only', () => {
+    // runOneGapFix returns its counts instead of writing the outcome line, so
+    // running several gaps back to back cannot overwrite its own result at
+    // every step.
+    expect(SOURCE).toMatch(/return \{ done, failed \};/);
+    expect(SOURCE).toMatch(/done \+= tally\.done;/);
+    expect(SOURCE).toMatch(/failed \+= tally\.failed;/);
   });
 
   it('the built module and its mirror carry the change', () => {
     expect(read('misc_components_module.js'), 'run: node _build_misc_components_module.js')
-      .toMatch(/runGapFix/);
-    expect(read('desktop/web-app/public/misc_components_module.js')).toMatch(/runGapFix/);
+      .toMatch(/runGapFixes/);
+    expect(read('desktop/web-app/public/misc_components_module.js')).toMatch(/runGapFixes/);
+  });
+});
+
+describe('spending generation calls is confirmed first', () => {
+  it('a free fix runs on click; a paid one asks', () => {
+    expect(SOURCE).toMatch(/if \(list\.some\(\(g\) => g\.spendsAi\)\) setPendingGapFix\(list\);\s*\n\s*else runGapFixes\(list\);/);
+  });
+
+  it('the confirmation states the word count, which the button cannot show', () => {
+    expect(SOURCE).toMatch(/Generate for \{n\} word\(s\)\?/);
+    expect(SOURCE).toMatch(/const words = new Set\(list\.flatMap\(\(g\) => g\.indices\)\)\.size;/);
+  });
+
+  it('it warns when pictures are in the batch', () => {
+    // Imagen is the slow, expensive one, and a teacher clicking "Fix all"
+    // cannot tell that from the label.
+    expect(SOURCE).toMatch(/const images = list\.some\(\(g\) => g\.key === 'images'\)/);
+    expect(SOURCE).toMatch(/fix_images_cost/);
+  });
+
+  it('cancel does nothing but close', () => {
+    expect(SOURCE).toMatch(/onClick=\{\(\) => setPendingGapFix\(null\)\}/);
+  });
+
+  it('Fix all appears only when there is more than one thing to fix', () => {
+    expect(SOURCE).toMatch(/fixable\.length > 1 && \(/);
+    expect(SOURCE).toMatch(/const fixableWords = new Set\(fixable\.flatMap\(\(g\) => g\.indices\)\)\.size;/);
+  });
+});
+
+describe('an edited word does not keep the old word\'s audio', () => {
+  const MODULE = read('word_sounds_module.js');
+
+  it('renaming a word reopens its audio request', () => {
+    // Packed audio is keyed by TEXT. Rename "cat" to "cot" and the pack holds
+    // a clip for "cat", nothing for "cot", and ttsReady stays true — so the
+    // readiness panel called it ready and a student device with AI off played
+    // silence.
+    expect(MODULE).toMatch(/const _ttsTextChanged = \(before, after\) =>/);
+    expect(MODULE).toMatch(/ttsReady: false,\s*\n\s*_ttsFailed: false,\s*\n\s*_audioRequested: false,/);
+  });
+
+  it('both write paths get it, not just the persisted one', () => {
+    // handleUpdatePreloadedWord has a setWsPreloadedWords branch and a local
+    // fallback; an edit through either one can rename a word.
+    expect((MODULE.match(/_ttsTextChanged\(prevArray\[index\], newData\)/g) || []).length).toBe(2);
+  });
+
+  it('the retry button targets the same set the gap line reports', () => {
+    // The old filter missed words whose ttsReady was undefined rather than
+    // false, and re-requested words that already had a packed clip, so
+    // clicking Retry could not clear the line that offered it.
+    expect(MODULE).toMatch(/if \(portableTtsLibrary\[packKey\(w\.targetWord \|\| w\.word \|\| w\.term\)\]\) return false;/);
+    expect(MODULE).toMatch(/return !w\.ttsReady \|\| w\._ttsFailed;/);
+  });
+
+  it('the mirror matches', () => {
+    expect(read('desktop/web-app/public/word_sounds_module.js')).toMatch(/const _ttsTextChanged/);
   });
 });

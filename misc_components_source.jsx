@@ -244,47 +244,88 @@ const WordSoundsReviewPanel = ({
     // fix the teacher pressed reports an outcome.
     const [fixingGap, setFixingGap] = React.useState(null);
     const [gapFixResult, setGapFixResult] = React.useState(null);
-    const gapFixRef = React.useRef(false);
-    React.useEffect(() => () => { gapFixRef.current = true; }, []);
-    const runGapFix = React.useCallback(async (gap) => {
-        if (!gap || fixingGap !== null) return;
+    // A fix the teacher has asked for but not yet confirmed. Anything that
+    // spends generation calls asks first and says how many words it will run
+    // on, because the bill and the wait both scale with that number and
+    // neither is visible from the button.
+    const [pendingGapFix, setPendingGapFix] = React.useState(null);
+    const unmountedRef = React.useRef(false);
+    // Synchronous lock. `fixingGap` drives the UI, but a state value read
+    // inside an async loop is the value from the render that created the
+    // closure, so it cannot serialise anything. The ref can.
+    const gapBusyRef = React.useRef(false);
+    React.useEffect(() => () => { unmountedRef.current = true; }, []);
+    // Runs one gap and RETURNS its tally. It does not write the outcome line,
+    // so the same function serves a single fix and a combined run without the
+    // second one overwriting its own result at every step.
+    const runOneGapFix = React.useCallback(async (gap) => {
+        let done = 0;
+        let failed = 0;
+        if (!gap) return { done, failed };
         setFixingGap(gap.key);
+        if (gap.batch) {
+            // One call that re-arms every affected word at once.
+            try {
+                await gap.batch();
+                done = gap.indices.length;
+            } catch (e) {
+                failed = gap.indices.length;
+            }
+        } else if (gap.each) {
+            // Sequential on purpose: the host tracks a single
+            // regeneratingIndex, and firing these in parallel would both
+            // scramble that indicator and burst the AI rate limit that
+            // already costs this panel 401s.
+            for (const idx of gap.indices) {
+                if (unmountedRef.current) break;
+                try {
+                    await gap.each(idx);
+                    done += 1;
+                } catch (e) {
+                    failed += 1;
+                }
+            }
+        }
+        return { done, failed };
+    }, []);
+    // Say what actually happened, including the failures: a silent return
+    // reads as success for words that did not change.
+    const describeGapFix = (done, failed) => (failed > 0
+        ? `${done} fixed, ${failed} could not be fixed. Try again, or edit those words by hand.`
+        : `${done} fixed.`);
+    const runGapFixes = React.useCallback(async (gaps) => {
+        const list = (Array.isArray(gaps) ? gaps : [gaps]).filter(Boolean);
+        if (!list.length || gapBusyRef.current) return;
+        gapBusyRef.current = true;
+        setPendingGapFix(null);
         setGapFixResult(null);
         let done = 0;
         let failed = 0;
         try {
-            if (gap.batch) {
-                // One call that re-arms every affected word at once.
-                await gap.batch();
-                done = gap.indices.length;
-            } else if (gap.each) {
-                // Sequential on purpose: the host tracks a single
-                // regeneratingIndex, and firing these in parallel would both
-                // scramble that indicator and burst the AI rate limit that
-                // already costs this panel 401s.
-                for (const idx of gap.indices) {
-                    if (gapFixRef.current) return;
-                    try {
-                        await gap.each(idx);
-                        done += 1;
-                    } catch (e) {
-                        failed += 1;
-                    }
-                }
+            for (const gap of list) {
+                if (unmountedRef.current) return;
+                const tally = await runOneGapFix(gap);
+                done += tally.done;
+                failed += tally.failed;
             }
         } finally {
-            if (!gapFixRef.current) {
+            gapBusyRef.current = false;
+            if (!unmountedRef.current) {
                 setFixingGap(null);
-                // Say what actually happened, including the failures. A silent
-                // return would read as success for words that did not change.
-                setGapFixResult(
-                    failed > 0
-                        ? `${done} fixed, ${failed} could not be fixed — try again, or edit those words by hand.`
-                        : `${done} fixed.`
-                );
+                setGapFixResult(describeGapFix(done, failed));
             }
         }
-    }, [fixingGap]);
+    }, [runOneGapFix]);
+    // Free fixes run on click. Anything that spends generation calls asks
+    // first, because the bill and the wait both scale with the word count and
+    // neither is visible from the button.
+    const requestGapFix = React.useCallback((gapOrGaps) => {
+        if (gapBusyRef.current) return;
+        const list = (Array.isArray(gapOrGaps) ? gapOrGaps : [gapOrGaps]).filter(Boolean);
+        if (!list.length) return;
+        if (list.some((g) => g.spendsAi)) setPendingGapFix(list);
+        else runGapFixes(list);
+    }, [runGapFixes]);
     const [imageRefinementInputs, setImageRefinementInputs] = React.useState({});
     const [draggedPhoneme, setDraggedPhoneme] = React.useState(null);
     const [dragOverIndex, setDragOverIndex] = React.useState(null);
@@ -642,9 +683,26 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
 
                         if (!gaps.length) return null;
                         const busy = fixingGap !== null;
+                        const fixable = gaps.filter((g) => g.each || g.batch);
+                        const fixableWords = new Set(fixable.flatMap((g) => g.indices)).size;
                         return (
                             <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 text-xs text-amber-900">
-                                <div className="font-bold mb-1">{t('word_sounds.pack_gaps_title') || 'Student-device readiness'}</div>
+                                <div className="flex items-center justify-between gap-3 mb-1">
+                                    <div className="font-bold">{t('word_sounds.pack_gaps_title') || 'Student-device readiness'}</div>
+                                    {fixable.length > 1 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => requestGapFix(fixable)}
+                                            disabled={busy}
+                                            aria-busy={busy}
+                                            className={`shrink-0 px-2 py-0.5 rounded-full font-bold border transition-colors motion-reduce:transition-none ${busy ? 'bg-white/60 text-amber-800 border-amber-200' : 'bg-amber-600 text-white border-amber-600 hover:bg-amber-700'}`}
+                                        >
+                                            {busy
+                                                ? (t('word_sounds.fixing') || 'Fixing…')
+                                                : `✨ ${t('word_sounds.fix_all') || 'Fix all'} (${fixableWords})`}
+                                        </button>
+                                    )}
+                                </div>
                                 <ul className="space-y-1">
                                     {gaps.map((g) => (
                                         <li key={g.key} className="flex items-center justify-between gap-3">
@@ -652,7 +710,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                             {(g.each || g.batch) && (
                                                 <button
                                                     type="button"
-                                                    onClick={() => runGapFix(g)}
+                                                    onClick={() => requestGapFix(g)}
                                                     disabled={busy}
                                                     aria-busy={fixingGap === g.key}
                                                     className={`shrink-0 px-2 py-0.5 rounded-full font-bold border transition-colors motion-reduce:transition-none ${busy ? 'bg-white/60 text-amber-800 border-amber-200' : 'bg-white text-amber-900 border-amber-400 hover:bg-amber-100'}`}
@@ -668,6 +726,34 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                         </li>
                                     ))}
                                 </ul>
+                                {/* Confirm before spending generation calls. The
+                                    word count is the part a teacher cannot see
+                                    from the button, and it drives both the bill
+                                    and how long they will be waiting. */}
+                                {pendingGapFix && (() => {
+                                    const list = pendingGapFix;
+                                    const words = new Set(list.flatMap((g) => g.indices)).size;
+                                    const images = list.some((g) => g.key === 'images');
+                                    return (
+                                        <div role="alertdialog" aria-labelledby="ws-gap-confirm-title" className="mt-2 rounded-lg border border-amber-400 bg-white p-2">
+                                            <p id="ws-gap-confirm-title" className="font-bold">
+                                                {(t('word_sounds.fix_confirm') || 'Generate for {n} word(s)?').replace('{n}', String(words))}
+                                            </p>
+                                            <p className="mt-0.5">
+                                                {list.map((g) => g.label).join(', ')}
+                                                {images ? ` — ${t('word_sounds.fix_images_cost') || 'pictures are the slowest and most expensive of these'}` : ''}
+                                            </p>
+                                            <div className="mt-2 flex gap-2">
+                                                <button type="button" onClick={() => runGapFixes(list)} className="px-2 py-0.5 rounded-full font-bold bg-amber-600 text-white border border-amber-600 hover:bg-amber-700 transition-colors motion-reduce:transition-none">
+                                                    {t('word_sounds.fix_confirm_go') || 'Generate'}
+                                                </button>
+                                                <button type="button" onClick={() => setPendingGapFix(null)} className="px-2 py-0.5 rounded-full font-bold bg-white text-amber-900 border border-amber-400 hover:bg-amber-100 transition-colors motion-reduce:transition-none">
+                                                    {t('common.cancel') || 'Cancel'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
                                 {/* Outcome is reported only for a fix the teacher
                                     pressed. Nothing is announced for work the
                                     pipeline did on its own before they got here. */}

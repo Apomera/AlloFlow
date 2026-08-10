@@ -8782,6 +8782,21 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         },
         [setWsPreloadedWords],
       );
+      // A word's packed audio is keyed by its TEXT. Rename "cat" to "cot" in
+      // the review panel and the pack still holds a clip for "cat", nothing
+      // for "cot", and ttsReady stays true from the old word — so the readiness
+      // panel reported the word as ready and a student device with AI switched
+      // off played silence. Reopen the audio request whenever the text moves;
+      // the prefetch effect and the Retry audio button both key off these
+      // flags, so the word re-speaks and is reported honestly until it does.
+      // The old clip is left in the pack on purpose: another word in the
+      // session may still be using that exact text.
+      const _ttsTextChanged = (before, after) => {
+        if (!before || !after) return false;
+        const textOf = (w) => String(w.targetWord || w.word || w.term || "").trim().toLowerCase();
+        const next = textOf({ ...before, ...after });
+        return !!next && next !== textOf(before);
+      };
       const handleUpdatePreloadedWord = React.useCallback((index, newData) => {
         if (setWsPreloadedWords) {
           setWsPreloadedWords((prev) => {
@@ -8789,6 +8804,14 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             const updated = [...prevArray];
             if (index < updated.length) {
               updated[index] = { ...updated[index], ...newData };
+              if (_ttsTextChanged(prevArray[index], newData)) {
+                updated[index] = {
+                  ...updated[index],
+                  ttsReady: false,
+                  _ttsFailed: false,
+                  _audioRequested: false,
+                };
+              }
             }
             debugLog(
               "✅ Updated word at index",
@@ -8803,6 +8826,14 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             const updated = [...prevArray];
             if (index >= 0 && index < updated.length) {
               updated[index] = { ...updated[index], ...newData };
+              if (_ttsTextChanged(prevArray[index], newData)) {
+                updated[index] = {
+                  ...updated[index],
+                  ttsReady: false,
+                  _ttsFailed: false,
+                  _audioRequested: false,
+                };
+              }
             }
             return updated;
           });
@@ -9413,9 +9444,17 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
       // some words without audio. No phoneme data is re-fetched — we just
       // re-run the prefetch pipeline with a fresh retry cycle.
       const handleRetryFailedTTS = React.useCallback(async () => {
-        const missing = (preloadedWords || []).filter(
-          (w) => w && (w._ttsFailed || (w.ttsReady === false && !w._audioRequested)),
-        );
+        // Match the readiness panel's definition of "without portable audio"
+        // exactly, or the button cannot clear the line that offers it. The old
+        // filter missed two sets: a word whose ttsReady is undefined rather
+        // than false (never attempted), and it re-requested words that already
+        // have a clip in the portable pack, which need nothing.
+        const packKey = (v) => String(v || "").trim().toLowerCase().replace(/\s+/g, " ");
+        const missing = (preloadedWords || []).filter((w) => {
+          if (!w) return false;
+          if (portableTtsLibrary[packKey(w.targetWord || w.word || w.term)]) return false;
+          return !w.ttsReady || w._ttsFailed;
+        });
         if (missing.length === 0) {
           addToast?.("All audio is ready — nothing to retry.", "info");
           return;
@@ -9436,7 +9475,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             }),
           );
         }
-      }, [preloadedWords, setWsPreloadedWords, addToast]);
+      }, [preloadedWords, setWsPreloadedWords, addToast, portableTtsLibrary]);
       const handleGenerateWordImage = React.useCallback(
         async (index, word) => {
           if (generatingImageSet.size >= 5) {
