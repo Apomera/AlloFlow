@@ -2574,3 +2574,42 @@ struct-tree walk confirms zero malformed tables. `--verapdf required` also
 now keeps artifacts+report on gate failure instead of deleting the staging
 dir. The worksheet was REGENERATED against the passing run's HTML (sha256
 bindings); the fresh-context `verify-check` remains the open item.
+
+## Independent verification RUN (2026-08-10) - item 2 of "what remains" DONE
+
+A fresh-context reader (subagent, never saw the plan or these sessions) filled
+all 1,664 items against the source PDF and the passing run's HTML:
+**1,645 verified / 19 discrepancies / 0 unreadable**; `verify-check` enforced
+bindings and stamped `verification-report.json` (committed in the ua1-pass run
+dir alongside the filled worksheet). The reader extracted all 126 pages with
+pdf.js including resolved font programs, script-compared every heading, ~28k
+table cells, list, link, and emphasis span in both directions, and visually
+read 26 rendered pages plus all 126 as thumbnails.
+
+**The two-model rule earned its keep. All 19 discrepancies were real:**
+
+1. **Sixteen were one bug**: `gen_tranche_58.py` attributed a category to page
+   118 iff its first topic number was < 400 - but everything through
+   "Employer tax information" (750s) PRINTS on 118. Eight h4s and eight topic
+   tables carried `source_page: 119` for content a reader finds on 118. Fixed
+   by carrying the sub-head's page through from the GEOMETRY instead of
+   guessing from topic numbers, plus two new gates (start pages in range,
+   non-decreasing). Regenerated: exactly 16 lines change, all
+   `source_page: 119` -> `118`.
+2. **Three were emphasis-span defects**, each confirmed against the embedded
+   font programs: p87 "e-filed" and p88 "State and Local Income Tax Refund
+   Worksheet" are regular roman in the source (both de-italicised); p40's
+   span included "(SSN)" which the source continues in roman (boundary
+   moved). Generators 12/27/28 fixed and regenerated - the plain text is
+   byte-identical, only `runs` change.
+
+Full e2e re-run on the corrected plan: 2,106 blocks, `pagesWithoutBlocks: []`,
+**PDF/UA-1 PASS, identifier earned, exit 0 under `--verapdf required`,
+outputTextRecall 1.0, sourceTextRecall 0.9349** (the slug ceiling, unchanged).
+
+A correction that postdates its verification: the 19 fixes above were made
+AFTER the worksheet was attested, so the committed report describes the
+PRE-fix artifact. The changes are 16 metadata integers and 3 styling runs,
+each the exact repair the discrepancy note prescribes; re-attesting those 19
+items (not the other 1,645) is the honest residual if anyone wants the loop
+fully closed.

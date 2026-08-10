@@ -1,0 +1,120 @@
+{
+  "binding": {
+    "html_sha256": "ebfb91e51dfc2b79330191c646b502ac0c79c7939e76b1d37df2a1c9308a296d",
+    "plan_sha256": "bbdf4ab7a82e151f58fd3698a572a4b4ab39b15bcde20ab73b4a763830f102bf",
+    "source_sha256": "482e9c487c608f1bbeaceef35bc3c0933e8b35443cfff447e4279d590468364a"
+  },
+  "counts": {
+    "discrepancies": 19,
+    "items": 1664,
+    "unreadable": 0,
+    "verified": 1645
+  },
+  "createdAt": "2026-08-10T04:20:36Z",
+  "discrepancies": [
+    {
+      "id": "emphasis-159",
+      "kind": "inline_style",
+      "note": "Span boundary: source page 40 italicises only 'Social security number' (TimesNewRomanPS-ItalicMT run ends at x~143); '(SSN) in the' continues in regular roman, but the rebuild's em span includes '(SSN)'. Minor overextension of emphasis."
+    },
+    {
+      "id": "emphasis-339",
+      "kind": "inline_style",
+      "note": "Invented emphasis: on source page 87 the line 'your e-filed return or 4 weeks after you' is one text run in regular TimesNewRomanPSMT with an unskewed matrix; 'e-filed' carries no italic there, but the rebuild marks it em. (The source does italicise e-file elsewhere, e.g. page 8, but not here.)"
+    },
+    {
+      "id": "emphasis-348",
+      "kind": "inline_style",
+      "note": "Invented emphasis: on source page 88 'use the State and Local Income Tax Refund Worksheet in these instructions' is set entirely in regular roman runs; the worksheet-name span is not italicised in the source but the rebuild marks it em."
+    },
+    {
+      "id": "heading-648",
+      "kind": "heading",
+      "note": "Heading 'Types of income' is printed on page 118 (Tax Topics list), not page 119 as this item and the HTML data-source-page claim; text, level and content are otherwise correct. Verified against per-item PDF geometry and a rendered image of page 118."
+    },
+    {
+      "id": "table-070",
+      "kind": "table",
+      "note": "All 25 rows (topics 401-432) are printed on page 118, but the item and HTML data-source-page say 119. Cell content, order and dimensions verified correct against page 118."
+    },
+    {
+      "id": "heading-649",
+      "kind": "heading",
+      "note": "Heading 'Adjustments to income' is printed on page 118 (Tax Topics list), not page 119 as this item and the HTML data-source-page claim; text, level and content are otherwise correct. Verified against per-item PDF geometry and a rendered image of page 118."
+    },
+    {
+      "id": "table-071",
+      "kind": "table",
+      "note": "All 6 rows (topics 451-458) are printed on page 118, not page 119 as claimed. Cell content verified correct against page 118."
+    },
+    {
+      "id": "heading-650",
+      "kind": "heading",
+      "note": "Heading 'Itemized deductions' is printed on page 118 (Tax Topics list), not page 119 as this item and the HTML data-source-page claim; text, level and content are otherwise correct. Verified against per-item PDF geometry and a rendered image of page 118."
+    },
+    {
+      "id": "table-072",
+      "kind": "table",
+      "note": "All 11 rows (topics 501-515) are printed on page 118, not page 119 as claimed. Cell content verified correct against page 118."
+    },
+    {
+      "id": "heading-651",
+      "kind": "heading",
+      "note": "Heading 'Tax computation' is printed on page 118 (Tax Topics list), not page 119 as this item and the HTML data-source-page claim; text, level and content are otherwise correct. Verified against per-item PDF geometry and a rendered image of page 118."
+    },
+    {
+      "id": "table-073",
+      "kind": "table",
+      "note": "All 9 rows (topics 551-560) are printed on page 118, not page 119 as claimed. Cell content verified correct against page 118."
+    },
+    {
+      "id": "heading-652",
+      "kind": "heading",
+      "note": "Heading 'Tax credits' is printed on page 118 (Tax Topics list), not page 119 as this item and the HTML data-source-page claim; text, level and content are otherwise correct. Verified against per-item PDF geometry and a rendered image of page 118."
+    },
+    {
+      "id": "table-074",
+      "kind": "table",
+      "note": "All 5 rows (topics 601-612) are printed on page 118, not page 119 as claimed. Cell content verified correct against page 118."
+    },
+    {
+      "id": "heading-653",
+      "kind": "heading",
+      "note": "Heading 'IRS notices' is printed on page 118 (Tax Topics list), not page 119 as this item and the HTML data-source-page claim; text, level and content are otherwise correct. Verified against per-item PDF geometry and a rendered image of page 118."
+    },
+    {
+      "id": "table-075",
+      "kind": "table",
+      "note": "All 4 rows (topics 651-654) are printed on page 118, not page 119 as claimed. Cell content verified correct against page 118."
+    },
+    {
+      "id": "heading-654",
+      "kind": "heading",
+      "note": "Heading 'Basis of assets, depreciation, and sale of assets' is printed on page 118 (Tax Topics list), not page 119 as this item and the HTML data-source-page claim; text, level and content are otherwise correct. Verified against per-item PDF geometry and a rendered image of page 118."
+    },
+    {
+      "id": "table-076",
+      "kind": "table",
+      "note": "All 4 rows (topics 701-705) are printed on page 118, not page 119 as claimed. Cell content verified correct against page 118."
+    },
+    {
+      "id": "heading-655",
+      "kind": "heading",
+      "note": "Heading 'Employer tax information' is printed on page 118 (third column, y~111), not page 119 as claimed; its topics continue onto 119, but the plan's own convention attributes a block to the page it starts on. Text and level otherwise correct."
+    },
+    {
+      "id": "table-077",
+      "kind": "table",
+      "note": "Topics 751-752 are printed on page 118 and 753-763 on page 119; the block starts on 118 but is attributed to 119, contrary to the rebuild's stated start-page convention. Cell content and order verified correct."
+    }
+  ],
+  "meaning": "'verified' means an independent reader attested every item against the source. It does not upgrade any compliance claim, and the script cannot prove the reader's independence - it records the attestation.",
+  "result": "discrepancies-found",
+  "schemaVersion": "1.0",
+  "unreadable": [],
+  "verifier": {
+    "context_isolation": "fresh-context",
+    "model": "claude-fable-5 (fresh-context subagent)",
+    "statement": "I extracted all 126 source pages directly with pdf.js (text, font faces, text matrices and link annotations), compared every heading, table cell, list item, link, emphasised span and page's text against the rebuilt HTML with normalisation-tolerant scripted matching in both directions, re-verified every flagged item by targeted probes (font/geometry level), independently recomputed the EIC and Tax Table part ranges and row integrity (3,442 body rows), and visually read 26 rendered pages in full plus all 126 as rendered thumbnails, including the page-63 figure, page 118-119 Tax Topics, and the page-126 address table. 19 discrepancies recorded; everything else verified against the source or covered by an explicit review-note disclosure."
+  }
+}

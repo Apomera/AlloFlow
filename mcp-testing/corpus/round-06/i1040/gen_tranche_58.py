@@ -129,20 +129,30 @@ def join(parts):
 
 def parse():
     """Walk the three columns of each page in reading order and return
-    [(category, [(number, subject), ...]), ...]."""
-    categories = []          # list of (name, rows)
+    [(category, [(number, subject), ...], start_page), ...]. The start page
+    comes from the GEOMETRY - the page whose items carried the category's
+    sub-head - not from any property of the topic numbers. The first version
+    attributed a category to page 118 iff its first topic number was < 400,
+    and the independent verification (2026-08-10) caught it: every category
+    from "Types of income" (400s) through "Employer tax information" (750s)
+    prints on page 118, so sixteen blocks carried source_page 119 for content
+    a reader finds on 118."""
+    categories = []          # list of (name, rows, start_page)
     current = None           # the category being filled
     pending_subhead = []     # a sub-head that wraps over several bands
+    pending_page = None      # the page the pending sub-head was printed on
+    page_no = None
 
     def flush_subhead():
         nonlocal pending_subhead, current
         if pending_subhead:
             name = " ".join(pending_subhead)
-            categories.append((name, []))
+            categories.append((name, [], pending_page))
             current = categories[-1][1]
             pending_subhead = []
 
     for page in load_pages():
+        page_no = page["page"]
         items = [i for i in page["items"]
                  if str(i["text"]).strip()
                  and i["face"] in (BODY_FACE, SUBHEAD_FACE)]
@@ -169,6 +179,8 @@ def parse():
                     words = {p["text"].strip() for p in subhead_parts}
                     if words & COLUMN_HEADER_WORDS:
                         continue          # the repeated "Topic No. / Subject" header
+                    if not pending_subhead:
+                        pending_page = page_no
                     pending_subhead.append(join(subhead_parts))
                     continue
                 flush_subhead()
@@ -192,12 +204,17 @@ categories = parse()
 # ------------------------------------------------------------- assertions
 # Six gates. The plan is not written unless every one holds.
 
-all_rows = [row for _, rows in categories for row in rows]
+all_rows = [row for _, rows, _pg in categories for row in rows]
 
 # 1. Every category has a name and at least one topic.
-for name, rows in categories:
+for name, rows, start_page in categories:
     assert name and not name.isspace(), "unnamed category"
     assert rows, f"category {name!r} has no topics"
+    assert start_page in (118, 119), f"category {name!r} started on page {start_page!r}"
+# Start pages never go backwards: the categories arrive in reading order.
+_pages = [pg for _, _, pg in categories]
+for _prev, _nxt in zip(_pages, _pages[1:]):
+    assert _nxt >= _prev, f"category start pages out of order: {_prev} then {_nxt}"
 
 # 2. Every topic number is digits only.
 for number, _ in all_rows:
@@ -243,8 +260,7 @@ para(
     118,
 )
 
-for name, rows in categories:
-    page = 118 if int(rows[0][0]) < 400 else 119
+for name, rows, page in categories:
     heading(name, 4, page)
     blocks.append({
         "type": "table",

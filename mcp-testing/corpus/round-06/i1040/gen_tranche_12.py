@@ -119,8 +119,10 @@ bullets(
         "Follow the steps in the following flowchart.",
         "Complete the worksheet that applies to you or let the IRS figure the "
         "credit for you.",
+        # The source italicises only "Social security number"; "(SSN)"
+        # continues in roman (independent verification 2026-08-10).
         f"Review the SSN requirements for claiming the EIC under «Social "
-        f"security number (SSN)» in the {DEFS} section, later.",
+        f"security number» (SSN) in the {DEFS} section, later.",
         "If you have at least one child who meets the conditions to be your "
         "qualifying child for purposes of claiming the EIC, complete and attach "
         "Schedule EIC, even if that child doesn’t have a valid SSN. See "

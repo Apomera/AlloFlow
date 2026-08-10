@@ -162,7 +162,10 @@ para(
     "[[IRS.gov/Refunds|https://www.irs.gov/refunds]] or use the free IRS2Go "
     "app, 24 hours a day, 7 days a week. Information about your refund will "
     "generally be available within 24 hours after the IRS receives your "
-    "«e-filed» return or 4 weeks after you mail a paper return. But if you "
+    # NOT «e-filed»: the source prints this line in one regular-roman run.
+    # The independent verification (2026-08-10) checked the resolved font
+    # program — the source does italicise "e-file" elsewhere (p8), not here.
+    "e-filed return or 4 weeks after you mail a paper return. But if you "
     "filed Form 8379 with your return, allow 14 weeks (11 weeks if you filed "
     "electronically) before checking your refund status.",
     87,
