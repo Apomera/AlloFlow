@@ -193,6 +193,14 @@ window.StemLab = window.StemLab || {
       var compileFunc = function(expr) {
         var safe = (expr || '').replace(/[^0-9.+\-*\/()xX^ ]/g, '').replace(/\^/g, '**').replace(/X/g, 'x');
         if (!safe) return null;
+        // Implicit multiplication: students type "2x+1" (the exact syntax the
+        // error toast suggests), but `return 2x+1` is a JS SyntaxError — so
+        // every suggested format failed with the warning that suggested it.
+        // Insert the * a math reader assumes: 2x, 0.5x, )x, 2(, )(, x2, x(.
+        // The lookaheads exclude '*' so the ** from ^ is left alone.
+        safe = safe
+          .replace(/(\d|\))(?=\s*[x(])/g, '$1*')
+          .replace(/x(?=\s*[0-9(])/g, 'x*');
         try {
           var fn = new Function('x', 'return ' + safe);
           var probe = fn(0);
@@ -319,7 +327,10 @@ window.StemLab = window.StemLab || {
         var gcdFn = function(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { var tmp = b; b = a % tmp; a = tmp; } return a || 1; };
         var g = gcdFn(dy, dx);
         var num = dy / g; var den = dx / g;
-        var frac = den < 0 ? (-num) + '/' + (-den) : den === 1 ? '' + num : num + '/' + den;
+        // Normalize the sign into the numerator, then drop a /1 denominator —
+        // without the second step a slope of -2 displayed as "-2/1".
+        if (den < 0) { num = -num; den = -den; }
+        var frac = den === 1 ? '' + num : num + '/' + den;
         return { rise: dy, run: dx, value: dy / dx, display: frac };
       };
 
