@@ -185,6 +185,26 @@
         }
 
         // ── Float32 PCM → WAV (runs in worker) ──
+        // De-click ramps. The model can end while a voiced sound is still at
+        // full amplitude, which word-final nasals ("bun", "hon") reliably are.
+        // Writing that straight to PCM leaves a step at the buffer edge, and a
+        // step is a click; heard right after a nasal it reads as a /t/ or /d/
+        // release. In a phonemic-awareness activity that is not cosmetic — a
+        // child asked for the last sound in "bun" can hear the wrong one.
+        //
+        // These are ramps, not trims: no sample is removed, so no phoneme can
+        // be shortened. The fade-in is deliberately much shorter than the
+        // fade-out, because a word beginning with a stop carries its burst in
+        // the first few milliseconds and softening that would trade one wrong
+        // sound for another.
+        const FADE_IN_MS = 2;
+        const FADE_OUT_MS = 6;
+        function edgeGain(i, n, fadeIn, fadeOut) {
+            let g = 1;
+            if (fadeIn && i < fadeIn) g = i / fadeIn;
+            if (fadeOut && i >= n - fadeOut) g = Math.min(g, (n - 1 - i) / fadeOut);
+            return g;
+        }
         function float32ToWav(float32Array, sampleRate) {
             const bitsPerSample = 16;
             const dataSize = float32Array.length * 2;
@@ -205,9 +225,14 @@
             w(36, 'data');
             view.setUint32(40, dataSize, true);
 
+            const n = float32Array.length;
+            // Never let a ramp eat more than half the clip from either end.
+            const half = Math.floor(n / 2);
+            const fadeIn = n > 3 ? Math.min(Math.floor(sampleRate * (FADE_IN_MS / 1000)), half) : 0;
+            const fadeOut = n > 3 ? Math.min(Math.floor(sampleRate * (FADE_OUT_MS / 1000)), half) : 0;
             let off = 44;
-            for (let i = 0; i < float32Array.length; i++) {
-                const s = Math.max(-1, Math.min(1, float32Array[i]));
+            for (let i = 0; i < n; i++) {
+                const s = Math.max(-1, Math.min(1, float32Array[i] * edgeGain(i, n, fadeIn, fadeOut)));
                 view.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
                 off += 2;
             }
@@ -421,7 +446,9 @@
     }
 
     function _cacheKey(text, voice) {
-        return JSON.stringify(['kokoro-v2', _textFingerprint(text), voice, SYNTHESIS_SPEED, _currentDtype]);
+        // v3: edge fades changed the bytes, so a clip cached under v2 would
+        // keep its click for the life of the page.
+        return JSON.stringify(['kokoro-v3', _textFingerprint(text), voice, SYNTHESIS_SPEED, _currentDtype]);
     }
 
     function ownsUrl(url) {
