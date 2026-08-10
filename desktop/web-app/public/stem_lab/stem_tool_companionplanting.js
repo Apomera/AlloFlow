@@ -402,6 +402,32 @@ var d = (labToolData.companionPlanting) || {};
 
           ];
 
+          // The authored banks put 80% of correct answers in slot 2 (measured
+          // 2/8/0/0 across quizzes + garden scenarios; later slots never),
+          // rewarding position-guessing. Rotate each question by a
+          // deterministic per-question offset: questions are re-derived from
+          // the bank on every render (quizzes[quizQ % ...]), so a random
+          // shuffle would deal new options under the student mid-question,
+          // while a fixed rotation is stable across renders. The quizzes bank
+          // grades by option TEXT (opt === currentQuiz.correct), so rotating
+          // opts alone is safe; GARDEN_SCENARIOS grades by INDEX, so its
+          // `correct` moves with the options. explain strings are not
+          // positional in either bank.
+          var cpRotateQuestion = function(q, seedIdx) {
+            var opts = q.opts || q.options;
+            if (!opts || opts.length < 2) return q;
+            var n = opts.length;
+            var shift = ((seedIdx * 7) + 3) % n;
+            if (shift === 0) return q;
+            var rotated = new Array(n);
+            for (var i = 0; i < n; i++) rotated[(i + shift) % n] = opts[i];
+            var next = Object.assign({}, q);
+            if (q.opts) next.opts = rotated; else next.options = rotated;
+            if (typeof q.correct === 'number') next.correct = (q.correct + shift) % n;
+            return next;
+          };
+          quizzes = quizzes.map(function(q, qi) { return cpRotateQuestion(q, qi); });
+
           var currentQuiz = quizzes[quizQ % quizzes.length];
 
           // === Wave 1: COMPANION_PAIRS ===

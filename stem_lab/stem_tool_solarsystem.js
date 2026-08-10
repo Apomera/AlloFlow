@@ -735,6 +735,21 @@ const d = labToolData.solarSystem || {};
           };
 
           // ── Enhanced Quiz with Error-Correcting Feedback ──
+          // The authored bank leans on slot 2 (measured 2/10/3/0 — 67% of
+          // correct answers in slot 2, slot 4 never), which rewards guessing
+          // by position. Shuffle a COPY of the options at draw time: the
+          // drawn question is stored whole in d.quiz, so the order is stable
+          // for the life of the question. Grading compares option TEXT
+          // (opt === d.quiz.a) and wrongFeedback is keyed by TEXT, so
+          // reordering is safe by construction.
+          var solarShuffledOpts = function(opts) {
+            var out = opts.slice();
+            for (var i = out.length - 1; i > 0; i--) {
+              var j = Math.floor(Math.random() * (i + 1));
+              var tmp = out[i]; out[i] = out[j]; out[j] = tmp;
+            }
+            return out;
+          };
           var QUIZ_BANK = [
             { q: 'Which planet is the hottest?', a: 'Venus', opts: ['Mercury', 'Venus', 'Mars', 'Jupiter'], tip: __alloT('stem.solarsystem.venus_has_a_runaway_greenhouse_effect_', 'Venus has a runaway greenhouse effect reaching 462\u00B0C!'), wrongFeedback: { Mercury: 'Mercury is closest to the Sun, but Venus is hotter because its thick CO\u2082 atmosphere traps heat (greenhouse effect). Distance isn\u2019t everything!', Mars: 'Mars is actually very cold (-65\u00B0C average). Its thin atmosphere can\u2019t trap much heat.', Jupiter: 'Jupiter is far from the Sun and made of cold gas. Its cloud tops are -145\u00B0C!' }, difficulty: 1, concept: 'greenhouse effect' },
             { q: 'Which planet has the most moons?', a: 'Saturn', opts: ['Jupiter', 'Saturn', 'Uranus', 'Neptune'], tip: __alloT('stem.solarsystem.saturn_has_146_known_moons_as_of_2024', 'Saturn has 293 known moons in the current JPL planetary satellite list.'), wrongFeedback: { Jupiter: 'Close! Jupiter has 115 known moons, but Saturn is currently ahead with 293 listed by JPL.', Uranus: 'Uranus has 29 known moons \u2014 far fewer than the gas giant leaders.', Neptune: 'Neptune has 16 known moons. Triton is the famous one \u2014 it orbits backwards!' }, difficulty: 1, concept: 'moons' },
@@ -16180,7 +16195,7 @@ const d = labToolData.solarSystem || {};
                           var available = QUIZ_BANK.filter(function(q2) { return asked.indexOf(q2.q) === -1; });
                           if (available.length === 0) { available = QUIZ_BANK; asked = []; }
                           var q = available[Math.floor(Math.random() * available.length)];
-                          upd('quiz', Object.assign({}, q, { answered: false, correct: null, chosen: null, score: d.quiz ? d.quiz.score : 0, streak: d.quiz ? d.quiz.streak : 0 }));
+                          upd('quiz', Object.assign({}, q, { opts: solarShuffledOpts(q.opts), answered: false, correct: null, chosen: null, score: d.quiz ? d.quiz.score : 0, streak: d.quiz ? d.quiz.streak : 0 }));
                           upd('quizAsked', asked.concat([q.q]));
                         }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.quiz ? 'bg-indigo-100 text-indigo-700' : 'bg-indigo-600 text-white') + " hover:opacity-90 transition-all"
                       }, d.quiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz Mode"),

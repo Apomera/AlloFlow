@@ -328,6 +328,28 @@ dataRef.current = d;
 
           // ── Knowledge Quiz Questions ──
 
+          // The authored banks put 75% of correct answers in slot 2 (measured
+          // 1/15/3/1 across quiz + scenarios), so position-savvy students
+          // could pass without the behavior analysis. Rotate each question by
+          // a deterministic per-question offset: questions are re-read from
+          // the bank on every render (QUIZ_BANK[blLevel]), so a random
+          // shuffle would deal new options mid-question, while a fixed
+          // rotation is stable across renders. Grading is by option INDEX,
+          // so `correct` moves with the options; explain/better strings are
+          // not positional and stay put.
+          var blRotateQuestion = function(q, seedIdx) {
+            var opts = q.opts || q.options;
+            if (!opts || opts.length < 2 || typeof q.correct !== 'number') return q;
+            var n = opts.length;
+            var shift = ((seedIdx * 7) + 3) % n;
+            if (shift === 0) return q;
+            var rotated = new Array(n);
+            for (var i = 0; i < n; i++) rotated[(i + shift) % n] = opts[i];
+            var next = Object.assign({}, q);
+            if (q.opts) next.opts = rotated; else next.options = rotated;
+            next.correct = (q.correct + shift) % n;
+            return next;
+          };
           var QUIZ_BANK = {
 
             1: { q: 'In positive reinforcement, what happens to the behavior?', opts: ['It decreases', 'It increases', 'It stays the same', 'It disappears'], correct: 1, explain: 'Positive reinforcement ADDS a stimulus that INCREASES the future probability of a behavior.' },
@@ -349,6 +371,10 @@ dataRef.current = d;
           };
 
 
+
+          Object.keys(QUIZ_BANK).forEach(function(level) {
+            QUIZ_BANK[level] = blRotateQuestion(QUIZ_BANK[level], Number(level));
+          });
 
           // ── Chain sequence for Level 7 ──
 
@@ -873,6 +899,10 @@ dataRef.current = d;
               explain: 'Extinction bursts are temporary increases BEFORE the behavior decreases. Giving in during a burst teaches the child that MORE INTENSE tantrums work! This is the worst time to reinforce.',
               better: 'Warn parents about extinction bursts BEFORE starting extinction. Staying consistent through the burst is critical for success.' }
           ];
+
+          SCENARIO_CHALLENGES = SCENARIO_CHALLENGES.map(function(sc, si) {
+            return blRotateQuestion(sc, si);
+          });
 
           // === Wave 3: ABA_MILESTONES ===
           var ABA_MILESTONES = [
