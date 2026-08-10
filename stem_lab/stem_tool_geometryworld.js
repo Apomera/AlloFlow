@@ -1895,38 +1895,7 @@
   })();
 
 
-  // 34 of the 35 built-in NPC questions authored the correct answer in slot 1
-  // (measured 82/0/1 — 99% by the position-bias scanner), so every quiz could
-  // be passed by always picking the first choice. Rotate each question (and
-  // its follow-ups) ONCE here by a deterministic per-question offset: the
-  // dialogue re-reads the lesson config on every render, so a random shuffle
-  // would deal new options mid-question. Grading is by index
-  // (ci === curQ.correct) and the wrong-answer log reads choices[correct], so
-  // `correct` is remapped with the choices. NPC translations cover dialogue
-  // and question TEXT only, never choices, so rotation cannot desync them.
-  // User-authored lessons from the in-app editor are untouched.
-  (function () {
-    var seed = 0;
-    var rotate = function (q) {
-      if (!q || !Array.isArray(q.choices) || q.choices.length < 2 || typeof q.correct !== 'number') { seed++; return; }
-      var n = q.choices.length;
-      var shift = ((seed++ * 7) + 3) % n;
-      if (shift === 0) return;
-      var moved = new Array(n);
-      for (var i = 0; i < n; i++) moved[(i + shift) % n] = q.choices[i];
-      q.choices = moved;
-      q.correct = (q.correct + shift) % n;
-    };
-    Object.keys(SAMPLE_LESSONS).forEach(function (key) {
-      (SAMPLE_LESSONS[key].npcs || []).forEach(function (npc) {
-        if (!npc.question) return;
-        rotate(npc.question);
-        (npc.question.followUp || []).forEach(rotate);
-      });
-    });
-  })();
-
-  var LESSON_ORDER = ['volumeExplorer', 'areaSurface', 'buildChallenge', 'realWorld', 'geometryGarden', 'compositeVolume', 'fractionVolume', 'volumeEstimation', 'fractionBuilder', 'base10Blocks', 'fluencyMaze'];
+  var LESSON_ORDER =['volumeExplorer', 'areaSurface', 'buildChallenge', 'realWorld', 'geometryGarden', 'compositeVolume', 'fractionVolume', 'volumeEstimation', 'fractionBuilder', 'base10Blocks', 'fluencyMaze'];
   var MAX_BLOCKS = 1500; // Performance safety limit
   // Radians/second for arrow-key look. ~100°/s: fast enough to sweep a structure
   // without hunting, slow enough to land the crosshair on an NPC.

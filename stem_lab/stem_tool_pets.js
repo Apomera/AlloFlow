@@ -6174,6 +6174,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         choices: ['Tradition', 'Adult deer ticks (Ixodes scapularis) are active any day above ~40°F — Maine has many such days even in January / February', 'Vets need year-round revenue', 'Lyme bacteria mutate in cold'],
         correct: 1, why: 'Adult Ixodes ticks emerge whenever temperatures briefly rise above ~40°F. Maine has plenty of warm days mid-winter. Year-round prevention has become standard for Maine dogs given Lyme + anaplasmosis density.' }
     ];
+
+    // The authored bank put 73% of correct answers in slot 2 (measured
+    // 0/11/4/0, slots 1 and 4 never) — passable by position. Rotate each
+    // question ONCE here: renderQuiz re-reads QUIZ[qIdx] on every render,
+    // so a random shuffle would deal new options mid-question. Grading is
+    // by index, so `correct` is remapped with the choices; `why` is one
+    // string. (The body-language quiz already shuffles at generation time
+    // and is untouched.)
+    (function () {
+      for (var qi = 0; qi < QUIZ.length; qi++) {
+        var q = QUIZ[qi];
+        if (!q || !Array.isArray(q.choices) || q.choices.length < 2 || typeof q.correct !== 'number') continue;
+        var n = q.choices.length;
+        var shift = ((qi * 7) + 3) % n;
+        if (shift === 0) continue;
+        var moved = new Array(n);
+        for (var i = 0; i < n; i++) moved[(i + shift) % n] = q.choices[i];
+        q.choices = moved;
+        q.correct = (q.correct + shift) % n;
+      }
+    })();
+
     function renderQuiz() {
       var qIdx = quizState.idx || 0;
       var done = qIdx >= QUIZ.length;

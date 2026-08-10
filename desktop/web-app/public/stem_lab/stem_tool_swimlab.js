@@ -556,6 +556,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
 
       function scenarioCard(modId, idx, scenario) {
         var key = modId + '-scn-' + idx;
+        // The authored scenarios put 94% of correct answers in slot 2
+        // (measured 0/17/1/0 by the position-bias scanner). The configs are
+        // inline literals recreated on every render, so rotate HERE with a
+        // deterministic seed from the card key: stable across renders for a
+        // given card, different across cards. Grading is by index
+        // (ci === scenario.correct), so `correct` moves with the choices;
+        // `explain` is one string.
+        if (scenario && Array.isArray(scenario.choices) && scenario.choices.length > 1 && typeof scenario.correct === 'number') {
+          var _n = scenario.choices.length;
+          var _seed = 0;
+          for (var _si = 0; _si < key.length; _si++) _seed = (_seed * 31 + key.charCodeAt(_si)) % 997;
+          var _shift = ((_seed * 7) + 3) % _n;
+          if (_shift !== 0) {
+            var _moved = new Array(_n);
+            for (var _i = 0; _i < _n; _i++) _moved[(_i + _shift) % _n] = scenario.choices[_i];
+            scenario = Object.assign({}, scenario, { choices: _moved, correct: (scenario.correct + _shift) % _n });
+          }
+        }
         // Hook-free: takes a pre-allocated slot from the fixed hook budget.
         var slot = _scnSlots[idx] || _scnSlot0;
         var raw = slot[0], setRaw = slot[1];

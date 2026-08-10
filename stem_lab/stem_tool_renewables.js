@@ -351,6 +351,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       correct: 1, why: 'CSP\'s edge over photovoltaic (PV) panels is that the working fluid (molten salt) IS the storage. Insulated tanks hold the salt at 565°C; flowing it through a heat exchanger when needed makes steam to spin the same turbine that runs during daytime. Heat is much cheaper to store than electrons.' }
   ];
 
+  // The authored bank put 72% of correct answers in slot 2 (measured
+  // 1/13/4/0) — passable by position. Rotate each question ONCE here: the
+  // quiz re-reads QUIZ[qIdx] on every render, so a random shuffle would
+  // deal new options mid-question. Grading is by index (i === q.correct)
+  // and the printable answer key reads choices[correct] with a recomputed
+  // letter, so `correct` is remapped with the choices; `why` is one string.
+  (function () {
+    for (var qi = 0; qi < QUIZ.length; qi++) {
+      var q = QUIZ[qi];
+      if (!q || !Array.isArray(q.choices) || q.choices.length < 2 || typeof q.correct !== 'number') continue;
+      var n = q.choices.length;
+      var shift = ((qi * 7) + 3) % n;
+      if (shift === 0) continue;
+      var moved = new Array(n);
+      for (var i = 0; i < n; i++) moved[(i + shift) % n] = q.choices[i];
+      q.choices = moved;
+      q.correct = (q.correct + shift) % n;
+    }
+  })();
+
   // ─────────────────────────────────────────────────────────
   // SECTION 5: TURBINE / PLANT TYPE DICTIONARIES
   // ─────────────────────────────────────────────────────────
