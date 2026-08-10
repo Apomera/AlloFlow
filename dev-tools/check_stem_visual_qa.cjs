@@ -557,13 +557,39 @@ function auditMarkup(toolId, html) {
   };
 }
 
-function makeCtx(toolId, toolData) {
+function newStore(seed) {
+  return { toolData: seed || {}, labToolData: seed || {}, dirty: false };
+}
+
+// Upper bound on state-settling passes (see renderTool).
+const SETTLE_PASSES = 5;
+
+// State setters write into a real store rather than dropping writes. Tools that
+// self-initialize on first render (setLabToolData(...) then return a
+// "Loading..." placeholder) otherwise stay stuck on the placeholder, which is
+// why STARTER_DATA below hand-duplicates their initial state. With the settle
+// loop the tool's own initializer supplies it, so STARTER_DATA is only needed
+// to reach a non-default screen.
+function makeCtx(toolId, toolData, store) {
+  store = store || newStore(toolData);
+  function applyUpdater(key, arg) {
+    const prev = store[key] || {};
+    const next = (typeof arg === 'function') ? arg(prev) : arg;
+    if (next && next !== prev) {
+      store[key] = next;
+      store.dirty = true;
+    }
+  }
   const base = {
     React: React,
-    toolData: toolData || {},
-    setToolData: noop,
-    update: noop,
-    updateMulti: noop,
+    toolData: store.toolData,
+    setToolData: function (a) { applyUpdater('toolData', a); },
+    update: function (k, v) {
+      applyUpdater('toolData', function (p) { const n = Object.assign({}, p); n[k] = v; return n; });
+    },
+    updateMulti: function (o) {
+      applyUpdater('toolData', function (p) { return Object.assign({}, p, o || {}); });
+    },
     setStemLabTool: noop,
     setStemLabTab: noop,
     stemLabTab: 'explore',
@@ -632,8 +658,8 @@ function makeCtx(toolId, toolData) {
     setMultTableHover: noop,
     multTableRevealed: new Set(),
     setMultTableRevealed: noop,
-    labToolData: toolData || {},
-    setLabToolData: noop,
+    labToolData: store.labToolData,
+    setLabToolData: function (a) { applyUpdater('labToolData', a); },
     _renderingFlag: { current: false }
   };
   return new Proxy(base, { get: function (obj, prop) { return (prop in obj) ? obj[prop] : noop; } });
@@ -649,10 +675,19 @@ function renderTool(id, toolData) {
     } catch (_) {}
   };
   try {
-    const ctx = makeCtx(id, toolData || STARTER_DATA[id] || {});
-    const html = RDS.renderToStaticMarkup(React.createElement(function StemVisualSmoke() {
-      return window.StemLab.renderTool(id, ctx);
-    }));
+    // Replay until the tool stops asking for state, so tools that self-initialize
+    // behind a placeholder are measured on their real first screen.
+    const seed = toolData || STARTER_DATA[id] || {};
+    const store = newStore(seed);
+    let html = '';
+    for (let pass = 0; pass < SETTLE_PASSES; pass++) {
+      store.dirty = false;
+      const ctx = makeCtx(id, seed, store);
+      html = RDS.renderToStaticMarkup(React.createElement(function StemVisualSmoke() {
+        return window.StemLab.renderTool(id, ctx);
+      }));
+      if (!store.dirty) break;
+    }
     return { html: html, caught: caught };
   } catch (e) {
     return { html: '', caught: caught, error: (e && e.message) || String(e) };
@@ -748,6 +783,12 @@ const allMarkerIssues = markerResults.reduce(function (acc, result) { return acc
 const syncDrift = syncRows.filter(function (row) { return row.status !== 'synced'; });
 const sourcePublicDrift = syncRows.filter(function (row) { return row.status === 'source-public-drift'; });
 const monitoredDrift = syncRows.filter(function (row) { return row.monitored && row.status !== 'synced'; });
+// desktop/web-app/build/ is gitignored generated output, not a tracked copy, so a
+// stale build directory ships nothing — it just means nobody has run the desktop
+// build since the last source edit. Gating on it made every legitimate tool edit
+// fail until a full rebuild ran. Source vs public (both tracked) stays fatal.
+const monitoredBlockingDrift = monitoredDrift.filter(function (row) { return row.status !== 'build-drift'; });
+const monitoredBuildOnlyDrift = monitoredDrift.filter(function (row) { return row.status === 'build-drift'; });
 const findingsByCode = allMarkerIssues.reduce(function (acc, issue) {
   if (!acc[issue.code]) acc[issue.code] = { code: issue.code, severity: issue.severity, count: 0, tools: [] };
   acc[issue.code].count += 1;
@@ -864,7 +905,7 @@ function makeMarkdown(rep) {
   lines.push('');
   lines.push('## Gate Policy');
   lines.push('');
-  lines.push('`--gate` fails on load errors, missing monitored markers, monitored render errors, monitored high-confidence accessibility errors, source/public drift, or drift in monitored source/public/build triplets.');
+  lines.push('`--gate` fails on load errors, missing monitored markers, monitored render errors, monitored high-confidence accessibility errors, or source/public drift. A monitored file that differs only from `desktop/web-app/build/` is an advisory, not a failure: that directory is gitignored build output, so a stale copy means the desktop build has not been re-run, not that anything ships stale.');
   lines.push('');
   return lines.join('\n');
 }
@@ -893,7 +934,12 @@ if (allMarkerIssues.some(function (i) { return i.severity === 'error'; })) {
   gateErrors.push('monitored accessibility/render errors: ' + allMarkerIssues.filter(function (i) { return i.severity === 'error'; }).length);
 }
 if (sourcePublicDrift.length) gateErrors.push('source/public drift: ' + sourcePublicDrift.length);
-if (monitoredDrift.length) gateErrors.push('monitored copy drift: ' + monitoredDrift.length);
+if (monitoredBlockingDrift.length) gateErrors.push('monitored copy drift: ' + monitoredBlockingDrift.length);
+if (monitoredBuildOnlyDrift.length) {
+  console.warn('[check_stem_visual_qa] advisory -- ' + monitoredBuildOnlyDrift.length +
+    ' monitored tool(s) newer than desktop/web-app/build/ (gitignored build output). Run the desktop build to refresh: ' +
+    monitoredBuildOnlyDrift.slice(0, 8).map(function (r) { return r.file; }).join(', '));
+}
 
 if (GATE && gateErrors.length) {
   console.error('[check_stem_visual_qa] FAILED -- ' + gateErrors.join('; '));

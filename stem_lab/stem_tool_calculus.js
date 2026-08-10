@@ -246,8 +246,19 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             }
             cv.addEventListener('click', onClick);
 
+            function calcReducedMotion() {
+              try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+              catch (e) { return false; }
+            }
+
             function frame() {
-              _vizTick.current++;
+              // This is the render loop, not just an animation: it also repaints on
+              // slider/view interaction, so it has to keep scheduling. Under reduced
+              // motion we freeze the animation clock instead, which stops the
+              // time-driven motion (Riemann sweep, FTC sweep) while interaction
+              // still redraws. The tool's @media(prefers-reduced-motion) CSS block
+              // cannot reach a canvas.
+              if (!calcReducedMotion()) _vizTick.current++;
               var t = _vizTick.current;
               var ls = _vizLiveState.current;
               if (ls.tab !== 'visualize') { _vizAnimId.current = requestAnimationFrame(frame); return; }

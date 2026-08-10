@@ -121,7 +121,9 @@ window.StemLab = window.StemLab || {
                 aiExplain: '', aiExplainLoading: false
               }});
             });
-            return React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading...');
+            // text-slate-600 on the dark tool shell is ~2:1. Use the theme var so the
+            // placeholder stays readable in light, dark and high-contrast.
+            return React.createElement('div', { className: 'p-8 text-center', style: { color: 'var(--allo-stem-text-soft, #475569)' } }, 'Loading...');
           }
 
           const d = labToolData.funcGrapher;
@@ -508,7 +510,7 @@ window.StemLab = window.StemLab || {
                     ].map(function(metric) {
                       return React.createElement("div", { key: metric.label, className: "min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center" },
                         React.createElement("div", { className: "truncate text-sm font-black text-white", title: metric.value }, metric.value),
-                        React.createElement("div", { className: "mt-1 text-[9px] font-bold uppercase tracking-wider text-indigo-200" }, metric.label)
+                        React.createElement("div", { className: "mt-1 text-[10px] leading-snug font-bold uppercase tracking-wider text-indigo-200" }, metric.label)
                       );
                     })
                   )
@@ -1576,7 +1578,7 @@ window.StemLab = window.StemLab || {
                   __alloT('stem.funcgrapher.i_understand_explain_in_own_words', 'I understand — explain in own words')),
                 iq.understood && h('textarea', { 'aria-label': __alloT('stem.funcgrapher.explanation_input', 'Function grapher explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.funcgrapher.explain_how_each_parameter_shapes_a_si', 'Explain how each parameter shapes a sine wave.'),
                   className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
-                h('div', { className: 'text-[9px] italic text-slate-500' }, __alloT('stem.funcgrapher.design_note_discrete_5_state_marker_no', 'Design note: discrete 5-state marker; no wave score; no reveal — by design.'))
+                h('div', { className: 'text-[10px] leading-snug italic text-slate-500' }, __alloT('stem.funcgrapher.design_note_discrete_5_state_marker_no', 'Design note: discrete 5-state marker; no wave score; no reveal — by design.'))
               );
             })()
           )

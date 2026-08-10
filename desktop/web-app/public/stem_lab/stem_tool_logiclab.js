@@ -1273,7 +1273,9 @@ window.StemLab = window.StemLab || {
 
                 var table = genTable(expr);
 
-                if (!table) return React.createElement("div", { className: "p-8 text-center text-slate-600 text-sm" }, t('stem.logiclab.enter_an_expression_above_to_generate_', "Enter an expression above to generate a truth table"));
+                // text-slate-600 on the dark tool shell is ~2:1. Use the theme var so the
+                // empty state stays readable in light, dark and high-contrast.
+                if (!table) return React.createElement("div", { className: "p-8 text-center text-sm", style: { color: 'var(--allo-stem-text-soft, #475569)' } }, t('stem.logiclab.enter_an_expression_above_to_generate_', "Enter an expression above to generate a truth table"));
 
                 var typeBadge = table.type === 'tautology' ? { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-300', label: t('stem.logiclab.tautology_always_true', '\u2705 Tautology (always true)'), glow: '0 0 20px rgba(16,185,129,0.3)' }
 

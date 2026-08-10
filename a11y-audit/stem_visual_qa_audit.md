@@ -1,6 +1,6 @@
 # STEM Visual QA Audit
 
-Generated: 2026-08-09T18:48:08.326Z
+Generated: 2026-08-10T03:09:16.339Z
 
 ## Scope
 
@@ -15,11 +15,11 @@ Generated: 2026-08-09T18:48:08.326Z
 | Load errors | 0 |
 | Marker passes | 74 |
 | Marker failures | 0 |
-| Monitored first-screen findings | 1 |
+| Monitored first-screen findings | 0 |
 | High-confidence monitored errors | 0 |
 | Source/public drift | 0 |
-| Any source/public/build drift | 12 |
-| Monitored file drift | 9 |
+| Any source/public/build drift | 10 |
+| Monitored file drift | 8 |
 
 ## Visual Marker Coverage
 
@@ -102,27 +102,23 @@ Generated: 2026-08-09T18:48:08.326Z
 
 ## Top First-Screen Findings
 
-| Severity | Code | Count | Tools |
-| --- | --- | ---: | --- |
-| warning | `canvas-focus` | 1 | `wave` |
+No monitored first-screen accessibility findings.
 
 ## Sync Drift
 
 | Status | File | Monitored | Hashes |
 | --- | --- | --- | --- |
-| build-drift | `stem_tool_astronomy.js` | yes | source `7C178C3482FA`, public `7C178C3482FA`, build `2F9656A4226E` |
-| build-drift | `stem_tool_beehive.js` | yes | source `EE656D9EF522`, public `EE656D9EF522`, build `528E26D2FA49` |
-| build-drift | `stem_tool_chembalance.js` | yes | source `04B256053BA1`, public `04B256053BA1`, build `21352322B783` |
-| build-drift | `stem_tool_dissection.js` | no | source `E3741CD5F532`, public `E3741CD5F532`, build `559006CD5343` |
-| build-drift | `stem_tool_ecosystem.js` | yes | source `5CD9005C340D`, public `5CD9005C340D`, build `4AF7E08911E2` |
-| build-drift | `stem_tool_firstresponse.js` | yes | source `3B44DAB1839C`, public `3B44DAB1839C`, build `F5D9D9DD7D54` |
-| build-drift | `stem_tool_geologyexplorer.js` | yes | source `6ACBA6A7148C`, public `6ACBA6A7148C`, build `3E58FCAC89E3` |
-| build-drift | `stem_tool_geometryworld.js` | no | source `F990FFB5B3A6`, public `F990FFB5B3A6`, build `B7F6A5D5B57C` |
-| build-drift | `stem_tool_nuclearlab.js` | no | source `68727A6515E9`, public `68727A6515E9`, build `A0C0474DDED0` |
-| build-drift | `stem_tool_pets.js` | yes | source `95CC50AE2791`, public `95CC50AE2791`, build `E80DDE78F9A4` |
-| build-drift | `stem_tool_raptorhunt.js` | yes | source `0B3590D529F2`, public `0B3590D529F2`, build `B0AAE0D2BD76` |
-| build-drift | `stem_tool_watercycle.js` | yes | source `83791BE5CBA8`, public `83791BE5CBA8`, build `0B8B318777C2` |
+| build-drift | `stem_tool_applab.js` | no | source `C8AA03547B6E`, public `C8AA03547B6E`, build `845C12A193BD` |
+| build-drift | `stem_tool_calculus.js` | yes | source `C7D3BE16EBF6`, public `C7D3BE16EBF6`, build `49F67C4BE0FE` |
+| build-drift | `stem_tool_forge.js` | no | source `D68D49985E30`, public `D68D49985E30`, build `0D77471B1BC6` |
+| build-drift | `stem_tool_funcgrapher.js` | yes | source `8EE675EB11EF`, public `8EE675EB11EF`, build `EA9E7F963EEF` |
+| build-drift | `stem_tool_logiclab.js` | yes | source `989F59D267F9`, public `989F59D267F9`, build `96DAE95D9C72` |
+| build-drift | `stem_tool_music.js` | yes | source `2F03A1777D90`, public `2F03A1777D90`, build `75BEA08CC5B0` |
+| build-drift | `stem_tool_physics.js` | yes | source `6023919873CC`, public `6023919873CC`, build `3A1BCC569248` |
+| build-drift | `stem_tool_semiconductor.js` | yes | source `F26FDF2454E7`, public `F26FDF2454E7`, build `706171F545D3` |
+| build-drift | `stem_tool_spacecolony.js` | yes | source `BB939C5246A1`, public `BB939C5246A1`, build `1B57ABA1386B` |
+| build-drift | `stem_tool_wave.js` | yes | source `3E394E8438F9`, public `3E394E8438F9`, build `B48563F96A1A` |
 
 ## Gate Policy
 
-`--gate` fails on load errors, missing monitored markers, monitored render errors, monitored high-confidence accessibility errors, source/public drift, or drift in monitored source/public/build triplets.
+`--gate` fails on load errors, missing monitored markers, monitored render errors, monitored high-confidence accessibility errors, or source/public drift. A monitored file that differs only from `desktop/web-app/build/` is an advisory, not a failure: that directory is gitignored build output, so a stale copy means the desktop build has not been re-run, not that anything ships stale.

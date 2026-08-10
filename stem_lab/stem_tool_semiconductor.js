@@ -52,6 +52,13 @@ window.StemLab = window.StemLab || {
   function sfxSemiClick() { semiTone(600,0.03,"sine",0.04); }
   function sfxSemiSuccess() { semiTone(523,0.08,"sine",0.07); setTimeout(function(){semiTone(659,0.08,"sine",0.07);},70); setTimeout(function(){semiTone(784,0.1,"sine",0.08);},140); }
   if(!document.getElementById("semi-a11y")){var _s=document.createElement("style");_s.id="semi-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}";document.head.appendChild(_s);}
+  // The CSS above only reaches CSS animations/transitions. The canvas draw
+  // loops below are requestAnimationFrame, which that media query cannot stop,
+  // so they have to check the preference themselves and settle on one frame.
+  function semiReducedMotion() {
+    try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+    catch (e) { return false; }
+  }
   // High-contrast, lab-specific interaction layer. Keeping this scoped to the
   // Semiconductor Lab prevents the richer controls from changing other tools.
   if (!document.getElementById('semi-contrast-ui')) {
@@ -819,7 +826,7 @@ window.StemLab = window.StemLab || {
           var canvas = document.getElementById('semi-bandgap-canvas');
           if (!canvas) return;
           if (canvasA11yDesc) canvasA11yDesc(canvas, 'Band gap energy diagram. Shows valence and conduction bands for ' + mat.name + '. Band gap is ' + Eg.toFixed(2) + ' electron volts at ' + tempK + ' Kelvin.');
-          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
+          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); if (!semiReducedMotion()) animRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animRef.current); };
         }, [tab, subtool, d.material, d.temperature, d.showPhoton, d.showFermi]);
@@ -1019,7 +1026,7 @@ window.StemLab = window.StemLab || {
           // Only loop while there's a moving free carrier to animate (dopant set).
           // The intrinsic (none) lattice is static — paint it once; the effect
           // re-fires and restarts the loop when the student picks a real dopant.
-          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); if (dopantKey !== 'none') animRef.current = requestAnimationFrame(draw); }
+          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); if (dopantKey !== 'none' && !semiReducedMotion()) animRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animRef.current); };
         }, [tab, subtool, dopantKey, d.dopantCount, d.crystalSize]);
@@ -1277,7 +1284,7 @@ window.StemLab = window.StemLab || {
         React.useEffect(function() {
           var canvas = document.getElementById('semi-pn-canvas');
           if (!canvas) return;
-          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animFrameRef.current); return; } canvasRef(canvas); animFrameRef.current = requestAnimationFrame(draw); }
+          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animFrameRef.current); return; } canvasRef(canvas); if (!semiReducedMotion()) animFrameRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animFrameRef.current); };
         }, [tab, subtool, d.pnBias, d.pnShowField, d.pnShowCarriers, d.pnShowDepletion, d.pnShowIV, d.pnLedMode]);
@@ -1534,7 +1541,7 @@ window.StemLab = window.StemLab || {
         React.useEffect(function() {
           var canvas = document.getElementById('semi-transistor-canvas');
           if (!canvas) return;
-          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
+          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); if (!semiReducedMotion()) animRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animRef.current); };
         }, [tab, subtool, d.transistorType, d.gateVoltage, d.drainVoltage, d.showCMOS]);
@@ -2255,7 +2262,7 @@ window.StemLab = window.StemLab || {
         React.useEffect(function() {
           var canvas = document.getElementById('semi-fab-canvas');
           if (!canvas) return;
-          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
+          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); if (!semiReducedMotion()) animRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animRef.current); };
         }, [tab, subtool, d.fabStage]);
@@ -2439,7 +2446,7 @@ window.StemLab = window.StemLab || {
         React.useEffect(function() {
           var canvas = document.getElementById('semi-led-canvas');
           if (!canvas) return;
-          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
+          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); if (!semiReducedMotion()) animRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animRef.current); };
         }, [tab, subtool, d.ledMaterial, d.ledCurrent, d.ledMixMode, d.ledMixR, d.ledMixG, d.ledMixB]);
@@ -2642,7 +2649,7 @@ window.StemLab = window.StemLab || {
         React.useEffect(function() {
           var canvas = document.getElementById('semi-solar-canvas');
           if (!canvas) return;
-          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
+          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); if (!semiReducedMotion()) animRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animRef.current); };
         }, [tab, subtool, d.solarIrradiance, d.solarTemp, d.solarArea, d.solarMaterial, d.solarShowPV]);
@@ -3298,7 +3305,7 @@ window.StemLab = window.StemLab || {
         React.useEffect(function() {
           var canvas = document.getElementById('semi-mem-canvas');
           if (!canvas) return;
-          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
+          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); if (!semiReducedMotion()) animRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animRef.current); };
         }, [tab, subtool, d.memType, d.memBitValue, d.memWriteEnable, d.memShowArray]);
@@ -3494,7 +3501,7 @@ window.StemLab = window.StemLab || {
         React.useEffect(function() {
           var canvas = document.getElementById('semi-amp-canvas');
           if (!canvas) return;
-          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); animRef.current = requestAnimationFrame(draw); }
+          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); if (!semiReducedMotion()) animRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animRef.current); };
         }, [tab, subtool, d.ampType, d.ampVin, d.ampFreq, d.ampVdd, d.ampRd, d.ampShowBode, d.ampBiasPoint]);

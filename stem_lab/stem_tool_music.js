@@ -24,6 +24,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
     document.head.appendChild(st);
   })();
 
+  // The CSS above cannot reach a canvas draw loop. Only DECORATIVE, time-driven
+  // canvas motion is gated on this (the harmonic-series scroller). The synth,
+  // beat-pad and mic visualizers are analyser-driven: their motion IS the audio
+  // data, so freezing them would remove information rather than reduce motion.
+  function musicReducedMotion() {
+    try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+    catch (e) { return false; }
+  }
+
   // ── Accessibility live region (WCAG 4.1.3) ──
   (function() {
     if (document.getElementById('allo-live-music')) return;
@@ -4682,7 +4691,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     var start = performance.now();
                     function drawHs() {
                       if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._hsAnim); return; }
-                      var t = (performance.now() - start) / 1000;
+                      // Freeze the clock (not the loop) under reduced motion: the
+                      // ResizeObserver below still needs repaints, and a static
+                      // frame conveys the harmonic series just as well.
+                      var t = musicReducedMotion() ? 0 : (performance.now() - start) / 1000;
                       c2.fillStyle = '#1e1b4b';
                       c2.fillRect(0, 0, W, H);
                       var harmonics = [
