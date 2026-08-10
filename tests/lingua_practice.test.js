@@ -19,6 +19,12 @@ beforeAll(() => {
   if (!Lingua) throw new Error('LinguaPractice did not register');
 });
 
+function requireLinguaHelper(name) {
+  const helper = Lingua && Lingua[name];
+  expect(typeof helper, `${name} must be exported for focused regression coverage`).toBe('function');
+  return helper;
+}
+
 describe('Lingua Practice lesson helpers', () => {
   it('parses a fenced AI practice set and limits collection sizes', () => {
     const vocabulary = Array.from({ length: 10 }, (_, i) => ({
@@ -53,11 +59,209 @@ describe('Lingua Practice lesson helpers', () => {
     expect(Lingua._parseLesson('not json')).toBe(null);
     expect(Lingua._parseLesson('{"title":"missing vocabulary"}')).toBe(null);
   });
+  it('normalizes language-generic word forms and preserves them through a practice-set round trip', () => {
+    const forms = Lingua._normalizeWordForms([
+      'completed aspect | avais parl\u00e9 | action completed before another past action',
+      { feature: 'noun class 7', term: 'kitabu', usage: 'singular class' },
+      { label: 'completed aspect', form: 'avais parl\u00e9', note: 'duplicate is dropped' },
+      { name: 'polite register', text: '\u304a\u8a71\u3057\u306b\u306a\u308a\u307e\u3059', meaning: 'honorific form' },
+    ]);
+    expect(forms.map(({ label, form, note }) => ({ label, form, note }))).toEqual([
+      { label: 'completed aspect', form: 'avais parl\u00e9', note: 'action completed before another past action' },
+      { label: 'noun class 7', form: 'kitabu', note: 'singular class' },
+      { label: 'polite register', form: '\u304a\u8a71\u3057\u306b\u306a\u308a\u307e\u3059', note: 'honorific form' },
+    ]);
+    expect(Lingua._normalizeWordForms(Lingua._wordFormsText(forms)).map(({ label, form, note }) => ({ label, form, note })))
+      .toEqual(forms.map(({ label, form, note }) => ({ label, form, note })));
+
+    const lesson = Lingua._parseLesson(JSON.stringify({
+      title: 'Flexible grammar', inputCharacters: ['\u00e9', '\u00e7', '\u00e9'], visualStyle: ' Watercolor ',
+      vocabulary: [{ term: 'parler', meaning: 'to speak', forms }],
+    }));
+    expect(lesson.vocabulary[0].forms).toHaveLength(3);
+    expect(lesson.inputCharacters).toEqual(['\u00e9', '\u00e7']);
+    expect(lesson.visualStyle).toBe('Watercolor');
+
+    const entry = Lingua._savePracticeSet([], 'French', lesson, { level: 'Beginner' }, 100, 'forms-set')[0];
+    const portable = Lingua._createPracticeSetExport(entry, 200);
+    const imported = Lingua._parsePracticeSetImport(JSON.stringify(portable), 300);
+    expect(portable.version).toBe(3);
+    expect(imported.lesson.vocabulary[0].forms.map(({ label, form, note }) => ({ label, form, note })))
+      .toEqual(forms.map(({ label, form, note }) => ({ label, form, note })));
+    expect(imported.lesson.inputCharacters).toEqual(['\u00e9', '\u00e7']);
+    expect(imported.lesson.visualStyle).toBe('Watercolor');
+  });
+
+  it('derives bounded typing characters and inserts them at the current selection', () => {
+    expect(Lingua._normalizeInputCharacters(' \u00e9, \u00e7 \u00e9 \u0153 ')).toEqual(['\u00e9', '\u00e7', '\u0153']);
+    const characters = Lingua._deriveInputCharacters({
+      inputCharacters: ['\u00e9', '\u00e7'],
+      vocabulary: [{ term: 'o\u00f9 ?', example: 'L\u2019\u0153uvre', forms: [{ label: 'variant', form: '\u00e0' }] }],
+      phrases: [{ target: '\u00a1Hola!' }],
+      conversation: [{ coach: '\u00c7a va ?', sample: 'tr\u00e8s bien' }],
+    });
+    expect(characters.slice(0, 2)).toEqual(['\u00e9', '\u00e7']);
+    expect(characters).toEqual(expect.arrayContaining(['\u00f9', '?', '\u2019', '\u0153', '\u00e0', '\u00a1', '!', '\u00c7', '\u00e8']));
+    expect(characters).not.toContain('H');
+
+    expect(Lingua._insertTextAtSelection('caf', 3, 3, '\u00e9', 20)).toEqual({ value: 'caf\u00e9', caret: 4 });
+    expect(Lingua._insertTextAtSelection('garcon', 3, 4, '\u00e7', 20)).toEqual({ value: 'gar\u00e7on', caret: 4 });
+    expect(Lingua._insertTextAtSelection('ab', 2, 2, '\u00e9', 2)).toEqual({ value: 'ab', caret: 2 });
+  });
 
   it('scores transcript word coverage without claiming accent quality', () => {
     expect(Lingua._similarity('Hola, me llamo Ana.', 'hola me llamo ana')).toBe(100);
     expect(Lingua._similarity('Hola, me llamo Ana.', 'hola ana')).toBeGreaterThan(40);
     expect(Lingua._similarity('Hola, me llamo Ana.', '')).toBe(0);
+  });
+
+  it('builds form practice items from arbitrary language-specific labels', () => {
+    const formPracticeItems = requireLinguaHelper('_formPracticeItems');
+    const items = formPracticeItems({
+      vocabulary: [
+        {
+          id: 'parler', term: 'parler', meaning: 'to speak',
+          forms: [
+            { id: 'anterior', label: 'completed before another past action', form: 'avais parl\u00e9', note: 'pluperfect use' },
+            { id: 'respect', label: 'speaker-to-listener respect', form: '\u304a\u8a71\u3057\u306b\u306a\u308a\u307e\u3059', note: 'honorific register' },
+          ],
+        },
+        {
+          id: 'kitabu', term: 'kitabu', meaning: 'book',
+          forms: [{ id: 'class-seven', label: 'noun class 7 singular', form: 'kitabu', note: 'language-specific noun class' }],
+        },
+      ],
+    });
+
+    expect(items.map(({ base, label, form, note }) => ({ base, label, form, note }))).toEqual([
+      { base: 'parler', label: 'completed before another past action', form: 'avais parl\u00e9', note: 'pluperfect use' },
+      { base: 'parler', label: 'speaker-to-listener respect', form: '\u304a\u8a71\u3057\u306b\u306a\u308a\u307e\u3059', note: 'honorific register' },
+      { base: 'kitabu', label: 'noun class 7 singular', form: 'kitabu', note: 'language-specific noun class' },
+    ]);
+  });
+
+  it('classifies form answers with NFC, case, spacing, close accents, wrong, and empty states', () => {
+    const formPracticeResult = requireLinguaHelper('_formPracticeResult');
+
+    expect(formPracticeResult('\u00e9tais', '  e\u0301TAIS  ')).toEqual({ status: 'correct', score: 100, correct: true, close: false });
+    expect(formPracticeResult('avais parl\u00e9', '  AVAIS    PARL\u00c9 ')).toEqual({ status: 'correct', score: 100, correct: true, close: false });
+    expect(formPracticeResult('\u00e9tais', 'etais')).toEqual({ status: 'close', score: 90, correct: false, close: true });
+    expect(formPracticeResult('parler', 'finir')).toMatchObject({ status: 'incorrect', correct: false, close: false });
+    expect(formPracticeResult('parler', '   ')).toEqual({ status: 'empty', score: 0, correct: false, close: false });
+  });
+
+  it('aligns transcript evidence in sequence without double-counting reordered duplicates', () => {
+    const alignPronunciationEvidence = requireLinguaHelper('_alignPronunciationEvidence');
+    const duplicate = alignPronunciationEvidence('one two one', 'one one two', { locale: 'en-US' });
+
+    expect(duplicate).toMatchObject({
+      kind: 'transcript-evidence-v1', unit: 'word', matchedUnits: 2, totalUnits: 3,
+      coverage: 67, precision: 67, transcriptMatch: 67,
+    });
+    expect(duplicate.expectedUnits.filter((unit) => unit.status === 'heard')).toHaveLength(2);
+    expect(duplicate.expectedUnits.filter((unit) => unit.status === 'not-heard')).toHaveLength(1);
+    expect(duplicate.heardExtras).toEqual(['one']);
+    expect(duplicate.focusUnits).toHaveLength(1);
+
+    const reordered = alignPronunciationEvidence('red blue', 'blue red', { locale: 'en-US' });
+    expect(reordered.matchedUnits).toBe(1);
+    expect(reordered.transcriptMatch).toBeLessThan(100);
+  });
+
+  it('falls back to character evidence for CJK when word segmentation is unavailable', () => {
+    const alignPronunciationEvidence = requireLinguaHelper('_alignPronunciationEvidence');
+    const descriptor = Object.getOwnPropertyDescriptor(Intl, 'Segmenter');
+    try {
+      Object.defineProperty(Intl, 'Segmenter', { configurable: true, writable: true, value: undefined });
+      const evidence = alignPronunciationEvidence('\u4f60\u597d\u518d\u89c1', '\u4f60\u597d\u89c1', { locale: 'zh-CN' });
+      expect(evidence).toMatchObject({ unit: 'character', matchedUnits: 3, totalUnits: 4, focusUnits: ['\u518d'] });
+      expect(evidence.expectedUnits.map((unit) => unit.status)).toEqual(['heard', 'heard', 'not-heard', 'heard']);
+    } finally {
+      if (descriptor) Object.defineProperty(Intl, 'Segmenter', descriptor);
+      else delete Intl.Segmenter;
+    }
+  });
+
+  it('keeps only finite numeric recognizer confidence and never exposes raw recognition objects', () => {
+    const sanitizeRecognitionMeta = requireLinguaHelper('_sanitizeRecognitionMeta');
+    expect(sanitizeRecognitionMeta({
+      engine: 'web-speech', locale: 'fr-CA', confidence: 0.42,
+      fullEvent: { privateAudioHandle: true }, transcript: 'private raw transcript',
+    })).toEqual({ engine: 'web-speech', locale: 'fr-CA', confidence: 0.42, confidenceSource: 'recognizer' });
+    expect(sanitizeRecognitionMeta({ engine: 'web-speech', confidence: 0 }).confidence).toBe(0);
+
+    [null, '', '0.42', Number.NaN, Number.POSITIVE_INFINITY, -0.1, 1.1].forEach((confidence) => {
+      expect(sanitizeRecognitionMeta({ engine: 'web-speech', confidence })).toMatchObject({ confidence: null, confidenceSource: null });
+    });
+    expect(sanitizeRecognitionMeta({ engine: 'gemini-audio' })).toMatchObject({ confidence: null, confidenceSource: null });
+  });
+
+  it('builds bounded pronunciation attempts and deterministic retry guidance without sound claims', () => {
+    const pronunciationAttemptEvidence = requireLinguaHelper('_pronunciationAttemptEvidence');
+    const nextPronunciationGuidance = requireLinguaHelper('_nextPronunciationGuidance');
+    const attempt = pronunciationAttemptEvidence('Bonjour mon ami', 'bonjour ami', {
+      language: 'Michif / M\u00e9tis French', practiceSetId: 'set-7', sourceId: 'phrase:1', locale: 'fr-CA',
+      recognizer: { engine: 'web-speech', locale: 'fr-CA', confidence: 0.31 },
+    }, 1700000000000);
+
+    expect(attempt).toMatchObject({
+      id: 'pronunciation-1700000000000-phrase:1', language: 'Michif / M\u00e9tis French',
+      practiceSetId: 'set-7', sourceId: 'phrase:1', at: 1700000000000,
+      evidenceLevel: 'transcript-only', focusUnits: ['mon'],
+      recognizer: { engine: 'web-speech', locale: 'fr-CA', confidence: 0.31 },
+    });
+    expect(attempt).not.toHaveProperty('transcript');
+    expect(attempt.limitations).toEqual(['phonemes', 'accent', 'stress', 'native-likeness']);
+
+    expect(nextPronunciationGuidance([], { sourceId: 'phrase:1', coverage: 100, focusUnits: [] })).toEqual({ kind: 'all-heard', focus: '' });
+    expect(nextPronunciationGuidance([], { sourceId: 'phrase:1', coverage: 40, focusUnits: ['mon'] })).toEqual({ kind: 'listen-slow', focus: 'mon' });
+    expect(nextPronunciationGuidance([], { sourceId: 'phrase:1', coverage: 70, focusUnits: ['mon'] })).toEqual({ kind: 'retry-phrase', focus: 'mon' });
+    expect(nextPronunciationGuidance(
+      [{ sourceId: 'phrase:1', focusUnits: ['ecole'] }, { sourceId: 'phrase:2', focusUnits: ['mon'] }],
+      { sourceId: 'phrase:1', coverage: 70, focusUnits: ['\u00e9cole'] },
+    )).toEqual({ kind: 'focus-unit', focus: '\u00e9cole' });
+  });
+
+  it('persists only bounded form/pronunciation evidence and excludes typed answers and raw transcripts', () => {
+    const appendFormEvidence = requireLinguaHelper('_appendFormEvidence');
+    const privateTypedAnswer = 'PRIVATE_TYPED_FORM_ANSWER';
+    const privateTranscript = 'PRIVATE_RAW_SPEECH_TRANSCRIPT';
+    let progress = appendFormEvidence(
+      { formEvidence: [] },
+      { id: 'relative-form', label: 'obviative form', form: 'nindinawemaagan' },
+      { status: 'incorrect', score: 12, correct: false, close: false, actual: privateTypedAnswer, typedAnswer: privateTypedAnswer, rawTranscript: privateTranscript },
+      { language: 'Ojibwe', practiceSetId: 'ojibwe-set' },
+      1000,
+    );
+    progress = Object.assign({}, progress, {
+      pronunciationEvidence: [{
+        id: 'pronunciation-1001-phrase:1', language: 'Ojibwe', practiceSetId: 'ojibwe-set', sourceId: 'phrase:1',
+        coverage: 50, precision: 50, transcriptMatch: 50, matchedUnits: 1, totalUnits: 2, unit: 'word',
+        focusUnits: ['nindinawemaagan'], evidenceLevel: 'transcript-only', at: 1001,
+        transcript: privateTranscript, rawTranscript: privateTranscript, expectedUnits: [{ text: privateTranscript }],
+      }],
+    });
+
+    const record = Lingua._createLearningRecord(
+      { known: 'English', target: 'Ojibwe', level: 'Beginner' },
+      Lingua._normalizeProgress(progress),
+      { title: 'Kinship practice', vocabulary: [{ term: 'nindinawemaagan', meaning: 'my relative' }] },
+      'ojibwe-set',
+      {},
+      2000,
+    );
+    const serialized = JSON.stringify(record);
+
+    expect(record.formEvidence).toHaveLength(1);
+    expect(record.pronunciationEvidence).toHaveLength(1);
+    expect(record.formEvidence[0]).not.toHaveProperty('actual');
+    expect(record.formEvidence[0]).not.toHaveProperty('typedAnswer');
+    expect(record.formEvidence[0]).not.toHaveProperty('rawTranscript');
+    expect(record.pronunciationEvidence[0]).not.toHaveProperty('transcript');
+    expect(record.pronunciationEvidence[0]).not.toHaveProperty('rawTranscript');
+    expect(serialized).not.toContain(privateTypedAnswer);
+    expect(serialized).not.toContain(privateTranscript);
+    expect(record.privacy.excluded).toContain('speech transcripts');
   });
 
   it('builds a source-bounded prompt with learner context', () => {
@@ -829,12 +1033,13 @@ describe('Lingua Practice saved-word organization', () => {
 describe('Lingua Practice word-bank CSV export', () => {
   it('quotes fields, escapes quotes, and neutralizes leading formula characters', () => {
     const csv = Lingua._wordBankCsv([
-      { language: 'Spanish', term: 'hola', meaning: 'hello', pronunciation: 'OH-lah', example: 'Hola, "Ana".', examplePronunciation: '', translation: 'Hello, "Ana".', note: 'Say "hello", warmly.', tags: ['Greeting', 'Unit 2'] },
+      { language: 'Spanish', term: 'hola', meaning: 'hello', pronunciation: 'OH-lah', example: 'Hola, "Ana".', examplePronunciation: '', translation: 'Hello, "Ana".', forms: [{ label: 'formal', form: 'salude', note: 'formal command' }], note: 'Say "hello", warmly.', tags: ['Greeting', 'Unit 2'] },
       { language: 'French', term: '=2+2', meaning: 'injection attempt', pronunciation: '', example: '', examplePronunciation: '', translation: '', note: '@private note', tags: ['=priority', 'School'] },
     ]);
     const lines = csv.split('\r\n');
-    expect(lines[0]).toBe('"Language","Term","Meaning","Pronunciation","Example","Example pronunciation","Translation","Personal note","Tags"');
+    expect(lines[0]).toBe('"Language","Term","Meaning","Pronunciation","Example","Example pronunciation","Translation","Related forms","Word features JSON","Related forms JSON","Personal note","Tags"');
     expect(lines[1]).toContain('"Hola, ""Ana""."');
+    expect(lines[1]).toContain('"formal | salude | formal command"');
     expect(lines[1]).toContain('"Say ""hello"", warmly."');
     expect(lines[1]).toContain('"Greeting; Unit 2"');
     // Leading = is prefixed so spreadsheet apps treat the cell as text.
@@ -847,7 +1052,7 @@ describe('Lingua Practice word-bank CSV export', () => {
   it('handles missing fields and non-array input safely', () => {
     expect(Lingua._wordBankCsv(null).split('\r\n')).toHaveLength(1);
     const csv = Lingua._wordBankCsv([{ language: 'Spanish', term: 'hola' }]);
-    expect(csv.split('\r\n')[1]).toBe('"Spanish","hola","","","","","","",""');
+    expect(csv.split('\r\n')[1]).toBe('"Spanish","hola","","","","","","","[]","[]","",""');
   });
 });
 
@@ -873,6 +1078,20 @@ describe('Lingua Practice illustration prompts', () => {
     expect(styled).toContain('THIS word’s meaning'); // style match must not clone the subject
   });
 
+  it('keeps image caches style-sensitive while normalizing equivalent style text', () => {
+    const base = Lingua._imageCacheKey('term', 'French', 'bonjour', '');
+    const watercolor = Lingua._imageCacheKey('term', 'French', 'bonjour', 'Soft watercolor');
+    expect(watercolor).toBe(Lingua._imageCacheKey('term', 'French', 'bonjour', '  Soft   watercolor  '));
+    expect(watercolor).not.toBe(base);
+    expect(watercolor).not.toBe(Lingua._imageCacheKey('scene', 'French', 'bonjour', 'Soft watercolor'));
+    expect(watercolor).not.toContain('bonjour');
+    expect(watercolor).not.toContain('watercolor');
+
+    expect(Lingua._termImagePrompt({ term: 'bonjour', meaning: 'hello' }, 'French', false, 'Soft watercolor'))
+      .toContain('Visual style: Soft watercolor.');
+    expect(Lingua._sceneImagePrompt({ scenario: 'A neighborhood market.' }, { topic: 'ignored' }, 'Paper collage'))
+      .toContain('Visual style: Paper collage.');
+  });
   it('extracts base64 payloads from data URLs safely', () => {
     expect(Lingua._dataUrlBase64('data:image/png;base64,QUFB')).toBe('QUFB');
     expect(Lingua._dataUrlBase64('data:image/jpeg;base64,')).toBe('');
@@ -1106,7 +1325,7 @@ describe('Lingua Practice set library helpers', () => {
   it('exports and imports bounded sets and sanitizes single-item refreshes', () => {
     const entry = Lingua._savePracticeSet([], 'Spanish', lesson, { level: 'Beginner' }, 100, 'school-set')[0];
     const portable = Lingua._createPracticeSetExport(entry, 200);
-    expect(portable).toMatchObject({ product: 'AlloFlow Lingua Practice Set', version: 1 });
+    expect(portable).toMatchObject({ product: 'AlloFlow Lingua Practice Set', version: 3 });
     const imported = Lingua._parsePracticeSetImport(JSON.stringify(portable), 300);
     expect(imported).toMatchObject({ language: 'Spanish', name: 'School help', archived: false, createdAt: 300 });
     expect(imported.id).not.toBe(entry.id);
@@ -1130,6 +1349,49 @@ describe('Lingua Practice set library helpers', () => {
 });
 
 describe('Lingua Practice backup validation', () => {
+  it('creates a bounded, target-language learning record without raw private artifacts', () => {
+    const activityLog = Array.from({ length: 205 }, (_, index) => ({
+      id: 'spanish-' + index, language: 'Spanish', kind: 'reviews', count: 1, at: index + 1,
+    })).concat([{ id: 'french-secret', language: 'French', kind: 'reviews', count: 9, at: 999 }]);
+    const record = Lingua._createLearningRecord(
+      { known: 'English', target: 'Spanish', level: 'Developing', dialect: 'Mexico', register: 'Polite' },
+      {
+        activityLog,
+        saved: [
+          { language: 'Spanish', term: 'hablar', meaning: 'to speak', forms: Array.from({ length: 12 }, (_, index) => ({ label: 'form ' + index, form: 'hablar-' + index })), note: 'PRIVATE NOTE', example: 'PRIVATE EXAMPLE', tags: ['PRIVATE TAG'], reviewHistory: [{ at: 2, rating: 'know' }] },
+          { language: 'French', term: 'secret-french-word', meaning: 'private' },
+        ],
+        reflections: [{ id: 'private-reflection', language: 'Spanish', text: 'PRIVATE REFLECTION', at: 3 }],
+        rawChat: 'PRIVATE CHAT', speechTranscript: 'PRIVATE SPEECH', images: ['PRIVATE IMAGE'],
+      },
+      { title: 'Conversation set', sourceText: 'PRIVATE SOURCE' },
+      'conversation-set',
+      { learnerCodename: ' L'.repeat(80), includeReflections: false, rawChat: 'PRIVATE OPTION' },
+      Date.UTC(2026, 0, 2),
+    );
+
+    expect(record).toMatchObject({
+      product: 'AlloFlow Lingua Learning Record', version: 2,
+      generatedAt: '2026-01-02T00:00:00.000Z',
+      language: { known: 'English', target: 'Spanish', level: 'Developing', dialect: 'Mexico', register: 'Polite' },
+      practiceSet: { id: 'conversation-set', title: 'Conversation set' },
+    });
+    expect(record.learnerCodename.length).toBeLessThanOrEqual(100);
+    expect(record.activity).toHaveLength(200);
+    expect(record.activity.every((item) => item.id.startsWith('spanish-'))).toBe(true);
+    expect(record.savedWords).toHaveLength(1);
+    expect(record.savedWords[0].forms).toHaveLength(8);
+    expect(record.savedWords[0]).not.toHaveProperty('note');
+    expect(record.savedWords[0]).not.toHaveProperty('example');
+    expect(record.savedWords[0]).not.toHaveProperty('tags');
+    expect(record.savedWords[0]).not.toHaveProperty('reviewHistory');
+    expect(record.reflections).toEqual([]);
+    expect(record.privacy.excluded).toEqual(['source material', 'raw chat', 'speech transcripts', 'typed answers', 'audio', 'generated images']);
+    const serialized = JSON.stringify(record);
+    for (const secret of ['PRIVATE NOTE', 'PRIVATE EXAMPLE', 'PRIVATE TAG', 'PRIVATE REFLECTION', 'PRIVATE CHAT', 'PRIVATE SPEECH', 'PRIVATE IMAGE', 'PRIVATE SOURCE', 'PRIVATE OPTION', 'secret-french-word', 'french-secret']) {
+      expect(serialized).not.toContain(secret);
+    }
+  });
   it('round-trips bounded learner data without including source text or image caches', () => {
     const saved = Array.from({ length: 505 }, (_, index) => ({
       language: 'Spanish', term: 'word-' + index, meaning: 'meaning-' + index, reviewStage: index % 6, nextReviewAt: index,
@@ -1147,13 +1409,13 @@ describe('Lingua Practice backup validation', () => {
     );
 
     expect(backup.product).toBe('AlloFlow Lingua Practice');
-    expect(backup.version).toBe(2);
+    expect(backup.version).toBe(4);
     expect(backup.progress.saved).toHaveLength(500);
     expect(backup.progress.saved[0].reviewHistory).toEqual([{ at: 40, rating: 'learning', interval: 86400000, stage: 1 }]);
     expect(backup.progress.saved[0].note).toBe('Remember this in context.');
     expect(backup.progress.saved[0].tags).toEqual(['Unit 2', 'school', 'x'.repeat(Lingua._maxWordTagLength), 'fourth', 'fifth']);
-    expect(backup.progress.languageStats.Spanish).toEqual({ practiceSets: 4, spokenAttempts: 0, listeningAttempts: 0, reviews: 3, chatTurns: 0, lastPracticedAt: 0 });
-    expect(backup.progress.activityLog).toEqual([{ id: 'activity-20-reviews-0', language: 'Spanish', kind: 'reviews', count: 2, at: 20 }]);
+    expect(backup.progress.languageStats.Spanish).toEqual({ practiceSets: 4, formAttempts: 0, spokenAttempts: 0, listeningAttempts: 0, reviews: 3, chatTurns: 0, lastPracticedAt: 0 });
+    expect(backup.progress.activityLog).toEqual([{ id: 'activity-20-reviews-0', language: 'Spanish', kind: 'reviews', count: 2, at: 20, practiceSetId: '', assignmentId: '', assignmentRevision: 0 }]);
     expect(backup.progress.reflections[0].text).toBe('Revisit the new terms.');
     expect(backup.preferences).toEqual({ audioSlow: true, pictureOnlyReview: true });
     expect(backup).not.toHaveProperty('sourceText');
@@ -1167,7 +1429,7 @@ describe('Lingua Practice backup validation', () => {
 
     const legacy = { ...backup, version: 1 };
     delete legacy.practiceSets;
-    expect(Lingua._parseBackup(JSON.stringify(legacy))).toMatchObject({ version: 2, practiceSets: [] });
+    expect(Lingua._parseBackup(JSON.stringify(legacy))).toMatchObject({ version: 4, practiceSets: [] });
   });
 
   it('rejects unrelated, malformed, and unsupported backup files', () => {

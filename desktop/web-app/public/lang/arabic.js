@@ -30938,7 +30938,16 @@
     "run_lesson_blueprint_hint": "ينشئ جميع موارد الخطة الحالية",
     "cancelled": "تم طلب الإلغاء. ستتوقف العملية الحالية عندما يدعمها موفّرها.",
     "cancel": "إلغاء",
-    "retry": "إعادة المحاولة"
+    "retry": "إعادة المحاولة",
+    "open_stem_tool": "Open a specific STEM tool",
+    "open_stem_tool_ambiguous": "More than one tool matches that: ",
+    "open_stem_tool_done": "Opened ",
+    "open_stem_tool_hint": "Name any STEM Lab tool and go straight to it",
+    "open_stem_tool_miss": "No STEM tool matched ",
+    "open_stem_tool_miss_tail": ". STEM Lab opened so you can browse.",
+    "open_stem_tool_no_index": "STEM Lab opened. The tool catalog was not available, so browse the list.",
+    "open_stem_tool_none": "STEM Lab opened. Name a tool and I can go straight to it.",
+    "open_stem_tool_unsupported": "STEM Lab opened. This build cannot jump straight to a named tool."
   },
   "palette": {
     "aria": "لوحة أوامر AlloFlow",

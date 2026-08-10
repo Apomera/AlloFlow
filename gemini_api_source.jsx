@@ -744,6 +744,17 @@ const createGeminiAPI = (deps) => {
 
     const callGeminiImageEdit = async (prompt, base64Image, width = 800, qual = 0.9, referenceBase64 = null, options = null) => {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.image}:generateContent`;
+      const _explicitSignal = options && options.signal
+        ? options.signal
+        : (options && typeof options.aborted === 'boolean' ? options : null);
+      const _signal = _explicitSignal
+        || (typeof getAbortSignal === 'function' ? getAbortSignal() : null)
+        || null;
+      const _throwIfImageEditAborted = () => {
+        if (!_signal || !_signal.aborted) return;
+        const abortError = new Error('Image editing cancelled.'); abortError.name = 'AbortError'; throw abortError;
+      };
+      _throwIfImageEditAborted();
       // Build parts. Only attach inlineData when an actual base64 image is
       // provided — otherwise Gemini receives an inlineData part with
       // `data: undefined`, which silently fails for text-to-image use.
@@ -766,14 +777,18 @@ const createGeminiAPI = (deps) => {
         const response = await fetch(url, {
           method: 'POST',
           headers: _geminiHeaders(true),
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
+          ...(_signal ? { signal: _signal } : {})
         });
+        _throwIfImageEditAborted();
         const data = await response.json();
         const imagePart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
         if (!imagePart) throw new Error("No image generated in response");
         const rawUrl = `data:image/png;base64,${imagePart.inlineData.data}`;
         _noteApiSuccess(); // a good image response clears any transient-401 streak / banner
-        return await optimizeImage(rawUrl, width, qual);
+        const optimized = await optimizeImage(rawUrl, width, qual);
+        _throwIfImageEditAborted();
+        return optimized;
       } catch (err) {
         warnLog("Gemini Image Edit Error", _diagnosticErrorSummary(err));
         throw err;

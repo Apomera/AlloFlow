@@ -752,7 +752,8 @@
     label: 'Access Lens',
     desc: 'Point your camera at the world: get a scene description read aloud (built for students who are blind or have low vision), re-read any text in large print, translate signs and handouts into your language, or investigate an object Socratic-style with an AI that asks questions instead of pronouncing answers.',
     color: 'sky',
-    category: 'general',
+    category: 'accessibility',
+    aliases: ['camera', 'photo description', 'OCR', 'low vision'],
     questHooks: [
       { id: 'lens_photo', label: 'Capture or choose a photo', icon: '📷',
         check: function (d) { return !!(d && d.captured); },

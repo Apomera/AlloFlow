@@ -31149,7 +31149,16 @@
     "run_lesson_blueprint_hint": "현재 계획의 모든 리소스를 생성합니다",
     "cancelled": "취소가 요청되었습니다. 제공자가 취소를 지원하면 현재 작업이 중지됩니다.",
     "cancel": "취소",
-    "retry": "다시 시도"
+    "retry": "다시 시도",
+    "open_stem_tool": "Open a specific STEM tool",
+    "open_stem_tool_ambiguous": "More than one tool matches that: ",
+    "open_stem_tool_done": "Opened ",
+    "open_stem_tool_hint": "Name any STEM Lab tool and go straight to it",
+    "open_stem_tool_miss": "No STEM tool matched ",
+    "open_stem_tool_miss_tail": ". STEM Lab opened so you can browse.",
+    "open_stem_tool_no_index": "STEM Lab opened. The tool catalog was not available, so browse the list.",
+    "open_stem_tool_none": "STEM Lab opened. Name a tool and I can go straight to it.",
+    "open_stem_tool_unsupported": "STEM Lab opened. This build cannot jump straight to a named tool."
   },
   "palette": {
     "aria": "AlloFlow 명령 팔레트",

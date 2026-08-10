@@ -1082,7 +1082,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 t('stem.moonmission.mission_objectives', '\uD83C\uDFAF MISSION OBJECTIVES'),
                 d.aiBriefing && Array.isArray(d.aiBriefing.objectives) && h('span', { className: 'ml-2 text-[10px] text-emerald-300 font-normal' }, t('stem.moonmission.ai_customized', '\u2728 AI-customized'))
               ),
-              h('div', { className: 'space-y-1' },
+              h('div', { id: 'mm-profile-description', className: 'space-y-1' },
                 ((d.aiBriefing && Array.isArray(d.aiBriefing.objectives) && d.aiBriefing.objectives.length >= 3)
                   ? d.aiBriefing.objectives.slice(0, 6).map(function(o) { return String(o).substring(0, 120); })
                   : [
@@ -1111,6 +1111,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 h('canvas', {
                   'data-profile-canvas': 'true',
                   role: 'img',
+                  'data-a11y-static': 'true',
+                  'aria-describedby': 'mm-profile-description',
                   'aria-label': t('stem.moonmission.mission_profile_diagram', 'Diagram of the whole mission path. From Earth: launch to low Earth orbit, then the trans-lunar injection burn sends the spacecraft on a three-day coast to the Moon. Lunar orbit insertion captures it into orbit, powered descent lands the Lunar Module, ascent returns it to the Command Module, then the trans-Earth injection burn starts the coast home, ending with atmospheric entry and splashdown.'),
                   style: { width: '100%', height: '100%', display: 'block' },
                   ref: function(cvEl) {
@@ -1359,6 +1361,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('canvas', { 
                 'data-launch-canvas': 'true',
                 role: 'img',
+                'data-a11y-static': 'true',
+                'aria-describedby': 'mm-launch-description',
                 'aria-label': t('stem.moonmission.animated_saturn_v_rocket_launch_sequen', 'Animated Saturn V rocket launch sequence. A 5-second countdown, then ascent through the atmosphere to orbit. The rocket pitches over into a gravity turn shortly after liftoff, trading vertical climb for the sideways speed that orbit actually requires, and drifts downrange as it goes. Shows altitude, velocity, pitch angle from vertical, G-force, and stage separations.'),
                 style: { width: '100%', height: '100%', display: 'block' },
                 ref: function(cvEl) {
@@ -1744,7 +1748,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('div', { className: 'flex items-center justify-between' },
                 h('div', null,
                   h('p', { className: 'text-xs text-slate-600' }, t('stem.moonmission.saturn_v_3_stages_7_5_million_lbs_thru', '\uD83D\uDE80 Saturn V \u2022 3 stages \u2022 7.5 million lbs thrust')),
-                  h('p', { className: 'text-[11px] text-slate-600' }, t('stem.moonmission.watch_the_countdown_and_ascent_through', 'Watch the countdown and ascent through Earth\'s atmosphere'))
+                  h('p', { id: 'mm-launch-description', className: 'text-[11px] text-slate-600' }, t('stem.moonmission.watch_the_countdown_and_ascent_through', 'Watch the countdown and ascent through Earth\'s atmosphere'))
                 ),
                 h('button', {
                   'aria-label': t('stem.moonmission.proceed_to_earth_orbit_phase_after_suc', 'Proceed to Earth orbit phase after successful launch'),
@@ -1768,6 +1772,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('div', { className: 'relative', style: { height: '260px' } },
               h('canvas', {
                 role: 'img',
+                'data-a11y-static': 'true',
+                'aria-describedby': 'mm-earth-orbit-description',
                 'aria-label': t('stem.moonmission.animated_view_of_spacecraft_in_low_ear', 'Animated view of spacecraft in low Earth orbit at 185 kilometers. CSM completes 1.5 orbits while a trans-lunar injection burn window aligns with the Moon\'s future position. Orbit counter, altitude, velocity, and TLI readiness displayed.'),
                 style: { width: '100%', height: '100%', display: 'block' },
                 ref: function(cvEl) {
@@ -1945,7 +1951,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('div', { className: 'text-center mb-3' },
               h('div', { className: 'text-3xl' }, '\uD83C\uDF0D'),
               h('h4', { className: 'text-base font-bold' }, t('stem.moonmission.low_earth_orbit', 'Low Earth Orbit')),
-              h('p', { className: 'text-[11px] text-slate-600' }, t('stem.moonmission.altitude_185_km_speed_28_000_km_h_1_5_', 'Altitude: 185 km \u2022 Speed: 28,000 km/h \u2022 1.5 orbits before TLI burn'))
+              h('p', { id: 'mm-earth-orbit-description', className: 'text-[11px] text-slate-600' }, t('stem.moonmission.altitude_185_km_speed_28_000_km_h_1_5_', 'Altitude: 185 km \u2022 Speed: 28,000 km/h \u2022 1.5 orbits before TLI burn'))
             ),
             h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10 mb-3' },
               h('p', { className: 'text-[11px] text-sky-300 font-bold mb-1' }, t('stem.moonmission.trans_lunar_injection_tli', '\uD83D\uDE80 TRANS-LUNAR INJECTION (TLI)')),
@@ -2027,6 +2033,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('div', { className: 'relative', style: { height: '280px' } },
               h('canvas', { 
                 role: 'img',
+                'data-a11y-static': 'true',
+                'aria-describedby': 'mm-transit-description',
                 'aria-label': t('stem.moonmission.animated_trans_lunar_coast_earth_shrin', 'Animated trans-lunar coast. Earth shrinks on the left, Moon grows on the right as the spacecraft travels 384,400 kilometers over 3 days. Shows distance counter and mission communications.'),
                 style: { width: '100%', height: '100%', display: 'block' },
                 ref: function(cvEl) {
@@ -2144,7 +2152,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               })
             ),
             h('div', { className: 'p-3 border-t border-slate-700' },
-              h('div', { className: 'space-y-1.5 mb-2' },
+              h('div', { id: 'mm-transit-description', className: 'space-y-1.5 mb-2' },
                 [
                   'The Command Module extracts the Lunar Module from the S-IVB third stage.',
                   'The spacecraft rotates slowly ("BBQ roll") to evenly distribute solar heating.',
@@ -2228,6 +2236,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('div', { className: 'relative', style: { height: '240px' } },
               h('canvas', { 
                 role: 'img',
+                'data-a11y-static': 'true',
+                'aria-describedby': 'mm-lunar-orbit-description',
                 'aria-label': t('stem.moonmission.animated_view_of_spacecraft_orbiting_t', 'Animated view of the docked Command and Lunar Module stack orbiting the Moon at 110 kilometer altitude. The Moon shows craters and the Sea of Tranquility landing site marked in green. The spacecraft passes behind the Moon on each orbit and loses radio contact with Earth while it is there, and Earth rises above the lunar limb.'),
                 style: { width: '100%', height: '100%', display: 'block' },
                 ref: function(cvEl) {
@@ -2376,7 +2386,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               })
             ),
             h('div', { className: 'p-3 border-t border-slate-700' },
-              h('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
+              h('div', { id: 'mm-lunar-orbit-description', className: 'grid grid-cols-2 gap-2 mb-2' },
                 [
                   ['\uD83C\uDF15 Landing Site', 'Mare Tranquillitatis'],
                   ['\uD83D\uDCCD Coordinates', '0.674\u00B0N, 23.473\u00B0E'],

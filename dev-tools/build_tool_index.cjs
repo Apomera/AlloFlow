@@ -38,6 +38,11 @@ const OUT = path.join(ROOT, 'tool_index.json');
 const MIRROR = path.join(ROOT, 'desktop/web-app/public/tool_index.json');
 const CHECK_ONLY = process.argv.includes('--check');
 
+// These tools retain a hidden StemLab registration only so old saved links can
+// resolve. Their discoverable home is outside STEM, so the STEM capability
+// index must not surface them in search or model routing.
+const NON_STEM_INDEX_IDS = new Set(['diagnosisEligibility']);
+
 // Caps keep the artifact bounded no matter how verbose a tool becomes.
 const MAX_DESC = 320;      // chars of self-description per tool
 const MAX_KEYWORDS = 26;   // distilled, rarity-ranked terms per tool
@@ -177,6 +182,7 @@ for (const f of fs.readdirSync(STEM_DIR)) {
   const topics = fileTopics.slice(0, MAX_TOPICS);
   const allHeadings = fileTopics.join(' ');
   for (const t of extractTools(p, src)) {
+    if (NON_STEM_INDEX_IDS.has(t.id)) continue;
     t.topics = topics;
     t.allHeadings = allHeadings;
     const description = decode(t.description).slice(0, MAX_DESC);
@@ -231,7 +237,7 @@ const payload = {
   version: 1,
   generated: new Date().toISOString().slice(0, 10),
   count: records.length,
-  note: 'Derived from each tool\'s own registerTool config by dev-tools/build_tool_index.cjs. Never hand-edit; never add tool source.',
+  note: 'Derived from each discoverable STEM tool\'s own registerTool config by dev-tools/build_tool_index.cjs. Never hand-edit; never add tool source.',
   tools: records
 };
 const json = JSON.stringify(payload);

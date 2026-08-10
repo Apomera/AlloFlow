@@ -10,7 +10,7 @@ describe('Queen-to-Drone causal carryover', () => {
     });
 
     expect(html).toContain('data-drone-carryover-brief="true"');
-    expect(html).toContain('Command evidence carried forward');
+    expect(html).toContain('Strategy evidence carried forward');
     expect(html).toContain('Victory route');
     expect(html).toContain('Queen signal ~12% closer');
     expect(html).toContain('One fewer predator bird');
@@ -21,8 +21,8 @@ describe('Queen-to-Drone causal carryover', () => {
       beehive: { viewMode: 'drone', queen: {} },
     });
 
-    expect(html).toContain('Unresolved command route');
-    expect(html).toContain('Finish a command match');
+    expect(html).toContain('Unresolved strategy route');
+    expect(html).toContain('Finish a Queen RTS match');
     expect(html).toContain('Inherited Queen RTS route modifiers');
   });
 });

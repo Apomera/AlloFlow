@@ -43,6 +43,7 @@ window.StemLab = window.StemLab || {
   })();
 
   var STORAGE_GALLERY = 'alloAppLabGallery';
+  var STORAGE_DRAFT = 'alloAppLabDraft';
 
   // ─── HTML reference (NGSS + AP CSP + ISTE Standards aligned) ───────
   // Every tag students will use, with semantic meaning + accessibility
@@ -18680,6 +18681,8 @@ test('no a11y violations', async () => {
       { id: 'three_apps', label: 'Create 3 different apps', icon: '\uD83C\uDFC6', check: function(d) { return (d.appsGenerated || 0) >= 3; }, progress: function(d) { return (d.appsGenerated || 0) + '/3'; } },
       { id: 'edit_code', label: 'Edit the source code of an app', icon: '\u270F\uFE0F', check: function(d) { return !!d.hasEditedCode; }, progress: function(d) { return d.hasEditedCode ? 'Edited!' : 'Not yet'; } },
       { id: 'iterate', label: 'Use "Enhance" to modify an app', icon: '\u2728', check: function(d) { return (d.enhanceCount || 0) >= 1; }, progress: function(d) { return (d.enhanceCount || 0) >= 1 ? 'Enhanced!' : 'Not yet'; } },
+      { id: 'save_app', label: 'Save an app to your gallery', icon: '\ud83d\udcc2', check: function(d) { return (d.galleryCount || 0) >= 1; }, progress: function(d) { return (d.galleryCount || 0) >= 1 ? 'Saved!' : 'Not yet'; } },
+      { id: 'export_app', label: 'Export an app as an HTML file', icon: '\ud83d\udce5', check: function(d) { return !!d.hasExported; }, progress: function(d) { return d.hasExported ? 'Exported!' : 'Not yet'; } },
     ],
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
@@ -18746,15 +18749,50 @@ test('no a11y violations', async () => {
         try { localStorage.setItem('alloAppLabPipeline', JSON.stringify(updated)); } catch(e) {}
       }
 
-      var _prompt = useState(''); var prompt = _prompt[0]; var setPrompt = _prompt[1];
-      var _html = useState(''); var html = _html[0]; var setHtml = _html[1];
-      var _editHtml = useState(''); var editHtml = _editHtml[0]; var setEditHtml = _editHtml[1];
+      // Restore the in-progress app so a reload/crash does not throw away a
+      // multi-minute pipeline run.
+      var _draft = useState(function() {
+        try { return JSON.parse(localStorage.getItem(STORAGE_DRAFT) || 'null') || {}; } catch(e) { return {}; }
+      });
+      var draft = _draft[0];
+      // ── Order semantics, shared by the pipeline and its diagram ──────
+      // Reordering used to be purely cosmetic: generateApp only asked whether
+      // an agent was enabled. Now an agent that sits before the agent whose
+      // output it consumes is genuinely skipped, and the diagram says so.
+      var enabledOrder = pipelineConfig.filter(function(c) { return c.enabled; }).map(function(c) { return c.id; });
+      function agentPos(id) { return enabledOrder.indexOf(id); }
+      function agentRuns(id) {
+        if (agentPos(id) < 0) return false;
+        var b = agentPos('builder');
+        if (id === 'builder') return true;
+        if (id === 'architect') return agentPos('architect') < b;
+        if (id === 'reviewer') return agentPos('reviewer') > b;
+        if (id === 'fixer') return agentRuns('reviewer') && agentPos('fixer') > agentPos('reviewer');
+        return true;
+      }
+      function agentOrderWarning(id) {
+        var cfg = pipelineConfig.find(function(c) { return c.id === id; });
+        if (!cfg || !cfg.enabled || agentRuns(id)) return null;
+        if (id === 'architect') return __alloT('stem.applab.warn_architect_after_builder', 'Runs after the Builder — plan arrives too late, so it is skipped');
+        if (id === 'reviewer') return __alloT('stem.applab.warn_reviewer_before_builder', 'Runs before the Builder — no code exists yet, so it is skipped');
+        if (id === 'fixer') return agentPos('reviewer') < 0
+          ? __alloT('stem.applab.warn_fixer_no_reviewer', 'Needs the Reviewer — with no issue list there is nothing to fix')
+          : __alloT('stem.applab.warn_fixer_before_reviewer', 'Runs before the Reviewer — no issue list yet, so it is skipped');
+        return null;
+      }
+      // The Assembler only exists in sectioned mode, which requires a working
+      // Architect pass.
+      var assemblerRuns = agentRuns('architect');
+
+      var _prompt = useState(draft.prompt || ''); var prompt = _prompt[0]; var setPrompt = _prompt[1];
+      var _html = useState(draft.html || ''); var html = _html[0]; var setHtml = _html[1];
+      var _editHtml = useState(draft.html || ''); var editHtml = _editHtml[0]; var setEditHtml = _editHtml[1];
       var _isGenerating = useState(false); var isGenerating = _isGenerating[0]; var setIsGenerating = _isGenerating[1];
       var _genStep = useState(''); var genStep = _genStep[0]; var setGenStep = _genStep[1];
       var _showCode = useState(false); var showCode = _showCode[0]; var setShowCode = _showCode[1];
       var _enhancePrompt = useState(''); var enhancePrompt = _enhancePrompt[0]; var setEnhancePrompt = _enhancePrompt[1];
-      var _history = useState([]); var history = _history[0]; var setHistory = _history[1];
-      var _historyIdx = useState(-1); var historyIdx = _historyIdx[0]; var setHistoryIdx = _historyIdx[1];
+      var _history = useState(draft.html ? [draft.html] : []); var history = _history[0]; var setHistory = _history[1];
+      var _historyIdx = useState(draft.html ? 0 : -1); var historyIdx = _historyIdx[0]; var setHistoryIdx = _historyIdx[1];
       var _gallery = useState(function() { try { return JSON.parse(localStorage.getItem(STORAGE_GALLERY) || '[]'); } catch(e) { return []; } });
       var gallery = _gallery[0]; var setGallery = _gallery[1];
       var _showGallery = useState(false); var showGallery = _showGallery[0]; var setShowGallery = _showGallery[1];
@@ -18764,6 +18802,174 @@ test('no a11y violations', async () => {
       var _fullscreen = useState(false); var fullscreen = _fullscreen[0]; var setFullscreen = _fullscreen[1];
       var _iframeErrors = useState([]); var iframeErrors = _iframeErrors[0]; var setIframeErrors = _iframeErrors[1];
       var iframeRef = useRef(null);
+      var importInputRef = useRef(null);
+      var cancelRef = useRef(false);
+      var CANCEL_SIGNAL = '__applab_cancelled__';
+      function throwIfCancelled() { if (cancelRef.current) throw new Error(CANCEL_SIGNAL); }
+      // Every phase change is now announced. Previously announceToSR was in
+      // generateApp's dep array but never called, so a screen-reader user got
+      // silence for the whole multi-minute run.
+      function step(displayMsg, srMsg) {
+        setGenStep(displayMsg);
+        if (announceToSR) announceToSR(srMsg || displayMsg);
+      }
+
+      // ── History helpers ──────────────────────────────────────────────
+      // historyIdx is read inside useCallback bodies whose dep arrays do not
+      // include it, so a plain closure read goes stale. Mirror it in a ref.
+      var historyIdxRef = useRef(-1);
+      historyIdxRef.current = historyIdx;
+      // Appending a version must DISCARD the redo branch, otherwise redo walks
+      // into versions the user already abandoned.
+      function pushHistory(next) {
+        var base = historyIdxRef.current;
+        setHistory(function(prev) { return prev.slice(0, base + 1).concat([next]); });
+        setHistoryIdx(base + 1);
+        historyIdxRef.current = base + 1;
+      }
+      function resetHistory(first) {
+        setHistory(first == null ? [] : [first]);
+        setHistoryIdx(first == null ? -1 : 0);
+        historyIdxRef.current = first == null ? -1 : 0;
+      }
+
+      // ── Model context limits ─────────────────────────────────────────
+      // Every AI round-trip used to slice the document and then replace the
+      // WHOLE document with the reply, silently deleting everything past the
+      // slice. We now refuse the round-trip instead of truncating.
+      var MAX_MODEL_CHARS = 60000;   // destructive passes (enhance, fix)
+      var MAX_REVIEW_CHARS = 40000;  // non-destructive pass (review)
+      function tooBigForModel(text) { return (text || '').length > MAX_MODEL_CHARS; }
+      function kchars(text) { return Math.round((text || '').length / 1000) + 'k'; }
+      // A reply that lost its closing tag is a truncated generation; accepting
+      // it would corrupt the user's app.
+      function looksCompleteDoc(doc) {
+        return (doc || '').toLowerCase().indexOf('</html>') !== -1;
+      }
+
+      // ── Preview error capture ────────────────────────────────────────
+      // The old implementation assigned iframeRef.current.contentWindow.onerror.
+      // With sandbox="allow-scripts" and no allow-same-origin the frame has an
+      // opaque origin, so that assignment always threw into an empty catch and
+      // the error overlay could never appear. Inject a reporter instead.
+      function escapeHtmlText(str) {
+        return String(str == null ? '' : str)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      }
+
+      // Deterministic, lossless fallback for the Assembler. Hoists each
+      // section's <style>/<script> and wraps the rest in a valid document.
+      // Used when the sections together exceed the model budget, or when the
+      // AI assembly comes back truncated — either way, beats dropping markup.
+      function localAssemble(sectionResults, plan, userPrompt) {
+        var styles = [];
+        var scripts = [];
+        var bodies = sectionResults.map(function(sr) {
+          var body = sr.html || '';
+          body = body.replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, function(m, css) { styles.push(css); return ''; });
+          body = body.replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, function(m, code) { scripts.push(code); return ''; });
+          return body.trim();
+        });
+        var title = (plan && plan.appTitle) || String(userPrompt || 'AppLab App').trim().slice(0, 80);
+        return '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
+          + '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
+          + '<title>' + escapeHtmlText(title) + '</title>\n<style>\n'
+          + 'body { margin: 0; font-family: system-ui, sans-serif; line-height: 1.5; }\n'
+          + 'main { max-width: 960px; margin: 0 auto; padding: 16px; }\n'
+          + '.skip-link { position: absolute; left: -9999px; }\n'
+          + '.skip-link:focus { left: 8px; top: 8px; background: #fff; color: #000; padding: 8px; z-index: 100; }\n'
+          + styles.join('\n') + '\n</style>\n</head>\n<body>\n'
+          + '<a class="skip-link" href="#main-content">Skip to content</a>\n'
+          + '<main id="main-content">\n' + bodies.join('\n') + '\n</main>\n'
+          + '<script>\n' + scripts.join('\n;\n') + '\n<\/script>\n</body>\n</html>';
+      }
+
+      // ── Gallery persistence ──────────────────────────────────────────
+      // setItem used to be wrapped in a bare try/catch with an unconditional
+      // "Saved!" toast, so a quota failure looked like success and the app
+      // vanished on reload. Shed oldest entries until it fits, and report
+      // honestly if it never does.
+      function persistGallery(list) {
+        var attempt = list.slice();
+        while (attempt.length > 0) {
+          try {
+            localStorage.setItem(STORAGE_GALLERY, JSON.stringify(attempt));
+            return attempt;
+          } catch(e) {
+            attempt = attempt.slice(0, attempt.length - 1);
+          }
+        }
+        try { localStorage.setItem(STORAGE_GALLERY, '[]'); } catch(e2) {}
+        return null;
+      }
+
+      // ── Bounded parallelism ──────────────────────────────────────────
+      // The section fan-out is driven by however many sections the Architect
+      // returns. The prompt asks for 2-4, but nothing enforces that, and an
+      // unbounded burst of concurrent Gemini calls is exactly what trips
+      // provider throttling. Cap both the section count and the in-flight
+      // calls; results stay in input order.
+      var MAX_SECTIONS = 6;
+      var MAX_PARALLEL = 3;
+      function mapLimit(items, limit, fn) {
+        var results = new Array(items.length);
+        var next = 0;
+        function worker() {
+          if (next >= items.length) return Promise.resolve();
+          var i = next++;
+          return Promise.resolve(fn(items[i], i)).then(function(v) {
+            results[i] = v;
+            return worker();
+          });
+        }
+        var runners = [];
+        for (var w = 0; w < Math.min(limit, items.length); w++) runners.push(worker());
+        return Promise.all(runners).then(function() { return results; });
+      }
+
+      var PREVIEW_ERR_TOKEN = 'applab-preview-error';
+      function withErrorReporter(doc) {
+        if (!doc) return doc;
+        var shim = '<script>(function(){'
+          + 'function send(p){try{parent.postMessage({__allolab:"' + PREVIEW_ERR_TOKEN + '",payload:p},"*");}catch(e){}}'
+          + 'window.onerror=function(m,s,l,c){send({msg:String(m),line:l,col:c});return true;};'
+          + 'window.addEventListener("unhandledrejection",function(e){var r=e&&e.reason;send({msg:"Unhandled promise rejection: "+((r&&r.message)||r),line:0,col:0});});'
+          + 'var _ce=console.error;console.error=function(){try{send({msg:Array.prototype.map.call(arguments,String).join(" "),line:0,col:0});}catch(e){}return _ce.apply(console,arguments);};'
+          + '})();<\/script>';
+        var lower = doc.toLowerCase();
+        var headIdx = lower.indexOf('<head>');
+        if (headIdx !== -1) return doc.slice(0, headIdx + 6) + shim + doc.slice(headIdx + 6);
+        var htmlIdx = lower.indexOf('<html');
+        if (htmlIdx !== -1) {
+          var close = doc.indexOf('>', htmlIdx);
+          if (close !== -1) return doc.slice(0, close + 1) + shim + doc.slice(close + 1);
+        }
+        return shim + doc;
+      }
+
+      React.useEffect(function() {
+        function onMessage(ev) {
+          var data = ev && ev.data;
+          if (!data || data.__allolab !== PREVIEW_ERR_TOKEN || !data.payload) return;
+          setIframeErrors(function(prev) { return prev.concat([data.payload]).slice(-5); });
+        }
+        window.addEventListener('message', onMessage);
+        return function() { window.removeEventListener('message', onMessage); };
+      }, []);
+
+      // Clear stale errors when the app itself changes (NOT on iframe load —
+      // parse-time errors fire before load and would be wiped).
+      React.useEffect(function() { setIframeErrors([]); }, [html]);
+
+      // ── Crash/reload recovery ────────────────────────────────────────
+      React.useEffect(function() {
+        if (!html) return;
+        var handle = setTimeout(function() {
+          try { localStorage.setItem(STORAGE_DRAFT, JSON.stringify({ html: html, prompt: prompt })); } catch(e) {}
+        }, 800);
+        return function() { clearTimeout(handle); };
+      }, [html, prompt]);
 
       // ── Clean AI HTML response ──
       function cleanHtmlResponse(result) {
@@ -18780,22 +18986,31 @@ test('no a11y violations', async () => {
       // Architect breaks app into sections → each section gets Build→Review→Fix → Assembler combines
       var generateApp = useCallback(async function(userPrompt) {
         if (!callGemini || !userPrompt.trim()) return;
+        cancelRef.current = false;
         setIsGenerating(true);
         setShowCode(false);
         try {
           var isElem = /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel);
           var gradeCtx = 'Grade level: ' + gradeLevel + (isElem ? ' (use simple language, large buttons, bright colors)' : '');
           var pipelineLog = [];
-          var enabledIds = pipelineConfig.filter(function(c) { return c.enabled; }).map(function(c) { return c.id; });
-          var useArchitect = enabledIds.indexOf('architect') >= 0;
-          var useReviewer = enabledIds.indexOf('reviewer') >= 0;
-          var useFixer = enabledIds.indexOf('fixer') >= 0;
+          // Order, not just membership, decides who runs — same rules the
+          // configurator diagram shows, so the two can never disagree.
+          var useArchitect = agentRuns('architect');
+          var useReviewer = agentRuns('reviewer');
+          var useFixer = agentRuns('fixer');
+          ['architect', 'reviewer', 'fixer'].forEach(function(id) {
+            var warn = agentOrderWarning(id);
+            if (!warn) return;
+            var name = id.charAt(0).toUpperCase() + id.slice(1);
+            pipelineLog.push({ agent: name, icon: '⚠️', result: warn });
+          });
 
           // ═══ PHASE 1: ARCHITECT — decompose into sections ═══
           var sections = null;
           if (useArchitect) {
+            throwIfCancelled();
             setPipelineLive('architect');
-            setGenStep('\uD83C\uDFD7\uFE0F Architect: decomposing app into sections...');
+            step('\uD83C\uDFD7\uFE0F Architect: decomposing app into sections...', 'Architect: decomposing app into sections');
             var archPrompt = 'You are a software architect decomposing an educational mini-app into buildable sections.\n\n'
               + 'App request: "' + userPrompt.trim() + '"\n' + gradeCtx + '\n\n'
               + 'Break this app into 2-4 independent sections. Each section is a self-contained piece of the app.\n\n'
@@ -18825,15 +19040,37 @@ test('no a11y violations', async () => {
           var finalHtml = '';
 
           if (sections && sections.sections && sections.sections.length >= 2) {
-            // ═══ PHASE 2: PER-SECTION BUILD → REVIEW → FIX ═══
-            var sectionResults = [];
-            for (var si = 0; si < sections.sections.length; si++) {
-              var sec = sections.sections[si];
-              var secLabel = sec.name + ' (' + (si + 1) + '/' + sections.sections.length + ')';
+            // ═══ PHASE 2: BUILD → REVIEW → FIX, all sections in parallel ═══
+            // The Architect designs sections to be independent, so there is no
+            // reason to build them one at a time. Staged fan-out (all builds,
+            // then all reviews, then all fixes) keeps the pipeline visualiser
+            // honest while cutting wall-clock roughly by the section count.
+            // The Architect is asked for 2-4 sections but can return more;
+            // cap it rather than fan out to an arbitrary width.
+            var secList = sections.sections;
+            if (secList.length > MAX_SECTIONS) {
+              pipelineLog.push({ agent: 'Architect', icon: '⚠️', result: 'Returned ' + secList.length + ' sections — building the first ' + MAX_SECTIONS + ' only' });
+              secList = secList.slice(0, MAX_SECTIONS);
+            }
+            var secCount = secList.length;
+            var secLogs = secList.map(function(sec) {
+              return { agent: 'Section: ' + sec.name, icon: '📦', result: '', children: [] };
+            });
 
-              // BUILD this section
-              setPipelineLive('builder');
-              setGenStep('\uD83D\uDD28 Building: ' + secLabel);
+            function trackProgress(verb, srVerb) {
+              var done = 0;
+              return function() {
+                done++;
+                step(verb + ' ' + done + '/' + secCount + ' sections...', srVerb + ' ' + done + ' of ' + secCount + ' sections');
+              };
+            }
+
+            // ── Stage A: build every section concurrently ──
+            throwIfCancelled();
+            setPipelineLive('builder');
+            step('🔨 Builder: building ' + secCount + ' sections in parallel...', 'Builder: building ' + secCount + ' sections in parallel');
+            var tickBuild = trackProgress('🔨 Built', 'Built');
+            var secHtmls = await mapLimit(secList, MAX_PARALLEL, function(sec, si) {
               var secBuildPrompt = 'You are building ONE SECTION of a larger educational mini-app.\n\n'
                 + 'APP: "' + userPrompt.trim() + '" — ' + (sections.appTitle || '') + '\n'
                 + gradeCtx + '\nColor scheme: ' + (sections.colorScheme || 'modern, clean') + '\n\n'
@@ -18848,115 +19085,218 @@ test('no a11y violations', async () => {
                 + 'Include <script> for this section\'s JavaScript (if any).\n'
                 + 'WCAG 2.1 AA: aria-labels, 4.5:1 contrast, keyboard nav.\n\n'
                 + 'Return ONLY the section HTML. No <!DOCTYPE>, no <html>, no <body>.';
-              var secHtml = await callGemini(secBuildPrompt, false);
-              secHtml = (secHtml || '').replace(/^```html\s*/i, '').replace(/```\s*$/i, '').trim();
-              var secLog = { agent: 'Section: ' + sec.name, icon: '\uD83D\uDCE6', result: '', children: [] };
+              return Promise.resolve(callGemini(secBuildPrompt, false)).then(function(out) {
+                tickBuild();
+                return (out || '').replace(/^```html\s*/i, '').replace(/```\s*$/i, '').trim();
+              }, function(err) {
+                console.warn('[applab section-builder] failed for section "' + sec.name + '":', err);
+                tickBuild();
+                secLogs[si].children.push({ agent: 'Builder', icon: '⚠️', result: 'Build failed — section omitted' });
+                return '';
+              });
+            });
+            secList.forEach(function(sec, si) {
+              if (secHtmls[si]) secLogs[si].children.push({ agent: 'Builder', icon: '🔨', result: secHtmls[si].length + ' chars' });
+            });
 
-              secLog.children.push({ agent: 'Builder', icon: '\uD83D\uDD28', result: (secHtml || '').length + ' chars' });
-
-              // REVIEW this section
-              if (useReviewer && secHtml && secHtml.length > 50) {
-                setPipelineLive('reviewer');
-                setGenStep('\uD83D\uDD0D Reviewing: ' + secLabel);
-                var secIssues = [];
-                try {
-                  var sr = await callGemini('Review this HTML section for bugs, a11y gaps, and UX issues. Section: "' + sec.name + '"\n\nCODE:\n```html\n' + secHtml.substring(0, 6000) + '\n```\n\nReturn JSON array: [{"type":"error|warning|a11y","description":"...","fix":"..."}]. If perfect, return [].', true);
-                  sr = (typeof sr === 'string' ? sr : JSON.stringify(sr)).replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-                  try { secIssues = JSON.parse(sr); } catch(e2) { console.warn('[applab section-reviewer] parse failed for section "' + sec.name + '":', e2); }
-                  if (!Array.isArray(secIssues)) secIssues = [];
-                } catch(e3) { console.warn('[applab section-reviewer] AI call failed for section "' + sec.name + '"; skipping review:', e3); }
-                secLog.children.push({ agent: 'Reviewer', icon: '\uD83D\uDD0D', result: secIssues.length === 0 ? 'Passed \u2705' : secIssues.length + ' issue(s)' });
-
-                // FIX this section's issues
-                if (useFixer && secIssues.length > 0) {
-                  setPipelineLive('fixer');
-                  setGenStep('\uD83D\uDD27 Fixing: ' + secLabel);
-                  var secFixList = secIssues.map(function(iss, ii) { return (ii+1) + '. ' + iss.description + ' \u2192 ' + (iss.fix || ''); }).join('\n');
-                  try {
-                    var secFixed = await callGemini('Fix these issues in this HTML section.\n\nISSUES:\n' + secFixList + '\n\nCODE:\n```html\n' + secHtml.substring(0, 8000) + '\n```\n\nReturn ONLY the fixed section HTML.', false);
-                    secFixed = (secFixed || '').replace(/^```html\s*/i, '').replace(/```\s*$/i, '').trim();
-                    if (secFixed && secFixed.length > secHtml.length * 0.3) secHtml = secFixed;
-                  } catch(e4) { console.warn('[applab section-fixer] AI call failed for section "' + sec.name + '"; keeping unfixed section:', e4); }
-                  secLog.children.push({ agent: 'Fixer', icon: '\uD83D\uDD27', result: 'Fixed ' + secIssues.length + ' issue(s)' });
-                }
-              }
-
-              secLog.result = secHtml.length + ' chars final';
-              pipelineLog.push(secLog);
-              sectionResults.push({ id: sec.id, name: sec.name, html: secHtml });
+            // ── Stage B: review every built section concurrently ──
+            var secIssueLists = secList.map(function() { return []; });
+            if (useReviewer) {
+              throwIfCancelled();
+              setPipelineLive('reviewer');
+              step('🔍 Reviewer: reviewing ' + secCount + ' sections in parallel...', 'Reviewer: reviewing ' + secCount + ' sections in parallel');
+              var tickReview = trackProgress('🔍 Reviewed', 'Reviewed');
+              secIssueLists = await mapLimit(secList, MAX_PARALLEL, function(sec, si) {
+                var secHtml = secHtmls[si];
+                if (!secHtml || secHtml.length <= 50) { tickReview(); return Promise.resolve([]); }
+                var reviewSrc = secHtml.length > MAX_REVIEW_CHARS ? secHtml.substring(0, MAX_REVIEW_CHARS) : secHtml;
+                return Promise.resolve(callGemini('Review this HTML section for bugs, a11y gaps, and UX issues. Section: "' + sec.name + '"\n\nCODE:\n```html\n' + reviewSrc + '\n```\n\nReturn JSON array: [{"type":"error|warning|a11y","description":"...","fix":"..."}]. If perfect, return [].', true))
+                  .then(function(sr) {
+                    tickReview();
+                    sr = (typeof sr === 'string' ? sr : JSON.stringify(sr)).replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+                    var open = sr.indexOf('['), close = sr.lastIndexOf(']');
+                    if (open >= 0 && close > open) sr = sr.substring(open, close + 1);
+                    var parsed = [];
+                    try { parsed = JSON.parse(sr); } catch(e2) { console.warn('[applab section-reviewer] parse failed for section "' + sec.name + '":', e2); }
+                    return Array.isArray(parsed) ? parsed : [];
+                  }, function(e3) {
+                    tickReview();
+                    console.warn('[applab section-reviewer] AI call failed for section "' + sec.name + '"; skipping review:', e3);
+                    return [];
+                  });
+              });
+              secList.forEach(function(sec, si) {
+                if (!secHtmls[si] || secHtmls[si].length <= 50) return;
+                secLogs[si].children.push({ agent: 'Reviewer', icon: '🔍', result: secIssueLists[si].length === 0 ? 'Passed ✅' : secIssueLists[si].length + ' issue(s)' });
+              });
             }
 
+            // ── Stage C: fix every flagged section concurrently ──
+            if (useFixer) {
+              var needFix = secList.filter(function(sec, si) { return secIssueLists[si].length > 0 && secHtmls[si]; }).length;
+              if (needFix > 0) {
+                throwIfCancelled();
+                setPipelineLive('fixer');
+                step('🔧 Fixer: fixing ' + needFix + ' section(s) in parallel...', 'Fixer: fixing ' + needFix + ' sections in parallel');
+                var fixed = await mapLimit(secList, MAX_PARALLEL, function(sec, si) {
+                  var secHtml = secHtmls[si];
+                  var issues = secIssueLists[si];
+                  if (!secHtml || issues.length === 0) return Promise.resolve(secHtml);
+                  // Refuse rather than truncate: sending a slice and then keeping
+                  // the reply would silently delete the tail of the section.
+                  if (tooBigForModel(secHtml)) {
+                    secLogs[si].children.push({ agent: 'Fixer', icon: '⚠️', result: 'Section too large (' + kchars(secHtml) + ') — left unfixed rather than truncated' });
+                    return Promise.resolve(secHtml);
+                  }
+                  var secFixList = issues.map(function(iss, ii) { return (ii + 1) + '. ' + iss.description + ' → ' + (iss.fix || ''); }).join('\n');
+                  return Promise.resolve(callGemini('Fix these issues in this HTML section.\n\nISSUES:\n' + secFixList + '\n\nCODE:\n```html\n' + secHtml + '\n```\n\nReturn ONLY the fixed section HTML.', false))
+                    .then(function(secFixed) {
+                      secFixed = (secFixed || '').replace(/^```html\s*/i, '').replace(/```\s*$/i, '').trim();
+                      if (secFixed && secFixed.length > secHtml.length * 0.6) {
+                        secLogs[si].children.push({ agent: 'Fixer', icon: '🔧', result: 'Fixed ' + issues.length + ' issue(s)' });
+                        return secFixed;
+                      }
+                      secLogs[si].children.push({ agent: 'Fixer', icon: '⚠️', result: 'Reply looked truncated — kept the original section' });
+                      return secHtml;
+                    }, function(e4) {
+                      console.warn('[applab section-fixer] AI call failed for section "' + sec.name + '"; keeping unfixed section:', e4);
+                      secLogs[si].children.push({ agent: 'Fixer', icon: '⚠️', result: 'Fix call failed — kept the original section' });
+                      return secHtml;
+                    });
+                });
+                secHtmls = fixed;
+              }
+            }
+
+            var sectionResults = [];
+            secList.forEach(function(sec, si) {
+              secLogs[si].result = (secHtmls[si] || '').length + ' chars final';
+              pipelineLog.push(secLogs[si]);
+              if (secHtmls[si]) sectionResults.push({ id: sec.id, name: sec.name, html: secHtmls[si] });
+            });
+            if (sectionResults.length === 0) throw new Error('Every section failed to build');
+
             // ═══ PHASE 3: ASSEMBLER — combine sections into final document ═══
+            throwIfCancelled();
             setPipelineLive('assembler');
-            setGenStep('\uD83E\uDDE9 Assembler: combining ' + sectionResults.length + ' sections...');
-            var assemblePrompt = 'You are assembling sections into a complete HTML document.\n\n'
-              + 'APP: "' + userPrompt.trim() + '"\n' + gradeCtx + '\n'
-              + 'Color scheme: ' + (sections.colorScheme || 'modern') + '\n\n'
-              + 'Combine these sections into ONE complete <!DOCTYPE html> document:\n\n'
-              + sectionResults.map(function(sr) { return '=== SECTION: ' + sr.name + ' ===\n' + sr.html.substring(0, 5000); }).join('\n\n') + '\n\n'
-              + 'REQUIREMENTS:\n'
-              + '- Wrap in <!DOCTYPE html><html lang="en"><head>...</head><body><main>...</main></body></html>\n'
-              + '- Consolidate all <style> blocks into one <style> in <head>\n'
-              + '- Consolidate all <script> blocks into one <script> before </body>\n'
-              + '- Resolve any shared state conflicts between sections\n'
-              + '- Add responsive CSS, skip-to-content link, proper <title>\n'
-              + '- NO external dependencies\n\n'
-              + 'Return ONLY the complete HTML document.';
-            finalHtml = cleanHtmlResponse(await callGemini(assemblePrompt, false));
-            pipelineLog.push({ agent: 'Assembler', icon: '\uD83E\uDDE9', result: 'Combined ' + sectionResults.length + ' sections into ' + finalHtml.length + ' chars' });
+            step('🧩 Assembler: combining ' + sectionResults.length + ' sections...', 'Assembler: combining ' + sectionResults.length + ' sections');
+            var sectionBlob = sectionResults.map(function(sr) { return '=== SECTION: ' + sr.name + ' ===\n' + sr.html; }).join('\n\n');
+            if (sectionBlob.length > MAX_MODEL_CHARS) {
+              // Too much markup to hand back to the model. Assemble it here
+              // instead of slicing sections away — deterministic, lossless, free.
+              finalHtml = localAssemble(sectionResults, sections, userPrompt);
+              pipelineLog.push({ agent: 'Assembler', icon: '🧩', result: 'Sections totalled ' + kchars(sectionBlob) + ' chars — assembled locally (lossless) instead of truncating' });
+            } else {
+              var assemblePrompt = 'You are assembling sections into a complete HTML document.\n\n'
+                + 'APP: "' + userPrompt.trim() + '"\n' + gradeCtx + '\n'
+                + 'Color scheme: ' + (sections.colorScheme || 'modern') + '\n\n'
+                + 'Combine these sections into ONE complete <!DOCTYPE html> document:\n\n'
+                + sectionBlob + '\n\n'
+                + 'REQUIREMENTS:\n'
+                + '- Wrap in <!DOCTYPE html><html lang="en"><head>...</head><body><main>...</main></body></html>\n'
+                + '- Consolidate all <style> blocks into one <style> in <head>\n'
+                + '- Consolidate all <script> blocks into one <script> before </body>\n'
+                + '- Resolve any shared state conflicts between sections\n'
+                + '- Add responsive CSS, skip-to-content link, proper <title>\n'
+                + '- NO external dependencies\n\n'
+                + 'Return ONLY the complete HTML document.';
+              finalHtml = cleanHtmlResponse(await callGemini(assemblePrompt, false));
+              if (!looksCompleteDoc(finalHtml)) {
+                finalHtml = localAssemble(sectionResults, sections, userPrompt);
+                pipelineLog.push({ agent: 'Assembler', icon: '⚠️', result: 'AI assembly came back incomplete — assembled locally instead' });
+              } else {
+                pipelineLog.push({ agent: 'Assembler', icon: '🧩', result: 'Combined ' + sectionResults.length + ' sections into ' + finalHtml.length + ' chars' });
+              }
+            }
 
           } else {
             // ═══ FALLBACK: Linear single-build (no architect or decomposition failed) ═══
+            throwIfCancelled();
             setPipelineLive('builder');
-            setGenStep('\uD83D\uDD28 Building app...');
+            step('🔨 Building app...', 'Builder: building app');
             var buildPrompt = 'You are an expert web developer building an educational mini-app.\n\n'
               + 'APP REQUEST: "' + userPrompt.trim() + '"\n' + gradeCtx + '\n\n'
               + 'REQUIREMENTS: Single HTML file, ALL CSS/JS inline, NO CDN. Interactive, WCAG 2.1 AA, responsive, educational.\n\n'
               + 'Return ONLY the complete HTML document. No markdown.';
             finalHtml = cleanHtmlResponse(await callGemini(buildPrompt, false));
             if (!finalHtml || finalHtml.length < 100) throw new Error('Builder produced empty output');
-            pipelineLog.push({ agent: 'Builder', icon: '\uD83D\uDD28', result: finalHtml.length + ' chars (single-build mode)' });
+            pipelineLog.push({ agent: 'Builder', icon: '🔨', result: finalHtml.length + ' chars (single-build mode)' });
 
             // Linear review + fix
             if (useReviewer) {
+              throwIfCancelled();
               setPipelineLive('reviewer');
-              setGenStep('\uD83D\uDD0D Reviewing...');
+              step('🔍 Reviewing...', 'Reviewer: reviewing the app');
               var issues = [];
+              // Review is non-destructive (it only produces a list), so a slice
+              // here cannot lose code — but say so when it happens.
+              var reviewTruncated = finalHtml.length > MAX_REVIEW_CHARS;
+              var reviewSrc = reviewTruncated ? finalHtml.substring(0, MAX_REVIEW_CHARS) : finalHtml;
               try {
-                var rr = await callGemini('Review this HTML app for bugs/a11y/UX issues.\n\nCODE:\n```html\n' + finalHtml.substring(0, 12000) + '\n```\n\nReturn JSON array of issues. If perfect, return [].', true);
+                var rr = await callGemini('Review this HTML app for bugs/a11y/UX issues.\n\nCODE:\n```html\n' + reviewSrc + '\n```\n\nReturn JSON array of issues. If perfect, return [].', true);
                 rr = (typeof rr === 'string' ? rr : JSON.stringify(rr)).replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+                var rOpen = rr.indexOf('['), rClose = rr.lastIndexOf(']');
+                if (rOpen >= 0 && rClose > rOpen) rr = rr.substring(rOpen, rClose + 1);
                 try { issues = JSON.parse(rr); } catch(e) { console.warn('[applab linear-reviewer] JSON parse failed:', e); }
                 if (!Array.isArray(issues)) issues = [];
               } catch(e) { console.warn('[applab linear-reviewer] AI call failed; skipping review:', e); }
-              pipelineLog.push({ agent: 'Reviewer', icon: '\uD83D\uDD0D', result: issues.length === 0 ? 'Passed \u2705' : issues.length + ' issue(s)' });
+              pipelineLog.push({ agent: 'Reviewer', icon: '🔍', result: (issues.length === 0 ? 'Passed ✅' : issues.length + ' issue(s)')
+                + (reviewTruncated ? ' (reviewed the first ' + kchars(reviewSrc) + ' chars)' : '') });
               if (useFixer && issues.length > 0) {
+                throwIfCancelled();
                 setPipelineLive('fixer');
-                setGenStep('\uD83D\uDD27 Fixing ' + issues.length + ' issue(s)...');
-                var fixList = issues.map(function(iss, i) { return (i+1) + '. ' + iss.description; }).join('\n');
-                try {
-                  var fixed = cleanHtmlResponse(await callGemini('Fix these issues:\n' + fixList + '\n\nCODE:\n```html\n' + finalHtml.substring(0, 15000) + '\n```\n\nReturn COMPLETE fixed HTML.', false));
-                  if (fixed && fixed.length > finalHtml.length * 0.5) finalHtml = fixed;
-                } catch(e) { console.warn('[applab linear-fixer] AI call failed; keeping unfixed HTML:', e); }
-                pipelineLog.push({ agent: 'Fixer', icon: '\uD83D\uDD27', result: 'Fixed ' + issues.length + ' issue(s)' });
+                step('🔧 Fixing ' + issues.length + ' issue(s)...', 'Fixer: fixing ' + issues.length + ' issues');
+                if (tooBigForModel(finalHtml)) {
+                  // Sending a slice and keeping the reply would delete the tail
+                  // of the app. Skip the pass and say why.
+                  pipelineLog.push({ agent: 'Fixer', icon: '⚠️', result: 'App is ' + kchars(finalHtml) + ' chars — too large to fix without truncating it, so it was left unchanged' });
+                } else {
+                  var fixList = issues.map(function(iss, i) { return (i+1) + '. ' + iss.description; }).join('\n');
+                  var fixApplied = false;
+                  try {
+                    var fixed = cleanHtmlResponse(await callGemini('Fix these issues:\n' + fixList + '\n\nCODE:\n```html\n' + finalHtml + '\n```\n\nReturn COMPLETE fixed HTML.', false));
+                    if (fixed && looksCompleteDoc(fixed) && fixed.length > finalHtml.length * 0.5) {
+                      finalHtml = fixed;
+                      fixApplied = true;
+                    }
+                  } catch(e) { console.warn('[applab linear-fixer] AI call failed; keeping unfixed HTML:', e); }
+                  pipelineLog.push({ agent: 'Fixer', icon: fixApplied ? '🔧' : '⚠️',
+                    result: fixApplied ? 'Fixed ' + issues.length + ' issue(s)' : 'Reply was incomplete — kept the original app' });
+                }
               }
             }
           }
 
+          throwIfCancelled();
           if (!finalHtml || finalHtml.length < 100) throw new Error('Pipeline produced empty output');
 
           setPipelineLive(null);
           setHtml(finalHtml);
           setEditHtml(finalHtml);
-          setHistory(function(prev) { return prev.concat([finalHtml]); });
-          setHistoryIdx(function(prev) { return prev + 1; });
+          pushHistory(finalHtml);
           upd('appsGenerated', (d.appsGenerated || 0) + 1);
           upd('lastPipelineLog', pipelineLog);
           if (awardXP) awardXP('appLab', 15);
           var agentCount = pipelineLog.reduce(function(acc, p) { return acc + 1 + (p.children ? p.children.length : 0); }, 0);
-          addToast && addToast('\u2705 ' + agentCount + '-step pipeline complete! ' + (sections ? sections.sections.length + ' sections built independently.' : 'Single-build mode.'), 'success');
+          addToast && addToast('✅ ' + agentCount + '-step pipeline complete! ' + (sections ? sections.sections.length + ' sections built in parallel.' : 'Single-build mode.'), 'success');
+          if (announceToSR) announceToSR('App generated. ' + agentCount + ' pipeline steps complete.');
         } catch(err) {
-          addToast && addToast('Generation failed: ' + err.message, 'error');
+          // Keep whatever the pipeline managed to record. A failed run is the
+          // most useful thing to be able to inspect, and it used to be thrown
+          // away because the log was only saved on the success path.
+          if (typeof pipelineLog !== 'undefined' && pipelineLog.length) {
+            pipelineLog.push({ agent: 'Pipeline', icon: '❌', result: 'Stopped: ' + (err && err.message) });
+            upd('lastPipelineLog', pipelineLog);
+          }
+          if (err && err.message === CANCEL_SIGNAL) {
+            addToast && addToast('Generation cancelled.', 'info');
+            if (announceToSR) announceToSR('Generation cancelled');
+          } else {
+            addToast && addToast('Generation failed: ' + (err && err.message), 'error');
+            if (announceToSR) announceToSR('Generation failed');
+          }
         }
+        cancelRef.current = false;
         setPipelineLive(null);
         setIsGenerating(false);
         setGenStep('');
@@ -18965,40 +19305,47 @@ test('no a11y violations', async () => {
       // ── Enhance (iterate) ──
       var enhanceApp = useCallback(async function() {
         if (!callGemini || !enhancePrompt.trim() || !html) return;
+        // The old code sent html.substring(0, 15000) and then replaced the
+        // WHOLE app with the reply, so any app over 15k chars was silently
+        // amputated and still reported "App enhanced!". Refuse instead.
+        if (tooBigForModel(html)) {
+          addToast && addToast('This app is ' + kchars(html) + ' chars — too large to enhance without truncating it. Edit the source directly instead.', 'error');
+          return;
+        }
         setIsGenerating(true);
-        setGenStep('Enhancing your app...');
+        step('✨ Enhancing your app...', 'Enhancing your app');
         try {
           var ePrompt = 'You are modifying an existing HTML mini-app. Here is the current code:\n\n'
-            + '```html\n' + html.substring(0, 15000) + '\n```\n\n'
+            + '```html\n' + html + '\n```\n\n'
             + 'Modification requested: "' + enhancePrompt.trim() + '"\n\n'
             + 'Apply the modification and return the COMPLETE updated HTML document.\n'
             + 'Keep all existing functionality intact. Only add/change what was requested.\n'
             + 'Return ONLY the HTML — no markdown, no explanation.';
           var result = await callGemini(ePrompt, false);
-          var cleaned = (result || '').replace(/^```html\s*/i, '').replace(/```\s*$/i, '').trim();
-          if (!cleaned.toLowerCase().startsWith('<!doctype') && !cleaned.toLowerCase().startsWith('<html')) {
-            var idx = cleaned.toLowerCase().indexOf('<!doctype');
-            if (idx === -1) idx = cleaned.toLowerCase().indexOf('<html');
-            if (idx > 0) cleaned = cleaned.substring(idx);
-          }
-          if (cleaned.length > 100) {
+          var cleaned = cleanHtmlResponse(result);
+          // A reply missing </html>, or barely a fraction of the input, is a
+          // truncated generation. Keeping the user's app beats "enhancing" it
+          // into a stump.
+          if (cleaned.length > 100 && looksCompleteDoc(cleaned) && cleaned.length > html.length * 0.5) {
             setHtml(cleaned);
             setEditHtml(cleaned);
-            setHistory(function(prev) { return prev.concat([cleaned]); });
-            setHistoryIdx(function(prev) { return prev + 1; });
+            pushHistory(cleaned);
             setEnhancePrompt('');
             upd('enhanceCount', (d.enhanceCount || 0) + 1);
             if (awardXP) awardXP('appLab', 10);
             addToast && addToast('App enhanced!', 'success');
+            if (announceToSR) announceToSR('App enhanced');
+          } else if (cleaned.length > 100) {
+            addToast && addToast('The reply came back incomplete, so your app was left unchanged. Try a smaller change.', 'error');
           } else {
             addToast && addToast('Enhancement failed. Try again.', 'error');
           }
         } catch(err) {
-          addToast && addToast('Enhancement failed: ' + err.message, 'error');
+          addToast && addToast('Enhancement failed: ' + (err && err.message), 'error');
         }
         setIsGenerating(false);
         setGenStep('');
-      }, [callGemini, html, enhancePrompt, addToast, awardXP, d]);
+      }, [callGemini, html, enhancePrompt, addToast, awardXP, announceToSR, d]);
 
       // ── Suggest Ideas ──
       var suggestIdeas = useCallback(async function() {
@@ -19013,8 +19360,14 @@ test('no a11y violations', async () => {
             + 'Return ONLY a JSON array:\n'
             + '[{"title":"App Title","description":"What it does and what concept it teaches","difficulty":"Beginner|Intermediate|Advanced","prompt":"The exact prompt to generate this app"}]';
           var result = await callGemini(sPrompt, true);
-          var parsed = JSON.parse((result || '').replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim());
-          if (Array.isArray(parsed)) setSuggestions(parsed);
+          var raw = (typeof result === 'string' ? result : JSON.stringify(result)).replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+          // Extract the array span the way the Architect does, so a stray
+          // sentence around the JSON does not blow up the whole call.
+          var open = raw.indexOf('['), close = raw.lastIndexOf(']');
+          if (open >= 0 && close > open) raw = raw.substring(open, close + 1);
+          var parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length) setSuggestions(parsed);
+          else addToast && addToast('No usable suggestions came back. Try again.', 'info');
         } catch(err) {
           addToast && addToast('Could not generate suggestions.', 'error');
         }
@@ -19029,36 +19382,67 @@ test('no a11y violations', async () => {
         var titleMatch = html.match(/<title>([^<]+)<\/title>/i);
         if (titleMatch) title = titleMatch[1];
         var entry = { id: Date.now().toString(36), title: title, html: html, prompt: prompt, created: new Date().toISOString() };
-        var updated = [entry].concat(gallery.slice(0, 19));
-        setGallery(updated);
-        try { localStorage.setItem(STORAGE_GALLERY, JSON.stringify(updated)); } catch(e) {}
-        addToast && addToast('Saved to gallery!', 'success');
-      }, [html, prompt, gallery, addToast]);
+        var wanted = [entry].concat(gallery.slice(0, 19));
+        var saved = persistGallery(wanted);
+        if (!saved) {
+          addToast && addToast('Not enough browser storage to save this app. Export it as a file instead.', 'error');
+          return;
+        }
+        setGallery(saved);
+        upd('galleryCount', saved.length);
+        if (saved.length < wanted.length) {
+          addToast && addToast('Saved — but storage was full, so the ' + (wanted.length - saved.length) + ' oldest app(s) were removed.', 'info');
+        } else if (gallery.length >= 20) {
+          addToast && addToast('Saved! The gallery holds 20 apps, so the oldest one was removed.', 'info');
+        } else {
+          addToast && addToast('Saved to gallery!', 'success');
+        }
+      }, [html, prompt, gallery, addToast, d]);
 
       // ── Export as HTML file ──
       var exportHtml = useCallback(function() {
         if (!html) return;
+        // Name the file after the app, not the clock.
+        var titleMatch = html.match(/<title>([^<]+)<\/title>/i);
+        var base = (titleMatch ? titleMatch[1] : (prompt || 'applab app'))
+          .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+        if (!base) base = 'applab-app';
         var blob = new Blob([html], { type: 'text/html' });
         var url = URL.createObjectURL(blob);
-        var a = document.createElement('a'); a.href = url; a.download = 'applab_' + Date.now() + '.html'; a.click();
+        var a = document.createElement('a'); a.href = url; a.download = base + '.html'; a.click();
         URL.revokeObjectURL(url);
-        addToast && addToast('HTML file exported!', 'success');
-      }, [html, addToast]);
+        upd('hasExported', true);
+        addToast && addToast('Exported ' + base + '.html', 'success');
+      }, [html, prompt, addToast, d]);
 
       // ── Import HTML file ──
       var importHtml = useCallback(function(file) {
         if (!file) return;
+        // The old version accepted anything and failed silently on a bad read
+        // or a too-short file, so a mis-picked file just did nothing.
+        if (!/\.html?$/i.test(file.name || '')) {
+          addToast && addToast('Pick an .html file — ' + (file.name || 'that file') + ' is not one.', 'error');
+          return;
+        }
         var reader = new FileReader();
+        reader.onerror = function() {
+          addToast && addToast('Could not read ' + file.name + '.', 'error');
+        };
         reader.onload = function(ev) {
-          var content = ev.target.result;
-          if (content && content.length > 50) {
-            setHtml(content);
-            setEditHtml(content);
-            setHistory(function(prev) { return prev.concat([content]); });
-            setHistoryIdx(function(prev) { return prev + 1; });
-            setPrompt(file.name.replace(/\.html?$/i, ''));
-            addToast && addToast('Imported ' + file.name + '!', 'success');
+          var content = ev.target && ev.target.result;
+          if (!content || content.length <= 50) {
+            addToast && addToast(file.name + ' looks empty — nothing was imported.', 'error');
+            return;
           }
+          if (content.toLowerCase().indexOf('<') === -1) {
+            addToast && addToast(file.name + ' does not look like HTML — nothing was imported.', 'error');
+            return;
+          }
+          setHtml(content);
+          setEditHtml(content);
+          pushHistory(content);
+          setPrompt(file.name.replace(/\.html?$/i, ''));
+          addToast && addToast('Imported ' + file.name + '!', 'success');
         };
         reader.readAsText(file);
       }, [addToast]);
@@ -19067,8 +19451,7 @@ test('no a11y violations', async () => {
       var applyCodeEdit = useCallback(function() {
         if (editHtml !== html) {
           setHtml(editHtml);
-          setHistory(function(prev) { return prev.concat([editHtml]); });
-          setHistoryIdx(function(prev) { return prev + 1; });
+          pushHistory(editHtml);
           upd('hasEditedCode', true);
           addToast && addToast('Code changes applied!', 'success');
         }
@@ -19453,7 +19836,7 @@ test('no a11y violations', async () => {
             // Preview
             h('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0 } },
               h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase' } }, __alloT('stem.applab.live_preview', 'Live Preview')),
-              h('iframe', { key: pgRun, src: blob, title: __alloT('stem.applab.playground_preview', 'Playground preview'), sandbox: 'allow-scripts',
+              h('iframe', { key: pgRun, src: blob, title: __alloT('stem.applab.playground_preview', 'Playground preview'), sandbox: 'allow-scripts allow-modals allow-forms',
                 style: { flex: 1, border: '1px solid #e5e7eb', borderRadius: '10px', background: '#fff' } })
             )
           ),
@@ -19516,7 +19899,7 @@ test('no a11y violations', async () => {
                   h('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#1e293b', margin: '0 0 6px 0' } }, s.name || s.title),
                   s.description && h('p', { style: { fontSize: '12px', color: '#374151', margin: '0 0 8px 0' } }, s.description),
                   s.code && h('pre', { style: { fontSize: '11px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', padding: '10px', borderRadius: '8px', overflowX: 'auto', maxHeight: '240px' } }, s.code),
-                  s.code && h('button', { onClick: function() { setHtml(s.code); setEditHtml(s.code); setHistory([s.code]); setHistoryIdx(0); goToTab('build'); if (addToast) addToast('Loaded ' + (s.name || 'template'), 'success'); },
+                  s.code && h('button', { onClick: function() { setHtml(s.code); setEditHtml(s.code); resetHistory(s.code); goToTab('build'); if (addToast) addToast('Loaded ' + (s.name || 'template'), 'success'); },
                     style: Object.assign({}, btn(PURPLE, '#fff', false), { marginTop: '8px' }) }, __alloT('stem.applab.load_in_build', '📥 Load in Build'))
                 );
               })
@@ -19696,11 +20079,19 @@ test('no a11y violations', async () => {
             h('button', { onClick: function() { setShowCode(!showCode); }, style: btn(showCode ? PURPLE : '#f1f5f9', showCode ? '#fff' : '#374151', false), 'aria-label': __alloT('stem.applab.toggle_code_view', 'Toggle code view') }, showCode ? '</> Hide Code' : '</> View Code'),
             h('button', { onClick: saveToGallery, style: btn('#f1f5f9', '#374151', false), title: __alloT('stem.applab.save_to_gallery', 'Save to gallery'), 'aria-label': __alloT('stem.applab.save_to_gallery_2', 'Save to gallery') }, '💾'),
             h('button', { onClick: exportHtml, style: btn('#f1f5f9', '#374151', false), title: __alloT('stem.applab.export_as_html_file', 'Export as HTML file'), 'aria-label': __alloT('stem.applab.export_as_html_file_2', 'Export as HTML file') }, '📥'),
-            h('label', { style: Object.assign({}, btn('#f1f5f9', '#374151', false), { cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }), title: __alloT('stem.applab.import_html_file', 'Import HTML file'), 'aria-label': __alloT('stem.applab.import_html_file_2', 'Import HTML file') },
-              '📂',
-              h('input', { type: 'file', accept: '.html,.htm', style: { display: 'none' }, onChange: function(ev) { if (ev.target.files && ev.target.files[0]) importHtml(ev.target.files[0]); ev.target.value = ''; } })
-            ),
-            h('button', { onClick: function() { setFullscreen(!fullscreen); }, style: btn('#f1f5f9', '#374151', false), 'aria-label': __alloT('stem.applab.toggle_fullscreen', 'Toggle fullscreen') }, fullscreen ? '🗗' : '⛶')
+            // Import was a <label> wrapping a display:none file input. A label
+            // is not in the tab order, and display:none removes the input from
+            // the accessibility tree entirely — so the control was mouse-only
+            // and had no accessible name. Use a real button that forwards to a
+            // hidden input.
+            h('button', { onClick: function() { importInputRef.current && importInputRef.current.click(); },
+              style: btn('#f1f5f9', '#374151', false),
+              title: __alloT('stem.applab.import_html_file', 'Import HTML file'),
+              'aria-label': __alloT('stem.applab.import_html_file_2', 'Import HTML file') }, '📂'),
+            h('input', { ref: importInputRef, type: 'file', accept: '.html,.htm', tabIndex: -1, 'aria-hidden': true,
+              style: { display: 'none' },
+              onChange: function(ev) { if (ev.target.files && ev.target.files[0]) importHtml(ev.target.files[0]); ev.target.value = ''; } }),
+            h('button', { onClick: function() { setFullscreen(!fullscreen); }, style: btn('#f1f5f9', '#374151', false), 'aria-pressed': fullscreen, 'aria-label': __alloT('stem.applab.toggle_fullscreen', 'Toggle fullscreen') }, fullscreen ? '🗗' : '⛶')
           )
         ),
 
@@ -19732,84 +20123,110 @@ test('no a11y violations', async () => {
           !html && h('div', { style: { maxWidth: '700px', margin: '0 auto', width: '100%' } },
 
           // ── Visual Pipeline Configurator ──
-          h('details', { open: showPipelineConfig, style: { marginBottom: '12px', background: 'linear-gradient(135deg, var(--allo-stem-canvas, #0f172a), #1e1b4b)', borderRadius: '12px', border: '1px solid var(--allo-stem-border, #334155)', overflow: 'hidden' } },
+          // Surfaces and text both come from theme vars. The old version mixed
+          // var(--allo-stem-canvas) (WHITE under .theme-default) with a
+          // hardcoded #1e1b4b stop and hardcoded light-purple text, which
+          // rendered at roughly 2:1 contrast in light mode.
+          h('details', { open: showPipelineConfig, style: { marginBottom: '12px', background: 'var(--allo-stem-panel, #1e293b)', borderRadius: '12px', border: '1px solid var(--allo-stem-border, #334155)', overflow: 'hidden' } },
             h('summary', { onClick: function(e) { e.preventDefault(); setShowPipelineConfig(!showPipelineConfig); },
-              style: { padding: '10px 14px', color: '#c4b5fd', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', listStyle: 'none' } },
-              h('span', null, __alloT('stem.applab.ai_pipeline_configuration', '\u2699\uFE0F AI Pipeline Configuration')),
-              h('span', { style: { fontSize: '10px', color: '#818cf8', background: 'rgba(129,140,248,0.1)', padding: '2px 8px', borderRadius: '10px' } },
+              style: { padding: '10px 14px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', listStyle: 'none' } },
+              h('span', null, __alloT('stem.applab.ai_pipeline_configuration', '⚙️ AI Pipeline Configuration')),
+              h('span', { style: { fontSize: '10px', color: 'var(--allo-stem-text, #e2e8f0)', background: 'var(--allo-stem-deeper, #020617)', border: '1px solid var(--allo-stem-border, #334155)', padding: '2px 8px', borderRadius: '10px' } },
                 pipelineConfig.filter(function(c) { return c.enabled; }).length + '/' + PIPELINE_AGENTS.length + ' agents active')
             ),
             showPipelineConfig && h('div', { style: { padding: '12px 14px', paddingTop: 0 } },
               h('p', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '12px', lineHeight: 1.5 } },
-                __alloT('stem.applab.configure_which_ai_agents_run_when_gen', 'Configure which AI agents run when generating an app. Toggle agents on/off and reorder them to see how it affects output quality. Each agent specializes in a different aspect of software development.')
+                __alloT('stem.applab.configure_which_ai_agents_run_when_gen', 'Configure which AI agents run when generating an app. Toggle agents on or off, and reorder them — order matters, because an agent placed before the agent whose output it needs has nothing to work with and will be skipped. Each agent specializes in a different aspect of software development.')
               ),
 
               // Pipeline flow diagram
               h('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', overflowX: 'auto', paddingBottom: '8px' },
-                role: 'list', 'aria-label': __alloT('stem.applab.ai_agent_pipeline_drag_to_reorder_clic', 'AI agent pipeline — drag to reorder, click to toggle') },
+                role: 'list', 'aria-label': __alloT('stem.applab.ai_agent_pipeline_reorder_and_toggle', 'AI agent pipeline — use the arrow buttons to reorder, and the ON/OFF button to toggle each agent') },
 
                 // Input node
-                h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', border: '2px solid var(--allo-stem-border, #475569)', borderRadius: '10px', padding: '6px 10px', textAlign: 'center', flexShrink: 0 } },
-                  h('div', { style: { fontSize: '16px' } }, '\uD83D\uDCDD'),
-                  h('div', { style: { fontSize: '8px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, __alloT('stem.applab.your_prompt', 'Your Prompt'))
+                h('div', { role: 'listitem', style: { background: 'var(--allo-stem-deeper, #020617)', border: '2px solid var(--allo-stem-border, #475569)', borderRadius: '10px', padding: '6px 10px', textAlign: 'center', flexShrink: 0 } },
+                  h('div', { style: { fontSize: '16px' }, 'aria-hidden': true }, '📝'),
+                  h('div', { style: { fontSize: '8px', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 600 } }, __alloT('stem.applab.your_prompt', 'Your Prompt'))
                 ),
 
-                // Arrow
-                h('div', { style: { color: '#4f46e5', fontSize: '14px', flexShrink: 0 } }, '\u2192'),
-
+                // Arrow — decorative, and not a valid child of role="list"
+                h('div', { 'aria-hidden': true, style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', flexShrink: 0 } }, '→'),
                 // Agent nodes
                 pipelineConfig.map(function(cfg, ci) {
                   var agent = PIPELINE_AGENTS.find(function(a) { return a.id === cfg.id; });
                   if (!agent) return null;
                   var isLive = pipelineLive === cfg.id;
                   var isOn = cfg.enabled;
+                  var warn = agentOrderWarning(cfg.id);
                   return h(React.Fragment, { key: cfg.id },
                     h('div', { role: 'listitem', style: {
-                      background: isLive ? 'rgba(129,140,248,0.2)' : isOn ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.3)',
-                      border: '2px solid ' + (isLive ? '#818cf8' : isOn ? agent.color + '60' : '#334155'),
+                      background: isLive ? 'rgba(129,140,248,0.22)' : isOn ? 'transparent' : 'rgba(127,127,127,0.18)',
+                      border: '2px solid ' + (isLive ? '#818cf8' : isOn ? agent.color : 'var(--allo-stem-border, #334155)'),
                       borderRadius: '10px', padding: '8px', textAlign: 'center', minWidth: '80px', flexShrink: 0,
-                      opacity: isOn ? 1 : 0.4, transition: 'all 0.2s', position: 'relative',
+                      opacity: isOn ? 1 : 0.55, transition: 'all 0.2s', position: 'relative',
                       boxShadow: isLive ? '0 0 14px ' + agent.color + '66, 0 0 34px ' + agent.color + '22' : 'none'
                     } },
                       // Live indicator
-                      isLive && h('div', { style: { position: 'absolute', top: -3, right: -3, width: 8, height: 8, background: '#22c55e', borderRadius: '50%', border: '2px solid #0f172a' } }),
+                      isLive && h('div', { style: { position: 'absolute', top: -3, right: -3, width: 8, height: 8, background: '#22c55e', borderRadius: '50%', border: '2px solid var(--allo-stem-panel, #0f172a)' } }),
 
                       // Reorder buttons
                       h('div', { style: { display: 'flex', justifyContent: 'center', gap: '2px', marginBottom: '4px' } },
                         ci > 0 && h('button', { onClick: function() { moveAgent(cfg.id, -1); },
-                          'aria-label': 'Move ' + agent.name + ' left',
-                          style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', fontSize: '10px', padding: '0 2px' } }, '\u25C0'),
+                          'aria-label': 'Move ' + agent.name + ' earlier in the pipeline',
+                          style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', fontSize: '10px', padding: '0 2px' } }, '◀'),
                         ci < pipelineConfig.length - 1 && h('button', { onClick: function() { moveAgent(cfg.id, 1); },
-                          'aria-label': 'Move ' + agent.name + ' right',
-                          style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', fontSize: '10px', padding: '0 2px' } }, '\u25B6')
+                          'aria-label': 'Move ' + agent.name + ' later in the pipeline',
+                          style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', fontSize: '10px', padding: '0 2px' } }, '▶')
                       ),
 
-                      h('div', { style: { fontSize: '18px', marginBottom: '2px' } }, agent.icon),
-                      h('div', { style: { fontSize: '9px', fontWeight: 700, color: isOn ? agent.color: 'var(--allo-stem-text-soft, #94a3b8)' } }, agent.name),
+                      h('div', { style: { fontSize: '18px', marginBottom: '2px' }, 'aria-hidden': true }, agent.icon),
+                      // Agent colour drives the BORDER, not the label — the
+                      // pastel palette fails contrast on a light surface.
+                      h('div', { style: { fontSize: '9px', fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)' } }, agent.name),
 
                       // Toggle
                       !agent.required && h('button', {
                         onClick: function() { toggleAgent(cfg.id); },
                         'aria-label': (isOn ? 'Disable ' : 'Enable ') + agent.name,
+                        'aria-pressed': isOn,
                         style: { marginTop: '4px', padding: '2px 8px', borderRadius: '6px', border: '1px solid ' + (isOn ? '#22c55e' : '#dc2626'),
-                          background: isOn ? 'rgba(34,197,94,0.1)' : 'rgba(220,38,38,0.1)',
-                          color: isOn ? '#22c55e' : '#dc2626', fontSize: '8px', fontWeight: 700, cursor: 'pointer' }
+                          background: isOn ? 'rgba(34,197,94,0.18)' : 'rgba(220,38,38,0.18)',
+                          color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '8px', fontWeight: 700, cursor: 'pointer' }
                       }, isOn ? 'ON' : 'OFF'),
-                      agent.required && h('div', { style: { marginTop: '4px', fontSize: '8px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.applab.required', 'Required'))
+                      agent.required && h('div', { style: { marginTop: '4px', fontSize: '8px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.applab.required', 'Required')),
+
+                      // Tell the student when this agent cannot actually run.
+                      warn && h('div', { style: { marginTop: '4px', fontSize: '8px', fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', background: 'rgba(234,88,12,0.25)', border: '1px solid #ea580c', borderRadius: '5px', padding: '2px 4px', lineHeight: 1.3 } }, warn)
                     ),
 
                     // Arrow between agents
-                    ci < pipelineConfig.length - 1 && h('div', { style: { color: '#4f46e5', fontSize: '14px', flexShrink: 0 } }, '\u2192')
+                    ci < pipelineConfig.length - 1 && h('div', { 'aria-hidden': true, style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', flexShrink: 0 } }, '→')
                   );
                 }),
 
-                // Arrow to output
-                h('div', { style: { color: '#4f46e5', fontSize: '14px', flexShrink: 0 } }, '\u2192'),
+                // Arrow to the Assembler / output
+                h('div', { 'aria-hidden': true, style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', flexShrink: 0 } }, '→'),
+
+                // Assembler node — always ran in sectioned mode but was absent
+                // from this diagram, so the slowest phase lit nothing up.
+                assemblerRuns && h(React.Fragment, null,
+                  h('div', { role: 'listitem', style: {
+                    background: pipelineLive === 'assembler' ? 'rgba(167,139,250,0.22)' : 'transparent',
+                    border: '2px solid #a78bfa', borderRadius: '10px', padding: '8px', textAlign: 'center', minWidth: '80px', flexShrink: 0, position: 'relative',
+                    boxShadow: pipelineLive === 'assembler' ? '0 0 14px #a78bfa66, 0 0 34px #a78bfa22' : 'none'
+                  } },
+                    pipelineLive === 'assembler' && h('div', { style: { position: 'absolute', top: -3, right: -3, width: 8, height: 8, background: '#22c55e', borderRadius: '50%', border: '2px solid var(--allo-stem-panel, #0f172a)' } }),
+                    h('div', { style: { fontSize: '18px', marginBottom: '2px' }, 'aria-hidden': true }, '🧩'),
+                    h('div', { style: { fontSize: '9px', fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)' } }, __alloT('stem.applab.assembler', 'Assembler')),
+                    h('div', { style: { marginTop: '4px', fontSize: '8px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.applab.automatic', 'Automatic'))
+                  ),
+                  h('div', { 'aria-hidden': true, style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', flexShrink: 0 } }, '→')
+                ),
 
                 // Output node
-                h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', border: '2px solid #22c55e', borderRadius: '10px', padding: '6px 10px', textAlign: 'center', flexShrink: 0 } },
-                  h('div', { style: { fontSize: '16px' } }, '\u2705'),
-                  h('div', { style: { fontSize: '8px', color: '#22c55e', fontWeight: 600 } }, __alloT('stem.applab.your_app', 'Your App'))
+                h('div', { role: 'listitem', style: { background: 'var(--allo-stem-deeper, #020617)', border: '2px solid #22c55e', borderRadius: '10px', padding: '6px 10px', textAlign: 'center', flexShrink: 0 } },
+                  h('div', { style: { fontSize: '16px' }, 'aria-hidden': true }, '✅'),
+                  h('div', { style: { fontSize: '8px', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 600 } }, __alloT('stem.applab.your_app', 'Your App'))
                 )
               ),
 
@@ -19819,17 +20236,18 @@ test('no a11y violations', async () => {
                   var agent = PIPELINE_AGENTS.find(function(a) { return a.id === cfg.id; });
                   if (!agent) return null;
                   return h('details', { key: cfg.id, style: { marginBottom: '4px' } },
-                    h('summary', { style: { fontSize: '10px', color: agent.color, cursor: 'pointer', fontWeight: 600 } }, agent.icon + ' ' + agent.name + ': ' + agent.desc),
+                    h('summary', { style: { fontSize: '10px', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', fontWeight: 600, borderLeft: '3px solid ' + agent.color, paddingLeft: '6px' } }, agent.icon + ' ' + agent.name + ': ' + agent.desc),
                     h('p', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, #94a3b8)', padding: '4px 0 4px 16px', lineHeight: 1.5 } }, agent.learnMore)
                   );
                 })
               ),
 
-              h('div', { style: { marginTop: '8px', padding: '6px 10px', background: 'rgba(99,102,241,0.1)', borderRadius: '8px', border: '1px solid rgba(99,102,241,0.2)' } },
-                h('p', { style: { fontSize: '9px', color: '#a5b4fc', lineHeight: 1.5 } },
-                  __alloT('stem.applab.experiment_try_disabling_the_reviewer_', '\uD83D\uDCA1 Experiment: Try disabling the Reviewer to see what happens when code isn\'t checked. Or disable the Architect to see how the Builder does without a plan. This teaches how software quality depends on process, not just skill.')
+              h('div', { style: { marginTop: '8px', padding: '6px 10px', background: 'rgba(99,102,241,0.12)', borderRadius: '8px', border: '1px solid rgba(99,102,241,0.35)' } },
+                h('p', { style: { fontSize: '9px', color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5 } },
+                  __alloT('stem.applab.experiment_try_disabling_the_reviewer_v2', '💡 Experiment: Turn the Reviewer off to see what ships when nobody checks the code. Move the Architect after the Builder and watch it get skipped — a plan that arrives after the work is done cannot change anything. Order and staffing are both part of software quality, not just skill.')
                 )
               )
+
             )
           ),
 
@@ -19847,11 +20265,17 @@ test('no a11y violations', async () => {
                 'aria-busy': isGenerating,
                 'aria-label': isGenerating ? ('Generating app: ' + genStep) : 'Generate app',
                 style: Object.assign({}, btn(PURPLE, '#fff', isGenerating || !prompt.trim()), { padding: '10px 24px', fontSize: '14px' })
-              }, isGenerating ? '\u23F3 ' + genStep : '\uD83D\uDE80 Generate App'),
+              }, isGenerating ? '⏳ ' + genStep : '🚀 Generate App'),
+              // A multi-agent run is minutes long; there was no way out of it.
+              isGenerating && h('button', {
+                onClick: function() { cancelRef.current = true; step('Cancelling after the current step...', 'Cancelling after the current step'); },
+                style: btn('#fee2e2', '#991b1b', false),
+                'aria-label': __alloT('stem.applab.cancel_generation', 'Cancel generation')
+              }, __alloT('stem.applab.cancel', '✕ Cancel')),
               h('button', { onClick: suggestIdeas, disabled: sugLoading,
-                style: btn('#f1f5f9', '#374151', sugLoading) }, sugLoading ? '\u23F3 Thinking...' : '\u2728 Suggest Ideas'),
+                style: btn('#f1f5f9', '#374151', sugLoading) }, sugLoading ? '⏳ Thinking...' : '✨ Suggest Ideas'),
               h('button', { onClick: function() { setShowGallery(!showGallery); },
-                style: btn('#f1f5f9', '#374151', false) }, '\uD83D\uDCC2 Gallery (' + gallery.length + ')')
+                style: btn('#f1f5f9', '#374151', false) }, '📂 Gallery (' + gallery.length + ')')
             )
           ),
 
@@ -19901,12 +20325,11 @@ test('no a11y violations', async () => {
                     h('div', { style: { fontSize: '10px', color: '#6b7280' } }, new Date(app.created).toLocaleDateString())
                   ),
                   h('div', { style: { display: 'flex', gap: '4px' } },
-                    h('button', { onClick: function() { setHtml(app.html); setEditHtml(app.html); setPrompt(app.prompt || ''); setHistory([app.html]); setHistoryIdx(0); setShowGallery(false); },
+                    h('button', { onClick: function() { setHtml(app.html); setEditHtml(app.html); setPrompt(app.prompt || ''); resetHistory(app.html); setShowGallery(false); },
                       style: btn('#f1f5f9', '#374151', false) }, __alloT('stem.applab.load', 'Load')),
                     h('button', { onClick: function() {
                       var updated = gallery.filter(function(g) { return g.id !== app.id; });
-                      setGallery(updated);
-                      try { localStorage.setItem(STORAGE_GALLERY, JSON.stringify(updated)); } catch(e) {}
+                      setGallery(persistGallery(updated) || updated);
                     }, style: btn('#fee2e2', '#991b1b', false) }, '✕')
                   )
                 );
@@ -19984,24 +20407,17 @@ test('no a11y violations', async () => {
           h('div', { style: { flex: showCode ? 1 : 1, display: 'flex', flexDirection: 'column', minHeight: fullscreen ? '80vh' : '300px', position: 'relative' } },
             h('iframe', {
               ref: iframeRef,
-              srcDoc: html,
-              sandbox: 'allow-scripts',
+              // srcDoc carries an injected reporter — see withErrorReporter.
+              srcDoc: withErrorReporter(html),
+              // allow-modals/allow-forms are needed because generated apps
+              // routinely call alert()/confirm() and submit forms; without them
+              // the app looks broken to the student. The frame still has an
+              // opaque origin (no allow-same-origin), so it cannot touch the
+              // parent page or its storage.
+              sandbox: 'allow-scripts allow-modals allow-forms',
               title: __alloT('stem.applab.applab_preview', 'AppLab preview'),
               'aria-label': 'Interactive app preview: ' + (prompt || 'generated app'),
-              style: { flex: 1, border: '2px solid #e5e7eb', borderRadius: '12px', background: '#fff', width: '100%', boxShadow: '0 10px 30px rgba(15,23,42,0.15)' },
-              onLoad: function() {
-                // Inject error listener into iframe to capture runtime errors
-                setIframeErrors([]);
-                try {
-                  var iDoc = iframeRef.current && iframeRef.current.contentWindow;
-                  if (iDoc) {
-                    iDoc.onerror = function(msg, src, line, col) {
-                      setIframeErrors(function(prev) { return prev.concat([{ msg: msg, line: line, col: col }]).slice(-5); });
-                      return true; // prevent default
-                    };
-                  }
-                } catch(e) { /* sandbox may block */ }
-              }
+              style: { flex: 1, border: '2px solid #e5e7eb', borderRadius: '12px', background: '#fff', width: '100%', boxShadow: '0 10px 30px rgba(15,23,42,0.15)' }
             }),
             // Error overlay (shows runtime errors from generated app)
             iframeErrors.length > 0 && h('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(220,38,38,0.95)', color: '#fff', padding: '8px 12px', borderRadius: '0 0 12px 12px', fontSize: '11px', fontFamily: 'monospace', maxHeight: '80px', overflowY: 'auto', zIndex: 10 } },
@@ -20024,7 +20440,7 @@ test('no a11y violations', async () => {
                 disabled: isGenerating, 'aria-label': __alloT('stem.applab.enhancement_prompt', 'Enhancement prompt') }),
               h('button', { onClick: enhanceApp, disabled: !enhancePrompt.trim() || isGenerating,
                 style: btn(PURPLE, '#fff', !enhancePrompt.trim() || isGenerating) }, isGenerating ? '\u23F3' : '\u2728 Enhance'),
-              h('button', { onClick: function() { setHtml(''); setEditHtml(''); setPrompt(''); setHistory([]); setHistoryIdx(-1); },
+              h('button', { onClick: function() { setHtml(''); setEditHtml(''); setPrompt(''); resetHistory(null); try { localStorage.removeItem(STORAGE_DRAFT); } catch(e) {} },
                 style: btn('#fee2e2', '#991b1b', false), title: __alloT('stem.applab.start_over', 'Start over') }, __alloT('stem.applab.new', '\uD83D\uDDD1\uFE0F New'))
             )
           )
@@ -20034,9 +20450,14 @@ test('no a11y violations', async () => {
 
         // Loading overlay
         isGenerating && !html && h('div', { style: { textAlign: 'center', padding: '40px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
-          h('div', { style: { fontSize: '48px', marginBottom: '12px', animation: 'pulse 1.5s infinite' } }, '\uD83D\uDCA1'),
-          h('p', { style: { fontSize: '14px', fontWeight: 600 } }, genStep || 'Generating your app...'),
-          h('p', { style: { fontSize: '11px', color: '#6b7280' } }, __alloT('stem.applab.this_usually_takes_5_15_seconds', 'This usually takes 5-15 seconds'))
+          h('div', { style: { fontSize: '48px', marginBottom: '12px', animation: 'pulse 1.5s infinite' }, 'aria-hidden': true }, '💡'),
+          // Live region: the phase text changes many times over a run that can
+          // last minutes, and none of it used to reach a screen reader.
+          h('p', { role: 'status', 'aria-live': 'polite', style: { fontSize: '14px', fontWeight: 600 } }, genStep || 'Generating your app...'),
+          h('p', { style: { fontSize: '11px', color: '#6b7280' } },
+            assemblerRuns
+              ? __alloT('stem.applab.multi_agent_run_takes_a_few_minutes', 'The Architect splits your app into sections and several agents work on them at once. This usually takes a few minutes.')
+              : __alloT('stem.applab.single_build_takes_under_a_minute', 'Single-build mode — this usually takes under a minute.'))
         ),
 
         // \u2550\u2550 PROMPT-CRAFT INQUIRY widget (H7b'') \u2550\u2550

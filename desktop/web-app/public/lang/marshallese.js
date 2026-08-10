@@ -23234,7 +23234,16 @@
     "run_lesson_blueprint_hint": "Kōṃṃan resource ko aolep ilo plan eo kiiō",
     "cancelled": "Kōjerbal kōṃṃan bwe en jako. Kōṃṃan eo an jānṃōṃṃan enaaj bōk jān ñe provider eo ej jipan kōjerbal bwe en jako.",
     "cancel": "Kōjerbal jab",
-    "retry": "Kōṃṃan ilo juon alen"
+    "retry": "Kōṃṃan ilo juon alen",
+    "open_stem_tool": "Open a specific STEM tool",
+    "open_stem_tool_ambiguous": "More than one tool matches that: ",
+    "open_stem_tool_done": "Opened ",
+    "open_stem_tool_hint": "Name any STEM Lab tool and go straight to it",
+    "open_stem_tool_miss": "No STEM tool matched ",
+    "open_stem_tool_miss_tail": ". STEM Lab opened so you can browse.",
+    "open_stem_tool_no_index": "STEM Lab opened. The tool catalog was not available, so browse the list.",
+    "open_stem_tool_none": "STEM Lab opened. Name a tool and I can go straight to it.",
+    "open_stem_tool_unsupported": "STEM Lab opened. This build cannot jump straight to a named tool."
   },
   "palette": {
     "aria": "AlloFlow command palette",

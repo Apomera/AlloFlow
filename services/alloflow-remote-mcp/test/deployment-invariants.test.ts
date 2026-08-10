@@ -41,6 +41,7 @@ describe("Cloudflare deployment invariants", () => {
     expect(config).toContain('"name": "DCR_RATE_LIMITER"');
     expect(config).toContain('"ACCESS_CLIENT_SECRET"');
     expect(config).toContain('"GEMINI_API_KEY"');
+    expect(config).toContain('"RELEASE_CANARY_SECRET"');
     expect(config).toContain('"RUNNER_AUTH_SECRET"');
     expect(config).toContain('"CHATGPT_REDIRECT_URI"');
   });
@@ -67,6 +68,15 @@ describe("Cloudflare deployment invariants", () => {
     expect(packageJson.scripts["deploy:staging"]).toContain(
       "runner:stage:check",
     );
+    expect(packageJson.scripts["deploy:staging"]).toContain(
+      "runner:canary",
+    );
+    expect(packageJson.scripts["deploy:staging"]).toContain(
+      "lifecycle:apply:staging",
+    );
+    expect(packageJson.scripts["deploy:staging"]).toContain(
+      "canary:staging",
+    );
   });
 
   it("exports the ContainerProxy required by outbound interception", () => {
@@ -75,6 +85,21 @@ describe("Cloudflare deployment invariants", () => {
     expect(entrypoint).toContain(
       'export { ContainerProxy } from "@cloudflare/containers";',
     );
+  });
+
+  it("keeps deep readiness authenticated and model-aware", () => {
+    const entrypoint = readProjectFile("src/pilot-index.ts");
+    const container = readProjectFile("src/remediation-container.ts");
+
+    expect(entrypoint).toContain('url.pathname === "/readyz"');
+    expect(entrypoint).toContain("RELEASE_CANARY_SECRET");
+    expect(entrypoint).toContain("constantTimeEqual");
+    expect(entrypoint).toContain("expectedRunnerBuildForModel(");
+    expect(entrypoint).toContain("container.probeRunnerHealth()");
+    expect(container).toContain("async probeRunnerHealth()");
+    expect(container).toContain("await this.setOutboundByHosts({})");
+    expect(container).toContain("await this.setAllowedHosts([])");
+    expect(container).toContain("this.enableInternet = false");
   });
 
   it("allows both internal proxy hostnames before outbound handlers run", () => {
@@ -111,6 +136,44 @@ describe("Cloudflare deployment invariants", () => {
     expect(store.match(/await db\.batch\(\[/gu)?.length).toBeGreaterThanOrEqual(2);
     expect(store).toContain('current.status === "completed"');
     expect(store).toContain("input_key IS NOT NULL");
+  });
+
+  it("rolls out renewable job leases without expiring legacy runs", () => {
+    const migration = readProjectFile(
+      "migrations/0004_job_attempt_leases.sql",
+    );
+    const store = readProjectFile("src/job-store.ts");
+
+    expect(migration).toContain("ADD COLUMN attempt_id");
+    expect(migration).toContain("ADD COLUMN heartbeat_at");
+    expect(migration).toContain("ADD COLUMN lease_expires_at");
+    expect(migration).toContain("unixepoch() + 3600");
+    expect(store).toContain("RUNNING_JOB_LEASE_SECONDS = 5 * 60");
+    expect(store).toContain("const queuedCutoff");
+    expect(store).not.toContain("COALESCE(started_at, created_at)");
+  });
+
+  it("rolls out attempt-fenced durable checkpoints before runtime use", () => {
+    const migration = readProjectFile(
+      "migrations/0005_job_checkpoints.sql",
+    );
+    const store = readProjectFile("src/job-store.ts");
+    const container = readProjectFile("src/remediation-container.ts");
+    const workflow = readProjectFile("src/remediation-workflow.ts");
+    const operations = readProjectFile("src/pilot-operations.ts");
+
+    expect(migration).toContain("ADD COLUMN checkpoint_seq");
+    expect(migration).toContain("ADD COLUMN checkpoint_key");
+    expect(migration).toContain("ADD COLUMN checkpoint_sha256");
+    expect(migration).toContain("jobs_checkpoint_key_idx");
+    expect(store).toContain("commitJobCheckpoint");
+    expect(store).toContain("AND attempt_id = ?");
+    expect(store).toContain("checkpoint_seq = ?");
+    expect(container).toContain('url.pathname === "/checkpoint"');
+    expect(container).toContain('etagDoesNotMatch: "*"');
+    expect(workflow).toContain('"http://r2.internal/checkpoint"');
+    expect(workflow).toContain('"remove published checkpoints"');
+    expect(operations).toContain("jobCheckpointPrefix(job)");
   });
 
   it("defers terminal states and input cleanup until shutdown is confirmed", () => {

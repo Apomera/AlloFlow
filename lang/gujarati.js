@@ -30826,7 +30826,16 @@
     "run_lesson_blueprint_hint": "વર્તમાન યોજનાના બધા સંસાધનો બનાવે છે",
     "cancelled": "રદ કરવાની વિનંતી કરવામાં આવી છે. પ્રદાતા તેને સમર્થન આપે ત્યારે વર્તમાન કામગીરી અટકી જશે.",
     "cancel": "રદ કરો",
-    "retry": "ફરી પ્રયાસ કરો"
+    "retry": "ફરી પ્રયાસ કરો",
+    "open_stem_tool": "Open a specific STEM tool",
+    "open_stem_tool_ambiguous": "More than one tool matches that: ",
+    "open_stem_tool_done": "Opened ",
+    "open_stem_tool_hint": "Name any STEM Lab tool and go straight to it",
+    "open_stem_tool_miss": "No STEM tool matched ",
+    "open_stem_tool_miss_tail": ". STEM Lab opened so you can browse.",
+    "open_stem_tool_no_index": "STEM Lab opened. The tool catalog was not available, so browse the list.",
+    "open_stem_tool_none": "STEM Lab opened. Name a tool and I can go straight to it.",
+    "open_stem_tool_unsupported": "STEM Lab opened. This build cannot jump straight to a named tool."
   },
   "palette": {
     "aria": "AlloFlow આદેશ પેલેટ",

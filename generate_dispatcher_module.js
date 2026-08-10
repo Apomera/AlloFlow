@@ -1495,9 +1495,32 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
     // existing call sites stable while ensuring text requests can be cancelled
     // between resources instead of waiting for the full retry budget.
     const generationSignal = deps && deps.generationSignal;
+    const throwIfGenerationAborted = () => {
+        if (generationSignal && generationSignal.aborted) {
+            const abortError = new Error('Generation aborted');
+            abortError.name = 'AbortError';
+            throw abortError;
+        }
+    };
     const callGemini = (...args) => {
         if (generationSignal && args[5] == null) args[5] = generationSignal;
         return callGeminiBase(...args);
+    };
+    const callImagenWithSignal = (...args) => {
+        if (!generationSignal) return callImagen(...args);
+        const options = args[3];
+        args[3] = options && typeof options === 'object'
+            ? Object.assign({}, options, { signal: options.signal || generationSignal })
+            : { signal: generationSignal };
+        return callImagen(...args);
+    };
+    const callGeminiImageEditWithSignal = (...args) => {
+        if (!generationSignal) return callGeminiImageEdit(...args);
+        const options = args[5];
+        args[5] = options && typeof options === 'object'
+            ? Object.assign({}, options, { signal: options.signal || generationSignal })
+            : { signal: generationSignal };
+        return callGeminiImageEdit(...args);
     };
     // ── DA CLINICAL ISOLATION ────────────────────────────────────────────
     // Dynamic Assessment supports (visual organizers, sentence frames) route
@@ -2098,9 +2121,9 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             }
             addToast(autoRemoveWords ? t('status_steps.refining_icons') : t('status_steps.generating_icons'), "info");
             setGenerationStep(autoRemoveWords ? t('status_steps.refining_icons') : t('status_steps.generating_icons'));
-            const BATCH_SIZE = 10;
+            const BATCH_SIZE = 3;
             const BATCH_DELAY_MS = 500;
-            const MAX_RETRIES = 3;
+            const MAX_RETRIES = 1;
             const processedContent = [];
             const generateImageWithRetry = async (item, index, total) => {
                 try {
@@ -2114,19 +2137,21 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                                 debugLog(`⏳ Retry ${attempt + 1}/${MAX_RETRIES} for "${item.term}" after ${backoffMs}ms...`);
                                 await new Promise(r => setTimeout(r, backoffMs));
                             }
-                            let imageUrl = await callImagen(imgPrompt);
+                            let imageUrl = await callImagenWithSignal(imgPrompt);
                             if (autoRemoveWords && imageUrl) {
                                 try {
                                     const rawBase64 = imageUrl.split(',')[1];
                                     const editPrompt = "Remove all text, labels, letters, and words from the image. Keep the illustration clean.";
-                                    imageUrl = await callGeminiImageEdit(editPrompt, rawBase64);
+                                    imageUrl = await callGeminiImageEditWithSignal(editPrompt, rawBase64);
                                 } catch (editErr) {
+                                    if ((editErr && editErr.name === 'AbortError') || (generationSignal && generationSignal.aborted)) throw editErr;
                                     warnLog("Auto-remove text failed for term:", item.term, editErr);
                                 }
                             }
                             debugLog(`✅ Image ${index + 1}/${total} generated for: ${item.term}`);
                             return { ...item, image: imageUrl };
                         } catch (e) {
+                            if ((e && e.name === 'AbortError') || (generationSignal && generationSignal.aborted)) throw e;
                             const is401 = e.message && e.message.includes('401');
                             if (is401 && attempt < MAX_RETRIES - 1) {
                                 warnLog(`⚠️ Rate limited on "${item.term}", will retry...`);
@@ -2796,11 +2821,11 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         if (visualLayoutMode !== 'single') {
             try {
                 if (visualLayoutMode === 'auto') {
-                    visualPlan = await generateVisualPlan(imageSourceText.substring(0, 500), effectiveGrade, effectiveLanguage, effectiveVisualStyle, effCustomInstructions);
+                    visualPlan = await generateVisualPlan(imageSourceText.substring(0, 500), effectiveGrade, effectiveLanguage, effectiveVisualStyle, effCustomInstructions, generationSignal);
                 } else {
                     const templateHint = `You MUST use layout: "${visualLayoutMode}".`;
                     const concept = imageSourceText.substring(0, 500);
-                    visualPlan = await generateVisualPlan(concept + '\n\n' + templateHint, effectiveGrade, effectiveLanguage, effectiveVisualStyle, effCustomInstructions);
+                    visualPlan = await generateVisualPlan(concept + '\n\n' + templateHint, effectiveGrade, effectiveLanguage, effectiveVisualStyle, effCustomInstructions, generationSignal);
                     if (visualPlan) visualPlan.layout = visualLayoutMode;
                 }
             } catch (planErr) {
@@ -2810,7 +2835,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         }
         if (visualPlan && visualPlan.layout !== 'single' && visualPlan.panels.length > 1) {
             setGenerationStep(t('visual_director.generating_panels') || 'Generating multi-panel illustration...');
-            const executedPlan = await executeVisualPlan(visualPlan, targetWidth, targetQual, effectiveVisualStyle);
+            const executedPlan = await executeVisualPlan(visualPlan, targetWidth, targetQual, effectiveVisualStyle, generationSignal);
             if (!executedPlan?.panels?.some(p => p?.imageUrl)) {
                 console.error('[VisualDebug] executeVisualPlan returned all-null panels:', executedPlan);
             }
@@ -2826,7 +2851,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         setGenerationStep(t('status_steps.rendering_diagram'));
         let imageBase64;
         try {
-            imageBase64 = await callImagen(finalPrompt, targetWidth, targetQual);
+            imageBase64 = await callImagenWithSignal(finalPrompt, targetWidth, targetQual);
         } catch(e) {
             console.error('[VisualDebug] callImagen threw:', e);
             warnLog('Image generation failed:', e);
@@ -2851,7 +2876,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                      refinePrompt = "Enhance this image to make it significantly more eye-catching and visually appealing. Increase contrast, vibrancy, and lighting effects while maintaining the educational clarity of the diagram. Make it look like a high-quality textbook illustration.";
                  }
                  if (refinePrompt) {
-                     const refinedImage = await callGeminiImageEdit(refinePrompt, rawBase64, targetWidth, targetQual);
+                     const refinedImage = await callGeminiImageEditWithSignal(refinePrompt, rawBase64, targetWidth, targetQual);
                      if (refinedImage) {
                          imageBase64 = refinedImage;
                          addToast(t('visuals.actions.enhanced_success'), "success");
@@ -3305,7 +3330,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                     // the view falls back to text-only rendering. Never blocks the quiz.
                     await Promise.all(_imgTasks.map(async function (task) {
                         try {
-                            const url = await callImagen(task.prompt);
+                            const url = await callImagenWithSignal(task.prompt);
                             if (task.key === 'imageUrl') {
                                 task.target.imageUrl = url || '';
                             } else if (task.key === 'optionImageUrls') {
@@ -4722,8 +4747,8 @@ ${modeListForAuto}
              setGenerationStep(t('timeline.visuals.generating') || 'Generating sequence visuals...');
              addToast(t('timeline.visuals.generating') || 'Generating sequence visuals...', 'info');
              let failCount = 0;
-             const POOL_SIZE = 5;
-             const MAX_RETRIES = 3;
+             const POOL_SIZE = 2;
+             const MAX_RETRIES = 1;
              const progression = content.progressionLabel || 'sequential order';
              const generateOne = async (item) => {
                  const _timelineStyle = (timelineImageStyle || '').trim() || (universalImageStyle || '').trim();
@@ -4732,18 +4757,20 @@ ${modeListForAuto}
                  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
                      try {
                          if (attempt > 0) await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt)));
-                         let imageUrl = await callImagen(imgPrompt);
+                         let imageUrl = await callImagenWithSignal(imgPrompt);
                          if (autoRemoveWords && imageUrl) {
                              try {
                                  const rawBase64 = imageUrl.split(',')[1];
                                  const editPrompt = "Remove all text, labels, letters, and words from the image. Keep the illustration clean.";
-                                 imageUrl = await callGeminiImageEdit(editPrompt, rawBase64);
+                                 imageUrl = await callGeminiImageEditWithSignal(editPrompt, rawBase64);
                              } catch (editErr) {
+                                 if ((editErr && editErr.name === 'AbortError') || (generationSignal && generationSignal.aborted)) throw editErr;
                                  warnLog("Timeline batch auto-remove text failed for:", item.event, editErr);
                              }
                          }
                          return { ...item, image: imageUrl };
                      } catch (e) {
+                         if ((e && e.name === 'AbortError') || (generationSignal && generationSignal.aborted)) throw e;
                          if (attempt === MAX_RETRIES - 1) { failCount++; warnLog('Timeline image gen failed', e); return item; }
                      }
                  }
@@ -5037,7 +5064,7 @@ ${modeListForAuto}
                  setGenerationStep('Generating card visuals...');
                  addToast(t('toasts.generating_card_visuals'), "info");
                  // POOL_SIZE was 5, dropped to 2 to reduce concurrent rate-limit
-                 // triggers on Imagen. callImagen has its own 3-retry exponential
+                 // triggers on Imagen. callImagen has its own centralized 3-attempt exponential
                  // backoff (1s/2s/4s, see AlloFlowANTI.txt:13021), but when 5
                  // requests fire at once and the first hits a 429, the others
                  // are already in flight and exhaust their retries within ~7s.
@@ -5048,9 +5075,10 @@ ${modeListForAuto}
                          const _csDeckStyle = (conceptSortImageStyle || '').trim() || (universalImageStyle || '').trim();
                          const styleInstruction = _csDeckStyle ? `Style: ${_csDeckStyle}.` : 'Educational style.';
                          const imgPrompt = `Simple, clear vector icon or illustration of: "${item.content}". White background. ${styleInstruction} No text.`;
-                         const imageUrl = await callImagen(imgPrompt);
+                         const imageUrl = await callImagenWithSignal(imgPrompt);
                          return { ...item, image: imageUrl };
                      } catch (e) {
+                         if ((e && e.name === 'AbortError') || (generationSignal && generationSignal.aborted)) throw e;
                          warnLog("Card image gen failed", e);
                          return item;
                      }

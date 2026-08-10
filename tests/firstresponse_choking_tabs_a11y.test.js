@@ -13,7 +13,7 @@ describe('First Response Choking tabs accessibility', () => {
   it('gives Choking tabs roving focus and keyboard navigation', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
     expect(source).toContain("role: 'tablist', 'aria-label': __alloT('stem.firstresponse.choking_module_sections'");
-    expect(source).toContain("var CHOKING_TAB_IDS = ['select', 'protocol'];");
+    expect(source).toContain("var CHOKING_TAB_IDS = ['select', 'practice', 'protocol'];");
     expect(source).toContain("id: 'firstresponse-choking-tab-' + id");
     expect(source).toContain("'aria-controls': 'firstresponse-choking-panel-' + id");
     expect(source).toContain("'aria-selected': active ? 'true' : 'false'");
@@ -30,5 +30,18 @@ describe('First Response Choking tabs accessibility', () => {
     expect(source).toContain("id: 'firstresponse-choking-panel-' + chokeView");
     expect(source).toContain("'aria-labelledby': 'firstresponse-choking-tab-' + chokeView");
     expect(source).toContain('tabIndex: 0');
+  });
+
+  it('pins the interactive 2025 choking sequence and training boundary', () => {
+    const source = fs.readFileSync(sourcePath, 'utf8');
+    expect(source).toContain("tabBtn('practice', 'Interactive practice')");
+    expect(source).toContain("p.sequence.push('five-back-blows')");
+    expect(source).toContain("p.sequence.push('five-thrusts')");
+    expect(source).toContain("p.sequence.push('start-cpr-compressions')");
+    expect(source).toContain("p.sequence.push('remove-visible-object-only')");
+    expect(source).toContain('Never use abdominal thrusts on an infant');
+    expect(source).toContain('In late pregnancy, use chest thrusts on the center of the breastbone');
+    expect(source).toContain('It cannot assess real force, hand position, body support, or skill quality');
+    expect(source).toContain("role: 'status', 'aria-live': 'polite'");
   });
 });

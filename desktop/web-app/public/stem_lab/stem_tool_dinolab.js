@@ -6022,7 +6022,9 @@ window.StemLab = window.StemLab || {
   window.StemLab.registerTool('dinoLab', {
     name: 'Dino Lab',
     icon: '🦕',
-    category: 'explore',
+    desc: 'Explore dinosaurs across deep time, compare species, dig fossils, build food webs, and connect birds to dinosaurs.',
+    category: 'biology',
+    aliases: ['dinosaurs', 'paleontology', 'fossils', 'food webs'],
     questHooks: [
       { id: 'meet_5', label: 'Open 5 different dinosaur cards', icon: '🦕', check: function (d) { return Object.keys(d.seen || {}).length >= 5; }, progress: function (d) { return Object.keys(d.seen || {}).length + '/5 met'; } },
       { id: 'dig_one', label: 'Excavate a fossil at the Dig Site', icon: '⛏️', check: function (d) { return (d.digsSolved || 0) >= 1; }, progress: function (d) { return (d.digsSolved || 0) + '/1 dig'; } },

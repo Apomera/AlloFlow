@@ -31,6 +31,34 @@
   function wcTone(f, d2, t, v) { var ac = getWCAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.06, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d2||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d2||0.1)); } catch(e) {} }
   function wcNoise(dur, vol, hz, type) { var ac = getWCAC(); if (!ac) return; try { var bs = Math.floor(ac.sampleRate*(dur||0.1)); var b = ac.createBuffer(1,bs,ac.sampleRate); var dd = b.getChannelData(0); for(var i=0;i<bs;i++) dd[i]=(Math.random()*2-1)*(1-i/bs); var s = ac.createBufferSource(); s.buffer=b; var f = ac.createBiquadFilter(); f.type=type||'lowpass'; f.frequency.value=hz||600; var g = ac.createGain(); g.gain.setValueAtTime(vol||0.04,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(dur||0.1)); s.connect(f); f.connect(g); g.connect(ac.destination); s.start(); } catch(e) {} }
   
+  function playWcThunderRumble() {
+    var ac = getWCAC();
+    if (!ac) return;
+    try {
+      var duration = 1.25;
+      var bufferSize = Math.floor(ac.sampleRate * duration);
+      var buffer = ac.createBuffer(1, bufferSize, ac.sampleRate);
+      var data = buffer.getChannelData(0);
+      for (var noiseIndex = 0; noiseIndex < bufferSize; noiseIndex++) {
+        var envelope = Math.pow(1 - noiseIndex / bufferSize, 1.35);
+        data[noiseIndex] = (Math.random() * 2 - 1) * envelope;
+      }
+      var source = ac.createBufferSource();
+      source.buffer = buffer;
+      var filter = ac.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 180;
+      var gain = ac.createGain();
+      gain.gain.setValueAtTime(0.0001, ac.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.08, ac.currentTime + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + duration);
+      source.connect(filter);
+      filter.connect(gain);
+      gain.connect(ac.destination);
+      source.start();
+    } catch (e) {}
+  }
+
   function playBubblePop() {
     var ac = getWCAC(); if (!ac) return;
     try {
@@ -203,6 +231,7 @@
       '.wc-viewport-actions{display:flex;align-items:center;justify-content:flex-end;gap:5px;flex-wrap:wrap}.wc-viewport-btn{min-width:44px;min-height:44px;padding:6px 10px;border:1px solid rgba(125,211,252,.36);border-radius:8px;background:#075985;color:#fff;font-size:11px;font-weight:900}.wc-viewport-btn[aria-pressed="true"]{background:#0ea5e9;color:#082f49}.wc-viewport-btn:disabled{opacity:.48;cursor:not-allowed}.wc-viewport-start{min-height:44px;padding:8px 14px;border-radius:9px;background:linear-gradient(135deg,#0e7490,#1d4ed8);color:#fff;font-size:12px;font-weight:900;box-shadow:0 8px 20px rgba(14,165,233,.3)}',
       '.wc-viewport-choice{position:absolute;z-index:7;left:50%;bottom:76px;width:min(620px,calc(100% - 20px));transform:translateX(-50%);padding:12px;border:1px solid rgba(186,230,253,.5);border-radius:14px;background:rgba(4,26,43,.94);box-shadow:0 18px 42px rgba(2,6,23,.5);backdrop-filter:blur(12px);color:#e0f2fe}.wc-viewport-choice h5{margin:0;font-size:14px;font-weight:900}.wc-viewport-choice p{margin:3px 0 9px;font-size:10px;color:#bae6fd}.wc-viewport-choice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.wc-viewport-choice-grid button{min-height:52px;padding:7px;border:1px solid rgba(125,211,252,.4);border-radius:9px;background:rgba(8,47,73,.9);color:#fff;text-align:left}.wc-viewport-choice-grid strong,.wc-viewport-choice-grid span{display:block}.wc-viewport-choice-grid strong{font-size:11px}.wc-viewport-choice-grid span{margin-top:2px;font-size:10px;color:#bae6fd}',
       '.wc-viewport-choice-grid button[data-route-choice="runoff"]{border-left:3px solid #3b82f6}.wc-viewport-choice-grid button[data-route-choice="infiltrate"]{border-left:3px solid #22d3ee}.wc-viewport-choice-grid button[data-route-choice="plant"]{border-left:3px solid #4ade80}',
+      '.wc-precip-journey-choice{left:auto;right:12px;bottom:76px;width:min(400px,calc(100% - 24px));transform:none;padding:10px;background:rgba(4,26,43,.88);box-shadow:0 14px 34px rgba(2,6,23,.38)}.wc-precip-journey-choice h5{font-size:13px}.wc-precip-journey-choice p{margin-bottom:7px}.wc-precip-journey-choice .wc-viewport-choice-grid{gap:5px}.wc-precip-journey-choice .wc-route-choice-card{background:rgba(8,47,73,.78)}@media(max-width:560px){.wc-precip-journey-choice{left:10px;right:10px;bottom:76px;width:auto}.wc-precip-journey-choice .wc-viewport-choice-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.wc-precip-journey-choice .wc-route-choice-card[data-route-choice="plant"]{grid-column:1/-1}}@media(forced-colors:active){.wc-precip-journey-choice{background:Canvas;box-shadow:none}.wc-precip-journey-choice .wc-route-choice-card{background:Canvas;color:CanvasText;border-color:CanvasText}}',
       '.wc-viewport-choice-grid .wc-route-share-track{display:block;height:5px;margin-top:6px;border-radius:999px;background:rgba(125,211,252,.22);overflow:hidden}.wc-viewport-choice-grid .wc-route-share-track span{display:block;height:100%;margin:0;border-radius:inherit;background:#60a5fa}.wc-viewport-choice-grid button[data-route-choice="infiltrate"] .wc-route-share-track span{background:#22d3ee}.wc-viewport-choice-grid button[data-route-choice="plant"] .wc-route-share-track span{background:#4ade80}@media (forced-colors: active){.wc-viewport-choice-grid .wc-route-share-track{border:1px solid CanvasText;background:Canvas}.wc-viewport-choice-grid .wc-route-share-track span{background:Highlight}}',
       '.wc-route-choice-card{position:relative;transition:transform 160ms ease,box-shadow 160ms ease}.wc-route-choice-card:hover{transform:translateY(-1px)}.wc-route-choice-card.is-leading{box-shadow:0 0 0 2px #facc15,0 10px 22px rgba(250,204,21,.18)}.wc-route-leader-badge{display:inline-block!important;margin-top:5px!important;padding:2px 5px;border-radius:5px;background:#facc15;color:#422006!important;font-size:8px!important;font-weight:900!important;letter-spacing:.04em;text-transform:uppercase}.wc-route-choice-signal{margin:4px 0 9px!important;padding:5px 7px;border-left:2px solid #facc15;border-radius:5px;background:rgba(250,204,21,.1);color:#fef08a!important;font-size:10px!important;font-weight:800!important}.wc-route-choice-card:focus-visible{outline:3px solid #facc15;outline-offset:2px}@media (forced-colors: active){.wc-route-choice-card.is-leading{box-shadow:0 0 0 2px Highlight}.wc-route-leader-badge{background:Highlight;color:HighlightText!important}.wc-route-choice-signal{border-color:Highlight;background:Canvas;color:CanvasText!important}}',
       '.wc-journey-lens{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;margin:-2px 0 10px;border-left:3px solid #0ea5e9;background:rgba(14,165,233,.16)}',
@@ -414,7 +443,22 @@
       '.wc-stage-causal{position:relative;z-index:1;box-shadow:0 0 0 2px rgba(99,102,241,.35),0 5px 12px rgba(79,70,229,.14)}',
       '@media(max-width:560px){.wc-causal-strip{grid-template-columns:1fr}.wc-causal-chain{justify-content:flex-start}}',
       '.dark .wc-causal-strip{background:rgba(8,47,73,.5);border-color:rgba(56,189,248,.2);border-left-color:#38bdf8;color:#cbd5e1}.dark .wc-causal-kicker{color:#7dd3fc}.dark .wc-causal-copy strong{color:#f8fafc}.dark .wc-causal-copy span:last-child{color:#94a3b8}.dark .wc-causal-node{background:rgba(15,23,42,.72);color:#e2e8f0}.dark .wc-causal-arrow{color:#94a3b8}.dark .wc-stage-causal{box-shadow:0 0 0 2px rgba(129,140,248,.5),0 5px 12px rgba(99,102,241,.2)}',
-      '.dark .wc-brief-title{color:#f8fafc}.dark .wc-brief-copy{color:#cbd5e1}.dark .wc-metric{background:rgba(15,23,42,.72);border-color:rgba(56,189,248,.22)}.dark .wc-metric strong{color:#f8fafc}.dark .wc-metric span{color:#94a3b8}'
+      '.dark .wc-brief-title{color:#f8fafc}.dark .wc-brief-copy{color:#cbd5e1}.dark .wc-metric{background:rgba(15,23,42,.72);border-color:rgba(56,189,248,.22)}.dark .wc-metric strong{color:#f8fafc}.dark .wc-metric span{color:#94a3b8}',
+      '.wc-precip-lab{width:100%;max-width:65rem;padding:14px;border:1px solid rgba(14,165,233,.28);border-radius:18px;background:linear-gradient(145deg,rgba(248,250,252,.98),rgba(224,242,254,.82));box-shadow:0 18px 42px rgba(15,23,42,.12);color:#1e293b}',
+      '.wc-precip-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:11px}.wc-precip-head-copy{min-width:0;flex:1}.wc-precip-kicker{display:block;font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#0369a1}.wc-precip-head h3{margin:2px 0 0;font-size:18px;font-weight:900;line-height:1.2;color:#0f172a}.wc-precip-head p{max-width:680px;margin:4px 0 0;font-size:11px;line-height:1.45;color:#475569}.wc-precip-head-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.wc-precip-btn{min-height:38px;padding:6px 9px;border:1px solid rgba(14,165,233,.3);border-radius:8px;background:rgba(255,255,255,.82);color:#075985;font-size:11px;font-weight:900}.wc-precip-btn:hover{background:#fff;box-shadow:0 5px 12px rgba(14,165,233,.14)}.wc-precip-btn.is-primary{border-color:#0369a1;background:#0369a1;color:#fff}.wc-precip-btn.is-primary:hover{background:#075985}.wc-precip-btn:focus-visible,.wc-precip-lab input:focus-visible,.wc-precip-lab select:focus-visible,.wc-precip-lab textarea:focus-visible,.wc-precip-lab summary:focus-visible{outline:3px solid #facc15;outline-offset:2px}',
+      '.wc-precip-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(270px,.9fr);gap:12px;align-items:start}.wc-precip-visual{min-width:0}.wc-precip-chamber{position:relative;overflow:hidden;border:1px solid rgba(125,211,252,.42);border-radius:15px;background:#082f49;box-shadow:0 16px 34px rgba(2,6,23,.24)}.wc-precip-canvas{display:block;width:100%;height:auto;aspect-ratio:16/9;min-height:260px;background:#082f49}.wc-precip-canvas-dock{position:relative;display:flex;align-items:flex-end;justify-content:space-between;gap:8px;padding:7px 8px;border:1px solid rgba(186,230,253,.3);border-radius:10px;background:rgba(4,26,43,.86);color:#e0f2fe;backdrop-filter:blur(8px)}.wc-precip-canvas-dock span,.wc-precip-canvas-dock strong{display:block}.wc-precip-canvas-dock span{font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#7dd3fc}.wc-precip-canvas-dock strong{margin-top:1px;font-size:12px;line-height:1.2;color:#fff}.wc-precip-pause{flex:0 0 auto;min-height:38px;padding:5px 8px;border:1px solid rgba(125,211,252,.4);border-radius:7px;background:#075985;color:#fff;font-size:10px;font-weight:900}.wc-precip-pause[aria-pressed="true"]{background:#e0f2fe;color:#075985}',
+      '.wc-precip-result{margin-top:9px;padding:10px 11px;border:1px solid rgba(14,165,233,.24);border-left:4px solid #0ea5e9;border-radius:11px;background:rgba(255,255,255,.78)}.wc-precip-result-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap}.wc-precip-result-label{font-size:15px;font-weight:900;color:#0f172a}.wc-precip-result-badge{padding:4px 6px;border-radius:6px;background:#e0f2fe;color:#075985;font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase}.wc-precip-result p{margin:4px 0 0;font-size:11px;line-height:1.4;color:#475569}.wc-precip-causal{margin-top:6px;padding-top:6px;border-top:1px solid rgba(14,165,233,.16);font-size:10px!important;color:#075985!important;font-weight:800}',
+      '.wc-precip-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px;margin-top:8px}.wc-precip-metric{min-width:0;padding:7px 8px;border:1px solid rgba(125,211,252,.34);border-radius:9px;background:rgba(255,255,255,.68)}.wc-precip-metric span,.wc-precip-metric strong{display:block}.wc-precip-metric span{font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:#64748b}.wc-precip-metric strong{margin-top:2px;font-size:11px;line-height:1.25;color:#1e293b;overflow-wrap:anywhere}',
+      '.wc-precip-path-strip{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr);align-items:stretch;gap:5px;margin-top:8px}.wc-precip-path-step{min-width:0;padding:7px 8px;border:1px solid rgba(14,165,233,.24);border-radius:9px;background:rgba(255,255,255,.72)}.wc-precip-path-step span,.wc-precip-path-step strong{display:block}.wc-precip-path-step span{font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:#0369a1}.wc-precip-path-step strong{margin-top:2px;font-size:10px;line-height:1.3;color:#1e293b;overflow-wrap:anywhere}.wc-precip-path-arrow{align-self:center;color:#0284c7;font-size:16px;font-weight:900}.dark .wc-precip-path-step{background:rgba(15,23,42,.7);border-color:rgba(56,189,248,.24)}.dark .wc-precip-path-step span,.dark .wc-precip-path-arrow{color:#7dd3fc}.dark .wc-precip-path-step strong{color:#f8fafc}@media(max-width:560px){.wc-precip-path-strip{grid-template-columns:1fr}.wc-precip-path-arrow{display:none}}@media(forced-colors:active){.wc-precip-path-step{border-color:CanvasText;background:Canvas;color:CanvasText}.wc-precip-path-step span,.wc-precip-path-step strong,.wc-precip-path-arrow{color:CanvasText}}',
+      '.wc-precip-controls{display:grid;gap:9px;min-width:0}.wc-precip-control-group{padding:10px;border:1px solid rgba(14,165,233,.2);border-radius:12px;background:rgba(255,255,255,.62)}.wc-precip-control-title{display:block;margin-bottom:7px;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#0369a1}.wc-precip-field{display:block;margin-top:8px}.wc-precip-field:first-of-type{margin-top:0}.wc-precip-field-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:10px;font-weight:800;color:#334155}.wc-precip-field-head output{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;font-weight:900;color:#0369a1}.wc-precip-field input[type="range"]{width:100%;min-height:32px;margin-top:3px;accent-color:#0284c7}.wc-precip-select-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.wc-precip-select-grid label{display:block;font-size:9px;font-weight:900;color:#475569}.wc-precip-select-grid select,.wc-precip-preset{width:100%;min-height:38px;margin-top:3px;padding:5px 24px 5px 7px;border:1px solid #bae6fd;border-radius:8px;background:#fff;color:#0f172a;font-size:10px;font-weight:800}.wc-precip-switch{display:flex;align-items:center;gap:7px;margin-top:9px;font-size:10px;font-weight:800;color:#334155}.wc-precip-switch input{width:16px;height:16px;accent-color:#0284c7}',
+      '.wc-precip-profile-editor{margin:2px 0 8px;padding:7px;border:1px solid rgba(14,165,233,.2);border-radius:10px;background:rgba(224,242,254,.38)}.wc-precip-profile-chart{display:block;width:100%;height:auto;max-height:190px;overflow:visible}.wc-profile-cold-zone{fill:rgba(125,211,252,.2)}.wc-profile-warm-zone{fill:rgba(251,191,36,.14)}.wc-profile-grid-line,.wc-profile-level-line{stroke:rgba(100,116,139,.3);stroke-width:1}.wc-profile-level-line{stroke-dasharray:3 4}.wc-profile-freezing-line{stroke:#0284c7;stroke-width:2;stroke-dasharray:5 4}.wc-profile-temperature-line{fill:none;stroke:#7c3aed;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}.wc-profile-temperature-point{fill:#fff;stroke:#7c3aed;stroke-width:3}.wc-profile-crossing-point{fill:#facc15;stroke:#713f12;stroke-width:1.5}.wc-profile-tick-label,.wc-profile-level-label,.wc-profile-point-value,.wc-profile-zone-label,.wc-profile-crossing-label{font-family:system-ui,sans-serif;font-weight:800;fill:#334155}.wc-profile-tick-label{font-size:9px}.wc-profile-level-label,.wc-profile-zone-label{font-size:8px;letter-spacing:.05em}.wc-profile-point-value{font-size:9px}.wc-profile-crossing-label{font-size:7px;fill:#854d0e}.wc-precip-profile-hint{margin:4px 1px 0;font-size:9px;line-height:1.35;color:#475569}.dark .wc-precip-profile-editor{background:rgba(8,47,73,.46);border-color:rgba(56,189,248,.22)}.dark .wc-profile-grid-line,.dark .wc-profile-level-line{stroke:rgba(148,163,184,.34)}.dark .wc-profile-tick-label,.dark .wc-profile-level-label,.dark .wc-profile-point-value,.dark .wc-profile-zone-label{fill:#e2e8f0}.dark .wc-profile-crossing-label{fill:#fde68a}.dark .wc-profile-temperature-point{fill:#0f172a}.dark .wc-precip-profile-hint{color:#cbd5e1}@media(forced-colors:active){.wc-precip-profile-editor{border-color:CanvasText;background:Canvas}.wc-profile-cold-zone,.wc-profile-warm-zone{fill:Canvas}.wc-profile-grid-line,.wc-profile-level-line,.wc-profile-freezing-line,.wc-profile-temperature-line{stroke:CanvasText}.wc-profile-temperature-point,.wc-profile-crossing-point{fill:Highlight;stroke:CanvasText}.wc-profile-tick-label,.wc-profile-level-label,.wc-profile-point-value,.wc-profile-zone-label,.wc-profile-crossing-label{fill:CanvasText}.wc-precip-profile-hint{color:CanvasText}}',
+      '.wc-thunder-lesson{margin-top:7px;padding:7px 8px;border-left:3px solid #facc15;border-radius:7px;background:rgba(254,249,195,.56);color:#713f12}.wc-thunder-lesson strong,.wc-thunder-lesson span{display:block}.wc-thunder-lesson strong{font-size:10px;font-weight:900}.wc-thunder-lesson span{margin-top:2px;font-size:10px;line-height:1.35}.dark .wc-thunder-lesson{background:rgba(113,63,18,.3);border-left-color:#facc15;color:#fde68a}@media(forced-colors:active){.wc-thunder-lesson{border-color:CanvasText;background:Canvas;color:CanvasText}}',
+      '.wc-thunder-measure{margin-top:7px;padding:7px 8px;border:1px solid rgba(14,116,144,.28);border-radius:7px;background:rgba(224,242,254,.62);color:#164e63}.wc-thunder-measure strong,.wc-thunder-measure span{display:block}.wc-thunder-measure strong{font-size:10px;font-weight:900}.wc-thunder-measure span{margin-top:2px;font-size:10px;line-height:1.35}.wc-thunder-measure label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:5px;font-size:10px;font-weight:800}.wc-thunder-measure input[type=range]{width:100%;accent-color:#0284c7}.wc-thunder-measure-result{margin:5px 0 0;padding:5px 6px;border-radius:5px;background:rgba(14,116,144,.1);font-size:10px;line-height:1.35;font-weight:700}.wc-thunder-measure[data-thunder-measurement=close]{border-color:#16a34a}.wc-thunder-measure[data-thunder-measurement=recheck]{border-color:#dc2626}.dark .wc-thunder-measure{background:rgba(8,47,73,.48);border-color:rgba(125,211,252,.5);color:#bae6fd}.dark .wc-thunder-measure-result{background:rgba(125,211,252,.1)}@media(forced-colors:active){.wc-thunder-measure{border-color:CanvasText;background:Canvas;color:CanvasText}.wc-thunder-measure-result{background:Canvas;color:CanvasText}}@media(max-width:640px){.wc-thunder-measure label{display:block}.wc-thunder-measure label span{margin-top:2px}}',
+      '.wc-storm-lifecycle{margin-top:8px;padding:9px 10px;border:1px solid rgba(14,165,233,.24);border-radius:11px;background:rgba(255,255,255,.7)}.wc-storm-lifecycle-head,.wc-storm-time-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}.wc-storm-lifecycle-head strong{font-size:12px;color:#0f172a}.wc-storm-lifecycle-head span,.wc-storm-time-head{font-size:9px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#0369a1}.wc-storm-stage-segments,.wc-storm-playback{display:flex;gap:5px;flex-wrap:wrap}.wc-storm-stage-segments{margin-top:7px}.wc-storm-stage-segments .wc-precip-btn{flex:1;min-width:88px;min-height:34px}.wc-storm-stage-segments .wc-precip-btn[aria-pressed="true"]{background:#0369a1;color:#fff}.wc-storm-time-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end;margin-top:7px}.wc-storm-time-row input[type="range"]{width:100%;min-height:32px;accent-color:#0284c7}.wc-storm-playback .wc-precip-btn{min-height:34px}.wc-storm-stage-copy{margin:6px 0 0;font-size:10px;line-height:1.35;color:#475569}.wc-storm-accumulation{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin-top:8px}.wc-storm-accumulation-item{min-width:0}.wc-storm-accumulation-item span,.wc-storm-accumulation-item strong{display:block;font-size:9px}.wc-storm-accumulation-item span{font-weight:900;color:#475569}.wc-storm-accumulation-item strong{margin-top:1px;color:#0f172a}.wc-storm-accumulation-track{height:5px;margin-top:3px;overflow:hidden;border-radius:4px;background:rgba(148,163,184,.28)}.wc-storm-accumulation-track i{display:block;height:100%;background:#0284c7}.dark .wc-storm-lifecycle{background:rgba(15,23,42,.7);border-color:rgba(56,189,248,.24)}.dark .wc-storm-lifecycle-head strong,.dark .wc-storm-accumulation-item strong{color:#f8fafc}.dark .wc-storm-lifecycle-head span,.dark .wc-storm-time-head{color:#7dd3fc}.dark .wc-storm-stage-copy,.dark .wc-storm-accumulation-item span{color:#cbd5e1}.dark .wc-storm-stage-segments .wc-precip-btn[aria-pressed="true"]{background:#0ea5e9;color:#082f49}@media(max-width:560px){.wc-storm-time-row{grid-template-columns:1fr}.wc-storm-playback{justify-content:space-between}.wc-storm-playback .wc-precip-btn{flex:1}.wc-storm-accumulation{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(forced-colors:active){.wc-storm-lifecycle,.wc-storm-accumulation-track{border:1px solid CanvasText;background:Canvas;color:CanvasText}.wc-storm-accumulation-track i{background:Highlight}.wc-storm-stage-segments .wc-precip-btn[aria-pressed="true"]{background:Highlight;color:HighlightText}}',
+      '.wc-precip-notebook{margin-top:12px;border-top:1px solid rgba(14,165,233,.2);border-bottom:1px solid rgba(14,165,233,.2)}.wc-precip-notebook summary{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:40px;cursor:pointer;list-style:none;font-size:11px;font-weight:900;color:#075985}.wc-precip-notebook summary::-webkit-details-marker{display:none}.wc-precip-notebook summary::after{content:"+";display:grid;place-items:center;width:23px;height:23px;border-radius:6px;background:#e0f2fe;color:#075985;font-size:16px}.wc-precip-notebook[open] summary::after{content:"\\2212"}.wc-precip-notebook-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,.7fr);gap:10px;padding:3px 0 11px}.wc-precip-log-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:7px}.wc-precip-log-wrap{overflow-x:auto}.wc-precip-table{width:100%;border-collapse:collapse;font-size:10px;color:#334155}.wc-precip-table th,.wc-precip-table td{padding:5px 6px;border-top:1px solid rgba(14,165,233,.16);text-align:left;white-space:nowrap}.wc-precip-table th{font-size:9px;font-weight:900;color:#0369a1}.wc-precip-writing label{display:block;font-size:10px;font-weight:900;color:#334155}.wc-precip-writing textarea{width:100%;margin-top:4px;padding:7px;border:1px solid #bae6fd;border-radius:8px;background:#fff;color:#0f172a;font-size:11px;line-height:1.4}.wc-precip-prompts{margin-top:7px;padding:7px 9px;border-left:3px solid #f59e0b;border-radius:7px;background:#fffbeb;color:#78350f;font-size:10px;line-height:1.4}.wc-precip-model-note{margin:9px 0 0;font-size:9px;line-height:1.35;color:#64748b}',
+      '@media(max-width:820px){.wc-precip-layout{grid-template-columns:1fr}.wc-precip-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.wc-precip-control-group:last-child{grid-column:1/-1}}@media(max-width:560px){.wc-precip-lab{padding:10px}.wc-precip-head-actions{width:100%}.wc-precip-head-actions button{flex:1}.wc-precip-canvas{min-height:220px}.wc-precip-controls{grid-template-columns:1fr}.wc-precip-control-group:last-child{grid-column:auto}.wc-precip-metrics{grid-template-columns:1fr}.wc-precip-notebook-body{grid-template-columns:1fr}.wc-precip-select-grid{grid-template-columns:1fr}}',
+      '.dark .wc-precip-lab{background:linear-gradient(145deg,rgba(15,23,42,.96),rgba(8,47,73,.8));border-color:rgba(56,189,248,.24);color:#e2e8f0}.dark .wc-precip-head h3,.dark .wc-precip-result-label,.dark .wc-precip-metric strong{color:#f8fafc}.dark .wc-precip-kicker,.dark .wc-precip-control-title,.dark .wc-precip-field-head output,.dark .wc-precip-table th{color:#7dd3fc}.dark .wc-precip-head p,.dark .wc-precip-result p,.dark .wc-precip-model-note{color:#cbd5e1}.dark .wc-precip-btn,.dark .wc-precip-control-group,.dark .wc-precip-result,.dark .wc-precip-metric{background:rgba(15,23,42,.7);border-color:rgba(56,189,248,.24);color:#bae6fd}.dark .wc-precip-btn.is-primary{background:#0ea5e9;color:#082f49}.dark .wc-precip-field-head,.dark .wc-precip-switch,.dark .wc-precip-select-grid label,.dark .wc-precip-writing label,.dark .wc-precip-table{color:#cbd5e1}.dark .wc-precip-select-grid select,.dark .wc-precip-preset,.dark .wc-precip-writing textarea{background:#0f172a;border-color:#075985;color:#f8fafc}.dark .wc-precip-result-badge,.dark .wc-precip-notebook summary::after{background:#075985;color:#e0f2fe}.dark .wc-precip-notebook summary{color:#bae6fd}.dark .wc-precip-table th,.dark .wc-precip-table td,.dark .wc-precip-notebook{border-color:rgba(56,189,248,.18)}.dark .wc-precip-prompts{background:rgba(120,53,15,.4);color:#fde68a}',
+      '@media(prefers-contrast:more){.wc-precip-lab,.wc-precip-chamber,.wc-precip-canvas-dock,.wc-precip-control-group,.wc-precip-result{border-width:2px}}@media(forced-colors:active){.wc-precip-lab,.wc-precip-chamber,.wc-precip-canvas-dock,.wc-precip-control-group,.wc-precip-result,.wc-precip-metric,.wc-precip-btn,.wc-precip-pause,.wc-precip-select-grid select,.wc-precip-preset,.wc-precip-writing textarea{border-color:CanvasText;background:Canvas;color:CanvasText}.wc-precip-btn.is-primary,.wc-precip-pause[aria-pressed="true"]{background:Highlight;color:HighlightText}.wc-precip-result{border-left-color:Highlight}.wc-precip-kicker,.wc-precip-control-title,.wc-precip-field-head output,.wc-precip-table th{color:CanvasText}}'
     ].join('');
     if (document.head) document.head.appendChild(st);
   })();
@@ -1021,6 +1065,505 @@
 
   function stewardClamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
+  var WC_PRECIP_DEFAULTS = {
+    moisture: 76,
+    tempC: 3,
+    midLevelTempC: 5,
+    lowLevelHumidity: 86,
+    surfaceTempC: 14,
+    wind: 8,
+    windDirection: 'east',
+    updraft: 34,
+    cloudDepth: 5,
+    stormTime: 52,
+    stormAutoPlay: false,
+    stormDistanceKm: 3,
+    soundEnabled: false,
+    thunderEstimateKm: 3,
+    thunderEstimateChecked: false,
+    terrain: 'plains',
+    showAirflow: true,
+    paused: false,
+    preset: 'gentleRain'
+  };
+
+  var WC_PRECIP_PRESETS = {
+    gentleRain: {
+      label: 'Gentle rain',
+      focus: 'Moderate moisture and lift grow drops that survive the humid air below.',
+      moisture: 76, tempC: 3, midLevelTempC: 5, lowLevelHumidity: 86, surfaceTempC: 14,
+      wind: 8, windDirection: 'east', updraft: 34, cloudDepth: 5, terrain: 'plains'
+    },
+    summerStorm: {
+      label: 'Summer downpour',
+      focus: 'A deep, moist cloud and strong updraft build heavy precipitation.',
+      moisture: 94, tempC: -6, midLevelTempC: 8, lowLevelHumidity: 82, surfaceTempC: 28,
+      wind: 22, windDirection: 'east', updraft: 78, cloudDepth: 11, terrain: 'plains'
+    },
+    mountainSnow: {
+      label: 'Mountain snow',
+      focus: 'Moist air rises over terrain and stays frozen all the way down.',
+      moisture: 88, tempC: -16, midLevelTempC: -10, lowLevelHumidity: 76, surfaceTempC: -5,
+      wind: 20, windDirection: 'east', updraft: 58, cloudDepth: 8, terrain: 'mountains'
+    },
+    virga: {
+      label: 'Virga',
+      focus: 'Drops form aloft, then evaporate in the very dry air below the cloud.',
+      moisture: 72, tempC: 1, midLevelTempC: 10, lowLevelHumidity: 16, surfaceTempC: 27,
+      wind: 18, windDirection: 'east', updraft: 48, cloudDepth: 6, terrain: 'plains'
+    },
+    freezingRain: {
+      label: 'Freezing rain',
+      focus: 'Liquid drops reach a shallow layer of subfreezing air and freeze on contact.',
+      moisture: 84, tempC: 4, midLevelTempC: 6, lowLevelHumidity: 90, surfaceTempC: -4,
+      wind: 10, windDirection: 'east', updraft: 42, cloudDepth: 7, terrain: 'plains'
+    },
+    hailstorm: {
+      label: 'Hailstorm',
+      focus: 'A powerful updraft recycles ice through a deep, moisture-rich cloud.',
+      moisture: 96, tempC: -14, midLevelTempC: -4, lowLevelHumidity: 78, surfaceTempC: 24,
+      wind: 26, windDirection: 'east', updraft: 96, cloudDepth: 12, terrain: 'plains'
+    }
+  };
+
+  function wcPrecipClamp(value, low, high) {
+    var numberValue = Number(value);
+    if (!isFinite(numberValue)) numberValue = low;
+    return Math.max(low, Math.min(high, numberValue));
+  }
+
+  function normalizeWcPrecipConfig(config) {
+    var source = config || {};
+    var normalized = Object.assign({}, WC_PRECIP_DEFAULTS);
+    Object.keys(WC_PRECIP_DEFAULTS).forEach(function(key) {
+      if (source[key] !== undefined && source[key] !== null) normalized[key] = source[key];
+    });
+    normalized.moisture = wcPrecipClamp(normalized.moisture, 0, 100);
+    normalized.tempC = wcPrecipClamp(normalized.tempC, -35, 15);
+    normalized.surfaceTempC = wcPrecipClamp(normalized.surfaceTempC, -15, 35);
+    normalized.midLevelTempC = source.midLevelTempC !== undefined && source.midLevelTempC !== null
+      ? wcPrecipClamp(source.midLevelTempC, -25, 25)
+      : wcPrecipClamp(normalized.tempC + (normalized.surfaceTempC - normalized.tempC) * 0.55, -25, 25);
+    normalized.lowLevelHumidity = wcPrecipClamp(normalized.lowLevelHumidity, 0, 100);
+    normalized.wind = wcPrecipClamp(normalized.wind, 0, 40);
+    normalized.updraft = wcPrecipClamp(normalized.updraft, 0, 100);
+    normalized.cloudDepth = wcPrecipClamp(normalized.cloudDepth, 1, 12);
+    normalized.stormTime = wcPrecipClamp(normalized.stormTime, 0, 100);
+    normalized.stormAutoPlay = !!normalized.stormAutoPlay;
+    normalized.stormDistanceKm = wcPrecipClamp(normalized.stormDistanceKm, 0.5, 20);
+    normalized.soundEnabled = normalized.soundEnabled === true;
+    normalized.thunderEstimateKm = wcPrecipClamp(normalized.thunderEstimateKm, 0.5, 20);
+    normalized.thunderEstimateChecked = normalized.thunderEstimateChecked === true;
+    normalized.windDirection = normalized.windDirection === 'west' ? 'west' : 'east';
+    normalized.terrain = normalized.terrain === 'mountains' || normalized.terrain === 'coast'
+      ? normalized.terrain : 'plains';
+    normalized.showAirflow = normalized.showAirflow !== false;
+    normalized.paused = !!normalized.paused;
+    return normalized;
+  }
+
+  function wcPrecipTemperatureAt(config, fallProgress) {
+    var cfg = normalizeWcPrecipConfig(config);
+    var progress = wcPrecipClamp(fallProgress, 0, 1);
+    var middleProgress = 0.55;
+    if (progress <= middleProgress) {
+      var upperBlend = progress / middleProgress;
+      return cfg.tempC + (cfg.midLevelTempC - cfg.tempC) * upperBlend;
+    }
+    var lowerBlend = (progress - middleProgress) / (1 - middleProgress);
+    return cfg.midLevelTempC + (cfg.surfaceTempC - cfg.midLevelTempC) * lowerBlend;
+  }
+
+  function buildWcPrecipThermalStructure(config, visualType) {
+    var cfg = normalizeWcPrecipConfig(config);
+    var temperaturePoints = [
+      { progress: 0, temperatureC: cfg.tempC, label: 'Cloud base' },
+      { progress: 0.55, temperatureC: cfg.midLevelTempC, label: 'Middle atmosphere' },
+      { progress: 1, temperatureC: cfg.surfaceTempC, label: 'Surface' }
+    ];
+    var crossings = [];
+    for (var pointIndex = 0; pointIndex < temperaturePoints.length - 1; pointIndex++) {
+      var upperPoint = temperaturePoints[pointIndex];
+      var lowerPoint = temperaturePoints[pointIndex + 1];
+      var crossesFreezing = (upperPoint.temperatureC <= 0 && lowerPoint.temperatureC > 0) ||
+        (upperPoint.temperatureC > 0 && lowerPoint.temperatureC <= 0);
+      if (!crossesFreezing || lowerPoint.temperatureC === upperPoint.temperatureC) continue;
+      var segmentBlend = (0 - upperPoint.temperatureC) /
+        (lowerPoint.temperatureC - upperPoint.temperatureC);
+      crossings.push({
+        progress: wcPrecipClamp(
+          upperPoint.progress + segmentBlend * (lowerPoint.progress - upperPoint.progress),
+          0.04,
+          0.96
+        ),
+        kind: upperPoint.temperatureC <= 0 ? 'melting' : 'freezing'
+      });
+    }
+    var primaryCrossing = crossings.length ? crossings[0] : null;
+    var transitionKind = crossings.length > 1 ? 'layered'
+      : primaryCrossing ? primaryCrossing.kind : 'none';
+    var layerLabel = crossings.length > 1 ? 'Two 0\u00B0C transition layers'
+      : transitionKind === 'melting' ? '0\u00B0C melting layer'
+      : transitionKind === 'freezing' ? '0\u00B0C freezing layer'
+      : Math.max(cfg.tempC, cfg.midLevelTempC, cfg.surfaceTempC) <= 0
+        ? 'Below freezing through the column'
+        : Math.min(cfg.tempC, cfg.midLevelTempC, cfg.surfaceTempC) > 0
+          ? 'Above freezing through the column'
+          : 'Near-freezing layer without a full crossing';
+    var phasePathLabel = visualType === 'clear'
+      ? 'Cloud particles have not begun a sustained fall'
+      : visualType === 'hail'
+        ? 'Ice recycled in a deep convective updraft'
+        : visualType === 'virga'
+          ? 'Falling particles evaporate in dry lower air'
+          : crossings.length > 1
+            ? (crossings[0].kind === 'melting'
+              ? 'Snow \u2192 melting layer \u2192 liquid drops \u2192 refreezing layer \u2192 contact ice'
+              : 'Liquid drops \u2192 freezing layer \u2192 frozen particles \u2192 melting layer \u2192 rain')
+            : transitionKind === 'melting'
+              ? (visualType === 'mix' ? 'Snow \u2192 partial melt \u2192 wintry mix' : 'Snow \u2192 melting layer \u2192 rain')
+              : transitionKind === 'freezing'
+                ? 'Liquid drops \u2192 supercooled layer \u2192 contact ice'
+                : visualType === 'snow'
+                  ? 'Snow remains frozen to the surface'
+                  : visualType === 'rain'
+                    ? 'Liquid drops remain liquid to the surface'
+                    : 'Cloud particles have not begun a sustained fall';
+    return {
+      crossingProgress: primaryCrossing ? primaryCrossing.progress : null,
+      freezingLevel: primaryCrossing ? primaryCrossing.progress : null,
+      transitionKind: transitionKind,
+      primaryTransitionKind: primaryCrossing ? primaryCrossing.kind : 'none',
+      crossings: crossings,
+      temperaturePoints: temperaturePoints,
+      layerLabel: layerLabel,
+      phasePathLabel: phasePathLabel
+    };
+  }
+  function buildWcStormLifecycle(config, baseIntensity, visualType, reachesGround) {
+    var cfg = normalizeWcPrecipConfig(config);
+    var stormTime = wcPrecipClamp(cfg.stormTime, 0, 100);
+    var stageKey;
+    var stageLabel;
+    var stageProgress;
+    var activityFactor;
+    var cloudFactor;
+    var updraftFactor;
+    if (stormTime < 32) {
+      stageKey = 'developing';
+      stageLabel = 'Developing';
+      stageProgress = stormTime / 32;
+      var developingEase = stageProgress * stageProgress * (3 - 2 * stageProgress);
+      activityFactor = 0.18 + developingEase * 0.82;
+      cloudFactor = 0.52 + stageProgress * 0.48;
+      updraftFactor = 0.42 + stageProgress * 0.58;
+    } else if (stormTime <= 72) {
+      stageKey = 'mature';
+      stageLabel = 'Mature';
+      stageProgress = (stormTime - 32) / 40;
+      activityFactor = 1;
+      cloudFactor = 1;
+      updraftFactor = 1;
+    } else {
+      stageKey = 'weakening';
+      stageLabel = 'Weakening';
+      stageProgress = (stormTime - 72) / 28;
+      var weakeningEase = stageProgress * stageProgress * (3 - 2 * stageProgress);
+      activityFactor = 1 - weakeningEase * 0.72;
+      cloudFactor = 1 - stageProgress * 0.18;
+      updraftFactor = 1 - stageProgress * 0.78;
+    }
+
+    var developingArea = 0.18 * 32 + 0.82 * 16;
+    var matureArea = 40;
+    var weakeningFullArea = 28 - 0.72 * 14;
+    var cumulativeArea;
+    if (stormTime < 32) {
+      cumulativeArea = 0.18 * stormTime + 0.82 * stormTime * stormTime / 64;
+    } else if (stormTime <= 72) {
+      cumulativeArea = developingArea + (stormTime - 32);
+    } else {
+      var weakeningTime = stormTime - 72;
+      cumulativeArea = developingArea + matureArea +
+        weakeningTime - 0.72 * weakeningTime * weakeningTime / 56;
+    }
+    var cumulativeExposure = wcPrecipClamp(
+      cumulativeArea / (developingArea + matureArea + weakeningFullArea),
+      0,
+      1
+    );
+    var effectiveIntensity = Math.round(wcPrecipClamp(baseIntensity * activityFactor, 0, 100));
+    var groundExposure = reachesGround ? cumulativeExposure * baseIntensity : 0;
+    var snowIndex = visualType === 'snow' ? Math.round(groundExposure)
+      : visualType === 'mix' ? Math.round(groundExposure * 0.45) : 0;
+    var glazeIndex = visualType === 'freezing-rain' ? Math.round(groundExposure) : 0;
+    var hailIndex = visualType === 'hail' ? Math.round(groundExposure * 0.82) : 0;
+    var puddleIndex = visualType === 'rain' ? Math.round(groundExposure * 0.74)
+      : visualType === 'mix' ? Math.round(groundExposure * 0.28) : 0;
+    var runoffTerrainFactor = cfg.terrain === 'mountains' ? 0.82 : cfg.terrain === 'coast' ? 0.68 : 0.54;
+    var runoffIndex = reachesGround && visualType !== 'snow'
+      ? Math.round(groundExposure * runoffTerrainFactor) : Math.round(snowIndex * 0.12);
+    var stageCopy = stageKey === 'developing'
+      ? 'Updrafts strengthen, the cloud tower grows, and precipitation organizes.'
+      : stageKey === 'mature'
+        ? 'Cloud depth, lift, precipitation, and electrical activity are near their peak.'
+        : 'Lift weakens, the anvil spreads, and precipitation fades while ground effects remain.';
+    return {
+      time: Math.round(stormTime),
+      stageKey: stageKey,
+      stageLabel: stageLabel,
+      stageProgress: stageProgress,
+      activityFactor: activityFactor,
+      cloudFactor: cloudFactor,
+      updraftFactor: updraftFactor,
+      anvilFactor: stageKey === 'developing' ? stageProgress * 0.72 : stageKey === 'mature' ? 1 : 1 - stageProgress * 0.2,
+      lightningFactor: stageKey === 'mature' ? 1 : stageKey === 'developing'
+        ? Math.max(0, (stageProgress - 0.55) / 0.45) : Math.max(0, 1 - stageProgress * 1.35),
+      cumulativeExposure: cumulativeExposure,
+      effectiveIntensity: effectiveIntensity,
+      stageCopy: stageCopy,
+      accumulation: {
+        snow: wcPrecipClamp(snowIndex, 0, 100),
+        glaze: wcPrecipClamp(glazeIndex, 0, 100),
+        hail: wcPrecipClamp(hailIndex, 0, 100),
+        puddling: wcPrecipClamp(puddleIndex, 0, 100),
+        runoff: wcPrecipClamp(runoffIndex, 0, 100)
+      }
+    };
+  }
+  function buildWcThunderModel(config, lifecycle, lightningEligible) {
+    var cfg = normalizeWcPrecipConfig(config);
+    var distanceKm = wcPrecipClamp(cfg.stormDistanceKm, 0.5, 20);
+    var delaySeconds = Math.round(distanceKm / 0.343 * 10) / 10;
+    var explanation = lightningEligible
+      ? 'Lightning heats the air almost instantly. The expanding air makes a pressure wave; light arrives first, then thunder travels about 0.343 km each second.'
+      : 'Thunder is quiet in this setup because the modeled storm does not yet have enough electrical activity for a lightning flash.';
+    return {
+      distanceKm: distanceKm,
+      delaySeconds: delaySeconds,
+      speedOfSoundKmPerSecond: 0.343,
+      soundEnabled: cfg.soundEnabled,
+      caption: lightningEligible
+        ? 'Flash now; thunder in about ' + delaySeconds.toFixed(1) + ' seconds'
+        : 'No lightning flash to trigger thunder',
+      explanation: explanation
+    };
+  }
+  function evaluateWcThunderEstimate(config, thunderModel) {
+    var cfg = normalizeWcPrecipConfig(config);
+    var estimateKm = wcPrecipClamp(cfg.thunderEstimateKm, 0.5, 20);
+    var actualKm = thunderModel.distanceKm;
+    var errorKm = Math.abs(estimateKm - actualKm);
+    var toleranceKm = Math.max(0.5, actualKm * 0.1);
+    var band = errorKm <= toleranceKm ? 'close' : errorKm <= Math.max(1.5, actualKm * 0.25) ? 'near' : 'recheck';
+    var feedback = band === 'close'
+      ? 'Close estimate. Light arrives almost instantly; thunder travels at about 0.343 km/s.'
+      : band === 'near'
+        ? 'Nearly there. Use the delay again: distance ≈ 0.343 × seconds.'
+        : 'Try again. Multiply the flash-to-thunder delay by 0.343 km/s to estimate distance.';
+    return {
+      estimateKm: estimateKm,
+      actualKm: actualKm,
+      errorKm: Math.round(errorKm * 10) / 10,
+      band: band,
+      feedback: feedback
+    };
+  }
+
+  function computeWcPrecipitationModel(config) {
+    var cfg = normalizeWcPrecipConfig(config);
+    var moisture = cfg.moisture / 100;
+    var lowHumidity = cfg.lowLevelHumidity / 100;
+    var updraft = cfg.updraft / 100;
+    var cloudDepth = (cfg.cloudDepth - 1) / 11;
+    var wind = cfg.wind / 40;
+    var terrainLift = cfg.terrain === 'mountains'
+      ? Math.min(0.28, 0.08 + wind * 0.24)
+      : cfg.terrain === 'coast' ? 0.05 : 0;
+    var liftIndex = wcPrecipClamp(updraft * 0.76 + terrainLift, 0, 1);
+    var growthIndex = wcPrecipClamp(
+      moisture * 0.34 + cloudDepth * 0.24 + liftIndex * 0.42,
+      0,
+      1
+    );
+    var drynessLoss = (1 - lowHumidity) * 0.52;
+    var relativeIntensity = growthIndex < 0.32
+      ? 0
+      : Math.round(wcPrecipClamp(((growthIndex - 0.28) / 0.72) * (1 - drynessLoss), 0, 1) * 100);
+    var virga = growthIndex >= 0.32 && lowHumidity < 0.3 && relativeIntensity < 35;
+    var reachesGround = growthIndex >= 0.32 && !virga && relativeIntensity >= 8;
+    var cloudPhase = cfg.tempC <= -12 ? 'Ice-rich' : cfg.tempC <= 0 ? 'Mixed phase' : 'Liquid drops';
+    var warmestProfileTemp = Math.max(cfg.tempC, cfg.midLevelTempC, cfg.surfaceTempC);
+    var coldestProfileTemp = Math.min(cfg.tempC, cfg.midLevelTempC, cfg.surfaceTempC);
+    var profileLabel;
+    if (cfg.tempC <= 0 && cfg.midLevelTempC > 0 && cfg.surfaceTempC <= 0) {
+      profileLabel = 'Frozen aloft, warm middle layer, freezing near the surface';
+    } else if (cfg.tempC > 0 && (cfg.midLevelTempC <= 0 || cfg.surfaceTempC <= 0)) {
+      profileLabel = 'Liquid aloft with a subfreezing lower layer';
+    } else if (cfg.tempC <= 0 && cfg.surfaceTempC > 3) {
+      profileLabel = 'Frozen aloft, melting below';
+    } else if (cfg.tempC <= 0 && cfg.surfaceTempC > 0.5) {
+      profileLabel = 'Partly melting near the surface';
+    } else if (warmestProfileTemp <= 0) {
+      profileLabel = 'Frozen through the column';
+    } else if (coldestProfileTemp > 0) {
+      profileLabel = 'Liquid through the column';
+    } else {
+      profileLabel = 'Layered near-freezing profile';
+    }
+    var visualType = 'clear';
+    var phaseLabel = 'No surface precipitation';
+    var description = 'Cloud particles are present, but growth and lift are not yet sufficient for a sustained fall.';
+    if (virga) {
+      visualType = 'virga';
+      phaseLabel = 'Virga';
+      description = 'Precipitation forms below the cloud, then evaporates before reaching the ground.';
+    } else if (reachesGround) {
+      var hailFavored = cfg.updraft >= 84 && cfg.cloudDepth >= 9 && cfg.moisture >= 78 && cfg.tempC <= -8;
+      if (hailFavored) {
+        visualType = 'hail';
+        phaseLabel = 'Hail';
+        profileLabel = 'Deep convective ice growth';
+        description = 'A powerful updraft can recycle ice through the cloud, adding layers before gravity wins.';
+      } else if (cfg.midLevelTempC > 0 && cfg.surfaceTempC <= 0) {
+        visualType = 'freezing-rain';
+        phaseLabel = 'Freezing rain';
+        description = cfg.tempC <= 0
+          ? 'Snow melts in a warm middle layer, then the liquid becomes supercooled near the surface and freezes on contact.'
+          : 'Liquid drops enter a subfreezing surface layer and freeze on contact.';
+      } else if (warmestProfileTemp <= 0) {
+        visualType = 'snow';
+        phaseLabel = 'Snow';
+        description = 'Ice particles grow aloft and remain frozen through the full atmospheric profile.';
+      } else if (cfg.tempC <= 0 && cfg.surfaceTempC <= 3) {
+        visualType = 'mix';
+        phaseLabel = 'Wintry mix';
+        description = 'Frozen particles cross a shallow or near-freezing warm layer, so only part of the fall melts.';      } else {
+        visualType = 'rain';
+        phaseLabel = relativeIntensity < 22 ? 'Drizzle' : 'Rain';
+        description = cfg.tempC <= 0
+          ? 'Frozen particles melt in the warmer air below the cloud and reach the surface as rain.'
+          : 'Liquid cloud drops collide, merge, and remain liquid on the way to the surface.';
+      }
+    }
+
+    var baseRelativeIntensity = relativeIntensity;
+    var lifecycle = buildWcStormLifecycle(cfg, baseRelativeIntensity, visualType, reachesGround);
+    relativeIntensity = lifecycle.effectiveIntensity;
+
+    var intensityLabel = relativeIntensity < 8 ? 'None'
+      : relativeIntensity < 22 ? 'Light'
+      : relativeIntensity < 58 ? 'Steady'
+      : 'Heavy';
+    var displayLabel = visualType === 'clear'
+      ? 'Cloud building'
+      : visualType === 'virga'
+        ? 'Virga - evaporating aloft'
+        : visualType === 'hail'
+          ? intensityLabel + ' hailstorm'
+          : intensityLabel + ' ' + phaseLabel.toLowerCase();
+    var formationLabel = visualType === 'clear' ? 'Not released'
+      : visualType === 'virga' ? 'Evaporates aloft'
+      : intensityLabel + ' fall';
+    var liftLabel = liftIndex < 0.28 ? 'Weak lift' : liftIndex < 0.62 ? 'Moderate lift' : 'Strong lift';
+    var thermalLayers = buildWcPrecipThermalStructure(cfg, visualType);
+    var electrificationIndex = Math.round(wcPrecipClamp(
+      updraft * 0.45 + cloudDepth * 0.25 + moisture * 0.15 + (cfg.tempC <= -5 ? 0.15 : 0),
+      0,
+      1
+    ) * 100);
+    var lightningEligible = reachesGround && electrificationIndex >= 72 && lifecycle.lightningFactor >= 0.62 &&
+      (visualType === 'rain' || visualType === 'hail');
+    var thunder = buildWcThunderModel(cfg, lifecycle, lightningEligible);
+    var thunderEstimate = evaluateWcThunderEstimate(cfg, thunder);
+    var causalExplanation = liftLabel + ' and a ' + cfg.cloudDepth.toFixed(0) + ' km cloud produce a ' +
+      Math.round(growthIndex * 100) + '/100 particle-growth index. ' +
+      (visualType === 'virga'
+        ? 'Dry lower air removes the falling water before it reaches the surface.'
+        : visualType === 'clear'
+          ? 'Particles remain too small or sparse for sustained precipitation.'
+          : profileLabel + ' determines what reaches the ground.');
+
+    return {
+      config: cfg,
+      visualType: visualType,
+      phaseLabel: phaseLabel,
+      displayLabel: displayLabel,
+      description: description,
+      formationLabel: formationLabel,
+      intensityLabel: intensityLabel,
+      relativeIntensity: relativeIntensity,
+      baseRelativeIntensity: baseRelativeIntensity,
+      lifecycle: lifecycle,
+      growthIndex: Math.round(growthIndex * 100),
+      liftIndex: Math.round(liftIndex * 100),
+      liftLabel: liftLabel,
+      cloudPhase: cloudPhase,
+      profileLabel: profileLabel,
+      reachesGround: reachesGround,
+      virga: virga,
+      thermalLayers: thermalLayers,
+      freezingLevel: thermalLayers.freezingLevel,
+      phasePathLabel: thermalLayers.phasePathLabel,
+      electrificationIndex: electrificationIndex,
+      lightningEligible: lightningEligible,
+      thunder: thunder,
+      thunderEstimate: thunderEstimate,
+      causalExplanation: causalExplanation,
+      driftDirection: cfg.windDirection === 'west' ? 'right to left' : 'left to right',
+      terrainLift: Math.round(terrainLift * 100)
+    };
+  }
+
+  function wcPrecipPhaseAtTransitions(surfaceType, cloudTemperatureC, fallProgress,
+      firstKind, firstProgress, secondKind, secondProgress) {
+    var progress = wcPrecipClamp(fallProgress, 0, 1);
+    if (surfaceType === 'clear' || surfaceType === 'virga' || surfaceType === 'hail') return surfaceType;
+    if (!firstKind || firstKind === 'none' || !isFinite(firstProgress)) return surfaceType;
+    var phase = cloudTemperatureC <= 0 ? 'snow' : 'rain';
+    var transitionKinds = [firstKind, secondKind];
+    var transitionProgresses = [firstProgress, secondProgress];
+    for (var transitionIndex = 0; transitionIndex < 2; transitionIndex++) {
+      var kind = transitionKinds[transitionIndex];
+      var crossingProgress = transitionProgresses[transitionIndex];
+      if (!kind || kind === 'none' || !isFinite(crossingProgress)) continue;
+      if (progress < crossingProgress - 0.055) break;
+      if (progress <= crossingProgress + 0.055) {
+        return kind === 'melting' ? 'mix' : 'freezing-rain';
+      }
+      phase = kind === 'melting' ? 'rain' : 'freezing-rain';
+    }
+    if (surfaceType === 'mix' && progress > firstProgress) return 'mix';
+    if (progress >= 0.96) return surfaceType;
+    return phase;
+  }
+
+  function wcPrecipPhaseFromModel(model, fallProgress) {
+    var crossings = model.thermalLayers.crossings || [];
+    return wcPrecipPhaseAtTransitions(
+      model.visualType,
+      model.config.tempC,
+      fallProgress,
+      crossings[0] ? crossings[0].kind : 'none',
+      crossings[0] ? crossings[0].progress : NaN,
+      crossings[1] ? crossings[1].kind : 'none',
+      crossings[1] ? crossings[1].progress : NaN
+    );
+  }
+  function wcPrecipPhaseAt(config, fallProgress) {
+    return wcPrecipPhaseFromModel(computeWcPrecipitationModel(config), fallProgress);
+  }
+
+  window.WaterCyclePrecipitationKernel = {
+    defaults: Object.assign({}, WC_PRECIP_DEFAULTS),
+    presets: WC_PRECIP_PRESETS,
+    normalize: normalizeWcPrecipConfig,
+    compute: computeWcPrecipitationModel,
+    lifecycle: function(config) { return computeWcPrecipitationModel(config).lifecycle; },
+    phaseAt: wcPrecipPhaseAt,
+    temperatureAt: wcPrecipTemperatureAt
+  };
+
   if(!window.StemLab||!window.StemLab.registerTool) return;
   window.StemLab.registerTool('waterCycle',{
     icon:'\uD83C\uDF0A', label:'Water Cycle', desc:'Live water cycle canvas plus Journey Mode: ride one droplet through evaporation, condensation, precipitation, collection, transpiration, and infiltration with real choices along the way.',
@@ -1182,7 +1725,7 @@ const d = labToolData.waterCycle || {};
             };
           };
           var resetClimate = function() {
-            updMulti({ climSolar: 1.0, climTemp: 15, climWind: 1.0, wcScenarioPreset: 'custom', wcPrediction: '', wcReplayedObservation: '' });
+            updMulti({ climSolar: 1.0, climTemp: 15, climWind: 1.0, precipLab3dActive: false, wcScenarioPreset: 'custom', wcPrediction: '', wcReplayedObservation: '' });
             var cv = document.getElementById('wcCanvas');
             if (cv) {
               cv.dataset.climSolar = '1.0';
@@ -1196,6 +1739,7 @@ const d = labToolData.waterCycle || {};
             var nextState = Object.assign({}, d, {
               [key]: val,
               climateAdjusted: true,
+              precipLab3dActive: false,
               wcScenarioPreset: 'custom',
               wcPrediction: '',
               wcReplayedObservation: ''
@@ -1220,7 +1764,7 @@ const d = labToolData.waterCycle || {};
 
           var adjustLand = function(key, val) {
             var interactionBaseline = getWcInteractionBaseline();
-            var nextData = { [key]: val, landAdjusted: true, wcScenarioPreset: 'custom', wcPrediction: '', wcReplayedObservation: '' };
+            var nextData = { [key]: val, landAdjusted: true, precipLab3dActive: false, wcScenarioPreset: 'custom', wcPrediction: '', wcReplayedObservation: '' };
             if (interactionBaseline) nextData.wcScenarioBaseline = interactionBaseline;
             updMulti(nextData);
             if (interactionBaseline && typeof announceToSR === 'function') announceToSR('Experiment baseline saved before this change. Choose a prediction, then use the comparison values as evidence.');
@@ -1260,6 +1804,7 @@ const d = labToolData.waterCycle || {};
               landCover: preset.landCover,
               climateAdjusted: true,
               landAdjusted: true,
+              precipLab3dActive: false,
               wcScenarioPreset: presetId,
               wcPrediction: '',
               wcReplayedObservation: ''
@@ -2560,84 +3105,1312 @@ const d = labToolData.waterCycle || {};
           if (wcMode === 'steward') {
             return renderStewardCampaign();
           }
-          // === H7b'' inquiry widget: precipitation discovery ===
+          // === Inquiry widget: precipitation discovery ===
           if (wcMode === 'precipHunt') {
-            var iq = d.precipHunt || { moisture: 50, tempC: 20, wind: 10, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-            function setIQ(patch) { upd('precipHunt', Object.assign({}, iq, patch)); }
-            // Precipitation type: depends on temp + moisture + wind interaction
-            var cloudCondensation = (iq.moisture / 100) * Math.max(0, (35 - iq.tempC) / 35);
-            var liftEffect = iq.wind / 60;
-            var rate = cloudCondensation * 0.7 + liftEffect * 0.3;
-            var ptype;
-            if (rate < 0.15) ptype = 'clear';
-            else if (rate < 0.35) ptype = 'drizzle';
-            else if (rate < 0.65) ptype = 'rain';
-            else ptype = 'storm';
-            var ptMeta = {
-              clear:   { label: t('stem.watercycle.clear_very_light', '☀️ Clear / very light'), color: '#facc15', bg: '#fefce8', border: '#fde047', desc: t('stem.watercycle.insufficient_condensation_too_warm_or_', 'Insufficient condensation — too warm or too dry.') },
-              drizzle: { label: t('stem.watercycle.light_drizzle', '🌦️ Light drizzle'),      color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: t('stem.watercycle.slow_condensation_steady_but_gentle_pr', 'Slow condensation. Steady but gentle precipitation.') },
-              rain:    { label: t('stem.watercycle.moderate_rain', '🌧️ Moderate rain'),     color: '#0284c7', bg: '#e0f2fe', border: '#7dd3fc', desc: t('stem.watercycle.strong_condensation_typical_rainfall', 'Strong condensation. Typical rainfall.') },
-              storm:   { label: t('stem.watercycle.storm_burst', '⛈️ Storm burst'),        color: '#1e40af', bg: '#dbeafe', border: '#60a5fa', desc: t('stem.watercycle.high_moisture_cool_temp_strong_lift_he', 'High moisture + cool temp + strong lift → heavy convective precipitation.') }
-            }[ptype];
-            function logObs() {
-              setIQ({ log: (iq.log || []).concat([{ m: iq.moisture, t: iq.tempC, w: iq.wind, p: ptype }]).slice(-8) });
+            var iqStored = d.precipHunt || {};
+            var iq = Object.assign({}, WC_PRECIP_DEFAULTS, iqStored);
+            var precipModel = computeWcPrecipitationModel(iq);
+            var precipConfig = precipModel.config;
+            var activePrecipPreset = WC_PRECIP_PRESETS[iq.preset] ? iq.preset : 'custom';
+
+            function setIQ(patch) {
+              upd('precipHunt', Object.assign({}, iq, patch));
             }
-            return h('div', { className: 'p-4 rounded-xl bg-white border border-cyan-200 shadow-sm space-y-3' },
-              h('button', { onClick: function() { upd('wcMode', 'explorer'); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700' }, t('stem.watercycle.back_to_explorer', '← Back to Explorer')),
-              h('h3', { className: 'text-sm font-black text-cyan-700' }, t('stem.watercycle.precipitation_discovery', '🌧️ Precipitation discovery')),
-              h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' },
-                t('stem.watercycle.adjust_cloud_moisture_temperature_and_', 'Adjust cloud moisture, temperature, and wind. Widget classifies precipitation into one of four discrete types. No score, no reveal — sweep and notice.')),
-              h('div', { className: 'p-3 rounded-lg text-center', style: { background: ptMeta.bg, border: '2px solid ' + ptMeta.border } },
-                h('div', { className: 'text-base font-black', style: { color: ptMeta.color } }, ptMeta.label),
-                h('div', { className: 'text-[11px] text-slate-700 mt-1' }, ptMeta.desc)
-              ),
-              h('div', { className: 'grid grid-cols-3 gap-3' },
-                [
-                  { key: 'moisture', label: t('stem.watercycle.moisture', 'Moisture (%)'),  val: iq.moisture, min: 0, max: 100, step: 1 },
-                  { key: 'tempC',    label: t('stem.watercycle.temp_c', 'Temp (°C)'),     val: iq.tempC,    min: -10, max: 40, step: 1 },
-                  { key: 'wind',     label: t('stem.watercycle.wind_m_s', 'Wind (m/s)'),    val: iq.wind,     min: 0, max: 60, step: 1 }
-                ].map(function(s) {
-                  return h('div', { key: s.key },
-                    h('label', { htmlFor: 'ph-' + s.key, className: 'block text-[11px] font-bold text-slate-700' },
-                      s.label + ': ', h('span', { className: 'font-mono text-cyan-700' }, s.val)),
-                    h('input', { id: 'ph-' + s.key, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val,
-                      onChange: function(e) { var p = {}; p[s.key] = parseInt(e.target.value, 10); setIQ(p); },
-                      className: 'w-full', 'aria-label': s.label }));
+
+            function setPrecipControl(key, value) {
+              var patch = { preset: 'custom' };
+              patch[key] = value;
+              setIQ(patch);
+            }
+
+            function applyPrecipPreset(presetId) {
+              if (presetId === 'custom') {
+                setIQ({ preset: 'custom' });
+                return;
+              }
+              var preset = WC_PRECIP_PRESETS[presetId];
+              if (!preset) return;
+              setIQ({
+                preset: presetId,
+                moisture: preset.moisture,
+                tempC: preset.tempC,
+                midLevelTempC: preset.midLevelTempC,
+                lowLevelHumidity: preset.lowLevelHumidity,
+                surfaceTempC: preset.surfaceTempC,
+                wind: preset.wind,
+                windDirection: preset.windDirection,
+                updraft: preset.updraft,
+                cloudDepth: preset.cloudDepth,
+                terrain: preset.terrain
+              });
+              if (typeof announceToSR === 'function') {
+                announceToSR('Precipitation scenario loaded: ' + preset.label + '. ' + preset.focus);
+              }
+            }
+
+            function resetPrecipLab() {
+              setIQ(Object.assign({}, WC_PRECIP_DEFAULTS, {
+                log: [],
+                hypothesis: '',
+                stuckRevealed: false,
+                understood: false,
+                explanation: ''
+              }));
+              if (typeof announceToSR === 'function') announceToSR('Precipitation Lab reset to gentle rain.');
+            }
+
+            function logPrecipObservation() {
+              var entry = {
+                moisture: precipConfig.moisture,
+                cloudTemp: precipConfig.tempC,
+                midLevelTemp: precipConfig.midLevelTempC,
+                surfaceTemp: precipConfig.surfaceTempC,
+                humidity: precipConfig.lowLevelHumidity,
+                lift: precipConfig.updraft,
+                depth: precipConfig.cloudDepth,
+                wind: precipConfig.wind,
+                terrain: precipConfig.terrain,
+                result: precipModel.displayLabel,
+                type: precipModel.visualType,
+                intensity: precipModel.relativeIntensity,
+                stormDistanceKm: precipConfig.stormDistanceKm,
+                thunderDelaySeconds: precipModel.thunder.delaySeconds,
+                thunderEstimateKm: precipConfig.thunderEstimateKm,
+                thunderEstimateErrorKm: precipModel.thunderEstimate.errorKm,
+                thunderEstimateBand: precipModel.thunderEstimate.band,
+                soundEnabled: precipConfig.soundEnabled,
+                stormTime: precipModel.lifecycle.time,
+                stormStage: precipModel.lifecycle.stageLabel,
+                accumulation: Object.assign({}, precipModel.lifecycle.accumulation)
+              };
+              setIQ({ log: (iq.log || []).concat([entry]).slice(-8) });
+              if (typeof announceToSR === 'function') announceToSR('Observation saved: ' + precipModel.displayLabel + '.');
+            }
+
+            function openPrecipitationIn3d() {
+              var mappedWind = precipConfig.windDirection === 'calm' ? 0 : Math.max(0, Math.min(3, precipConfig.wind / 10));
+              var mappedRain = Math.max(0, Math.min(100, precipModel.relativeIntensity));
+              updMulti({
+                wcMode: 'explorer',
+                activeStage: 'precipitation',
+                journeyView: '3d',
+                journeyActive: true,
+                journeyState: 'precipitating',
+                journeyPaused: false,
+                precipLab3dActive: true,
+                climTemp: precipConfig.surfaceTempC,
+                climWind: mappedWind,
+                landRainIntensity: mappedRain,
+                landSlope: precipConfig.terrain === 'mountains' ? 'steep' : 'moderate',
+                climateAdjusted: true,
+                landAdjusted: true
+              });
+              setTimeout(function() {
+                var journeyCanvas = document.getElementById('wcCanvas');
+                if (!journeyCanvas) return;
+                journeyCanvas.dataset.journeyState = 'precipitating';
+                journeyCanvas.dataset.activeStage = 'precipitation';
+                journeyCanvas.dataset.climTemp = String(precipConfig.surfaceTempC);
+                journeyCanvas.dataset.climWind = String(mappedWind);
+                journeyCanvas.dataset.rainIntensity = String(mappedRain);
+                journeyCanvas.dataset.precipitationType = precipModel.visualType;
+                journeyCanvas.dataset.precipitationUpdraft = String(precipConfig.updraft);
+                journeyCanvas.dataset.precipitationCloudDepth = String(precipConfig.cloudDepth);
+                journeyCanvas.dataset.precipitationLowerHumidity = String(precipConfig.lowLevelHumidity);
+                journeyCanvas.dataset.precipitationCloudTemp = String(precipConfig.tempC);
+                journeyCanvas.dataset.precipitationWindDirection = precipConfig.windDirection;
+                journeyCanvas.dataset.precipitationLightningEligible = String(precipModel.lightningEligible);
+                journeyCanvas.dataset.stormStage = precipModel.lifecycle.stageKey;
+                journeyCanvas.dataset.thunderDelaySeconds = String(precipModel.thunder.delaySeconds);
+                journeyCanvas.dataset.thunderCaption = precipModel.thunder.caption;
+                journeyCanvas.dataset.thunderSound = precipModel.thunder.soundEnabled ? 'enabled' : 'muted';
+                journeyCanvas.dataset.thunderEstimateKm = String(precipModel.thunderEstimate.estimateKm);
+                journeyCanvas.dataset.thunderEstimateChecked = precipModel.config.thunderEstimateChecked ? 'true' : 'false';
+                journeyCanvas.dataset.thunderEstimateBand = precipModel.config.thunderEstimateChecked ? precipModel.thunderEstimate.band : 'unsubmitted';
+                journeyCanvas.dataset.thunderEstimateErrorKm = String(precipModel.thunderEstimate.errorKm);
+                journeyCanvas.dataset.stormCloudFactor = String(precipModel.lifecycle.cloudFactor);
+                journeyCanvas.dataset.stormUpdraftFactor = String(precipModel.lifecycle.updraftFactor);
+                journeyCanvas.dataset.stormSnowAccumulation = String(precipModel.lifecycle.accumulation.snow);
+                journeyCanvas.dataset.stormGlazeAccumulation = String(precipModel.lifecycle.accumulation.glaze);
+                journeyCanvas.dataset.stormHailAccumulation = String(precipModel.lifecycle.accumulation.hail);
+                journeyCanvas.dataset.stormPuddleAccumulation = String(precipModel.lifecycle.accumulation.puddling);
+                journeyCanvas.dataset.stormRunoffAccumulation = String(precipModel.lifecycle.accumulation.runoff);
+                journeyCanvas.dataset.journeyProgress = '0';
+              }, 0);
+              if (typeof announceToSR === 'function') {
+                announceToSR('Opening this ' + precipModel.displayLabel + ' setup in the full 3D water journey.');
+              }
+            }
+
+            var precipCanvasNode = null;
+            var precipCanvasRef = function(canvasEl) {
+              if (!canvasEl) {
+                var detachedCanvas = precipCanvasNode;
+                precipCanvasNode = null;
+                setTimeout(function() {
+                  if (detachedCanvas && !detachedCanvas.isConnected && detachedCanvas._wcPrecipCleanup) {
+                    detachedCanvas._wcPrecipCleanup();
+                    detachedCanvas._wcPrecipInit = false;
+                  }
+                }, 0);
+                return;
+              }
+
+              precipCanvasNode = canvasEl;
+              canvasEl._wcPrecipAdvanceLifecycle = function(nextTime, keepPlaying) {
+                setIQ({ stormTime: nextTime, stormAutoPlay: keepPlaying });
+              };
+              var nextCanvasModel = Object.assign({}, precipModel, { isDark: isDark });
+              if (canvasEl._wcPrecipInit) {
+                if (canvasEl._wcPrecipSync) canvasEl._wcPrecipSync(nextCanvasModel);
+                return;
+              }
+
+              canvasEl._wcPrecipInit = true;
+              var context = canvasEl.getContext('2d');
+              if (!context) {
+                canvasEl._wcPrecipInit = false;
+                return;
+              }
+
+              var model = nextCanvasModel;
+              var cssWidth = 0;
+              var cssHeight = 0;
+              var animationFrame = null;
+              var resizeObserver = null;
+              var lifecycleTimer = null;
+              var thunderTimer = null;
+              var lastLightningCycle = -1;
+              var visualTime = 0;
+              var lastTimestamp = 0;
+              var alive = true;
+              var motionReduced = false;
+              try {
+                motionReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+              } catch (e) {}
+
+              var particles = [];
+              for (var particleIndex = 0; particleIndex < 150; particleIndex++) {
+                particles.push({
+                  x: ((particleIndex * 47) % 149) / 149,
+                  y: ((particleIndex * 83) % 151) / 151,
+                  z: ((particleIndex * 61) % 137) / 137,
+                  wobble: ((particleIndex * 29) % 97) / 97 * Math.PI * 2
+                });
+              }
+
+              function setCanvasData() {
+                canvasEl.dataset.precipitationType = model.visualType;
+                canvasEl.dataset.precipitationIntensity = String(model.relativeIntensity);
+                canvasEl.dataset.precipitationLift = String(model.liftIndex);
+                canvasEl.dataset.precipitationProfile = model.profileLabel;
+                canvasEl.dataset.precipitationTerrain = model.config.terrain;
+                canvasEl.dataset.precipitationWindDirection = model.config.windDirection;
+                canvasEl.dataset.orographicFlow = model.config.terrain === 'mountains' && model.config.windDirection !== 'calm' && model.config.wind >= 2
+                  ? 'windward-lift-leeward-drying' : 'none';
+                canvasEl.dataset.thermalProfile = model.thermalLayers.transitionKind;
+                canvasEl.dataset.freezingLevel = model.freezingLevel == null
+                  ? 'none' : model.freezingLevel.toFixed(3);
+                canvasEl.dataset.profileTransitionCount = String(model.thermalLayers.crossings.length);
+                canvasEl.dataset.midLevelTemperature = model.config.midLevelTempC.toFixed(1);
+                canvasEl.dataset.secondaryTransitionKind = model.thermalLayers.crossings[1] ? model.thermalLayers.crossings[1].kind : 'none';
+                canvasEl.dataset.secondaryTransitionProgress = model.thermalLayers.crossings[1] ? model.thermalLayers.crossings[1].progress.toFixed(3) : 'none';
+                canvasEl.dataset.phasePath = model.phasePathLabel;
+                canvasEl.dataset.stormStage = model.lifecycle.stageKey;
+                canvasEl.dataset.stormTime = String(model.lifecycle.time);
+                canvasEl.dataset.stormActivity = model.lifecycle.activityFactor.toFixed(3);
+                canvasEl.dataset.groundAccumulation = ['snow','glaze','hail','puddling','runoff'].map(function(key) {
+                  return key + ':' + model.lifecycle.accumulation[key];
+                }).join(',');
+                canvasEl.dataset.thunderDelaySeconds = String(model.thunder.delaySeconds);
+                canvasEl.dataset.thunderCaption = model.thunder.caption;
+                canvasEl.dataset.thunderSound = model.thunder.soundEnabled ? 'enabled' : 'muted';
+                canvasEl.dataset.thunderEstimateKm = String(model.thunderEstimate.estimateKm);
+                canvasEl.dataset.thunderEstimateChecked = model.config.thunderEstimateChecked ? 'true' : 'false';
+                canvasEl.dataset.thunderEstimateBand = model.config.thunderEstimateChecked ? model.thunderEstimate.band : 'unsubmitted';
+                canvasEl.dataset.thunderEstimateErrorKm = String(model.thunderEstimate.errorKm);
+                canvasEl.dataset.lightningMode = !model.lightningEligible
+                  ? 'none'
+                  : motionReduced
+                    ? 'suppressed-reduced-motion'
+                    : model.config.paused ? 'paused' : 'periodic';
+                canvasEl.dataset.rendered = 'true';
+              }
+
+              function rainShadowFactorAt(sampleX, width, windSign) {
+                if (model.config.terrain !== 'mountains' || model.config.windDirection === 'calm' || model.config.wind < 2) return 1;
+                var isLeeward = windSign > 0 ? sampleX > width * 0.71 : sampleX < width * 0.62;
+                return isLeeward ? Math.max(0.22, 1 - model.terrainLift / 34) : 1;
+              }
+
+              function resizePrecipCanvas() {
+                if (!alive || !canvasEl.isConnected) return;
+                var rect = canvasEl.getBoundingClientRect();
+                var nextWidth = Math.round(rect.width || canvasEl.clientWidth || 0) || 320;
+                var nextHeight = Math.max(220, Math.round(rect.height || nextWidth * 9 / 16));
+                var dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+                if (nextWidth === cssWidth && nextHeight === cssHeight &&
+                    canvasEl.width === Math.round(nextWidth * dpr)) return;
+                cssWidth = nextWidth;
+                cssHeight = nextHeight;
+                canvasEl.width = Math.round(cssWidth * dpr);
+                canvasEl.height = Math.round(cssHeight * dpr);
+                context.setTransform(dpr, 0, 0, dpr, 0, 0);
+                drawPrecipCanvas(true);
+              }
+
+              function cancelPrecipFrame() {
+                if (animationFrame && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(animationFrame);
+                animationFrame = null;
+              }
+
+              function isPrecipCanvasHidden() {
+                return typeof document !== 'undefined' && !!document.hidden;
+              }
+
+              function schedulePrecipFrame() {
+                if (!alive || animationFrame || motionReduced || model.config.paused || isPrecipCanvasHidden()) return;
+                if (typeof requestAnimationFrame !== 'function') return;
+                animationFrame = requestAnimationFrame(drawPrecipCanvas);
+              }
+
+              function scheduleStormLifecycleTick() {
+                if (lifecycleTimer) { clearTimeout(lifecycleTimer); lifecycleTimer = null; }
+                if (thunderTimer) { clearTimeout(thunderTimer); thunderTimer = null; }
+                if (!alive || motionReduced || !model.config.stormAutoPlay || isPrecipCanvasHidden()) return;
+                lifecycleTimer = setTimeout(function() {
+                  lifecycleTimer = null;
+                  if (!alive || !canvasEl._wcPrecipAdvanceLifecycle) return;
+                  var nextStormTime = Math.min(100, model.lifecycle.time + 2);
+                  canvasEl._wcPrecipAdvanceLifecycle(nextStormTime, nextStormTime < 100);
+                }, 240);
+              }
+
+              function scheduleThunderAfterFlash() {
+                if (thunderTimer) { clearTimeout(thunderTimer); thunderTimer = null; }
+                if (!model.config.soundEnabled || !model.lightningEligible || typeof setTimeout !== 'function') {
+                  canvasEl.dataset.thunderStatus = model.config.soundEnabled ? 'not-eligible' : 'muted';
+                  return;
+                }
+                canvasEl.dataset.thunderStatus = 'pending';
+                thunderTimer = setTimeout(function() {
+                  thunderTimer = null;
+                  if (!alive || model.config.paused || motionReduced) return;
+                  playWcThunderRumble();
+                  canvasEl.dataset.thunderStatus = 'heard';
+                }, Math.round(model.thunder.delaySeconds * 1000));
+              }
+
+              function drawArrow(ctx2, x1, y1, x2, y2, color, alpha) {
+                var angle = Math.atan2(y2 - y1, x2 - x1);
+                ctx2.save();
+                ctx2.globalAlpha = alpha;
+                ctx2.strokeStyle = color;
+                ctx2.fillStyle = color;
+                ctx2.lineWidth = 1.5;
+                ctx2.beginPath();
+                ctx2.moveTo(x1, y1);
+                ctx2.lineTo(x2, y2);
+                ctx2.stroke();
+                ctx2.beginPath();
+                ctx2.moveTo(x2, y2);
+                ctx2.lineTo(x2 - 7 * Math.cos(angle - Math.PI / 6), y2 - 7 * Math.sin(angle - Math.PI / 6));
+                ctx2.lineTo(x2 - 7 * Math.cos(angle + Math.PI / 6), y2 - 7 * Math.sin(angle + Math.PI / 6));
+                ctx2.closePath();
+                ctx2.fill();
+                ctx2.restore();
+              }
+
+              function drawCloudPuff(ctx2, x, y, radius, depth, moistureValue) {
+                var cloudGradient = ctx2.createRadialGradient(
+                  x - radius * 0.25,
+                  y - radius * 0.32,
+                  radius * 0.1,
+                  x,
+                  y,
+                  radius
+                );
+                var shade = model.isDark ? 195 : 225;
+                cloudGradient.addColorStop(0, 'rgba(248,250,252,' + (0.7 + moistureValue * 0.25) + ')');
+                cloudGradient.addColorStop(0.62, 'rgba(' + shade + ',' + (shade + 8) + ',245,' + (0.64 + moistureValue * 0.2) + ')');
+                cloudGradient.addColorStop(1, 'rgba(71,85,105,' + (0.35 + depth * 0.22) + ')');
+                ctx2.fillStyle = cloudGradient;
+                ctx2.beginPath();
+                ctx2.arc(x, y, radius, 0, Math.PI * 2);
+                ctx2.fill();
+              }
+
+              function drawTerrain(ctx2, w, h, groundY) {
+                if (model.config.terrain === 'mountains') {
+                  var ridgeGradient = ctx2.createLinearGradient(0, groundY - h * 0.32, 0, groundY);
+                  ridgeGradient.addColorStop(0, model.isDark ? '#475569' : '#94a3b8');
+                  ridgeGradient.addColorStop(1, model.isDark ? '#1e293b' : '#475569');
+                  ctx2.fillStyle = ridgeGradient;
+                  ctx2.beginPath();
+                  ctx2.moveTo(0, groundY);
+                  ctx2.lineTo(w * 0.48, groundY);
+                  ctx2.lineTo(w * 0.66, groundY - h * 0.32);
+                  ctx2.lineTo(w * 0.79, groundY - h * 0.08);
+                  ctx2.lineTo(w, groundY - h * 0.18);
+                  ctx2.lineTo(w, h);
+                  ctx2.lineTo(0, h);
+                  ctx2.closePath();
+                  ctx2.fill();
+                  ctx2.fillStyle = 'rgba(226,232,240,.8)';
+                  ctx2.beginPath();
+                  ctx2.moveTo(w * 0.61, groundY - h * 0.23);
+                  ctx2.lineTo(w * 0.66, groundY - h * 0.32);
+                  ctx2.lineTo(w * 0.71, groundY - h * 0.2);
+                  ctx2.closePath();
+                  ctx2.fill();
+                } else if (model.config.terrain === 'coast') {
+                  ctx2.fillStyle = model.isDark ? '#164e63' : '#0e7490';
+                  ctx2.fillRect(0, groundY, w * 0.53, h - groundY);
+                  ctx2.fillStyle = model.isDark ? '#365314' : '#65a30d';
+                  ctx2.fillRect(w * 0.53, groundY, w * 0.47, h - groundY);
+                  ctx2.strokeStyle = 'rgba(186,230,253,.62)';
+                  ctx2.lineWidth = 1.5;
+                  for (var waveIndex = 0; waveIndex < 3; waveIndex++) {
+                    ctx2.beginPath();
+                    for (var waveX = 0; waveX <= w * 0.53; waveX += 8) {
+                      var waveY = groundY + 8 + waveIndex * 9 + Math.sin(waveX * 0.07 + visualTime * 1.3) * 2;
+                      if (waveX === 0) ctx2.moveTo(waveX, waveY);
+                      else ctx2.lineTo(waveX, waveY);
+                    }
+                    ctx2.stroke();
+                  }
+                } else {
+                  var groundGradient = ctx2.createLinearGradient(0, groundY, 0, h);
+                  groundGradient.addColorStop(0, model.isDark ? '#3f6212' : '#65a30d');
+                  groundGradient.addColorStop(1, model.isDark ? '#1c1917' : '#365314');
+                  ctx2.fillStyle = groundGradient;
+                  ctx2.fillRect(0, groundY, w, h - groundY);
+                }
+              }
+
+              function terrainSurfaceYAt(x, w, h, groundY) {
+                if (model.config.terrain !== 'mountains') return groundY;
+                var ratio = Math.max(0, Math.min(1, x / Math.max(1, w)));
+                var ridge = [
+                  [0, groundY],
+                  [0.48, groundY],
+                  [0.66, groundY - h * 0.32],
+                  [0.79, groundY - h * 0.08],
+                  [1, groundY - h * 0.18]
+                ];
+                for (var ridgeIndex = 1; ridgeIndex < ridge.length; ridgeIndex++) {
+                  if (ratio <= ridge[ridgeIndex][0]) {
+                    var left = ridge[ridgeIndex - 1];
+                    var right = ridge[ridgeIndex];
+                    var localProgress = (ratio - left[0]) / Math.max(0.001, right[0] - left[0]);
+                    return left[1] + (right[1] - left[1]) * localProgress;
+                  }
+                }
+                return groundY;
+              }
+
+              function drawHydrometeor(ctx2, x, y, size, alpha, particle, type, drift) {
+                ctx2.save();
+                ctx2.globalAlpha = alpha;
+                ctx2.lineCap = 'round';
+                if (type === 'snow') {
+                  ctx2.strokeStyle = '#f8fafc';
+                  ctx2.lineWidth = Math.max(1, size * 0.38);
+                  for (var arm = 0; arm < 3; arm++) {
+                    var snowAngle = particle.wobble + visualTime * 0.45 + arm * Math.PI / 3;
+                    ctx2.beginPath();
+                    ctx2.moveTo(x - Math.cos(snowAngle) * size, y - Math.sin(snowAngle) * size);
+                    ctx2.lineTo(x + Math.cos(snowAngle) * size, y + Math.sin(snowAngle) * size);
+                    ctx2.stroke();
+                  }
+                } else if (type === 'hail') {
+                  ctx2.fillStyle = '#f8fafc';
+                  ctx2.strokeStyle = '#93c5fd';
+                  ctx2.lineWidth = 1;
+                  ctx2.beginPath();
+                  ctx2.arc(x, y, Math.max(2, size * 0.75), 0, Math.PI * 2);
+                  ctx2.fill();
+                  ctx2.stroke();
+                } else if (type === 'mix' && particle.z > 0.5) {
+                  ctx2.fillStyle = '#e0f2fe';
+                  ctx2.beginPath();
+                  ctx2.arc(x, y, Math.max(1.5, size * 0.55), 0, Math.PI * 2);
+                  ctx2.fill();
+                } else {
+                  ctx2.strokeStyle = type === 'freezing-rain' ? '#a5f3fc' : '#7dd3fc';
+                  ctx2.lineWidth = Math.max(1, size * 0.34);
+                  ctx2.beginPath();
+                  ctx2.moveTo(x, y);
+                  ctx2.lineTo(x + drift * 0.08, y + size * (type === 'mix' ? 1.8 : 2.8));
+                  ctx2.stroke();
+                  if (type === 'freezing-rain') {
+                    ctx2.setLineDash([2, 2]);
+                    ctx2.lineWidth = 1;
+                    ctx2.beginPath();
+                    ctx2.arc(x, y + size * 0.7, Math.max(2, size * 0.78), 0, Math.PI * 2);
+                    ctx2.stroke();
+                    ctx2.setLineDash([]);
+                  }
+                }
+                ctx2.restore();
+              }
+
+              function drawPrecipCanvas(timestampOrForce) {
+                animationFrame = null;
+                if (!alive || !canvasEl.isConnected) {
+                  cleanupPrecipCanvas();
+                  return;
+                }
+                var force = timestampOrForce === true;
+                var timestamp = typeof timestampOrForce === 'number' ? timestampOrForce : 0;
+                if (!force && !motionReduced && !model.config.paused) {
+                  var delta = lastTimestamp ? Math.min(0.05, (timestamp - lastTimestamp) / 1000) : 0.016;
+                  visualTime += delta;
+                  lastTimestamp = timestamp;
+                }
+                if (!cssWidth || !cssHeight) {
+                  resizePrecipCanvas();
+                  if (!cssWidth || !cssHeight) return;
+                }
+
+                var w = cssWidth;
+                var h = cssHeight;
+                var groundY = h * 0.82;
+                var depthNormalized = (model.config.cloudDepth - 1) / 11;
+                var updraftNormalized = model.config.updraft / 100 * model.lifecycle.updraftFactor;
+                var convectiveBuild = Math.min(1, depthNormalized * 0.52 + updraftNormalized * 0.48);
+                var cloudY = h * (0.33 - depthNormalized * 0.14 - updraftNormalized * 0.045);
+                var cloudBase = h * 0.39;
+                var skyGradient = context.createLinearGradient(0, 0, 0, groundY);
+                if (model.isDark) {
+                  skyGradient.addColorStop(0, '#071a2c');
+                  skyGradient.addColorStop(0.58, '#164e63');
+                  skyGradient.addColorStop(1, '#475569');
+                } else {
+                  skyGradient.addColorStop(0, '#075985');
+                  skyGradient.addColorStop(0.58, '#38bdf8');
+                  skyGradient.addColorStop(1, '#bae6fd');
+                }
+                context.fillStyle = skyGradient;
+                context.fillRect(0, 0, w, h);
+
+                var airThermalGradient = context.createLinearGradient(0, cloudBase, 0, groundY);
+                airThermalGradient.addColorStop(0, model.config.tempC <= 0 ? 'rgba(147,197,253,.14)' : 'rgba(251,191,36,.12)');
+                airThermalGradient.addColorStop(0.55, model.config.midLevelTempC <= 0 ? 'rgba(125,211,252,.14)' : 'rgba(251,146,60,.12)');
+                airThermalGradient.addColorStop(1, model.config.surfaceTempC <= 0 ? 'rgba(165,243,252,.12)' : 'rgba(251,146,60,.10)');
+                context.fillStyle = airThermalGradient;
+                context.fillRect(0, 0, w, groundY);
+
+                model.thermalLayers.crossings.forEach(function(thermalCrossing, thermalCrossingIndex) {
+                  var freezingLevelY = cloudBase + thermalCrossing.progress * (groundY - cloudBase);
+                  var thermalBand = context.createLinearGradient(0, freezingLevelY - 13, 0, freezingLevelY + 13);
+                  thermalBand.addColorStop(0, 'rgba(254,240,138,0)');
+                  thermalBand.addColorStop(0.5, thermalCrossing.kind === 'melting'
+                    ? 'rgba(251,191,36,.18)' : 'rgba(103,232,249,.18)');
+                  thermalBand.addColorStop(1, 'rgba(186,230,253,0)');
+                  context.fillStyle = thermalBand;
+                  context.fillRect(0, freezingLevelY - 13, w, 26);
+                  context.save();
+                  context.setLineDash([7, 5]);
+                  context.strokeStyle = thermalCrossing.kind === 'melting' ? '#fde68a' : '#a5f3fc';
+                  context.lineWidth = 1.5;
+                  context.beginPath();
+                  context.moveTo(0, freezingLevelY);
+                  context.lineTo(w, freezingLevelY);
+                  context.stroke();
+                  context.setLineDash([]);
+                  var thermalLabelText = (thermalCrossing.kind === 'melting' ? 'MELTING LAYER' : 'FREEZING LAYER') +
+                    ' \u00B7 SCHEMATIC';
+                  context.font = '800 9px system-ui, sans-serif';
+                  var thermalLabelWidth = Math.min(w - 20, context.measureText(thermalLabelText).width + 12);
+                  var thermalLabelX = thermalCrossingIndex % 2 === 0 ? 6 : Math.max(6, w - thermalLabelWidth - 6);
+                  context.fillStyle = 'rgba(3,18,31,.74)';
+                  context.fillRect(thermalLabelX, freezingLevelY - 19, thermalLabelWidth, 15);
+                  context.fillStyle = '#f8fafc';
+                  context.fillText(thermalLabelText, thermalLabelX + 6, freezingLevelY - 8);
+                  context.restore();
+                });
+                context.save();
+                context.globalAlpha = 0.18;
+                context.strokeStyle = '#e0f2fe';
+                context.lineWidth = 1;
+                for (var gridIndex = 0; gridIndex < 7; gridIndex++) {
+                  context.beginPath();
+                  context.moveTo(w * 0.5, groundY - h * 0.05);
+                  context.lineTo((gridIndex / 6) * w, h);
+                  context.stroke();
+                }
+                for (var depthLine = 0; depthLine < 4; depthLine++) {
+                  var lineY = groundY + (h - groundY) * Math.pow((depthLine + 1) / 4, 1.55);
+                  context.beginPath();
+                  context.moveTo(0, lineY);
+                  context.lineTo(w, lineY);
+                  context.stroke();
+                }
+                context.restore();
+
+                drawTerrain(context, w, h, groundY);
+
+                var windSign = model.config.windDirection === 'west' ? -1 : (model.config.windDirection === 'calm' ? 0 : 1);
+                var orographicFlowActive = model.config.terrain === 'mountains' && model.config.windDirection !== 'calm' && model.config.wind >= 2;
+                var windShift = windSign * model.config.wind / 40 * w * 0.08;
+                var cloudCenter = w * 0.48 + windShift * 0.18;
+                if (orographicFlowActive) {
+                  cloudCenter = w * (windSign > 0 ? 0.56 : 0.78) + windShift * 0.08;
+                  context.save();
+                  var rainShadowCenter = w * (windSign > 0 ? 0.86 : 0.25);
+                  var rainShadowGradient = context.createRadialGradient(
+                    rainShadowCenter, groundY - h * 0.06, 2,
+                    rainShadowCenter, groundY - h * 0.06, w * 0.18
+                  );
+                  rainShadowGradient.addColorStop(0, 'rgba(251,191,36,' + (0.08 + model.terrainLift / 280) + ')');
+                  rainShadowGradient.addColorStop(1, 'rgba(251,191,36,0)');
+                  context.fillStyle = rainShadowGradient;
+                  context.beginPath();
+                  context.ellipse(rainShadowCenter, groundY - h * 0.05, w * 0.2, h * 0.12, 0, 0, Math.PI * 2);
+                  context.fill();
+                  context.restore();
+                }
+                var stormDrift = windSign * model.config.wind / 40 * w * 0.24;
+                var cloudScale = (0.82 + model.config.moisture / 100 * 0.35 + model.config.cloudDepth / 12 * 0.18) * model.lifecycle.cloudFactor;
+                if (model.visualType !== 'clear') {
+                  var shaftBottom = model.visualType === 'virga'
+                    ? h * (0.68 - (1 - model.config.lowLevelHumidity / 100) * 0.2)
+                    : groundY;
+                  var shaftWidth = w * (0.16 + model.relativeIntensity / 520);
+                  var shaftSurfaceCenter = cloudCenter + stormDrift;
+                  var shaftGradient = context.createLinearGradient(0, cloudBase, 0, shaftBottom);
+                  shaftGradient.addColorStop(0, 'rgba(186,230,253,' + (0.04 + model.relativeIntensity / 560) + ')');
+                  shaftGradient.addColorStop(0.76, 'rgba(125,211,252,' + (0.02 + model.relativeIntensity / 760) + ')');
+                  shaftGradient.addColorStop(1, 'rgba(125,211,252,0)');
+                  context.fillStyle = shaftGradient;
+                  context.beginPath();
+                  context.moveTo(cloudCenter - shaftWidth, cloudBase - 2);
+                  context.lineTo(cloudCenter + shaftWidth, cloudBase - 2);
+                  context.lineTo(shaftSurfaceCenter + shaftWidth * 0.62, shaftBottom);
+                  context.lineTo(shaftSurfaceCenter - shaftWidth * 0.62, shaftBottom);
+                  context.closePath();
+                  context.fill();
+                }
+                if (convectiveBuild > 0.56) {
+                  var anvilDirection = windSign;
+                  context.fillStyle = 'rgba(226,232,240,' + (0.42 + model.config.moisture / 260) + ')';
+                  context.beginPath();
+                  context.ellipse(
+                    cloudCenter + anvilDirection * w * 0.08,
+                    cloudY - 15,
+                    w * (0.11 + convectiveBuild * 0.08),
+                    16 + convectiveBuild * 8,
+                    -anvilDirection * 0.08,
+                    0,
+                    Math.PI * 2
+                  );
+                  context.fill();
+                  var towerLevels = Math.max(2, Math.round(2 + convectiveBuild * 3));
+                  for (var towerIndex = 0; towerIndex < towerLevels; towerIndex++) {
+                    drawCloudPuff(
+                      context,
+                      cloudCenter - windSign * 10 + Math.sin(towerIndex * 1.7) * 8,
+                      cloudY + 18 - towerIndex * (13 + convectiveBuild * 4),
+                      (24 + towerIndex * 4) * cloudScale,
+                      0.7,
+                      model.config.moisture / 100
+                    );
+                  }
+                }
+                drawCloudPuff(context, cloudCenter - w * 0.16, cloudY + 12, 38 * cloudScale, 0.4, model.config.moisture / 100);
+                drawCloudPuff(context, cloudCenter - w * 0.06, cloudY - 5, 52 * cloudScale, 0.75, model.config.moisture / 100);
+                drawCloudPuff(context, cloudCenter + w * 0.07, cloudY, 47 * cloudScale, 0.65, model.config.moisture / 100);
+                drawCloudPuff(context, cloudCenter + w * 0.17, cloudY + 15, 35 * cloudScale, 0.35, model.config.moisture / 100);
+                var cloudBaseGradient = context.createLinearGradient(0, cloudY + 18, 0, cloudBase + 8);
+                cloudBaseGradient.addColorStop(0, 'rgba(71,85,105,' + (0.18 + model.config.moisture / 300) + ')');
+                cloudBaseGradient.addColorStop(1, 'rgba(30,41,59,' + (0.34 + model.config.moisture / 250) + ')');
+                context.fillStyle = cloudBaseGradient;
+                context.beginPath();
+                context.moveTo(cloudCenter - w * 0.25, cloudY + 25);
+                context.bezierCurveTo(cloudCenter - w * 0.12, cloudY + 13,
+                  cloudCenter + w * 0.12, cloudY + 17, cloudCenter + w * 0.25, cloudY + 28);
+                context.lineTo(cloudCenter + w * 0.23, cloudBase);
+                context.quadraticCurveTo(cloudCenter, cloudBase + 10, cloudCenter - w * 0.23, cloudBase);
+                context.closePath();
+                context.fill();
+
+                context.fillStyle = '#e0f2fe';
+                context.font = '600 11px system-ui, sans-serif';
+                context.fillText('CLOUD ' + model.config.tempC.toFixed(0) + '\u00B0C', 10, 18);
+                context.fillText('SURFACE ' + model.config.surfaceTempC.toFixed(0) + '\u00B0C', 10, groundY - 8);
+
+                if (model.config.showAirflow) {
+                  var airColor = model.config.tempC <= 0 ? '#bfdbfe' : '#fde68a';
+                  var updraftHeight = h * (0.1 + model.liftIndex / 100 * 0.16);
+                  for (var airIndex = 0; airIndex < 3; airIndex++) {
+                    var airX = cloudCenter - 46 + airIndex * 46;
+                    var pulse = Math.sin(visualTime * 1.6 + airIndex) * 5;
+                    drawArrow(context, airX, cloudBase + 80, airX + pulse, cloudBase + 80 - updraftHeight, airColor, 0.55);
+                  }
+                  if (model.config.windDirection !== 'calm' && model.config.wind >= 2) {
+                    for (var windIndex = 0; windIndex < 3; windIndex++) {
+                      var windY = cloudY - 45 + windIndex * 18;
+                      var windStartX = windSign > 0 ? 16 : w - 16;
+                      var windEndX = windStartX + windSign * Math.min(w * 0.2, 35 + model.config.wind * 2.2);
+                      drawArrow(context, windStartX, windY, windEndX, windY + 2, '#e0f2fe', 0.42);
+                    }
+                  }
+                  if (orographicFlowActive) {
+                    var oroStartX = w * (windSign > 0 ? 0.34 : 0.96);
+                    var oroEndX = w * (windSign > 0 ? 0.95 : 0.34);
+                    var ridgeX = w * 0.66;
+                    var ridgeY = groundY - h * 0.36;
+                    context.save();
+                    context.strokeStyle = '#ddd6fe';
+                    context.lineWidth = 2;
+                    context.globalAlpha = 0.72;
+                    context.setLineDash([8, 5]);
+                    context.beginPath();
+                    context.moveTo(oroStartX, groundY - h * 0.08);
+                    context.quadraticCurveTo(ridgeX, ridgeY, oroEndX, groundY - h * 0.11);
+                    context.stroke();
+                    context.setLineDash([]);
+                    drawArrow(context, ridgeX - windSign * 34, ridgeY + 16,
+                      ridgeX - windSign * 7, ridgeY - 2, '#ddd6fe', 0.88);
+                    drawArrow(context, ridgeX + windSign * 16, ridgeY + 2,
+                      ridgeX + windSign * 48, ridgeY + 24, '#fcd34d', 0.62);
+                    context.font = '800 9px system-ui, sans-serif';
+                    context.fillStyle = '#ede9fe';
+                    context.fillText('WINDWARD LIFT', w * (windSign > 0 ? 0.34 : 0.72), ridgeY - 9);
+                    context.fillStyle = '#fde68a';
+                    context.fillText('LEEWARD DRYING', w * (windSign > 0 ? 0.73 : 0.16), groundY - h * 0.03);
+                    context.restore();
+                  }
+                  if (convectiveBuild > 0.58) {
+                    drawArrow(context, cloudCenter + windSign * 42, cloudY + 22, cloudCenter + windSign * 48,
+                      cloudBase + 62, '#bae6fd', 0.48);
+                  }
+                  if (model.visualType === 'hail') {
+                    context.save();
+                    context.strokeStyle = 'rgba(224,242,254,.7)';
+                    context.lineWidth = 1.5;
+                    context.setLineDash([5, 4]);
+                    context.beginPath();
+                    context.ellipse(cloudCenter - windSign * 12, cloudY + 18, 34, 48, 0, 0, Math.PI * 2);
+                    context.stroke();
+                    context.setLineDash([]);
+                    for (var embryoIndex = 0; embryoIndex < 5; embryoIndex++) {
+                      var embryoAngle = visualTime * 1.35 + embryoIndex * Math.PI * 0.4;
+                      context.fillStyle = '#f8fafc';
+                      context.beginPath();
+                      context.arc(cloudCenter - windSign * 12 + Math.cos(embryoAngle) * 34,
+                        cloudY + 18 + Math.sin(embryoAngle) * 48, 2.3, 0, Math.PI * 2);
+                      context.fill();
+                    }
+                    context.restore();
+                  }
+                }
+
+                var activeParticles = model.visualType === 'clear'
+                  ? 0
+                  : Math.max(16, Math.min(145, Math.round(18 + model.relativeIntensity * 1.25)));
+                var fallTarget = model.visualType === 'virga'
+                  ? h * (0.68 - (1 - model.config.lowLevelHumidity / 100) * 0.2)
+                  : groundY - 2;
+                var fallSpeed = model.visualType === 'snow' ? 0.09
+                  : model.visualType === 'hail' ? 0.36
+                  : model.visualType === 'mix' ? 0.18
+                  : 0.28;
+                fallSpeed *= 0.72 + model.relativeIntensity / 180;
+                var drift = stormDrift;
+                for (var visibleIndex = 0; visibleIndex < activeParticles; visibleIndex++) {
+                  var particle = particles[visibleIndex];
+                  var progress = (particle.y + visualTime * fallSpeed * (0.72 + particle.z * 0.55)) % 1;
+                  var depthScale = 0.55 + particle.z * 0.8;
+                  var spread = (particle.x - 0.5) * w * 0.48 * depthScale;
+                  var sway = Math.sin(visualTime * 1.4 + particle.wobble) * (model.visualType === 'snow' ? 10 : 2);
+                  var particleX = cloudCenter + spread + drift * progress + sway;
+                  var particleSurfaceY = terrainSurfaceYAt(particleX, w, h, groundY) - 2;
+                  var particleFallTarget = model.visualType === 'virga' ? fallTarget : particleSurfaceY;
+                  var particleY = cloudBase + progress * (particleFallTarget - cloudBase);
+                  var particleAlpha = model.visualType === 'virga'
+                    ? Math.max(0, Math.pow(1 - progress, 1.7))
+                    : 0.42 + particle.z * 0.5;
+                  particleAlpha *= rainShadowFactorAt(particleX, w, windSign);
+                  var particleSize = (2.2 + depthScale * 2.8) *
+                    (model.visualType === 'virga' ? Math.max(0.08, 1 - progress) : 1);
+                  var particlePhase = wcPrecipPhaseFromModel(model, progress);
+                  drawHydrometeor(context, particleX, particleY, particleSize, particleAlpha, particle, particlePhase, drift);
+                }
+
+                if (model.reachesGround) {
+                  var surfaceFootprintCenter = cloudCenter + stormDrift;
+                  var footprintStart = Math.max(0, surfaceFootprintCenter - w * 0.29);
+                  var footprintEnd = Math.min(w, surfaceFootprintCenter + w * 0.29);
+                  if (model.visualType === 'snow' || model.visualType === 'freezing-rain') {
+                    context.save();
+                    context.strokeStyle = model.visualType === 'snow' ? 'rgba(248,250,252,.9)' : 'rgba(165,243,252,.86)';
+                    var surfaceAccumulation = model.visualType === 'snow' ? model.lifecycle.accumulation.snow : model.lifecycle.accumulation.glaze;
+                    context.lineWidth = 2 + surfaceAccumulation / (model.visualType === 'snow' ? 11 : 18);
+                    if (model.visualType === 'freezing-rain') context.setLineDash([5, 3]);
+                    var previousSurfaceX = footprintStart;
+                    var previousSurfaceY = terrainSurfaceYAt(previousSurfaceX, w, h, groundY) - 2;
+                    for (var surfaceX = footprintStart + 6; surfaceX <= footprintEnd; surfaceX += 6) {
+                      var surfaceY = terrainSurfaceYAt(surfaceX, w, h, groundY) - 2;
+                      context.globalAlpha = rainShadowFactorAt((previousSurfaceX + surfaceX) / 2, w, windSign);
+                      context.beginPath();
+                      context.moveTo(previousSurfaceX, previousSurfaceY);
+                      context.lineTo(surfaceX, surfaceY);
+                      context.stroke();
+                      previousSurfaceX = surfaceX;
+                      previousSurfaceY = surfaceY;
+                    }
+                    context.restore();
+                  } else {
+                    context.save();
+                    context.strokeStyle = model.visualType === 'hail' ? 'rgba(224,242,254,.82)' : 'rgba(125,211,252,.55)';
+                    context.fillStyle = 'rgba(224,242,254,.82)';
+                    context.lineWidth = 1;
+                    for (var impactIndex = 0; impactIndex < Math.min(12, Math.round(model.relativeIntensity / 6)); impactIndex++) {
+                      var impactPhase = (visualTime * 0.8 + impactIndex * 0.17) % 1;
+                      var impactX = footprintStart + (((impactIndex * 73) % 113) / 113) * (footprintEnd - footprintStart);
+                      var impactGroundY = terrainSurfaceYAt(impactX, w, h, groundY);
+                      context.globalAlpha = (1 - impactPhase) * rainShadowFactorAt(impactX, w, windSign);
+                      context.beginPath();
+                      if (model.visualType === 'hail') {
+                        context.arc(impactX, impactGroundY - Math.sin(impactPhase * Math.PI) * 12, 2.5, 0, Math.PI * 2);
+                        context.fill();
+                      } else {
+                        context.ellipse(impactX, impactGroundY + 2, 3 + impactPhase * 11, 1 + impactPhase * 3, 0, 0, Math.PI * 2);
+                        context.stroke();
+                      }
+                    }
+                    context.restore();
+                  }
+                }
+
+                var lifecycleAccumulation = model.lifecycle.accumulation;
+                if (model.reachesGround && (lifecycleAccumulation.puddling > 0 || lifecycleAccumulation.hail > 0 || lifecycleAccumulation.runoff > 0)) {
+                  var accumulationCenter = cloudCenter + stormDrift;
+                  context.save();
+                  if (lifecycleAccumulation.puddling > 0) {
+                    context.strokeStyle = 'rgba(56,189,248,.72)';
+                    context.fillStyle = 'rgba(14,165,233,.18)';
+                    var puddleCount = Math.max(1, Math.round(lifecycleAccumulation.puddling / 18));
+                    for (var puddleIndex = 0; puddleIndex < puddleCount; puddleIndex++) {
+                      var puddleX = accumulationCenter + (puddleIndex - (puddleCount - 1) / 2) * 22;
+                      var puddleY = terrainSurfaceYAt(puddleX, w, h, groundY) + 2;
+                      context.beginPath();
+                      context.ellipse(puddleX, puddleY, 7 + lifecycleAccumulation.puddling / 10, 2 + lifecycleAccumulation.puddling / 34, 0, 0, Math.PI * 2);
+                      context.fill();
+                      context.stroke();
+                    }
+                  }
+                  if (lifecycleAccumulation.hail > 0) {
+                    context.fillStyle = 'rgba(248,250,252,.92)';
+                    var hailCoverCount = Math.min(24, Math.round(lifecycleAccumulation.hail / 4));
+                    for (var hailCoverIndex = 0; hailCoverIndex < hailCoverCount; hailCoverIndex++) {
+                      var hailCoverX = accumulationCenter - w * 0.18 + ((hailCoverIndex * 47) % 97) / 97 * w * 0.36;
+                      context.beginPath();
+                      context.arc(hailCoverX, terrainSurfaceYAt(hailCoverX, w, h, groundY) - 1, 1.5 + (hailCoverIndex % 3) * 0.35, 0, Math.PI * 2);
+                      context.fill();
+                    }
+                  }
+                  if (lifecycleAccumulation.runoff > 4) {
+                    context.strokeStyle = 'rgba(14,165,233,.76)';
+                    context.lineWidth = 1.5 + lifecycleAccumulation.runoff / 35;
+                    context.setLineDash([7, 5]);
+                    var runoffStartX = Math.max(12, accumulationCenter - w * 0.12);
+                    var runoffEndX = model.config.terrain === 'mountains' ? (windSign > 0 ? w - 12 : 12) : Math.min(w - 12, runoffStartX + windSign * w * 0.22);
+                    context.beginPath();
+                    context.moveTo(runoffStartX, terrainSurfaceYAt(runoffStartX, w, h, groundY) + 4);
+                    context.quadraticCurveTo((runoffStartX + runoffEndX) / 2, groundY + h * 0.045, runoffEndX, groundY + h * 0.07);
+                    context.stroke();
+                    context.setLineDash([]);
+                  }
+                  context.restore();
+                }
+
+                context.save();
+                context.font = '800 10px system-ui, sans-serif';
+                var lifecycleBadge = model.lifecycle.stageLabel.toUpperCase() + ' · T=' + model.lifecycle.time;
+                var lifecycleBadgeWidth = Math.min(w - 20, context.measureText(lifecycleBadge).width + 14);
+                context.fillStyle = 'rgba(3,18,31,.76)';
+                context.fillRect(w - lifecycleBadgeWidth - 7, 7, lifecycleBadgeWidth, 20);
+                context.fillStyle = '#f8fafc';
+                context.fillText(lifecycleBadge, w - lifecycleBadgeWidth, 21);
+                context.restore();
+
+                var lightningPhase = visualTime % 5.8;
+                var lightningCycle = Math.floor(visualTime / 5.8);
+                if (model.lightningEligible && !motionReduced && !model.config.paused && lightningPhase > 5.62 && lastLightningCycle !== lightningCycle) {
+                  lastLightningCycle = lightningCycle;
+                  scheduleThunderAfterFlash();
+                }
+                if (model.lightningEligible && !motionReduced && !model.config.paused && lightningPhase > 5.62) {
+                  var boltX = cloudCenter + windSign * w * 0.04;
+                  var boltTop = cloudY + 12;
+                  var boltBottom = terrainSurfaceYAt(boltX + windSign * 32, w, h, groundY) - 4;
+                  context.save();
+                  context.strokeStyle = '#fef9c3';
+                  context.shadowColor = '#fde047';
+                  context.shadowBlur = 10;
+                  context.lineWidth = 2.4;
+                  context.beginPath();
+                  context.moveTo(boltX, boltTop);
+                  context.lineTo(boltX - 9, boltTop + (boltBottom - boltTop) * 0.28);
+                  context.lineTo(boltX + 5, boltTop + (boltBottom - boltTop) * 0.46);
+                  context.lineTo(boltX - 3, boltTop + (boltBottom - boltTop) * 0.67);
+                  context.lineTo(boltX + windSign * 32, boltBottom);
+                  context.stroke();
+                  context.lineWidth = 1.2;
+                  context.beginPath();
+                  context.moveTo(boltX + 5, boltTop + (boltBottom - boltTop) * 0.46);
+                  context.lineTo(boltX + 24, boltTop + (boltBottom - boltTop) * 0.58);
+                  context.stroke();
+                  context.restore();
+                }
+
+                schedulePrecipFrame();
+              }
+
+              function onPrecipVisibilityChange() {
+                if (!alive) return;
+                if (isPrecipCanvasHidden()) cancelPrecipFrame();
+                else {
+                  lastTimestamp = 0;
+                  drawPrecipCanvas(true);
+                  schedulePrecipFrame();
+                }
+              }
+
+              function cleanupPrecipCanvas() {
+                if (!alive) return;
+                alive = false;
+                cancelPrecipFrame();
+                if (resizeObserver) resizeObserver.disconnect();
+                if (typeof window !== 'undefined') window.removeEventListener('resize', resizePrecipCanvas);
+                if (typeof document !== 'undefined') {
+                  document.removeEventListener('visibilitychange', onPrecipVisibilityChange);
+                }
+                if (lifecycleTimer) { clearTimeout(lifecycleTimer); lifecycleTimer = null; }
+                if (thunderTimer) { clearTimeout(thunderTimer); thunderTimer = null; }
+                canvasEl._wcPrecipAdvanceLifecycle = null;
+                canvasEl._wcPrecipSync = null;
+                canvasEl._wcPrecipCleanup = null;
+              }
+
+              canvasEl._wcPrecipSync = function(nextModel) {
+                model = nextModel;
+                lastTimestamp = 0;
+                setCanvasData();
+                cancelPrecipFrame();
+                drawPrecipCanvas(true);
+                schedulePrecipFrame();
+                scheduleStormLifecycleTick();
+              };
+              canvasEl._wcPrecipCleanup = cleanupPrecipCanvas;
+              if (typeof ResizeObserver !== 'undefined') {
+                resizeObserver = new ResizeObserver(resizePrecipCanvas);
+                resizeObserver.observe(canvasEl.parentElement || canvasEl);
+              }
+              if (typeof document !== 'undefined') {
+                document.addEventListener('visibilitychange', onPrecipVisibilityChange);
+              }
+              if (typeof window !== 'undefined') window.addEventListener('resize', resizePrecipCanvas);
+              resizePrecipCanvas();
+              setCanvasData();
+              drawPrecipCanvas(true);
+              schedulePrecipFrame();
+              scheduleStormLifecycleTick();
+            };
+
+            var precipCanvasLabel = '2.5D precipitation chamber. ' + precipModel.displayLabel + '. ' +
+              precipModel.formationLabel + ', ' + precipModel.cloudPhase + ', ' + precipModel.profileLabel + '. ' +
+              precipModel.phasePathLabel + '. ' + precipModel.thunder.explanation + ' ' + precipModel.thunder.caption + (precipConfig.thunderEstimateChecked ? '. Thunder estimate: ' + precipModel.thunderEstimate.feedback : '') + '. Storm lifecycle: ' + precipModel.lifecycle.stageLabel + ', time ' + precipModel.lifecycle.time + ' out of 100. ' +
+              'Ground accumulation indices: snow ' + precipModel.lifecycle.accumulation.snow + ', glaze ' + precipModel.lifecycle.accumulation.glaze + ', hail ' + precipModel.lifecycle.accumulation.hail + ', puddling ' + precipModel.lifecycle.accumulation.puddling + ', runoff ' + precipModel.lifecycle.accumulation.runoff + '. Electrical activity index ' + precipModel.electrificationIndex + ' out of 100. ' +
+              'Temperature profile: cloud ' + precipConfig.tempC.toFixed(0) + ' degrees Celsius, middle atmosphere ' +
+              precipConfig.midLevelTempC.toFixed(0) + ' degrees Celsius, surface ' + precipConfig.surfaceTempC.toFixed(0) + ' degrees Celsius. ' +
+              'Cloud moisture ' + precipConfig.moisture.toFixed(0) + ' percent, updraft ' +
+              precipConfig.updraft.toFixed(0) + ' out of 100, below-cloud humidity ' +
+              precipConfig.lowLevelHumidity.toFixed(0) + ' percent, wind ' + precipConfig.wind.toFixed(0) +
+              ' meters per second ' + precipModel.driftDirection + '. ' +
+              (precipConfig.terrain === 'mountains'
+                ? 'Air rises on the windward slope, while precipitation thins in the leeward rain shadow.'
+                : '');
+
+            function precipSlider(spec) {
+              var value = precipConfig[spec.key];
+              var inputId = 'wcPrecip-' + spec.key;
+              return h('label', { className: 'wc-precip-field', htmlFor: inputId, key: spec.key },
+                h('span', { className: 'wc-precip-field-head' },
+                  h('span', null, spec.label),
+                  h('output', { htmlFor: inputId }, spec.format(value))
+                ),
+                h('input', {
+                  id: inputId,
+                  type: 'range',
+                  min: spec.min,
+                  max: spec.max,
+                  step: spec.step,
+                  value: value,
+                  onChange: function(event) { setPrecipControl(spec.key, parseFloat(event.target.value)); },
+                  'aria-label': spec.label,
+                  'aria-valuetext': spec.aria(value)
                 })
+              );
+            }
+
+            var cloudSliders = [
+              { key: 'moisture', label: 'Cloud moisture', min: 0, max: 100, step: 1,
+                format: function(value) { return value.toFixed(0) + '%'; },
+                aria: function(value) { return value.toFixed(0) + ' percent cloud moisture'; } },
+              { key: 'cloudDepth', label: 'Cloud depth', min: 1, max: 12, step: 0.5,
+                format: function(value) { return value.toFixed(1) + ' km'; },
+                aria: function(value) { return value.toFixed(1) + ' kilometers cloud depth'; } },
+              { key: 'updraft', label: 'Vertical lift / updraft', min: 0, max: 100, step: 1,
+                format: function(value) { return value.toFixed(0) + '/100'; },
+                aria: function(value) { return value.toFixed(0) + ' out of 100 vertical lift'; } }
+            ];
+            var temperatureProfileSliders = [
+              { key: 'tempC', label: 'Cloud temperature', min: -35, max: 15, step: 1,
+                format: function(value) { return value.toFixed(0) + '\u00B0C'; },
+                aria: function(value) { return value.toFixed(0) + ' degrees Celsius at cloud base'; } },
+              { key: 'midLevelTempC', label: 'Middle-atmosphere temperature', min: -25, max: 25, step: 1,
+                format: function(value) { return value.toFixed(0) + '\u00B0C'; },
+                aria: function(value) { return value.toFixed(0) + ' degrees Celsius in the middle atmosphere'; } },
+              { key: 'surfaceTempC', label: 'Surface temperature', min: -15, max: 35, step: 1,
+                format: function(value) { return value.toFixed(0) + '\u00B0C'; },
+                aria: function(value) { return value.toFixed(0) + ' degrees Celsius at the surface'; } }
+            ];
+            var survivalSliders = [
+              { key: 'lowLevelHumidity', label: 'Below-cloud humidity', min: 0, max: 100, step: 1,
+                format: function(value) { return value.toFixed(0) + '%'; },
+                aria: function(value) { return value.toFixed(0) + ' percent below-cloud relative humidity'; } }
+            ];
+
+            function precipProfileX(temperatureC) {
+              return 26 + (wcPrecipClamp(temperatureC, -35, 35) + 35) / 70 * 206;
+            }
+
+            function precipProfileY(progress) {
+              return 22 + wcPrecipClamp(progress, 0, 1) * 128;
+            }
+
+            function renderPrecipTemperatureProfile() {
+              var profilePoints = precipModel.thermalLayers.temperaturePoints;
+              var profilePath = profilePoints.map(function(point, pointIndex) {
+                return (pointIndex ? 'L' : 'M') + precipProfileX(point.temperatureC).toFixed(1) + ' ' +
+                  precipProfileY(point.progress).toFixed(1);
+              }).join(' ');
+              var profileSummary = profilePoints.map(function(point) {
+                return point.label + ' ' + point.temperatureC.toFixed(0) + ' degrees Celsius';
+              }).join(', ') + '. ' + precipModel.thermalLayers.layerLabel + '.';
+              return h('div', { className: 'wc-precip-profile-editor', 'data-temperature-profile-editor': 'three-point' },
+                h('svg', { className: 'wc-precip-profile-chart', viewBox: '0 0 260 176', role: 'img',
+                  'aria-label': profileSummary, preserveAspectRatio: 'xMidYMid meet' },
+                  h('rect', { className: 'wc-profile-cold-zone', x: 26, y: 14,
+                    width: precipProfileX(0) - 26, height: 140 }),
+                  h('rect', { className: 'wc-profile-warm-zone', x: precipProfileX(0), y: 14,
+                    width: 232 - precipProfileX(0), height: 140 }),
+                  h('line', { className: 'wc-profile-freezing-line', x1: precipProfileX(0), y1: 14,
+                    x2: precipProfileX(0), y2: 154 }),
+                  [-20, 0, 20].map(function(tick) {
+                    return h('g', { key: 'profile-tick-' + tick },
+                      h('line', { className: 'wc-profile-grid-line', x1: precipProfileX(tick), y1: 14,
+                        x2: precipProfileX(tick), y2: 154 }),
+                      h('text', { className: 'wc-profile-tick-label', x: precipProfileX(tick), y: 170,
+                        textAnchor: 'middle' }, tick + '\u00B0'));
+                  }),
+                  h('text', { className: 'wc-profile-zone-label', x: 31, y: 28 }, 'FROZEN'),
+                  h('text', { className: 'wc-profile-zone-label', x: 188, y: 28 }, 'WARM'),
+                  h('path', { className: 'wc-profile-temperature-line', d: profilePath }),
+                  profilePoints.map(function(point, pointIndex) {
+                    var pointX = precipProfileX(point.temperatureC);
+                    var pointY = precipProfileY(point.progress);
+                    return h('g', { key: point.label },
+                      h('line', { className: 'wc-profile-level-line', x1: 20, y1: pointY, x2: 240, y2: pointY }),
+                      h('circle', { className: 'wc-profile-temperature-point', cx: pointX, cy: pointY, r: 5 }),
+                      h('text', { className: 'wc-profile-level-label', x: 22, y: pointY - 7 },
+                        pointIndex === 0 ? 'CLOUD' : pointIndex === 1 ? 'MIDDLE' : 'SURFACE'),
+                      h('text', { className: 'wc-profile-point-value',
+                        x: pointX > 205 ? pointX - 8 : pointX + 8, y: pointY + 4,
+                        textAnchor: pointX > 205 ? 'end' : 'start' }, point.temperatureC.toFixed(0) + '\u00B0C'));
+                  }),
+                  precipModel.thermalLayers.crossings.map(function(crossing, crossingIndex) {
+                    var crossingY = precipProfileY(crossing.progress);
+                    return h('g', { key: 'crossing-' + crossingIndex },
+                      h('circle', { className: 'wc-profile-crossing-point', cx: precipProfileX(0), cy: crossingY, r: 4 }),
+                      h('text', { className: 'wc-profile-crossing-label', x: precipProfileX(0) + 7,
+                        y: crossingY - 5 }, crossing.kind === 'melting' ? 'MELTS' : 'SUPERCOOLS'));
+                  })
+                ),
+                h('p', { className: 'wc-precip-profile-hint' },
+                  'Adjust the three temperatures. Each 0\u00B0C crossing becomes a visible phase-change layer.')
+              );
+            }
+            var precipMotionReduced = false;
+            try {
+              precipMotionReduced = typeof window !== 'undefined' && !!(window.matchMedia &&
+                window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+            } catch (e) {}
+
+            var stormStageStops = [
+              { key: 'developing', label: 'Developing', time: 16 },
+              { key: 'mature', label: 'Mature', time: 52 },
+              { key: 'weakening', label: 'Weakening', time: 86 }
+            ];
+            var stormAccumulationKeys = [
+              { key: 'snow', label: 'Snow' },
+              { key: 'glaze', label: 'Glaze' },
+              { key: 'hail', label: 'Hail' },
+              { key: 'puddling', label: 'Puddles' },
+              { key: 'runoff', label: 'Runoff' }
+            ];
+            function setStormLifecycleTime(nextTime, keepPlaying) {
+              setIQ({
+                stormTime: wcPrecipClamp(nextTime, 0, 100),
+                stormAutoPlay: !!keepPlaying && !precipMotionReduced
+              });
+            }
+            function checkThunderEstimate() {
+              setIQ({ thunderEstimateChecked: true });
+              if (typeof announceToSR === 'function') announceToSR(precipModel.thunderEstimate.feedback);
+            }
+
+            var precipSurfaceOutcomeLabel = precipModel.visualType === 'clear'
+              ? 'No sustained fall'
+              : precipModel.visualType === 'virga'
+                ? 'Evaporates aloft - does not reach surface'
+                : precipModel.visualType === 'freezing-rain'
+                  ? 'Glaze on contact'
+                  : precipModel.phaseLabel;
+
+            var thunderMeasure = precipModel.lightningEligible
+              ? h('div', { className: 'wc-thunder-measure', 'data-thunder-measurement': precipConfig.thunderEstimateChecked ? precipModel.thunderEstimate.band : 'unsubmitted' },
+                  h('strong', null, 'Measure the storm'),
+                  h('span', null, 'Observed delay: ' + precipModel.thunder.delaySeconds.toFixed(1) + ' seconds. Estimate the distance, then check your work.'),
+                  h('label', { htmlFor: 'wcPrecipThunderEstimate' },
+                    h('span', null, 'Your estimate: ' + precipConfig.thunderEstimateKm.toFixed(1) + ' km'),
+                    h('input', { id: 'wcPrecipThunderEstimate', type: 'range', min: 0.5, max: 20, step: 0.5,
+                      value: precipConfig.thunderEstimateKm,
+                      'aria-valuetext': precipConfig.thunderEstimateKm.toFixed(1) + ' kilometres estimated storm distance',
+                      onChange: function(event) { setIQ({ thunderEstimateKm: Number(event.target.value), thunderEstimateChecked: false }); } })),
+                  h('button', { type: 'button', className: 'wc-precip-btn', onClick: checkThunderEstimate }, 'Check estimate'),
+                  precipConfig.thunderEstimateChecked && h('p', { className: 'wc-thunder-measure-result', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+                    precipModel.thunderEstimate.feedback + ' Error: ' + precipModel.thunderEstimate.errorKm.toFixed(1) + ' km.'))
+              : h('div', { className: 'wc-thunder-measure', 'data-thunder-measurement': 'unavailable' },
+                  h('strong', null, 'Measure the storm'),
+                  h('span', null, 'No lightning flash is modeled yet, so there is no flash-to-thunder interval to measure. Increase cloud depth, moisture, or updraft to build electrical activity.'));
+            return h('section', { className: 'wc-precip-lab', role: 'region', 'aria-labelledby': 'wcPrecipLabTitle' },
+              h('div', { className: 'wc-precip-head' },
+                h('div', { className: 'wc-precip-head-copy' },
+                  h('span', { className: 'wc-precip-kicker' }, 'Interactive storm chamber'),
+                  h('h3', { id: 'wcPrecipLabTitle' }, '\uD83C\uDF27\uFE0F Precipitation Lab'),
+                  h('p', null, 'Build a cloud, shape the temperature profile, and watch water reach the surface as rain, snow, wintry mix, freezing rain, hail, or virga.')
+                ),
+                h('div', { className: 'wc-precip-head-actions' },
+                  h('button', { type: 'button', className: 'wc-precip-btn', onClick: function() { upd('wcMode', 'explorer'); } }, '\u2190 Back to cycle'),
+                  h('button', { type: 'button', className: 'wc-precip-btn is-primary', onClick: openPrecipitationIn3d,
+                    'aria-label': 'Open this precipitation setup in the full 3D water journey' }, 'View this setup in 3D \u2192')
+                )
               ),
-              h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, t('stem.watercycle.log', '📋 Log')),
-                h('button', { onClick: function() { setIQ({ moisture: 50, tempC: 20, wind: 10, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, t('stem.watercycle.reset', '↺ Reset')),
-                (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
+              h('div', { className: 'wc-precip-layout' },
+                h('div', { className: 'wc-precip-visual' },
+                  h('div', { className: 'wc-precip-chamber' },
+                    h('canvas', { id: 'wcPrecipCanvas', ref: precipCanvasRef, className: 'wc-precip-canvas', role: 'img',
+                      'aria-label': precipCanvasLabel, 'data-precipitation-chamber': '2.5d' },
+                      'Animated cross-section of cloud growth, airflow, and precipitation.'),
+                    h('div', { className: 'wc-precip-canvas-dock' },
+                      h('div', null, h('span', null, '2.5D storm chamber'), h('strong', null, precipModel.displayLabel)),
+                      h('button', { type: 'button', className: 'wc-precip-pause', 'aria-pressed': precipConfig.paused,
+                        'aria-disabled': precipMotionReduced,
+                        'aria-label': precipMotionReduced ? 'Animation is static because reduced motion is enabled' : (precipConfig.paused ? 'Resume precipitation animation' : 'Pause precipitation animation'),
+                        onClick: function() { if (!precipMotionReduced) setIQ({ paused: !precipConfig.paused }); } },
+                        precipMotionReduced ? 'Static' : (precipConfig.paused ? 'Resume' : 'Pause'))
+                    )
+                  ),
+                  h('div', { className: 'wc-precip-path-strip', role: 'group',
+                    'aria-label': 'Precipitation fall sequence: ' + precipModel.cloudPhase + ', ' +
+                      precipModel.thermalLayers.layerLabel + ', ' + precipSurfaceOutcomeLabel },
+                    h('div', { className: 'wc-precip-path-step' }, h('span', null, 'Cloud'), h('strong', null, precipModel.cloudPhase)),
+                    h('span', { className: 'wc-precip-path-arrow', 'aria-hidden': 'true' }, '\u2192'),
+                    h('div', { className: 'wc-precip-path-step' }, h('span', null, 'Air layer'), h('strong', null, precipModel.thermalLayers.layerLabel)),
+                    h('span', { className: 'wc-precip-path-arrow', 'aria-hidden': 'true' }, '\u2192'),
+                    h('div', { className: 'wc-precip-path-step' }, h('span', null, 'Surface'), h('strong', null,
+                      precipSurfaceOutcomeLabel))
+                  ),
+                  h('div', { className: 'wc-storm-lifecycle', role: 'group',
+                    'aria-labelledby': 'wcStormLifecycleTitle', 'data-storm-lifecycle': precipModel.lifecycle.stageKey },
+                    h('div', { className: 'wc-storm-lifecycle-head' },
+                      h('strong', { id: 'wcStormLifecycleTitle' }, 'Storm lifecycle'),
+                      h('span', null, precipModel.lifecycle.stageLabel + ' · ' + precipModel.lifecycle.time + '/100')),
+                    h('div', { className: 'wc-storm-stage-segments', 'aria-label': 'Jump to storm stage' },
+                      stormStageStops.map(function(stageStop) {
+                        return h('button', { key: stageStop.key, type: 'button', className: 'wc-precip-btn',
+                          'aria-pressed': precipModel.lifecycle.stageKey === stageStop.key,
+                          onClick: function() { setStormLifecycleTime(stageStop.time, false); } }, stageStop.label);
+                      })),
+                    h('div', { className: 'wc-storm-time-row' },
+                      h('label', { htmlFor: 'wcPrecipStormTime' },
+                        h('span', { className: 'wc-storm-time-head' }, 'Storm time · ' + precipModel.lifecycle.time + '/100'),
+                        h('input', { id: 'wcPrecipStormTime', type: 'range', min: 0, max: 100, step: 1,
+                          value: precipConfig.stormTime,
+                          'aria-valuetext': precipModel.lifecycle.stageLabel + ' storm, ' + precipModel.lifecycle.time + ' percent through lifecycle',
+                          onChange: function(event) { setStormLifecycleTime(Number(event.target.value), false); } })),
+                      h('div', { className: 'wc-storm-playback' },
+                        h('button', { type: 'button', className: 'wc-precip-btn',
+                          'aria-label': 'Move storm lifecycle backward',
+                          onClick: function() { setStormLifecycleTime(precipModel.lifecycle.time - 4, false); } }, 'Previous'),
+                        h('button', { type: 'button', className: 'wc-precip-btn is-primary',
+                          'aria-pressed': precipConfig.stormAutoPlay && !precipMotionReduced,
+                          'aria-disabled': precipMotionReduced,
+                          onClick: function() {
+                            if (precipMotionReduced) return;
+                            var restartTime = precipModel.lifecycle.time >= 100 ? 0 : precipModel.lifecycle.time;
+                            setStormLifecycleTime(restartTime, !precipConfig.stormAutoPlay);
+                          } }, precipMotionReduced ? 'Static' : (precipConfig.stormAutoPlay ? 'Pause time' : 'Play storm')),
+                        h('button', { type: 'button', className: 'wc-precip-btn',
+                          'aria-label': 'Move storm lifecycle forward',
+                          onClick: function() { setStormLifecycleTime(precipModel.lifecycle.time + 4, false); } }, 'Next'))),
+                    h('p', { className: 'wc-storm-stage-copy' }, precipModel.lifecycle.stageCopy),
+                    h('div', { className: 'wc-storm-accumulation', 'aria-label': 'Qualitative ground accumulation indices' },
+                      stormAccumulationKeys.map(function(accumulationItem) {
+                        var accumulationValue = precipModel.lifecycle.accumulation[accumulationItem.key];
+                        return h('div', { key: accumulationItem.key, className: 'wc-storm-accumulation-item' },
+                          h('span', null, accumulationItem.label),
+                          h('strong', null, accumulationValue + '/100'),
+                          h('div', { className: 'wc-storm-accumulation-track', 'aria-hidden': 'true' },
+                            h('i', { style: { width: accumulationValue + '%' } })));
+                      }))),
+                  h('div', { className: 'wc-thunder-lesson', role: 'group', 'aria-label': 'Thunder and lightning explanation' },
+                    h('strong', null, '⚡ Flash → thunder · ' + precipModel.thunder.caption),
+                    h('span', null, precipModel.thunder.explanation),
+                    precipModel.thunder.soundEnabled
+                      ? h('span', null, 'Sound is enabled; the rumble is scheduled after the modeled delay.')
+                      : h('span', null, 'Sound is muted; follow the captioned delay to observe the same idea.'),
+                    thunderMeasure),
+                  h('div', { className: 'wc-precip-result', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+                    h('div', { className: 'wc-precip-result-top' },
+                      h('strong', { className: 'wc-precip-result-label' }, precipModel.displayLabel),
+                      h('span', { className: 'wc-precip-result-badge' }, precipModel.formationLabel)),
+                    h('p', null, precipModel.description),
+                    h('p', { className: 'wc-precip-causal' }, precipModel.causalExplanation)
+                  ),
+                  h('div', { className: 'wc-precip-metrics', 'aria-label': 'Precipitation model readouts' },
+                    h('div', { className: 'wc-precip-metric' }, h('span', null, 'Particle growth'), h('strong', null, precipModel.growthIndex + '/100')),
+                    h('div', { className: 'wc-precip-metric' }, h('span', null, 'Cloud phase'), h('strong', null, precipModel.cloudPhase)),
+                    h('div', { className: 'wc-precip-metric' }, h('span', null, 'Temperature path'), h('strong', null, precipModel.profileLabel)),
+                    h('div', { className: 'wc-precip-metric' }, h('span', null, 'Fall path'), h('strong', null, precipModel.phasePathLabel)),
+                    h('div', { className: 'wc-precip-metric' }, h('span', null, 'Electrical activity'), h('strong', null,
+                      precipModel.lightningEligible ? 'Lightning favored \u00B7 ' + precipModel.electrificationIndex + '/100' : precipModel.electrificationIndex + '/100')),
+                    h('div', { className: 'wc-precip-metric' }, h('span', null, 'Terrain effect'), h('strong', null,
+                      precipConfig.terrain === 'mountains'
+                        ? (precipConfig.windDirection !== 'calm' && precipConfig.wind >= 2 ? 'Windward lift ' + precipModel.terrainLift + '/100 - rain shadow' : 'Mountain terrain - calm air')
+                        : precipConfig.terrain === 'coast' ? 'Coastal moisture feed' : 'Flat terrain'))
+                  )
+                ),
+                h('div', { className: 'wc-precip-controls', 'aria-label': 'Precipitation controls' },
+                  h('div', { className: 'wc-precip-control-group' },
+                    h('span', { className: 'wc-precip-control-title' }, 'Cloud engine'), cloudSliders.map(precipSlider)),
+                  h('div', { className: 'wc-precip-control-group' },
+                    h('span', { className: 'wc-precip-control-title' }, 'Vertical temperature profile'),
+                    renderPrecipTemperatureProfile(),
+                    temperatureProfileSliders.map(precipSlider),
+                    h('span', { className: 'wc-precip-control-title', style: { marginTop: 10 } }, 'Fall survival'),
+                    survivalSliders.map(precipSlider)),
+                  h('div', { className: 'wc-precip-control-group' },
+                    h('label', { className: 'wc-precip-control-title', htmlFor: 'wcPrecipPreset' }, 'Scenario preset'),
+                    h('select', { id: 'wcPrecipPreset', className: 'wc-precip-preset', value: activePrecipPreset,
+                      onChange: function(event) { applyPrecipPreset(event.target.value); }, 'aria-describedby': 'wcPrecipPresetFocus' },
+                      h('option', { value: 'custom' }, 'Custom setup'),
+                      Object.keys(WC_PRECIP_PRESETS).map(function(presetId) {
+                        return h('option', { key: presetId, value: presetId }, WC_PRECIP_PRESETS[presetId].label);
+                      })
+                    ),
+                    h('p', { id: 'wcPrecipPresetFocus', className: 'wc-precip-model-note' },
+                      activePrecipPreset === 'custom' ? 'Tune one control at a time and compare what changes.' : WC_PRECIP_PRESETS[activePrecipPreset].focus),
+                    precipSlider({ key: 'wind', label: 'Horizontal wind / drift', min: 0, max: 40, step: 1,
+                      format: function(value) { return value.toFixed(0) + ' m/s'; },
+                      aria: function(value) { return value.toFixed(0) + ' meters per second horizontal wind'; } }),
+                    h('div', { className: 'wc-precip-select-grid' },
+                      h('label', { htmlFor: 'wcPrecipTerrain' }, 'Terrain',
+                        h('select', { id: 'wcPrecipTerrain', value: precipConfig.terrain,
+                          onChange: function(event) { setPrecipControl('terrain', event.target.value); } },
+                          h('option', { value: 'plains' }, 'Open plains'),
+                          h('option', { value: 'mountains' }, 'Mountain ridge'),
+                          h('option', { value: 'coast' }, 'Coastline'))),
+                      h('label', { htmlFor: 'wcPrecipWindDirection' }, 'Wind direction',
+                        h('select', { id: 'wcPrecipWindDirection', value: precipConfig.windDirection,
+                          onChange: function(event) { setPrecipControl('windDirection', event.target.value); } },
+                          h('option', { value: 'east' }, 'West to east'),
+                          h('option', { value: 'west' }, 'East to west')))
+                    ),
+                    precipSlider({ key: 'stormDistanceKm', label: 'Lightning distance', min: 0.5, max: 20, step: 0.5,
+                      format: function(value) { return value.toFixed(1) + ' km'; },
+                      aria: function(value) { return value.toFixed(1) + ' kilometres from the storm'; }}),
+                    h('label', { className: 'wc-precip-switch', htmlFor: 'wcPrecipSound' },
+                      h('input', { id: 'wcPrecipSound', type: 'checkbox', checked: precipConfig.soundEnabled,
+                        onChange: function(event) { setIQ({ soundEnabled: event.target.checked }); } }),
+                      h('span', null, 'Play optional thunder after each eligible flash')),
+                    h('label', { className: 'wc-precip-switch', htmlFor: 'wcPrecipAirflow' },
+                      h('input', { id: 'wcPrecipAirflow', type: 'checkbox', checked: precipConfig.showAirflow,
+                        onChange: function(event) { setIQ({ showAirflow: event.target.checked }); } }),
+                      h('span', null, 'Show wind and updraft pathways')),
+                    h('button', { type: 'button', className: 'wc-precip-btn', onClick: resetPrecipLab }, '\u21BA Reset lab')
+                  )
+                )
               ),
-              (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700' },
-                h('thead', null, h('tr', { className: 'bg-slate-100' }, ['moisture', 'temp', 'wind', 'type'].map(function(c, i) { return h('th', { key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
-                h('tbody', null, iq.log.map(function(o, idx) {
-                  return h('tr', { key: 'lr' + idx },
-                    h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.m),
-                    h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.t),
-                    h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.w),
-                    h('td', { className: 'px-1 border border-slate-200' }, o.p));
-                }))
+              h('details', { className: 'wc-precip-notebook' },
+                h('summary', null, 'Investigation notebook \u00B7 ' + (iq.log || []).length + ' observations'),
+                h('div', { className: 'wc-precip-notebook-body' },
+                  h('div', null,
+                    h('div', { className: 'wc-precip-log-actions' },
+                      h('button', { type: 'button', className: 'wc-precip-btn', onClick: logPrecipObservation }, '\uD83D\uDCCB Save observation'),
+                      (iq.log || []).length > 0 && h('button', { type: 'button', className: 'wc-precip-btn',
+                        onClick: function() { setIQ({ log: [] }); } }, 'Clear log')),
+                    (iq.log || []).length > 0
+                      ? h('div', { className: 'wc-precip-log-wrap' },
+                          h('table', { className: 'wc-precip-table' },
+                            h('caption', { className: 'sr-only' }, 'Saved precipitation experiments'),
+                            h('thead', null, h('tr', null,
+                              ['Moisture', 'Cloud / middle / surface', 'Lift', 'Humidity', 'Result'].map(function(column) {
+                                return h('th', { key: column, scope: 'col' }, column);
+                              }))),
+                            h('tbody', null, iq.log.map(function(observation, observationIndex) {
+                              return h('tr', { key: 'precip-observation-' + observationIndex },
+                                h('td', null, (observation.moisture != null ? observation.moisture : observation.m) + '%'),
+                                h('td', null, (observation.cloudTemp != null ? observation.cloudTemp : observation.t) + '\u00B0 / ' +
+                                  (observation.midLevelTemp != null ? observation.midLevelTemp : '--') + '\u00B0 / ' +
+                                  (observation.surfaceTemp != null ? observation.surfaceTemp : '--') + '\u00B0C'),                                h('td', null, (observation.lift != null ? observation.lift : '--') + '/100'),
+                                h('td', null, (observation.humidity != null ? observation.humidity : '--') + '%'),
+                                h('td', null, observation.result || observation.p || observation.type));
+                            }))))
+                      : h('p', { className: 'wc-precip-model-note' }, 'Save contrasting setups to compare which variable changed the outcome.')
+                  ),
+                  h('div', { className: 'wc-precip-writing' },
+                    h('label', { htmlFor: 'wcPrecipHypothesis' }, 'Your hypothesis'),
+                    h('textarea', { id: 'wcPrecipHypothesis', rows: 3, value: iq.hypothesis || '',
+                      onChange: function(event) { setIQ({ hypothesis: event.target.value }); },
+                      placeholder: 'What combination will make precipitation reach the ground?' }),
+                    !iq.stuckRevealed && h('button', { type: 'button', className: 'wc-precip-btn',
+                      onClick: function() { setIQ({ stuckRevealed: true }); } }, 'Show investigation prompts'),
+                    iq.stuckRevealed && h('div', { className: 'wc-precip-prompts' },
+                      h('ul', null,
+                        h('li', null, 'Hold temperature steady and compare updraft strength.'),
+                        h('li', null, 'Keep the cloud unchanged, then dry the air below it to create virga.'),
+                        h('li', null, 'Find two temperature profiles with the same intensity but different surface phases.'))),
+                    h('label', { className: 'wc-precip-switch', htmlFor: 'wcPrecipUnderstood' },
+                      h('input', { id: 'wcPrecipUnderstood', type: 'checkbox', checked: !!iq.understood,
+                        onChange: function(event) { setIQ({ understood: event.target.checked }); } }),
+                      h('span', null, 'I can explain the pattern in my own words')),
+                    iq.understood && h('textarea', { rows: 3, value: iq.explanation || '',
+                      onChange: function(event) { setIQ({ explanation: event.target.value }); },
+                      'aria-label': 'Explain the precipitation pattern',
+                      placeholder: 'Use moisture, lift, lower-air humidity, and temperature in your explanation.' })
+                  )
+                )
               ),
-              h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.watercycle.hypothesis_free_text_what_triggers_a_s', 'Hypothesis (free text): What triggers a storm vs drizzle?'),
-                className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, t('stem.watercycle.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-              iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
-                h('ul', { className: 'list-disc pl-5 space-y-1' },
-                  h('li', null, t('stem.watercycle.hold_two_sliders_steady_move_one_watch', 'Hold two sliders steady. Move one. Watch.')),
-                  h('li', null, t('stem.watercycle.find_two_settings_producing_the_same_t', 'Find two settings producing the same type.')),
-                  h('li', null, t('stem.watercycle.real_storms_need_both_moisture_and_ins', 'Real storms need both moisture and instability. Investigate.')))),
-              h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
-                h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
-                  h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-                  t('stem.watercycle.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.watercycle.explain_how_moisture_temperature_and_w', 'Explain how moisture, temperature, and wind jointly determine precipitation type.'),
-                  className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
-              h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.watercycle.design_note_discrete_4_type_precipitat', 'Design note: discrete 4-type precipitation marker; no rainfall-rate score; no reveal — by design.'))
+              h('p', { className: 'wc-precip-model-note', role: 'note' },
+                'Qualitative teaching model, not a weather measurement or forecast. Real precipitation depends on the full vertical temperature and humidity profile, cloud nuclei, and storm dynamics. The 3D view uses illustrative scale.')
             );
           }
-
           // ═══ GRADE BAND HELPER ═══
           var GRADE_BANDS = ['K-2', '3-5', '6-8', '9-12'];
           function getGradeBand() {
@@ -5710,7 +7483,8 @@ const d = labToolData.waterCycle || {};
             evaporationInterfaceGroup3d.visible = false;
             world3d.add(evaporationInterfaceGroup3d);
 
-            var rain3d = makePoints3d(120, 0x69d7ff, 0.075, 5.2, 5.5, 2.6);
+            var rain3d = makePoints3d(120, 0x69d7ff, 0.075, 5.2, 4.42, 2.6);
+            rain3d.geometry.translate(0, 0.49, 0);
             rain3d.position.set(1.2, 0.75, -0.8);
             world3d.add(rain3d);
             var rainBasePositions3d = new Float32Array(rain3d.geometry.attributes.position.array);
@@ -5748,6 +7522,108 @@ const d = labToolData.waterCycle || {};
             rainImpactMist3d.position.set(1.2, 0, -0.8);
             rainImpactMist3d.visible = false;
             world3d.add(rainImpactMist3d);
+
+            var stormUpdraftPoints3d = [];
+            for (var stormUpdraftPointIndex3d = 0; stormUpdraftPointIndex3d <= 72; stormUpdraftPointIndex3d++) {
+              var stormUpdraftPointProgress3d = stormUpdraftPointIndex3d / 72;
+              var stormUpdraftAngle3d = stormUpdraftPointProgress3d * Math.PI * 5;
+              var stormUpdraftRadius3d = 0.26 + stormUpdraftPointProgress3d * 0.24;
+              stormUpdraftPoints3d.push(new THREE.Vector3(
+                Math.cos(stormUpdraftAngle3d) * stormUpdraftRadius3d,
+                stormUpdraftPointProgress3d * 3.7,
+                Math.sin(stormUpdraftAngle3d) * stormUpdraftRadius3d
+              ));
+            }
+            var stormUpdraftMat3d = new THREE.LineBasicMaterial({
+              color: 0xc4b5fd, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            });
+            var stormUpdraft3d = new THREE.Line(
+              new THREE.BufferGeometry().setFromPoints(stormUpdraftPoints3d),
+              stormUpdraftMat3d
+            );
+            var stormUpdraftMarkerCount3d = 18;
+            var stormUpdraftMarkerGeometry3d = new THREE.BufferGeometry();
+            stormUpdraftMarkerGeometry3d.setAttribute('position',
+              new THREE.BufferAttribute(new Float32Array(stormUpdraftMarkerCount3d * 3), 3));
+            var stormUpdraftMarkers3d = new THREE.Points(
+              stormUpdraftMarkerGeometry3d,
+              new THREE.PointsMaterial({
+                color: 0xede9fe, size: 0.075, transparent: true, opacity: 0,
+                depthWrite: false, blending: THREE.AdditiveBlending
+              })
+            );
+            stormUpdraft3d.add(stormUpdraftMarkers3d);
+            stormUpdraft3d.position.set(1.2, -1.0, -0.8);
+            stormUpdraft3d.visible = false;
+            world3d.add(stormUpdraft3d);
+
+            var stormThermalLayerMat3d = new THREE.MeshBasicMaterial({
+              color: 0xfde68a, transparent: true, opacity: 0,
+              depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending
+            });
+            var stormThermalLayer3d = new THREE.Mesh(new THREE.PlaneGeometry(5.4, 2.8), stormThermalLayerMat3d);
+            stormThermalLayer3d.rotation.x = -Math.PI / 2;
+            stormThermalLayer3d.position.set(1.2, 0.2, -0.8);
+            stormThermalLayer3d.visible = false;
+            world3d.add(stormThermalLayer3d);
+
+            var stormThermalLayerSecondaryMat3d = new THREE.MeshBasicMaterial({
+              color: 0x67e8f9, transparent: true, opacity: 0,
+              depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending
+            });
+            var stormThermalLayerSecondary3d = new THREE.Mesh(
+              new THREE.PlaneGeometry(5.4, 2.8), stormThermalLayerSecondaryMat3d);
+            stormThermalLayerSecondary3d.rotation.x = -Math.PI / 2;
+            stormThermalLayerSecondary3d.position.set(1.2, -0.35, -0.8);
+            stormThermalLayerSecondary3d.visible = false;
+            world3d.add(stormThermalLayerSecondary3d);
+
+            var freezingGlazeMat3d = new THREE.MeshBasicMaterial({
+              color: 0xa5f3fc, transparent: true, opacity: 0,
+              depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending
+            });
+            var freezingGlaze3d = new THREE.Mesh(new THREE.CircleGeometry(1.7, 48), freezingGlazeMat3d);
+            freezingGlaze3d.rotation.x = -Math.PI / 2;
+            freezingGlaze3d.position.set(1.2, -0.965, -0.8);
+            freezingGlaze3d.scale.set(1.65, 0.82, 1);
+            freezingGlaze3d.visible = false;
+            world3d.add(freezingGlaze3d);
+            var stormPuddleMat3d = new THREE.MeshStandardMaterial({
+              color: 0x38bdf8, transparent: true, opacity: 0, roughness: 0.2, metalness: 0.04,
+              depthWrite: false, side: THREE.DoubleSide
+            });
+            var stormPuddle3d = new THREE.Mesh(new THREE.CircleGeometry(1.45, 48), stormPuddleMat3d);
+            stormPuddle3d.rotation.x = -Math.PI / 2;
+            stormPuddle3d.position.set(1.2, -0.96, -0.8);
+            stormPuddle3d.visible = false;
+            world3d.add(stormPuddle3d);
+
+            var stormLightningMat3d = new THREE.LineBasicMaterial({
+              color: 0xfef9c3, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            });
+            var stormLightningGroup3d = new THREE.Group();
+            stormLightningGroup3d.add(new THREE.Line(
+              new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(0, 2.65, 0),
+                new THREE.Vector3(-0.18, 1.9, 0),
+                new THREE.Vector3(0.08, 1.28, 0),
+                new THREE.Vector3(-0.04, 0.52, 0),
+                new THREE.Vector3(0.3, -0.9, 0)
+              ]),
+              stormLightningMat3d
+            ));
+            stormLightningGroup3d.add(new THREE.Line(
+              new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(0.08, 1.28, 0),
+                new THREE.Vector3(0.42, 0.88, 0.04)
+              ]),
+              stormLightningMat3d
+            ));
+            stormLightningGroup3d.position.set(1.2, 0, -0.8);
+            stormLightningGroup3d.visible = false;
+            world3d.add(stormLightningGroup3d);
 
             var percolationCount3d = 42;
             var percolationPositions3d = new Float32Array(percolationCount3d * 3);
@@ -6154,6 +8030,22 @@ const d = labToolData.waterCycle || {};
               delete processLabels3d.rain_shadow;
               rainShadowLabel3d.scale.set(1.6, 0.4, 1);
               rainShadowLabel3d.visible = false;
+            }
+            var stormMeltingLayerLabel3d = makeProcessLabel3d(
+              'storm_melting_layer', '0\u00B0C melting layer', '#fde68a', [3.25, 0.3, -0.8]
+            );
+            if (stormMeltingLayerLabel3d) {
+              delete processLabels3d.storm_melting_layer;
+              stormMeltingLayerLabel3d.scale.set(1.75, 0.44, 1);
+              stormMeltingLayerLabel3d.visible = false;
+            }
+            var stormFreezingLayerLabel3d = makeProcessLabel3d(
+              'storm_freezing_layer', '0\u00B0C freezing layer', '#67e8f9', [3.25, 0.3, -0.8]
+            );
+            if (stormFreezingLayerLabel3d) {
+              delete processLabels3d.storm_freezing_layer;
+              stormFreezingLayerLabel3d.scale.set(1.75, 0.44, 1);
+              stormFreezingLayerLabel3d.visible = false;
             }
             var canopyInterceptionLabel3d = makeProcessLabel3d(
               'canopy_interception', 'Canopy interception', '#7dd3fc', [4.2, 1.25, -0.6]
@@ -6654,6 +8546,8 @@ const d = labToolData.waterCycle || {};
               resizeObserver3d.observe(canvasEl);
             }
             var visualTime3d = 0;
+            var stormThunderTimer3d = null;
+            var lastLightningCycle3d = -1;
             var lastElapsed3d = 0;
             var waveFrame3d = 0;
             var lastUndergroundMode3d = null;
@@ -6687,6 +8581,42 @@ const d = labToolData.waterCycle || {};
               var solarVisual3d = Math.max(0, Math.min(2, parseFloat(canvasEl.dataset.climSolar || '1')));
               var tempVisual3d = parseFloat(canvasEl.dataset.climTemp || '15');
               var windVisual3d = Math.max(0, Math.min(3, parseFloat(canvasEl.dataset.climWind || '1')));
+              var precipLabSource3d = canvasEl.dataset.precipitationSource === 'lab';
+              var precipWindDirection3d = canvasEl.dataset.precipitationWindDirection || 'east';
+              var precipWindSign3d = precipWindDirection3d === 'calm' ? 0 : (precipWindDirection3d === 'west' ? -1 : 1);
+              var requestedPrecipType3d = canvasEl.dataset.precipitationType || '';
+              var supportedPrecipTypes3d = {
+                rain: true, snow: true, mix: true, hail: true,
+                'freezing-rain': true, virga: true, clear: true
+              };
+              var precipType3d = precipLabSource3d && supportedPrecipTypes3d[requestedPrecipType3d]
+                ? requestedPrecipType3d : (tempVisual3d < 0 ? 'snow' : 'rain');
+              var precipUpdraft3d = Math.max(0, Math.min(100, parseFloat(canvasEl.dataset.precipitationUpdraft || '0')));
+              var precipCloudDepth3d = Math.max(1, Math.min(12, parseFloat(canvasEl.dataset.precipitationCloudDepth || '5')));
+              var precipLowerHumidity3d = Math.max(0, Math.min(100, parseFloat(canvasEl.dataset.precipitationLowerHumidity || '80')));
+              var precipCloudTemp3d = parseFloat(canvasEl.dataset.precipitationCloudTemp || String(tempVisual3d));
+              var precipMidTemp3d = parseFloat(canvasEl.dataset.precipitationMidTemp || String((precipCloudTemp3d + tempVisual3d) / 2));
+              var precipTransitionProgress3d = parseFloat(canvasEl.dataset.precipitationTransitionProgress || '0.55');
+              if (!isFinite(precipTransitionProgress3d)) precipTransitionProgress3d = 0.55;
+              precipTransitionProgress3d = Math.max(0.08, Math.min(0.92, precipTransitionProgress3d));
+              var precipTransitionKind3d = canvasEl.dataset.precipitationTransitionKind || 'none';
+              var precipTransition2Progress3d = parseFloat(canvasEl.dataset.precipitationSecondaryTransitionProgress || '0.78');
+              if (!isFinite(precipTransition2Progress3d)) precipTransition2Progress3d = 0.78;
+              precipTransition2Progress3d = Math.max(0.08, Math.min(0.92, precipTransition2Progress3d));
+              var precipTransition2Kind3d = canvasEl.dataset.precipitationSecondaryTransitionKind || 'none';
+              var precipElectrification3d = Math.max(0, Math.min(100, parseFloat(canvasEl.dataset.precipitationElectrification || '0')));
+              var precipLightningEligible3d = canvasEl.dataset.precipitationLightningEligible === 'true';
+              var precipThunderDelay3d = Math.max(0.5, Math.min(60, parseFloat(canvasEl.dataset.thunderDelaySeconds || '8.7')));
+              var precipSoundEnabled3d = canvasEl.dataset.thunderSound === 'enabled';
+              var precipStormStage3d = canvasEl.dataset.stormStage || 'mature';
+              var precipStormCloudFactor3d = Math.max(0.35, Math.min(1.1, parseFloat(canvasEl.dataset.stormCloudFactor || '1')));
+              var precipStormUpdraftFactor3d = Math.max(0.1, Math.min(1.1, parseFloat(canvasEl.dataset.stormUpdraftFactor || '1')));
+              var precipSnowAccum3d = Math.max(0, Math.min(100, parseFloat(canvasEl.dataset.stormSnowAccumulation || '0')));
+              var precipGlazeAccum3d = Math.max(0, Math.min(100, parseFloat(canvasEl.dataset.stormGlazeAccumulation || '0')));
+              var precipHailAccum3d = Math.max(0, Math.min(100, parseFloat(canvasEl.dataset.stormHailAccumulation || '0')));
+              var precipPuddleAccum3d = Math.max(0, Math.min(100, parseFloat(canvasEl.dataset.stormPuddleAccumulation || '0')));
+              var precipRunoffAccum3d = Math.max(0, Math.min(100, parseFloat(canvasEl.dataset.stormRunoffAccumulation || '0')));
+              var precipLifecycleUpdraft3d = precipUpdraft3d * precipStormUpdraftFactor3d;
               var journeyPaused3d = canvasEl.dataset.journeyPaused === 'true';
               var hydroPoints3d = Math.max(0, Math.min(120, parseFloat(canvasEl.dataset.hydroPoints || '0')));
               var frameDelta3d = lastElapsed3d ? Math.min(0.05, Math.max(0, elapsed3d - lastElapsed3d)) : 0;
@@ -6826,7 +8756,21 @@ const d = labToolData.waterCycle || {};
               var parcelGasBlend3d = condensationTransfer3d ? (1 - journeyProgress3d) : (vaporTransfer3d ? 1 : 0);
               var precipitationTransfer3d = state3d === 'precipitating' || state3d === 'precipitation';
               var frozenParcel3d = tempVisual3d < -2 && (precipitationTransfer3d || state3d === 'ground_choice');
-              var rainParcel3d = precipitationTransfer3d && !frozenParcel3d;
+              var trackedHydrometeorPhase3d = frozenParcel3d ? 'snow' : 'rain';
+              if (precipLabSource3d && (precipitationTransfer3d || state3d === 'ground_choice')) {
+                trackedHydrometeorPhase3d = wcPrecipPhaseAtTransitions(
+                  precipType3d,
+                  precipCloudTemp3d,
+                  journeyProgress3d,
+                  precipTransitionKind3d,
+                  precipTransitionProgress3d,
+                  precipTransition2Kind3d,
+                  precipTransition2Progress3d
+                );
+                frozenParcel3d = trackedHydrometeorPhase3d === 'snow' ||
+                  trackedHydrometeorPhase3d === 'mix' || trackedHydrometeorPhase3d === 'hail';
+              }
+              canvasEl.dataset.trackedHydrometeorPhase = trackedHydrometeorPhase3d;              var rainParcel3d = precipitationTransfer3d && !frozenParcel3d;
               droplet3d.visible = !frozenParcel3d;
               dropletCore3d.visible = !frozenParcel3d;
               dropletHighlight3d.visible = !frozenParcel3d && parcelGasBlend3d < 0.86;
@@ -7688,11 +9632,21 @@ const d = labToolData.waterCycle || {};
                   (motionReduced3d ? 0.24 : (1 - latentHeatPhase3d) * (0.28 + journeyProgress3d * 0.18)) : 0;
               });
               var cloudMicrophysicsActive3d = condensationTransfer3d && !undergroundMode3d;
+              if (precipLabSource3d && (state3d === 'precipitating' || state3d === 'precipitation')) {
+                cloudMicrophysicsActive3d = true;
+              }
               var cloudGrowth3d = Math.max(0, Math.min(1, journeyProgress3d));
+              if (precipLabSource3d && cloudMicrophysicsActive3d) {
+                cloudGrowth3d = Math.max(cloudGrowth3d, rainVisual3d / 100);
+              }
+              var cloudMicrophysicsTemp3d = precipLabSource3d ? precipCloudTemp3d : tempVisual3d;
               cloudMicrophysicsGroup3d.visible = cloudMicrophysicsActive3d;
               cloudDroplets3d.material.size = 0.045 + cloudGrowth3d * 0.095;
               cloudDroplets3d.material.opacity = cloudMicrophysicsActive3d ? 0.46 + cloudGrowth3d * 0.42 : 0;
               cloudDroplets3d.material.color.setHex(tempVisual3d < 0 ? 0xbfdbfe : 0x7dd3fc);
+              if (precipLabSource3d) {
+                cloudDroplets3d.material.color.setHex(cloudMicrophysicsTemp3d < 0 ? 0xbfdbfe : 0x7dd3fc);
+              }
               cloudNuclei3d.material.opacity = cloudMicrophysicsActive3d ? 0.78 - cloudGrowth3d * 0.42 : 0;
               cloudNuclei3d.material.size = 0.052 + (1 - cloudGrowth3d) * 0.018;
               if (cloudMicrophysicsActive3d) {
@@ -7726,6 +9680,7 @@ const d = labToolData.waterCycle || {};
                 }
 
                 var cloudIceMicrophysicsActive3d = tempVisual3d < 0;
+                if (precipLabSource3d) cloudIceMicrophysicsActive3d = cloudMicrophysicsTemp3d < 0;
                 cloudIceCrystalGroup3d.visible = cloudIceMicrophysicsActive3d;
                 cloudIceCrystalMat3d.opacity = cloudIceMicrophysicsActive3d ? 0.38 + cloudGrowth3d * 0.42 : 0;
                 cloudIceCrystalGroup3d.children.forEach(function(cloudIceCrystal3d, cloudIceIndex3d) {
@@ -7749,6 +9704,10 @@ const d = labToolData.waterCycle || {};
               canvasEl.dataset.cloudMicrophysics = !cloudMicrophysicsActive3d ? 'hidden' :
                 (tempVisual3d < 0 ? 'ice-nucleation' : (cloudGrowth3d < 0.32 ? 'nucleation' :
                   (cloudGrowth3d < 0.72 ? 'droplet-growth' : 'collision-coalescence')));
+              if (precipLabSource3d && cloudMicrophysicsActive3d) {
+                canvasEl.dataset.cloudMicrophysics = cloudMicrophysicsTemp3d < 0
+                  ? 'ice-nucleation' : (cloudGrowth3d < 0.72 ? 'droplet-growth' : 'collision-coalescence');
+              }
               canvasEl.dataset.energyDriver = latentHeatVisible3d ? 'latent-heat-release' :
                 (solarEnergyActive3d ? 'solar-' + activeSolarEnergyKey3d : 'none');
 
@@ -7863,6 +9822,16 @@ const d = labToolData.waterCycle || {};
               cloudShadeMat3d.color.setHSL(0.56, 0.28, 0.62 - storminess3d * 0.18);
               cloudShadeMat3d.opacity = 0.34 + storminess3d * 0.34;
               cloudGroup3d.scale.set(1 + storminess3d * 0.06, 1 + storminess3d * 0.12, 1 + storminess3d * 0.06);
+              if (precipLabSource3d) {
+                var stormTowerDepth3d = (precipCloudDepth3d - 1) / 11;
+                var stormTowerLift3d = precipUpdraft3d / 100;
+                cloudGroup3d.scale.x += stormTowerDepth3d * 0.08;
+                cloudGroup3d.scale.y += stormTowerDepth3d * 0.3 + stormTowerLift3d * 0.24;
+                cloudGroup3d.scale.z += stormTowerDepth3d * 0.08;
+                cloudGroup3d.scale.x *= 0.78 + precipStormCloudFactor3d * 0.22;
+                cloudGroup3d.scale.y *= 0.58 + precipStormCloudFactor3d * 0.42;
+                cloudGroup3d.scale.z *= 0.78 + precipStormCloudFactor3d * 0.22;
+              }
               cloudShadow3d.position.x = cloudGroup3d.position.x;
               cloudShadow3d.scale.set(1 + storminess3d * 0.3, 1 + storminess3d * 0.2, 1);
               cloudShadow3d.visible = daylight3d > 0.06 && !undergroundMode3d;
@@ -7900,6 +9869,10 @@ const d = labToolData.waterCycle || {};
               canvasEl.dataset.ponding = urbanPonding3d.visible ? 'visible' : 'hidden';
               var snowAccumulationTarget3d = tempVisual3d < 0 ?
                 Math.min(1, 0.5 + Math.abs(tempVisual3d) / 28 + rainVisual3d / 500) : 0;
+              if (precipLabSource3d) {
+                snowAccumulationTarget3d = (precipType3d === 'snow' || precipType3d === 'mix')
+                  ? precipSnowAccum3d / 100 : 0;
+              }
               if (snowpackMemory3d === null) snowpackMemory3d = snowAccumulationTarget3d;
               if (!journeyPaused3d) {
                 if (snowAccumulationTarget3d > snowpackMemory3d) {
@@ -7992,11 +9965,21 @@ const d = labToolData.waterCycle || {};
                 }
                 var rainPos3d = rain3d.geometry.attributes.position;
                 var snowMode3d = tempVisual3d < 0;
+                if (precipLabSource3d) snowMode3d = precipType3d === 'snow' || precipType3d === 'mix' || precipCloudTemp3d <= 0;
+                var hailMode3d = precipLabSource3d && precipType3d === 'hail';
                 for (var ri3 = 0; ri3 < rainPos3d.count; ri3++) {
-                  var rainY3d = rainPos3d.getY(ri3) - (snowMode3d ? 0.006 : 0.018 + rainVisual3d / 5000);
-                  if (rainY3d < -2.6) rainY3d = 2.7;
+                  var pointFallRate3d = hailMode3d ? 0.036 : (snowMode3d ? 0.006 : 0.018 + rainVisual3d / 5000);
+                  var pointFrameScale3d = frameDelta3d * 60;
+                  var rainY3d = rainPos3d.getY(ri3) - pointFallRate3d * pointFrameScale3d;
+                  var solidGroundReset3d = precipLabSource3d ? -1.72 : -2.6;
+                  if (rainY3d < solidGroundReset3d) rainY3d = 2.7;
                   var rainBaseX3d = rainBasePositions3d[ri3 * 3];
-                  rainPos3d.setX(ri3, rainBaseX3d + (snowMode3d ? Math.sin(visualTime3d * 1.4 + ri3 * 0.67) * 0.22 : 0));
+                  var pointWobble3d = snowMode3d ? Math.sin(visualTime3d * 1.4 + ri3 * 0.67) * 0.22 : 0;
+                  var pointColumnProgress3d = Math.max(0, Math.min(1,
+                    (2.7 - rainY3d) / Math.max(0.01, 2.7 - solidGroundReset3d)));
+                  var pointWindDrift3d = precipLabSource3d
+                    ? precipWindSign3d * pointColumnProgress3d * windVisual3d * 0.18 : 0;
+                  rainPos3d.setX(ri3, rainBaseX3d + pointWobble3d + pointWindDrift3d);
                   rainPos3d.setY(ri3, rainY3d);
                 }
                 rainPos3d.needsUpdate = true;
@@ -8005,28 +9988,103 @@ const d = labToolData.waterCycle || {};
               var precipitationFieldActive3d = state3d === 'precipitating' || state3d === 'precipitation' || state3d === 'ground_choice';
               var liquidRainActive3d = precipitationFieldActive3d && tempVisual3d >= 0;
               var snowDriftActive3d = precipitationFieldActive3d && tempVisual3d < 0;
-              rain3d.visible = snowDriftActive3d;
+              if (precipLabSource3d) {
+                liquidRainActive3d = precipitationFieldActive3d &&
+                  (precipType3d === 'rain' || precipType3d === 'mix' ||
+                    precipType3d === 'freezing-rain' || precipType3d === 'virga');
+                snowDriftActive3d = precipitationFieldActive3d &&
+                  (precipType3d === 'snow' || precipType3d === 'mix' || precipType3d === 'hail' ||
+                    (precipCloudTemp3d <= 0 && precipTransitionKind3d === 'melting'));
+              }
+              if (precipitationFieldActive3d) {
+                var layeredSolidPositions3d = rain3d.geometry.attributes.position;
+                for (var layeredSolidIndex3d = 0; layeredSolidIndex3d < layeredSolidPositions3d.count; layeredSolidIndex3d++) {
+                  var layeredSolidVisible3d = true;
+                  if (precipLabSource3d) {
+                    var layeredSolidY3d = layeredSolidPositions3d.getY(layeredSolidIndex3d);
+                    var layeredSolidProgress3d = Math.max(0, Math.min(1, (2.7 - layeredSolidY3d) / 4.42));
+                    var layeredSolidPhase3d = wcPrecipPhaseAtTransitions(
+                      precipType3d,
+                      precipCloudTemp3d,
+                      layeredSolidProgress3d,
+                      precipTransitionKind3d,
+                      precipTransitionProgress3d,
+                      precipTransition2Kind3d,
+                      precipTransition2Progress3d
+                    );
+                    layeredSolidVisible3d = layeredSolidPhase3d === 'snow' ||
+                      layeredSolidPhase3d === 'mix' || layeredSolidPhase3d === 'hail';
+                  }
+                  layeredSolidPositions3d.setZ(layeredSolidIndex3d,
+                    layeredSolidVisible3d ? rainBasePositions3d[layeredSolidIndex3d * 3 + 2] : 40);
+                }
+                layeredSolidPositions3d.needsUpdate = true;
+              }              rain3d.visible = snowDriftActive3d;
               rain3d.material.opacity = snowDriftActive3d ? Math.min(0.9, 0.32 + rainVisual3d / 150) : 0;
+              if (precipLabSource3d && precipType3d === 'mix') rain3d.material.opacity *= 0.72;
+              var precipitationDensity3d = Math.max(0, Math.min(1, rainVisual3d / 100));
+              rain3d.geometry.setDrawRange(0, snowDriftActive3d
+                ? Math.max(12, Math.floor(rain3d.geometry.attributes.position.count * (0.18 + precipitationDensity3d * 0.82)))
+                : 0);
               rainCurtain3d.visible = liquidRainActive3d;
+              rainCurtainGeometry3d.setDrawRange(0, liquidRainActive3d
+                ? Math.max(16, Math.floor(rainCurtainCount3d * (0.2 + precipitationDensity3d * 0.8))) * 2
+                : 0);
               rainCurtain3d.material.opacity = liquidRainActive3d ? Math.min(0.86, 0.18 + rainVisual3d / 140) : 0;
-              rainCurtain3d.position.x = 1.2 + cloudGroup3d.position.x - 0.5;
+              var stormCenterX3d = 1.2 + cloudGroup3d.position.x - 0.5;
+              rainCurtain3d.position.x = stormCenterX3d;
+              rain3d.position.x = stormCenterX3d;
+              stormUpdraft3d.position.x = stormCenterX3d;
+              stormThermalLayer3d.position.x = stormCenterX3d;
+              stormThermalLayerSecondary3d.position.x = stormCenterX3d;
+              stormLightningGroup3d.position.x = stormCenterX3d;
+              var stormLandingX3d = stormCenterX3d + (precipLabSource3d ? precipWindSign3d * windVisual3d * 0.16 : 0);
+              freezingGlaze3d.position.x = stormLandingX3d;
+              stormPuddle3d.position.x = stormLandingX3d;
+              var hailImpactActive3d = precipitationFieldActive3d && precipLabSource3d && precipType3d === 'hail';
               rainImpactMist3d.visible = liquidRainActive3d;
-              rainImpactMist3d.material.opacity = liquidRainActive3d ? Math.min(0.72, 0.12 + rainVisual3d / 150) : 0;
-              rainImpactMist3d.material.size = 0.04 + rainVisual3d / 1800;
-              rainImpactMist3d.position.x = rainCurtain3d.position.x;
+              if (hailImpactActive3d) rainImpactMist3d.visible = true;
+              if (precipLabSource3d && (precipType3d === 'virga' || precipType3d === 'clear' ||
+                  precipType3d === 'freezing-rain')) {
+                rainImpactMist3d.visible = false;
+              }
+              rainImpactMist3d.material.opacity = rainImpactMist3d.visible ? Math.min(0.72, 0.12 + rainVisual3d / 150) : 0;
+              rainImpactMist3d.material.size = hailImpactActive3d ? 0.1 + rainVisual3d / 1500 : 0.04 + rainVisual3d / 1800;
+              rainImpactMist3d.position.x = hailImpactActive3d ? stormLandingX3d : stormCenterX3d;
+              rainImpactGeometry3d.setDrawRange(0, rainImpactMist3d.visible
+                ? Math.max(8, Math.floor(rainImpactCount3d * (0.18 + precipitationDensity3d * 0.82)))
+                : 0);
               canvasEl.dataset.precipitationDeflection = liquidRainActive3d ?
                 (windVisual3d >= 1.6 ? 'strong-downwind-slant' : (windVisual3d > 0.2 ? 'light-downwind-slant' : 'vertical')) : 'hidden';
+              if (precipLabSource3d && liquidRainActive3d) {
+                canvasEl.dataset.precipitationDeflection = windVisual3d <= 0.2 || precipWindSign3d === 0
+                  ? 'vertical'
+                  : (windVisual3d >= 1.6 ? 'strong-' : 'light-') +
+                  (precipWindSign3d > 0 ? 'right' : 'left') + '-slant';
+              }
               if (liquidRainActive3d) {
                 var rainCurtainPosition3d = rainCurtainGeometry3d.attributes.position;
                 var rainStreakLength3d = 0.22 + rainVisual3d / 120;
-                var rainWindSlant3d = windVisual3d * 0.11;
+                var rainWindDirection3d = precipLabSource3d ? precipWindSign3d : 1;
+                var rainWindSlant3d = rainWindDirection3d * windVisual3d * 0.11;
                 for (var rainCurtainIndex3d = 0; rainCurtainIndex3d < rainCurtainCount3d; rainCurtainIndex3d++) {
                   var rainCurtainPhase3d = (rainCurtainSeeds3d[rainCurtainIndex3d * 3 + 2] + visualTime3d * (0.3 + rainVisual3d / 180)) % 1;
-                  var rainCurtainX3d = rainCurtainSeeds3d[rainCurtainIndex3d * 3] + rainCurtainPhase3d * windVisual3d * 0.08;
+                  var rainCurtainX3d = rainCurtainSeeds3d[rainCurtainIndex3d * 3] + rainCurtainPhase3d * rainWindDirection3d * windVisual3d * 0.08;
                   var rainCurtainZ3d = rainCurtainSeeds3d[rainCurtainIndex3d * 3 + 1];
-                  var rainCurtainY3d = 2.65 - rainCurtainPhase3d * 4.1;
-                  rainCurtainPosition3d.setXYZ(rainCurtainIndex3d * 2, rainCurtainX3d, rainCurtainY3d, rainCurtainZ3d);
-                  rainCurtainPosition3d.setXYZ(rainCurtainIndex3d * 2 + 1, rainCurtainX3d + rainWindSlant3d, rainCurtainY3d - rainStreakLength3d, rainCurtainZ3d);
+                  var rainCurtainFallDistance3d = precipLabSource3d && precipType3d === 'virga'
+                    ? 1.75 + precipLowerHumidity3d / 100 * 1.05
+                    : 4.1;
+                  var rainCurtainY3d = 2.65 - rainCurtainPhase3d * rainCurtainFallDistance3d;
+                  var rainCurtainHydrometeorPhase3d = precipLabSource3d ? wcPrecipPhaseAtTransitions(
+                    precipType3d, precipCloudTemp3d, rainCurtainPhase3d,
+                    precipTransitionKind3d, precipTransitionProgress3d,
+                    precipTransition2Kind3d, precipTransition2Progress3d) : 'rain';
+                  var rainCurtainLiquidAtHeight3d = rainCurtainHydrometeorPhase3d === 'rain' ||
+                    rainCurtainHydrometeorPhase3d === 'mix' || rainCurtainHydrometeorPhase3d === 'freezing-rain' ||
+                    rainCurtainHydrometeorPhase3d === 'virga';
+                  var rainCurtainDisplayZ3d = rainCurtainLiquidAtHeight3d ? rainCurtainZ3d : 40;
+                  rainCurtainPosition3d.setXYZ(rainCurtainIndex3d * 2, rainCurtainX3d, rainCurtainY3d, rainCurtainDisplayZ3d);
+                  rainCurtainPosition3d.setXYZ(rainCurtainIndex3d * 2 + 1, rainCurtainX3d + rainWindSlant3d, rainCurtainY3d - rainStreakLength3d, rainCurtainDisplayZ3d);
                 }
                 rainCurtainPosition3d.needsUpdate = true;
 
@@ -8034,15 +10092,35 @@ const d = labToolData.waterCycle || {};
                 for (var rainImpactIndex3d = 0; rainImpactIndex3d < rainImpactCount3d; rainImpactIndex3d++) {
                   var rainImpactPhase3d = (rainImpactSeeds3d[rainImpactIndex3d * 3 + 2] + visualTime3d * (0.65 + rainVisual3d * 0.008)) % 1;
                   rainImpactPosition3d.setXYZ(rainImpactIndex3d,
-                    rainImpactSeeds3d[rainImpactIndex3d * 3] + rainImpactPhase3d * windVisual3d * 0.08,
+                    rainImpactSeeds3d[rainImpactIndex3d * 3] + rainImpactPhase3d * rainWindDirection3d * windVisual3d * 0.08,
                     -0.98 + Math.sin(rainImpactPhase3d * Math.PI) * (0.04 + rainVisual3d * 0.0012),
                     rainImpactSeeds3d[rainImpactIndex3d * 3 + 1]
                   );
                 }
                 rainImpactPosition3d.needsUpdate = true;
               }
+              if (hailImpactActive3d) {
+                var hailImpactPosition3d = rainImpactGeometry3d.attributes.position;
+                for (var hailImpactIndex3d = 0; hailImpactIndex3d < rainImpactCount3d; hailImpactIndex3d++) {
+                  var hailImpactPhase3d = (rainImpactSeeds3d[hailImpactIndex3d * 3 + 2] +
+                    visualTime3d * (0.9 + rainVisual3d * 0.006)) % 1;
+                  hailImpactPosition3d.setXYZ(hailImpactIndex3d,
+                    rainImpactSeeds3d[hailImpactIndex3d * 3],
+
+                    -0.98 + Math.sin(hailImpactPhase3d * Math.PI) * (0.1 + rainVisual3d * 0.0014),
+                    rainImpactSeeds3d[hailImpactIndex3d * 3 + 1]
+                  );
+                }
+                hailImpactPosition3d.needsUpdate = true;
+              }
               canvasEl.dataset.hydrometeorMode = snowDriftActive3d ? 'snow-drift' : (liquidRainActive3d ? 'rain-streaks' : 'hidden');
+              if (precipLabSource3d) {
+                canvasEl.dataset.hydrometeorMode = precipitationFieldActive3d ? precipType3d : 'hidden';
+                canvasEl.dataset.altitudePhaseMode = precipitationFieldActive3d ? 'thermal-profile-resolved' : 'hidden';
+              }
               var showRainRipples3d = liquidRainActive3d;
+              if (precipLabSource3d) showRainRipples3d = precipitationFieldActive3d &&
+                (precipType3d === 'rain' || precipType3d === 'mix');
               rainRipples3d.visible = showRainRipples3d;
               if (showRainRipples3d) {
                 rainRipples3d.children.forEach(function(rippleMesh3d) {
@@ -8051,8 +10129,8 @@ const d = labToolData.waterCycle || {};
                   rippleMesh3d.material.opacity = (1 - ripplePhase3d) * (0.16 + rainVisual3d / 500);
                 });
               }
-              river3d.material.opacity = Math.min(0.94, 0.3 + runoffVisual3d / 145 + snowmeltIntensity3d * 0.18);
-              river3d.material.emissiveIntensity = 0.1 + runoffVisual3d / 420 + snowmeltIntensity3d * 0.14;
+              river3d.material.opacity = Math.min(0.94, 0.3 + runoffVisual3d / 145 + snowmeltIntensity3d * 0.18 + precipRunoffAccum3d / 420);
+              river3d.material.emissiveIntensity = 0.1 + runoffVisual3d / 420 + snowmeltIntensity3d * 0.14 + precipRunoffAccum3d / 620;
               aquifer3d.material.opacity = Math.min(0.92, 0.28 + infiltrationVisual3d / 180 +
                 ((state3d === 'infiltrating' || state3d === 'infiltration' || state3d === 'aquifer_flow') ? 0.2 : 0));
               aquifer3d.material.emissiveIntensity = 0.12 + infiltrationVisual3d / 300;
@@ -8060,6 +10138,117 @@ const d = labToolData.waterCycle || {};
                 (condensationTransfer3d ? Math.max(0.08, parcelGasBlend3d) : 1);
               rain3d.material.color.setHex(snowDriftActive3d ? 0xe0f2fe : tempVisual3d <= 3 ? 0x93c5fd : 0x69d7ff);
               rain3d.material.size = snowDriftActive3d ? 0.105 : 0.075;
+              if (precipLabSource3d) {
+                rain3d.material.color.setHex(precipType3d === 'hail' ? 0xf8fafc :
+                  precipType3d === 'mix' ? 0xbfdbfe : 0xe0f2fe);
+                rain3d.material.size = precipType3d === 'hail' ? 0.15 :
+                  precipType3d === 'mix' ? 0.09 : 0.105;
+                rainCurtain3d.material.color.setHex(precipType3d === 'freezing-rain' ? 0x67e8f9 : 0x9ee7ff);
+                rainImpactMist3d.material.color.setHex(precipType3d === 'hail' ? 0xf8fafc :
+                  precipType3d === 'freezing-rain' ? 0xa5f3fc : 0xcffafe);
+              }
+              var stormProfileVisible3d = precipitationFieldActive3d && precipLabSource3d;
+              stormUpdraft3d.visible = stormProfileVisible3d && precipLifecycleUpdraft3d >= 18;
+              stormUpdraftMat3d.opacity = stormUpdraft3d.visible ? 0.12 + precipLifecycleUpdraft3d / 180 : 0;
+              stormUpdraftMarkers3d.material.opacity = stormUpdraft3d.visible ? 0.42 + precipLifecycleUpdraft3d / 220 : 0;
+              if (stormUpdraft3d.visible) {
+                var stormUpdraftMarkerPosition3d = stormUpdraftMarkerGeometry3d.attributes.position;
+                for (var stormUpdraftMarkerIndex3d = 0; stormUpdraftMarkerIndex3d < stormUpdraftMarkerCount3d; stormUpdraftMarkerIndex3d++) {
+                  var stormUpdraftMarkerPhase3d = (stormUpdraftMarkerIndex3d / stormUpdraftMarkerCount3d +
+                    visualTime3d * (0.06 + precipLifecycleUpdraft3d / 900)) % 1;
+                  var stormUpdraftMarkerAngle3d = stormUpdraftMarkerPhase3d * Math.PI * 5;
+                  var stormUpdraftMarkerRadius3d = 0.26 + stormUpdraftMarkerPhase3d * 0.24;
+                  stormUpdraftMarkerPosition3d.setXYZ(stormUpdraftMarkerIndex3d,
+                    Math.cos(stormUpdraftMarkerAngle3d) * stormUpdraftMarkerRadius3d,
+                    stormUpdraftMarkerPhase3d * 3.7,
+                    Math.sin(stormUpdraftMarkerAngle3d) * stormUpdraftMarkerRadius3d
+                  );
+                }
+                stormUpdraftMarkerPosition3d.needsUpdate = true;
+              }
+              if (stormUpdraft3d.visible && !motionReduced3d && !journeyPaused3d) {
+                stormUpdraft3d.rotation.y = visualTime3d * precipWindSign3d * (0.24 + precipLifecycleUpdraft3d / 260);
+              }
+              stormThermalLayer3d.visible = stormProfileVisible3d && precipTransitionKind3d !== 'none';
+              stormThermalLayerMat3d.opacity = stormThermalLayer3d.visible ? 0.1 : 0;
+              stormThermalLayerMat3d.color.setHex(precipTransitionKind3d === 'freezing' ? 0x67e8f9 : 0xfde68a);
+              stormThermalLayer3d.position.y = 2.65 - precipTransitionProgress3d * 3.6;
+              stormThermalLayerSecondary3d.visible = stormProfileVisible3d && precipTransition2Kind3d !== 'none';
+              stormThermalLayerSecondaryMat3d.opacity = stormThermalLayerSecondary3d.visible ? 0.1 : 0;
+              stormThermalLayerSecondaryMat3d.color.setHex(precipTransition2Kind3d === 'freezing' ? 0x67e8f9 : 0xfde68a);
+              stormThermalLayerSecondary3d.position.y = 2.65 - precipTransition2Progress3d * 3.6;
+              var stormMeltingLayerY3d = precipTransitionKind3d === 'melting' && stormThermalLayer3d.visible
+                ? stormThermalLayer3d.position.y
+                : precipTransition2Kind3d === 'melting' && stormThermalLayerSecondary3d.visible
+                  ? stormThermalLayerSecondary3d.position.y : null;
+              var stormFreezingLayerY3d = precipTransitionKind3d === 'freezing' && stormThermalLayer3d.visible
+                ? stormThermalLayer3d.position.y
+                : precipTransition2Kind3d === 'freezing' && stormThermalLayerSecondary3d.visible
+                  ? stormThermalLayerSecondary3d.position.y : null;
+              if (stormMeltingLayerLabel3d) {
+                stormMeltingLayerLabel3d.visible = stormMeltingLayerY3d != null;
+                if (stormMeltingLayerLabel3d.visible) {
+                  stormMeltingLayerLabel3d.position.set(stormCenterX3d + 2.05, stormMeltingLayerY3d + 0.18, -0.8);
+                }
+              }
+              if (stormFreezingLayerLabel3d) {
+                stormFreezingLayerLabel3d.visible = stormFreezingLayerY3d != null;
+                if (stormFreezingLayerLabel3d.visible) {
+                  stormFreezingLayerLabel3d.position.set(stormCenterX3d + 2.05, stormFreezingLayerY3d + 0.18, -0.8);
+                }
+              }              freezingGlaze3d.visible = stormProfileVisible3d && precipType3d === 'freezing-rain';
+              freezingGlazeMat3d.opacity = freezingGlaze3d.visible ? Math.min(0.58, 0.08 + precipGlazeAccum3d / 190) : 0;
+              if (freezingGlaze3d.visible) {
+                var freezingGlazeExtent3d = 0.58 + precipGlazeAccum3d / 105;
+                var freezingGlazePulse3d = motionReduced3d || journeyPaused3d ? 0 :
+                  Math.sin(visualTime3d * 0.8) * 0.035;
+                freezingGlaze3d.scale.set(freezingGlazeExtent3d + freezingGlazePulse3d,
+                  0.52 + precipitationDensity3d * 0.24, 1);
+              }
+              stormPuddle3d.visible = stormProfileVisible3d && precipPuddleAccum3d > 2;
+              stormPuddleMat3d.opacity = stormPuddle3d.visible ? Math.min(0.5, 0.08 + precipPuddleAccum3d / 230) : 0;
+              if (stormPuddle3d.visible) {
+                var stormPuddleExtent3d = 0.42 + precipPuddleAccum3d / 78;
+                var stormPuddlePulse3d = motionReduced3d || journeyPaused3d ? 0 : Math.sin(visualTime3d * 0.55) * 0.018;
+                stormPuddle3d.scale.set(stormPuddleExtent3d + stormPuddlePulse3d, 0.54 + precipPuddleAccum3d / 220, 1);
+              }
+              var stormLightningCycle3d = visualTime3d % 5.8;
+              var stormLightningCycleIndex3d = Math.floor(visualTime3d / 5.8);
+              var stormLightningVisible3d = stormProfileVisible3d && precipLightningEligible3d &&
+                !motionReduced3d && !journeyPaused3d && stormLightningCycle3d > 5.62;
+              stormLightningGroup3d.visible = stormLightningVisible3d;
+              stormLightningMat3d.opacity = stormLightningVisible3d ? 0.92 : 0;
+              if (stormLightningVisible3d && stormLightningCycleIndex3d !== lastLightningCycle3d) {
+                lastLightningCycle3d = stormLightningCycleIndex3d;
+                if (stormThunderTimer3d) { clearTimeout(stormThunderTimer3d); stormThunderTimer3d = null; }
+                canvasEl.dataset.thunderStatus = precipSoundEnabled3d ? 'pending' : 'muted';
+                if (precipSoundEnabled3d) {
+                  stormThunderTimer3d = setTimeout(function() {
+                    stormThunderTimer3d = null;
+                    if (alive3d && !motionReduced3d && !journeyPaused3d) {
+                      playWcThunderRumble();
+                      canvasEl.dataset.thunderStatus = 'heard';
+                    }
+                  }, Math.round(precipThunderDelay3d * 1000));
+                }
+              }
+              canvasEl.dataset.thermalLayer = stormThermalLayer3d.visible ? precipTransitionKind3d +
+                (stormThermalLayerSecondary3d.visible ? '+' + precipTransition2Kind3d : '') : 'none';
+              canvasEl.dataset.thermalLayerCount = String((stormThermalLayer3d.visible ? 1 : 0) +
+                (stormThermalLayerSecondary3d.visible ? 1 : 0));
+              canvasEl.dataset.stormUpdraft = stormUpdraft3d.visible ? 'visible' : 'hidden';
+              canvasEl.dataset.freezingGlaze = freezingGlaze3d.visible ? 'visible' : 'hidden';
+              canvasEl.dataset.stormLifecycleStage = precipLabSource3d ? precipStormStage3d : 'legacy';
+              canvasEl.dataset.stormPuddle = stormPuddle3d.visible ? 'visible' : 'hidden';
+              canvasEl.dataset.groundAccumulationMode = precipLabSource3d ? ['snow:'+precipSnowAccum3d,'glaze:'+precipGlazeAccum3d,'hail:'+precipHailAccum3d,'puddling:'+precipPuddleAccum3d,'runoff:'+precipRunoffAccum3d].join(',') : 'legacy';
+              canvasEl.dataset.thunderDelaySeconds = String(precipThunderDelay3d);
+              canvasEl.dataset.thunderCaption = precipLightningEligible3d ? 'Flash now; thunder in about ' + precipThunderDelay3d.toFixed(1) + ' seconds' : 'No lightning flash to trigger thunder';
+              canvasEl.dataset.lightningMode = !stormProfileVisible3d || !precipLightningEligible3d
+                ? 'none' : motionReduced3d ? 'suppressed-reduced-motion' : journeyPaused3d ? 'paused' : 'periodic';
+              canvasEl.dataset.stormColumnAlignment = stormProfileVisible3d ? 'cloud-to-ground-synced' : 'legacy';
+              canvasEl.dataset.updraftMotion = stormUpdraft3d.visible
+                ? (motionReduced3d ? 'static-markers' : journeyPaused3d ? 'paused-markers' : 'rising-markers')
+                : 'hidden';
               grass3d.material.color.setHex(coverVisual3d === 'forest' ? 0x245c3a : coverVisual3d === 'urban' ? 0x68737d : 0x5d8f3b);
               if (controls3d) {
                 if (!userOrbit3d) controls3d.target.lerp(target3d, motionReduced3d ? 1 : 0.035);
@@ -8076,6 +10265,7 @@ const d = labToolData.waterCycle || {};
               if (!alive3d) return;
               alive3d = false;
               if (frame3d) cancelAnimationFrame(frame3d);
+              if (stormThunderTimer3d) { clearTimeout(stormThunderTimer3d); stormThunderTimer3d = null; }
               if (resizeObserver3d) resizeObserver3d.disconnect();
               canvasEl.removeEventListener('pointerdown', handleBranchPointerDown3d);
               canvasEl.removeEventListener('pointermove', handleBranchPointerMove3d);
@@ -8142,6 +10332,9 @@ const d = labToolData.waterCycle || {};
           var currentSolar = d.climSolar != null ? d.climSolar : 1.0;
           var currentTemp = d.climTemp != null ? d.climTemp : 15;
           var currentWind = d.climWind != null ? d.climWind : 1.0;
+          var precipJourneyModel = d.precipLab3dActive && d.precipHunt
+            ? computeWcPrecipitationModel(d.precipHunt)
+            : null;
           var journeyView = d.journeyView || '2d';
           var journeyActiveStageMap = { ocean: 'collection', evaporating: 'evaporation', condensing: 'condensation',
             precipitating: 'precipitation', ground_choice: 'precipitation', river_runoff: 'collection',
@@ -8723,6 +10916,7 @@ const d = labToolData.waterCycle || {};
               landPermeability: baseline.landPermeability || 'medium',
               landSlope: baseline.landSlope || 'moderate',
               landCover: baseline.landCover || 'grass',
+              precipLab3dActive: false,
               wcScenarioPreset: 'custom',
               wcPrediction: '',
               wcReplayedObservation: ''
@@ -9278,6 +11472,26 @@ React.createElement("div", {
                 "data-clim-solar": String(d.climSolar != null ? d.climSolar : 1.0),
                 "data-clim-temp": String(d.climTemp != null ? d.climTemp : 15),
                 "data-clim-wind": String(d.climWind != null ? d.climWind : 1.0),
+                "data-precipitation-source": precipJourneyModel ? 'lab' : 'explorer',
+                "data-precipitation-type": precipJourneyModel ? precipJourneyModel.visualType : '',
+                "data-precipitation-updraft": precipJourneyModel ? String(precipJourneyModel.config.updraft) : '',
+                "data-precipitation-cloud-depth": precipJourneyModel ? String(precipJourneyModel.config.cloudDepth) : '',
+                "data-precipitation-lower-humidity": precipJourneyModel ? String(precipJourneyModel.config.lowLevelHumidity) : '',
+                "data-precipitation-cloud-temp": precipJourneyModel ? String(precipJourneyModel.config.tempC) : '',
+                "data-precipitation-mid-temp": precipJourneyModel ? String(precipJourneyModel.config.midLevelTempC) : '',
+                "data-precipitation-wind-direction": precipJourneyModel ? precipJourneyModel.config.windDirection : 'east',
+                "data-precipitation-lightning-eligible": precipJourneyModel ? String(precipJourneyModel.lightningEligible) : 'false',
+                "data-precipitation-transition-kind": precipJourneyModel ? precipJourneyModel.thermalLayers.primaryTransitionKind : 'none',
+                "data-precipitation-transition-progress": precipJourneyModel && precipJourneyModel.freezingLevel != null ? String(precipJourneyModel.freezingLevel) : '',
+                "data-precipitation-secondary-transition-kind": precipJourneyModel && precipJourneyModel.thermalLayers.crossings[1] ? precipJourneyModel.thermalLayers.crossings[1].kind : 'none',
+                "data-precipitation-secondary-transition-progress": precipJourneyModel && precipJourneyModel.thermalLayers.crossings[1] ? String(precipJourneyModel.thermalLayers.crossings[1].progress) : '',
+                "data-precipitation-electrification": precipJourneyModel ? String(precipJourneyModel.electrificationIndex) : '0',
+                "data-storm-stage": precipJourneyModel ? precipJourneyModel.lifecycle.stageKey : '',                 "data-storm-time": precipJourneyModel ? String(precipJourneyModel.lifecycle.time) : '',                 "data-storm-cloud-factor": precipJourneyModel ? String(precipJourneyModel.lifecycle.cloudFactor) : '',                 "data-storm-updraft-factor": precipJourneyModel ? String(precipJourneyModel.lifecycle.updraftFactor) : '',                 "data-storm-snow-accumulation": precipJourneyModel ? String(precipJourneyModel.lifecycle.accumulation.snow) : '',                 "data-storm-glaze-accumulation": precipJourneyModel ? String(precipJourneyModel.lifecycle.accumulation.glaze) : '',                 "data-storm-hail-accumulation": precipJourneyModel ? String(precipJourneyModel.lifecycle.accumulation.hail) : '',                 "data-storm-puddle-accumulation": precipJourneyModel ? String(precipJourneyModel.lifecycle.accumulation.puddling) : '',                 "data-storm-runoff-accumulation": precipJourneyModel ? String(precipJourneyModel.lifecycle.accumulation.runoff) : '',
+                "data-thunder-delay-seconds": precipJourneyModel ? String(precipJourneyModel.thunder.delaySeconds) : '',                 "data-thunder-caption": precipJourneyModel ? precipJourneyModel.thunder.caption : '',                 "data-thunder-sound": precipJourneyModel && precipJourneyModel.thunder.soundEnabled ? 'enabled' : 'muted',
+                "data-thunder-estimate-km": precipJourneyModel ? String(precipJourneyModel.thunderEstimate.estimateKm) : '',
+                "data-thunder-estimate-checked": precipJourneyModel ? String(!!precipJourneyModel.config.thunderEstimateChecked) : 'false',
+                "data-thunder-estimate-band": precipJourneyModel && precipJourneyModel.config.thunderEstimateChecked ? precipJourneyModel.thunderEstimate.band : 'unsubmitted',
+                "data-thunder-estimate-error-km": precipJourneyModel ? String(precipJourneyModel.thunderEstimate.errorKm) : '',
                 "data-dark-mode": String(isDark),
                 style: {
                   position: "absolute", inset: 0, width: "100%", height: "100%", display: "block",
@@ -9332,6 +11546,26 @@ React.createElement("div", {
                 "data-runoff-index": String(runoffTendency),
                 "data-infiltration-index": String(infiltrationOpportunity),
                 "data-rain-intensity": String(landRainIntensity),
+                "data-precipitation-source": precipJourneyModel ? 'lab' : 'explorer',
+                "data-precipitation-type": precipJourneyModel ? precipJourneyModel.visualType : '',
+                "data-precipitation-updraft": precipJourneyModel ? String(precipJourneyModel.config.updraft) : '',
+                "data-precipitation-cloud-depth": precipJourneyModel ? String(precipJourneyModel.config.cloudDepth) : '',
+                "data-precipitation-lower-humidity": precipJourneyModel ? String(precipJourneyModel.config.lowLevelHumidity) : '',
+                "data-precipitation-cloud-temp": precipJourneyModel ? String(precipJourneyModel.config.tempC) : '',
+                "data-precipitation-mid-temp": precipJourneyModel ? String(precipJourneyModel.config.midLevelTempC) : '',
+                "data-precipitation-wind-direction": precipJourneyModel ? precipJourneyModel.config.windDirection : 'east',
+                "data-precipitation-lightning-eligible": precipJourneyModel ? String(precipJourneyModel.lightningEligible) : 'false',
+                "data-precipitation-transition-kind": precipJourneyModel ? precipJourneyModel.thermalLayers.primaryTransitionKind : 'none',
+                "data-precipitation-transition-progress": precipJourneyModel && precipJourneyModel.freezingLevel != null ? String(precipJourneyModel.freezingLevel) : '',
+                "data-precipitation-secondary-transition-kind": precipJourneyModel && precipJourneyModel.thermalLayers.crossings[1] ? precipJourneyModel.thermalLayers.crossings[1].kind : 'none',
+                "data-precipitation-secondary-transition-progress": precipJourneyModel && precipJourneyModel.thermalLayers.crossings[1] ? String(precipJourneyModel.thermalLayers.crossings[1].progress) : '',
+                "data-precipitation-electrification": precipJourneyModel ? String(precipJourneyModel.electrificationIndex) : '0',
+                "data-storm-stage": precipJourneyModel ? precipJourneyModel.lifecycle.stageKey : '',                 "data-storm-time": precipJourneyModel ? String(precipJourneyModel.lifecycle.time) : '',                 "data-storm-cloud-factor": precipJourneyModel ? String(precipJourneyModel.lifecycle.cloudFactor) : '',                 "data-storm-updraft-factor": precipJourneyModel ? String(precipJourneyModel.lifecycle.updraftFactor) : '',                 "data-storm-snow-accumulation": precipJourneyModel ? String(precipJourneyModel.lifecycle.accumulation.snow) : '',                 "data-storm-glaze-accumulation": precipJourneyModel ? String(precipJourneyModel.lifecycle.accumulation.glaze) : '',                 "data-storm-hail-accumulation": precipJourneyModel ? String(precipJourneyModel.lifecycle.accumulation.hail) : '',                 "data-storm-puddle-accumulation": precipJourneyModel ? String(precipJourneyModel.lifecycle.accumulation.puddling) : '',                 "data-storm-runoff-accumulation": precipJourneyModel ? String(precipJourneyModel.lifecycle.accumulation.runoff) : '',
+                "data-thunder-delay-seconds": precipJourneyModel ? String(precipJourneyModel.thunder.delaySeconds) : '',                 "data-thunder-caption": precipJourneyModel ? precipJourneyModel.thunder.caption : '',                 "data-thunder-sound": precipJourneyModel && precipJourneyModel.thunder.soundEnabled ? 'enabled' : 'muted',
+                "data-thunder-estimate-km": precipJourneyModel ? String(precipJourneyModel.thunderEstimate.estimateKm) : '',
+                "data-thunder-estimate-checked": precipJourneyModel ? String(!!precipJourneyModel.config.thunderEstimateChecked) : 'false',
+                "data-thunder-estimate-band": precipJourneyModel && precipJourneyModel.config.thunderEstimateChecked ? precipJourneyModel.thunderEstimate.band : 'unsubmitted',
+                "data-thunder-estimate-error-km": precipJourneyModel ? String(precipJourneyModel.thunderEstimate.errorKm) : '',
                 "data-clim-solar": String(currentSolar),
                 "data-clim-temp": String(currentTemp),
                 "data-clim-wind": String(currentWind),
@@ -9355,12 +11589,17 @@ React.createElement("div", {
               ),
 
               // Weather badge overlay
-              (d.climTemp != null && d.climTemp < 0) && React.createElement("div", { className: "absolute top-16 left-2 px-2 py-1 bg-blue-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, t('stem.watercycle.snow', "\u2744\uFE0F SNOW")),
-              (d.climTemp != null && d.climTemp > 30) && React.createElement("div", { className: "absolute top-16 left-2 px-2 py-1 bg-amber-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, "HOT SURFACE"),
+              precipJourneyModel && React.createElement("div", { className: "absolute top-16 left-2 px-2 py-1 bg-sky-950/80 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" },
+                "\u26C8 " + precipJourneyModel.phaseLabel.toUpperCase()),
+              (!precipJourneyModel && d.climTemp != null && d.climTemp < 0) && React.createElement("div", { className: "absolute top-16 left-2 px-2 py-1 bg-blue-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, t('stem.watercycle.snow', "\u2744\uFE0F SNOW")),
+              (d.climTemp != null && d.climTemp > 30) && React.createElement("div", {
+                className: "absolute " + (precipJourneyModel ? "top-24" : "top-16") +
+                  " left-2 px-2 py-1 bg-amber-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm"
+              }, "HOT SURFACE"),
               (d.climSolar != null && d.climSolar < 0.3) && React.createElement("div", { className: "absolute top-16 right-2 px-2 py-1 bg-indigo-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, t('stem.watercycle.night', "\uD83C\uDF19 NIGHT")),
 
               journeyView === '3d' && d.journeyActive && d.journeyState === 'ground_choice' && React.createElement("section", {
-                className: "wc-viewport-choice",
+                className: "wc-viewport-choice" + (precipJourneyModel ? " wc-precip-journey-choice" : ""),
                 role: "group",
                 "aria-labelledby": "wcViewportChoiceTitle",
                 "aria-describedby": "wcViewportChoiceDescription wcViewportChoiceStatus",

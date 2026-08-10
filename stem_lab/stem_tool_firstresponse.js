@@ -99,8 +99,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
   // a real chest and WHAT the recovery position actually looks like as a
   // three-dimensional shape. That is what this module is for.
   //
-  // Clinical scope, stated plainly and repeatedly in the UI: adult, lay
+  // One learning path remains suitable for a lay
   // rescuer, hands-only. This is orientation and practice — it is NOT
+  // A trained path covers adult/child/infant 30:2 sequence practice.
   // certification, and it does not replace a hands-on course with a manikin,
   // where an instructor can feel whether your depth is real.
   //
@@ -139,6 +140,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
     { id: 'lean', label: 'Correct depth, but resting your weight between pushes', verdict: 'poor',
       why: 'Leaning is easy to do when you are tired and it quietly undoes your work. The chest has to recoil FULLY so the heart can refill before the next compression. Come all the way up without lifting your hands off the chest.' }
   ];
+
+  // Short, screen-based rehearsal target. It deliberately scores timing and
+  // sequence only; a real manikin and instructor are still required to assess
+  // depth, hand force, airway seal or ventilation volume.
+  var CPR_COACH_SPEC = {
+    compressionsPerCycle: 30,
+    breathsPerCycle: 2,
+    practiceCycles: 2,
+    minBpm: 100,
+    maxBpm: 120,
+    breathLockMs: 1500
+  };
+
+  // Pure so the timing logic can be regression-tested without a clock or DOM.
+  // The recorder handles input bounce; every accepted interval remains in the
+  // score so a very fast tap or a long pause cannot disappear from the result.
+  function analyzeCprTiming(intervals) {
+    var clean = (intervals || []).filter(function (ms) {
+      return typeof ms === 'number' && isFinite(ms) && ms >= 180 && ms <= 60000;
+    });
+    if (!clean.length) return { medianBpm: 0, inRangePct: 0, consistencyPct: 0, sampleCount: 0 };
+    var sorted = clean.slice().sort(function (a, b) { return a - b; });
+    var mid = Math.floor(sorted.length / 2);
+    var medianMs = sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+    var targetMinMs = 60000 / CPR_COACH_SPEC.maxBpm;
+    var targetMaxMs = 60000 / CPR_COACH_SPEC.minBpm;
+    var inRange = clean.filter(function (ms) { return ms >= targetMinMs && ms <= targetMaxMs; }).length;
+    var mean = clean.reduce(function (sum, ms) { return sum + ms; }, 0) / clean.length;
+    var variance = clean.reduce(function (sum, ms) {
+      var delta = ms - mean;
+      return sum + delta * delta;
+    }, 0) / clean.length;
+    var coefficient = mean ? Math.sqrt(variance) / mean : 1;
+    return {
+      medianBpm: Math.round(60000 / medianMs),
+      inRangePct: Math.round((inRange / clean.length) * 100),
+      consistencyPct: Math.max(0, Math.min(100, Math.round(100 - coefficient * 240))),
+      sampleCount: clean.length
+    };
+  }
 
   // The gate that matters more than any of the above.
   var BREATHING_GATE = [
@@ -183,7 +224,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
   // changes too. A teen who babysits is far more likely to meet an infant
   // emergency than an adult one, so leaving this at adult-only was a real gap.
   //
-  // Depths follow AHA 2020: roughly one third of the depth of the chest in
+  // Depths follow AHA/AAP 2025: roughly one third of the depth of the chest in
   // every case, which works out at about 5 cm for an adult and a child and
   // about 4 cm for an infant. (The existing quick-reference in the CPR + AED
   // module had the child figure at 4 cm, matching the infant — corrected.)
@@ -198,15 +239,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       hands: 'One hand, or two if one is not enough to reach the depth. Use whatever gets you deep enough on that particular child.',
       where: 'Same place as an adult — centre of the chest, lower half of the breastbone.',
       depth: 'About 2 inches (5 cm) — roughly one third of the depth of the chest.',
-      breaths: 'In children, arrest is more often caused by a breathing problem than by a sudden heart rhythm, so breaths matter more than they do for adults. If you are trained, give 30 compressions to 2 breaths. If you are not, compressions alone are still far better than nothing.',
+      breaths: 'Because pediatric arrest is often caused by a breathing problem, conventional CPR with breaths is recommended when you are willing and able. A single rescuer uses 30 compressions to 2 breaths; if a second trained rescuer joins, use 15:2. If you cannot or will not give breaths, compression-only CPR is still far better than nothing.',
       scale: 0.72 },
     { id: 'infant', icon: '👶', label: 'Infant', who: 'Under 1 year (not a newborn)',
-      hands: 'Two fingers on the breastbone, just below an imaginary line between the nipples. If two rescuers are present, the two-thumbs-encircling technique is preferred.',
+      hands: 'Use the heel of one hand on the breastbone, or the two-thumb encircling-hands technique. The older two-finger method is no longer recommended because it often fails to reach adequate depth.',
       where: 'Centre of the chest, just below the nipple line.',
       depth: 'About 1.5 inches (4 cm) — again roughly one third of the depth of the chest.',
-      breaths: 'Infant arrest is usually a breathing problem. Breaths matter. If trained, 30 compressions to 2 breaths as a single rescuer. Cover the mouth and nose, and give only enough air to make the chest rise — an infant\'s lungs are tiny.',
+      breaths: 'Infant arrest is usually a breathing problem, so conventional CPR with breaths is recommended when you are willing and able. A single rescuer uses 30:2; if a second trained rescuer joins, use 15:2. Cover the mouth and nose and give only enough air for visible chest rise.',
       scale: 0.46 }
   ];
+  // Adult guidance has an explicit 5-6 cm range. Pediatric guidance instead
+  // targets about one third of the chest, so the practice choices must change.
+  function cprMechanicsForAge(ageId) {
+    if (ageId === 'adult') return CPR_MECHANICS;
+    var infant = ageId === 'infant';
+    var targetLabel = infant
+      ? 'About 1.5 inches (4 cm), roughly one third of the chest'
+      : 'About 2 inches (5 cm), roughly one third of the chest';
+    var targetWhy = infant
+      ? 'This is the infant target: about 1.5 inches (4 cm), roughly one third of the chest. Let the chest recoil fully after every compression.'
+      : 'This is the child target: about 2 inches (5 cm), roughly one third of the chest. Let the chest recoil fully after every compression.';
+    var shallowLabel = infant ? 'Too shallow - only a small chest dip' : 'Too shallow - only about an inch';
+    var shallowWhy = infant
+      ? 'Shallow compressions do not move enough blood. For an infant, aim for about 1.5 inches (4 cm), roughly one third of the chest.'
+      : 'Shallow compressions do not move enough blood. For a child, aim for about 2 inches (5 cm), roughly one third of the chest.';
+    var deepLabel = infant ? 'Far beyond one third of the infant chest' : 'Far beyond one third of the child chest';
+    var deepWhy = infant
+      ? 'Do not chase an adult depth on an infant. Aim for about one third of the chest, around 1.5 inches (4 cm).'
+      : 'Do not push without limit. Aim for about one third of the child chest, around 2 inches (5 cm).';
+    return [
+      { id: 'shallow', label: shallowLabel, verdict: 'poor', why: shallowWhy },
+      { id: 'right', label: targetLabel, verdict: 'correct', why: targetWhy },
+      { id: 'toodeep', label: deepLabel, verdict: 'poor', why: deepWhy },
+      CPR_MECHANICS[3]
+    ];
+  }
 
   // ── AED pad placement ─────────────────────────────────────────────────────
   // Genuinely spatial and, until now, one line of text in the CPR + AED
@@ -270,7 +337,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             { id: 'b', label: 'Two hands, high on the chest just under the collarbones', verdict: 'wrong',
               why: 'Too high to squeeze the heart between the breastbone and the spine. Slide down to the centre of the chest.' },
             { id: 'c', label: 'Two fingers, centre of the chest', verdict: 'wrong',
-              why: 'That is the infant technique. Two fingers cannot move an adult chest 5 cm.' }
+              why: 'Two fingers cannot move an adult chest 5 cm, and the two-finger method is no longer recommended for infants either because it often fails to reach adequate depth.' }
           ] },
         { prompt: 'The AED arrives while you are compressing. What happens now?',
           options: [
@@ -319,10 +386,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           options: [
             { id: 'a', label: 'Two hands, as you would for an adult', verdict: 'unsafe',
               why: 'Far too much force for an infant. This is the difference the age selector exists to teach.' },
-            { id: 'b', label: 'Two fingers on the breastbone, just below the nipple line', verdict: 'correct',
-              why: 'Correct for a single rescuer. With two rescuers, the two-thumbs-encircling technique is preferred. Depth is about 1.5 inches (4 cm), roughly a third of the depth of her chest.' },
-            { id: 'c', label: 'One hand, same place as an adult', verdict: 'wrong',
-              why: 'That is the child technique, for roughly one year to puberty. She is under a year.' }
+            { id: 'b', label: 'Heel of one hand on the sternum, or two thumbs with hands encircling the chest', verdict: 'correct',
+              why: 'Correct under the 2025 AHA/AAP guidance. Either heel-of-one-hand or two-thumb encircling-hands can reach the needed depth: about 1.5 inches (4 cm), roughly a third of her chest.' },
+            { id: 'c', label: 'Two fingers on the breastbone', verdict: 'wrong',
+              why: 'The older two-finger technique was removed in 2025 because it often fails to achieve adequate depth. Use heel of one hand or the two-thumb encircling-hands technique.' }
           ] },
         { prompt: 'Do rescue breaths matter here?',
           options: [
@@ -343,7 +410,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               why: 'Pads that touch each other short the current across the skin instead of sending it through the chest, and can burn her.' }
           ] }
       ],
-      debrief: 'This is the call a teenager is most likely to face, and it is the one where adult habits are most wrong: two fingers not two hands, breaths matter, and an AED with the wrong pads still beats no AED.'
+      debrief: 'This is the call a teenager is most likely to face, and it is the one where adult habits are most wrong: heel of one hand or two-thumb encircling-hands, breaths matter, and an AED with the wrong pads still beats no AED.'
     },
     {
       id: 'breathing', icon: '😴', title: 'Unresponsive, but breathing', age: 'adult',
@@ -416,17 +483,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
     { id: 'belly',   label: 'Abdomen' },
     { id: 'sideL',   label: 'Ribs (left)' },
     { id: 'sideR',   label: 'Ribs (right)' },
-    // AED pad targets share the same body and the same pick machinery.
-    { id: 'padUR',        label: 'Upper right chest' },
-    { id: 'padLL',        label: 'Lower left side' },
-    { id: 'padTogether',  label: 'Both pads side by side' },
-    { id: 'padBelly',     label: 'Abdomen (pad)' }
   ];
+
+
+  // Viewer labels include both quizzes, but the placement control list above
+  // intentionally excludes AED-only targets.
+  var BODY_SCENE_PARTS = BODY_PARTS.concat(AED_PADS.map(function (pad) {
+    return { id: pad.id, label: pad.label };
+  }));
 
   // -- Body scene content --
   // api.phase drives the recovery-position roll: 0 = flat on the back,
   // rising to 1 = fully on the side with the airway open.
-  function buildBodyScene(THREE, api) {
+  function buildBodySceneLegacy(THREE, api) {
     var meshes = {};
     var picks = [];
     var roll = Math.max(0, Math.min(1, (api.phase || 0) / RECOVERY_STEPS.length));
@@ -534,6 +603,275 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
     return { meshes: meshes, picks: picks, anchor: ground };
   }
 
+
+  // Rounded, age-aware training manikin. The legacy block model remains above
+  // for an easy source-level comparison while this builder is the live scene.
+  // All geometry is procedural and supported by the bundled Three r128 build.
+  function buildBodyScene(THREE, api) {
+    var meshes = {};
+    var picks = [];
+    var sp = api.sceneProps || {};
+    var mode = sp.tab || 'place';
+    var age = sp.age || 'adult';
+    var phase = api.phase || 0;
+    var roll = Math.max(0, Math.min(1, (phase - 4) / Math.max(1, RECOVERY_STEPS.length - 4)));
+    var ageScale = 1;
+    for (var ai = 0; ai < CPR_AGES.length; ai++) if (CPR_AGES[ai].id === age) ageScale = CPR_AGES[ai].scale;
+    var profile = age === 'infant'
+      ? { head: 1.40, torso: 0.86, width: 0.88, limb: 0.72 }
+      : (age === 'child'
+        ? { head: 1.15, torso: 0.94, width: 0.94, limb: 0.88 }
+        : { head: 1, torso: 1, width: 1, limb: 1 });
+
+    function material(hex, shiny, opacity) {
+      var m = api.trim(api.contrast ? 0xffffff : hex, shiny);
+      if (opacity != null && opacity < 1) {
+        m.transparent = true;
+        m.opacity = opacity;
+        m.depthWrite = opacity > 0.62;
+      }
+      return m;
+    }
+    function blob(parent, sx, sy, sz, mat, x, y, z) {
+      var mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 28, 18), mat);
+      mesh.scale.set(sx, sy, sz);
+      mesh.position.set(x || 0, y || 0, z || 0);
+      parent.add(mesh);
+      return mesh;
+    }
+    function segment(parent, a, b, radius, mat) {
+      var delta = new THREE.Vector3().subVectors(b, a);
+      var length = delta.length();
+      var mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius * 0.94, length, 16), mat);
+      mesh.position.copy(a).add(b).multiplyScalar(0.5);
+      mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), delta.normalize());
+      parent.add(mesh);
+      return mesh;
+    }
+    function joint(parent, at, radius, mat) {
+      return blob(parent, radius, radius, radius, mat, at.x, at.y, at.z);
+    }
+
+    var ground = new THREE.Mesh(new THREE.BoxGeometry(7, 0.07, 5),
+      material(api.dark ? 0x111b2d : 0x9ba8b8, 4));
+    ground.position.y = -0.04;
+    if (api.wantShadow) ground.receiveShadow = true;
+    api.scene.add(ground);
+
+    var matFloor = new THREE.Mesh(new THREE.CylinderGeometry(2.05, 2.05, 0.025, 48),
+      material(api.dark ? 0x16243a : 0xc7d2df, 5));
+    matFloor.position.y = 0.005;
+    if (api.wantShadow) matFloor.receiveShadow = true;
+    api.scene.add(matFloor);
+    var floorRingMat = material(api.contrast ? 0xffffff : 0x38bdf8, 8, 0.22);
+    var floorRing = new THREE.Mesh(new THREE.RingGeometry(1.76, 1.79, 64), floorRingMat);
+    floorRing.rotation.x = -Math.PI / 2;
+    floorRing.position.y = 0.022;
+    api.scene.add(floorRing);
+
+    var skin = material(0xb98363, 12);
+    var shirt = material(0x2563a5, 18);
+    var trousers = material(0x273449, 10);
+    var shoe = material(0x111827, 16);
+    var bone = material(0xf8e7c4, 6, 0.70);
+    var lungMat = material(0x7dd3fc, 18, 0.30);
+    var heartMat = material(0xe11d48, 34, 0.88);
+
+    var body = new THREE.Group();
+    body.rotation.z = -roll * (Math.PI / 2) * 0.78;
+    body.position.y = 0.30 * ageScale;
+    body.scale.setScalar(ageScale);
+    api.scene.add(body);
+
+    var chestRig = new THREE.Group();
+    body.add(chestRig);
+    var torso = blob(chestRig, 0.56 * profile.width, 0.25, 0.78 * profile.torso,
+      shirt, 0, 0, -0.08);
+    blob(chestRig, 0.66 * profile.width, 0.22, 0.26, shirt, 0, 0.01, -0.62 * profile.torso);
+    blob(chestRig, 0.43 * profile.width, 0.21, 0.48 * profile.torso,
+      shirt, 0, -0.01, 0.49 * profile.torso);
+    blob(body, 0.47 * profile.width, 0.22, 0.31, trousers, 0, -0.01, 0.98 * profile.torso);
+
+    var neck = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.16, 0.25, 16), skin);
+    neck.rotation.x = Math.PI / 2;
+    neck.position.set(0, 0.03, -0.92 * profile.torso);
+    body.add(neck);
+    var headPivot = new THREE.Group();
+    headPivot.position.set(0, 0.07, -1.25 * profile.torso);
+    body.add(headPivot);
+    blob(headPivot, 0.28 * profile.head, 0.30 * profile.head, 0.34 * profile.head, skin, 0, 0, 0);
+    blob(headPivot, 0.045 * profile.head, 0.055 * profile.head, 0.055 * profile.head,
+      skin, 0, 0.29 * profile.head, -0.03);
+    blob(headPivot, 0.045 * profile.head, 0.06 * profile.head, 0.07 * profile.head,
+      skin, -0.29 * profile.head, 0, 0);
+    blob(headPivot, 0.045 * profile.head, 0.06 * profile.head, 0.07 * profile.head,
+      skin, 0.29 * profile.head, 0, 0);
+
+    var armOut = phase >= 2;
+    var handAtCheek = phase >= 3;
+    var kneeUp = phase >= 4;
+    var shoulderLX = -0.55 * profile.width;
+    var shoulderRX = 0.55 * profile.width;
+    var leftShoulder = new THREE.Vector3(shoulderLX, 0, -0.55 * profile.torso);
+    var leftElbow = armOut ? new THREE.Vector3(-1.02, 0, -0.52) : new THREE.Vector3(-0.69, -0.02, -0.10);
+    var leftWrist = armOut ? new THREE.Vector3(-1.34, 0, -0.52) : new THREE.Vector3(-0.66, -0.02, 0.31);
+    var rightShoulder = new THREE.Vector3(shoulderRX, 0, -0.55 * profile.torso);
+    var rightElbow = handAtCheek ? new THREE.Vector3(0.62, 0.20, -0.82) : new THREE.Vector3(0.69, -0.02, -0.10);
+    var rightWrist = handAtCheek ? new THREE.Vector3(0.18, 0.24, -1.12) : new THREE.Vector3(0.66, -0.02, 0.31);
+    [
+      [leftShoulder, leftElbow, leftWrist],
+      [rightShoulder, rightElbow, rightWrist]
+    ].forEach(function (arm) {
+      segment(body, arm[0], arm[1], 0.105, shirt);
+      segment(body, arm[1], arm[2], 0.085, skin);
+      joint(body, arm[1], 0.11, skin);
+      blob(body, 0.11, 0.07, 0.15, skin, arm[2].x, arm[2].y, arm[2].z);
+    });
+
+    var hipL = new THREE.Vector3(-0.24 * profile.width, 0, 1.00 * profile.torso);
+    var hipR = new THREE.Vector3(0.24 * profile.width, 0, 1.00 * profile.torso);
+    var kneeL = new THREE.Vector3(-0.25, -0.02, 1.62 * profile.limb);
+    var ankleL = new THREE.Vector3(-0.25, -0.02, 2.22 * profile.limb);
+    var kneeR = kneeUp ? new THREE.Vector3(0.34, 0.34, 1.48 * profile.limb) : new THREE.Vector3(0.25, -0.02, 1.62 * profile.limb);
+    var ankleR = kneeUp ? new THREE.Vector3(0.36, 0.01, 1.98 * profile.limb) : new THREE.Vector3(0.25, -0.02, 2.22 * profile.limb);
+    [[hipL, kneeL, ankleL], [hipR, kneeR, ankleR]].forEach(function (leg) {
+      segment(body, leg[0], leg[1], 0.15, trousers);
+      segment(body, leg[1], leg[2], 0.13, trousers);
+      joint(body, leg[1], 0.15, trousers);
+      blob(body, 0.14, 0.11, 0.22, shoe, leg[2].x, leg[2].y, leg[2].z + 0.08);
+    });
+
+    // Teaching overlay: sternum, ribs, lungs and a stylized heart. It is shown
+    // only where anatomy supports the current question, never as decoration.
+    var anatomy = new THREE.Group();
+    anatomy.visible = mode === 'place' || mode === 'depth' || mode === 'coach';
+    body.add(anatomy);
+    var sternum = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.035, 0.72), bone);
+    sternum.position.set(0, 0.27, -0.18);
+    anatomy.add(sternum);
+    for (var ri = 0; ri < 5; ri++) {
+      var rib = new THREE.Mesh(new THREE.TorusGeometry(0.30 + ri * 0.038, 0.014, 7, 30), bone);
+      rib.rotation.x = Math.PI / 2;
+      rib.scale.z = 0.46;
+      rib.position.set(0, 0.255, -0.48 + ri * 0.15);
+      anatomy.add(rib);
+    }
+    var lungs = new THREE.Group();
+    blob(lungs, 0.19, 0.045, 0.37, lungMat, -0.23, 0.29, -0.25);
+    blob(lungs, 0.19, 0.045, 0.37, lungMat, 0.23, 0.29, -0.25);
+    anatomy.add(lungs);
+    var heart = new THREE.Group();
+    blob(heart, 0.10, 0.045, 0.11, heartMat, -0.055, 0, 0);
+    blob(heart, 0.10, 0.045, 0.11, heartMat, 0.055, 0, 0);
+    var heartTip = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.26, 18), heartMat);
+    heartTip.rotation.x = Math.PI / 2;
+    heartTip.position.set(0, 0, 0.10);
+    heart.add(heartTip);
+    heart.position.set(-0.10, 0.31, -0.10);
+    anatomy.add(heart);
+
+    // Age-specific rescuer hand rig. Infant CPR now uses heel-of-one-hand by
+    // default (2025 AHA/AAP), never the obsolete two-finger technique.
+    var hands = new THREE.Group();
+    hands.visible = mode === 'depth' || mode === 'coach';
+    var handSize = age === 'adult' ? 1 : (age === 'child' ? 0.88 : 0.76);
+    var baseHandsY = (0.64 * ageScale) + (age === 'infant' ? 0.08 : 0.03);
+    hands.position.set(0, baseHandsY, -0.18 * ageScale);
+    api.scene.add(hands);
+    function palm(y, turn) {
+      var p = blob(hands, 0.17 * handSize, 0.036, 0.24 * handSize, skin, 0, y, 0);
+      p.rotation.y = turn || 0;
+      return p;
+    }
+    if (age === 'adult') {
+      palm(0, 0); palm(0.065, 0.18);
+      segment(hands, new THREE.Vector3(-0.07, 0.07, 0), new THREE.Vector3(-0.30, 0.92, 0.08), 0.085, skin);
+      segment(hands, new THREE.Vector3(0.07, 0.07, 0), new THREE.Vector3(0.30, 0.92, 0.08), 0.085, skin);
+    } else {
+      palm(0, 0);
+      segment(hands, new THREE.Vector3(0, 0.04, 0.02), new THREE.Vector3(0.18, 0.82, 0.10), 0.078, skin);
+    }
+
+    var guideMat = material(api.contrast ? 0xffffff : 0xfbbf24, 25, 0.62);
+    var guideRing = new THREE.Mesh(new THREE.RingGeometry(0.27, 0.31, 48), guideMat);
+    guideRing.rotation.x = -Math.PI / 2;
+    guideRing.position.set(0, baseHandsY - 0.08, -0.18 * ageScale);
+    guideRing.visible = mode === 'coach';
+    api.scene.add(guideRing);
+
+    function patch(id, w, hgt, x, z) {
+      var group = new THREE.Group();
+      var visibleMat = material(api.contrast ? 0xffffff : 0x38bdf8, 24, 0.34);
+      var plate = new THREE.Mesh(new THREE.CylinderGeometry(Math.max(w, hgt) * 0.48, Math.max(w, hgt) * 0.48, 0.045, 24), visibleMat);
+      plate.scale.set(w / Math.max(w, hgt), 1, hgt / Math.max(w, hgt));
+      plate.userData.partId = id;
+      group.add(plate);
+      group.position.set(x, 0.30, z);
+      group.userData.partId = id;
+      picks.push(plate);
+      body.add(group);
+      meshes[id] = group;
+    }
+    if (mode === 'aed') {
+      patch('padUR', 0.36, 0.34, -0.30, -0.52);
+      patch('padLL', 0.36, 0.34, 0.32, 0.16);
+      patch('padTogether', 0.34, 0.30, 0.30, -0.52);
+      patch('padBelly', 0.42, 0.36, 0, 0.60);
+    } else if (mode === 'place') {
+      patch('high', 0.34, 0.34, 0, -0.60);
+      patch('correct', 0.34, 0.36, 0, -0.20);
+      patch('low', 0.34, 0.26, 0, 0.13);
+      patch('belly', 0.42, 0.40, 0, 0.55);
+      patch('sideL', 0.28, 0.90, -0.36, -0.20);
+      patch('sideR', 0.28, 0.90, 0.36, -0.20);
+    }
+
+    if (api.wantShadow) {
+      body.traverse(function (o) { if (o.isMesh) o.castShadow = true; });
+      hands.traverse(function (o) { if (o.isMesh) o.castShadow = true; });
+    }
+
+    return {
+      meshes: meshes,
+      picks: picks,
+      anchor: ground,
+      frame: function (tick, nextProps, reduced) {
+        var coach = nextProps.coach || {};
+        var now = Date.now();
+        var compression = 0;
+        var breathRise = 0;
+        var guidePulse = 0;
+        if (!reduced && mode === 'depth') {
+          compression = Math.pow(Math.max(0, Math.sin(now / 720)), 6) * 0.72;
+        }
+        if (!reduced && mode === 'coach') {
+          if (coach.running && coach.phase === 'compressions') {
+            var beatMs = 60000 / Math.max(100, Math.min(120, coach.bpm || 110));
+            var beatPhase = ((now - (coach.startedAt || now)) % beatMs) / beatMs;
+            guidePulse = beatPhase < 0.26 ? Math.sin((beatPhase / 0.26) * Math.PI) : 0;
+          }
+          if (coach.mode === 'scenario' && coach.activeCompressionAt) {
+            compression = Math.max(compression, 0.62);
+          }
+          var sinceCompression = now - (coach.lastCompressionAt || 0);
+          if (sinceCompression >= 0 && sinceCompression < 310) {
+            compression = Math.pow(1 - sinceCompression / 310, 2);
+          }
+          var sinceBreath = now - (coach.lastBreathAt || 0);
+          if (sinceBreath >= 0 && sinceBreath < 1000) breathRise = sinceBreath / 1000;
+          else if (sinceBreath >= 1000 && sinceBreath < 1500) breathRise = 1 - (sinceBreath - 1000) / 500;
+        }
+        chestRig.scale.y = 1 - compression * 0.13 + breathRise * 0.07;
+        hands.position.y = baseHandsY - compression * 0.10 + ((!reduced && (coach.phase === 'breaths' || coach.phase === 'breathRecovery')) ? 0.18 : 0);
+        lungs.scale.y = 1 + breathRise * 0.24;
+        heart.scale.setScalar(1 + compression * 0.10);
+        headPivot.rotation.x = breathRise * -0.10;
+        guideRing.scale.setScalar(1 + guidePulse * 0.20);
+        guideMat.opacity = reduced ? 0.55 : (0.42 + guidePulse * 0.45);
+        if (heartMat.emissive) heartMat.emissive.setRGB(0.18 + compression * 0.42, 0.01, 0.04);
+      }
+    };
+  }
   // Shared 3D viewer shell, from the host (beside ensureThree). If the host is
   // absent this degrades to a permanently-failed viewer and the module falls
   // back to its 2D controls, which carry the whole lesson anyway.
@@ -545,7 +883,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
     var mk = (typeof window !== 'undefined') && window.StemLab && window.StemLab.makeBayViewer;
     if (!mk) return FR_NULL_VIEWER;
     return mk({
-      parts: BODY_PARTS,
+      parts: BODY_SCENE_PARTS,
       buildScene: buildBodyScene,
       home: { yaw: 0.1, pitch: 0.86, dist: 5.2 }
     });
@@ -572,8 +910,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
 
   // ─────────────────────────────────────────────────────────
   // SECTION 1: CONSTANTS — resources, Maine EMS, recognize cards
-  // All clinical numbers from AHA 2020 / Red Cross / Stop the Bleed / Epilepsy
-  // Foundation / SAMHSA published guidance as of 2024.
+  // Clinical numbers checked against AHA/AAP 2025 / Red Cross / Stop the Bleed / Epilepsy
+  // Foundation / SAMHSA guidance, with resuscitation guidance checked 2026-08.
   // ─────────────────────────────────────────────────────────
 
   // External resource directory. Every clinical claim in this tool traces back
@@ -636,8 +974,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
   var RECOGNIZE_CARDS = [
     { id: 'cardiac', icon: '💔', name: 'Cardiac arrest',
       cue: 'Not breathing, not responding',
-      first: { k2: 'Yell for an adult. Call 911.', g35: 'Call 911. Start hands-only CPR if trained.', g68: 'Call 911. Start hands-only CPR (100–120 bpm). Send someone for AED.', g912: 'Call 911. Start CPR (push hard, push fast, 100–120 bpm, 2 inches deep). AED ASAP.' },
-      bands: 'all', source: 'AHA 2020 Guidelines' },
+      first: { k2: 'Yell for an adult. Call 911.', g35: 'Call 911 on speaker and start CPR—dispatch can coach you. For a child, add breaths if willing and able.', g68: 'Call 911. Start age-appropriate CPR (100–120 bpm). Add breaths for a child or infant if willing and able. Send someone for an AED.', g912: 'Call 911. Start age-appropriate CPR at 100–120/min; add breaths for children, infants, and drowning if willing and able. AED ASAP.' },
+      bands: 'all', source: 'AHA 2025 Guidelines' },
     { id: 'choking', icon: '😬', name: 'Choking',
       cue: 'Hands at throat, can’t cough or speak',
       first: { k2: 'Yell for an adult.', g35: 'Yell for help. If they can’t cough, an adult does back blows + abdominal thrusts.', g68: 'If alone with them: 5 back blows then 5 abdominal thrusts. Call 911.', g912: 'Universal sign = silent + clutching throat. 5 back blows / 5 abdominal thrusts. Unconscious → CPR + 911.' },
@@ -648,7 +986,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       bands: 'g35,g68,g912', source: 'American Stroke Association' },
     { id: 'seizure', icon: '⚡', name: 'Seizure',
       cue: 'Body stiffens or jerks; loses awareness',
-      first: { k2: 'Get an adult. Don’t touch. Stay with them.', g35: 'Get an adult. Move sharp things away. Time it. Don’t hold them down.', g68: 'Time it. Move hazards away. Cushion head. Don’t restrain. Don’t put anything in mouth. 911 if >5 min or first-ever.', g912: 'Time it. Cushion head. Recovery position after. Don’t restrain or put anything in mouth (myth). 911 if >5 min, repeats, first-ever, in water, or injury.' },
+      first: { k2: 'Get an adult. Don’t touch. Stay with them.', g35: 'Get an adult. Move sharp things away. Time it. Don’t hold them down.', g68: 'Time it. Move hazards away. Cushion head. Don’t restrain. Don’t put anything in mouth. 911 if >5 min or first-ever.', g912: 'Time it. Cushion head. If the seizure stops and they are breathing normally, use the recovery position. Don’t restrain or put anything in mouth. 911 if >5 min, repeats, first-ever, in water, or injury.' },
       bands: 'all', source: 'Epilepsy Foundation' },
     { id: 'anaphylaxis', icon: '🦜', name: 'Anaphylaxis',
       cue: 'Hives, swelling, can’t breathe after exposure',
@@ -656,11 +994,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       bands: 'g35,g68,g912', source: 'FARE / AAP' },
     { id: 'bleed', icon: '🩸', name: 'Severe bleeding',
       cue: 'Spurting, pooling, soaks through cloth',
-      first: { g35: 'Get an adult. Press hard on the wound.', g68: 'Direct pressure with both hands. Call 911. Don’t lift to peek.', g912: 'Pressure → packing → tourniquet. Tourniquet 2–3" above wound on a limb (NEVER neck/torso). Note time applied.' },
+      first: { g35: 'Get an adult. Press hard on the wound.', g68: 'Direct pressure with both hands. Call 911. Don’t lift to peek.', g912: 'Call 911 and apply direct pressure. If trained: tourniquet for life-threatening limb bleeding; pack an appropriate deep wound where a tourniquet cannot be used.' },
       bands: 'g35,g68,g912', source: 'Stop the Bleed' },
     { id: 'hypoglycemia', icon: '🩺', name: 'Low blood sugar',
       cue: 'Shaky, sweaty, confused, behavior change',
-      first: { g35: 'Tell an adult. They may need juice or sugar.', g68: '15g fast sugar (juice, glucose tab). Recheck in 15 min. If unconscious — 911, do NOT give food.', g912: '15-15 rule: 15g fast carb, wait 15 min, recheck. Unconscious → 911 + recovery position. Glucagon if available.' },
+      first: { g35: 'Tell an adult. They may need juice or sugar.', g68: '15g fast sugar (juice, glucose tab). Recheck in 15 min. If unconscious — 911, do NOT give food.', g912: '15-15 rule if awake and able to swallow. If unconscious: call 911; use recovery position only if breathing normally, otherwise start CPR. Glucagon if available.' },
       bands: 'g35,g68,g912', source: 'American Diabetes Association' },
     { id: 'panic', icon: '😰', name: 'Panic attack',
       cue: 'Chest tight, breathing fast, fear',
@@ -672,7 +1010,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       bands: 'g68,g912', source: '988 / NAMI' },
     { id: 'overdose', icon: '💊', name: 'Overdose / unresponsive',
       cue: 'Won’t wake; slow or stopped breathing',
-      first: { g912: 'Call 911. Naloxone (Narcan) nasal spray if available — 1 spray per nostril, repeat in 2–3 min if no response. Recovery position. Maine’s Good Samaritan law protects bystanders.' },
+      first: { g912: 'Call 911. If they are not breathing normally, start CPR or rescue breathing as the dispatcher directs. Give naloxone (Narcan) if available and repeat in 2–3 min if no response. Use recovery position only if breathing normally. Maine’s Good Samaritan law protects bystanders.' },
       bands: 'g912', source: 'SAMHSA / Maine Good Samaritan Law' },
     { id: 'heat', icon: '🌡️', name: 'Heat stroke',
       cue: 'Hot dry skin, confused, no sweat',
@@ -691,7 +1029,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
     { id: 'q1', icon: '💔',
       stem: 'A classmate in the cafeteria suddenly collapses. They are not breathing and do not respond when you shake their shoulder. What is this?',
       choices: ['Fainting', 'Cardiac arrest', 'Panic attack', 'Stroke'],
-      correct: 1, why: 'Cardiac arrest = unresponsive + not breathing normally. Fainting people start breathing again quickly. Call 911 and start hands-only CPR.' },
+      correct: 1, why: 'Cardiac arrest = unresponsive + not breathing normally. Call 911 and start age-appropriate CPR; for a child or infant, add breaths if willing and able.' },
     { id: 'q2', icon: '😬',
       stem: 'At lunch, a friend stands up, grabs their throat, can’t cough, and can’t make a sound. What is this?',
       choices: ['Asthma attack', 'Choking (universal sign)', 'Allergic reaction', 'Panic attack'],
@@ -857,10 +1195,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       // and the Mastery view can reference the same canonical list) ──
       var FA_ACTIONS = [
         { id: 'callEMS',  label: __alloT('stem.firstresponse.call_911', 'Call 911'),                  color: '#dc2626', icon: '📞', def: 'Activate emergency services. In Maine you can text 911 too.' },
-        { id: 'cpr',      label: __alloT('stem.firstresponse.start_cpr', 'Start CPR'),                 color: '#ef4444', icon: '❤️', def: 'Hands-only chest compressions, 2 inches deep, 100–120/min.' },
+        { id: 'cpr',      label: __alloT('stem.firstresponse.start_cpr', 'Start CPR'),                 color: '#ef4444', icon: '❤️', def: 'Chest compressions at 100–120/min. Add breaths when appropriate—especially for children, infants, and drowning—if willing and able.' },
         { id: 'aed',      label: __alloT('stem.firstresponse.apply_aed', 'Apply AED'),                 color: '#f59e0b', icon: '⚡', def: 'Power on, attach pads, follow voice prompts. Continue compressions until shock.' },
         { id: 'pressure', label: __alloT('stem.firstresponse.direct_pressure', 'Direct pressure'),           color: '#7c3aed', icon: '🩹', def: 'Press hard on the wound with whatever cloth is at hand. Maintain pressure.' },
-        { id: 'heimlich', label: __alloT('stem.firstresponse.abdominal_thrusts', 'Abdominal thrusts'),         color: '#0ea5e9', icon: '🫶', def: 'Inward and upward thrusts above the navel until object dislodges.' },
+        { id: 'heimlich', label: __alloT('stem.firstresponse.abdominal_thrusts', 'Back blows + thrusts'),         color: '#0ea5e9', icon: '🫶', def: 'Give 5 back blows, then 5 abdominal thrusts for a responsive adult or child; repeat.' },
         { id: 'recovery', label: __alloT('stem.firstresponse.recovery_position', 'Recovery position'),         color: '#16a34a', icon: '🛌', def: 'Roll onto side; keeps airway open and prevents aspiration if they vomit.' }
       ];
       // Compact vignette index for Mastery view (full scenarios still live in
@@ -915,6 +1253,101 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       var frCeleb = _frCeleb[0];
       var setFrCeleb = _frCeleb[1];
 
+
+      // Live 30:2 rehearsal stays in memory. Persisting 30-60 timestamps through
+      // ctx.update would churn host storage and can distort the very rhythm being
+      // measured. Only a completed summary is written back to toolData.
+      var _frCoachVersion = useState(0);
+      var frCoachVersion = _frCoachVersion[0];
+      var setFrCoachVersion = _frCoachVersion[1];
+      var frCoachRef = useRef(null);
+      var frCoachTimerRef = useRef(null);
+      function makeFrCoachState() {
+        return {
+          running: false, phase: 'idle', cycle: 1,
+          compressionCount: 0, breathCount: 0,
+          intervals: [], pauseDurations: [], pauseStartedAt: 0,
+          lastCompressionAt: 0, lastCompressionEpoch: 0,
+          lastBreathAt: 0, lastBreathEpoch: 0, startedAtEpoch: 0,
+          compressionSegmentEpoch: 0, phaseStartedAt: 0, summary: null,
+          scenarioSteps: [], assessmentAt: 0, callAt: 0, aedAt: 0,
+          activeCompressionAt: 0, holdDurations: [], releaseCount: 0, lastScenarioReleaseAt: 0
+        };
+      }
+      if (!frCoachRef.current) frCoachRef.current = makeFrCoachState();
+      var _bleedPracticeVersion = useState(0);
+      var bleedPracticeVersion = _bleedPracticeVersion[0];
+      var setBleedPracticeVersion = _bleedPracticeVersion[1];
+      var bleedPracticeRef = useRef(null);
+      function makeBleedPracticeState() {
+        return {
+          caseId: null, phase: 'select', holding: false, holdStartedAt: 0,
+          pressureHoldMs: 0, packed: false, tourniquetPlacement: null,
+          windlassTurns: 0, mistakes: [], sequence: [], summary: null
+        };
+      }
+      if (!bleedPracticeRef.current) bleedPracticeRef.current = makeBleedPracticeState();
+      function refreshBleedPractice() {
+        setBleedPracticeVersion(function (n) { return n + 1; });
+      }
+      function bleedPracticeNow() {
+        try { return (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now(); }
+        catch (e) { return Date.now(); }
+      }
+
+      // Choking practice is a short decision-and-sequence rehearsal. Keep its
+      // tap-by-tap state in memory and persist only the completed debrief.
+      var _chokePracticeVersion = useState(0);
+      var chokePracticeVersion = _chokePracticeVersion[0];
+      var setChokePracticeVersion = _chokePracticeVersion[1];
+      var chokePracticeRef = useRef(null);
+      function makeChokePracticeState() {
+        return {
+          caseId: null, phase: 'select', backBlows: 0, thrusts: 0,
+          placementCorrect: false, mistakes: [], sequence: [], summary: null
+        };
+      }
+      if (!chokePracticeRef.current) chokePracticeRef.current = makeChokePracticeState();
+      function refreshChokePractice() {
+        setChokePracticeVersion(function (n) { return n + 1; });
+      }
+
+      function frCoachNow() {
+        try { return (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now(); }
+        catch (e) { return Date.now(); }
+      }
+      function refreshFrCoach() {
+        setFrCoachVersion(function (n) { return n + 1; });
+      }
+      function clearFrCoachTimer() {
+        if (frCoachTimerRef.current) {
+          clearTimeout(frCoachTimerRef.current);
+          frCoachTimerRef.current = null;
+        }
+      }
+      function resetFrCoachSession(message) {
+        clearFrCoachTimer();
+        frCoachRef.current = makeFrCoachState();
+        if (message) frAnnounce(message);
+        refreshFrCoach();
+      }
+      useEffect(function () {
+        function onVisibilityChange() {
+          if (typeof document !== 'undefined' && document.hidden && frCoachRef.current.running) {
+            resetFrCoachSession('Practice reset because the page was hidden.');
+          }
+        }
+        if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onVisibilityChange);
+        return function () {
+          if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onVisibilityChange);
+          clearFrCoachTimer();
+        };
+      }, []);
+      useEffect(function () {
+        if (view !== 'body3d' && frCoachRef.current.running) {
+          resetFrCoachSession('Practice reset after leaving the 3D coach.');
+        }
+      }, [view]);
       // Mirror persistent state to window slot + localStorage.
       useEffect(function () {
         try {
@@ -1070,8 +1503,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         { id: 'recognize', icon: '👁️', label: __alloT('stem.firstresponse.recognize', 'Recognize'), desc: __alloT('stem.firstresponse.visual_signs_of_12_emergencies_quiz_at', 'Visual signs of 12 emergencies. Quiz at the end.'), ready: true },
         { id: 'call', icon: '📞', label: __alloT('stem.firstresponse.call_911_988', 'Call (911 + 988)'), desc: __alloT('stem.firstresponse.what_to_say_text_to_911_when_988_vs_91', 'What to say. Text-to-911. When 988 vs 911.'), ready: true },
         { id: 'cprAed', icon: '❤️', label: __alloT('stem.firstresponse.cpr_aed', 'CPR + AED'), desc: __alloT('stem.firstresponse.hands_only_rhythm_trainer_aed_walkthro', 'Hands-only rhythm trainer. AED walkthrough.'), ready: true },
-        { id: 'body3d', icon: '🫀', label: __alloT('stem.firstresponse.body_position_3d', 'Body position (3D)'), desc: __alloT('stem.firstresponse.body_position_3d_desc', 'Where your hands go — adult, child, infant. Depth and recoil. AED pad placement. The recovery position. Then {count} scenarios that make you combine them.').replace('{count}', CALL_CASES.length), ready: true },
-        { id: 'bleed', icon: '🩸', label: __alloT('stem.firstresponse.stop_the_bleed', 'Stop the Bleed'), desc: __alloT('stem.firstresponse.pressure_packing_tourniquet', 'Pressure → packing → tourniquet.'), ready: true },
+        { id: 'body3d', icon: '🫀', label: __alloT('stem.firstresponse.body_position_3d', 'Body position (3D)'), desc: __alloT('stem.firstresponse.body_position_3d_desc', 'Explore an age-aware 3D training manikin: adult, child, infant. Practice hand placement, depth and recoil, a guided 30:2 compression + breath cycle, AED pad placement, recovery position, and {count} scenarios.').replace('{count}', CALL_CASES.length), ready: true },
+        { id: 'bleed', icon: '🩸', label: __alloT('stem.firstresponse.stop_the_bleed', 'Stop the Bleed'), desc: __alloT('stem.firstresponse.pressure_packing_tourniquet', 'Pressure, wound packing, and tourniquet decisions.'), ready: true },
         { id: 'choking', icon: '😬', label: __alloT('stem.firstresponse.choking', 'Choking'), desc: __alloT('stem.firstresponse.infant_child_adult_pregnant_alone', 'Infant, child, adult, pregnant, alone.'), ready: true },
         { id: 'disabilityAware', icon: '♾️', label: __alloT('stem.firstresponse.disability_aware_response', 'Disability-aware response'), desc: __alloT('stem.firstresponse.deaf_hoh_autistic_epilepsy_hidden_disa', 'Deaf/HoH, autistic, epilepsy, hidden disability.'), ready: true },
         { id: 'scenarios', icon: '🎭', label: __alloT('stem.firstresponse.scenario_sim', 'Scenario sim'), desc: __alloT('stem.firstresponse.multi_step_branching_emergency_decisio', 'Multi-step branching emergency decisions.'), ready: true },
@@ -1585,7 +2018,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       //   (audio OFF by default; sensory-aware default per accommodation guidance)
       // - Practice mode: 30-sec window, user taps in rhythm, tool reports avg bpm
       // - AED walkthrough: 6-step voice-prompt simulation with shock/no-shock branch
-      // All clinical numbers from AHA 2020 Guidelines (Adult Basic Life Support).
+      // Clinical numbers checked against the 2025 AHA Adult Basic Life Support Guidelines.
       // ─────────────────────────────────────────
       function renderCprAed() {
         var cprView = d.cprView || 'overview';
@@ -1706,7 +2139,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                 h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.use_the_aed', 'Use the AED')), __alloT('stem.firstresponse.as_soon_as_it_arrives_it_talks_you_thr', ' as soon as it arrives — it talks you through it.'))
               ),
               h('div', { style: { marginTop: 10, padding: '8px 10px', borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11, color: T.dim, fontStyle: 'italic' } },
-                __alloT('stem.firstresponse.depth_adult_child_infant', 'Depth: at least 2 in (5 cm) and no more than about 2.4 in (6 cm) for an adult; about 2 in (5 cm) for a child; about 1.5 in (4 cm) for an infant — in each case roughly one third of the depth of the chest. Source: AHA 2020 Guidelines for CPR & ECC.'))
+                __alloT('stem.firstresponse.depth_adult_child_infant', 'Depth: at least 2 in (5 cm) and no more than about 2.4 in (6 cm) for an adult; about 2 in (5 cm) for a child; about 1.5 in (4 cm) for an infant — in each case roughly one third of the depth of the chest. Source: 2025 AHA/AAP Guidelines for CPR & ECC.'))
             ),
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
               h('h3', { style: { margin: '0 0 8px', fontSize: 16, color: T.text } }, __alloT('stem.firstresponse.aed_in_one_paragraph', '⚡ AED in one paragraph')),
@@ -2021,15 +2454,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       }
 
       // ─────────────────────────────────────────
-      // BLEED module — Stop the Bleed protocol (pressure → packing → tourniquet)
-      // The decision is almost always "start with pressure, escalate if it fails."
-      // The branching that matters is location (limb vs junctional/torso) because
-      // tourniquets can ONLY be used on limbs.
+      // BLEED module — Stop the Bleed skills: direct pressure, wound packing,
+      // and tourniquet use. The next trained action depends on severity and wound
+      // location: tourniquets are for life-threatening limb bleeding; appropriate
+      // deep junctional wounds may be packed by a trained responder.
       // Source: Stop the Bleed (American College of Surgeons / Hartford Consensus).
       // ─────────────────────────────────────────
       function renderBleed() {
         var bleedView = d.bleedView || 'overview';
-        var BLEED_TAB_IDS = ['overview', 'detail', 'tourniquet'];
+        var BLEED_TAB_IDS = ['overview', 'practice', 'detail', 'tourniquet'];
         function bleedTabKeyDown(e, index) {
           var key = e.key;
           if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
@@ -2069,10 +2502,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               'Use both hands and your bodyweight. Lean in.',
               'Press directly ON the wound — not around it.',
               'If you have a clean cloth, use it. If not, bare hands are fine.',
-              'Don’t lift to peek. Stay on it for at least 5 minutes (longer if it keeps bleeding).',
-              'If blood soaks through — add another cloth ON TOP. Don’t remove the first.'
+              'Don’t lift to peek. Hold steady, firm pressure until bleeding stops, a tourniquet is applied and stops limb bleeding, another person relieves you, you are exhausted, or the scene becomes unsafe.',
+              'If blood soaks through, do not lift or remove the original dressing. Keep firm manual pressure and follow 911 dispatcher or trained-course guidance.'
             ],
-            when: 'ALWAYS start here. Most bleeding stops with pressure alone.',
+            when: 'Start direct pressure immediately. For life-threatening arm or leg bleeding, use a tourniquet if trained while pressure continues until it is ready.',
             source: 'Stop the Bleed step 1' },
           { num: 2, icon: '🧤', name: __alloT('stem.firstresponse.wound_packing', 'Wound packing'),
             short: 'Pack gauze deep into the wound; keep pressure.',
@@ -2080,8 +2513,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               'For deep wounds on a limb, neck, armpit, or groin where pressure alone isn’t stopping it.',
               'Pack gauze (or any clean cloth strips) DEEP into the wound, all the way to the bone if needed.',
               'Keep packing until you can’t fit any more in.',
-              'Then resume direct pressure on top, hard, for 3 more minutes.',
-              'Hemostatic gauze (QuickClot, Celox) is in many bleeding-control kits and works faster — use it the same way.'
+              'Then keep steady, firm direct pressure on top until bleeding stops or another trained responder takes over.',
+              'If a hemostatic dressing is available, follow its package instructions and your training.'
             ],
             when: 'Use when direct pressure isn’t controlling a DEEP wound, especially on the neck, armpit, or groin where you CAN’T tourniquet.',
             source: 'Stop the Bleed step 2' },
@@ -2094,9 +2527,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               'Note the TIME you applied it. Write it on the tourniquet, on the patient’s forehead with marker, or tell EMS.',
               'Do NOT remove it. EMS removes tourniquets in a hospital.',
               'A second tourniquet can be added 2–3 inches above the first if bleeding doesn’t stop.',
-              'In a pinch (no real tourniquet): a belt + a stick to twist works. Triangular bandage + windlass. T-shirt strip.'
+              'Use a manufactured tourniquet and follow its instructions. If none is available, keep direct pressure and follow 911 dispatcher guidance.'
             ],
-            when: 'Life-threatening bleeding from an arm or leg that pressure isn’t stopping. Or amputation. Or you have to leave them to call for help.',
+            when: 'Life-threatening bleeding from an arm or leg. Use a tourniquet if trained; use direct pressure while it is retrieved or if none is available.',
             source: 'Stop the Bleed step 3' }
         ];
 
@@ -2106,12 +2539,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               h('h3', { style: { margin: '0 0 8px', fontSize: 16, color: T.text } }, __alloT('stem.firstresponse.life_threatening_bleeding', '🩸 Life-threatening bleeding')),
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
                 h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.recognize_it', 'Recognize it: ')),
-                __alloT('stem.firstresponse.spurting_blood_blood_pooling_on_the_gr', 'spurting blood, blood pooling on the ground, blood that won’t stop after 5+ minutes of pressure, soaks through cloth fast. A person can bleed to death from a limb wound in '),
-                h('strong', { style: { color: T.accentHi } }, __alloT('stem.firstresponse.as_little_as_3_5_minutes', 'as little as 3–5 minutes')),
+                __alloT('stem.firstresponse.spurting_blood_blood_pooling_on_the_gr', 'spurting or continuously flowing blood, blood pooling on the ground, clothing rapidly soaking through, or signs of shock. Life-threatening blood loss can happen '),
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.firstresponse.as_little_as_3_5_minutes', 'within minutes')),
                 '.'),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
                 h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.the_protocol', 'The protocol: ')),
-                __alloT('stem.firstresponse.pressure_if_needed_packing_if_needed_t', 'Pressure → (if needed) Packing → (if needed) Tourniquet. Always start at step 1. Escalate only if the previous step isn’t working.'))
+                __alloT('stem.firstresponse.pressure_if_needed_packing_if_needed_t', 'Call 911 and apply direct pressure. For life-threatening arm or leg bleeding, use a tourniquet if trained. For a deep wound where a tourniquet cannot be used, pack the wound if trained and keep pressure.'))
             ),
             h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 10 } },
               STEPS.map(function(s) {
@@ -2146,8 +2579,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           return h('div', null,
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
               __alloT('stem.firstresponse.each_step_in_detail', 'Each step in detail. '),
-              h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.always_start_at_step_1', 'Always start at step 1.')),
-              __alloT('stem.firstresponse.escalate_only_when_the_previous_step_i', ' Escalate only when the previous step isn’t working.')),
+              h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.always_start_at_step_1', 'Apply direct pressure immediately.')),
+              __alloT('stem.firstresponse.escalate_only_when_the_previous_step_i', ' Choose the next trained skill by wound location and severity—tourniquet for life-threatening limb bleeding, or packing for an appropriate deep wound where a tourniquet cannot be used.')),
             STEPS.map(function(s) {
               return h('div', { key: s.num,
                 style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 10 } },
@@ -2167,7 +2600,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             h('div', { style: { padding: 12, borderRadius: 10, background: '#7f1d1d', border: '1px solid #dc2626', color: '#fde2e2', fontSize: 13, lineHeight: 1.55, marginTop: 6 } },
               h('strong', null, __alloT('stem.firstresponse.maine_reality', '🌲 Maine reality: ')),
               MAINE_EMS.ruralEta,
-              __alloT('stem.firstresponse.that_distance_is_why_a_tourniquet_may_', ' That distance is why a tourniquet may be life-saving here where pressure alone might be enough in a city — EMS is closer there.')),
+              __alloT('stem.firstresponse.that_distance_is_why_a_tourniquet_may_', ' That distance makes early 911 activation, continuous bleeding control, and monitoring for shock especially important. The treatment choice depends on wound location and severity, not distance from a city.')),
             h('div', { style: { marginTop: 12 } },
               h('button', { 'data-fr-focusable': true,
                 'aria-label': __alloT('stem.firstresponse.mark_stop_the_bleed_module_complete', 'Mark Stop the Bleed module complete'),
@@ -2182,6 +2615,314 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           );
         }
 
+        var BLEED_PRACTICE_CASES = [
+          { id: 'thigh', kind: 'limb', icon: '🦵', title: 'Workshop — deep thigh wound',
+            scene: 'A sharp tool caused a deep thigh wound. Bright red blood is flowing rapidly and pooling on the floor.',
+            choicePrompt: 'Pressure is slowing the flow, but this is still life-threatening limb bleeding. What comes next?' },
+          { id: 'groin', kind: 'junction', icon: '🩸', title: 'Bike crash — deep groin wound',
+            scene: 'A rider landed on broken metal. There is a deep groin wound with continuous heavy bleeding.',
+            choicePrompt: 'A tourniquet cannot go around the groin. What trained skill fits this location?' }
+        ];
+
+        function bleedPracticeCase(id) {
+          for (var i = 0; i < BLEED_PRACTICE_CASES.length; i++) if (BLEED_PRACTICE_CASES[i].id === id) return BLEED_PRACTICE_CASES[i];
+          return null;
+        }
+        function resetBleedPractice(message) {
+          bleedPracticeRef.current = makeBleedPracticeState();
+          if (message) frAnnounce(message);
+          refreshBleedPractice();
+        }
+        function startBleedPractice(caseId) {
+          var next = makeBleedPracticeState();
+          next.caseId = caseId;
+          next.phase = 'protect';
+          bleedPracticeRef.current = next;
+          frAnnounceUrgent('Check scene safety, use gloves if available, call 911, and begin care.');
+          refreshBleedPractice();
+        }
+        function bleedPracticeMistake(code, message) {
+          var p = bleedPracticeRef.current;
+          if (p.mistakes.indexOf(code) === -1) p.mistakes.push(code);
+          frAnnounceUrgent(message);
+          refreshBleedPractice();
+        }
+        function protectAndCallBleed() {
+          var p = bleedPracticeRef.current;
+          if (p.phase !== 'protect') return;
+          p.sequence.push('scene-safety-ppe-911');
+          p.phase = 'pressure';
+          frAnnounceUrgent('Apply steady, firm direct pressure now.');
+          refreshBleedPractice();
+        }
+        function beginBleedPressure(e) {
+          var p = bleedPracticeRef.current;
+          if (p.phase !== 'pressure' && p.phase !== 'packPressure') return;
+          if (e && e.type === 'keydown') {
+            if (e.repeat || (e.key !== ' ' && e.key !== 'Enter')) return;
+            e.preventDefault();
+          }
+          if (p.holding) return;
+          p.holding = true;
+          p.holdStartedAt = bleedPracticeNow();
+          frAnnounce('Pressure started. Keep holding steadily.');
+          refreshBleedPractice();
+        }
+        function finishBleedPractice() {
+          var p = bleedPracticeRef.current;
+          var kase = bleedPracticeCase(p.caseId);
+          p.holding = false;
+          p.phase = 'complete';
+          p.summary = {
+            caseId: p.caseId,
+            kind: kase ? kase.kind : null,
+            mistakes: p.mistakes.length,
+            sequence: p.sequence.slice(),
+            completedAtISO: new Date().toISOString()
+          };
+          upd('bleedPracticeBest', p.summary);
+          awardBadge('bleed_scenario_ready', 'Bleeding Control Scenario Practice');
+          frAnnounceUrgent('Scenario complete. Keep monitoring breathing, responsiveness, warmth, and signs of shock until EMS arrives.');
+          refreshBleedPractice();
+        }
+        function endBleedPressure(e) {
+          var p = bleedPracticeRef.current;
+          if (!p.holding) return;
+          if (e && e.type === 'keyup' && e.key !== ' ' && e.key !== 'Enter') return;
+          var held = Math.max(0, bleedPracticeNow() - p.holdStartedAt);
+          p.holding = false;
+          p.pressureHoldMs = held;
+          if (held < 2500) {
+            bleedPracticeMistake('released-early', 'Pressure released too soon. In real care, do not lift to peek. Hold continuously until bleeding stops, a tourniquet is applied and stops the bleeding, someone relieves you, you are exhausted, or the scene becomes unsafe.');
+            return;
+          }
+          if (p.phase === 'packPressure') {
+            p.sequence.push('pressure-after-packing');
+            finishBleedPractice();
+            return;
+          }
+          p.sequence.push('direct-pressure');
+          p.phase = 'choice';
+          frAnnounceUrgent('Pressure hold practiced. Choose the next action for this wound location.');
+          refreshBleedPractice();
+        }
+        function chooseBleedPracticeAction(action) {
+          var p = bleedPracticeRef.current;
+          var kase = bleedPracticeCase(p.caseId);
+          if (!kase || p.phase !== 'choice') return;
+          if (kase.kind === 'limb' && action === 'tourniquet') {
+            p.sequence.push('choose-tourniquet');
+            p.phase = 'tourniquetPlacement';
+            frAnnounce('Correct. Choose a safe tourniquet position.');
+          } else if (kase.kind === 'junction' && action === 'pack') {
+            p.sequence.push('choose-wound-packing');
+            p.phase = 'packing';
+            frAnnounce('Correct. Pack the deep wound if trained, then keep firm pressure.');
+          } else if (action === 'peek') {
+            bleedPracticeMistake('peeked', 'Do not lift or remove the original dressing to peek. Keep steady pressure.');
+            return;
+          } else if (action === 'tourniquet') {
+            bleedPracticeMistake('tourniquet-junction', 'A tourniquet cannot be placed around the groin, neck, armpit, chest, or abdomen. For this deep junctional wound, pack if trained and keep pressure.');
+            return;
+          } else {
+            bleedPracticeMistake('wrong-escalation', 'Match the tool to the wound location: life-threatening limb bleeding can use a tourniquet if trained; a deep junctional wound may need packing if trained.');
+            return;
+          }
+          refreshBleedPractice();
+        }
+        function chooseBleedTourniquetPlacement(place) {
+          var p = bleedPracticeRef.current;
+          if (p.phase !== 'tourniquetPlacement') return;
+          if (place !== 'above') {
+            bleedPracticeMistake('bad-tourniquet-placement', place === 'joint'
+              ? 'Do not place a tourniquet over a joint.'
+              : 'The tourniquet belongs 2 to 3 inches above the wound, between the wound and the heart.');
+            return;
+          }
+          p.tourniquetPlacement = place;
+          p.sequence.push('tourniquet-2-3-inches-above-not-joint');
+          p.phase = 'tighten';
+          frAnnounceUrgent('Placement correct. Tighten until the bleeding stops.');
+          refreshBleedPractice();
+        }
+        function tightenBleedTourniquet() {
+          var p = bleedPracticeRef.current;
+          if (p.phase !== 'tighten') return;
+          p.windlassTurns += 1;
+          if (p.windlassTurns >= 3) {
+            p.sequence.push('tighten-until-bleeding-stops');
+            p.phase = 'noteTime';
+            frAnnounceUrgent('Bleeding stopped. Secure the windlass, note the time, and do not loosen the tourniquet.');
+          } else {
+            frAnnounce('Still bleeding. Keep tightening.');
+          }
+          refreshBleedPractice();
+        }
+        function noteBleedTourniquetTime() {
+          var p = bleedPracticeRef.current;
+          if (p.phase !== 'noteTime') return;
+          p.sequence.push('note-time-leave-in-place');
+          finishBleedPractice();
+        }
+        function packBleedWound() {
+          var p = bleedPracticeRef.current;
+          if (p.phase !== 'packing') return;
+          p.packed = true;
+          p.sequence.push('pack-deep-wound');
+          p.phase = 'packPressure';
+          p.pressureHoldMs = 0;
+          frAnnounceUrgent('Wound packed. Apply steady, firm pressure on top and keep holding.');
+          refreshBleedPractice();
+        }
+
+        function bleedPracticeVisual(kase, p) {
+          var limb = kase && kase.kind === 'limb';
+          var controlled = p.phase === 'complete' || p.phase === 'noteTime' || (p.phase === 'tighten' && p.windlassTurns >= 3);
+          var streamWidth = controlled ? 2 : (p.holding ? 5 : 10);
+          var woundX = limb ? 218 : 224;
+          var woundY = limb ? 132 : 156;
+          return h('svg', {
+            viewBox: '0 0 440 230', role: 'img',
+            'aria-label': limb
+              ? 'Schematic thigh wound. Blood flow decreases while pressure is held and after the tourniquet is tightened.'
+              : 'Schematic deep groin wound. Blood flow decreases while pressure is held and after wound packing.',
+            style: { width: '100%', maxHeight: 250, display: 'block', marginBottom: 10, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border }
+          },
+            h('rect', { x: 12, y: 12, width: 416, height: 206, rx: 12, fill: T.cardAlt }),
+            limb
+              ? h('g', null,
+                h('rect', { x: 172, y: 24, width: 96, height: 180, rx: 46, fill: T.card, stroke: T.border, strokeWidth: 3 }),
+                (p.phase === 'tourniquetPlacement' || p.phase === 'tighten' || p.phase === 'noteTime' || p.phase === 'complete') &&
+                  h('rect', { x: 162, y: 72, width: 116, height: 18, rx: 5, fill: T.warn, stroke: T.text, strokeWidth: 2 }),
+                h('circle', { cx: woundX, cy: woundY, r: 13, fill: T.danger, stroke: '#fecaca', strokeWidth: 4 }))
+              : h('g', null,
+                h('path', { d: 'M150 28 Q220 2 290 28 L314 156 Q276 208 220 212 Q164 208 126 156 Z', fill: T.card, stroke: T.border, strokeWidth: 3 }),
+                h('circle', { cx: woundX, cy: woundY, r: 13, fill: T.danger, stroke: '#fecaca', strokeWidth: 4 }),
+                p.packed && h('path', { d: 'M205 145 L244 169 M244 145 L205 169', stroke: '#f8fafc', strokeWidth: 10, strokeLinecap: 'round' })),
+            !controlled && h('path', { d: 'M' + woundX + ' ' + (woundY + 10) + ' C' + (woundX + 8) + ' 176 ' + (woundX - 18) + ' 188 ' + woundX + ' 211',
+              fill: 'none', stroke: T.danger, strokeWidth: streamWidth, strokeLinecap: 'round' }),
+            p.holding && h('g', null,
+              h('rect', { x: woundX - 58, y: woundY - 42, width: 54, height: 38, rx: 16, fill: '#f5c7a9', stroke: T.text, strokeWidth: 2, transform: 'rotate(-12 ' + (woundX - 31) + ' ' + (woundY - 23) + ')' }),
+              h('rect', { x: woundX + 4, y: woundY - 42, width: 54, height: 38, rx: 16, fill: '#f5c7a9', stroke: T.text, strokeWidth: 2, transform: 'rotate(12 ' + (woundX + 31) + ' ' + (woundY - 23) + ')' })),
+            h('text', { x: 220, y: 214, textAnchor: 'middle', fill: T.muted, fontSize: 12 },
+              controlled ? 'Bleeding controlled — continue monitoring' : (p.holding ? 'Steady pressure applied' : 'Life-threatening bleeding'))
+          );
+        }
+
+        function bleedPractice() {
+          var p = bleedPracticeRef.current;
+          var kase = bleedPracticeCase(p.caseId);
+          var phaseNames = {
+            protect: 'SCENE SAFETY + 911', pressure: 'DIRECT PRESSURE', choice: 'CHOOSE THE NEXT TOOL',
+            tourniquetPlacement: 'PLACE THE TOURNIQUET', tighten: 'TIGHTEN UNTIL BLEEDING STOPS',
+            noteTime: 'NOTE THE TIME', packing: 'PACK THE WOUND', packPressure: 'PRESS AFTER PACKING',
+            complete: 'SCENARIO COMPLETE'
+          };
+          function practiceButton(label, action, primary) {
+            return h('button', { 'data-fr-focusable': true, onClick: action,
+              style: (primary ? btnPrimary : btn)({ width: '100%', textAlign: 'left', marginBottom: 7 }) }, label);
+          }
+          if (!kase) {
+            return h('div', null,
+              h('h3', { style: { margin: '0 0 6px', fontSize: 16, color: T.text } }, 'Interactive bleeding-control practice'),
+              h('p', { style: { margin: '0 0 10px', fontSize: 12.5, color: T.muted, lineHeight: 1.6 } },
+                'Choose a wound location. You will practice scene safety, continuous pressure, and the location-specific trained skill.'),
+              h('div', { role: 'list', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 9 } },
+                BLEED_PRACTICE_CASES.map(function (item) {
+                  return h('button', { key: item.id, onClick: function () { startBleedPractice(item.id); },
+                    'aria-label': 'Start bleeding-control scenario: ' + item.title,
+                    style: btn({ width: '100%', minHeight: 112, textAlign: 'left', padding: 13 }) },
+                    h('div', { style: { fontSize: 20, marginBottom: 4 }, 'aria-hidden': 'true' }, item.icon),
+                    h('div', { style: { fontSize: 14, fontWeight: 800, color: T.text, marginBottom: 4 } }, item.title),
+                    h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } }, item.scene));
+                })),
+              d.bleedPracticeBest && h('div', { style: { marginTop: 10, fontSize: 11.5, color: T.dim } },
+                'Previous scenario: ' + d.bleedPracticeBest.sequence.length + ' safe actions, ' + d.bleedPracticeBest.mistakes + ' mistake(s).')
+            );
+          }
+
+          return h('div', null,
+            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', marginBottom: 8 } },
+              h('div', null,
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: T.dim } }, phaseNames[p.phase] || 'PRACTICE'),
+                h('h3', { style: { margin: '2px 0 0', fontSize: 16, color: T.text } }, kase.icon + ' ' + kase.title)),
+              h('button', { onClick: function () { resetBleedPractice('Bleeding-control practice reset.'); }, style: btn({ padding: '5px 9px', fontSize: 11 }) }, 'Change scenario')),
+            h('p', { style: { margin: '0 0 8px', fontSize: 12.5, color: T.muted, lineHeight: 1.55 } }, kase.scene),
+            h('div', { role: 'note', style: { padding: 9, borderRadius: 8, border: '1px solid ' + T.warn, background: T.cardAlt, fontSize: 11.5, color: T.text, lineHeight: 1.5, marginBottom: 9 } },
+              h('strong', { style: { color: T.warn } }, 'Training boundary: '),
+              'The 2.5-second hold is compressed screen rehearsal. In real care, keep steady pressure until bleeding stops, a tourniquet is applied and stops the bleeding, someone relieves you, you are exhausted, or the scene becomes unsafe. This screen cannot assess real force, packing depth, or tourniquet tightness.'),
+            bleedPracticeVisual(kase, p),
+            h('div', { role: 'status', 'aria-live': 'polite', style: { padding: 9, borderRadius: 8, background: T.card, border: '1px solid ' + T.border, fontSize: 12, color: T.text, marginBottom: 9 } },
+              (phaseNames[p.phase] || 'PRACTICE') + ' • Mistakes: ' + p.mistakes.length),
+
+            p.phase === 'protect' && h('div', null,
+              practiceButton('Check scene safety, use gloves if available, call 911, and begin care', protectAndCallBleed, true),
+              practiceButton('Search for perfect supplies before touching the wound', function () {
+                bleedPracticeMistake('delayed-care', 'Do not delay life-saving care while searching for perfect supplies. Use gloves if available, call 911, and start bleeding control immediately.');
+              }, false)),
+
+            (p.phase === 'pressure' || p.phase === 'packPressure') && h('div', null,
+              h('p', { style: { fontSize: 12.5, color: T.text, lineHeight: 1.55, margin: '0 0 8px' } },
+                p.phase === 'packPressure' ? 'Press firmly on top of the packed wound.' : 'Place both hands directly over the wound and hold without peeking.'),
+              h('button', {
+                'data-fr-focusable': true,
+                'aria-label': p.phase === 'packPressure' ? 'Press and hold after wound packing' : 'Press and hold direct pressure',
+                onPointerDown: beginBleedPressure, onPointerUp: endBleedPressure, onPointerCancel: endBleedPressure,
+                onKeyDown: beginBleedPressure, onKeyUp: endBleedPressure, onBlur: endBleedPressure,
+                style: { display: 'block', width: 180, height: 180, borderRadius: '50%', margin: '0 auto 8px',
+                  border: '4px solid ' + (p.holding ? T.ok : T.danger),
+                  background: p.holding ? T.ok : T.danger, color: '#fff', fontSize: 18, fontWeight: 900,
+                  cursor: 'pointer', boxShadow: p.holding ? '0 0 0 8px rgba(34,197,94,.16)' : '0 12px 28px rgba(220,38,38,.28)' }
+              }, p.holding ? 'KEEP HOLDING' : 'PRESS + HOLD'),
+              h('div', { style: { textAlign: 'center', fontSize: 11.5, color: T.dim } }, 'Pointer: press and hold • Keyboard: hold Space or Enter')),
+
+            p.phase === 'choice' && h('div', null,
+              h('p', { style: { margin: '0 0 8px', fontSize: 12.5, color: T.text, lineHeight: 1.55 } }, kase.choicePrompt),
+              kase.kind === 'limb'
+                ? h('div', null,
+                  practiceButton('Use a manufactured tourniquet if trained', function () { chooseBleedPracticeAction('tourniquet'); }, true),
+                  practiceButton('Pack the thigh wound and wait before considering a tourniquet', function () { chooseBleedPracticeAction('pack'); }, false),
+                  practiceButton('Lift the dressing to see whether it is still bleeding', function () { chooseBleedPracticeAction('peek'); }, false))
+                : h('div', null,
+                  practiceButton('Pack the deep wound with gauze if trained, then keep pressure', function () { chooseBleedPracticeAction('pack'); }, true),
+                  practiceButton('Wrap a tourniquet around the groin', function () { chooseBleedPracticeAction('tourniquet'); }, false),
+                  practiceButton('Lift the dressing to inspect the wound', function () { chooseBleedPracticeAction('peek'); }, false))),
+
+            p.phase === 'tourniquetPlacement' && h('div', null,
+              practiceButton('Place it 2–3 inches above the wound, between wound and heart, not over a joint', function () { chooseBleedTourniquetPlacement('above'); }, true),
+              practiceButton('Place it directly over the wound', function () { chooseBleedTourniquetPlacement('wound'); }, false),
+              practiceButton('Place it across the knee joint', function () { chooseBleedTourniquetPlacement('joint'); }, false),
+              practiceButton('Place it below the wound, toward the foot', function () { chooseBleedTourniquetPlacement('below'); }, false)),
+
+            p.phase === 'tighten' && h('div', null,
+              h('div', { role: 'progressbar', 'aria-label': 'Tourniquet tightening practice', 'aria-valuemin': 0, 'aria-valuemax': 3, 'aria-valuenow': p.windlassTurns,
+                style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 8 } },
+                [0, 1, 2].map(function (i) { return h('span', { key: i, 'aria-hidden': 'true', style: { height: 9, borderRadius: 99, background: i < p.windlassTurns ? T.ok : T.border } }); })),
+              practiceButton(p.windlassTurns < 2 ? 'Tighten the windlass — bleeding is still flowing' : 'Tighten until bleeding stops, then secure the windlass', tightenBleedTourniquet, true)),
+
+            p.phase === 'noteTime' && h('div', null,
+              practiceButton('Note the application time and leave the tourniquet in place for EMS', noteBleedTourniquetTime, true),
+              practiceButton('Loosen it now that the bleeding stopped', function () {
+                bleedPracticeMistake('loosen-tourniquet', 'Do not loosen or remove a tourniquet after application. A medical professional should remove it.');
+              }, false)),
+
+            p.phase === 'packing' && h('div', null,
+              practiceButton('Pack gauze firmly into the deep wound, then press on top', packBleedWound, true),
+              practiceButton('Place gauze loosely over the opening without filling the wound', function () {
+                bleedPracticeMistake('loose-packing', 'For a deep junctional wound, trained wound packing fills the wound firmly before pressure is applied on top.');
+              }, false)),
+
+            p.phase === 'complete' && p.summary && h('div', { style: { padding: 13, borderRadius: 10, background: T.card, border: '2px solid ' + (p.mistakes.length ? T.warn : T.ok) } },
+              h('div', { style: { fontSize: 13, color: T.dim } }, 'BLEEDING-CONTROL SEQUENCE COMPLETE'),
+              h('div', { style: { fontSize: 22, fontWeight: 900, color: p.mistakes.length ? T.warn : T.ok, margin: '4px 0' } },
+                p.mistakes.length ? p.mistakes.length + ' mistake(s) — retry to make it automatic' : 'Safe sequence'),
+              h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.65 } }, 'Actions: ' + p.sequence.join(' → ')),
+              h('div', { style: { marginTop: 8, fontSize: 11.5, color: T.text, lineHeight: 1.55 } },
+                'Keep the person warm, watch breathing and responsiveness, reassure them, and monitor for re-bleeding or shock until EMS takes over.'),
+              h('button', { onClick: function () { resetBleedPractice('Choose another bleeding-control scenario.'); }, style: btnPrimary({ width: '100%', textAlign: 'center', marginTop: 10 }) }, 'Practice another scenario'))
+          );
+        }
+
         function bleedTourniquet() {
           // Body-zone diagram: green = OK to tourniquet (limbs), red = NEVER.
           var ZONES = [
@@ -2189,9 +2930,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             { zone: 'Forearm', ok: true, note: __alloT('stem.firstresponse.above_the_elbow_if_wound_is_at_near_el', 'Above the elbow if wound is at/near elbow.') },
             { zone: 'Thigh', ok: true, note: __alloT('stem.firstresponse.2_3_above_wound_between_wound_and_hip', '2–3" above wound, between wound and hip.') },
             { zone: 'Lower leg / shin', ok: true, note: __alloT('stem.firstresponse.above_the_knee_if_wound_is_at_near_kne', 'Above the knee if wound is at/near knee.') },
-            { zone: 'Neck', ok: false, note: __alloT('stem.firstresponse.never_pack_the_wound_and_apply_pressur', 'NEVER. Pack the wound and apply pressure.') },
-            { zone: 'Head / face', ok: false, note: __alloT('stem.firstresponse.never_direct_pressure_only', 'NEVER. Direct pressure only.') },
-            { zone: 'Chest / back / abdomen', ok: false, note: __alloT('stem.firstresponse.never_pack_if_you_can_pressure_911_fas', 'NEVER. Pack if you can; pressure; 911 fast.') },
+            { zone: 'Neck', ok: false, note: __alloT('stem.firstresponse.never_pack_the_wound_and_apply_pressur', 'No tourniquet. If trained, pack a deep wound and apply pressure while protecting the airway; call 911.') },
+            { zone: 'Head / face', ok: false, note: __alloT('stem.firstresponse.never_direct_pressure_only', 'No tourniquet. Call 911 and use direct pressure only when appropriate; do not press on an injured eye or suspected skull fracture.') },
+            { zone: 'Chest / abdomen', ok: false, note: __alloT('stem.firstresponse.never_pack_if_you_can_pressure_911_fas', 'No tourniquet and do not pack. Call 911 and follow dispatcher guidance; do not press on protruding organs or an embedded object.') },
+            { zone: 'Back / shoulder', ok: false, note: 'No tourniquet. If trained, pack a deep wound and apply steady pressure.' },
             { zone: 'Armpit (axilla)', ok: false, note: __alloT('stem.firstresponse.junctional_can_t_tourniquet_pack_with_', 'Junctional — can’t tourniquet. Pack with gauze and apply pressure.') },
             { zone: 'Groin', ok: false, note: __alloT('stem.firstresponse.junctional_can_t_tourniquet_pack_with__2', 'Junctional — can’t tourniquet. Pack with gauze and apply pressure with bodyweight.') }
           ];
@@ -2200,9 +2942,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.firstresponse.where_can_a_tourniquet_go', '🩹 Where can a tourniquet go?')),
               h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
                 h('strong', { style: { color: T.accentHi } }, __alloT('stem.firstresponse.limbs_only', 'Limbs only.')),
-                __alloT('stem.firstresponse.junctional_wounds_neck_armpit_groin_an', ' Junctional wounds (neck, armpit, groin) and torso wounds need '),
+                __alloT('stem.firstresponse.junctional_wounds_neck_armpit_groin_an', ' Deep junctional wounds (neck, shoulder, armpit, groin) may need '),
                 h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.wound_packing_2', 'wound packing')),
-                __alloT('stem.firstresponse.instead_gauze_deep_into_the_wound_then', ' instead — gauze deep into the wound, then heavy pressure.')),
+                __alloT('stem.firstresponse.instead_gauze_deep_into_the_wound_then', ' instead — if trained, pack gauze into the wound and keep pressure. Do not pack the chest or abdomen.')),
               h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                 ZONES.map(function(z, i) {
                   return h('div', { key: i, role: 'listitem',
@@ -2225,8 +2967,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               )
             ),
             h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.improvised_tourniquet_no_real_one_avai', 'Improvised tourniquet (no real one available): ')),
-              __alloT('stem.firstresponse.a_belt_won_t_tighten_enough_on_its_own', 'a belt won’t tighten enough on its own — you need a windlass. Triangular bandage or a torn shirt strip wrapped around the limb, with a stick or pen as a windlass to twist tighter, then secure. Real tourniquets (CAT, SOFT-T) work better and are widely available — many schools and Stop the Bleed kits stock them.'))
+              h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.improvised_tourniquet_no_real_one_avai', 'Use the right equipment: ')),
+              __alloT('stem.firstresponse.a_belt_won_t_tighten_enough_on_its_own', 'Use a manufactured tourniquet and follow its instructions. A belt alone is not a reliable tourniquet. If no tourniquet is available, keep firm direct pressure and follow 911 dispatcher guidance.'))
           );
         }
 
@@ -2236,6 +2978,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           h('div', { role: 'tablist', 'aria-label': __alloT('stem.firstresponse.stop_the_bleed_sections', 'Stop the Bleed sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('overview', 'Overview'),
+            tabBtn('practice', 'Interactive practice'),
             tabBtn('detail', 'Detailed protocol'),
             tabBtn('tourniquet', 'Tourniquet placement')
           ),
@@ -2245,6 +2988,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             tabIndex: 0
           },
             bleedView === 'overview' && bleedOverview(),
+            bleedView === 'practice' && bleedPractice(),
             bleedView === 'detail' && bleedDetail(),
             bleedView === 'tourniquet' && bleedTourniquet(),
             disclaimerFooter()
@@ -2256,14 +3000,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       // CHOKING module — age + situation specific decision flow
       // Infant (<1 yr): 5 back blows + 5 chest thrusts (NOT abdominal).
       // Child / adult: 5 back blows + 5 abdominal thrusts (Heimlich).
-      // Pregnant or large person: chest thrusts (avoid abdomen).
+      // Pregnant or a person whose abdomen cannot be encircled: 5 back blows + 5 chest thrusts.
       // Alone: self-administered abdominal thrust against chair back / counter.
-      // Source: Red Cross Adult & Pediatric First Aid 2020.
+      // Source: AHA/AAP 2025 Adult and Pediatric BLS; Red Cross first aid.
       // ─────────────────────────────────────────
       function renderChoking() {
         var chokeView = d.chokeView || 'select';
         var who = d.chokeWho || null; // 'adult' | 'child' | 'infant' | 'pregnant' | 'alone'
-        var CHOKING_TAB_IDS = ['select', 'protocol'];
+        var CHOKING_TAB_IDS = ['select', 'practice', 'protocol'];
         function chokingTabKeyDown(e, index) {
           var key = e.key;
           if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
@@ -2347,31 +3091,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               'between the shoulder blades with the heel of your hand. Firm but not violent.',
               'Flip the baby face-UP along your other forearm, head still low.',
               h('strong', null, __alloT('stem.firstresponse.5_chest_thrusts', '5 chest thrusts: ')),
-              'two fingers on the breastbone (just below the nipple line), 1.5 inches deep, slower than CPR (about 1 per second).',
+              'use the heel of one hand on the breastbone for each chest thrust. Do not use the older two-finger method.',
               'Repeat 5+5 until object comes out or baby is unconscious.',
               'If unconscious: 911, start infant CPR.'
             ],
             after: 'Always seek medical care after a choking event in an infant.',
-            source: 'Red Cross Pediatric First Aid'
+            source: 'AHA/AAP 2025 Pediatric BLS'
           },
           pregnant: {
             title: __alloT('stem.firstresponse.pregnant_person_2', 'Pregnant person'),
             recognize: 'Same universal sign — hands at throat, can’t breathe.',
             steps: [
               h('strong', null, __alloT('stem.firstresponse.use_chest_thrusts_not_abdominal_thrust', 'Use chest thrusts, NOT abdominal thrusts.')),
+              h('strong', null, '5 back blows first: '),
+              'lean them forward and strike between the shoulder blades with the heel of your hand.',
               'Stand behind them. Place your fist on the CENTER of the breastbone (sternum), not the abdomen.',
-              h('strong', null, __alloT('stem.firstresponse.5_chest_thrusts_2', '5 chest thrusts: ')),
+              h('strong', null, __alloT('stem.firstresponse.5_chest_thrusts_2', 'Then 5 chest thrusts: ')),
               'pull straight back into the chest, sharp and quick.',
               'Same goes for anyone too large for you to wrap your arms around the abdomen.',
-              'Repeat until object comes out or they’re unconscious.',
+              'Repeat 5 back blows + 5 chest thrusts until the object comes out or they’re unconscious.',
               'If unconscious: 911, start CPR.'
             ],
             after: 'Always see a doctor after — both for thrust injury risk and to check on the pregnancy.',
-            source: 'Red Cross First Aid'
+            source: 'AHA 2025 Adult BLS'
           },
           alone: {
             title: __alloT('stem.firstresponse.you_alone_choking_2', 'You — alone, choking'),
-            recognize: 'You can’t cough, can’t make sound. Don’t panic — you have a minute or so.',
+            recognize: 'You cannot cough, speak, or breathe. Act immediately; a severe blockage can become fatal quickly.',
             steps: [
               h('strong', null, __alloT('stem.firstresponse.self_abdominal_thrusts', 'Self abdominal thrusts. ')),
               'Make a fist just above your navel. Other hand on top. Pull sharply inward and upward.',
@@ -2385,6 +3131,134 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           }
         };
 
+        var CHOKE_PRACTICE_CASES = [
+          { id: 'adult', tag: 'ADULT', title: 'Cafeteria - adult', kind: 'abdomen', scene: 'Hands at throat; cannot speak, breathe, or cough strongly.', thrust: 'abdominal thrust', placement: 'Fist just above the navel; thrust inward and upward.' },
+          { id: 'infant', tag: 'INFANT', title: 'Day care - infant', kind: 'infant', scene: 'Awake but unable to cry or cough strongly; little sound; becoming dusky.', thrust: 'heel-of-one-hand chest thrust', placement: 'Heel of one hand on the breastbone; face-up with the head lower.' },
+          { id: 'pregnant', tag: 'CHEST', title: 'Restaurant - late pregnancy', kind: 'chest', scene: 'Hands at throat; cannot speak, breathe, or cough. Avoid the abdomen.', thrust: 'chest thrust', placement: 'Fist on the center of the breastbone; pull straight back.' }
+        ];
+        function chokePracticeCase(id) {
+          for (var i = 0; i < CHOKE_PRACTICE_CASES.length; i++) if (CHOKE_PRACTICE_CASES[i].id === id) return CHOKE_PRACTICE_CASES[i];
+          return null;
+        }
+        function resetChokePractice(message) {
+          chokePracticeRef.current = makeChokePracticeState();
+          if (message) frAnnounce(message);
+          refreshChokePractice();
+        }
+        function startChokePractice(id) {
+          var p = makeChokePracticeState(); p.caseId = id; p.phase = 'recognize';
+          chokePracticeRef.current = p;
+          frAnnounceUrgent('Decide whether this is a mild or severe airway obstruction.');
+          refreshChokePractice();
+        }
+        function chokeMistake(code, message) {
+          var p = chokePracticeRef.current;
+          if (p.mistakes.indexOf(code) < 0) p.mistakes.push(code);
+          frAnnounceUrgent(message); refreshChokePractice();
+        }
+        function chooseChokeSeverity(choice) {
+          var p = chokePracticeRef.current; if (p.phase !== 'recognize') return;
+          if (choice !== 'severe') return chokeMistake('severity', 'They cannot speak, breathe, or cough strongly: this is severe obstruction. Encourage coughing only when the cough is forceful.');
+          p.sequence.push('recognize-severe'); p.phase = 'call'; frAnnounceUrgent('Severe obstruction. Activate 911 while beginning care.'); refreshChokePractice();
+        }
+        function callChoke911() {
+          var p = chokePracticeRef.current; if (p.phase !== 'call') return;
+          p.sequence.push('activate-911'); p.phase = 'back'; frAnnounceUrgent('Give 5 separate back blows.'); refreshChokePractice();
+        }
+        function giveChokeBackBlow() {
+          var p = chokePracticeRef.current; if (p.phase !== 'back') return;
+          p.backBlows++;
+          if (p.backBlows >= 5) { p.sequence.push('five-back-blows'); p.phase = 'placement'; frAnnounceUrgent('Choose the correct thrust placement.'); }
+          else frAnnounce('Back blow ' + p.backBlows + ' of 5.');
+          refreshChokePractice();
+        }
+        function chooseChokePlacement(choice) {
+          var p = chokePracticeRef.current, k = chokePracticeCase(p.caseId); if (!k || p.phase !== 'placement') return;
+          if (choice !== k.kind) {
+            var msg = k.kind === 'infant' ? 'Never use abdominal thrusts on an infant. Use the heel of one hand on the breastbone.' : (k.kind === 'chest' ? 'In late pregnancy, use chest thrusts on the center of the breastbone.' : 'Place a fist just above the navel, not on the chest or ribs.');
+            return chokeMistake('placement-' + choice, msg);
+          }
+          p.placementCorrect = true; p.sequence.push('correct-' + k.kind + '-placement'); p.phase = 'thrust';
+          frAnnounceUrgent('Placement correct. Give 5 separate ' + k.thrust + 's.'); refreshChokePractice();
+        }
+        function giveChokeThrust() {
+          var p = chokePracticeRef.current, k = chokePracticeCase(p.caseId); if (!k || p.phase !== 'thrust') return;
+          p.thrusts++;
+          if (p.thrusts >= 5) { p.sequence.push('five-thrusts'); p.phase = 'unresponsive'; frAnnounceUrgent('They become unresponsive. Choose the next action.'); }
+          else frAnnounce(k.thrust + ' ' + p.thrusts + ' of 5.');
+          refreshChokePractice();
+        }
+        function chooseChokeUnresponsive(choice) {
+          var p = chokePracticeRef.current; if (p.phase !== 'unresponsive') return;
+          if (choice !== 'cpr') return chokeMistake('blind-sweep', 'Do not blindly sweep the mouth. Lower safely and start CPR with compressions.');
+          p.sequence.push('start-cpr-compressions'); p.phase = 'mouth';
+          frAnnounceUrgent('Before breaths, open the mouth and look for a visible object.'); refreshChokePractice();
+        }
+        function finishChokePractice(choice) {
+          var p = chokePracticeRef.current; if (p.phase !== 'mouth') return;
+          if (choice !== 'visible') return chokeMistake('sweep-unseen', 'Remove an object only if visible. A blind finger sweep can push it deeper.');
+          p.sequence.push('remove-visible-object-only'); p.phase = 'complete';
+          p.summary = { caseId: p.caseId, mistakes: p.mistakes.length, sequence: p.sequence.slice(), completedAtISO: new Date().toISOString() };
+          upd('chokePracticeBest', p.summary); awardBadge('choking_scenario_ready', 'Choking Scenario Practice');
+          frAnnounceUrgent('Scenario complete. Continue CPR and follow dispatcher or AED prompts until help arrives.'); refreshChokePractice();
+        }
+        function chokingPracticeVisual(k, p) {
+          var infant = k && k.kind === 'infant';
+          var action = p.phase === 'back' ? 'BACK BLOWS' : (p.phase === 'thrust' ? 'THRUSTS' : 'ASSESS AND ACT');
+          var count = p.phase === 'back' ? p.backBlows : (p.phase === 'thrust' ? p.thrusts : 0), dots = [];
+          for (var i = 0; i < 5; i++) dots.push(h('g', { key: i },
+            h('circle', { cx: 150 + i * 35, cy: 204, r: 12, fill: i < count ? T.accent : T.card, stroke: i < count ? T.accent : T.border, strokeWidth: 2 }),
+            h('text', { x: 150 + i * 35, y: 208, textAnchor: 'middle', fill: i < count ? '#fff' : T.muted, fontSize: 11 }, String(i + 1))));
+          return h('svg', { viewBox: '0 0 440 230', role: 'img', 'aria-label': (k ? k.title : 'Choking practice') + '. ' + action + ', ' + count + ' of 5.',
+            style: { width: '100%', maxHeight: 255, display: 'block', marginBottom: 10, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border } },
+            h('rect', { x: 12, y: 12, width: 416, height: 206, rx: 12, fill: T.cardAlt }),
+            infant ? h('g', { transform: 'rotate(-8 220 105)' },
+              h('ellipse', { cx: 215, cy: 108, rx: 92, ry: 36, fill: T.card, stroke: T.border, strokeWidth: 3 }),
+              h('circle', { cx: 118, cy: 101, r: 31, fill: '#d8a47f', stroke: T.border, strokeWidth: 3 }),
+              h('path', { d: 'M142 113 Q215 145 298 112', fill: 'none', stroke: '#d8a47f', strokeWidth: 20, strokeLinecap: 'round' }),
+              (p.phase === 'back' || p.phase === 'thrust') && h('path', { d: p.phase === 'back' ? 'M250 42 L220 78' : 'M205 58 L205 95', fill: 'none', stroke: T.danger, strokeWidth: 8, strokeLinecap: 'round' }))
+              : h('g', null,
+                h('circle', { cx: 220, cy: 48, r: 29, fill: '#d8a47f', stroke: T.border, strokeWidth: 3 }),
+                h('path', { d: 'M176 90 Q220 70 264 90 L278 172 L162 172 Z', fill: T.card, stroke: T.border, strokeWidth: 3 }),
+                h('line', { x1: 194, y1: 173, x2: 188, y2: 198, stroke: T.border, strokeWidth: 13, strokeLinecap: 'round' }),
+                h('line', { x1: 246, y1: 173, x2: 252, y2: 198, stroke: T.border, strokeWidth: 13, strokeLinecap: 'round' }),
+                (p.phase === 'back' || p.phase === 'thrust') && h('path', { d: p.phase === 'back' ? 'M302 76 L266 108' : (k.kind === 'chest' ? 'M304 109 L246 109' : 'M305 145 Q260 145 235 129'), fill: 'none', stroke: T.danger, strokeWidth: 8, strokeLinecap: 'round' })),
+            h('text', { x: 220, y: 24, textAnchor: 'middle', fill: T.text, fontSize: 12, fontWeight: 700 }, action),
+            (p.phase === 'back' || p.phase === 'thrust') ? dots : h('text', { x: 220, y: 211, textAnchor: 'middle', fill: T.muted, fontSize: 12 }, p.phase === 'complete' ? 'Continue care until advanced help arrives' : 'Follow the decision cue below'));
+        }
+        function chokingPractice() {
+          var p = chokePracticeRef.current, k = chokePracticeCase(p.caseId);
+          var phaseNames = { recognize: 'RECOGNIZE', call: 'ACTIVATE HELP', back: '5 BACK BLOWS', placement: 'CHOOSE PLACEMENT', thrust: '5 THRUSTS', unresponsive: 'BECOMES UNRESPONSIVE', mouth: 'CPR AIRWAY CHECK', complete: 'SCENARIO COMPLETE' };
+          function choice(label, fn, primary) { return h('button', { 'data-fr-focusable': true, onClick: fn, style: (primary ? btnPrimary : btn)({ width: '100%', textAlign: 'left', marginBottom: 7 }) }, label); }
+          if (!k) return h('div', { 'data-choke-practice': 'select' },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 16, color: T.text } }, 'Interactive choking practice'),
+            h('p', { style: { margin: '0 0 10px', fontSize: 12.5, color: T.muted, lineHeight: 1.6 } }, 'Practice recognition, the age/body-specific 5-and-5 sequence, placement, and transition to CPR.'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 9 } }, CHOKE_PRACTICE_CASES.map(function (item) {
+              return h('button', { key: item.id, onClick: function () { startChokePractice(item.id); }, 'aria-label': 'Start choking scenario: ' + item.title, style: btn({ width: '100%', minHeight: 112, textAlign: 'left', padding: 13 }) },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: T.accent, marginBottom: 5 } }, item.tag),
+                h('div', { style: { fontSize: 14, fontWeight: 800, color: T.text, marginBottom: 4 } }, item.title),
+                h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } }, item.scene)); })),
+            d.chokePracticeBest && h('div', { style: { marginTop: 10, fontSize: 11.5, color: T.dim } }, 'Previous: ' + d.chokePracticeBest.sequence.length + ' safe actions, ' + d.chokePracticeBest.mistakes + ' mistake(s).'));
+          var correctPlace = k.kind === 'infant' ? 'Heel of one hand on the breastbone' : (k.kind === 'chest' ? 'Fist on the center of the breastbone' : 'Fist just above the navel');
+          return h('div', { 'data-choke-practice': p.phase },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8 } },
+              h('div', null, h('div', { style: { fontSize: 11, fontWeight: 800, color: T.dim } }, phaseNames[p.phase]), h('h3', { style: { margin: '2px 0 0', fontSize: 16, color: T.text } }, k.title)),
+              h('button', { onClick: function () { resetChokePractice('Choking practice reset.'); }, style: btn({ padding: '5px 9px', fontSize: 11 }) }, 'Change scenario')),
+            h('p', { style: { margin: '0 0 8px', fontSize: 12.5, color: T.muted } }, k.scene),
+            h('div', { role: 'note', style: { padding: 9, borderRadius: 8, border: '1px solid ' + T.warn, background: T.cardAlt, fontSize: 11.5, color: T.text, lineHeight: 1.5, marginBottom: 9 } }, h('strong', { style: { color: T.warn } }, 'Training boundary: '), 'This screen rehearses decisions, order, placement concepts, and counting. It cannot assess real force, hand position, body support, or skill quality. Use an instructor-led course for hands-on practice.'),
+            chokingPracticeVisual(k, p),
+            h('div', { role: 'status', 'aria-live': 'polite', style: { padding: 9, borderRadius: 8, background: T.card, border: '1px solid ' + T.border, fontSize: 12, color: T.text, marginBottom: 9 } }, (phaseNames[p.phase] || 'PRACTICE') + ' - Back blows ' + p.backBlows + '/5 - Thrusts ' + p.thrusts + '/5 - Mistakes ' + p.mistakes.length),
+            p.phase === 'recognize' && h('div', null, choice('Severe obstruction - activate 911 and begin care', function () { chooseChokeSeverity('severe'); }, true), choice('Encourage coughing and observe', function () { chooseChokeSeverity('mild'); }, false)),
+            p.phase === 'call' && choice('Send someone to call 911, or call on speaker, while beginning care', callChoke911, true),
+            p.phase === 'back' && choice('Give back blow ' + (p.backBlows + 1) + ' of 5', giveChokeBackBlow, true),
+            p.phase === 'placement' && h('div', null, choice(correctPlace, function () { chooseChokePlacement(k.kind); }, true), choice(k.kind === 'infant' ? 'Two fingers on the breastbone' : 'Hands around the throat', function () { chooseChokePlacement('wrong'); }, false), choice(k.kind === 'abdomen' ? 'Fist on the center of the breastbone' : 'Fist on the abdomen', function () { chooseChokePlacement(k.kind === 'abdomen' ? 'chest' : 'abdomen'); }, false)),
+            p.phase === 'thrust' && h('div', null, h('p', { style: { margin: '0 0 7px', fontSize: 12, color: T.muted } }, k.placement), choice('Give ' + k.thrust + ' ' + (p.thrusts + 1) + ' of 5', giveChokeThrust, true)),
+            p.phase === 'unresponsive' && h('div', null, choice('Lower safely, activate 911 if needed, and start CPR with compressions', function () { chooseChokeUnresponsive('cpr'); }, true), choice('Reach into the mouth and sweep for the object', function () { chooseChokeUnresponsive('sweep'); }, false)),
+            p.phase === 'mouth' && h('div', null, choice('Before breaths, look in the mouth; remove the object only if visible', function () { finishChokePractice('visible'); }, true), choice('Sweep the mouth even when no object is visible', function () { finishChokePractice('blind'); }, false)),
+            p.phase === 'complete' && h('div', null,
+              h('div', { style: { padding: 12, borderRadius: 9, background: T.card, border: '1px solid ' + T.ok, marginBottom: 9, fontSize: 12.5, lineHeight: 1.6 } }, h('strong', { style: { color: T.ok } }, p.mistakes.length ? 'Complete - review feedback and retry. ' : 'Complete with no recorded mistakes. '), 'You activated help, completed 5 back blows plus 5 ' + k.thrust + 's, then transitioned to CPR and a visible-object-only check.'),
+              choice('Practice this case again', function () { startChokePractice(k.id); }, true), choice('Choose another case', function () { resetChokePractice('Choose another choking scenario.'); }, false)));
+        }
         function chokeSelect() {
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
@@ -2460,6 +3334,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           h('div', { role: 'tablist', 'aria-label': __alloT('stem.firstresponse.choking_module_sections', 'Choking module sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('select', 'Pick who'),
+
+            tabBtn('practice', 'Interactive practice'),
             tabBtn('protocol', 'Protocol')
           ),
           h('div', { role: 'tabpanel',
@@ -2468,6 +3344,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             tabIndex: 0
           },
             chokeView === 'select' && chokeSelect(),
+
+            chokeView === 'practice' && chokingPractice(),
             chokeView === 'protocol' && chokeProtocol(),
             disclaimerFooter()
           )
@@ -2712,9 +3590,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               ] },
             { situation: 'You begin CPR. What rate?',
               choices: [
-                { text: __alloT('stem.firstresponse.100_120_compressions_per_minute_about_', '100–120 compressions per minute, about the pace of "Stayin’ Alive."'), impact: 'help', feedback: __alloT('stem.firstresponse.exactly_right_push_hard_2_inches_deep_', 'Exactly right. Push hard (2 inches deep on an adult), let the chest fully recoil between pushes.'), source: 'AHA 2020 Guidelines' },
-                { text: __alloT('stem.firstresponse.as_fast_as_you_can_speed_saves_lives', 'As fast as you can — speed saves lives.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.too_fast_120_bpm_means_shallow_compres', 'Too fast (>120 bpm) means shallow compressions and not enough time for the heart to refill between pushes. Aim for 100–120.'), source: 'AHA 2020 Guidelines' },
-                { text: __alloT('stem.firstresponse.slow_and_steady_about_60_per_minute', 'Slow and steady, about 60 per minute.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.too_slow_the_heart_needs_100_120_pushe', 'Too slow. The heart needs ~100–120 pushes per minute to circulate blood enough to keep the brain alive.'), source: 'AHA 2020 Guidelines' }
+                { text: __alloT('stem.firstresponse.100_120_compressions_per_minute_about_', '100–120 compressions per minute, about the pace of "Stayin’ Alive."'), impact: 'help', feedback: __alloT('stem.firstresponse.exactly_right_push_hard_2_inches_deep_', 'Exactly right. Push hard (2 inches deep on an adult), let the chest fully recoil between pushes.'), source: 'AHA 2025 Guidelines' },
+                { text: __alloT('stem.firstresponse.as_fast_as_you_can_speed_saves_lives', 'As fast as you can — speed saves lives.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.too_fast_120_bpm_means_shallow_compres', 'Too fast (>120 bpm) means shallow compressions and not enough time for the heart to refill between pushes. Aim for 100–120.'), source: 'AHA 2025 Guidelines' },
+                { text: __alloT('stem.firstresponse.slow_and_steady_about_60_per_minute', 'Slow and steady, about 60 per minute.'), impact: 'hurt', feedback: __alloT('stem.firstresponse.too_slow_the_heart_needs_100_120_pushe', 'Too slow. The heart needs ~100–120 pushes per minute to circulate blood enough to keep the brain alive.'), source: 'AHA 2025 Guidelines' }
               ] },
             { situation: 'The AED arrives. The student you sent says "I’ve never used one." What do you tell them?',
               choices: [
@@ -3064,15 +3942,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       // these so the model can't invent its own protocol numbers.
       var PROTOCOL_GROUND_TRUTH = [
         'Always call 911 (or text 911) for any unresponsive person, suspected stroke, severe bleeding, anaphylaxis, suspected overdose, suspected cardiac arrest, severe burn, or breathing emergency.',
-        'Hands-only CPR: 100–120 bpm, push 2 inches deep on adult, 1.5 inches on child/infant. Continue until EMS or AED takes over.',
+        'CPR: 100–120 bpm with full recoil. Depth: at least 2 inches on an adult, about 2 inches on a child, and about 1.5 inches on an infant. Give conventional CPR with breaths for infants and children if able; for adult sudden collapse, untrained rescuers should start hands-only compressions. Continue until EMS or AED takes over.',
         'AED: turn it on, follow voice/visual prompts. AEDs will not shock someone who does not need it.',
-        'Stop the Bleed: pressure → packing → tourniquet. Tourniquet on LIMBS only, 2–3" above wound, NEVER on neck/torso/groin/armpit. Note time applied.',
-        'Choking adult/child: 5 back blows + 5 abdominal thrusts. Pregnant or large person: chest thrusts. Infant: 5 back blows + 5 chest thrusts (NEVER abdominal). Unconscious: lower, 911, CPR.',
+        'Stop the Bleed: call 911 and apply direct pressure. If trained, use a tourniquet for life-threatening limb bleeding; pack an appropriate deep wound where a tourniquet cannot be used. Place a tourniquet 2–3 inches above the wound, not over a joint; tighten until bleeding stops, note the time, and do not loosen it.',
+        'Choking adult/child: 5 back blows + 5 abdominal thrusts. Pregnant or large person: 5 back blows + 5 chest thrusts. Infant: 5 back blows + 5 chest thrusts (NEVER abdominal). Unconscious: lower, 911, CPR.',
         'Stroke recognition: BE FAST (Balance, Eyes, Face, Arms, Speech, Time). Note exact onset time. Do NOT give food, water, or aspirin.',
         'Anaphylaxis: EpiPen IM in outer thigh, hold 3 sec. Call 911 even if symptoms improve.',
-        'Seizure: NEVER restrain. NEVER put anything in the mouth. Time it. Cushion head. Recovery position after. 911 if >5 min, repeats, first-ever, in water, or injury.',
-        'Hypoglycemia: 15g fast carb if alert and able to swallow; 911 + recovery position if unconscious. Never pour liquid into the mouth of unconscious person.',
-        'Suspected overdose: 911. Naloxone if available. Recovery position. Maine Good Samaritan law protects bystanders.',
+        'Seizure: NEVER restrain. NEVER put anything in the mouth. Time it. Cushion head. Recovery position afterward only if breathing normally. 911 if >5 min, repeats, first-ever, in water, or injury.',
+        'Hypoglycemia: 15g fast carb if alert and able to swallow. If unconscious: 911; recovery position only if breathing normally, otherwise CPR. Never put food or liquid in their mouth.',
+        'Suspected overdose: 911. If not breathing normally, start CPR or rescue breathing as dispatch directs. Give naloxone if available. Recovery position only if breathing normally. Maine Good Samaritan law protects bystanders.',
         'Mental health crisis: 988 (call or text) for non-life-threat; 911 only if immediate life threat. Stay with the person. Tell a trusted adult.',
         'Deaf/HoH patients: text-to-911 (Maine has it). Face them. Don’t shout. Use phone-typing apps. AEDs show visual prompts.',
         'Autistic peer in distress: lower sensory load, predictable verbal warnings before touch, short literal sentences, allow stims, recognize meltdown ≠ tantrum.'
@@ -3388,21 +4266,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       function renderFirstActionSleuth() {
         var ACTIONS = [
           { id: 'callEMS',  label: __alloT('stem.firstresponse.call_911_3', 'Call 911'),                  color: '#dc2626', icon: '📞', def: 'Activate emergency services. In Maine you can text 911 too.' },
-          { id: 'cpr',      label: __alloT('stem.firstresponse.start_cpr_2', 'Start CPR'),                 color: '#ef4444', icon: '❤️', def: 'Hands-only chest compressions, 2 inches deep, 100–120/min.' },
+          { id: 'cpr',      label: __alloT('stem.firstresponse.start_cpr_2', 'Start CPR'),                 color: '#ef4444', icon: '❤️', def: 'Chest compressions at 100–120/min. Add breaths when appropriate—especially for children, infants, and drowning—if willing and able.' },
           { id: 'aed',      label: __alloT('stem.firstresponse.apply_aed_2', 'Apply AED'),                 color: '#f59e0b', icon: '⚡', def: 'Power on, attach pads, follow voice prompts. Continue compressions until shock.' },
           { id: 'pressure', label: __alloT('stem.firstresponse.direct_pressure_3', 'Direct pressure'),           color: '#7c3aed', icon: '🩹', def: 'Press hard on the wound with whatever cloth is at hand. Maintain pressure.' },
-          { id: 'heimlich', label: __alloT('stem.firstresponse.abdominal_thrusts_2', 'Abdominal thrusts'),         color: '#0ea5e9', icon: '🫶', def: 'Inward and upward thrusts above the navel until object dislodges.' },
+          { id: 'heimlich', label: __alloT('stem.firstresponse.abdominal_thrusts_2', 'Back blows + thrusts'),         color: '#0ea5e9', icon: '🫶', def: 'Give 5 back blows, then 5 abdominal thrusts for a responsive adult or child; repeat.' },
           { id: 'recovery', label: __alloT('stem.firstresponse.recovery_position_2', 'Recovery position'),         color: '#16a34a', icon: '🛌', def: 'Roll onto side; keeps airway open and prevents aspiration if they vomit.' }
         ];
         var VIGNETTES = [
           { id: 1, scenario: 'A coworker collapses in the office. They are unresponsive, not breathing, and have no pulse. You are alone with them. Your phone is in your pocket.', correct: 'callEMS',
             why: 'Single-rescuer adult cardiac arrest: call 911 FIRST so EMS + AED are dispatched while you start CPR. Adult sudden cardiac arrest is usually a heart-rhythm problem; defibrillation is the highest-value intervention and needs EMS en route.' },
           { id: 2, scenario: 'A 7-year-old has just been pulled from a backyard pool. Not breathing, no pulse. You are alone — no one else is around to call.', correct: 'cpr',
-            why: 'Pediatric drowning is a respiratory cause. AHA guidance: do 2 minutes of CPR FIRST, then call 911 if still alone. Restoring oxygenation matters more than EMS dispatch in the first 2 minutes for kids who arrested from drowning.' },
+            why: 'Pediatric drowning is a respiratory emergency: start conventional CPR with breaths now. If you have a phone, call 911 on speaker so dispatch can coach without making you leave; if you truly must leave to call, give about 2 minutes of CPR first.' },
           { id: 3, scenario: 'Someone has a deep cut on their thigh. Bright red blood is gushing — visible pumping with their heartbeat. They are conscious.', correct: 'pressure',
-            why: 'Pulsing bright red = arterial bleed. First action is direct pressure with whatever cloth is at hand. Tourniquet only if pressure cannot stop the bleed within ~5 minutes. Call 911 next, but pressure first to stop blood loss.' },
+            why: 'Pulsing bright red blood is life-threatening bleeding. Call 911 or send someone, apply firm direct pressure immediately, and for an arm or leg use a tourniquet if trained while pressure continues until it is ready.' },
           { id: 4, scenario: 'A friend at dinner suddenly stands up, hands clutching their throat. They cannot speak, cough, or breathe. Eyes wide, panicked.', correct: 'heimlich',
-            why: 'Universal choking sign + complete airway obstruction = abdominal thrusts immediately. Time matters — brain damage starts in 4–6 minutes without oxygen. Do not slap their back if they are conscious and standing — current AHA guidance is abdominal thrusts first for adults.' },
+            why: 'Universal choking sign + complete airway obstruction requires immediate action: give 5 back blows followed by 5 abdominal thrusts for a responsive adult or child, and repeat while someone activates 911.' },
           { id: 5, scenario: 'You have been doing CPR on an adult cardiac arrest for 90 seconds. A bystander runs over with an AED, already unboxed, pads ready. The patient still has no pulse.', correct: 'aed',
             why: 'AED FIRST as soon as it is available and pads are ready. Defibrillation within the first 3–5 minutes after collapse is the single most powerful intervention for adult cardiac arrest. Pause compressions only as long as the AED needs to analyze + shock; resume immediately after.' },
           { id: 6, scenario: 'A student just had a 90-second seizure. The seizure has stopped. They are now breathing normally on their own but are still unconscious. No injuries from the fall.', correct: 'recovery',
@@ -3793,9 +4671,217 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         var recDone = d.b3dRec || [];
         var violations = d.b3dViolations || [];
         var st3 = (BODY3D.status() === 'failed') ? 'failed' : (d.b3dStatus || 'idle');
+        var padSelections = Array.isArray(d.b3dPads) ? d.b3dPads : (pad ? [pad] : []);
+        var coach = frCoachRef.current;
+        var coachMode = d.b3dCoachMode === 'handsOnly' ? 'handsOnly'
+          : (d.b3dCoachMode === 'scenario' ? 'scenario' : 'trained');
+        var coachCycles = d.b3dCoachCycles === 1 ? 1 : 2;
+        var coachBpm = typeof d.b3dCoachBpm === 'number' ? d.b3dCoachBpm : 110;
+        coachBpm = Math.max(CPR_COACH_SPEC.minBpm, Math.min(CPR_COACH_SPEC.maxBpm, coachBpm));
+        var coachMetrics = analyzeCprTiming(coach.intervals);
+
+        function finishCoach(session) {
+          var metrics = analyzeCprTiming(session.intervals);
+          var longestPause = session.pauseDurations.length
+            ? Math.max.apply(Math, session.pauseDurations) : 0;
+          var pauseScore = session.mode === 'handsOnly' ? 100
+            : (longestPause <= 10000 ? 100 : Math.max(0, 100 - Math.round((longestPause - 10000) / 100)));
+          var score = Math.round(metrics.inRangePct * 0.55 + metrics.consistencyPct * 0.25 + pauseScore * 0.20);
+          session.running = false;
+          session.phase = 'complete';
+          session.summary = {
+            score: score,
+            medianBpm: metrics.medianBpm,
+            inRangePct: metrics.inRangePct,
+            consistencyPct: metrics.consistencyPct,
+            longestPauseMs: Math.round(longestPause),
+            mode: session.mode,
+            cycles: session.goalCycles,
+            age: age,
+            releaseTimingPct: session.holdDurations.length
+              ? Math.round(session.holdDurations.filter(function (ms) { return ms >= 120 && ms <= 500; }).length / session.holdDurations.length * 100) : 0,
+            scenarioSteps: session.scenarioSteps.slice(),
+            assessmentToCallMs: session.assessmentAt && session.callAt ? Math.max(0, session.callAt - session.assessmentAt) : 0,
+            completedAtISO: new Date().toISOString()
+          };
+          upd('b3dCoachBest', session.summary);
+          if (score >= 75) {
+            if (session.mode === 'trained') awardBadge('cpr_30x2_flow', '30:2 Flow Practice (timing and sequence)');
+            else if (session.mode === 'handsOnly') awardBadge('cpr_compression_fallback', 'Compression-only Fallback Practice (timing only)');
+            else awardBadge('cpr_full_arrest_run', 'Full Arrest Run (sequence practice)');
+          }
+          frAnnounceUrgent('Practice complete. Timing and sequence score: ' + score + ' out of 100.');
+          refreshFrCoach();
+        }
+
+        function startCoach() {
+          clearFrCoachTimer();
+          var next = makeFrCoachState();
+          next.running = true;
+          next.phase = coachMode === 'scenario' ? 'assessment' : 'compressions';
+          next.mode = coachMode;
+          next.goalCycles = coachMode === 'scenario' ? 1 : coachCycles;
+          next.startedAtEpoch = coachMode === 'scenario' ? 0 : Date.now();
+          next.compressionSegmentEpoch = coachMode === 'scenario' ? 0 : next.startedAtEpoch;
+          next.phaseStartedAt = frCoachNow();
+          frCoachRef.current = next;
+          coach = next;
+          frAnnounceUrgent(coachMode === 'scenario'
+            ? 'Check response and breathing first.'
+            : 'Begin compressions now. Aim for 100 to 120 per minute.');
+          refreshFrCoach();
+        }
+
+        function scenarioAction(action) {
+          var session = frCoachRef.current;
+          if (!session.running || session.mode !== 'scenario') return;
+          var epoch = Date.now();
+          if (action === 'assess' && session.phase === 'assessment') {
+            session.assessmentAt = epoch;
+            session.scenarioSteps.push('assessment');
+            session.phase = 'call';
+            session.phaseStartedAt = frCoachNow();
+            frAnnounceUrgent('No normal response or breathing. Call 911 on speaker.');
+          } else if (action === 'call' && session.phase === 'call') {
+            session.callAt = epoch;
+            session.scenarioSteps.push('call');
+            session.scenarioSteps.push('compressions');
+            session.phase = 'compressions';
+            session.startedAtEpoch = epoch;
+            session.compressionSegmentEpoch = epoch;
+            session.phaseStartedAt = frCoachNow();
+            frAnnounceUrgent('Begin 30 compressions now. Aim for 100 to 120 per minute.');
+          } else if (action === 'aed' && session.phase === 'aed') {
+            session.aedAt = epoch;
+            session.scenarioSteps.push('aed');
+            session.phase = 'resume';
+            session.pauseStartedAt = frCoachNow();
+            frAnnounceUrgent('AED step complete. Resume compressions now.');
+          } else return;
+          refreshFrCoach();
+        }
+
+        function stopCoach() {
+          resetFrCoachSession('Practice reset.');
+          coach = frCoachRef.current;
+        }
+
+        function recordScenarioCompressionDown() {
+          var session = frCoachRef.current;
+          if (!session.running || session.mode !== 'scenario' || session.phase !== 'compressions') return;
+          if (session.activeCompressionAt) return;
+          session.activeCompressionAt = frCoachNow();
+          recordCoachCompression();
+        }
+
+        function recordScenarioCompressionUp() {
+          var session = frCoachRef.current;
+          if (!session.activeCompressionAt) return;
+          session.holdDurations.push(Math.max(0, frCoachNow() - session.activeCompressionAt));
+          session.activeCompressionAt = 0;
+          session.releaseCount += 1;
+          session.lastScenarioReleaseAt = frCoachNow();
+          refreshFrCoach();
+        }
+
+        function recordScenarioCompressionClick() {
+          var session = frCoachRef.current;
+          if (session.lastScenarioReleaseAt && frCoachNow() - session.lastScenarioReleaseAt < 100) return;
+          recordScenarioCompressionDown();
+          recordScenarioCompressionUp();
+        }
+
+        function recordCoachCompression() {
+          var session = frCoachRef.current;
+          if (!session.running) return;
+          var now = frCoachNow();
+          var epoch = Date.now();
+          if (session.phase === 'resume') {
+            session.lastCompressionEpoch = epoch;
+            session.pauseDurations.push(Math.max(0, now - session.pauseStartedAt));
+            if (session.cycle >= session.goalCycles) {
+              if (session.mode === 'scenario') session.scenarioSteps.push('resume');
+              finishCoach(session);
+              return;
+            }
+            session.cycle += 1;
+            session.phase = 'compressions';
+            session.compressionCount = 1;
+            session.breathCount = 0;
+            session.lastCompressionAt = now;
+            session.compressionSegmentEpoch = epoch;
+            frAnnounceUrgent('Compressions resumed. Cycle ' + session.cycle + '.');
+            refreshFrCoach();
+            return;
+          }
+          if (session.phase !== 'compressions') return;
+          if (session.lastCompressionAt && now - session.lastCompressionAt < 180) return;
+          if (session.lastCompressionAt) session.intervals.push(now - session.lastCompressionAt);
+          session.lastCompressionAt = now;
+          session.lastCompressionEpoch = epoch;
+          session.compressionCount += 1;
+          if (session.compressionCount === 10 || session.compressionCount === 20) {
+            frAnnounce(session.compressionCount + ' compressions. Keep going.');
+          }
+          if (session.compressionCount >= CPR_COACH_SPEC.compressionsPerCycle) {
+            if (session.mode === 'handsOnly') {
+              if (session.cycle >= session.goalCycles) { finishCoach(session); return; }
+              session.cycle += 1;
+              session.compressionCount = 0;
+              frAnnounceUrgent('30. Continue compressions. Cycle ' + session.cycle + '.');
+            } else {
+              session.phase = 'breaths';
+              session.breathCount = 0;
+              session.pauseStartedAt = now;
+              session.lastCompressionAt = 0;
+              frAnnounceUrgent('30. Give two breaths, about one second each.');
+            }
+          }
+          refreshFrCoach();
+        }
+
+        function recordCoachBreath() {
+          var session = frCoachRef.current;
+          if (!session.running || session.phase !== 'breaths') return;
+          var now = frCoachNow();
+          if (session.lastBreathAt && now - session.lastBreathAt < CPR_COACH_SPEC.breathLockMs) return;
+          session.lastBreathAt = now;
+          session.lastBreathEpoch = Date.now();
+          session.breathCount += 1;
+          clearFrCoachTimer();
+          if (session.breathCount >= CPR_COACH_SPEC.breathsPerCycle) {
+            session.phase = 'breathRecovery';
+            frAnnounce('Second breath. Let the chest fall, then resume compressions.');
+            frCoachTimerRef.current = setTimeout(function () {
+              frCoachTimerRef.current = null;
+              if (frCoachRef.current !== session || !session.running || session.phase !== 'breathRecovery') return;
+              if (session.mode === 'scenario') {
+                session.scenarioSteps.push('breaths');
+                session.phase = 'aed';
+                frAnnounceUrgent('AED arrives. Apply the AED and follow its prompts.');
+              } else {
+                session.phase = 'resume';
+                frAnnounceUrgent('Resume compressions now.');
+              }
+              refreshFrCoach();
+            }, CPR_COACH_SPEC.breathLockMs + 50);
+          } else {
+            frAnnounce('First breath. Let the chest fall, then give the second breath.');
+            frCoachTimerRef.current = setTimeout(function () {
+              frCoachTimerRef.current = null;
+              if (frCoachRef.current === session && session.running && session.phase === 'breaths') refreshFrCoach();
+            }, CPR_COACH_SPEC.breathLockMs + 50);
+          }
+          refreshFrCoach();
+        }
 
         var ageInfo = CPR_AGES[0];
         for (var agi = 0; agi < CPR_AGES.length; agi++) if (CPR_AGES[agi].id === age) ageInfo = CPR_AGES[agi];
+        var ageMechanics = cprMechanicsForAge(age);
+        var modelTechnique = age === 'adult'
+          ? 'Two-hand adult placement.'
+          : (age === 'child' ? 'Heel of one hand; use two hands if needed to reach child depth.'
+            : 'Heel of one hand. Two-thumb encircling-hands is also recommended and is best learned hands-on.');
 
         // The scenario tab drives the figure from the case being run, not from
         // the age selector (which only appears on the placement/depth tabs).
@@ -3816,7 +4902,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           // On the scenario tab the body should be the person in the story —
           // an adult figure during the infant call would undercut the whole
           // point of the age selector.
-          sceneProps: { tab: tab, age: sceneAge },
+          sceneProps: {
+            tab: tab,
+            age: sceneAge,
+            coach: tab === 'coach' ? {
+              mode: coach.mode || coachMode,
+              running: !!coach.running,
+              phase: coach.phase,
+              bpm: coachBpm,
+              startedAt: coach.compressionSegmentEpoch || coach.startedAtEpoch,
+              lastCompressionAt: coach.lastCompressionEpoch,
+              lastBreathAt: coach.lastBreathEpoch,
+              activeCompressionAt: coach.activeCompressionAt || 0
+            } : null
+          },
           sceneKey: tab + ':' + sceneAge,
           dark: true, contrast: !!ctx.isContrast,
           onPick: function (id) { pickZone(id); },
@@ -3836,20 +4935,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         // targets belonging to the open tab, so the id tells us which it is.
         function pickZone(id) {
           var p = padById(id);
-          if (p) { upd('b3dPad', p.id); frAnnounce(p.label + '. ' + p.why); return; }
+          if (p) {
+            var nextPads;
+            if (p.verdict === 'correct') {
+              nextPads = padSelections.filter(function (id) {
+                var prior = padById(id);
+                return prior && prior.verdict === 'correct';
+              });
+              if (nextPads.indexOf(p.id) === -1) nextPads.push(p.id);
+            } else nextPads = [p.id];
+            updMulti({ b3dPad: p.id, b3dPads: nextPads });
+            frAnnounce(nextPads.indexOf('padUR') !== -1 && nextPads.indexOf('padLL') !== -1
+              ? 'Both pads placed diagonally across the heart.'
+              : p.label + '. ' + p.why);
+            return;
+          }
           var z = zoneById(id);
           if (!z) return;
           upd('b3dPlaced', z.id === 'side' ? 'sideL' : z.id);
-          frAnnounce(z.label + '. ' + z.why);
+          var zoneWhy = z.verdict === 'correct' ? ageInfo.where + ' ' + ageInfo.hands : z.why;
+          frAnnounce(z.label + '. ' + zoneWhy);
         }
 
         var placedZone = placed ? zoneById(placed) : null;
+        var BODY_TAB_IDS = ['gate', 'place', 'depth', 'coach', 'aed', 'recovery', 'call'];
+        function bodyTabKeyDown(e, index) {
+          var key = e.key;
+          if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
+          e.preventDefault();
+          var nextIndex = index;
+          if (key === 'ArrowRight' || key === 'ArrowDown') nextIndex = (index + 1) % BODY_TAB_IDS.length;
+          if (key === 'ArrowLeft' || key === 'ArrowUp') nextIndex = (index - 1 + BODY_TAB_IDS.length) % BODY_TAB_IDS.length;
+          if (key === 'Home') nextIndex = 0;
+          if (key === 'End') nextIndex = BODY_TAB_IDS.length - 1;
+          var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+          var nextTab = tabs[nextIndex];
+          if (nextTab) { nextTab.focus(); nextTab.click(); }
+        }
+
 
         function tabBtn(id, label) {
           var active = tab === id;
           return h('button', {
             key: id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
-            onClick: function () { upd('b3dTab', id); frAnnounce(label); },
+            id: 'firstresponse-body-tab-' + id,
+            'aria-controls': 'firstresponse-body-panel-' + id,
+            tabIndex: active ? 0 : -1,
+            onKeyDown: function (e) { bodyTabKeyDown(e, BODY_TAB_IDS.indexOf(id)); },
+            onClick: function () {
+              if (id !== 'coach' && frCoachRef.current.running) stopCoach();
+              upd('b3dTab', id); frAnnounce(label);
+            },
             style: btn({
               padding: '7px 12px', fontSize: 13,
               background: active ? T.accent : T.card,
@@ -3882,27 +5018,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         }
 
         return h('div', { style: { padding: 16, maxWidth: 1040, margin: '0 auto' } },
-          h('button', { onClick: function () { upd('view', 'menu'); }, style: btn({ padding: '6px 12px', fontSize: 12, marginBottom: 12 }) },
+          h('button', { onClick: function () { if (frCoachRef.current.running) stopCoach(); upd('view', 'menu'); }, style: btn({ padding: '6px 12px', fontSize: 12, marginBottom: 12 }) },
             __alloT('stem.firstresponse.b3d_back', '← Menu')),
           h('h1', { style: { margin: '0 0 6px', fontSize: 20, color: T.text } },
             h('span', { 'aria-hidden': 'true' }, '🫀 '), __alloT('stem.firstresponse.b3d_title', 'Body position in 3D')),
           h('p', { style: { margin: '0 0 8px', fontSize: 13, color: T.muted, lineHeight: 1.6 } },
-            __alloT('stem.firstresponse.b3d_intro', 'The rhythm trainer teaches you how FAST. This teaches you WHERE — where your hands go on a real chest, where the AED pads go, and what the recovery position actually looks like from every side. Those are the things a flat diagram teaches worst.')),
+            __alloT('stem.firstresponse.b3d_intro', 'Explore a rounded, age-aware training manikin from every side. Find the hand position, watch compression and full recoil, rehearse the 30:2 flow with visible breaths, place both AED pads, and build the recovery position step by step.')),
           h('div', { role: 'note', style: { margin: '0 0 12px', padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent, fontSize: 12, color: T.text, lineHeight: 1.6 } },
             h('strong', { style: { color: T.accentHi } }, __alloT('stem.firstresponse.b3d_scope_lead', 'Scope: ')),
             __alloT('stem.firstresponse.b3d_scope', 'lay rescuer, compression-focused, covering adult, child and infant. This is orientation and practice, not certification — it cannot tell you whether your depth is real, which is exactly what an instructor with a manikin can. Take a hands-on course. In a real emergency, call 911 first or send someone to.')),
 
-          h('div', { role: 'tablist', style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } },
+          h('div', { role: 'tablist', 'aria-label': 'Body position practice sections', style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } },
             tabBtn('gate', __alloT('stem.firstresponse.b3d_tab_gate', '1 · Which one do they need?')),
             tabBtn('place', __alloT('stem.firstresponse.b3d_tab_place', '2 · Hand placement')),
             tabBtn('depth', __alloT('stem.firstresponse.b3d_tab_depth', '3 · Depth + recoil')),
-            tabBtn('aed', __alloT('stem.firstresponse.b3d_tab_aed', '4 · AED pads')),
-            tabBtn('recovery', __alloT('stem.firstresponse.b3d_tab_recovery', '5 · Recovery position')),
-            tabBtn('call', __alloT('stem.firstresponse.b3d_tab_call', '6 · Run the call'))
+            tabBtn('coach', '4 · 30:2 coach'),
+            tabBtn('aed', __alloT('stem.firstresponse.b3d_tab_aed', '5 · AED pads')),
+            tabBtn('recovery', __alloT('stem.firstresponse.b3d_tab_recovery', '6 · Recovery position')),
+            tabBtn('call', __alloT('stem.firstresponse.b3d_tab_call', '7 · Run the call'))
           ),
 
           // Age selector — only meaningful where the technique actually differs.
-          (tab === 'place' || tab === 'depth') && h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12, padding: 9, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+          (tab === 'place' || tab === 'depth' || tab === 'coach') && h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12, padding: 9, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
             h('span', { style: { fontSize: 12, fontWeight: 700, color: T.muted } }, __alloT('stem.firstresponse.b3d_age', 'Who is it?')),
             CPR_AGES.map(function (a) {
               var on = age === a.id;
@@ -3915,7 +5052,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             h('span', { style: { fontSize: 11, color: T.dim } }, ageInfo.who)
           ),
 
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 14, alignItems: 'start' } },
+          h('div', {
+            role: 'tabpanel',
+            id: 'firstresponse-body-panel-' + tab,
+            'aria-labelledby': 'firstresponse-body-tab-' + tab,
+            tabIndex: 0,
+            style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 14, alignItems: 'start' } },
             h('div', null,
               h('div', {
                 ref: BODY3D.attach, tabIndex: 0, role: 'group',
@@ -3952,7 +5094,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                 })
               ),
               h('div', { style: { marginTop: 6, fontSize: 10.5, color: T.dim, lineHeight: 1.5 } },
-                __alloT('stem.firstresponse.b3d_hint', 'Schematic on purpose — a diagram you can walk around, not an anatomical model. Drag or arrow keys to spin.'))
+                __alloT('stem.firstresponse.b3d_hint', 'Purpose-built training manikin, not an anatomical model for diagnosis. Drag or use arrow keys to inspect it from every side.'))
             ),
 
             h('div', null,
@@ -4006,15 +5148,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                   __alloT('stem.firstresponse.b3d_aed_p', 'The pads carry a picture showing this, and the AED talks you through it. Knowing the shape in advance means the picture makes sense when you are under pressure. Two pads, diagonally opposite, so the heart sits between them.')),
                 h('div', { style: { display: 'flex', flexDirection: 'column', gap: 5 } },
                   AED_PADS.map(function (p) {
-                    return h('button', { key: p.id, 'aria-pressed': pad === p.id ? 'true' : 'false',
+                    var on = padSelections.indexOf(p.id) !== -1;
+                    return h('button', { key: p.id, 'aria-pressed': on ? 'true' : 'false',
                       onClick: function () { pickZone(p.id); },
-                      style: btn({ width: '100%', fontSize: 13, border: '1px solid ' + (pad === p.id ? T.accent : T.border) }) }, p.label);
+                      style: btn({ width: '100%', fontSize: 13, border: '1px solid ' + (on ? T.accent : T.border) }) }, (on ? 'Placed: ' : '') + p.label);
                   })
                 ),
                 (function () {
                   var sel = pad ? padById(pad) : null;
-                  return sel ? note(sel.verdict === 'correct' ? '✓ ' + sel.label : '✗ ' + sel.label, sel.why,
-                    sel.verdict === 'correct' ? 'ok' : 'warn') : null;
+                  var pairDone = padSelections.indexOf('padUR') !== -1 && padSelections.indexOf('padLL') !== -1;
+                  if (pairDone) return note('Both pads placed',
+                    'Correct pair: upper right chest and lower left side, diagonally across the heart.', 'ok');
+                  if (!sel) return null;
+                  if (sel.verdict !== 'correct') return note('Try a different pair', sel.why, 'warn');
+                  return note('One pad placed - add its diagonal partner',
+                    sel.why + ' The task is not complete until both pads are positioned.', 'ok');
                 })(),
                 h('h3', { style: { margin: '14px 0 6px', fontSize: 13, color: T.accentHi } },
                   __alloT('stem.firstresponse.b3d_aed_rules', 'Before you press the button')),
@@ -4032,7 +5180,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                 h('h2', { style: { margin: '0 0 6px', fontSize: 15, color: T.accentHi } },
                   __alloT('stem.firstresponse.b3d_depth_h', 'How hard, and what happens between pushes')),
                 h('div', { style: { display: 'flex', flexDirection: 'column', gap: 5 } },
-                  CPR_MECHANICS.map(function (m) {
+                  ageMechanics.map(function (m) {
                     return h('button', { key: m.id, 'aria-pressed': mech === m.id ? 'true' : 'false',
                       onClick: function () { upd('b3dMech', m.id); frAnnounce(m.label + '. ' + m.why); },
                       style: btn({ width: '100%', fontSize: 13, border: '1px solid ' + (mech === m.id ? T.accent : T.border) }) }, m.label);
@@ -4040,16 +5188,171 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                 ),
                 (function () {
                   var sel = null;
-                  for (var i = 0; i < CPR_MECHANICS.length; i++) if (CPR_MECHANICS[i].id === mech) sel = CPR_MECHANICS[i];
+                  for (var i = 0; i < ageMechanics.length; i++) if (ageMechanics[i].id === mech) sel = ageMechanics[i];
                   return sel ? note(sel.verdict === 'correct' ? '✓ ' + sel.label : '✗ ' + sel.label, sel.why, sel.verdict === 'correct' ? 'ok' : 'warn') : null;
                 })(),
                 note(ageInfo.icon + ' ' + ageInfo.label + __alloT('stem.firstresponse.b3d_depth_for', ' — depth for this age'),
                   ageInfo.depth, 'ok'),
+                note('Model shown', modelTechnique),
                 note(__alloT('stem.firstresponse.b3d_breaths', 'Do breaths matter here?'), ageInfo.breaths,
                   age === 'adult' ? null : 'warn'),
                 note(__alloT('stem.firstresponse.b3d_rate', 'And the rate'),
                   __alloT('stem.firstresponse.b3d_rate_body', '100 to 120 compressions a minute for every age, which is faster than most people expect. The CPR + AED module has a rhythm trainer for exactly this. Keep interruptions as short as you can, and if an AED arrives, turn it on and do what it says.'))
               ),
+
+              tab === 'coach' && (function () {
+                var session = frCoachRef.current;
+                var metrics = analyzeCprTiming(session.intervals);
+                var best = d.b3dCoachBest || null;
+                var phaseTitle = session.phase === 'assessment' ? 'CHECK RESPONSE + BREATHING'
+                  : (session.phase === 'call' ? 'CALL 911 NOW'
+                  : (session.phase === 'aed' ? 'AED: FOLLOW PROMPTS'
+                  : (session.phase === 'breaths'
+                    ? 'BREATH ' + Math.min(2, session.breathCount + 1) + ' / 2'
+                    : (session.phase === 'breathRecovery'
+                      ? 'LET THE CHEST FALL'
+                      : (session.phase === 'resume'
+                        ? 'RESUME COMPRESSIONS NOW'
+                        : 'COMPRESSIONS ' + session.compressionCount + ' / 30')))));
+                var paceText = metrics.sampleCount < 2 ? 'Build a steady rhythm'
+                  : (metrics.medianBpm < 100 ? 'Too slow - speed up'
+                    : (metrics.medianBpm > 120 ? 'Too fast - ease back' : 'On target'));
+                var paceColor = metrics.sampleCount < 2 ? T.dim
+                  : (metrics.medianBpm >= 100 && metrics.medianBpm <= 120 ? T.ok : T.warn);
+                var breathReady = !session.lastBreathAt || frCoachNow() - session.lastBreathAt >= CPR_COACH_SPEC.breathLockMs;
+                var inBreathPhase = session.phase === 'breaths' || session.phase === 'breathRecovery';
+                var pediatricCoach = age !== 'adult';
+                var fallbackLabel = pediatricCoach ? 'Compression-only fallback' : 'Hands-only comparison';
+                var boundaryText = coachMode === 'scenario'
+                  ? 'Run the sequence: check response and breathing, call 911, 30 compressions, 2 breaths, AED, then resume. This is timing and sequence rehearsal only - not depth, force, recoil, airway seal, ventilation volume or certification.'
+                  : (pediatricCoach
+                  ? 'This is single-rescuer 30:2 practice. If a second trained rescuer joins, pediatric CPR uses 15:2. Breaths are recommended when willing and able; choose compression-only fallback only if you cannot or will not give breaths. This screen scores timing and sequence only - never depth, force, airway seal or real chest rise.'
+                  : 'For an adult sudden collapse, a rescuer who cannot or will not give breaths should start hands-only compressions. If willing and able, use 30:2. This screen scores timing and sequence only - never depth, force, airway seal or real chest rise.');
+
+                function settingButton(on, label, onClick, disabled) {
+                  return h('button', {
+                    disabled: !!disabled,
+                    'aria-pressed': on ? 'true' : 'false',
+                    onClick: onClick,
+                    style: btn({ padding: '7px 11px', fontSize: 12,
+                      opacity: disabled ? 0.55 : 1,
+                      background: on ? T.accent : T.card,
+                      color: on ? '#fff' : T.text,
+                      border: '1px solid ' + (on ? T.accent : T.border) })
+                  }, label);
+                }
+
+                return h('div', null,
+                  h('h2', { style: { margin: '0 0 6px', fontSize: 16, color: T.accentHi } },
+                    coachMode === 'scenario' ? 'Full cardiac-arrest sequence coach' : '30:2 compression + breath coach'),
+                  h('p', { style: { margin: '0 0 10px', fontSize: 12.5, color: T.muted, lineHeight: 1.6 } },
+                    'Practice the flow: 30 compressions, 2 breaths with visible chest rise and fall, then resume immediately. The moving ring is the target beat; your taps move the hands and chest.'),
+                  h('div', { role: 'note', style: { padding: 10, borderRadius: 9, background: T.cardAlt, border: '1px solid ' + T.warn, fontSize: 11.5, lineHeight: 1.55, color: T.text, marginBottom: 10 } },
+                    h('strong', { style: { color: T.warn } }, 'Training boundary: '),
+                    boundaryText),
+
+                  !session.running && session.phase !== 'complete' && h('div', null,
+                    h('div', { style: { marginBottom: 9 } },
+                      h('div', { style: { fontSize: 11, fontWeight: 800, color: T.dim, marginBottom: 5 } }, 'PRACTICE PATH'),
+                      h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                        settingButton(coachMode === 'trained', '30:2 with breaths', function () { upd('b3dCoachMode', 'trained'); }, false),
+                        settingButton(coachMode === 'handsOnly', fallbackLabel, function () { upd('b3dCoachMode', 'handsOnly'); }, false),
+                        settingButton(coachMode === 'scenario', 'Full arrest run', function () { upd('b3dCoachMode', 'scenario'); }, false)
+                      )
+                    ),
+                    h('div', { style: { marginBottom: 9 } },
+                      h('div', { style: { fontSize: 11, fontWeight: 800, color: T.dim, marginBottom: 5 } }, 'LENGTH'),
+                      h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                        settingButton(coachCycles === 1, '1 cycle + resume', function () { upd('b3dCoachCycles', 1); }, false),
+                        settingButton(coachCycles === 2, '2 cycles', function () { upd('b3dCoachCycles', 2); }, false)
+                      )
+                    ),
+                    h('label', { htmlFor: 'fr-body-coach-bpm', style: { display: 'block', fontSize: 11, fontWeight: 800, color: T.dim, marginBottom: 5 } },
+                      'TARGET RATE - ' + coachBpm + ' bpm'),
+                    h('input', { id: 'fr-body-coach-bpm', type: 'range', min: 100, max: 120, step: 1, value: coachBpm,
+                      'aria-label': 'Target compression rate, ' + coachBpm + ' beats per minute',
+                      onChange: function (e) { upd('b3dCoachBpm', parseInt(e.target.value, 10)); },
+                      style: { width: '100%', marginBottom: 8 } }),
+                    note(ageInfo.icon + ' ' + ageInfo.label + ' hand position', ageInfo.hands, 'ok'),
+                    note('Model shown', modelTechnique),
+                    h('button', { onClick: startCoach, style: btnPrimary({ width: '100%', marginTop: 10, textAlign: 'center', fontSize: 15, padding: '12px 16px' }) },
+                      coachMode === 'trained' ? 'Start 30:2 practice' : (coachMode === 'scenario' ? 'Start full arrest scenario' : (pediatricCoach ? 'Start compression-only fallback' : 'Start hands-only practice')))
+                  ),
+
+                  session.running && h('div', null,
+                    h('div', { role: 'status', style: { padding: '10px 12px', borderRadius: 10,
+                      background: session.phase === 'resume' ? '#7f1d1d' : (inBreathPhase ? '#0c4a6e' : '#172554'),
+                      border: '2px solid ' + (session.phase === 'resume' ? T.danger : (inBreathPhase ? '#38bdf8' : '#60a5fa')),
+                      color: '#fff', fontSize: 16, fontWeight: 900, textAlign: 'center', letterSpacing: 0.7, marginBottom: 10 } },
+                      'Cycle ' + session.cycle + ' / ' + session.goalCycles + ' - ' + phaseTitle),
+                    session.mode === 'scenario' && (session.phase === 'assessment' || session.phase === 'call' || session.phase === 'aed') && h('div', { role: 'group', style: { padding: 10, borderRadius: 9, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 10 } },
+                      h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5, marginBottom: 7 } },
+                        session.phase === 'assessment' ? 'Confirm the person is unresponsive and not breathing normally.' : (session.phase === 'call' ? 'Use speakerphone so dispatch can coach you while you start.' : 'Turn on the AED, attach pads, and follow every voice prompt.')),
+                      h('button', { onClick: function () { scenarioAction(session.phase === 'assessment' ? 'assess' : (session.phase === 'call' ? 'call' : 'aed')); }, style: btnPrimary({ width: '100%', textAlign: 'center' }) },
+                        session.phase === 'assessment' ? 'Check response and breathing' : (session.phase === 'call' ? 'Call 911 on speaker' : 'Apply AED and follow prompts'))
+                    ),
+                    h('div', { role: 'progressbar', 'aria-label': 'Compressions in this cycle',
+                      'aria-valuemin': 0, 'aria-valuemax': 30, 'aria-valuenow': Math.min(30, session.compressionCount),
+                      style: { display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: 4, marginBottom: 10 } },
+                      Array.from({ length: 30 }, function (_, i) {
+                        var done = i < session.compressionCount;
+                        return h('span', { key: i, 'aria-hidden': 'true', style: { height: 8, borderRadius: 999,
+                          background: done ? T.ok : T.border,
+                          opacity: done ? 1 : 0.55,
+                          marginBottom: (i === 9 || i === 19) ? 3 : 0 } });
+                      })
+                    ),
+                    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 6, marginBottom: 10 } },
+                      h('div', { style: { padding: 8, borderRadius: 8, background: T.cardAlt, textAlign: 'center' } },
+                        h('div', { style: { fontSize: 10, color: T.dim } }, 'ROLLING RATE'),
+                        h('div', { style: { fontSize: 18, fontWeight: 900, color: paceColor } }, metrics.medianBpm ? metrics.medianBpm + ' bpm' : '--')),
+                      h('div', { style: { padding: 8, borderRadius: 8, background: T.cardAlt, textAlign: 'center' } },
+                        h('div', { style: { fontSize: 10, color: T.dim } }, 'IN RANGE'),
+                        h('div', { style: { fontSize: 18, fontWeight: 900, color: metrics.inRangePct >= 70 ? T.ok : T.warn } }, metrics.inRangePct + '%')),
+                      h('div', { style: { padding: 8, borderRadius: 8, background: T.cardAlt, textAlign: 'center' } },
+                        h('div', { style: { fontSize: 10, color: T.dim } }, session.mode === 'scenario' ? 'RELEASE TIMING' : 'CONSISTENCY'),
+                        h('div', { style: { fontSize: 18, fontWeight: 900, color: (session.mode === 'scenario' ? (session.releaseCount ? Math.round(session.holdDurations.filter(function (ms) { return ms >= 120 && ms <= 500; }).length / session.releaseCount * 100) : 0) : metrics.consistencyPct) >= 70 ? T.ok : T.warn } }, session.mode === 'scenario' ? (session.releaseCount ? Math.round(session.holdDurations.filter(function (ms) { return ms >= 120 && ms <= 500; }).length / session.releaseCount * 100) : 0) + '%' : metrics.consistencyPct + '%'))
+                    ),
+                    h('div', { style: { textAlign: 'center', fontSize: 12, fontWeight: 800, color: paceColor, marginBottom: 8 } }, paceText),
+                    (session.phase === 'compressions' || session.phase === 'resume') && h('button', {
+                      onClick: session.mode === 'scenario' && session.phase !== 'resume' ? recordScenarioCompressionClick : recordCoachCompression,
+                      onPointerDown: session.mode === 'scenario' ? recordScenarioCompressionDown : undefined,
+                      onPointerUp: session.mode === 'scenario' ? recordScenarioCompressionUp : undefined,
+                      onPointerCancel: session.mode === 'scenario' ? recordScenarioCompressionUp : undefined,
+                      onKeyDown: session.mode === 'scenario' ? function (e) { if (!e.repeat && (e.key === ' ' || e.key === 'Enter')) recordScenarioCompressionDown(); } : undefined,
+                      onKeyUp: session.mode === 'scenario' ? function (e) { if (e.key === ' ' || e.key === 'Enter') recordScenarioCompressionUp(); } : undefined,
+                      'aria-keyshortcuts': 'Space',
+                      'aria-label': session.phase === 'resume' ? 'Resume compressions now' : (session.mode === 'scenario' ? 'Press and release compression ' + (session.compressionCount + 1) + ' of 30' : 'Record compression ' + (session.compressionCount + 1) + ' of 30'),
+                      style: { display: 'block', width: 190, height: 190, margin: '0 auto 10px', borderRadius: '50%',
+                        border: '4px solid ' + (session.phase === 'resume' ? '#fecaca' : '#fca5a5'),
+                        background: session.phase === 'resume' ? '#b91c1c' : 'radial-gradient(circle at 35% 30%, #ef4444, #991b1b)',
+                        color: '#fff', fontSize: 20, fontWeight: 950, cursor: 'pointer', boxShadow: '0 14px 34px rgba(220,38,38,.34)' }
+                    }, session.phase === 'resume' ? 'RESUME' : (session.mode === 'scenario' ? 'PRESS + RELEASE' : 'PRESS')),
+                    session.phase === 'breaths' && session.breathCount < CPR_COACH_SPEC.breathsPerCycle && h('button', {
+                      disabled: !breathReady,
+                      onClick: recordCoachBreath,
+                      'aria-label': 'Give simulated breath ' + (session.breathCount + 1) + ' of 2',
+                      style: btn({ width: '100%', padding: 14, textAlign: 'center', fontSize: 16,
+                        opacity: breathReady ? 1 : 0.55, background: '#075985', color: '#fff', border: '2px solid #38bdf8' })
+                    }, breathReady ? 'Give breath ' + (session.breathCount + 1) : 'Let the chest fall...'),
+                    inBreathPhase && h('div', { style: { marginTop: 6, fontSize: 11, color: T.dim, textAlign: 'center', lineHeight: 1.5 } },
+                      'Each real breath should take about one second and use only enough air for visible chest rise; avoid excessive ventilation. This screen locks each simulated rise and fall but cannot assess seal or air volume.'),
+                    h('button', { onClick: stopCoach, style: btn({ display: 'block', margin: '10px auto 0', padding: '6px 11px', fontSize: 11.5 }) }, 'Stop and reset')
+                  ),
+
+                  session.phase === 'complete' && session.summary && h('div', { style: { padding: 13, borderRadius: 10, background: T.card, border: '2px solid ' + (session.summary.score >= 75 ? T.ok : T.warn) } },
+                    h('div', { style: { fontSize: 13, color: T.dim } }, session.summary.mode === 'scenario' ? 'FULL ARREST SCENARIO SCORE' : (session.summary.mode === 'trained' ? 'TIMING + 30:2 SEQUENCE SCORE' : 'COMPRESSION TIMING SCORE')),
+                    h('div', { style: { fontSize: 34, fontWeight: 950, color: session.summary.score >= 75 ? T.ok : T.warn } }, session.summary.score + ' / 100'),
+                    h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.7 } },
+                      'Median rate: ' + session.summary.medianBpm + ' bpm | In range: ' + session.summary.inRangePct + '% | Consistency: ' + session.summary.consistencyPct + '%',
+                      session.summary.mode === 'scenario' ? ' | Steps: ' + session.summary.scenarioSteps.join(' > ') + ' | Release timing: ' + session.summary.releaseTimingPct + '%' : (session.summary.mode === 'trained' ? ' | Longest breath pause: ' + (session.summary.longestPauseMs / 1000).toFixed(1) + ' s' : '')),
+                    note('What this score means', session.summary.mode === 'scenario' ? 'It reflects sequence timing plus the screen?s press/release gesture only. It does not assess response checks, call quality, compression depth, recoil, force, airway seal, ventilation volume, AED pad placement or readiness to perform CPR.' : (session.summary.mode === 'trained' ? 'It reflects screen timing and the 30:2 sequence only. It does not measure compression depth, full recoil, hand force, airway seal, ventilation volume or readiness to perform CPR.' : 'It reflects screen compression timing only. It does not mean compression-only CPR is preferred for this age or cause, and it does not measure depth, recoil, force or readiness to perform CPR.'), 'warn'),
+                    h('button', { onClick: stopCoach, style: btnPrimary({ marginTop: 10, width: '100%', textAlign: 'center' }) }, 'Practice again')
+                  ),
+                  !session.running && session.phase === 'idle' && best && h('div', { style: { marginTop: 8, fontSize: 11, color: T.dim, textAlign: 'center' } },
+                    'Previous ' + (best.mode === 'scenario' ? 'full arrest scenario' : 'timing + sequence') + ' score: ' + best.score + ' / 100')
+                );
+              })(),
 
               tab === 'call' && (function () {
                 var run = d.b3dCall || { caseId: null, step: 0, wrong: 0, unsafe: [], picked: null };

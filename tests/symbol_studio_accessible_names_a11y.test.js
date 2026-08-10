@@ -32,12 +32,21 @@ describe('Symbol Studio accessible control names', () => {
     expect(source).toContain("'aria-label': n + ' choices', 'aria-pressed': cbCount === n");
   });
 
+  it('uses the canonical product and workspace names', () => {
+    expect(source).toContain("'Symbol Studio'");
+    expect(source).not.toContain('Visual Supports Studio');
+    expect(source).toContain("label: 'Symbol Bank'");
+    expect(source).toContain("label: 'Sequences'");
+  });
+
   it('uses item-specific names for destructive, export, print, and scan actions', () => {
     expect(source).toContain("'Delete profile ' + (activeProfile.name || 'student')");
     expect(source).toContain("'Remove IEP goal: ' + g.text");
     expect(source).toContain("'Delete saved board ' + (b.title || 'Untitled Board')");
-    expect(source).toContain("'Delete saved schedule ' + (s.title || 'Untitled Schedule')");
-    expect(source).toContain("'Print all boards in ' + (activeBook.title || 'activity set')");
+    expect(source).toContain("'Delete saved sequence ' + (s.title || 'Untitled Sequence')");
+    expect(source).toContain("'Print all boards in ' + (activeBook.title || 'Visual Pack')");
+    expect(source).toContain("'Export shareable Visual Pack ' + (activeBook.title || 'Untitled')");
+    expect(source).toContain("'Delete Visual Pack ' + (activeBook.title || 'Untitled')");
     expect(source).toContain("'Exit scanning mode'");
   });
 });

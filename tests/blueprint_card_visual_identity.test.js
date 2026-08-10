@@ -203,6 +203,21 @@ describe('blueprint plan rows: run status', () => {
     expect(r[2].textContent).toContain('Failed');
   });
 
+  it('mounts the production diagnostic download control and saved-run warning', () => {
+    installRegistry();
+    const onDownloadDiagnostics = vi.fn();
+    const el = mountRun({
+      run: { ...RUN, persistenceWarning: 'Only compact diagnostics were restored.' },
+      onDownloadDiagnostics,
+    });
+    const button = el.querySelector('[data-testid="bp-download-diagnostics"]');
+    expect(button).not.toBeNull();
+    expect(button.getAttribute('aria-label')).toContain('Download Blueprint');
+    expect(el.textContent).toContain('Only compact diagnostics were restored.');
+    act(() => button.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    expect(onDownloadDiagnostics).toHaveBeenCalledTimes(1);
+  });
+
   // Scoped to the ROWS: the card also has a standing role="status" live region
   // for drag-reorder announcements ("Moved plan step to position N").
   const rowStatuses = (el, sel) => rows(el).flatMap((r) => Array.from(r.querySelectorAll(sel)));

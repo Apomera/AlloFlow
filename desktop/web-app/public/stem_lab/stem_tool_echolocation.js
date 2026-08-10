@@ -912,6 +912,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       var cave3dRef = useRef(null);
       var cave3dEngineRef = useRef(null);
       var cave3dAnimRef = useRef(0);
+      var cave3dRetryState = useState(0);
+      var cave3dRetryNonce = cave3dRetryState[0];
+      var setCave3dRetryNonce = cave3dRetryState[1];
 
       // Initialize Three.js cave — hoisted to top level to obey Rules of Hooks
       useEffect(function() {
@@ -1141,7 +1144,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           // arrow keys do, and the original bug class felt like
           // "the controls don't work" even when keys were registering.)
           eng.keys = {};
-          var _CAVE_FLIGHT_CODES = { KeyW: 1, KeyA: 1, KeyS: 1, KeyD: 1, KeyE: 1, KeyP: 1, KeyR: 1, Space: 1, ArrowUp: 1, ArrowDown: 1, ArrowLeft: 1, ArrowRight: 1 };
+          var _CAVE_FLIGHT_CODES = { KeyW: 1, KeyA: 1, KeyS: 1, KeyD: 1, KeyE: 1, KeyP: 1, KeyR: 1, Space: 1, ShiftLeft: 1, ShiftRight: 1, ArrowUp: 1, ArrowDown: 1, ArrowLeft: 1, ArrowRight: 1 };
           eng._keyDown = function(e) {
             if (_CAVE_FLIGHT_CODES[e.code]) {
               eng.keys[e.code] = true;
@@ -1209,7 +1212,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               if (tch.identifier === _caveTouchLookId) { _caveTouchLookId = null; _caveTouchLookStart = null; }
             }
           }, { passive: false });
-          document.addEventListener('pointerlockchange', function() { eng._locked = !!document.pointerLockElement; });
+          eng._pointerLockChange = function() { eng._locked = document.pointerLockElement === cnv; };
+          document.addEventListener('pointerlockchange', eng._pointerLockChange);
 
           // ── Animate ──
           function animate() {
@@ -1218,14 +1222,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             var t = eng.clock.getElapsedTime();
 
             // ── Game over check ──
+            // Restart must be handled before the game-over early return.
+            if (eng.gameOver && eng.keys['KeyR']) {
+              eng.gameOver = false;
+              eng.energy = eng.energyMax;
+              eng.mothsCaught = 0;
+              eng.score = 0;
+              eng.survivalTime = 0;
+              eng.camera.position.set(0, 2, 0);
+              eng.moths.forEach(function(m) { eng.scene.remove(m); m.geometry.dispose(); m.material.dispose(); });
+              eng.moths = [];
+              for (var ri = 0; ri < 8; ri++) spawnInsect();
+            }
             if (eng.gameOver) {
               eng.renderer.render(eng.scene, eng.camera);
               return;
             }
             eng.survivalTime += dt;
 
+            // Compute drain before the energy update that consumes it.
+            var difficultyMult = 1 + (eng.survivalTime / 120) * 0.5;
+            var currentDrain = eng.energyDrain * difficultyMult;
+
             // ── Energy system ──
-            var isMoving = eng.keys['KeyW'] || eng.keys['KeyS'] || eng.keys['KeyA'] || eng.keys['KeyD'];
+            var isMoving = eng.keys['KeyW'] || eng.keys['ArrowUp'] || eng.keys['KeyS'] || eng.keys['ArrowDown'] || eng.keys['KeyA'] || eng.keys['ArrowLeft'] || eng.keys['KeyD'] || eng.keys['ArrowRight'];
             // Perching: press P or land on floor (y < 0.8)
             var nearFloor = eng.camera.position.y < 0.8;
             var nearCeiling = eng.camera.position.y > 5.2;
@@ -1260,23 +1280,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               if (addToast) addToast('\uD83E\uDD87 Out of energy! Score: ' + eng.score + ' \u2022 ' + eng.mothsCaught + ' insects \u2022 ' + Math.round(eng.survivalTime) + 's. Press R to restart.', 'error');
             }
 
-            // Restart on R key
-            if (eng.keys['KeyR'] && eng.gameOver) {
-              eng.gameOver = false;
-              eng.energy = eng.energyMax;
-              eng.mothsCaught = 0;
-              eng.score = 0;
-              eng.survivalTime = 0;
-              eng.camera.position.set(0, 2, 0);
-              // Respawn all insects
-              eng.moths.forEach(function(m) { eng.scene.remove(m); m.geometry.dispose(); m.material.dispose(); });
-              eng.moths = [];
-              for (var ri = 0; ri < 8; ri++) spawnInsect();
-            }
 
-            // ── Difficulty scaling: drain increases over time ──
-            var difficultyMult = 1 + (eng.survivalTime / 120) * 0.5; // +50% drain per 2 minutes
-            var currentDrain = eng.energyDrain * difficultyMult;
 
             // Movement (WASD) — only if not game over
             var fwd = new THREE.Vector3();
@@ -1284,10 +1288,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             var right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0)).normalize();
             var moveSpeed = eng.perching ? 0 : 4;
             var prevPos = eng.camera.position.clone();
-            if (eng.keys['KeyW']) eng.camera.position.addScaledVector(fwd, moveSpeed * dt);
-            if (eng.keys['KeyS']) eng.camera.position.addScaledVector(fwd, -moveSpeed * dt);
-            if (eng.keys['KeyA']) eng.camera.position.addScaledVector(right, -moveSpeed * dt);
-            if (eng.keys['KeyD']) eng.camera.position.addScaledVector(right, moveSpeed * dt);
+            if (eng.keys['KeyW'] || eng.keys['ArrowUp']) eng.camera.position.addScaledVector(fwd, moveSpeed * dt);
+            if (eng.keys['KeyS'] || eng.keys['ArrowDown']) eng.camera.position.addScaledVector(fwd, -moveSpeed * dt);
+            if (eng.keys['KeyA'] || eng.keys['ArrowLeft']) eng.camera.position.addScaledVector(right, -moveSpeed * dt);
+            if (eng.keys['KeyD'] || eng.keys['ArrowRight']) eng.camera.position.addScaledVector(right, moveSpeed * dt);
             if (!eng.perching) {
               if (eng.keys['Space']) eng.camera.position.y += 3 * dt;
               if (eng.keys['ShiftLeft'] || eng.keys['ShiftRight']) eng.camera.position.y -= 3 * dt;
@@ -1451,7 +1455,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 var ilAge = t - il2._born;
                 il2.intensity = Math.max(0, 1.5 - ilAge * 3);
                 if (ilAge > 0.5) {
-                  eng.scene.remove(il2); il2.dispose();
+                  eng.scene.remove(il2);
+                  if (typeof il2.dispose === 'function') il2.dispose();
                   eng._impactLights.splice(ili, 1);
                 }
               }
@@ -1631,13 +1636,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             document.removeEventListener('keydown', eng._keyDown);
             document.removeEventListener('keyup', eng._keyUp);
             document.removeEventListener('mousemove', eng._mouseMove);
+            document.removeEventListener('pointerlockchange', eng._pointerLockChange);
             if (cnv.parentNode) cnv.parentNode.removeChild(cnv);
+            try { if (eng.renderer && eng.renderer.dispose) eng.renderer.dispose(); } catch (e) {}
             cave3dEngineRef.current = null;
           };
-      }, [tab, threeLoaded]);
+      }, [tab, threeLoaded, cave3dRetryNonce]);
 
       function renderCave3dTab() {
         var threeReady = window.THREE;
+        var threeLoadError = (ctx.toolData && ctx.toolData._threeLoadError) || null;
 
         return h('div', { className: 'space-y-3' },
           // Header \u2014 clear goal + survival framing.
@@ -1699,8 +1707,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           ),
           // Three.js not loaded
           !threeReady && h('div', { className: 'text-center p-8 text-slate-600' },
-            h('p', null, t('stem.echolocation.loading_3d_engine_three_js_required', 'Loading 3D engine... (Three.js required)')),
-            h('p', { className: 'text-xs mt-2' }, t('stem.echolocation.three_js_loads_automatically_when_you_', 'Three.js loads automatically when you open any 3D tool.'))
+            h('p', null, threeLoadError
+              ? t('stem.echolocation.three_js_failed_to_load', 'The 3D engine could not be loaded.')
+              : t('stem.echolocation.loading_3d_engine_three_js_required', 'Loading 3D engine... (Three.js required)')),
+            h('p', { className: 'text-xs mt-2' }, threeLoadError
+              ? String(threeLoadError.message || threeLoadError)
+              : t('stem.echolocation.three_js_loads_automatically_when_you_', 'Three.js loads automatically when you open any 3D tool.')),
+            threeLoadError && h('button', {
+              type: 'button',
+              onClick: function() {
+                ctx.setToolData(function(prev) {
+                  return Object.assign({}, prev, {
+                    _threeLoadError: undefined,
+                    _threeLoaded: false,
+                    _threeAttempt: ((prev && prev._threeAttempt) || 0) + 1
+                  });
+                });
+              },
+              style: { marginTop: 10, padding: '6px 12px', background: '#0369a1', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' }
+            }, t('stem.echolocation.retry_loading_3d_engine', 'Retry loading 3D engine'))
           ),
           // 3D Canvas container
           threeReady && (webglError
@@ -1711,6 +1736,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('button', {
                   onClick: function() {
                     setWebglError(false);
+                    cave3dEngineRef.current = null;
+                    setCave3dRetryNonce(function(n) { return n + 1; });
                   },
                   style: { padding: '6px 12px', background: '#b91c1c', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' }
                 }, t('stem.echolocation.retry', 'Retry'))
@@ -2618,9 +2645,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           }
 
           if (!st.perching) {
-            // Gravity
+            // Gravity. Velocity is integrated with dt below, so this cap is
+            // pixels/second. Keep the normal glide cap but give a deliberate
+            // dive enough headroom to produce visible downward travel.
             st.batVy += GRAVITY;
-            if (st.batVy > MAX_FALL_SPEED) st.batVy = MAX_FALL_SPEED;
+            var fallSpeedLimit = isDiving ? Math.max(MAX_FALL_SPEED, 120) : MAX_FALL_SPEED;
+            if (st.batVy > fallSpeedLimit) st.batVy = fallSpeedLimit;
 
             // Horizontal movement
             var hAccel = sp.speed * 60;
@@ -2633,7 +2663,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               st.energy -= sp.energyDrain;
               st.flapPhase += dt * 20; // fast wing flap
             } else if (isDiving) {
-              st.batVy += 2 * dt * 60;
+              // Reverse upward momentum promptly, then descend at a visible
+              // baseline speed (the old path remained around 5 px/second).
+              st.batVy = Math.max(st.batVy + 240 * dt, 90);
+              if (st.batVy > fallSpeedLimit) st.batVy = fallSpeedLimit;
               st.flapPhase += dt * 2; // wings folded
             } else {
               st.flapPhase += dt * 4; // gentle glide

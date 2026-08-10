@@ -161,7 +161,10 @@ export function setupBehaviorLens() {
   installAmbientGlobals();
 
   window.AlloModules = window.AlloModules || {};
+  const workspaceSrc = readFileSync(resolve(process.cwd(), 'behavior_lens_workspace_module.js'), 'utf8');
   const src = readFileSync(resolve(process.cwd(), 'behavior_lens_module.js'), 'utf8');
+  // eslint-disable-next-line no-new-func
+  new Function(workspaceSrc)();
   // eslint-disable-next-line no-new-func
   new Function(src)();
 

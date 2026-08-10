@@ -137,6 +137,11 @@ const checks = [
     description: 'Headlessly renders every STEM tool with a stub ctx; catches the render-phase TypeError class static gates miss (undefined.map, mis-shaped data literals — the 2026-06-05 protractor crash). Skips if React/jsdom absent.',
   },
   {
+    name: 'STEM tool reachability + loader recovery',
+    cmd: ['node', 'dev-tools/check_stem_reachability.cjs', '--quiet'],
+    description: 'Worker-free gate: registrations, tiles, fallbacks, lazy loader recovery, Heat/Nuclear sentinels, and active runtime mirrors.',
+  },
+  {
     name: 'SEL Hub tool render-smoke',
     cmd: ['node', 'dev-tools/check_sel_render.cjs', '--quiet'],
     description: 'Headlessly renders every SEL Hub tool (window.SelHub plugin bridge) with a stub ctx; catches the render-phase crash class static gates miss. Found 3 first-render crashes (journal/mindfulness/safety) on first run 2026-06-07. Skips if React/jsdom absent.',
@@ -286,6 +291,10 @@ const checks = [
     cmd: ['node', 'dev-tools/check_source_freshness.cjs', '--quiet'],
     description: 'Compiled *_module.js newer than *_source.jsx (manual-edit risk; informational)',
     informational: true,
+  },  {
+    name: 'Eligibility source links',
+    cmd: ['node', 'dev-tools/check_eligibility_sources.cjs', '--quiet'],
+    description: 'Official source URL shape, review-date freshness, prep coverage, and mirror parity',
   },
   {
     name: '@main URL placeholders',

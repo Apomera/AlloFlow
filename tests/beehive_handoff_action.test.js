@@ -45,7 +45,7 @@ describe('Beehive evidence handoff actions', () => {
     let action = host.querySelector('[data-beehive-handoff-action="beekeeper"]');
     expect(action).toBeTruthy();
     expect(action.textContent).toContain('Open Queen RTS');
-    expect(action.getAttribute('aria-label')).toContain('field report to command map');
+    expect(action.getAttribute('aria-label')).toContain('field report to strategy map');
     await act(async () => { action.click(); await Promise.resolve(); });
     expect(latest.beehive.viewMode).toBe('queen');
 

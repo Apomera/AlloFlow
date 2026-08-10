@@ -61,7 +61,8 @@
     label: 'Circuit Shelf',
     desc: 'Build and run real electronic circuits in CircuitJS — Paul Falstad’s open-source simulator — wrapped in a Predict → Explore → Explain coach. Pick a challenge, lock in a guess before you wire anything, build it, then let the coach compare what you predicted with what the meters actually read.',
     color: 'amber',
-    category: 'general',
+    category: 'engineering',
+    aliases: ['circuits', 'CircuitJS', 'electronics', 'Ohm law'],
     questHooks: [
       { id: 'cc_open', label: 'Open the circuit simulator', icon: '🔌',
         check: function (d) { return !!(d && d.opened); } },

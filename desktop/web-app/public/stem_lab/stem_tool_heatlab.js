@@ -100,6 +100,107 @@
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
   function fmt(n, dp) { var f = Math.pow(10, dp || 0); return (Math.round(n * f) / f).toLocaleString(); }
 
+  // Pure model helpers are shared by the UI and the focused science tests. Keeping
+  // one implementation prevents a test copy of an equation from drifting away
+  // from what learners actually see.
+  var HEAT_FINISH_C = 50;
+  function heatDiffusivity(material) {
+    return material.k / (material.rho * material.c);
+  }
+  function heatAdvanceBar(T, material, hot, dt, barLength) {
+    var n = T.length;
+    if (n < 3) return T;
+    var alpha = heatDiffusivity(material);
+    var dx = (barLength || 0.20) / n;
+    var stable = 0.4 * dx * dx / alpha;
+    // Never cap this count: doing so makes a large manual step violate the
+    // explicit heat-equation stability limit and produce impossible values.
+    var sub = Math.max(1, Math.ceil(dt / stable));
+    var sdt = dt / sub;
+    for (var s = 0; s < sub; s++) {
+      T[0] = hot;
+      T[n - 1] = 20;
+      var prev = T.slice();
+      for (var i = 1; i < n - 1; i++) {
+        T[i] = prev[i] + alpha * sdt * (prev[i + 1] - 2 * prev[i] + prev[i - 1]) / (dx * dx);
+      }
+    }
+    return T;
+  }
+  function heatRacePrediction(a, b) {
+    var alphaA = heatDiffusivity(a), alphaB = heatDiffusivity(b);
+    var faster = alphaA >= alphaB ? a : b;
+    var slower = alphaA >= alphaB ? b : a;
+    var fastAlpha = Math.max(alphaA, alphaB), slowAlpha = Math.min(alphaA, alphaB);
+    return {
+      ratio: slowAlpha > 0 ? fastAlpha / slowAlpha : Infinity,
+      fasterId: faster.id,
+      fasterName: faster.name,
+      slowerId: slower.id,
+      slowerName: slower.name
+    };
+  }
+  function heatMixTemperature(sub1, m1, t1, sub2, m2, t2) {
+    return (m1 * sub1.c * t1 + m2 * sub2.c * t2) / (m1 * sub1.c + m2 * sub2.c);
+  }
+  function heatMixExplanation(sub1, m1, t1, sub2, m2, t2) {
+    if (Math.abs(t1 - t2) < 1e-9) {
+      return 'Both samples start at the same temperature, so there is no net heat flow between them.';
+    }
+    var capacity1 = m1 * sub1.c, capacity2 = m2 * sub2.c;
+    var scale = Math.max(capacity1, capacity2);
+    if (scale > 0 && Math.abs(capacity1 - capacity2) / scale < 0.01) {
+      return 'The samples have almost the same total heat capacity (mass × specific heat), so each changes temperature by about the same amount.';
+    }
+    var steadier = capacity1 > capacity2 ? sub1 : sub2;
+    var other = capacity1 > capacity2 ? sub2 : sub1;
+    return steadier.name + ' has the larger total heat capacity (mass × specific heat), so its temperature changes less while the ' + other.name.toLowerCase() + ' changes more.';
+  }
+  function heatWaterState(kJ) {
+    var e = kJ * 1000;
+    if (e < 2090 * 20) return { phase: 'Ice', temp: -20 + e / 2090, frac: 0 };
+    e -= 2090 * 20;
+    if (e < 334000) return { phase: 'Ice melting', temp: 0, frac: e / 334000 };
+    e -= 334000;
+    if (e < 4186 * 100) return { phase: 'Liquid water', temp: e / 4186, frac: 0 };
+    e -= 4186 * 100;
+    if (e < 2260000) return { phase: 'Water boiling', temp: 100, frac: e / 2260000 };
+    e -= 2260000;
+    return { phase: 'Steam', temp: 100 + e / 2010, frac: 0 };
+  }
+  function heatPumpModel(outdoorC, indoorC) {
+    var liftK = indoorC - outdoorC;
+    if (!isFinite(liftK) || liftK <= 0) {
+      return { heating: false, liftK: liftK, idealCOP: null, realisticCOP: null, equipmentLiftK: null };
+    }
+    var hotK = indoorC + 273.15;
+    var idealCOP = hotK / liftK;
+    // A real heat pump never exchanges heat at the room and outdoor-air
+    // temperatures themselves. The refrigerant must run colder than the source
+    // and hotter than the sink, fans/pumps consume power, and cold coils defrost.
+    // This remains a transparent teaching estimate, not a product rating.
+    var sourceApproachK = 5;
+    var sinkApproachK = 8;
+    var equipmentHotK = hotK + sinkApproachK;
+    var equipmentColdK = outdoorC + 273.15 - sourceApproachK;
+    var equipmentLiftK = equipmentHotK - equipmentColdK;
+    var cycleCOP = (equipmentHotK / equipmentLiftK) * 0.45;
+    var defrostFactor = outdoorC < 7 ? clamp(0.78 + (outdoorC + 20) * 0.008, 0.72, 0.98) : 1;
+    var auxiliaryPowerFactor = 1.18;
+    var realisticCOP = clamp((cycleCOP * defrostFactor) / auxiliaryPowerFactor, 1, 8);
+    return {
+      heating: true,
+      liftK: liftK,
+      idealCOP: idealCOP,
+      realisticCOP: realisticCOP,
+      equipmentLiftK: equipmentLiftK,
+      sourceApproachK: sourceApproachK,
+      sinkApproachK: sinkApproachK,
+      defrostFactor: defrostFactor,
+      practicalCap: 8
+    };
+  }
+
   // ── 3D convection tank ──────────────────────────────────────────────
   // Convection is the mechanism a flat diagram serves worst. In 2D it looks like
   // a circle of arrows; in reality it is a closed toroidal roll, and you only
@@ -275,6 +376,17 @@
       'specific heat', 'calorimetry', 'latent heat', 'phase change', 'heating curve', 'entropy', 'carnot',
       'heat engine', 'thermal', 'temperature', 'R-value', 'second law'],
 
+    // Exposed as pure calculations so tests verify the same code the UI uses.
+    models: {
+      finishC: HEAT_FINISH_C,
+      advanceBar: heatAdvanceBar,
+      racePrediction: heatRacePrediction,
+      mixTemperature: heatMixTemperature,
+      mixExplanation: heatMixExplanation,
+      waterState: heatWaterState,
+      heatPump: heatPumpModel
+    },
+
     // Quest hooks measure deliberate acts, never "you opened the panel".
     questHooks: [
       { id: 'heat_transfer_run', label: 'Run all three heat transfer modes', icon: '🔥',
@@ -327,6 +439,10 @@
       var view3dStatus = st3d[0], setView3dStatus = st3d[1];
       var stTable = React.useState(false);
       var showTables = stTable[0], setShowTables = stTable[1];
+      var stRaceStatus = React.useState('Bars begin at 20 °C. The finish line is ' + HEAT_FINISH_C + ' °C at the midpoint.');
+      var raceStatus = stRaceStatus[0], setRaceStatus = stRaceStatus[1];
+      var prefersReducedMotion = !!(typeof window !== 'undefined' && window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
       var d = (ctx.toolData && ctx.toolData._heatLab) || {};
 
@@ -353,12 +469,14 @@
       var materialB = MATERIALS.filter(function (m) { return m.id === matBId; })[0] || MATERIALS[5];
       var raceOn = !!d.raceOn;
       var hotEnd = typeof d.hotEnd === 'number' ? d.hotEnd : 200;
+      var racePrediction = heatRacePrediction(material, materialB);
+      var raceRatioText = racePrediction.ratio >= 10 ? Math.round(racePrediction.ratio).toLocaleString() : racePrediction.ratio.toFixed(1);
 
       // ── Module 1 canvas ──────────────────────────────────────────────
       React.useEffect(function () {
         var el = canvasRef.current;
         if (!el) return;
-        var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        var reduce = prefersReducedMotion;
         var dpr = Math.min(window.devicePixelRatio || 1, 2);
         var W = 0, H = 0;
         function size() {
@@ -378,16 +496,17 @@
         // 20 cm bar with the line at 50 C gives copper 22 s, aluminium 27 s,
         // steel 201 s and the insulators never — which is exactly the lesson.
         var BAR_LEN = 0.20;              // metres
-        var FINISH_C = 50;               // midpoint temperature that stops the clock
         var TIME_SCALE = 10;             // simulated seconds per real second
         var N = 90;
         var TA = new Float64Array(N);
         var TB = new Float64Array(N);
         var clockA = 0, clockB = 0;      // seconds of simulated time
-        var reachA = null, reachB = null; // seconds for the midpoint to pass FINISH_C
+        var reachA = null, reachB = null; // seconds for the midpoint to pass HEAT_FINISH_C
+        var last = 0;
         function reset() {
           for (var i = 0; i < N; i++) { TA[i] = 20; TB[i] = 20; }
-          clockA = 0; clockB = 0; reachA = null; reachB = null;
+          clockA = 0; clockB = 0; reachA = null; reachB = null; last = 0;
+          setRaceStatus('Bars reset to 20 °C. The finish line is ' + HEAT_FINISH_C + ' °C at the midpoint.');
         }
         reset();
 
@@ -395,36 +514,46 @@
           return MATERIALS.filter(function (x) { return x.id === id; })[0] || fallback;
         }
         function advance(T, mat, hot, dt) {
-          // alpha = k / (rho * c). The explicit scheme needs sub-steps or it blows
-          // up: copper's diffusivity is 27,000x aerogel's, so one dt cannot serve both.
-          var alpha = mat.k / (mat.rho * mat.c);
-          var dx = BAR_LEN / N;
-          var stable = 0.4 * dx * dx / alpha;
-          var sub = Math.min(400, Math.max(1, Math.ceil(dt / stable)));
-          var sdt = dt / sub;
-          for (var s = 0; s < sub; s++) {
-            T[0] = hot;
-            T[N - 1] = 20;                              // held at room temperature
-            var prev = T.slice();
-            for (var i = 1; i < N - 1; i++) {
-              T[i] = prev[i] + alpha * sdt * (prev[i + 1] - 2 * prev[i] + prev[i - 1]) / (dx * dx);
-            }
-          }
+          heatAdvanceBar(T, mat, hot, dt, BAR_LEN);
         }
-        var last = 0;
         function step(dt) {
           var hot = parseFloat(el.dataset.hot || '200');
           var mid = Math.floor(N / 2);
           var mA = matOf(el.dataset.material, MATERIALS[0]);
+          var reachedNow = false;
           advance(TA, mA, hot, dt);
           clockA += dt;
-          if (reachA === null && TA[mid] >= FINISH_C) reachA = clockA;
+          if (reachA === null && TA[mid] >= HEAT_FINISH_C) { reachA = clockA; reachedNow = true; }
           if (el.dataset.race === 'on') {
             var mB = matOf(el.dataset.materialB, MATERIALS[5]);
             advance(TB, mB, hot, dt);
             clockB += dt;
-            if (reachB === null && TB[mid] >= FINISH_C) reachB = clockB;
+            if (reachB === null && TB[mid] >= HEAT_FINISH_C) { reachB = clockB; reachedNow = true; }
           }
+          if (reachedNow) {
+            var parts = [mA.name + (reachA === null
+              ? ' has not reached the finish line.'
+              : ' reached ' + HEAT_FINISH_C + ' °C at the midpoint in ' + reachA.toFixed(1) + ' simulated seconds.')];
+            if (el.dataset.race === 'on') {
+              var raceB = matOf(el.dataset.materialB, MATERIALS[5]);
+              parts.push(raceB.name + (reachB === null
+                ? ' has not reached the finish line yet.'
+                : ' reached it in ' + reachB.toFixed(1) + ' simulated seconds.'));
+            }
+            setRaceStatus(parts.join(' '));
+          }
+        }
+        function currentRaceStatus() {
+          var mid = Math.floor(N / 2);
+          var mA = matOf(el.dataset.material, MATERIALS[0]);
+          var text = mA.name + ' midpoint: ' + TA[mid].toFixed(1) + ' °C' +
+            (reachA === null ? '.' : ', reached the finish in ' + reachA.toFixed(1) + ' simulated seconds.');
+          if (el.dataset.race === 'on') {
+            var mB = matOf(el.dataset.materialB, MATERIALS[5]);
+            text += ' ' + mB.name + ' midpoint: ' + TB[mid].toFixed(1) + ' °C' +
+              (reachB === null ? '.' : ', reached the finish in ' + reachB.toFixed(1) + ' simulated seconds.');
+          }
+          return text;
         }
 
         function colourFor(temp) {
@@ -459,7 +588,7 @@
           c.fillStyle = reached === null ? 'rgba(148,163,184,0.85)' : '#4ade80';
           c.fillText(reached === null
             ? fmt(T[Math.floor(N / 2)], 0) + '°C at the middle, still climbing'
-            : 'middle hit ' + FINISH_C + '°C in ' + reached.toFixed(1) + ' s', W - pad, top - 6 * dpr);
+            : 'middle hit ' + HEAT_FINISH_C + '°C in ' + reached.toFixed(1) + ' s', W - pad, top - 6 * dpr);
         }
 
         function drawBar(ts) {
@@ -538,33 +667,66 @@
           c.fillText('This is how the Sun’s energy crosses 150 million km of vacuum to reach you', W / 2, H - 14 * dpr);
         }
 
+        function drawCurrent(ts) {
+          var m = el.dataset.mode || 'conduction';
+          if (m === 'conduction') drawBar(ts);
+          else if (m === 'convection') drawConvection(ts);
+          else drawRadiation(ts);
+        }
+        var visible = true;
+        var io = null;
+        function requestNext() {
+          if (!visible || animRef.current) return;
+          animRef.current = requestAnimationFrame(frame);
+        }
         function frame(ts) {
+          animRef.current = 0;
           if (!el.isConnected) { cancelAnimationFrame(animRef.current); return; }
           try {
             var m = el.dataset.mode || 'conduction';
             if (m === 'conduction') {
               var dt = last ? Math.min(0.25, (ts - last) / 1000) : 0.016;
-              step(dt * TIME_SCALE);
+              if (!reduce) step(dt * TIME_SCALE);
               drawBar(ts);
             } else if (m === 'convection') { drawConvection(ts); }
             else { drawRadiation(ts); }
           } catch (err) { console.error('Heat lab draw error:', err); }
           last = ts;
-          animRef.current = requestAnimationFrame(frame);
+          if (!reduce) requestNext();
         }
-        animRef.current = requestAnimationFrame(frame);
 
-        el._heatReset = reset;
+        el._heatReset = function () { reset(); drawCurrent(0); };
+        el._heatDraw = function () { drawCurrent(0); };
+        el._heatStep = function () {
+          if ((el.dataset.mode || 'conduction') !== 'conduction') return;
+          step(10);
+          drawBar(0);
+          setRaceStatus(currentRaceStatus());
+        };
         if (typeof ResizeObserver === 'function') {
-          var ro = new ResizeObserver(size);
+          var ro = new ResizeObserver(function () { size(); drawCurrent(0); });
           ro.observe(el);
           roRef.current = ro;
         }
+        if (typeof IntersectionObserver === 'function') {
+          io = new IntersectionObserver(function (entries) {
+            visible = !entries.length || entries[0].isIntersecting;
+            if (visible) requestNext();
+            else if (animRef.current) { cancelAnimationFrame(animRef.current); animRef.current = 0; }
+          }, { rootMargin: '120px' });
+          io.observe(el);
+        }
+        requestNext();
         return function () {
           cancelAnimationFrame(animRef.current);
+          animRef.current = 0;
+          if (io) io.disconnect();
           if (roRef.current) { roRef.current.disconnect(); roRef.current = null; }
+          el._heatReset = null;
+          el._heatDraw = null;
+          el._heatStep = null;
         };
-      }, [isDark]);
+      }, [isDark, prefersReducedMotion]);
 
       // keep the canvas fed without re-creating the loop
       React.useEffect(function () {
@@ -575,6 +737,7 @@
         el.dataset.materialB = matBId;
         el.dataset.race = raceOn ? 'on' : 'off';
         el.dataset.hot = String(hotEnd);
+        if (el._heatDraw) el._heatDraw();
       }, [mode, matId, matBId, raceOn, hotEnd]);
 
       // ── Shared line chart. Both curves are the point of their module, and a
@@ -683,6 +846,10 @@
       }
       var curve = coolingCurve(insMat, thickness);
       var after60 = curve[curve.length - 1];
+      var wrapRHere = (thickness / 1000) / insMat.k;
+      var surfaceRHere = 0.12;
+      var doubledFlowRatio = (wrapRHere + surfaceRHere) / (2 * wrapRHere + surfaceRHere);
+      var doubledFlowReductionPct = Math.max(0, (1 - doubledFlowRatio) * 100);
 
       React.useEffect(function () {
         if (after60 >= 65 && !d.insulationWin) upd({ insulationWin: true });
@@ -695,23 +862,12 @@
       var m2 = typeof d.m2 === 'number' ? d.m2 : 0.5;
       var t1 = typeof d.t1 === 'number' ? d.t1 : 20;
       var t2 = typeof d.t2 === 'number' ? d.t2 : 90;
-      var finalT = (m1 * sub1.c * t1 + m2 * sub2.c * t2) / (m1 * sub1.c + m2 * sub2.c);
+      var finalT = heatMixTemperature(sub1, m1, t1, sub2, m2, t2);
+      var mixExplanation = heatMixExplanation(sub1, m1, t1, sub2, m2, t2);
 
       // ── Module 4: heating curve ──────────────────────────────────────
       var energyIn = typeof d.energyIn === 'number' ? d.energyIn : 0;   // kJ per kg
-      function waterState(kJ) {
-        var e = kJ * 1000;
-        if (e < 2090 * 20) return { phase: 'Ice', temp: -20 + e / 2090, frac: 0 };
-        e -= 2090 * 20;
-        if (e < 334000) return { phase: 'Ice melting', temp: 0, frac: e / 334000 };
-        e -= 334000;
-        if (e < 4186 * 100) return { phase: 'Liquid water', temp: e / 4186, frac: 0 };
-        e -= 4186 * 100;
-        if (e < 2260000) return { phase: 'Water boiling', temp: 100, frac: e / 2260000 };
-        e -= 2260000;
-        return { phase: 'Steam', temp: 100 + e / 2010, frac: 0 };
-      }
-      var wstate = waterState(energyIn);
+      var wstate = heatWaterState(energyIn);
 
       React.useEffect(function () {
         if (wstate.phase === 'Steam' && !d.curveComplete) upd({ curveComplete: true });
@@ -720,7 +876,7 @@
       // Sample the curve across the full energy range so the plateaus are visible
       var CURVE_MAX = 3100;
       var curvePts = [];
-      for (var ce = 0; ce <= CURVE_MAX; ce += 10) curvePts.push([ce, waterState(ce).temp]);
+      for (var ce = 0; ce <= CURVE_MAX; ce += 10) curvePts.push([ce, heatWaterState(ce).temp]);
 
       React.useEffect(function () {
         drawChart(curveRef.current, {
@@ -810,6 +966,8 @@
       var entHere = lnMultiplicity(entSplit, ENT_NA) + lnMultiplicity(ENT_Q - entSplit, ENT_NB);
       // how many times more likely the even split is than the current one
       var entOddsLog10 = (entPeak - entHere) / Math.LN10;
+      var entAtPeak = entSplit === entPeakAt;
+      var entNearPeak = !entAtPeak && entOddsLog10 < 0.5;
 
       React.useEffect(function () {
         drawChart(entropyRef.current, {
@@ -823,10 +981,10 @@
       // ── Heat pumps: the engine run backwards ─────────────────────────
       var hpOut = typeof d.hpOut === 'number' ? d.hpOut : 2;    // outdoor °C
       var hpIn = typeof d.hpIn === 'number' ? d.hpIn : 21;      // indoor °C
-      var hpTh = hpIn + 273.15, hpTc = hpOut + 273.15;
-      var hpIdealCOP = hpTh > hpTc ? hpTh / (hpTh - hpTc) : Infinity;
-      // Real units reach roughly 45% of the ideal figure across a season
-      var hpRealCOP = hpIdealCOP * 0.45;
+      var hpModel = heatPumpModel(hpOut, hpIn);
+      var hpTh = hpIn + 273.15;
+      var hpIdealCOP = hpModel.idealCOP;
+      var hpRealCOP = hpModel.realisticCOP;
 
       // ── Module 5: engines ────────────────────────────────────────────
       var enginePick = typeof d.enginePick === 'number' ? d.enginePick : null;
@@ -861,7 +1019,7 @@
         var children = Array.prototype.slice.call(arguments, 1);
         // Spread as separate arguments, not as one array child: an array makes
         // React treat static siblings as a dynamic list and demand keys.
-        return h.apply(null, ['div', {
+        return h.apply(null, ['section', {
           className: 'rounded-xl border p-3 mt-3',
           style: {
             borderColor: accent + '55',
@@ -878,12 +1036,14 @@
         return React.cloneElement(node, {
           id: 'htsec-' + id,
           'data-ht-sec': id,
+          tabIndex: -1,
           style: Object.assign({}, node.props.style, { scrollMarginTop: '188px' })
         });
       };
       var heading = function (accent, text) {
-        return h('p', { className: 'text-xs font-black mb-2', style: { color: accent } }, text);
+        return h('h4', { className: 'text-xs font-black mb-2', style: { color: accent } }, text);
       };
+      var pillTextColor = function (accent) { var m = String(accent || '').match(/^#([0-9a-f]{6})/i); if (!m) return '#0b1020'; var r = parseInt(m[1].slice(0, 2), 16) / 255; var g = parseInt(m[1].slice(2, 4), 16) / 255; var b = parseInt(m[1].slice(4, 6), 16) / 255; var linear = function (v) { return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; var lum = 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b); var darkRatio = (lum + 0.05) / 0.05; var lightRatio = 1.05 / (lum + 0.05); return lightRatio >= darkRatio ? '#ffffff' : '#0b1020'; };
       var pill = function (on, accent, label, onClick, ariaLabel) {
         return h('button', {
           key: label, type: 'button',
@@ -892,7 +1052,7 @@
           onClick: onClick,
           className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold transition-colors',
           style: on
-            ? { background: accent, color: '#0b1020', border: '1px solid ' + accent }
+            ? { background: accent, color: pillTextColor(accent), border: '1px solid ' + accent }
             : { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') }
         }, label);
       };
@@ -901,6 +1061,7 @@
           h('label', { htmlFor: id, className: 'text-[11px] font-bold w-28 flex-shrink-0', style: { color: isDark ? '#cbd5e1' : '#475569' } }, label),
           h('input', {
             id: id, type: 'range', min: min, max: max, step: step, value: value,
+            'aria-valuetext': String(suffix),
             onChange: onChange, className: 'flex-1 h-6 accent-orange-500'
           }),
           h('span', { className: 'text-[11px] font-bold w-20 text-right', style: { color: isDark ? '#fdba74' : '#c2410c' } }, suffix)
@@ -981,6 +1142,8 @@
             && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
           try { target.scrollIntoView({ behavior: rm ? 'auto' : 'smooth', block: 'start' }); }
           catch (e) { target.scrollIntoView(); }
+          try { target.focus({ preventScroll: true }); }
+          catch (focusErr) { target.focus(); }
         }
         if (typeof announceToSR === 'function') announceToSR('Jumped to ' + s.label + '.');
       }
@@ -1083,6 +1246,7 @@
               ref: canvasRef,
               tabIndex: 0,
               role: 'img',
+              'aria-describedby': mode === 'conduction' ? 'heat-race-status' : undefined,
               'aria-label': 'Heat transfer visualisation, currently showing ' + activeMode.label + '. ' + activeMode.why +
                 (mode === 'conduction' ? ' The bar is ' + material.name + ', heated to ' + hotEnd + ' degrees Celsius at the left end. Use arrow keys to change the hot end temperature.' : ''),
               onKeyDown: function (e) {
@@ -1099,6 +1263,10 @@
               style: { width: '100%', height: '100%', display: 'block' }
             })
           ),
+          mode === 'conduction' ? h('p', {
+            id: 'heat-race-status', role: 'status', 'aria-live': 'polite',
+            className: 'text-[11px] mt-1.5', style: { color: isDark ? '#cbd5e1' : '#475569' }
+          }, raceStatus) : null,
 
           mode === 'conduction' ? h('div', { className: 'mt-2' },
             h('div', { className: 'flex flex-wrap items-center gap-2 mb-2' },
@@ -1112,7 +1280,7 @@
                   if (el && el._heatReset) el._heatReset();
                   if (typeof beep === 'function') beep();
                   if (typeof announceToSR === 'function') {
-                    announceToSR(raceOn ? 'Single bar.' : 'Racing ' + material.name + ' against ' + materialB.name + '. Both start at 20 degrees; the clock stops when the middle of each bar passes 100 degrees.');
+                    announceToSR(raceOn ? 'Single bar.' : 'Racing ' + material.name + ' against ' + materialB.name + '. Both start at 20 degrees; the clock stops when the middle of each bar passes ' + HEAT_FINISH_C + ' degrees.');
                   }
                 },
                 className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-black transition-colors',
@@ -1132,8 +1300,20 @@
                 className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold transition-colors',
                 style: { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') }
               }, '↺ Restart'),
+              prefersReducedMotion ? h('button', {
+                type: 'button',
+                'aria-label': 'Advance the conduction model by 10 simulated seconds',
+                onClick: function () {
+                  var el = canvasRef.current;
+                  if (el && el._heatStep) el._heatStep();
+                },
+                className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold transition-colors',
+                style: { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') }
+              }, 'Advance 10 s') : null,
               raceOn ? h('span', { className: 'text-[11px]', style: { color: isDark ? '#cbd5e1' : '#475569' } },
-                'Predicted gap: about ' + Math.round((material.k / (material.rho * material.c)) / (materialB.k / (materialB.rho * materialB.c))) + '× — does the clock agree?') : null
+                material.id === materialB.id
+                  ? 'Prediction: identical materials should tie.'
+                  : 'Prediction: ' + racePrediction.fasterName + ' should reach the midpoint about ' + raceRatioText + '× sooner than ' + racePrediction.slowerName + '. Does the clock agree?') : null
             ),
             h('p', { className: 'text-[11px] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, raceOn ? 'Top bar' : 'Bar material'),
             h('div', { className: 'flex flex-wrap gap-1' },
@@ -1198,11 +1378,13 @@
           h('div', { className: 'mt-2 rounded-lg overflow-hidden border', style: { borderColor: 'rgba(251,191,36,0.35)', height: '190px' } },
             h('canvas', {
               ref: coolRef, role: 'img',
+              'data-a11y-static': 'true',
+              'aria-describedby': 'ht-cooling-curve-description',
               'aria-label': 'Cooling curve over one hour. With ' + thickness + ' millimetres of ' + insMat.name +
                 ' the tea falls from 90 degrees to ' + after60.toFixed(0) + ' degrees. The dashed lines show copper, the worst choice, and aerogel, the best, at the same thickness.',
               style: { width: '100%', height: '100%', display: 'block' }
             })),
-          h('p', { className: 'text-[10px] mt-1', style: { color: isDark ? '#94a3b8' : '#64748b' } },
+          h('p', { id: 'ht-cooling-curve-description', className: 'text-[10px] mt-1', style: { color: isDark ? '#94a3b8' : '#64748b' } },
             'Solid line: your choice. Dashed: copper (worst) and aerogel (best) at the same thickness. The curve is steepest at the start, because heat flow is proportional to the temperature gap.'),
           dataTable('Tea temperature every ten minutes, ' + thickness + ' mm of ' + insMat.name,
             ['Minutes', 'Your wrap', 'Copper', 'Aerogel'],
@@ -1214,7 +1396,7 @@
             })),
           h('p', { className: 'text-[11px] mt-2', style: { color: after60 >= 65 ? '#16a34a' : (isDark ? '#cbd5e1' : '#475569') } },
             after60 >= 65
-              ? '✅ Still ' + fmt(after60, 1) + ' °C after an hour. Doubling the thickness halves the heat flow, but the still-air film on the outside sets a floor you cannot beat by wrapping alone.'
+              ? '✅ Still ' + fmt(after60, 1) + ' °C after an hour. In this series-resistance model, doubling the wrap from ' + thickness + ' to ' + (thickness * 2) + ' mm cuts wall heat flow by about ' + Math.round(doubledFlowReductionPct) + '%. It approaches a one-half reduction only when the wrap dominates the surface-film resistance. The model omits the lid, evaporation and thermal bridges.'
               : 'Down to ' + fmt(after60, 1) + ' °C. Try a material with a lower k, or more of it.')
         ),
 
@@ -1364,22 +1546,20 @@
             h('p', { className: 'text-[11px] mt-1 font-mono', style: { color: isDark ? '#cbd5e1' : '#475569' } },
               'Tf = (m₁c₁T₁ + m₂c₂T₂) / (m₁c₁ + m₂c₂)'),
             h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
-              sub1.c === sub2.c
-                ? 'Same substance both sides, so the answer sits at the mass-weighted midpoint.'
-                : (sub1.c > sub2.c
-                  ? sub1.name + ' has the larger specific heat, so it barely shifts while the ' + sub2.name.toLowerCase() + ' moves a long way. Specific heat is stubbornness against temperature change.'
-                  : sub2.name + ' has the larger specific heat, so it barely shifts while the ' + sub1.name.toLowerCase() + ' moves a long way. Specific heat is stubbornness against temperature change.'))
+              mixExplanation)
           ) : null
         ),
 
         // ── 4. heating curve ──
         sec('heatingcurve', '#a78bfa',
           heading('#a78bfa', '♨️ 6. The heating curve: where the energy hides'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { id: 'ht-heating-curve-description', className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Pour energy into 1 kg of ice at −20 °C and watch the temperature. It does not rise steadily, and the reason is the most useful idea in this whole tool.'),
           h('div', { className: 'rounded-lg overflow-hidden border mb-2', style: { borderColor: 'rgba(167,139,250,0.35)', height: '190px' } },
             h('canvas', {
               ref: curveRef, role: 'img',
+              'data-a11y-static': 'true',
+              'aria-describedby': 'ht-heating-curve-description',
               'aria-label': 'Heating curve for one kilogram of water, temperature against energy added. ' +
                 'The line rises through ice, then holds flat at zero degrees for 334 kilojoules while the ice melts, ' +
                 'rises again through liquid water, then holds flat at 100 degrees for 2,260 kilojoules while it boils, ' +
@@ -1663,11 +1843,13 @@
         // ── entropy ──
         sec('entropy', '#f472b6',
           heading('#f472b6', '🎲 12. Entropy: why heat only goes one way'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+          h('p', { id: 'ht-entropy-description', className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Nothing forbids a cold cup warming itself by cooling the room — energy would still be conserved. It does not happen because of counting. Two blocks share 80 units of energy; the graph plots how many ways each split can be arranged.'),
           h('div', { className: 'rounded-lg overflow-hidden border mb-2', style: { borderColor: 'rgba(244,114,182,0.35)', height: '190px' } },
             h('canvas', {
               ref: entropyRef, role: 'img',
+              'data-a11y-static': 'true',
+              'aria-describedby': 'ht-entropy-description',
               'aria-label': 'Log of the number of arrangements against how the 80 energy units are split between two equal blocks. ' +
                 'The curve peaks sharply at an even split of ' + entPeakAt + ' units each. ' +
                 'The current split of ' + entSplit + ' units is ' + (entOddsLog10 > 1 ? '10 to the power ' + entOddsLog10.toFixed(0) + ' times' : 'only slightly') + ' less likely than the peak.',
@@ -1684,8 +1866,10 @@
               h('p', { className: 'text-sm font-black', style: { color: entOddsLog10 < 0.5 ? '#34d399' : '#fbbf24' } }, entOddsLog10 < 0.05 ? 'at the peak' : '10^' + entOddsLog10.toFixed(1)))
           ),
           h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
-            entOddsLog10 < 0.5
-              ? 'You are at the peak — the two blocks are at the same temperature. Nothing stops the energy sloshing away from here, but there are so few ways to do it that you would never see it.'
+            entAtPeak
+              ? 'You are exactly at the peak: the two equal blocks hold the same number of energy units. In this deliberately tiny model, ordinary fluctuations away from the peak are still visible.'
+              : entNearPeak
+                ? 'This is near equilibrium, not exactly at it. A 120-oscillator teaching model visibly fluctuates among nearby splits; only when the particle count becomes macroscopic do large reverse flows become effectively impossible.'
               : 'This lopsided split is about 10^' + entOddsLog10.toFixed(0) + ' times rarer than the even one. That is the whole of the second law: heat flows toward the split with more arrangements, not because it is forced to, but because the alternatives are outnumbered beyond counting.'),
           h('p', { className: 'text-[11px] mt-1 font-mono', style: { color: isDark ? '#94a3b8' : '#64748b' } },
             'S = k ln Ω    Ω = C(q+N−1, q) for q units among N oscillators'),
@@ -1702,24 +1886,27 @@
             function (e) { upd({ hpOut: parseFloat(e.target.value) }); }, hpOut + ' °C'),
           slider('heat-hp-in', 'Indoor temp', 15, 26, 1, hpIn,
             function (e) { upd({ hpIn: parseFloat(e.target.value) }); }, hpIn + ' °C'),
-          h('div', { className: 'mt-2 grid grid-cols-3 gap-2' },
-            [['Ideal COP', isFinite(hpIdealCOP) ? hpIdealCOP.toFixed(1) : '∞', '#22d3ee'],
-             ['Realistic COP', hpRealCOP.toFixed(1), '#0891b2'],
-             ['Heat per 1 kW in', hpRealCOP.toFixed(1) + ' kW', '#f59e0b']
+          h('div', { className: 'mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2' },
+            [['Ideal COP', hpModel.heating ? hpIdealCOP.toFixed(1) : '—', '#22d3ee'],
+             ['Teaching estimate COP', hpModel.heating ? hpRealCOP.toFixed(1) : '—', '#0891b2'],
+             ['Heat per 1 kW in', hpModel.heating ? hpRealCOP.toFixed(1) + ' kW' : '—', '#f59e0b']
             ].map(function (p) {
               return h('div', { key: p[0], className: 'rounded-lg p-2 text-center', style: { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(34,211,238,0.09)', border: '1px solid rgba(34,211,238,0.32)' } },
                 h('p', { className: 'text-[10px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, p[0]),
                 h('p', { className: 'text-sm font-black', style: { color: p[2] } }, p[1]));
             })
           ),
-          h('p', { className: 'text-[11px] mt-2 font-mono', style: { color: isDark ? '#94a3b8' : '#64748b' } },
-            'COP_ideal = T_hot / (T_hot − T_cold) = ' + hpTh.toFixed(0) + ' / ' + (hpTh - hpTc).toFixed(0) + ' K'),
-          h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
-            'An electric bar heater is exactly 1.0: every joule of electricity becomes one joule of heat, and it cannot do better. This heat pump delivers ' + hpRealCOP.toFixed(1) + ' — roughly ' + Math.round(hpRealCOP * 100) + '% of a bar heater\'s output for the same electricity, because most of the heat was already outside and only needed carrying in.'),
-          h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: hpOut <= -10 ? '#fbbf24' : (isDark ? '#cbd5e1' : '#475569') } },
+          hpModel.heating ? h('p', { className: 'text-[11px] mt-2 font-mono', style: { color: isDark ? '#94a3b8' : '#64748b' } },
+            'COP_ideal = T_hot / (T_hot − T_cold) = ' + hpTh.toFixed(0) + ' / ' + hpModel.liftK.toFixed(0) + ' K')
+            : h('div', { role: 'status', className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(34,211,238,0.4)', background: isDark ? 'rgba(15,23,42,0.65)' : 'rgba(236,254,255,0.9)' } },
+              h('p', { className: 'text-[11px] font-bold', style: { color: isDark ? '#67e8f9' : '#0e7490' } },
+                'No heating lift is required. Outdoor air is already as warm as or warmer than the indoor target, so heating-mode COP is undefined. Lower the outdoor temperature or raise the indoor target to model heating.')),
+          hpModel.heating ? h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            'An electric bar heater is exactly 1.0: every joule of electricity becomes one joule of heat. The teaching estimate is ' + hpRealCOP.toFixed(1) + ', using a refrigerant 5 K colder than outdoors and 8 K hotter than the room, 45% of the resulting cycle limit, auxiliary power and a cold-weather defrost penalty. It is capped at ' + hpModel.practicalCap + ' and is not a product rating.') : null,
+          hpModel.heating ? h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: hpOut <= -10 ? '#fbbf24' : (isDark ? '#cbd5e1' : '#475569') } },
             hpOut <= -10
               ? '⚠️ Notice what the cold does. As the outdoor temperature falls the gap widens, the COP collapses, and the pump has to work far harder for the same warmth. This is the real engineering problem with heat pumps in cold climates, and it falls straight out of the Carnot expression.'
-              : 'Drag the outdoor temperature down towards −20 °C and watch what happens to the COP. The reason is the same denominator that caps every heat engine.'),
+              : 'Drag the outdoor temperature down towards −20 °C and watch what happens to the COP. The reason is the same denominator that caps every heat engine.') : null,
           h('p', { className: 'text-[11px] mt-1.5 font-bold', style: { color: '#22d3ee' } },
             '🤔 A fridge is the same machine pointed the other way. Where does the heat it removes actually go, and why does leaving the door open warm the kitchen?')
         ),

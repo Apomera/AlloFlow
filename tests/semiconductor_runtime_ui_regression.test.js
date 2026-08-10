@@ -12,6 +12,21 @@ function readSource() {
   return fs.readFileSync(sourcePath, 'utf8');
 }
 
+function contrastRatio(foreground, background) {
+  const luminance = (hex) => {
+    const channels = hex.replace('#', '').match(/.{2}/g).map((value) => {
+      const channel = Number.parseInt(value, 16) / 255;
+      return channel <= 0.04045
+        ? channel / 12.92
+        : ((channel + 0.055) / 1.055) ** 2.4;
+    });
+    return (0.2126 * channels[0]) + (0.7152 * channels[1]) + (0.0722 * channels[2]);
+  };
+  const first = luminance(foreground);
+  const second = luminance(background);
+  return (Math.max(first, second) + 0.05) / (Math.min(first, second) + 0.05);
+}
+
 describe('Semiconductor Lab runtime UI regressions', () => {
   beforeEach(() => {
     resetStemLab();
@@ -203,5 +218,56 @@ describe('Semiconductor Lab runtime UI regressions', () => {
     expect(source).not.toContain('E\\u2097');
     expect(source).toContain('E_g');
     expect(source).toContain('function canvasInkFor(background)');
+  });
+
+  it('owns a high-contrast live workspace surface with obvious navigation', () => {
+    const source = readSource();
+    const html = renderTool('semiconductor', {
+      semiconductor: { mode: 'explore', subtool: 'bandgap' }
+    });
+
+    expect(html).toContain('class=\"semiconductor-lab');
+    expect(html).toContain('data-mode=\"explore\"');
+    expect(html).toContain('Simulation live');
+    expect(html).toContain('aria-label=\"Previous simulation\"');
+    expect(html).toContain('aria-label=\"Next simulation\"');
+    expect(html).toContain('role=\"progressbar\"');
+    expect(html).toContain('data-state=\"active\"');
+    expect(source).toContain("semiUiStyle.id = 'semi-contrast-ui'");
+    expect(source).toContain('[data-stem-theme=\"dark\"] [data-stem-tool-surface=\"semiconductor\"]');
+    expect(source).toContain('--allo-stem-text:#e2e8f0');
+    expect(contrastRatio('#e2e8f0', '#020617')).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio('#cbd5e1', '#020617')).toBeGreaterThanOrEqual(4.5);
+    expect(source).toContain(':focus-visible{outline:3px solid #f8fafc!important');
+    expect(source).toContain('input[type=\"range\"]::-webkit-slider-thumb');
+    expect(source).toContain('@media(forced-colors:active)');
+  });
+
+  it('keeps challenge and color-choice controls actionable and stateful', () => {
+    const source = readSource();
+    const challenge = renderTool('semiconductor', {
+      semiconductor: { mode: 'challenge', challengeActive: true, challengeIdx: 0 }
+    });
+    const led = renderTool('semiconductor', {
+      semiconductor: { mode: 'explore', subtool: 'ledspec', ledMaterial: 'green-gan', ledCurrent: 20 }
+    });
+    const wafer = renderTool('semiconductor', {
+      semiconductor: { mode: 'explore', subtool: 'waferfab', fabStage: 0 }
+    });
+    const finalWafer = renderTool('semiconductor', {
+      semiconductor: { mode: 'explore', subtool: 'waferfab', fabStage: 7 }
+    });
+
+    expect(source).not.toContain('a11yClick(function() {})');
+    expect(challenge).toContain('aria-pressed=\"false\"');
+    expect(challenge).toContain('min-h-11');
+    expect(led).toContain('aria-label=\"InGaN (Green) LED\"');
+    expect(source).toContain('color: canvasInkFor(m.color)');
+    expect(wafer).toContain('aria-current=\"step\"');
+    expect(wafer).toContain('disabled=\"\"');
+    expect(finalWafer).toContain('Finish wafer ✓');
+    expect(finalWafer).not.toContain('disabled=\"\"');
+    expect(source).toContain("announceToSR('Wafer fabrication complete')");
+    expect(source).toContain("cx.strokeStyle = '#64748B'; cx.lineWidth = 1");
   });
 });

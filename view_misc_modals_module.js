@@ -76,6 +76,7 @@ function UDLGuideModal(props) {
     handleRestoreArchivedPlan,
     handleDeleteArchivedPlan,
     handleRebuildBlueprintStep,
+    handleDownloadBlueprintDiagnostics,
     lessonTemplates,
     handleSaveLessonTemplate,
     handleApplyLessonTemplate,
@@ -314,6 +315,7 @@ function UDLGuideModal(props) {
       isRunning: !!isExecutingBlueprint,
       onStopRun: handleStopBlueprintRun,
       onRebuildStep: handleRebuildBlueprintStep,
+      onDownloadDiagnostics: handleDownloadBlueprintDiagnostics,
       onSaveTemplate: handleSaveLessonTemplate,
       onPreviewStep: handlePreviewBlueprintStep,
       onUpdate: handleBlueprintUIUpdate,
@@ -416,6 +418,7 @@ function UDLGuideModal(props) {
       isRunning: !!isExecutingBlueprint,
       onStopRun: handleStopBlueprintRun,
       onRebuildStep: handleRebuildBlueprintStep,
+      onDownloadDiagnostics: handleDownloadBlueprintDiagnostics,
       onSaveTemplate: handleSaveLessonTemplate,
       onPreviewStep: handlePreviewBlueprintStep,
       onUpdate: handleBlueprintUIUpdate,
@@ -603,6 +606,237 @@ function UDLGuideModal(props) {
     },
     isShowMeMode ? /* @__PURE__ */ React.createElement(Eye, { size: 18 }) : /* @__PURE__ */ React.createElement(Send, { size: 18 })
   ))));
+}
+function PlatformDiagnosticsSection(props) {
+  const { t } = props;
+  const [platProbe, setPlatProbe] = React.useState(null);
+  const [probeRunning, setProbeRunning] = React.useState(false);
+  const runPlatformProbe = async () => {
+    const rows = [];
+    const add = (name, status, detail) => rows.push({ name, status, detail: String(detail || "") });
+    setProbeRunning(true);
+    try {
+      try {
+        let origin = "unknown";
+        try {
+          origin = window.location.origin;
+        } catch (_) {
+        }
+        let inFrame = "unknown";
+        try {
+          inFrame = window.top === window ? "no (top window)" : "yes";
+        } catch (_) {
+          inFrame = "yes (cross-origin parent)";
+        }
+        add("Context", "info", "origin: " + origin + " \xB7 in iframe: " + inFrame + " \xB7 secure: " + (typeof isSecureContext !== "undefined" ? isSecureContext : "?"));
+      } catch (e) {
+        add("Context", "info", "unreadable: " + e.message);
+      }
+      try {
+        const w = window.open("", "_blank", "width=80,height=60");
+        if (w) {
+          try {
+            w.close();
+          } catch (_) {
+          }
+          add("Pop-up windows", "pass", "window.open works \u2014 compare view + Save-as-PDF can open");
+        } else add("Pop-up windows", "fail", "window.open returned null \u2014 the compare view and print flow cannot open here");
+      } catch (e) {
+        add("Pop-up windows", "fail", "window.open threw: " + e.message);
+      }
+      try {
+        new WebAssembly.Module(new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0]));
+        add("WebAssembly", "pass", "compiles \u2014 Writing Check + OCR can run");
+      } catch (e) {
+        add("WebAssembly", "fail", "cannot compile: " + e.message);
+      }
+      try {
+        const prior = localStorage.getItem("allo_platform_probe_marker");
+        localStorage.setItem("allo_platform_probe_marker", (/* @__PURE__ */ new Date()).toISOString());
+        if (localStorage.getItem("allo_platform_probe_marker")) {
+          add("localStorage (this session)", "pass", "write + read OK");
+          add("localStorage (across sessions)", prior ? "pass" : "warn", prior ? "marker from a previous run found (" + prior.slice(0, 19) + ") \u2014 storage persisted" : "no marker from a previous run \u2014 first probe here, or storage was wiped between sessions. Run again in a new session to confirm.");
+        } else add("localStorage (this session)", "fail", "wrote but could not read back");
+      } catch (e) {
+        add("localStorage (this session)", "fail", e.message);
+      }
+      try {
+        const idb = await new Promise((resolve) => {
+          const to = setTimeout(() => resolve({ status: "fail", detail: "open timed out (3s)" }), 3e3);
+          try {
+            const req = indexedDB.open("allo_platform_probe", 1);
+            req.onupgradeneeded = () => {
+              try {
+                req.result.createObjectStore("kv");
+              } catch (_) {
+              }
+            };
+            req.onerror = () => {
+              clearTimeout(to);
+              resolve({ status: "fail", detail: "open error: " + (req.error && req.error.message) });
+            };
+            req.onsuccess = () => {
+              try {
+                const db = req.result;
+                const tx = db.transaction("kv", "readwrite");
+                const st = tx.objectStore("kv");
+                const get = st.get("marker");
+                get.onsuccess = () => {
+                  const prior = get.result;
+                  st.put((/* @__PURE__ */ new Date()).toISOString(), "marker");
+                  tx.oncomplete = () => {
+                    clearTimeout(to);
+                    try {
+                      db.close();
+                    } catch (_) {
+                    }
+                    resolve({
+                      status: "pass",
+                      detail: prior ? "works; marker from a previous run found (" + String(prior).slice(0, 19) + ") \u2014 persisted" : "works this session; no prior marker \u2014 first probe here, or wiped between sessions. Re-run in a new session to confirm."
+                    });
+                  };
+                };
+                get.onerror = () => {
+                  clearTimeout(to);
+                  resolve({ status: "fail", detail: "read failed" });
+                };
+              } catch (e) {
+                clearTimeout(to);
+                resolve({ status: "fail", detail: e.message });
+              }
+            };
+          } catch (e) {
+            clearTimeout(to);
+            resolve({ status: "fail", detail: e.message });
+          }
+        });
+        add("IndexedDB", idb.status, idb.detail);
+      } catch (e) {
+        add("IndexedDB", "fail", e.message);
+      }
+      try {
+        const u = URL.createObjectURL(new Blob(["probe"], { type: "text/plain" }));
+        const r = await fetch(u);
+        const txt = await r.text();
+        URL.revokeObjectURL(u);
+        add("Blob URLs (same window)", txt === "probe" ? "pass" : "warn", txt === "probe" ? "create + fetch back OK" : "fetched but content mismatched");
+      } catch (e) {
+        add("Blob URLs (same window)", "fail", e.message);
+      }
+      try {
+        const u = URL.createObjectURL(new Blob(["AlloFlow probe OK"], { type: "text/plain" }));
+        const a = document.createElement("a");
+        a.href = u;
+        a.download = "alloflow-platform-probe.txt";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(u), 4e3);
+        add("File downloads", "info", "a tiny test file was triggered \u2014 if alloflow-platform-probe.txt appears in Downloads, downloads work end-to-end");
+      } catch (e) {
+        add("File downloads", "fail", e.message);
+      }
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText("AlloFlow platform probe");
+          add("Clipboard (API)", "pass", "writeText OK");
+        } else add("Clipboard (API)", "warn", "navigator.clipboard unavailable");
+      } catch (e) {
+        add("Clipboard (API)", "warn", "writeText rejected: " + String(e && e.message).slice(0, 120));
+      }
+      try {
+        const ta = document.createElement("textarea");
+        ta.setAttribute("aria-label", "Clipboard fallback text");
+        ta.value = "AlloFlow platform probe";
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand("copy");
+        document.body.removeChild(ta);
+        add("Clipboard (fallback)", ok ? "pass" : "warn", ok ? "execCommand copy works \u2014 copy buttons function even where the API is blocked" : "execCommand returned false");
+      } catch (e) {
+        add("Clipboard (fallback)", "fail", String(e && e.message).slice(0, 120));
+      }
+      add("Dialogs (confirm/prompt)", "info", "typeof confirm = " + typeof window.confirm + " \u2014 use \u201CTest dialog\u201D for the real answer (a sandbox can define it but silently return false)");
+      const cdns = [
+        ["jsDelivr", "https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/package.json"],
+        ["unpkg", "https://unpkg.com/pdf-lib@1.17.1/package.json"],
+        ["cdnjs", "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"],
+        ["Google Fonts", "https://fonts.googleapis.com/css2?family=Lexend&display=swap"]
+      ];
+      for (const pair of cdns) {
+        try {
+          const t0 = Date.now();
+          const ac = typeof AbortController === "function" ? new AbortController() : null;
+          const tid = ac ? setTimeout(() => {
+            try {
+              ac.abort();
+            } catch (_) {
+            }
+          }, 6e3) : null;
+          const r = await fetch(pair[1], ac ? { signal: ac.signal } : void 0);
+          if (tid) clearTimeout(tid);
+          add("CDN: " + pair[0], r.ok ? "pass" : "warn", "HTTP " + r.status + " in " + (Date.now() - t0) + "ms");
+        } catch (e) {
+          add("CDN: " + pair[0], "fail", "unreachable: " + (e && e.message));
+        }
+      }
+      try {
+        const t0 = Date.now();
+        const r = await fetch("https://cdn.jsdelivr.net/npm/harper.js@2.4.0/dist/harper_wasm_bg.wasm", { cache: "force-cache" });
+        if (r.ok) {
+          await r.arrayBuffer();
+          add("Writing-Check cache (10 MB WASM)", "info", "fetched in " + (Date.now() - t0) + "ms \u2014 under ~500ms means the HTTP cache held it; re-run in a fresh session to test cross-session caching");
+        } else add("Writing-Check cache (10 MB WASM)", "warn", "HTTP " + r.status);
+      } catch (e) {
+        add("Writing-Check cache (10 MB WASM)", "warn", e.message);
+      }
+    } finally {
+      setPlatProbe({ when: (/* @__PURE__ */ new Date()).toLocaleString(), rows });
+      setProbeRunning(false);
+    }
+  };
+  const runDialogProbe = () => {
+    let value = null;
+    try {
+      value = window.confirm(t("platform_diag.dialog_question") || "Dialog test: click OK.");
+    } catch (e) {
+      value = "threw: " + e.message;
+    }
+    setPlatProbe((previous) => ({
+      when: previous && previous.when || (/* @__PURE__ */ new Date()).toLocaleString(),
+      rows: [
+        ...(previous && previous.rows || []).filter((row) => row.name !== "Dialogs (live test)"),
+        {
+          name: "Dialogs (live test)",
+          status: value === true ? "pass" : value === false ? "warn" : "fail",
+          detail: value === true ? "confirm() returned true after OK \u2014 dialogs work" : value === false ? "confirm() returned FALSE \u2014 either Cancel was clicked or the sandbox suppressed the dialog" : String(value)
+        }
+      ]
+    }));
+  };
+  const probeReportText = () => !platProbe ? "" : "AlloFlow Platform Check \u2014 " + platProbe.when + "\n" + (typeof navigator !== "undefined" ? navigator.userAgent : "") + "\n\n" + platProbe.rows.map((row) => "[" + row.status.toUpperCase() + "] " + row.name + " \u2014 " + row.detail).join("\n");
+  const copyProbeReport = async () => {
+    const text = probeReportText();
+    try {
+      if (typeof window.alloCopyText === "function" && await window.alloCopyText(text)) return;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+    } catch (_) {
+    }
+    try {
+      const ta = document.createElement("textarea");
+      ta.setAttribute("aria-label", "Clipboard fallback text");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    } catch (_) {
+    }
+  };
+  return /* @__PURE__ */ React.createElement("section", { id: "ai-platform-diagnostics-section", "data-help-key": "ai_platform_diagnostics", className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(Cpu, { size: 14, className: "text-violet-600" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { id: "ai-platform-diagnostics-title", className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, t("platform_diag.header") || "Platform & Browser Diagnostics"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-0.5" }, "Check capabilities that affect AI, files, storage, and pop-up workflows."))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: runPlatformProbe, disabled: probeRunning, className: "bg-violet-600 text-white border-2 border-violet-600 px-3 py-2 rounded-xl font-bold text-xs hover:bg-violet-700 disabled:opacity-60" }, "\u{1F52C} ", probeRunning ? "Running platform check\u2026" : t("platform_diag.run") || "Run platform check"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-ignore": "true", "data-a11y-ignore": "diagnostic-confirm", onClick: runDialogProbe, className: "bg-white text-violet-700 border-2 border-violet-200 px-3 py-2 rounded-xl font-bold text-xs hover:bg-violet-50" }, "\u{1F9EA} ", t("platform_diag.dialog") || "Test dialog")), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-2" }, "Use this when a feature behaves differently across environments. Copy the report and include it when asking for help."), platProbe && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "mt-3 bg-white border border-slate-300 rounded-lg p-2 text-[11px]", role: "region", "aria-labelledby": "ai-platform-results-title" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-1" }, /* @__PURE__ */ React.createElement("span", { id: "ai-platform-results-title", className: "font-bold text-slate-700" }, t("platform_diag.results") || "Results", " \u2014 ", platProbe.when), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: copyProbeReport, "aria-label": t("platform_diag.copy") || "Copy report", className: "min-h-11 shrink-0 px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold hover:bg-slate-200" }, "\u{1F4CB} ", t("platform_diag.copy") || "Copy report")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-0.5" }, platProbe.rows.map((row, index) => /* @__PURE__ */ React.createElement("li", { key: index, className: "flex gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "shrink-0 font-bold " + (row.status === "pass" ? "text-green-700" : row.status === "fail" ? "text-red-700" : row.status === "warn" ? "text-amber-700" : "text-slate-500") }, row.status === "pass" ? "\u2713" : row.status === "fail" ? "\u2717" : row.status === "warn" ? "\u26A0" : "\u2139"), /* @__PURE__ */ React.createElement("span", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, row.name, ":"), " ", row.detail))))), /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, "Platform check complete. ", platProbe.rows.length, " results available.")));
 }
 function ModelDiagnosticsSection(props) {
   const { t, _isCanvasEnv, GEMINI_MODELS } = props;
@@ -1273,7 +1507,7 @@ function AIBackendModal(props) {
     /* @__PURE__ */ React.createElement("option", { value: "imagen" }, "\u{1F3A8} Imagen 4.0 (Google Cloud)"),
     /* @__PURE__ */ React.createElement("option", { value: "flux" }, "\u{1F5BC}\uFE0F FLUX (Local \u2014 port 7860)"),
     /* @__PURE__ */ React.createElement("option", { value: "off" }, "\u{1F6AB} Off (disable image generation)")
-  ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-amber-50 p-2 rounded-lg border border-amber-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Imagen:"), " Google Cloud (requires Blaze plan). High quality, fast."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-600 mt-1" }, /* @__PURE__ */ React.createElement("strong", null, "FLUX:"), " Self-hosted at localhost:7860. Supports generation + editing via FLUX Kontext. No cloud dependency."))), !isStudentAiSetup && /* @__PURE__ */ React.createElement(ModelDiagnosticsSection, { t, _isCanvasEnv, GEMINI_MODELS }), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-device-storage-section", className: "border-t border-slate-100 pt-4" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("canvas_settings.device_storage_label") || "Device Storage"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, t("canvas_settings.device_storage_hint") || "Work and settings are saved on this device only \u2014 nothing goes to a server. Review, export, or erase what is stored here."), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-amber-50 p-2 rounded-lg border border-amber-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Imagen:"), " Google Cloud (requires Blaze plan). High quality, fast."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-600 mt-1" }, /* @__PURE__ */ React.createElement("strong", null, "FLUX:"), " Self-hosted at localhost:7860. Supports generation + editing via FLUX Kontext. No cloud dependency."))), !isStudentAiSetup && /* @__PURE__ */ React.createElement(ModelDiagnosticsSection, { t, _isCanvasEnv, GEMINI_MODELS }), !isStudentAiSetup && /* @__PURE__ */ React.createElement(PlatformDiagnosticsSection, { t }), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-device-storage-section", className: "border-t border-slate-100 pt-4" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("canvas_settings.device_storage_label") || "Device Storage"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, t("canvas_settings.device_storage_hint") || "Work and settings are saved on this device only \u2014 nothing goes to a server. Review, export, or erase what is stored here."), /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => {
@@ -1315,7 +1549,8 @@ window.AlloModules = window.AlloModules || {};
 window.AlloModules.UDLGuideModal = (typeof UDLGuideModal !== 'undefined') ? UDLGuideModal : null;
 window.AlloModules.AIBackendModal = (typeof AIBackendModal !== 'undefined') ? AIBackendModal : null;
 window.AlloModules.ModelDiagnosticsSection = (typeof ModelDiagnosticsSection !== 'undefined') ? ModelDiagnosticsSection : null;
+window.AlloModules.PlatformDiagnosticsSection = (typeof PlatformDiagnosticsSection !== 'undefined') ? PlatformDiagnosticsSection : null;
 window.AlloModules.ViewMiscModalsModule = true;
 window.AlloModules.MiscModals = true;  // satisfies loadModule('MiscModals', ...) registration check
-console.log('[CDN] ViewMiscModalsModule loaded — 2 modals + 1 shared section registered (UDLGuide, AIBackend, ModelDiagnosticsSection)');
+console.log('[CDN] ViewMiscModalsModule loaded — 2 modals + 2 shared sections registered (UDLGuide, AIBackend, ModelDiagnosticsSection, PlatformDiagnosticsSection)');
 })();

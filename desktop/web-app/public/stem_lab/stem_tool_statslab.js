@@ -66,7 +66,34 @@ window.StemLab = window.StemLab || {
     if (document.getElementById('allo-statslab-focus-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-statslab-focus-css';
-    st.textContent = '[data-sl-focusable]:focus-visible{outline:3px solid #6366f1!important;outline-offset:2px!important;border-radius:6px}';
+    st.textContent = '[data-sl-focusable]:focus-visible{outline:3px solid var(--sl-focus,#4338ca)!important;outline-offset:2px!important;border-radius:6px}';
+    document.head.appendChild(st);
+  })();
+
+  // ── Semantic contrast palette (WCAG 1.4.3 / 1.4.11) ──
+  (function() {
+    if (document.getElementById('allo-statslab-contrast-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-statslab-contrast-css';
+    st.textContent = [
+      '.statslab-tool-shell{--allo-stem-canvas:#fff;--allo-stem-panel:#f8fafc;--allo-stem-panel-deeper:#f1f5f9;--allo-stem-text:#0f172a;--allo-stem-text-soft:#475569;--allo-stem-border:#64748b;--sl-surface:#fff;--sl-panel:#f8fafc;--sl-text:#0f172a;--sl-muted:#475569;--sl-border:#64748b;--sl-heading:#3730a3;--sl-accent:#4338ca;--sl-accent-soft:rgba(67,56,202,.10);--sl-accent-border:#6366f1;--sl-purple:#6d28d9;--sl-purple-soft:rgba(109,40,217,.10);--sl-info:#075985;--sl-info-soft:rgba(7,89,133,.10);--sl-positive:#166534;--sl-positive-soft:rgba(22,101,52,.10);--sl-warning:#92400e;--sl-warning-soft:rgba(146,64,14,.10);--sl-danger:#b91c1c;--sl-danger-soft:rgba(185,28,28,.10);--sl-teal:#0f766e;--sl-teal-soft:rgba(15,118,110,.10);--sl-focus:#4338ca;--sl-chart-bg:#fff;--sl-chart-axis:#475569;--sl-chart-grid:#64748b;--sl-chart-label:#334155;--sl-chart-primary:#4338ca;--sl-chart-secondary:#047857;--sl-chart-warning:#a16207;--sl-chart-danger:#b91c1c;--sl-chart-point-stroke:#fff;color:var(--sl-text);background:var(--sl-surface);border-radius:16px;color-scheme:light;}',
+      '[data-stem-theme="dark"] .statslab-tool-shell{--allo-stem-canvas:#0f172a;--allo-stem-panel:#1e293b;--allo-stem-panel-deeper:#020617;--allo-stem-text:#f8fafc;--allo-stem-text-soft:#cbd5e1;--allo-stem-border:#94a3b8;--sl-surface:#0f172a;--sl-panel:#1e293b;--sl-text:#f8fafc;--sl-muted:#cbd5e1;--sl-border:#94a3b8;--sl-heading:#c7d2fe;--sl-accent:#a5b4fc;--sl-accent-soft:rgba(129,140,248,.16);--sl-accent-border:#818cf8;--sl-purple:#d8b4fe;--sl-purple-soft:rgba(216,180,254,.14);--sl-info:#7dd3fc;--sl-info-soft:rgba(125,211,252,.12);--sl-positive:#86efac;--sl-positive-soft:rgba(134,239,172,.12);--sl-warning:#fde68a;--sl-warning-soft:rgba(253,230,138,.12);--sl-danger:#fca5a5;--sl-danger-soft:rgba(252,165,165,.12);--sl-teal:#5eead4;--sl-teal-soft:rgba(94,234,212,.12);--sl-focus:#fbbf24;--sl-chart-bg:#0f172a;--sl-chart-axis:#cbd5e1;--sl-chart-grid:#64748b;--sl-chart-label:#e2e8f0;--sl-chart-primary:#a5b4fc;--sl-chart-secondary:#6ee7b7;--sl-chart-warning:#fde68a;--sl-chart-danger:#fca5a5;--sl-chart-point-stroke:#0f172a;color-scheme:dark;}',
+      '[data-stem-theme="contrast"] .statslab-tool-shell{--allo-stem-canvas:#000;--allo-stem-panel:#000;--allo-stem-panel-deeper:#000;--allo-stem-text:#fff;--allo-stem-text-soft:#fff;--allo-stem-border:#ff0;--sl-surface:#000;--sl-panel:#000;--sl-text:#fff;--sl-muted:#fff;--sl-border:#ff0;--sl-heading:#fff;--sl-accent:#ff0;--sl-accent-soft:#000;--sl-accent-border:#ff0;--sl-purple:#ff0;--sl-purple-soft:#000;--sl-info:#0ff;--sl-info-soft:#000;--sl-positive:#0f0;--sl-positive-soft:#000;--sl-warning:#ff0;--sl-warning-soft:#000;--sl-danger:#ff8080;--sl-danger-soft:#000;--sl-teal:#0ff;--sl-teal-soft:#000;--sl-focus:#0ff;--sl-chart-bg:#000;--sl-chart-axis:#fff;--sl-chart-grid:#fff;--sl-chart-label:#fff;--sl-chart-primary:#ff0;--sl-chart-secondary:#0ff;--sl-chart-warning:#ff0;--sl-chart-danger:#ff8080;--sl-chart-point-stroke:#000;color-scheme:dark;}',
+      '.statslab-tool-shell{--sl-badge-muted:#cbd5e1;--sl-badge-warning:#fbbf24;--sl-badge-medium:#fb923c;--sl-badge-positive:#86efac;--sl-badge-danger:#fca5a5;--sl-on-badge:#0b1220;}',
+      '[data-stem-theme="contrast"] .statslab-tool-shell{--sl-badge-muted:#fff;--sl-badge-warning:#ff0;--sl-badge-medium:#ff0;--sl-badge-positive:#0f0;--sl-badge-danger:#ff8080;--sl-on-badge:#000;}',
+      '.statslab-tool-shell :is(input,select,textarea)::placeholder{color:var(--sl-muted);opacity:1;}',
+      '.statslab-tool-shell :is(input,select,textarea){border-color:var(--sl-border)!important;}',
+      '[data-stem-theme="contrast"] .statslab-tool-shell button{background-color:#000!important;background-image:none!important;color:#0f0!important;border-color:#ff0!important;}',
+      '[data-stem-theme="contrast"] .statslab-tool-shell :is(input,select,textarea){background:#000!important;color:#fff!important;border:2px solid #ff0!important;}',
+      '.statslab-tool-shell svg{max-width:100%;height:auto;}',
+      '.statslab-tool-shell [aria-label="Back to STEM tools"]{border-color:var(--sl-accent-border)!important;background:var(--sl-accent-soft)!important;color:var(--sl-heading)!important;}',
+      '.statslab-tool-shell :is(h1,h2,h3,h4){text-wrap:balance;}',
+      '.statslab-tool-shell [role="tab"]{forced-color-adjust:auto;}',
+      '[data-stem-theme="contrast"] .statslab-tool-shell [role="tab"][aria-selected="true"]{color:#000!important;background:#ff0!important;border-color:#ff0!important;}',
+      '.statslab-tool-shell [data-sl-focusable]:focus-visible{outline-color:var(--sl-focus)!important;}',
+      '@media (prefers-contrast:more){.statslab-tool-shell{--sl-border:currentColor;}.statslab-tool-shell svg{outline:1px solid var(--sl-border);}}',
+      '@media (forced-colors:active){.statslab-tool-shell{forced-color-adjust:auto;}.statslab-tool-shell svg{border:1px solid CanvasText;}}'
+    ].join('');
     document.head.appendChild(st);
   })();
 
@@ -553,30 +580,30 @@ window.StemLab = window.StemLab || {
   function effectSizeLabel(value, type) {
     var v = Math.abs(value);
     if (type === 'd') {
-      if (v < 0.2) return { label: 'negligible', color: 'var(--allo-stem-text-soft, #94a3b8)' };
-      if (v < 0.5) return { label: 'small', color: '#fbbf24' };
-      if (v < 0.8) return { label: 'medium', color: '#f97316' };
-      return { label: 'large', color: '#16a34a' };
+      if (v < 0.2) return { label: 'negligible', color: 'var(--sl-badge-muted)' };
+      if (v < 0.5) return { label: 'small', color: 'var(--sl-badge-warning)' };
+      if (v < 0.8) return { label: 'medium', color: 'var(--sl-badge-medium)' };
+      return { label: 'large', color: 'var(--sl-badge-positive)' };
     }
     if (type === 'eta' || type === 'r2') {
-      if (v < 0.01) return { label: 'negligible', color: 'var(--allo-stem-text-soft, #94a3b8)' };
-      if (v < 0.06) return { label: 'small', color: '#fbbf24' };
-      if (v < 0.14) return { label: 'medium', color: '#f97316' };
-      return { label: 'large', color: '#16a34a' };
+      if (v < 0.01) return { label: 'negligible', color: 'var(--sl-badge-muted)' };
+      if (v < 0.06) return { label: 'small', color: 'var(--sl-badge-warning)' };
+      if (v < 0.14) return { label: 'medium', color: 'var(--sl-badge-medium)' };
+      return { label: 'large', color: 'var(--sl-badge-positive)' };
     }
     if (type === 'r') {
-      if (v < 0.1) return { label: 'negligible', color: 'var(--allo-stem-text-soft, #94a3b8)' };
-      if (v < 0.3) return { label: 'small', color: '#fbbf24' };
-      if (v < 0.5) return { label: 'medium', color: '#f97316' };
-      return { label: 'large', color: '#16a34a' };
+      if (v < 0.1) return { label: 'negligible', color: 'var(--sl-badge-muted)' };
+      if (v < 0.3) return { label: 'small', color: 'var(--sl-badge-warning)' };
+      if (v < 0.5) return { label: 'medium', color: 'var(--sl-badge-medium)' };
+      return { label: 'large', color: 'var(--sl-badge-positive)' };
     }
     if (type === 'phi' || type === 'v') {
-      if (v < 0.1) return { label: 'negligible', color: 'var(--allo-stem-text-soft, #94a3b8)' };
-      if (v < 0.3) return { label: 'small', color: '#fbbf24' };
-      if (v < 0.5) return { label: 'medium', color: '#f97316' };
-      return { label: 'large', color: '#16a34a' };
+      if (v < 0.1) return { label: 'negligible', color: 'var(--sl-badge-muted)' };
+      if (v < 0.3) return { label: 'small', color: 'var(--sl-badge-warning)' };
+      if (v < 0.5) return { label: 'medium', color: 'var(--sl-badge-medium)' };
+      return { label: 'large', color: 'var(--sl-badge-positive)' };
     }
-    return { label: '?', color: 'var(--allo-stem-text-soft, #94a3b8)' };
+    return { label: '?', color: 'var(--sl-badge-muted)' };
   }
 
   // ──────────────────────────────────────────────────────────────────
@@ -1816,6 +1843,7 @@ window.StemLab = window.StemLab || {
         if (nextTab) { nextTab.focus(); nextTab.click(); }
       };
       return h('div', {
+        className: 'statslab-tool-shell',
         style: {
           fontFamily: 'system-ui, sans-serif',
           color: 'var(--allo-stem-text, #e2e8f0)',
@@ -1829,12 +1857,12 @@ window.StemLab = window.StemLab || {
           h('button', { type: 'button', onClick: function() { setStemLabTool(null); }, 'aria-label': 'Back to STEM tools', 'data-sl-focusable': 'true', style: { width: 40, height: 40, borderRadius: 12, border: '1px solid rgba(99,102,241,.45)', background: 'rgba(99,102,241,.10)', color: '#c7d2fe', cursor: 'pointer', fontSize: 18, flexShrink: 0 } }, '←'),
           h('div', { style: { fontSize: 36 } }, '📊'),
           h('div', { style: { flex: 1 } },
-            h('h2', { style: { margin: 0, color: '#a5b4fc', fontSize: 24, fontWeight: 900 } }, __alloT('stem.statslab.statistics_lab', 'Statistics Lab')),
-            h('p', { style: { margin: '4px 0 0', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, __alloT('stem.statslab.inferential_stats_with_ap_psych_ap_bio', 'Inferential stats with AP Psych / AP Bio focus. Transparent. Scaffolded. Better than SPSS for learning.'))
+            h('h2', { style: { margin: 0, color: 'var(--sl-heading)', fontSize: 24, fontWeight: 900 } }, __alloT('stem.statslab.statistics_lab', 'Statistics Lab')),
+            h('p', { style: { margin: '4px 0 0', color: 'var(--sl-muted)', fontSize: 12 } }, __alloT('stem.statslab.inferential_stats_with_ap_psych_ap_bio', 'Inferential stats with AP Psych / AP Bio focus. Transparent. Scaffolded. Better than SPSS for learning.'))
           )
         ),
 
-        h('section', { 'data-statslab-command': 'true', 'aria-labelledby': 'statslab-command-title', className: 'relative overflow-hidden rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-950/65 via-slate-900 to-cyan-950/45 p-4 sm:p-5 mb-4' },
+        h('section', { 'data-statslab-command': 'true', 'aria-labelledby': 'statslab-command-title', className: 'relative overflow-hidden rounded-2xl border border-indigo-500/30 p-4 sm:p-5 mb-4', style: { background: 'linear-gradient(135deg,#1e1b4b,#0f172a 55%,#083344)' } },
           h('div', { className: 'absolute -right-6 -top-8 text-8xl opacity-[0.06]', 'aria-hidden': 'true' }, '📊'),
           h('div', { className: 'relative grid gap-4 lg:grid-cols-[1.15fr_.85fr]' },
             h('div', null,
@@ -1842,7 +1870,7 @@ window.StemLab = window.StemLab || {
               h('h2', { id: 'statslab-command-title', className: 'mt-2 text-xl sm:text-2xl font-black text-white' }, analysisMission.icon + ' ' + analysisMission.title),
               h('p', { className: 'mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed' }, analysisMission.detail),
               h('div', { className: 'mt-4 grid grid-cols-3 gap-2', 'aria-label': 'Statistics workflow status' },
-                [[d.sampleId ? 'Ready' : '—', 'Sample'], [d.selectedTest ? 'Chosen' : '—', 'Test'], [d.testsRun || 0, 'Runs']].map(function(metric) { return h('div', { key: metric[1], className: 'rounded-xl border border-white/10 bg-white/5 p-3 text-center' }, h('div', { className: 'text-base font-black text-white' }, metric[0]), h('div', { className: 'mt-1 text-[10px] font-bold text-slate-400' }, metric[1])); })
+                [[d.sampleId ? 'Ready' : '—', 'Sample'], [d.selectedTest ? 'Chosen' : '—', 'Test'], [d.testsRun || 0, 'Runs']].map(function(metric) { return h('div', { key: metric[1], className: 'rounded-xl border border-white/10 bg-white/5 p-3 text-center' }, h('div', { className: 'text-base font-black text-white' }, metric[0]), h('div', { className: 'mt-1 text-[10px] font-bold text-slate-200' }, metric[1])); })
               )
             ),
             h('aside', { className: 'rounded-xl border border-cyan-500/20 bg-black/20 p-4', 'aria-label': 'Statistics evidence route' },
@@ -1883,9 +1911,9 @@ window.StemLab = window.StemLab || {
               title: tab.desc,
               style: {
                 padding: '8px 14px',
-                background: sel ? 'linear-gradient(135deg,#6366f1,#4f46e5)' : 'rgba(99,102,241,0.10)',
-                color: sel ? '#fff' : '#a5b4fc',
-                border: '1px solid ' + (sel ? '#4f46e5' : 'rgba(99,102,241,0.40)'),
+                background: sel ? 'linear-gradient(135deg,#4338ca,#3730a3)' : 'var(--sl-accent-soft)',
+                color: sel ? '#fff' : 'var(--sl-heading)',
+                border: '1px solid ' + (sel ? '#312e81' : 'var(--sl-accent-border)'),
                 borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 700, minHeight: 36
               }
             }, tab.label);
@@ -1905,15 +1933,25 @@ window.StemLab = window.StemLab || {
             inquiry: { accent: '#14b8a6', soft: 'rgba(20,184,166,0.10)',  icon: '🔬', title: __alloT('stem.statslab.inquiry_sandbox_power_effect_alpha', 'Inquiry sandbox — power × effect × alpha'),   hint: __alloT('stem.statslab.move_three_sliders_predict_where_a_stu', 'Move three sliders. Predict where a study moves from underpowered to well-powered to wasteful. No score, no reveal — you mark your own understanding.') }
           };
           var meta = TAB_META[d.mode] || TAB_META.home;
+          var semanticTopicColors = {
+            home: ['var(--sl-accent)', 'var(--sl-accent-soft)', 'var(--sl-accent-border)'],
+            wizard: ['var(--sl-purple)', 'var(--sl-purple-soft)', 'var(--sl-purple)'],
+            data: ['var(--sl-positive)', 'var(--sl-positive-soft)', 'var(--sl-positive)'],
+            test: ['var(--sl-info)', 'var(--sl-info-soft)', 'var(--sl-info)'],
+            results: ['var(--sl-warning)', 'var(--sl-warning-soft)', 'var(--sl-warning)'],
+            power: ['var(--sl-danger)', 'var(--sl-danger-soft)', 'var(--sl-danger)'],
+            mastery: ['var(--sl-warning)', 'var(--sl-warning-soft)', 'var(--sl-warning)'],
+            inquiry: ['var(--sl-teal)', 'var(--sl-teal-soft)', 'var(--sl-teal)']
+          }[d.mode] || ['var(--sl-accent)', 'var(--sl-accent-soft)', 'var(--sl-accent-border)'];
           return h('div', {
             role: 'tabpanel',
             id: 'statslab-panel-' + d.mode,
             'aria-labelledby': 'statslab-tab-' + d.mode,
             tabIndex: 0,
             style: {
-              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0.4) 100%)',
-              border: '1px solid ' + meta.accent + '55',
-              borderLeft: '4px solid ' + meta.accent,
+              background: 'linear-gradient(135deg, ' + semanticTopicColors[1] + ' 0%, var(--sl-panel) 100%)',
+              border: '1px solid ' + semanticTopicColors[2],
+              borderLeft: '4px solid ' + semanticTopicColors[0],
               borderRadius: 12,
               padding: '14px 16px',
               marginBottom: 16,
@@ -1922,7 +1960,7 @@ window.StemLab = window.StemLab || {
           },
             h('div', { style: { fontSize: 32, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: '1 1 220px', minWidth: 0 } },
-              h('h3', { style: { color: meta.accent, fontSize: 17, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('h3', { style: { color: semanticTopicColors[0], fontSize: 17, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
               h('p', { style: { margin: '4px 0 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } }, meta.hint)
             )
           );
@@ -1977,16 +2015,16 @@ window.StemLab = window.StemLab || {
             h('p', { style: { margin: '0 0 10px', fontSize: 12, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.statslab.set_true_effect_size_alpha_and_per_gro', 'Set true effect size, alpha, and per-group sample size. Predict where the design moves between futile, underpowered, well-powered, and overkill. No score, no reveal.')),
             h('div', { style: { display: 'inline-block', padding: '4px 12px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 12, fontWeight: 800, marginBottom: 6 } }, sm.label + ' (Power ≈ ' + (power * 100).toFixed(0) + '%)'),
             h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
-            h('svg', { width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
-              h('line', { x1: 36, y1: 130, x2: 296, y2: 130, stroke: '#1e293b' }),
-              h('line', { x1: 36, y1: 18, x2: 36, y2: 130, stroke: '#1e293b' }),
-              h('line', { x1: 36, y1: 130 - 0.8 * 110, x2: 296, y2: 130 - 0.8 * 110, stroke: '#16a34a', strokeDasharray: '3 3', opacity: 0.6 }),
-              h('text', { x: 296, y: 130 - 0.8 * 110 - 2, fill: '#16a34a', fontSize: 8, textAnchor: 'end' }, __alloT('stem.statslab.power_80', 'power = 80%')),
-              [0, 50, 100, 150, 200].map(function(nv, i) { return h('text', { key: 'nx' + i, x: 36 + ((nv - 5) / 195) * 260, y: 145, fill: '#94a3b8', fontSize: 8, textAnchor: 'middle' }, 'n=' + nv); }),
-              [0, 0.25, 0.5, 0.75, 1.0].map(function(p, i) { return h('text', { key: 'py' + i, x: 30, y: 132 - p * 110, fill: '#94a3b8', fontSize: 8, textAnchor: 'end' }, (p * 100).toFixed(0) + '%'); }),
+            h('svg', { width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: 'var(--sl-chart-bg)', borderRadius: 6, marginBottom: 10 } },
+              h('line', { x1: 36, y1: 130, x2: 296, y2: 130, stroke: 'var(--sl-chart-axis)' }),
+              h('line', { x1: 36, y1: 18, x2: 36, y2: 130, stroke: 'var(--sl-chart-axis)' }),
+              h('line', { x1: 36, y1: 130 - 0.8 * 110, x2: 296, y2: 130 - 0.8 * 110, stroke: 'var(--sl-chart-secondary)', strokeWidth: 1.5, strokeDasharray: '3 3' }),
+              h('text', { x: 296, y: 130 - 0.8 * 110 - 2, fill: 'var(--sl-chart-secondary)', fontSize: 8, textAnchor: 'end' }, __alloT('stem.statslab.power_80', 'power = 80%')),
+              [0, 50, 100, 150, 200].map(function(nv, i) { return h('text', { key: 'nx' + i, x: 36 + ((nv - 5) / 195) * 260, y: 145, fill: 'var(--sl-chart-label)', fontSize: 8, textAnchor: 'middle' }, 'n=' + nv); }),
+              [0, 0.25, 0.5, 0.75, 1.0].map(function(p, i) { return h('text', { key: 'py' + i, x: 30, y: 132 - p * 110, fill: 'var(--sl-chart-label)', fontSize: 8, textAnchor: 'end' }, (p * 100).toFixed(0) + '%'); }),
               h('polyline', { points: pts, fill: 'none', stroke: sm.color, strokeWidth: 2, style: { filter: 'drop-shadow(0 0 3px ' + sm.color + ')' } }),
-              h('circle', { cx: hereX, cy: hereY, r: 5, fill: sm.color, stroke: '#fff', strokeWidth: 1 }),
-              h('text', { x: 160, y: 156, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'Power vs n at d=' + iq.effect.toFixed(2) + ', α=' + iq.alpha)
+              h('circle', { cx: hereX, cy: hereY, r: 5, fill: sm.color, stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1.5 }),
+              h('text', { x: 160, y: 156, fill: 'var(--sl-chart-label)', fontSize: 9, textAnchor: 'middle' }, 'Power vs n at d=' + iq.effect.toFixed(2) + ', α=' + iq.alpha)
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 10 } },
               h('label', null,
@@ -2046,7 +2084,7 @@ window.StemLab = window.StemLab || {
         },
           h('div', {
             style: {
-              background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%)',
+              background: 'linear-gradient(135deg, #4338ca 0%, #7e22ce 50%, #be185d 100%)',
               color: '#fff',
               padding: '14px 22px',
               borderRadius: 16,
@@ -2089,7 +2127,7 @@ window.StemLab = window.StemLab || {
         }
       },
         h('div', { style: { textAlign: 'center', minWidth: 90 } },
-          h('div', { style: { fontSize: 26, fontWeight: 900, color: '#d8b4fe', lineHeight: 1 } }, _hMasteredCount + ' / ' + _hTotal),
+          h('div', { style: { fontSize: 26, fontWeight: 900, color: 'var(--sl-purple)', lineHeight: 1 } }, _hMasteredCount + ' / ' + _hTotal),
           h('div', { style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 3 } }, 'AP mastered')
         ),
         h('div', { style: { flex: '1 1 200px', minWidth: 0 } },
@@ -2103,7 +2141,7 @@ window.StemLab = window.StemLab || {
             : _hPct + '% of the AP quiz bank mastered. ' + (_hTotal - _hMasteredCount) + ' to go.'
           )
         ),
-        h('span', { 'aria-hidden': 'true', style: { fontSize: 22, color: '#d8b4fe', fontWeight: 900, flexShrink: 0 } }, '→')
+        h('span', { 'aria-hidden': 'true', style: { fontSize: 22, color: 'var(--sl-purple)', fontWeight: 900, flexShrink: 0 } }, '→')
       ),
       h('div', {
         style: {
@@ -2112,10 +2150,10 @@ window.StemLab = window.StemLab || {
           borderRadius: 10, padding: 14, marginBottom: 16
         }
       },
-        h('div', { style: { fontSize: 14, fontWeight: 800, color: '#a5b4fc', marginBottom: 6 } }, '🚀 Quick start with a sample dataset'),
+        h('div', { style: { fontSize: 14, fontWeight: 800, color: 'var(--sl-heading)', marginBottom: 6 } }, '🚀 Quick start with a sample dataset'),
         h('p', { style: { margin: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
           'Pick a real-world AP Psych or AP Bio scenario. Each loads pre-cleaned data, suggests the right test, and shows a research question. Or jump to the ',
-          h('b', { style: { color: '#fbbf24' } }, 'Wizard'), ' to walk through your own design.'
+          h('b', { style: { color: 'var(--sl-warning)' } }, 'Wizard'), ' to walk through your own design.'
         )
       ),
       h('div', {
@@ -2134,8 +2172,8 @@ window.StemLab = window.StemLab || {
               display: 'flex', flexDirection: 'column', gap: 6
             }
           },
-            h('div', { style: { fontSize: 10, fontWeight: 800, color: s.curriculum === 'AP Bio' ? '#86efac' : '#d8b4fe', letterSpacing: '0.06em', textTransform: 'uppercase' } }, s.curriculum),
-            h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fef3c7' } }, s.title),
+            h('div', { style: { fontSize: 10, fontWeight: 800, color: s.curriculum === 'AP Bio' ? 'var(--sl-positive)' : 'var(--sl-purple)', letterSpacing: '0.06em', textTransform: 'uppercase' } }, s.curriculum),
+            h('div', { style: { fontSize: 14, fontWeight: 800, color: 'var(--sl-text)' } }, s.title),
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.4 } }, s.research_question),
             h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 4 } }, '→ ' + (WIZARD_TESTS[s.recommendedTest] && WIZARD_TESTS[s.recommendedTest].label) || s.recommendedTest)
           );
@@ -2166,7 +2204,7 @@ window.StemLab = window.StemLab || {
           borderRadius: 10, padding: 16, marginBottom: 12
         }
       },
-        h('div', { style: { fontSize: 14, fontWeight: 800, color: '#a5b4fc', marginBottom: 10 } }, title),
+        h('div', { style: { fontSize: 14, fontWeight: 800, color: 'var(--sl-heading)', marginBottom: 10 } }, title),
         body
       );
     };
@@ -2176,7 +2214,7 @@ window.StemLab = window.StemLab || {
         onClick: onClick,
         'data-sl-focusable': 'true',
         style: {
-          padding: '10px 14px', background: 'rgba(99,102,241,0.18)', color: '#e0e7ff',
+          padding: '10px 14px', background: 'rgba(99,102,241,0.18)', color: 'var(--sl-heading)',
           border: '1px solid rgba(99,102,241,0.55)', borderRadius: 8, cursor: 'pointer',
           margin: '0 6px 6px 0', fontSize: 13, fontWeight: 700, minHeight: 38
         }
@@ -2240,7 +2278,7 @@ window.StemLab = window.StemLab || {
         )
       );
     }
-    return box('Wizard complete. Try the Test tab.', h('button', { onClick: reset, style: { padding: '8px 14px', background: 'rgba(99,102,241,0.18)', color: '#e0e7ff', border: '1px solid rgba(99,102,241,0.55)', borderRadius: 8, cursor: 'pointer' } }, '← Restart wizard'));
+    return box('Wizard complete. Try the Test tab.', h('button', { onClick: reset, style: { padding: '8px 14px', background: 'rgba(99,102,241,0.18)', color: 'var(--sl-heading)', border: '1px solid rgba(99,102,241,0.55)', borderRadius: 8, cursor: 'pointer' } }, '← Restart wizard'));
   }
 
   // ──────────────────────────────────────────────────────────────────
@@ -2332,14 +2370,14 @@ window.StemLab = window.StemLab || {
       var min = Math.min.apply(null, x), max = Math.max.apply(null, x);
       var nOut = _outlierIndices(values).length;
       // Color skew badge by magnitude
-      var skBadge = Math.abs(sk) < 0.5 ? { label: 'symmetric', color: '#86efac' }
-                  : Math.abs(sk) < 1.0 ? { label: 'moderate skew', color: '#fbbf24' }
-                  : { label: 'strong skew', color: '#fca5a5' };
+      var skBadge = Math.abs(sk) < 0.5 ? { label: 'symmetric', color: 'var(--sl-positive)', badge: 'var(--sl-badge-positive)' }
+                  : Math.abs(sk) < 1.0 ? { label: 'moderate skew', color: 'var(--sl-warning)', badge: 'var(--sl-badge-warning)' }
+                  : { label: 'strong skew', color: 'var(--sl-danger)', badge: 'var(--sl-badge-danger)' };
       return h('div', {
         key: key,
         style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid rgba(99,102,241,0.30)', borderRadius: 8, padding: '8px 10px', fontSize: 11, fontFamily: 'monospace' }
       },
-        h('div', { style: { color: '#fbbf24', fontWeight: 800, marginBottom: 4 } }, label + ' (n = ' + x.length + ')'),
+        h('div', { style: { color: 'var(--sl-warning)', fontWeight: 800, marginBottom: 4 } }, label + ' (n = ' + x.length + ')'),
         h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4 } },
           h('span', null, 'M = ', h('b', { style: { color: 'var(--allo-stem-text, #fef3c7)' } }, isFinite(m) ? m.toFixed(2) : '—')),
           h('span', null, 'SD = ', h('b', { style: { color: 'var(--allo-stem-text, #fef3c7)' } }, isFinite(sd) ? sd.toFixed(2) : '—')),
@@ -2349,8 +2387,8 @@ window.StemLab = window.StemLab || {
           h('span', null, 'skew = ', h('b', { style: { color: skBadge.color } }, isFinite(sk) ? sk.toFixed(2) : '—'))
         ),
         h('div', { style: { marginTop: 4, display: 'flex', gap: 6, flexWrap: 'wrap' } },
-          h('span', { style: { padding: '1px 6px', background: skBadge.color, color: '#0b1220', borderRadius: 999, fontSize: 9, fontWeight: 800 } }, skBadge.label),
-          nOut > 0 && h('span', { style: { padding: '1px 6px', background: '#fbbf24', color: '#0b1220', borderRadius: 999, fontSize: 9, fontWeight: 800 } }, '⚠ ' + nOut + ' outlier' + (nOut > 1 ? 's' : ''))
+          h('span', { style: { padding: '1px 6px', background: skBadge.badge, color: 'var(--sl-on-badge)', borderRadius: 999, fontSize: 9, fontWeight: 800 } }, skBadge.label),
+          nOut > 0 && h('span', { style: { padding: '1px 6px', background: 'var(--sl-badge-warning)', color: 'var(--sl-on-badge)', borderRadius: 999, fontSize: 9, fontWeight: 800 } }, '⚠ ' + nOut + ' outlier' + (nOut > 1 ? 's' : ''))
         )
       );
     }
@@ -2371,7 +2409,7 @@ window.StemLab = window.StemLab || {
           borderRadius: 10, padding: 12, marginBottom: 12
         }
       },
-        h('div', { style: { fontSize: 12, fontWeight: 800, color: '#a5b4fc', marginBottom: 6 } }, '📊 At-a-glance summary'),
+        h('div', { style: { fontSize: 12, fontWeight: 800, color: 'var(--sl-heading)', marginBottom: 6 } }, '📊 At-a-glance summary'),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8 } },
           sumCards.filter(Boolean)
         )
@@ -2384,12 +2422,12 @@ window.StemLab = window.StemLab || {
           borderRadius: 10, padding: 12, marginBottom: 12
         }
       },
-        h('div', { style: { fontSize: 13, fontWeight: 800, color: '#7dd3fc', marginBottom: 4 } }, '🧮 Local analytical workspace'),
+        h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--sl-info)', marginBottom: 4 } }, '🧮 Local analytical workspace'),
         h('p', { style: { margin: '0 0 8px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } }, 'Run read-only SQL over the numeric data currently in Stats Lab. The query executes locally in your browser and keeps its source/provenance with the result.'),
         h('textarea', { value: kernelSQL, onChange: function(e) { upd({ kernelSQL: e.target.value, kernelRecipeId: '' }); }, rows: 2, spellCheck: false, 'data-sl-focusable': 'true', 'aria-label': 'Local analytical SQL query', placeholder: 'SELECT group_name, COUNT(*) AS rows, AVG(measure_value) AS mean_value FROM data GROUP BY group_name ORDER BY group_name', style: { width: '100%', padding: '7px 9px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid rgba(56,189,248,0.42)', borderRadius: 6, fontFamily: 'monospace', fontSize: 11, resize: 'vertical', boxSizing: 'border-box' } }),
         kernelRecipes.length > 0 && h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 7, flexWrap: 'wrap' } },
-          h('label', { htmlFor: 'sl-kernel-recipe', style: { fontSize: 10, fontWeight: 800, color: '#7dd3fc' } }, 'Starter recipe'),
-          h('select', { id: 'sl-kernel-recipe', value: kernelRecipeId, onChange: function(e) { var recipe = kernelRecipes.find(function(item) { return item.id === e.target.value; }); applyKernelRecipe(recipe); }, 'data-sl-focusable': 'true', style: { flex: 1, minWidth: 190, padding: '5px 7px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#bae6fd', border: '1px solid rgba(56,189,248,0.42)', borderRadius: 6, fontSize: 10 } },
+          h('label', { htmlFor: 'sl-kernel-recipe', style: { fontSize: 10, fontWeight: 800, color: 'var(--sl-info)' } }, 'Starter recipe'),
+          h('select', { id: 'sl-kernel-recipe', value: kernelRecipeId, onChange: function(e) { var recipe = kernelRecipes.find(function(item) { return item.id === e.target.value; }); applyKernelRecipe(recipe); }, 'data-sl-focusable': 'true', style: { flex: 1, minWidth: 190, padding: '5px 7px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-info)', border: '1px solid rgba(56,189,248,0.42)', borderRadius: 6, fontSize: 10 } },
             h('option', { value: '' }, 'Choose a local analysis…'),
             kernelRecipes.map(function(recipe) { return h('option', { key: recipe.id, value: recipe.id }, recipe.label); })
           ),
@@ -2399,13 +2437,13 @@ window.StemLab = window.StemLab || {
           h('button', { onClick: runKernelQuery, disabled: kernelBusy || !kernelRows.length, 'data-sl-focusable': 'true', style: { padding: '6px 12px', background: '#0369a1', color: '#fff', border: '1px solid #0284c7', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 800, opacity: kernelBusy || !kernelRows.length ? 0.45 : 1 } }, kernelBusy ? '⏳ Loading local engine…' : '▶ Run local query'),
           !kernelRows.length && h('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Enter numeric data above first.')
         ),
-        kernelError && h('div', { role: 'alert', style: { marginTop: 7, padding: 7, background: 'rgba(127,29,29,0.28)', border: '1px solid rgba(248,113,113,0.45)', borderRadius: 6, color: '#fca5a5', fontSize: 11, whiteSpace: 'pre-wrap' } }, kernelError),
+        kernelError && h('div', { role: 'alert', style: { marginTop: 7, padding: 7, background: 'rgba(127,29,29,0.28)', border: '1px solid rgba(248,113,113,0.45)', borderRadius: 6, color: 'var(--sl-danger)', fontSize: 11, whiteSpace: 'pre-wrap' } }, kernelError),
         kernelResult && h('div', { style: { marginTop: 9, paddingTop: 8, borderTop: '1px solid rgba(56,189,248,0.18)' } },
-          h('div', { style: { fontSize: 11, fontWeight: 800, color: '#7dd3fc', marginBottom: 3 } }, 'Result · ' + kernelResult.rows.length + ' row' + (kernelResult.rows.length === 1 ? '' : 's') + ' · ' + (kernelResult.backend || 'local')),
+          h('div', { style: { fontSize: 11, fontWeight: 800, color: 'var(--sl-info)', marginBottom: 3 } }, 'Result · ' + kernelResult.rows.length + ' row' + (kernelResult.rows.length === 1 ? '' : 's') + ' · ' + (kernelResult.backend || 'local')),
           kernelResult.provenance && h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6 } }, 'Source: ' + kernelResult.provenance.rowCount + ' rows · ' + (kernelResult.provenance.columns || []).join(', ') + ' · query kept read-only'),
           kernelResult.rows.length > 0 && h('div', { style: { overflowX: 'auto' } },
             h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 10, fontFamily: 'monospace' } },
-              h('thead', null, h('tr', null, kernelResult.columns.map(function(column) { return h('th', { key: column, style: { textAlign: 'left', padding: '4px 6px', background: 'rgba(56,189,248,0.12)', color: '#bae6fd', border: '1px solid rgba(56,189,248,0.2)' } }, column); }))),
+              h('thead', null, h('tr', null, kernelResult.columns.map(function(column) { return h('th', { key: column, style: { textAlign: 'left', padding: '4px 6px', background: 'rgba(56,189,248,0.12)', color: 'var(--sl-info)', border: '1px solid rgba(56,189,248,0.2)' } }, column); }))),
               h('tbody', null, kernelResult.rows.map(function(row, ri) { return h('tr', { key: ri }, kernelResult.columns.map(function(column) { return h('td', { key: column, style: { padding: '4px 6px', color: 'var(--allo-stem-text, #cbd5e1)', border: '1px solid rgba(56,189,248,0.16)' } }, row[column] == null ? '—' : String(row[column])); })); }))
             )
           ),
@@ -2419,14 +2457,14 @@ window.StemLab = window.StemLab || {
           borderRadius: 10, padding: 14, marginBottom: 12
         }
       },
-        h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a5b4fc', marginBottom: 8 } }, 'Two-column data (paired t-test, independent t-test, correlation, regression)'),
+        h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--sl-heading)', marginBottom: 8 } }, 'Two-column data (paired t-test, independent t-test, correlation, regression)'),
         h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 8 } },
           h('div', null,
             h('input', {
               type: 'text', value: t.aLabel,
               onChange: function(e) { upd('twoColData', Object.assign({}, t, { aLabel: e.target.value })); },
               'data-sl-focusable': 'true', 'aria-label': 'Column A label',
-              style: { width: '100%', padding: '6px 10px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontWeight: 700, marginBottom: 4 }
+              style: { width: '100%', padding: '6px 10px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-warning)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontWeight: 700, marginBottom: 4 }
             }),
             h('textarea', {
               value: t.a.join('\n'),
@@ -2446,7 +2484,7 @@ window.StemLab = window.StemLab || {
               type: 'text', value: t.bLabel,
               onChange: function(e) { upd('twoColData', Object.assign({}, t, { bLabel: e.target.value })); },
               'data-sl-focusable': 'true', 'aria-label': 'Column B label',
-              style: { width: '100%', padding: '6px 10px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontWeight: 700, marginBottom: 4 }
+              style: { width: '100%', padding: '6px 10px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-warning)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontWeight: 700, marginBottom: 4 }
             }),
             h('textarea', {
               value: t.b.join('\n'),
@@ -2468,7 +2506,7 @@ window.StemLab = window.StemLab || {
           t.b.length > 0 && h('div', null, '📊 ', h('b', null, t.bLabel + ': '), 'M=' + mean(t.b).toFixed(2), ' SD=' + (isFinite(stdDev(t.b)) ? stdDev(t.b).toFixed(2) : '—'), ' min=' + Math.min.apply(null, t.b) + ' max=' + Math.max.apply(null, t.b))
         ),
         h('details', { style: { marginTop: 8 } },
-          h('summary', { style: { cursor: 'pointer', fontSize: 11, color: '#a5b4fc' } }, '📋 Paste CSV (header row optional)'),
+          h('summary', { style: { cursor: 'pointer', fontSize: 11, color: 'var(--sl-heading)' } }, '📋 Paste CSV (header row optional)'),
           h('textarea', {
             placeholder: 'Group A,Group B\n22,15\n25,18\n...',
             'aria-label': 'CSV paste for two columns',
@@ -2493,7 +2531,7 @@ window.StemLab = window.StemLab || {
           borderRadius: 10, padding: 14, marginBottom: 12
         }
       },
-        h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a5b4fc', marginBottom: 8 } }, 'Multi-group data (ANOVA, Kruskal-Wallis)'),
+        h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--sl-heading)', marginBottom: 8 } }, 'Multi-group data (ANOVA, Kruskal-Wallis)'),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8 } },
           t2.groups.map(function(g, gi) {
             return h('div', { key: gi },
@@ -2505,7 +2543,7 @@ window.StemLab = window.StemLab || {
                   upd('multiColData', { groups: nextGroups });
                 },
                 'data-sl-focusable': 'true', 'aria-label': 'Group ' + (gi + 1) + ' label',
-                style: { width: '100%', padding: '4px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontWeight: 700, fontSize: 11, marginBottom: 4, boxSizing: 'border-box' }
+                style: { width: '100%', padding: '4px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-warning)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontWeight: 700, fontSize: 11, marginBottom: 4, boxSizing: 'border-box' }
               }),
               h('textarea', {
                 value: g.values.join('\n'),
@@ -2530,7 +2568,7 @@ window.StemLab = window.StemLab || {
               upd('multiColData', { groups: nextGroups });
             },
             'data-sl-focusable': 'true',
-            style: { padding: '6px 12px', background: 'rgba(99,102,241,0.18)', color: '#e0e7ff', border: '1px solid rgba(99,102,241,0.45)', borderRadius: 6, cursor: 'pointer', fontSize: 11 }
+            style: { padding: '6px 12px', background: 'rgba(99,102,241,0.18)', color: 'var(--sl-heading)', border: '1px solid rgba(99,102,241,0.45)', borderRadius: 6, cursor: 'pointer', fontSize: 11 }
           }, '+ Add group'),
           t2.groups.length > 2 && h('button', {
             onClick: function() {
@@ -2550,7 +2588,7 @@ window.StemLab = window.StemLab || {
           borderRadius: 10, padding: 14
         }
       },
-        h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a5b4fc', marginBottom: 8 } }, 'Single-column data (one-sample t-test)'),
+        h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--sl-heading)', marginBottom: 8 } }, 'Single-column data (one-sample t-test)'),
         h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 200px', gap: 10 } },
           h('textarea', {
             value: d.oneColData.values.join('\n'),
@@ -2572,7 +2610,7 @@ window.StemLab = window.StemLab || {
                 upd('oneColData', Object.assign({}, d.oneColData, { mu0: isFinite(n) ? n : 0 }));
               },
               'data-sl-focusable': 'true', 'aria-label': 'Hypothesized population mean',
-              style: { width: '100%', padding: 8, background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontWeight: 700, marginTop: 4, boxSizing: 'border-box' }
+              style: { width: '100%', padding: 8, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-warning)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontWeight: 700, marginTop: 4, boxSizing: 'border-box' }
             }),
             h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, 'n = ' + d.oneColData.values.length)
           )
@@ -2586,7 +2624,7 @@ window.StemLab = window.StemLab || {
           borderRadius: 10, padding: 14, marginTop: 12
         }
       },
-        h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a5b4fc', marginBottom: 8 } }, 'Chi-square goodness-of-fit (observed + expected counts)'),
+        h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--sl-heading)', marginBottom: 8 } }, 'Chi-square goodness-of-fit (observed + expected counts)'),
         h('p', { style: { margin: '0 0 8px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } },
           'Enter category labels and counts. Expected counts can be raw numbers OR proportions that sum to 1 (we\'ll auto-scale).'
         ),
@@ -2622,7 +2660,7 @@ window.StemLab = window.StemLab || {
                 upd('chiGofData', Object.assign({}, d.chiGofData, { observed: obs }));
               },
               'data-sl-focusable': 'true', 'aria-label': 'Observed count for ' + row.label,
-              style: { padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: '#a5b4fc', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, fontWeight: 700, boxSizing: 'border-box' }
+              style: { padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-heading)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, fontWeight: 700, boxSizing: 'border-box' }
             }),
             h('input', {
               type: 'number', step: 'any', value: row.exp,
@@ -2633,7 +2671,7 @@ window.StemLab = window.StemLab || {
                 upd('chiGofData', Object.assign({}, d.chiGofData, { expected: exp }));
               },
               'data-sl-focusable': 'true', 'aria-label': 'Expected count for ' + row.label,
-              style: { padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, fontWeight: 700, boxSizing: 'border-box' }
+              style: { padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-warning)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, fontWeight: 700, boxSizing: 'border-box' }
             }),
             h('button', {
               onClick: function() {
@@ -2656,7 +2694,7 @@ window.StemLab = window.StemLab || {
             upd('chiGofData', { observed: obs, expected: exp, labels: lab });
           },
           'data-sl-focusable': 'true',
-          style: { marginTop: 4, padding: '6px 12px', background: 'rgba(99,102,241,0.18)', color: '#e0e7ff', border: '1px solid rgba(99,102,241,0.45)', borderRadius: 6, cursor: 'pointer', fontSize: 11 }
+          style: { marginTop: 4, padding: '6px 12px', background: 'rgba(99,102,241,0.18)', color: 'var(--sl-heading)', border: '1px solid rgba(99,102,241,0.45)', borderRadius: 6, cursor: 'pointer', fontSize: 11 }
         }, '+ Add category')
       ),
       // Chi-square: contingency table (independence)
@@ -2667,7 +2705,7 @@ window.StemLab = window.StemLab || {
           borderRadius: 10, padding: 14, marginTop: 12
         }
       },
-        h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a5b4fc', marginBottom: 8 } }, 'Chi-square test of independence (contingency table)'),
+        h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--sl-heading)', marginBottom: 8 } }, 'Chi-square test of independence (contingency table)'),
         h('p', { style: { margin: '0 0 10px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } },
           'Two categorical variables crossed. Enter row × column counts. Expected counts get computed automatically.'
         ),
@@ -2701,7 +2739,7 @@ window.StemLab = window.StemLab || {
                       upd('chiIndepData', Object.assign({}, d.chiIndepData, { cols: cols, table: table }));
                     },
                     'data-sl-focusable': 'true', 'aria-label': 'Add column',
-                    style: { padding: '2px 6px', background: 'rgba(99,102,241,0.18)', color: '#e0e7ff', border: '1px solid rgba(99,102,241,0.45)', borderRadius: 4, cursor: 'pointer', fontSize: 11 }
+                    style: { padding: '2px 6px', background: 'rgba(99,102,241,0.18)', color: 'var(--sl-heading)', border: '1px solid rgba(99,102,241,0.45)', borderRadius: 4, cursor: 'pointer', fontSize: 11 }
                   }, '+col')
                 )
               )
@@ -2733,7 +2771,7 @@ window.StemLab = window.StemLab || {
                           upd('chiIndepData', Object.assign({}, d.chiIndepData, { table: table }));
                         },
                         'data-sl-focusable': 'true', 'aria-label': 'Cell ' + rowLabel + ' × ' + d.chiIndepData.cols[ci],
-                        style: { width: 60, padding: 4, background: 'var(--allo-stem-canvas, #0f172a)', color: '#a5b4fc', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 4, fontSize: 11, fontWeight: 700, textAlign: 'center' }
+                        style: { width: 60, padding: 4, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-heading)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 4, fontSize: 11, fontWeight: 700, textAlign: 'center' }
                       })
                     );
                   }),
@@ -2760,7 +2798,7 @@ window.StemLab = window.StemLab || {
                       upd('chiIndepData', Object.assign({}, d.chiIndepData, { rows: rows, table: table }));
                     },
                     'data-sl-focusable': 'true', 'aria-label': 'Add row',
-                    style: { padding: '4px 10px', background: 'rgba(99,102,241,0.18)', color: '#e0e7ff', border: '1px solid rgba(99,102,241,0.45)', borderRadius: 4, cursor: 'pointer', fontSize: 11 }
+                    style: { padding: '4px 10px', background: 'rgba(99,102,241,0.18)', color: 'var(--sl-heading)', border: '1px solid rgba(99,102,241,0.45)', borderRadius: 4, cursor: 'pointer', fontSize: 11 }
                   }, '+ Add row')
                 )
               )
@@ -2776,7 +2814,7 @@ window.StemLab = window.StemLab || {
           borderRadius: 10, padding: 14, marginTop: 12
         }
       },
-        h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a5b4fc', marginBottom: 8 } }, 'Multiple regression (multiple predictors → one outcome)'),
+        h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--sl-heading)', marginBottom: 8 } }, 'Multiple regression (multiple predictors → one outcome)'),
         h('p', { style: { margin: '0 0 8px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } },
           'Each row = one observation. Edit the predictor labels at the top, the outcome label at the right, then enter values. Need at least k+2 observations for k predictors.'
         ),
@@ -2800,7 +2838,7 @@ window.StemLab = window.StemLab || {
                 upd('multiRegData', Object.assign({}, d.multiRegData, { xLabels: labels, x: x }));
               },
               'data-sl-focusable': 'true',
-              style: { width: 70, padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, fontWeight: 700, boxSizing: 'border-box' }
+              style: { width: 70, padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-warning)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, fontWeight: 700, boxSizing: 'border-box' }
             })
           ),
           h('div', null,
@@ -2821,7 +2859,7 @@ window.StemLab = window.StemLab || {
               upd('multiRegData', Object.assign({}, d.multiRegData, { x: x, y: y }));
             },
             'data-sl-focusable': 'true',
-            style: { padding: '6px 12px', background: 'rgba(99,102,241,0.18)', color: '#e0e7ff', border: '1px solid rgba(99,102,241,0.45)', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 700 }
+            style: { padding: '6px 12px', background: 'rgba(99,102,241,0.18)', color: 'var(--sl-heading)', border: '1px solid rgba(99,102,241,0.45)', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 700 }
           }, '+ Add row')
         ),
         // The grid
@@ -2843,7 +2881,7 @@ window.StemLab = window.StemLab || {
                         upd('multiRegData', Object.assign({}, d.multiRegData, { xLabels: labels }));
                       },
                       'data-sl-focusable': 'true', 'aria-label': 'Predictor ' + (ki + 1) + ' label',
-                      style: { width: 80, padding: 4, background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 4, fontSize: 11, fontWeight: 700, textAlign: 'center' }
+                      style: { width: 80, padding: 4, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-warning)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 4, fontSize: 11, fontWeight: 700, textAlign: 'center' }
                     })
                   );
                 }),
@@ -2868,7 +2906,7 @@ window.StemLab = window.StemLab || {
                           upd('multiRegData', Object.assign({}, d.multiRegData, { x: x }));
                         },
                         'data-sl-focusable': 'true', 'aria-label': 'Row ' + (ri + 1) + ' ' + d.multiRegData.xLabels[ki],
-                        style: { width: 76, padding: 4, background: 'var(--allo-stem-canvas, #0f172a)', color: '#a5b4fc', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 4, fontSize: 11, fontWeight: 700, textAlign: 'center', boxSizing: 'border-box' }
+                        style: { width: 76, padding: 4, background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-heading)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 4, fontSize: 11, fontWeight: 700, textAlign: 'center', boxSizing: 'border-box' }
                       })
                     );
                   }),
@@ -2968,7 +3006,7 @@ window.StemLab = window.StemLab || {
           borderRadius: 10, padding: 14, marginBottom: 12
         }
       },
-        h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a5b4fc', marginBottom: 8 } }, '⚖️ Choose a hypothesis test'),
+        h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--sl-heading)', marginBottom: 8 } }, '⚖️ Choose a hypothesis test'),
         h('label', { htmlFor: 'sl-test-select', style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'block', marginBottom: 4 } }, 'Test:'),
         h('select', {
           id: 'sl-test-select',
@@ -2976,7 +3014,7 @@ window.StemLab = window.StemLab || {
           onChange: function(e) { upd('selectedTest', e.target.value || null); },
           'data-sl-focusable': 'true',
           style: {
-            width: '100%', padding: '8px 10px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#e0e7ff',
+            width: '100%', padding: '8px 10px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-heading)',
             border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 8, fontSize: 13, fontWeight: 700, marginBottom: 10
           }
         },
@@ -2993,7 +3031,7 @@ window.StemLab = window.StemLab || {
         sel && WIZARD_TESTS[sel] && h('div', {
           style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10, fontStyle: 'italic', lineHeight: 1.5 }
         },
-          h('b', { style: { color: '#fbbf24' } }, 'When to use: '), WIZARD_TESTS[sel].desc
+          h('b', { style: { color: 'var(--sl-warning)' } }, 'When to use: '), WIZARD_TESTS[sel].desc
         ),
         sel && h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10 } },
           h('b', null, 'Data needed: '), dataNeeded
@@ -3008,7 +3046,7 @@ window.StemLab = window.StemLab || {
             disabled: !sel,
             style: {
               padding: '10px 20px',
-              background: sel ? 'linear-gradient(135deg,#16a34a,#15803d)' : '#374151',
+              background: sel ? 'linear-gradient(135deg,#15803d,#166534)' : '#374151',
               color: '#fff',
               border: '1px solid ' + (sel ? '#15803d' : '#4b5563'),
               borderRadius: 8, cursor: sel ? 'pointer' : 'not-allowed',
@@ -3028,7 +3066,7 @@ window.StemLab = window.StemLab || {
               title: 'Sensitivity analysis excluding ' + sensitivity.rule + '. The original analysis remains available for comparison.',
               style: {
                 padding: '10px 16px',
-                background: 'rgba(245,158,11,0.15)', color: '#fbbf24',
+                background: 'rgba(245,158,11,0.15)', color: 'var(--sl-warning)',
                 border: '1px solid rgba(245,158,11,0.55)',
                 borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700, minHeight: 40
               }
@@ -3044,7 +3082,7 @@ window.StemLab = window.StemLab || {
         },
         role: 'note', 'aria-label': 'Assumption check warnings'
       },
-        h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 6 } }, '⚠ Assumption checks'),
+        h('div', { style: { fontSize: 12, fontWeight: 800, color: 'var(--sl-warning)', marginBottom: 6 } }, '⚠ Assumption checks'),
         assumptionPreview.map(function(w, i) {
           return h('div', { key: i, style: { fontSize: 11, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.5, marginBottom: 4 } }, '• ' + w.msg);
         })
@@ -3057,7 +3095,7 @@ window.StemLab = window.StemLab || {
           borderRadius: 10, padding: 12
         }
       },
-        h('div', { style: { fontSize: 12, fontWeight: 800, color: '#a5b4fc', marginBottom: 8 } }, '📊 Visual preview'),
+        h('div', { style: { fontSize: 12, fontWeight: 800, color: 'var(--sl-heading)', marginBottom: 8 } }, '📊 Visual preview'),
         _renderChartFor(d, h) || h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Load data in the Data tab to see a chart here.')
       )
     );
@@ -3129,7 +3167,7 @@ window.StemLab = window.StemLab || {
       },
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' } },
           h('div', { style: { textAlign: 'center', minWidth: 110 } },
-            h('div', { style: { fontSize: 38, fontWeight: 900, color: '#d8b4fe', lineHeight: 1 } }, masteredCount + ' / ' + totalQuestions),
+            h('div', { style: { fontSize: 38, fontWeight: 900, color: 'var(--sl-purple)', lineHeight: 1 } }, masteredCount + ' / ' + totalQuestions),
             h('div', { style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 4 } }, 'Quiz questions mastered')
           ),
           h('div', { style: { flex: 1, minWidth: 240 } },
@@ -3158,22 +3196,22 @@ window.StemLab = window.StemLab || {
           var statusLabel = cs.doneCount === 0 ? 'Untouched'
             : cs.doneCount === cs.questions.length ? '✓ All mastered'
             : cs.doneCount + ' / ' + cs.questions.length;
-          var statusColor = cs.doneCount === 0 ? '#94a3b8'
-            : cs.doneCount === cs.questions.length ? '#22c55e'
-            : cs.concept.color;
+          var statusColor = cs.doneCount === 0 ? 'var(--sl-muted)'
+            : cs.doneCount === cs.questions.length ? 'var(--sl-positive)'
+            : 'var(--sl-accent)';
           return h('div', {
             key: cs.concept.id,
             style: {
               padding: 12, borderRadius: 12,
-              background: 'rgba(15,23,42,0.6)',
-              border: '1px solid ' + (cs.doneCount > 0 ? cs.concept.color + 'aa' : 'rgba(148,163,184,0.25)')
+              background: 'var(--sl-panel)',
+              border: '1px solid var(--sl-border)'
             }
           },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
               h('div', { style: { fontSize: 14, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', flex: 1 } }, cs.concept.label),
               h('div', { style: { fontSize: 11, fontWeight: 700, color: statusColor } }, statusLabel)
             ),
-            h('div', { style: { height: 5, background: 'rgba(15,23,42,0.8)', borderRadius: 3, overflow: 'hidden', marginBottom: 8 }, 'aria-hidden': 'true' },
+            h('div', { style: { height: 5, background: 'var(--sl-surface)', border: '1px solid var(--sl-border)', borderRadius: 3, overflow: 'hidden', marginBottom: 8 }, 'aria-hidden': 'true' },
               h('div', { style: { width: pct + '%', height: '100%', background: cs.concept.color, transition: 'width 0.3s' } })
             ),
             h('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 } },
@@ -3185,11 +3223,11 @@ window.StemLab = window.StemLab || {
                   style: {
                     display: 'flex', alignItems: 'flex-start', gap: 6,
                     fontSize: 11,
-                    color: done ? '#cbd5e1' : '#94a3b8',
+                    color: done ? 'var(--sl-text)' : 'var(--sl-muted)',
                     lineHeight: 1.45
                   }
                 },
-                  h('span', { 'aria-hidden': 'true', style: { color: done ? '#22c55e' : '#475569', fontWeight: 700, flexShrink: 0, marginTop: 1 } }, done ? '✓' : '○'),
+                  h('span', { 'aria-hidden': 'true', style: { color: done ? 'var(--sl-positive)' : 'var(--sl-muted)', fontWeight: 700, flexShrink: 0, marginTop: 1 } }, done ? '✓' : '○'),
                   h('span', { style: { flex: 1, minWidth: 0 } },
                     q.q.length > 80 ? q.q.substring(0, 77) + '…' : q.q,
                     done && entry.firstCorrectAt && h('span', { style: { color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 10, marginLeft: 6, fontStyle: 'italic' } }, '· ' + fmtDate(entry.firstCorrectAt))
@@ -3206,7 +3244,7 @@ window.StemLab = window.StemLab || {
           onClick: function () { upd({ mode: 'results', quizQuestions: null, quizAnswers: [], quizSubmitted: false }); },
           style: {
             padding: '10px 18px', width: '100%',
-            background: 'linear-gradient(135deg, #a855f7, #7e22ce)',
+            background: 'linear-gradient(135deg, #7e22ce, #6b21a8)',
             color: '#fff', border: 'none', borderRadius: 8,
             fontSize: 13, fontWeight: 800, cursor: 'pointer'
           }
@@ -3230,7 +3268,7 @@ window.StemLab = window.StemLab || {
       },
         h('div', { style: { fontSize: 32, marginBottom: 8 } }, '📈'),
         h('div', { style: { fontSize: 14, marginBottom: 6 } }, 'No result yet.'),
-        h('div', { style: { fontSize: 12 } }, 'Run a test from the ', h('b', { style: { color: '#a5b4fc' } }, 'Test'), ' tab to see results here.')
+        h('div', { style: { fontSize: 12 } }, 'Run a test from the ', h('b', { style: { color: 'var(--sl-heading)' } }, 'Test'), ' tab to see results here.')
       );
     }
     if (r.error) {
@@ -3240,7 +3278,7 @@ window.StemLab = window.StemLab || {
           borderRadius: 10, padding: 14
         }
       },
-        h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fca5a5' } }, '⚠ ' + r.error)
+        h('div', { style: { fontSize: 14, fontWeight: 800, color: 'var(--sl-danger)' } }, '⚠ ' + r.error)
       );
     }
     var apa = apaWriteup(r);
@@ -3374,7 +3412,7 @@ window.StemLab = window.StemLab || {
       d.excludedOutliers && d.outliersRemoved > 0 && h('div', {
         style: {
           background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.55)',
-          borderRadius: 8, padding: '8px 12px', marginBottom: 10, fontSize: 12, color: '#fbbf24', fontWeight: 700
+          borderRadius: 8, padding: '8px 12px', marginBottom: 10, fontSize: 12, color: 'var(--sl-warning)', fontWeight: 700
         },
         role: 'note'
       },
@@ -3389,11 +3427,11 @@ window.StemLab = window.StemLab || {
         },
         role: 'status', 'aria-live': 'polite'
       },
-        h('div', { style: { fontSize: 14, fontWeight: 900, color: pSig ? '#86efac' : '#a5b4fc', marginBottom: 6 } },
+        h('div', { style: { fontSize: 14, fontWeight: 900, color: pSig ? 'var(--sl-positive)' : 'var(--sl-heading)', marginBottom: 6 } },
           pSig ? '✓ Significant result' : (_isNum(r.p) ? 'Not significant' : (r.test || 'Result'))
         ),
         h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, pe),
-        esBadge && h('div', { style: { marginTop: 8, display: 'inline-block', padding: '3px 10px', background: esBadge.color, color: '#0b1220', borderRadius: 999, fontSize: 11, fontWeight: 800 } },
+        esBadge && h('div', { style: { marginTop: 8, display: 'inline-block', padding: '3px 10px', background: esBadge.color, color: 'var(--sl-on-badge)', borderRadius: 999, fontSize: 11, fontWeight: 800 } },
           'Effect size: ' + esBadge.label
         )
       ),
@@ -3405,18 +3443,18 @@ window.StemLab = window.StemLab || {
           borderRadius: 10, padding: 12, marginBottom: 12
         }
       },
-        h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a5b4fc', marginBottom: 8 } }, '📊 Your data'),
+        h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--sl-heading)', marginBottom: 8 } }, '📊 Your data'),
         _renderChartFor(d, h) || h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '(no chart available for this test)')
       ),
       // Multi-coefficient table (only shown for multiple regression)
       r.test === 'Multiple linear regression' && Array.isArray(r.coefficients) && h('div', {
         style: {
-          background: 'rgba(15,23,42,0.60)',
-          border: '1px solid rgba(99,102,241,0.30)',
+          background: 'var(--sl-panel)',
+          border: '1px solid var(--sl-border)',
           borderRadius: 10, padding: 14, marginBottom: 12
         }
       },
-        h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a5b4fc', marginBottom: 8 } }, '📊 Coefficient table'),
+        h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--sl-heading)', marginBottom: 8 } }, '📊 Coefficient table'),
         h('div', { style: { overflowX: 'auto' } },
           h('table', {
             style: { width: '100%', borderCollapse: 'collapse', fontSize: 12, fontFamily: 'monospace' },
@@ -3424,11 +3462,11 @@ window.StemLab = window.StemLab || {
           },
             h('thead', null,
               h('tr', { style: { borderBottom: '1px solid var(--allo-stem-border, #475569)' } },
-                h('th', { style: { textAlign: 'left', padding: 6, color: '#fbbf24' } }, 'Term'),
-                h('th', { style: { textAlign: 'right', padding: 6, color: '#fbbf24' } }, 'b (coef)'),
-                h('th', { style: { textAlign: 'right', padding: 6, color: '#fbbf24' } }, 'SE'),
-                h('th', { style: { textAlign: 'right', padding: 6, color: '#fbbf24' } }, 't'),
-                h('th', { style: { textAlign: 'right', padding: 6, color: '#fbbf24' } }, 'p')
+                h('th', { style: { textAlign: 'left', padding: 6, color: 'var(--sl-warning)' } }, 'Term'),
+                h('th', { style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, 'b (coef)'),
+                h('th', { style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, 'SE'),
+                h('th', { style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, 't'),
+                h('th', { style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, 'p')
               )
             ),
             h('tbody', null,
@@ -3438,10 +3476,10 @@ window.StemLab = window.StemLab || {
                 var pSig = _isNum(pVal) && pVal < 0.05;
                 return h('tr', { key: ci, style: { borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } },
                   h('td', { style: { padding: 6, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700 } }, label),
-                  h('td', { style: { padding: 6, textAlign: 'right', color: '#fef3c7', fontWeight: 700 } }, c.toFixed(4)),
+                  h('td', { style: { padding: 6, textAlign: 'right', color: 'var(--sl-text)', fontWeight: 700 } }, c.toFixed(4)),
                   h('td', { style: { padding: 6, textAlign: 'right', color: 'var(--allo-stem-text, #cbd5e1)' } }, (r.ses && r.ses[ci] != null) ? r.ses[ci].toFixed(4) : '—'),
                   h('td', { style: { padding: 6, textAlign: 'right', color: 'var(--allo-stem-text, #cbd5e1)' } }, (r.ts && r.ts[ci] != null) ? r.ts[ci].toFixed(3) : '—'),
-                  h('td', { style: { padding: 6, textAlign: 'right', color: pSig ? '#86efac' : '#cbd5e1', fontWeight: pSig ? 800 : 400 } },
+                  h('td', { style: { padding: 6, textAlign: 'right', color: pSig ? 'var(--sl-positive)' : 'var(--sl-text)', fontWeight: pSig ? 800 : 400 } },
                     _isNum(pVal) ? (pVal < 0.001 ? '< .001' : pVal.toFixed(4)) : '—'
                   )
                 );
@@ -3460,19 +3498,19 @@ window.StemLab = window.StemLab || {
       // Numeric panel
       h('div', {
         style: {
-          background: 'rgba(15,23,42,0.60)',
-          border: '1px solid rgba(99,102,241,0.30)',
+          background: 'var(--sl-panel)',
+          border: '1px solid var(--sl-border)',
           borderRadius: 10, padding: 14, marginBottom: 12
         }
       },
         h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 6 } },
-          h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a5b4fc' } }, '🔢 Numeric output'),
+          h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--sl-heading)' } }, '🔢 Numeric output'),
           h('button', {
             onClick: function() { upd('showGlossary', !d.showGlossary); },
             'data-sl-focusable': 'true',
             'aria-expanded': !!d.showGlossary,
             title: 'Show definitions of every statistic in this result',
-            style: { padding: '4px 10px', background: 'rgba(168,85,247,0.18)', color: '#d8b4fe', border: '1px solid rgba(168,85,247,0.55)', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 700 }
+            style: { padding: '4px 10px', background: 'rgba(168,85,247,0.18)', color: 'var(--sl-purple)', border: '1px solid rgba(168,85,247,0.55)', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 700 }
           }, (d.showGlossary ? '▼' : '▶') + ' 📖 Glossary')
         ),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 6, fontFamily: 'monospace', fontSize: 12 } },
@@ -3494,14 +3532,14 @@ window.StemLab = window.StemLab || {
           },
           role: 'region', 'aria-label': 'Glossary of statistical terms'
         },
-          h('div', { style: { fontSize: 11, fontWeight: 800, color: '#d8b4fe', marginBottom: 8 } }, '📖 Definitions of terms in this result'),
+          h('div', { style: { fontSize: 11, fontWeight: 800, color: 'var(--sl-purple)', marginBottom: 8 } }, '📖 Definitions of terms in this result'),
           (function() {
             var keys = _glossaryKeysForResult(r);
             if (!keys.length) return h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '(no glossary entries to show)');
             return keys.map(function(k) {
               var g = GLOSSARY[k];
               return h('div', { key: k, style: { marginBottom: 8, paddingBottom: 8, borderBottom: '1px solid rgba(168,85,247,0.20)' } },
-                h('span', { style: { fontFamily: 'monospace', fontWeight: 800, color: '#fbbf24', fontSize: 12 } }, k),
+                h('span', { style: { fontFamily: 'monospace', fontWeight: 800, color: 'var(--sl-warning)', fontSize: 12 } }, k),
                 h('span', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, marginLeft: 6 } }, '— ' + g.name),
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, marginTop: 3 } }, g.def)
               );
@@ -3518,18 +3556,18 @@ window.StemLab = window.StemLab || {
         }
       },
         h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, flexWrap: 'wrap', gap: 6 } },
-          h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a5b4fc' } }, '📋 APA-7 write-up'),
+          h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--sl-heading)' } }, '📋 APA-7 write-up'),
           h('div', { style: { display: 'flex', gap: 6 } },
             h('button', {
               onClick: copyAPA,
               'data-sl-focusable': 'true',
-              style: { padding: '4px 10px', background: 'rgba(99,102,241,0.18)', color: '#e0e7ff', border: '1px solid rgba(99,102,241,0.55)', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 700 }
+              style: { padding: '4px 10px', background: 'rgba(99,102,241,0.18)', color: 'var(--sl-heading)', border: '1px solid rgba(99,102,241,0.55)', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 700 }
             }, '📋 Copy APA'),
             h('button', {
               onClick: copyFullReport,
               'data-sl-focusable': 'true',
               title: 'Copy a structured lab report (APA + plain-English + numeric + math + interpretation) to clipboard, ready for paste into Google Docs or Word',
-              style: { padding: '4px 10px', background: 'rgba(34,197,94,0.18)', color: '#86efac', border: '1px solid rgba(34,197,94,0.55)', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 700 }
+              style: { padding: '4px 10px', background: 'rgba(34,197,94,0.18)', color: 'var(--sl-positive)', border: '1px solid rgba(34,197,94,0.55)', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 700 }
             }, '📄 Export full report')
           )
         ),
@@ -3543,19 +3581,19 @@ window.StemLab = window.StemLab || {
           borderRadius: 10, padding: 14, marginBottom: 12
         }
       },
-        h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a5b4fc', marginBottom: 8 } }, '🔬 Tukey HSD post-hoc comparisons'),
+        h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--sl-heading)', marginBottom: 8 } }, '🔬 Tukey HSD post-hoc comparisons'),
         h('div', { style: { display: 'grid', gap: 4, fontFamily: 'monospace', fontSize: 12 } },
           r.tukey.map(function(c, i) {
             return h('div', {
               key: i,
               style: {
-                background: c.sig ? 'rgba(22,163,74,0.10)' : '#0f172a',
-                border: '1px solid ' + (c.sig ? 'rgba(22,163,74,0.50)' : '#334155'),
+                background: c.sig ? 'var(--sl-positive-soft)' : 'var(--sl-panel)',
+                border: '1px solid ' + (c.sig ? 'var(--sl-positive)' : 'var(--sl-border)'),
                 borderRadius: 6, padding: '6px 10px', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8
               }
             },
-              h('span', { style: { color: '#fef3c7' } }, 'Group ' + (c.i + 1) + ' vs Group ' + (c.j + 1)),
-              h('span', { style: { color: c.sig ? '#86efac' : '#cbd5e1' } },
+              h('span', { style: { color: 'var(--sl-text)' } }, 'Group ' + (c.i + 1) + ' vs Group ' + (c.j + 1)),
+              h('span', { style: { color: c.sig ? 'var(--sl-positive)' : 'var(--sl-text)' } },
                 'mean diff = ' + c.diff.toFixed(2) + ', q = ' + c.q.toFixed(2) + ', p ' + (c.sig ? '< .05' : '≥ .05')
               )
             );
@@ -3574,7 +3612,7 @@ window.StemLab = window.StemLab || {
           onClick: function() { upd('showMath', !d.showMath); },
           'data-sl-focusable': 'true',
           'aria-expanded': !!d.showMath,
-          style: { background: 'transparent', color: '#a5b4fc', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 800, padding: 0 }
+          style: { background: 'transparent', color: 'var(--sl-heading)', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 800, padding: 0 }
         }, (d.showMath ? '▼' : '▶') + ' 📐 Show me the math'),
         d.showMath && h('div', { style: { marginTop: 10, fontFamily: 'monospace', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, background: 'var(--allo-stem-canvas, #0f172a)', padding: 12, borderRadius: 6 } },
           _mathFormula(r, d)
@@ -3590,7 +3628,7 @@ window.StemLab = window.StemLab || {
           borderRadius: 10, padding: 14, marginBottom: 12
         }
       },
-        h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 6 } }, '📉 Sample-size stability check'),
+        h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--sl-warning)', marginBottom: 6 } }, '📉 Sample-size stability check'),
         h('p', { style: { margin: '0 0 8px', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
           'What if your study had been smaller? This recomputes your test on 200 random subsamples at each n. Watch how wildly p bounces around when n is small — and how it stabilizes as n grows. ',
           h('b', null, 'A "significant" study at n=10 is much weaker evidence than the same effect at n=50.')
@@ -3635,7 +3673,7 @@ window.StemLab = window.StemLab || {
           'data-sl-focusable': 'true',
           style: {
             padding: '8px 16px',
-            background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+            background: 'linear-gradient(135deg, #b45309, #92400e)',
             color: '#fff', border: '1px solid #d97706',
             borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700
           }
@@ -3647,21 +3685,21 @@ window.StemLab = window.StemLab || {
           },
             h('thead', null,
               h('tr', { style: { borderBottom: '1px solid var(--allo-stem-border, #475569)' } },
-                h('th', { style: { textAlign: 'left', padding: 6, color: '#fbbf24' } }, 'n'),
-                h('th', { style: { textAlign: 'right', padding: 6, color: '#fbbf24' } }, 'median p'),
-                h('th', { style: { textAlign: 'right', padding: 6, color: '#fbbf24' } }, '10–90% range'),
-                h('th', { style: { textAlign: 'right', padding: 6, color: '#fbbf24' } }, '% sig (p<.05)')
+                h('th', { style: { textAlign: 'left', padding: 6, color: 'var(--sl-warning)' } }, 'n'),
+                h('th', { style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, 'median p'),
+                h('th', { style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, '10–90% range'),
+                h('th', { style: { textAlign: 'right', padding: 6, color: 'var(--sl-warning)' } }, '% sig (p<.05)')
               )
             ),
             h('tbody', null,
               d.subsampleResult.levels.map(function(L, i) {
                 return h('tr', { key: i, style: { borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } },
-                  h('td', { style: { padding: 6, color: '#fef3c7', fontWeight: 700 } }, L.n),
+                  h('td', { style: { padding: 6, color: 'var(--sl-text)', fontWeight: 700 } }, L.n),
                   h('td', { style: { padding: 6, textAlign: 'right', color: 'var(--allo-stem-text, #e2e8f0)' } }, _isNum(L.pMedian) ? L.pMedian.toFixed(4) : '—'),
                   h('td', { style: { padding: 6, textAlign: 'right', color: 'var(--allo-stem-text, #cbd5e1)' } },
                     (_isNum(L.pLo) ? L.pLo.toFixed(4) : '—') + ' to ' + (_isNum(L.pHi) ? L.pHi.toFixed(4) : '—')
                   ),
-                  h('td', { style: { padding: 6, textAlign: 'right', color: L.pSigPct >= 80 ? '#86efac' : (L.pSigPct >= 50 ? '#fbbf24' : '#fca5a5'), fontWeight: 700 } },
+                  h('td', { style: { padding: 6, textAlign: 'right', color: L.pSigPct >= 80 ? 'var(--sl-positive)' : (L.pSigPct >= 50 ? 'var(--sl-warning)' : 'var(--sl-danger)'), fontWeight: 700 } },
                     L.pSigPct.toFixed(0) + '%'
                   )
                 );
@@ -3670,7 +3708,7 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { style: { marginTop: 8, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, fontStyle: 'italic' } },
             'The "% sig" column is your effective ',
-            h('b', { style: { color: '#fbbf24' } }, 'replication rate'),
+            h('b', { style: { color: 'var(--sl-warning)' } }, 'replication rate'),
             '. If small-n studies replicate at <50%, the effect is too noisy to detect reliably at that sample size — even when the underlying effect is real.'
           )
         )
@@ -3683,7 +3721,7 @@ window.StemLab = window.StemLab || {
           borderRadius: 10, padding: 14, marginBottom: 12
         }
       },
-        h('div', { style: { fontSize: 13, fontWeight: 800, color: '#6ee7b7', marginBottom: 6 } }, '🎲 Resampling toolkit'),
+        h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--sl-positive)', marginBottom: 6 } }, '🎲 Resampling toolkit'),
         h('p', { style: { margin: '0 0 10px', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
           'Two complementary resampling demos: ',
           h('b', null, 'permutation'),
@@ -3700,7 +3738,7 @@ window.StemLab = window.StemLab || {
             'data-sl-focusable': 'true',
             style: {
               padding: '8px 14px',
-              background: 'linear-gradient(135deg, #10b981, #059669)',
+              background: 'linear-gradient(135deg, #047857, #065f46)',
               color: '#fff', border: '1px solid #059669',
               borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700
             }
@@ -3713,7 +3751,7 @@ window.StemLab = window.StemLab || {
             'data-sl-focusable': 'true',
             style: {
               padding: '8px 14px',
-              background: 'linear-gradient(135deg, #06b6d4, #0891b2)',
+              background: 'linear-gradient(135deg, #0e7490, #155e75)',
               color: '#fff', border: '1px solid #0891b2',
               borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700
             }
@@ -3721,13 +3759,13 @@ window.StemLab = window.StemLab || {
         ),
         d.bootResult && h('div', { style: { marginBottom: 12 } },
           d.bootResult.error
-            ? h('div', { style: { fontSize: 11, color: '#fca5a5' } }, '⚠ ' + d.bootResult.error)
+            ? h('div', { style: { fontSize: 11, color: 'var(--sl-danger)' } }, '⚠ ' + d.bootResult.error)
             : h('div', null,
                 _renderBootstrapViz(d.bootResult, h),
-                h('div', { style: { marginTop: 8, fontSize: 12, color: '#fef3c7', lineHeight: 1.6 } },
+                h('div', { style: { marginTop: 8, fontSize: 12, color: 'var(--sl-text)', lineHeight: 1.6 } },
                   h('b', null, 'Bootstrap 95% CI for ' + d.bootResult.statName + ': '),
-                  '[', h('b', { style: { color: '#10b981' } }, d.bootResult.ci[0].toFixed(3)),
-                  ', ', h('b', { style: { color: '#10b981' } }, d.bootResult.ci[1].toFixed(3)), ']  ',
+                  '[', h('b', { style: { color: 'var(--sl-positive)' } }, d.bootResult.ci[0].toFixed(3)),
+                  ', ', h('b', { style: { color: 'var(--sl-positive)' } }, d.bootResult.ci[1].toFixed(3)), ']  ',
                   h('span', { style: { fontStyle: 'italic', color: 'var(--allo-stem-text, #cbd5e1)' } },
                     '(observed = ', d.bootResult.observed.toFixed(3), ')'
                   )
@@ -3739,14 +3777,14 @@ window.StemLab = window.StemLab || {
         ),
         d.permResult && h('div', { style: { marginTop: 12 } },
           d.permResult.error
-            ? h('div', { style: { fontSize: 11, color: '#fca5a5' } }, '⚠ ' + d.permResult.error)
+            ? h('div', { style: { fontSize: 11, color: 'var(--sl-danger)' } }, '⚠ ' + d.permResult.error)
             : h('div', null,
                 _renderPermutationViz(d.permResult, h),
-                h('div', { style: { marginTop: 8, fontSize: 12, color: '#fef3c7', lineHeight: 1.6 } },
+                h('div', { style: { marginTop: 8, fontSize: 12, color: 'var(--sl-text)', lineHeight: 1.6 } },
                   h('b', null, d.permResult.moreExtreme + ' of ' + d.permResult.nReps),
                   ' shuffles produced a test stat as extreme as your observed ',
                   d.permResult.statName, ' = ', d.permResult.observed.toFixed(3),
-                  '. Empirical p = ', h('b', { style: { color: '#fbbf24' } }, d.permResult.pPerm.toFixed(4)), '.'
+                  '. Empirical p = ', h('b', { style: { color: 'var(--sl-warning)' } }, d.permResult.pPerm.toFixed(4)), '.'
                 ),
                 h('div', { style: { marginTop: 6, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, fontStyle: 'italic' } },
                   '(Compare to the formula-based p = ', _isNum(r.p) ? (r.p < 0.001 ? '< .001' : r.p.toFixed(4)) : '?', '. They should be very close — both estimate the same thing two different ways.)'
@@ -3764,7 +3802,7 @@ window.StemLab = window.StemLab || {
           borderRadius: 10, padding: 14, marginBottom: 12
         }
       },
-        h('div', { style: { fontSize: 13, fontWeight: 800, color: '#d8b4fe', marginBottom: 6 } }, '📝 AP exam quiz mode'),
+        h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--sl-purple)', marginBottom: 6 } }, '📝 AP exam quiz mode'),
         h('p', { style: { margin: '0 0 8px', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
           'Take a 5-question multiple-choice quiz on the concepts behind your result. Two questions are tied to the specific test you ran; two probe p-values + type I/II errors; one is random. Answers include rationales.'
         ),
@@ -3780,7 +3818,7 @@ window.StemLab = window.StemLab || {
           'data-sl-focusable': 'true',
           style: {
             padding: '8px 16px',
-            background: 'linear-gradient(135deg, #a855f7, #7e22ce)',
+            background: 'linear-gradient(135deg, #7e22ce, #6b21a8)',
             color: '#fff', border: '1px solid #7e22ce',
             borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700
           }
@@ -3794,8 +3832,8 @@ window.StemLab = window.StemLab || {
               key: qi,
               style: {
                 marginBottom: 14, padding: 10,
-                background: 'var(--allo-stem-canvas, #0f172a)',
-                border: '1px solid ' + (d.quizSubmitted ? (isCorrect ? 'rgba(22,163,74,0.55)' : 'rgba(220,38,38,0.55)') : '#334155'),
+                background: 'var(--sl-surface)',
+                border: '1px solid ' + (d.quizSubmitted ? (isCorrect ? 'var(--sl-positive)' : 'var(--sl-danger)') : 'var(--sl-border)'),
                 borderRadius: 8
               }
             },
@@ -3804,12 +3842,12 @@ window.StemLab = window.StemLab || {
               q.choices.map(function(choice, ci) {
                 var isPicked = pickedIdx === ci;
                 var isThisCorrect = ci === q.correct;
-                var bg = '#1e293b', borderColor = '#334155', textColor = '#cbd5e1';
+                var bg = 'var(--sl-panel)', borderColor = 'var(--sl-border)', textColor = 'var(--sl-text)';
                 if (d.quizSubmitted) {
-                  if (isThisCorrect) { bg = 'rgba(22,163,74,0.18)'; borderColor = 'rgba(22,163,74,0.55)'; textColor = '#86efac'; }
-                  else if (isPicked) { bg = 'rgba(220,38,38,0.18)'; borderColor = 'rgba(220,38,38,0.55)'; textColor = '#fca5a5'; }
+                  if (isThisCorrect) { bg = 'var(--sl-positive-soft)'; borderColor = 'var(--sl-positive)'; textColor = 'var(--sl-positive)'; }
+                  else if (isPicked) { bg = 'var(--sl-danger-soft)'; borderColor = 'var(--sl-danger)'; textColor = 'var(--sl-danger)'; }
                 } else if (isPicked) {
-                  bg = 'rgba(168,85,247,0.18)'; borderColor = 'rgba(168,85,247,0.55)'; textColor = '#d8b4fe';
+                  bg = 'var(--sl-purple-soft)'; borderColor = 'var(--sl-purple)'; textColor = 'var(--sl-purple)';
                 }
                 return h('button', {
                   key: ci,
@@ -3832,14 +3870,14 @@ window.StemLab = window.StemLab || {
                 },
                   h('span', { style: { fontWeight: 800, marginRight: 6 } }, String.fromCharCode(65 + ci) + '.'),
                   choice,
-                  d.quizSubmitted && isThisCorrect && h('span', { style: { color: '#86efac', marginLeft: 8, fontWeight: 800 } }, ' ✓ correct'),
-                  d.quizSubmitted && isPicked && !isThisCorrect && h('span', { style: { color: '#fca5a5', marginLeft: 8, fontWeight: 800 } }, ' ✗ your answer')
+                  d.quizSubmitted && isThisCorrect && h('span', { style: { color: 'var(--sl-positive)', marginLeft: 8, fontWeight: 800 } }, ' ✓ correct'),
+                  d.quizSubmitted && isPicked && !isThisCorrect && h('span', { style: { color: 'var(--sl-danger)', marginLeft: 8, fontWeight: 800 } }, ' ✗ your answer')
                 );
               }),
               d.quizSubmitted && h('div', {
                 style: { marginTop: 8, padding: 8, background: 'rgba(99,102,241,0.10)', borderLeft: '3px solid #6366f1', borderRadius: 4, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 }
               },
-                h('b', { style: { color: '#a5b4fc' } }, '💡 Why: '), q.explain
+                h('b', { style: { color: 'var(--sl-heading)' } }, '💡 Why: '), q.explain
               )
             );
           }),
@@ -3898,7 +3936,7 @@ window.StemLab = window.StemLab || {
             'data-sl-focusable': 'true',
             style: {
               padding: '10px 18px',
-              background: 'linear-gradient(135deg, #a855f7, #7e22ce)',
+              background: 'linear-gradient(135deg, #7e22ce, #6b21a8)',
               color: '#fff', border: '1px solid #7e22ce',
               borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 800
             }
@@ -3909,10 +3947,10 @@ window.StemLab = window.StemLab || {
                        : d.quizCorrect >= 4 ? 'strong'
                        : d.quizCorrect >= 2 ? 'learning'
                        : 'review';
-            var tierColor = tier === 'perfect' ? '#fbbf24'
-                            : tier === 'strong' ? '#22c55e'
-                            : tier === 'learning' ? '#f59e0b'
-                            : '#ef4444';
+            var tierColor = tier === 'perfect' ? 'var(--sl-warning)'
+                            : tier === 'strong' ? 'var(--sl-positive)'
+                            : tier === 'learning' ? 'var(--sl-warning)'
+                            : 'var(--sl-danger)';
             var tierIcon = tier === 'perfect' ? '🏆' : tier === 'strong' ? '🎯' : tier === 'learning' ? '🪶' : '📚';
             var tierTitle = tier === 'perfect' ? 'Perfect score!'
                             : tier === 'strong' ? 'You can run a t-test now'
@@ -3925,7 +3963,7 @@ window.StemLab = window.StemLab || {
             var rad = 30, circ = 2 * Math.PI * rad;
             var dashOff = circ - (pct / 100) * circ;
             var ans = d.quizAnswers || [];
-            return h('div', { style: { marginTop: 10, borderRadius: 12, overflow: 'hidden', border: '2px solid ' + tierColor + '88', background: 'linear-gradient(135deg, rgba(15,23,42,0.85), rgba(30,41,59,0.85))' } },
+            return h('div', { style: { marginTop: 10, borderRadius: 12, overflow: 'hidden', border: '2px solid ' + tierColor, background: 'var(--sl-panel)' } },
               h('div', { style: { padding: 14, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' } },
                 h('div', { style: { position: 'relative', width: 84, height: 84, flexShrink: 0 } },
                   h('svg', { viewBox: '0 0 100 100', width: 84, height: 84, 'aria-label': 'Score: ' + d.quizCorrect + ' out of ' + d.quizQuestions.length },
@@ -3966,7 +4004,7 @@ window.StemLab = window.StemLab || {
                 h('button', {
                   onClick: function() { upd({ quizQuestions: null, quizAnswers: [], quizSubmitted: false }); },
                   'data-sl-focusable': 'true',
-                  style: { padding: '6px 14px', background: 'rgba(168,85,247,0.18)', color: '#d8b4fe', border: '1px solid rgba(168,85,247,0.45)', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 700 }
+                  style: { padding: '6px 14px', background: 'rgba(168,85,247,0.18)', color: 'var(--sl-purple)', border: '1px solid rgba(168,85,247,0.45)', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 700 }
                 }, '🔁 New quiz')
               )
             );
@@ -3981,7 +4019,7 @@ window.StemLab = window.StemLab || {
           borderRadius: 10, padding: 14, marginBottom: 12
         }
       },
-        h('div', { style: { fontSize: 13, fontWeight: 800, color: '#d8b4fe', marginBottom: 6 } }, '🤖 AI interpretation grader'),
+        h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--sl-purple)', marginBottom: 6 } }, '🤖 AI interpretation grader'),
         h('p', { style: { margin: '0 0 8px', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
           'Write a 2-3 sentence interpretation of this result for a peer who isn\'t a stats expert. Then get AI feedback on accuracy + clarity.'
         ),
@@ -4002,7 +4040,7 @@ window.StemLab = window.StemLab || {
           'aria-busy': !!d.aiGradeLoading,
           style: {
             padding: '8px 16px',
-            background: d.aiGradeLoading ? '#374151' : 'linear-gradient(135deg, #a855f7, #7e22ce)',
+            background: d.aiGradeLoading ? '#374151' : 'linear-gradient(135deg, #7e22ce, #6b21a8)',
             color: '#fff', border: '1px solid ' + (d.aiGradeLoading ? '#4b5563' : '#7e22ce'),
             borderRadius: 8, cursor: d.aiGradeLoading ? 'wait' : 'pointer',
             fontSize: 12, fontWeight: 700
@@ -4010,25 +4048,25 @@ window.StemLab = window.StemLab || {
         }, d.aiGradeLoading ? '🤖 Grading…' : '🤖 Grade my interpretation'),
         d.aiGradeResponse && h('div', { style: { marginTop: 10, padding: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid rgba(168,85,247,0.45)', borderRadius: 8 } },
           d.aiGradeResponse.error
-            ? h('div', { style: { fontSize: 12, color: '#fca5a5' } }, '⚠ ' + d.aiGradeResponse.error)
+            ? h('div', { style: { fontSize: 12, color: 'var(--sl-danger)' } }, '⚠ ' + d.aiGradeResponse.error)
             : h('div', null,
                 _isNum(d.aiGradeResponse.score) && h('div', { style: { fontSize: 16, fontWeight: 900, color: 'var(--allo-stem-text, #fef3c7)', marginBottom: 6 } },
                   'Score: ' + d.aiGradeResponse.score + ' / 10'
                 ),
                 Array.isArray(d.aiGradeResponse.strengths) && d.aiGradeResponse.strengths.length > 0 && h('div', { style: { marginBottom: 8 } },
-                  h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', marginBottom: 2 } }, '✓ Strengths'),
+                  h('div', { style: { fontSize: 11, fontWeight: 800, color: 'var(--sl-positive)', marginBottom: 2 } }, '✓ Strengths'),
                   h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
                     d.aiGradeResponse.strengths.map(function(s, i) { return h('li', { key: i }, s); })
                   )
                 ),
                 Array.isArray(d.aiGradeResponse.issues) && d.aiGradeResponse.issues.length > 0 && h('div', { style: { marginBottom: 8 } },
-                  h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', marginBottom: 2 } }, '✗ Issues to address'),
+                  h('div', { style: { fontSize: 11, fontWeight: 800, color: 'var(--sl-danger)', marginBottom: 2 } }, '✗ Issues to address'),
                   h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
                     d.aiGradeResponse.issues.map(function(s, i) { return h('li', { key: i }, s); })
                   )
                 ),
                 d.aiGradeResponse.improved_version && h('div', null,
-                  h('div', { style: { fontSize: 11, fontWeight: 800, color: '#a5b4fc', marginBottom: 2 } }, '📝 Model interpretation'),
+                  h('div', { style: { fontSize: 11, fontWeight: 800, color: 'var(--sl-heading)', marginBottom: 2 } }, '📝 Model interpretation'),
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #fef3c7)', fontStyle: 'italic', padding: 8, background: 'rgba(99,102,241,0.10)', borderRadius: 6, lineHeight: 1.6 } },
                     d.aiGradeResponse.improved_version
                   )
@@ -4259,39 +4297,39 @@ window.StemLab = window.StemLab || {
       width: W, height: H, viewBox: '0 0 ' + W + ' ' + H,
       role: 'img',
       'aria-label': 'Type I and Type II error visualization. Cohen\'s d = ' + d_eff + ', n = ' + n + ', alpha = ' + alpha + '. Power = ' + power.toFixed(3),
-      style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6 }
+      style: { background: 'var(--sl-chart-bg)', borderRadius: 6 }
     },
       // Axis
-      h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: '#475569' }),
+      h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
       // β (Type II) region: under H₁ to the LEFT of crit (failed to reject)
-      h('path', { d: pathFill(xMin, Math.min(crit, ncp + 4), ncp, 1), fill: '#3b82f6', opacity: 0.30 }),
+      h('path', { d: pathFill(xMin, Math.min(crit, ncp + 4), ncp, 1), fill: 'var(--sl-chart-primary)', opacity: 0.78, stroke: 'var(--sl-chart-primary)', strokeWidth: 0.8 }),
       // Power region: under H₁ to the RIGHT of crit (correctly rejected)
-      h('path', { d: pathFill(crit, ncp + 4, ncp, 1), fill: '#16a34a', opacity: 0.40 }),
+      h('path', { d: pathFill(crit, ncp + 4, ncp, 1), fill: 'var(--sl-chart-secondary)', opacity: 0.78, stroke: 'var(--sl-chart-secondary)', strokeWidth: 0.8 }),
       // α (Type I) region: under H₀ to the RIGHT of crit (false alarm)
-      h('path', { d: pathFill(crit, 4, 0, 1), fill: '#ef4444', opacity: 0.55 }),
+      h('path', { d: pathFill(crit, 4, 0, 1), fill: 'var(--sl-chart-danger)', opacity: 0.78, stroke: 'var(--sl-chart-danger)', strokeWidth: 0.8 }),
       // Curve outlines (drawn AFTER fills so they sit on top)
-      h('path', { d: curveLine(0, 1), fill: 'none', stroke: '#94a3b8', strokeWidth: 1.5 }),
-      h('path', { d: curveLine(ncp, 1), fill: 'none', stroke: '#fbbf24', strokeWidth: 1.5 }),
+      h('path', { d: curveLine(0, 1), fill: 'none', stroke: 'var(--sl-chart-label)', strokeWidth: 1.5 }),
+      h('path', { d: curveLine(ncp, 1), fill: 'none', stroke: 'var(--sl-chart-warning)', strokeWidth: 1.5 }),
       // Critical value vertical line
-      h('line', { x1: sx(crit), y1: pad.t - 8, x2: sx(crit), y2: H - pad.b, stroke: '#fef3c7', strokeWidth: 1.5, strokeDasharray: '4 3' }),
-      h('text', { x: sx(crit), y: pad.t - 12, fill: '#fef3c7', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'crit z = ' + crit.toFixed(2)),
+      h('line', { x1: sx(crit), y1: pad.t - 8, x2: sx(crit), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 1.5, strokeDasharray: '4 3' }),
+      h('text', { x: sx(crit), y: pad.t - 12, fill: 'var(--sl-chart-warning)', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'crit z = ' + crit.toFixed(2)),
       // Distribution labels
-      h('text', { x: sx(0), y: sy(_normalPdf(0, 0, 1)) - 4, fill: '#94a3b8', fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, 'H₀'),
-      h('text', { x: sx(ncp), y: sy(_normalPdf(ncp, ncp, 1)) - 4, fill: '#fbbf24', fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, 'H₁'),
+      h('text', { x: sx(0), y: sy(_normalPdf(0, 0, 1)) - 4, fill: 'var(--sl-chart-label)', fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, 'H₀'),
+      h('text', { x: sx(ncp), y: sy(_normalPdf(ncp, ncp, 1)) - 4, fill: 'var(--sl-chart-warning)', fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, 'H₁'),
       // X axis ticks
       _niceTicks(xMin, xMax, 7).map(function(t, ti) {
         return h('g', { key: 't' + ti },
-          h('line', { x1: sx(t), y1: H - pad.b, x2: sx(t), y2: H - pad.b + 4, stroke: '#475569' }),
-          h('text', { x: sx(t), y: H - pad.b + 14, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, t.toFixed(1))
+          h('line', { x1: sx(t), y1: H - pad.b, x2: sx(t), y2: H - pad.b + 4, stroke: 'var(--sl-chart-axis)' }),
+          h('text', { x: sx(t), y: H - pad.b + 14, fill: 'var(--sl-chart-label)', fontSize: 9, textAnchor: 'middle' }, t.toFixed(1))
         );
       }),
       // Legend bar at bottom
-      h('rect', { x: pad.l, y: H - 18, width: 10, height: 10, fill: '#ef4444', opacity: 0.55 }),
-      h('text', { x: pad.l + 14, y: H - 9, fill: '#fca5a5', fontSize: 10, fontWeight: 700 }, 'α = ' + alpha.toFixed(3) + ' (Type I)'),
-      h('rect', { x: pad.l + 130, y: H - 18, width: 10, height: 10, fill: '#3b82f6', opacity: 0.30 }),
-      h('text', { x: pad.l + 144, y: H - 9, fill: '#93c5fd', fontSize: 10, fontWeight: 700 }, 'β = ' + beta.toFixed(3) + ' (Type II)'),
-      h('rect', { x: pad.l + 270, y: H - 18, width: 10, height: 10, fill: '#16a34a', opacity: 0.40 }),
-      h('text', { x: pad.l + 284, y: H - 9, fill: '#86efac', fontSize: 10, fontWeight: 700 }, 'Power = ' + power.toFixed(3))
+      h('rect', { x: pad.l, y: H - 18, width: 10, height: 10, fill: 'var(--sl-chart-danger)', opacity: 0.78, stroke: 'var(--sl-chart-danger)' }),
+      h('text', { x: pad.l + 14, y: H - 9, fill: 'var(--sl-chart-danger)', fontSize: 10, fontWeight: 700 }, 'α = ' + alpha.toFixed(3) + ' (Type I)'),
+      h('rect', { x: pad.l + 130, y: H - 18, width: 10, height: 10, fill: 'var(--sl-chart-primary)', opacity: 0.78, stroke: 'var(--sl-chart-primary)' }),
+      h('text', { x: pad.l + 144, y: H - 9, fill: 'var(--sl-chart-primary)', fontSize: 10, fontWeight: 700 }, 'β = ' + beta.toFixed(3) + ' (Type II)'),
+      h('rect', { x: pad.l + 270, y: H - 18, width: 10, height: 10, fill: 'var(--sl-chart-secondary)', opacity: 0.78, stroke: 'var(--sl-chart-secondary)' }),
+      h('text', { x: pad.l + 284, y: H - 9, fill: 'var(--sl-chart-secondary)', fontSize: 10, fontWeight: 700 }, 'Power = ' + power.toFixed(3))
     );
   }
 
@@ -4357,7 +4395,7 @@ window.StemLab = window.StemLab || {
           borderRadius: 10, padding: 14, marginBottom: 12
         }
       },
-        h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a5b4fc', marginBottom: 8 } }, '🔋 Power / sample-size calculator'),
+        h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--sl-heading)', marginBottom: 8 } }, '🔋 Power / sample-size calculator'),
         h('p', { style: { margin: '0 0 12px', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
           'Plan a study before you run it. Plug in your expected effect size + desired power, and the calculator returns the sample size you need.'
         ),
@@ -4367,7 +4405,7 @@ window.StemLab = window.StemLab || {
             h('select', {
               id: 'sl-power-test', value: p.test, onChange: function(e) { setP('test', e.target.value); },
               'data-sl-focusable': 'true',
-              style: { width: '100%', padding: '6px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#e0e7ff', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12 }
+              style: { width: '100%', padding: '6px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-heading)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12 }
             },
               h('option', { value: 'ttest_independent' }, 'Independent t-test'),
               h('option', { value: 'pearson' }, 'Pearson correlation'),
@@ -4382,7 +4420,7 @@ window.StemLab = window.StemLab || {
               value: p.effectSize,
               onChange: function(e) { setP('effectSize', e.target.value); },
               'data-sl-focusable': 'true',
-              style: { width: '100%', padding: '6px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, fontWeight: 700 }
+              style: { width: '100%', padding: '6px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-warning)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, fontWeight: 700 }
             })
           ),
           h('div', null,
@@ -4392,7 +4430,7 @@ window.StemLab = window.StemLab || {
               value: p.alpha,
               onChange: function(e) { setP('alpha', e.target.value); },
               'data-sl-focusable': 'true',
-              style: { width: '100%', padding: '6px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, fontWeight: 700 }
+              style: { width: '100%', padding: '6px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-warning)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, fontWeight: 700 }
             })
           ),
           h('div', null,
@@ -4402,7 +4440,7 @@ window.StemLab = window.StemLab || {
               value: p.power,
               onChange: function(e) { setP('power', e.target.value); },
               'data-sl-focusable': 'true',
-              style: { width: '100%', padding: '6px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, fontWeight: 700 }
+              style: { width: '100%', padding: '6px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-warning)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, fontWeight: 700 }
             })
           ),
           p.test === 'anova_oneWay' && h('div', null,
@@ -4412,7 +4450,7 @@ window.StemLab = window.StemLab || {
               value: p.k || 3,
               onChange: function(e) { setP('k', e.target.value); },
               'data-sl-focusable': 'true',
-              style: { width: '100%', padding: '6px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, fontWeight: 700 }
+              style: { width: '100%', padding: '6px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-warning)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, fontWeight: 700 }
             })
           ),
           p.test === 'chiSquare' && h('div', null,
@@ -4422,7 +4460,7 @@ window.StemLab = window.StemLab || {
               value: p.df || 1,
               onChange: function(e) { setP('df', e.target.value); },
               'data-sl-focusable': 'true',
-              style: { width: '100%', padding: '6px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: '#fbbf24', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, fontWeight: 700 }
+              style: { width: '100%', padding: '6px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--sl-warning)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12, fontWeight: 700 }
             })
           )
         ),
@@ -4431,7 +4469,7 @@ window.StemLab = window.StemLab || {
           'data-sl-focusable': 'true',
           style: {
             padding: '10px 20px',
-            background: 'linear-gradient(135deg,#16a34a,#15803d)',
+            background: 'linear-gradient(135deg,#15803d,#166534)',
             color: '#fff', border: '1px solid #15803d',
             borderRadius: 8, cursor: 'pointer', fontSize: 14, fontWeight: 800, minHeight: 40
           }
@@ -4446,23 +4484,23 @@ window.StemLab = window.StemLab || {
         role: 'status', 'aria-live': 'polite'
       },
         lastR.error
-          ? h('div', { style: { fontSize: 13, color: '#fca5a5' } }, '⚠ ' + lastR.error)
+          ? h('div', { style: { fontSize: 13, color: 'var(--sl-danger)' } }, '⚠ ' + lastR.error)
           : h('div', null,
-              h('div', { style: { fontSize: 12, fontWeight: 800, color: '#86efac', marginBottom: 6 } }, '✓ Power analysis complete'),
-              p.test === 'ttest_independent' && lastR.n != null && h('div', { style: { fontSize: 14, color: '#fef3c7', lineHeight: 1.6 } },
-                'You need ', h('b', { style: { color: '#fbbf24', fontSize: 16 } }, lastR.n + ' subjects per group'),
+              h('div', { style: { fontSize: 12, fontWeight: 800, color: 'var(--sl-positive)', marginBottom: 6 } }, '✓ Power analysis complete'),
+              p.test === 'ttest_independent' && lastR.n != null && h('div', { style: { fontSize: 14, color: 'var(--sl-text)', lineHeight: 1.6 } },
+                'You need ', h('b', { style: { color: 'var(--sl-warning)', fontSize: 16 } }, lastR.n + ' subjects per group'),
                 ' (', h('b', null, lastR.total_n + ' total'), ') to detect d = ', lastR.d, ' at α = ', lastR.alpha, ', power ≥ ', (lastR.power || 0.8).toFixed(2), '.'
               ),
-              p.test === 'pearson' && lastR.n != null && h('div', { style: { fontSize: 14, color: '#fef3c7', lineHeight: 1.6 } },
-                'You need ', h('b', { style: { color: '#fbbf24', fontSize: 16 } }, lastR.n + ' participants'),
+              p.test === 'pearson' && lastR.n != null && h('div', { style: { fontSize: 14, color: 'var(--sl-text)', lineHeight: 1.6 } },
+                'You need ', h('b', { style: { color: 'var(--sl-warning)', fontSize: 16 } }, lastR.n + ' participants'),
                 ' to detect r = ', lastR.r, ' at α = ', lastR.alpha, ', power = ', lastR.power, '.'
               ),
-              p.test === 'anova_oneWay' && lastR.n != null && h('div', { style: { fontSize: 14, color: '#fef3c7', lineHeight: 1.6 } },
-                'You need ', h('b', { style: { color: '#fbbf24', fontSize: 16 } }, lastR.n + ' subjects per group'),
+              p.test === 'anova_oneWay' && lastR.n != null && h('div', { style: { fontSize: 14, color: 'var(--sl-text)', lineHeight: 1.6 } },
+                'You need ', h('b', { style: { color: 'var(--sl-warning)', fontSize: 16 } }, lastR.n + ' subjects per group'),
                 ' (', h('b', null, lastR.total_n + ' total across ' + lastR.k + ' groups'), ') to detect Cohen\'s f = ', lastR.f, ' at α = ', lastR.alpha, ', power ≥ ', (lastR.power || 0.8).toFixed(2), '.'
               ),
-              p.test === 'chiSquare' && lastR.n != null && h('div', { style: { fontSize: 14, color: '#fef3c7', lineHeight: 1.6 } },
-                'You need ', h('b', { style: { color: '#fbbf24', fontSize: 16 } }, lastR.n + ' total observations'),
+              p.test === 'chiSquare' && lastR.n != null && h('div', { style: { fontSize: 14, color: 'var(--sl-text)', lineHeight: 1.6 } },
+                'You need ', h('b', { style: { color: 'var(--sl-warning)', fontSize: 16 } }, lastR.n + ' total observations'),
                 ' to detect w = ', lastR.w, ' (df=', lastR.df, ') at α = ', lastR.alpha, ', power ≥ ', (lastR.power || 0.8).toFixed(2), '.'
               )
             )
@@ -4475,19 +4513,19 @@ window.StemLab = window.StemLab || {
           borderRadius: 10, padding: 14, marginTop: 12
         }
       },
-        h('div', { style: { fontSize: 13, fontWeight: 800, color: '#a5b4fc', marginBottom: 6 } }, '🎯 Visualize Type I & Type II error'),
+        h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--sl-heading)', marginBottom: 6 } }, '🎯 Visualize Type I & Type II error'),
         h('p', { style: { margin: '0 0 10px', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
           'Two overlapping bell curves: the gray one is the test stat distribution under ',
           h('b', null, 'H₀'), ' (no effect), the yellow one under ',
           h('b', null, 'H₁'), ' (effect = your Cohen\'s d). The dashed line is the critical value (you reject H₀ to its right). ',
-          h('b', { style: { color: '#fca5a5' } }, 'Red'), ' = α (Type I error: false alarm). ',
-          h('b', { style: { color: '#93c5fd' } }, 'Blue'), ' = β (Type II error: missed real effect). ',
-          h('b', { style: { color: '#86efac' } }, 'Green'), ' = power (correctly detect a real effect). Move the sliders to feel how they trade off.'
+          h('b', { style: { color: 'var(--sl-danger)' } }, 'Red'), ' = α (Type I error: false alarm). ',
+          h('b', { style: { color: 'var(--sl-info)' } }, 'Blue'), ' = β (Type II error: missed real effect). ',
+          h('b', { style: { color: 'var(--sl-positive)' } }, 'Green'), ' = power (correctly detect a real effect). Move the sliders to feel how they trade off.'
         ),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10, marginBottom: 10 } },
           h('div', null,
             h('label', { htmlFor: 'sl-viz-d', style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'block', marginBottom: 4 } },
-              "Effect size (Cohen's d): ", h('b', { style: { color: '#fbbf24' } }, parseFloat(p.vizD || 0.5).toFixed(2))
+              "Effect size (Cohen's d): ", h('b', { style: { color: 'var(--sl-warning)' } }, parseFloat(p.vizD || 0.5).toFixed(2))
             ),
             h('input', {
               id: 'sl-viz-d', type: 'range', min: 0, max: 2.0, step: 0.05,
@@ -4499,7 +4537,7 @@ window.StemLab = window.StemLab || {
           ),
           h('div', null,
             h('label', { htmlFor: 'sl-viz-n', style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'block', marginBottom: 4 } },
-              'Sample size per group: ', h('b', { style: { color: '#fbbf24' } }, parseInt(p.vizN || 30, 10))
+              'Sample size per group: ', h('b', { style: { color: 'var(--sl-warning)' } }, parseInt(p.vizN || 30, 10))
             ),
             h('input', {
               id: 'sl-viz-n', type: 'range', min: 4, max: 200, step: 2,
@@ -4511,7 +4549,7 @@ window.StemLab = window.StemLab || {
           ),
           h('div', null,
             h('label', { htmlFor: 'sl-viz-alpha', style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'block', marginBottom: 4 } },
-              'α (Type I rate): ', h('b', { style: { color: '#fbbf24' } }, parseFloat(p.vizAlpha || 0.05).toFixed(3))
+              'α (Type I rate): ', h('b', { style: { color: 'var(--sl-warning)' } }, parseFloat(p.vizAlpha || 0.05).toFixed(3))
             ),
             h('input', {
               id: 'sl-viz-alpha', type: 'range', min: 0.001, max: 0.20, step: 0.001,
@@ -4533,19 +4571,19 @@ window.StemLab = window.StemLab || {
           return h('div', {
             style: { marginTop: 8, padding: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid rgba(99,102,241,0.30)', borderRadius: 8, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 }
           },
-            'With d = ', h('b', { style: { color: '#fbbf24' } }, vd.toFixed(2)),
-            ', n = ', h('b', { style: { color: '#fbbf24' } }, vn),
-            ' per group, α = ', h('b', { style: { color: '#fbbf24' } }, va.toFixed(3)), ':',
+            'With d = ', h('b', { style: { color: 'var(--sl-warning)' } }, vd.toFixed(2)),
+            ', n = ', h('b', { style: { color: 'var(--sl-warning)' } }, vn),
+            ' per group, α = ', h('b', { style: { color: 'var(--sl-warning)' } }, va.toFixed(3)), ':',
             h('div', { style: { marginTop: 4, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 6 } },
-              h('span', { style: { color: '#fca5a5' } }, 'Type I (α): ', h('b', null, va.toFixed(3))),
-              h('span', { style: { color: '#93c5fd' } }, 'Type II (β): ', h('b', null, beta.toFixed(3))),
-              h('span', { style: { color: '#86efac' } }, 'Power (1−β): ', h('b', null, power.toFixed(3))),
+              h('span', { style: { color: 'var(--sl-danger)' } }, 'Type I (α): ', h('b', null, va.toFixed(3))),
+              h('span', { style: { color: 'var(--sl-info)' } }, 'Type II (β): ', h('b', null, beta.toFixed(3))),
+              h('span', { style: { color: 'var(--sl-positive)' } }, 'Power (1−β): ', h('b', null, power.toFixed(3))),
               h('span', { style: { color: 'var(--allo-stem-text, #fef3c7)' } }, 'NCP: ', h('b', null, ncp.toFixed(2)))
             ),
-            power < 0.50 && h('div', { style: { marginTop: 6, color: '#fbbf24', fontStyle: 'italic' } },
+            power < 0.50 && h('div', { style: { marginTop: 6, color: 'var(--sl-warning)', fontStyle: 'italic' } },
               '⚠ Power below 0.50 — fewer than half of studies of this size would detect this effect. Consider larger n.'
             ),
-            power >= 0.80 && h('div', { style: { marginTop: 6, color: '#86efac', fontStyle: 'italic' } },
+            power >= 0.80 && h('div', { style: { marginTop: 6, color: 'var(--sl-positive)', fontStyle: 'italic' } },
               '✓ Power ≥ 0.80 — meets the conventional threshold for "adequately powered."'
             )
           );
@@ -4608,11 +4646,11 @@ window.StemLab = window.StemLab || {
       width: W, height: H, viewBox: '0 0 ' + W + ' ' + H,
       role: 'img',
       'aria-label': 'Histogram of ' + label + ', n=' + x.length + ', mean=' + m.toFixed(2) + ', median=' + md.toFixed(2),
-      style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6 }
+      style: { background: 'var(--sl-chart-bg)', borderRadius: 6 }
     },
       // Grid + axes
-      h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: '#475569', strokeWidth: 1 }),
-      h('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: '#475569', strokeWidth: 1 }),
+      h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: 'var(--sl-chart-axis)', strokeWidth: 1 }),
+      h('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: 'var(--sl-chart-axis)', strokeWidth: 1 }),
       // Bars
       bins.map(function(c, bi) {
         var x0 = sx(min + bi * binW), x1 = sx(min + (bi + 1) * binW);
@@ -4620,26 +4658,26 @@ window.StemLab = window.StemLab || {
         return h('rect', {
           key: bi,
           x: x0 + 1, y: y0, width: Math.max(1, x1 - x0 - 2), height: H - pad.b - y0,
-          fill: '#6366f1', opacity: 0.85
+          fill: 'var(--sl-chart-primary)', opacity: 0.85
         });
       }),
       // Mean line
-      h('line', { x1: sx(m), y1: pad.t, x2: sx(m), y2: H - pad.b, stroke: '#fbbf24', strokeWidth: 2, strokeDasharray: '4 3' }),
-      h('text', { x: sx(m), y: pad.t - 4, fill: '#fbbf24', fontSize: 9, textAnchor: 'middle' }, 'M=' + m.toFixed(1)),
+      h('line', { x1: sx(m), y1: pad.t, x2: sx(m), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 2, strokeDasharray: '4 3' }),
+      h('text', { x: sx(m), y: pad.t - 4, fill: 'var(--sl-chart-warning)', fontSize: 9, textAnchor: 'middle' }, 'M=' + m.toFixed(1)),
       // Median line — the gap between this and the mean reveals skew at a glance
-      h('line', { x1: sx(md), y1: pad.t, x2: sx(md), y2: H - pad.b, stroke: '#10b981', strokeWidth: 2, strokeDasharray: '2 3' }),
-      h('text', { x: sx(md), y: pad.t + 9, fill: '#10b981', fontSize: 9, textAnchor: 'middle' }, 'Mdn=' + md.toFixed(1)),
+      h('line', { x1: sx(md), y1: pad.t, x2: sx(md), y2: H - pad.b, stroke: 'var(--sl-chart-secondary)', strokeWidth: 2, strokeDasharray: '2 3' }),
+      h('text', { x: sx(md), y: pad.t + 9, fill: 'var(--sl-chart-secondary)', fontSize: 9, textAnchor: 'middle' }, 'Mdn=' + md.toFixed(1)),
       // X axis ticks
       ticks.map(function(t, ti) {
         return h('g', { key: 'xt' + ti },
-          h('line', { x1: sx(t), y1: H - pad.b, x2: sx(t), y2: H - pad.b + 4, stroke: '#475569' }),
-          h('text', { x: sx(t), y: H - pad.b + 14, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, '' + t)
+          h('line', { x1: sx(t), y1: H - pad.b, x2: sx(t), y2: H - pad.b + 4, stroke: 'var(--sl-chart-axis)' }),
+          h('text', { x: sx(t), y: H - pad.b + 14, fill: 'var(--sl-chart-label)', fontSize: 9, textAnchor: 'middle' }, '' + t)
         );
       }),
       // Y axis label
-      h('text', { x: 4, y: H / 2, fill: '#94a3b8', fontSize: 9, transform: 'rotate(-90 4 ' + (H / 2) + ')' }, 'Count'),
+      h('text', { x: 4, y: H / 2, fill: 'var(--sl-chart-label)', fontSize: 9, transform: 'rotate(-90 4 ' + (H / 2) + ')' }, 'Count'),
       // X axis label
-      h('text', { x: W / 2, y: H - 6, fill: '#cbd5e1', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, label)
+      h('text', { x: W / 2, y: H - 6, fill: 'var(--sl-chart-label)', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, label)
     );
   }
 
@@ -4671,38 +4709,38 @@ window.StemLab = window.StemLab || {
     var lineX1 = zMin - 0.3, lineX2 = zMax + 0.3;
     var lineY1 = m + sd * lineX1, lineY2 = m + sd * lineX2;
     var children = [
-      h('line', { key: 'ax', x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: '#475569' }),
-      h('line', { key: 'ay', x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: '#475569' }),
+      h('line', { key: 'ax', x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
+      h('line', { key: 'ay', x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
       // Reference line (where points would fall if normally distributed)
       h('line', { key: 'ref',
         x1: sx(lineX1), y1: sy(lineY1), x2: sx(lineX2), y2: sy(lineY2),
-        stroke: '#fbbf24', strokeWidth: 1.5, strokeDasharray: '4 3', opacity: 0.7
+        stroke: 'var(--sl-chart-warning)', strokeWidth: 1.5, strokeDasharray: '4 3', opacity: 0.7
       })
     ];
     // Points
     pts.forEach(function(p, pi) {
-      children.push(h('circle', { key: 'p' + pi, cx: sx(p[0]), cy: sy(p[1]), r: 3, fill: '#10b981', stroke: '#0f172a', strokeWidth: 1, opacity: 0.85 }));
+      children.push(h('circle', { key: 'p' + pi, cx: sx(p[0]), cy: sy(p[1]), r: 3, fill: 'var(--sl-chart-secondary)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1, opacity: 0.85 }));
     });
     // Axis ticks
     var zTicks = _niceTicks(zMin, zMax, 5);
     zTicks.forEach(function(t, ti) {
-      children.push(h('line', { key: 'tx' + ti, x1: sx(t), y1: H - pad.b, x2: sx(t), y2: H - pad.b + 4, stroke: '#475569' }));
-      children.push(h('text', { key: 'tlx' + ti, x: sx(t), y: H - pad.b + 14, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, t.toFixed(1)));
+      children.push(h('line', { key: 'tx' + ti, x1: sx(t), y1: H - pad.b, x2: sx(t), y2: H - pad.b + 4, stroke: 'var(--sl-chart-axis)' }));
+      children.push(h('text', { key: 'tlx' + ti, x: sx(t), y: H - pad.b + 14, fill: 'var(--sl-chart-label)', fontSize: 9, textAnchor: 'middle' }, t.toFixed(1)));
     });
     var vTicks = _niceTicks(vMin, vMax, 5);
     vTicks.forEach(function(t, ti) {
-      children.push(h('line', { key: 'ty' + ti, x1: pad.l - 4, y1: sy(t), x2: pad.l, y2: sy(t), stroke: '#475569' }));
-      children.push(h('text', { key: 'tly' + ti, x: pad.l - 6, y: sy(t) + 3, fill: '#94a3b8', fontSize: 9, textAnchor: 'end' }, '' + t));
+      children.push(h('line', { key: 'ty' + ti, x1: pad.l - 4, y1: sy(t), x2: pad.l, y2: sy(t), stroke: 'var(--sl-chart-axis)' }));
+      children.push(h('text', { key: 'tly' + ti, x: pad.l - 6, y: sy(t) + 3, fill: 'var(--sl-chart-label)', fontSize: 9, textAnchor: 'end' }, '' + t));
     });
     // Labels
-    children.push(h('text', { key: 'xl', x: W / 2, y: H - 6, fill: '#cbd5e1', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'Theoretical normal quantile (z)'));
-    children.push(h('text', { key: 'yl', x: 12, y: H / 2, fill: '#cbd5e1', fontSize: 10, fontWeight: 700, transform: 'rotate(-90 12 ' + (H / 2) + ')' }, 'Sample value (' + label + ')'));
-    children.push(h('text', { key: 'title', x: pad.l, y: pad.t - 6, fill: '#10b981', fontSize: 9, fontWeight: 700 }, 'Q-Q plot: dots near line = normal'));
+    children.push(h('text', { key: 'xl', x: W / 2, y: H - 6, fill: 'var(--sl-chart-label)', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'Theoretical normal quantile (z)'));
+    children.push(h('text', { key: 'yl', x: 12, y: H / 2, fill: 'var(--sl-chart-label)', fontSize: 10, fontWeight: 700, transform: 'rotate(-90 12 ' + (H / 2) + ')' }, 'Sample value (' + label + ')'));
+    children.push(h('text', { key: 'title', x: pad.l, y: pad.t - 6, fill: 'var(--sl-chart-secondary)', fontSize: 9, fontWeight: 700 }, 'Q-Q plot: dots near line = normal'));
     return h('svg', {
       width: W, height: H, viewBox: '0 0 ' + W + ' ' + H,
       role: 'img',
       'aria-label': 'Q-Q plot of ' + label + ' against normal distribution. Points near the diagonal indicate approximate normality.',
-      style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6 }
+      style: { background: 'var(--sl-chart-bg)', borderRadius: 6 }
     }, children);
   }
 
@@ -4720,19 +4758,19 @@ window.StemLab = window.StemLab || {
     var sy = _scaleLinear(min - pad_y, max + pad_y, H - pad.b, pad.t);
     var bandW = (W - pad.l - pad.r) / validGroups.length;
     var ticks = _niceTicks(min, max, 5);
-    var palette = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#a855f7', '#06b6d4'];
+    var palette = ['var(--sl-chart-primary)', 'var(--sl-chart-secondary)', 'var(--sl-chart-warning)', 'var(--sl-chart-danger)', 'var(--sl-purple)', 'var(--sl-teal)'];
     return h('svg', {
       width: W, height: H, viewBox: '0 0 ' + W + ' ' + H,
       role: 'img',
       'aria-label': 'Boxplots comparing ' + validGroups.length + ' groups: ' + validGroups.map(function(g) { return g.label; }).join(', '),
-      style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6 }
+      style: { background: 'var(--sl-chart-bg)', borderRadius: 6 }
     },
       // Y axis
-      h('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: '#475569' }),
+      h('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
       ticks.map(function(t, ti) {
         return h('g', { key: 'yt' + ti },
-          h('line', { x1: pad.l - 4, y1: sy(t), x2: W - pad.r, y2: sy(t), stroke: '#1e293b', strokeWidth: 1 }),
-          h('text', { x: pad.l - 6, y: sy(t) + 3, fill: '#94a3b8', fontSize: 9, textAnchor: 'end' }, '' + t)
+          h('line', { x1: pad.l - 4, y1: sy(t), x2: W - pad.r, y2: sy(t), stroke: 'var(--sl-chart-grid)', strokeWidth: 1 }),
+          h('text', { x: pad.l - 6, y: sy(t) + 3, fill: 'var(--sl-chart-label)', fontSize: 9, textAnchor: 'end' }, '' + t)
         );
       }),
       // Each box
@@ -4756,27 +4794,27 @@ window.StemLab = window.StemLab || {
           // Box
           h('rect', { x: cx - bw / 2, y: sy(q.q3), width: bw, height: sy(q.q1) - sy(q.q3), fill: color, opacity: 0.30, stroke: color, strokeWidth: 1.5 }),
           // Median line (quartiles() returns q2 as the median — q.median was undefined → NaN → the line never drew)
-          h('line', { x1: cx - bw / 2, y1: sy(q.q2), x2: cx + bw / 2, y2: sy(q.q2), stroke: '#fef3c7', strokeWidth: 2 }),
+          h('line', { x1: cx - bw / 2, y1: sy(q.q2), x2: cx + bw / 2, y2: sy(q.q2), stroke: 'var(--sl-chart-warning)', strokeWidth: 2 }),
           // Quartile value annotations (Q3 / Md / Q1) beside the box — only when
           // there are few groups, so the labels never crowd adjacent boxes.
           validGroups.length <= 4 ? h('g', { key: 'qlab' },
-            h('text', { x: cx + bw / 2 + 4, y: sy(q.q3) + 3, fill: '#cbd5e1', fontSize: 8 }, 'Q3 ' + q.q3.toFixed(1)),
-            h('text', { x: cx + bw / 2 + 4, y: sy(q.q2) + 3, fill: '#fde68a', fontSize: 8, fontWeight: 700 }, 'Md ' + q.q2.toFixed(1)),
-            h('text', { x: cx + bw / 2 + 4, y: sy(q.q1) + 3, fill: '#cbd5e1', fontSize: 8 }, 'Q1 ' + q.q1.toFixed(1))
+            h('text', { x: cx + bw / 2 + 4, y: sy(q.q3) + 3, fill: 'var(--sl-chart-label)', fontSize: 8 }, 'Q3 ' + q.q3.toFixed(1)),
+            h('text', { x: cx + bw / 2 + 4, y: sy(q.q2) + 3, fill: 'var(--sl-chart-warning)', fontSize: 8, fontWeight: 700 }, 'Md ' + q.q2.toFixed(1)),
+            h('text', { x: cx + bw / 2 + 4, y: sy(q.q1) + 3, fill: 'var(--sl-chart-label)', fontSize: 8 }, 'Q1 ' + q.q1.toFixed(1))
           ) : null,
           // Mean dot
-          h('circle', { cx: cx, cy: sy(mean(x)), r: 3, fill: '#fbbf24', stroke: '#0f172a', strokeWidth: 1 }),
+          h('circle', { cx: cx, cy: sy(mean(x)), r: 3, fill: 'var(--sl-chart-warning)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1 }),
           // Outliers
           outliers.map(function(o, oi) {
-            return h('circle', { key: 'o' + oi, cx: cx, cy: sy(o), r: 2.5, fill: '#ef4444', stroke: '#0f172a', strokeWidth: 1 });
+            return h('circle', { key: 'o' + oi, cx: cx, cy: sy(o), r: 2.5, fill: 'var(--sl-chart-danger)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1 });
           }),
           // Group label
-          h('text', { x: cx, y: H - pad.b + 14, fill: '#cbd5e1', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, g.label.length > 14 ? g.label.slice(0, 12) + '…' : g.label),
-          h('text', { x: cx, y: H - pad.b + 26, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'n=' + x.length + ', M=' + mean(x).toFixed(1))
+          h('text', { x: cx, y: H - pad.b + 14, fill: 'var(--sl-chart-label)', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, g.label.length > 14 ? g.label.slice(0, 12) + '…' : g.label),
+          h('text', { x: cx, y: H - pad.b + 26, fill: 'var(--sl-chart-label)', fontSize: 9, textAnchor: 'middle' }, 'n=' + x.length + ', M=' + mean(x).toFixed(1))
         );
       }),
       // Legend
-      h('text', { x: pad.l, y: H - 6, fill: '#94a3b8', fontSize: 8 }, '⎯ = median   • = mean   ● red = outlier')
+      h('text', { x: pad.l, y: H - 6, fill: 'var(--sl-chart-label)', fontSize: 8 }, '⎯ = median   • = mean   ● red = outlier')
     );
   }
 
@@ -4802,16 +4840,16 @@ window.StemLab = window.StemLab || {
     var hasFit = !lr.error && _isNum(lr.slope);
     var children = [
       // Axes
-      h('line', { key: 'ax', x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: '#475569' }),
-      h('line', { key: 'ay', x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: '#475569' })
+      h('line', { key: 'ax', x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
+      h('line', { key: 'ay', x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' })
     ];
     yTicks.forEach(function(t, ti) {
-      children.push(h('line', { key: 'gy' + ti, x1: pad.l, y1: sy(t), x2: W - pad.r, y2: sy(t), stroke: '#1e293b', strokeWidth: 1 }));
-      children.push(h('text', { key: 'tyl' + ti, x: pad.l - 6, y: sy(t) + 3, fill: '#94a3b8', fontSize: 9, textAnchor: 'end' }, '' + t));
+      children.push(h('line', { key: 'gy' + ti, x1: pad.l, y1: sy(t), x2: W - pad.r, y2: sy(t), stroke: 'var(--sl-chart-grid)', strokeWidth: 1 }));
+      children.push(h('text', { key: 'tyl' + ti, x: pad.l - 6, y: sy(t) + 3, fill: 'var(--sl-chart-label)', fontSize: 9, textAnchor: 'end' }, '' + t));
     });
     xTicks.forEach(function(t, ti) {
-      children.push(h('line', { key: 'gx' + ti, x1: sx(t), y1: H - pad.b, x2: sx(t), y2: H - pad.b + 4, stroke: '#475569' }));
-      children.push(h('text', { key: 'txl' + ti, x: sx(t), y: H - pad.b + 14, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, '' + t));
+      children.push(h('line', { key: 'gx' + ti, x1: sx(t), y1: H - pad.b, x2: sx(t), y2: H - pad.b + 4, stroke: 'var(--sl-chart-axis)' }));
+      children.push(h('text', { key: 'txl' + ti, x: sx(t), y: H - pad.b + 14, fill: 'var(--sl-chart-label)', fontSize: 9, textAnchor: 'middle' }, '' + t));
     });
     // Regression line
     if (hasFit) {
@@ -4820,18 +4858,18 @@ window.StemLab = window.StemLab || {
       var lineY2 = lr.intercept + lr.slope * lineX2;
       children.push(h('line', { key: 'fit',
         x1: sx(lineX1), y1: sy(lineY1), x2: sx(lineX2), y2: sy(lineY2),
-        stroke: '#fbbf24', strokeWidth: 2, strokeDasharray: '5 3', opacity: 0.85
+        stroke: 'var(--sl-chart-warning)', strokeWidth: 2, strokeDasharray: '5 3', opacity: 0.85
       }));
     }
     // Points
     for (var pi = 0; pi < x.length; pi++) {
-      children.push(h('circle', { key: 'p' + pi, cx: sx(x[pi]), cy: sy(y[pi]), r: 3.5, fill: '#10b981', stroke: '#0f172a', strokeWidth: 1, opacity: 0.85 }));
+      children.push(h('circle', { key: 'p' + pi, cx: sx(x[pi]), cy: sy(y[pi]), r: 3.5, fill: 'var(--sl-chart-secondary)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1, opacity: 0.85 }));
     }
     // Labels
-    children.push(h('text', { key: 'xl', x: W / 2, y: H - 6, fill: '#cbd5e1', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, xLabel));
-    children.push(h('text', { key: 'yl', x: 12, y: H / 2, fill: '#cbd5e1', fontSize: 10, fontWeight: 700, transform: 'rotate(-90 12 ' + (H / 2) + ')' }, yLabel));
+    children.push(h('text', { key: 'xl', x: W / 2, y: H - 6, fill: 'var(--sl-chart-label)', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, xLabel));
+    children.push(h('text', { key: 'yl', x: 12, y: H / 2, fill: 'var(--sl-chart-label)', fontSize: 10, fontWeight: 700, transform: 'rotate(-90 12 ' + (H / 2) + ')' }, yLabel));
     if (hasFit) {
-      children.push(h('text', { key: 'fitnote', x: W - pad.r, y: pad.t + 4, fill: '#fbbf24', fontSize: 9, textAnchor: 'end' },
+      children.push(h('text', { key: 'fitnote', x: W - pad.r, y: pad.t + 4, fill: 'var(--sl-chart-warning)', fontSize: 9, textAnchor: 'end' },
         'ŷ = ' + lr.intercept.toFixed(2) + ' + ' + lr.slope.toFixed(2) + 'x  (r=' + (lr.r != null ? lr.r.toFixed(2) : '?') + ', r²=' + (lr.r != null ? (lr.r * lr.r).toFixed(2) : '?') + ')'
       ));
     }
@@ -4839,7 +4877,7 @@ window.StemLab = window.StemLab || {
       width: W, height: H, viewBox: '0 0 ' + W + ' ' + H,
       role: 'img',
       'aria-label': 'Scatterplot of ' + xLabel + ' vs ' + yLabel + ', n=' + x.length + (hasFit ? ', r=' + lr.r.toFixed(2) : ''),
-      style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6 }
+      style: { background: 'var(--sl-chart-bg)', borderRadius: 6 }
     }, children);
   }
 
@@ -4857,14 +4895,14 @@ window.StemLab = window.StemLab || {
     return h('svg', {
       width: W, height: H, viewBox: '0 0 ' + W + ' ' + H,
       role: 'img', 'aria-label': 'Bar chart of observed vs expected counts across ' + k + ' categories',
-      style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6 }
+      style: { background: 'var(--sl-chart-bg)', borderRadius: 6 }
     },
-      h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: '#475569' }),
-      h('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: '#475569' }),
+      h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
+      h('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
       ticks.map(function(t, ti) {
         return h('g', { key: 't' + ti },
-          h('line', { x1: pad.l - 4, y1: sy(t), x2: W - pad.r, y2: sy(t), stroke: '#1e293b' }),
-          h('text', { x: pad.l - 6, y: sy(t) + 3, fill: '#94a3b8', fontSize: 9, textAnchor: 'end' }, '' + t)
+          h('line', { x1: pad.l - 4, y1: sy(t), x2: W - pad.r, y2: sy(t), stroke: 'var(--sl-chart-grid)' }),
+          h('text', { x: pad.l - 6, y: sy(t) + 3, fill: 'var(--sl-chart-label)', fontSize: 9, textAnchor: 'end' }, '' + t)
         );
       }),
       observed.map(function(o, oi) {
@@ -4874,20 +4912,20 @@ window.StemLab = window.StemLab || {
         var label = (labels && labels[oi]) || ('cat ' + (oi + 1));
         return h('g', { key: oi },
           // Observed
-          h('rect', { x: cx - bw - 1, y: sy(o), width: bw, height: H - pad.b - sy(o), fill: '#6366f1' }),
-          h('text', { x: cx - bw / 2 - 1, y: sy(o) - 3, fill: '#a5b4fc', fontSize: 9, textAnchor: 'middle' }, '' + o),
+          h('rect', { x: cx - bw - 1, y: sy(o), width: bw, height: H - pad.b - sy(o), fill: 'var(--sl-chart-primary)' }),
+          h('text', { x: cx - bw / 2 - 1, y: sy(o) - 3, fill: 'var(--sl-chart-primary)', fontSize: 9, textAnchor: 'middle' }, '' + o),
           // Expected
-          h('rect', { x: cx + 1, y: sy(e), width: bw, height: H - pad.b - sy(e), fill: '#fbbf24', opacity: 0.85 }),
-          h('text', { x: cx + bw / 2 + 1, y: sy(e) - 3, fill: '#fbbf24', fontSize: 9, textAnchor: 'middle' }, e.toFixed ? e.toFixed(1) : e),
+          h('rect', { x: cx + 1, y: sy(e), width: bw, height: H - pad.b - sy(e), fill: 'var(--sl-chart-warning)', opacity: 0.85 }),
+          h('text', { x: cx + bw / 2 + 1, y: sy(e) - 3, fill: 'var(--sl-chart-warning)', fontSize: 9, textAnchor: 'middle' }, e.toFixed ? e.toFixed(1) : e),
           // Category label
-          h('text', { x: cx, y: H - pad.b + 14, fill: '#cbd5e1', fontSize: 9, textAnchor: 'middle' }, label.length > 12 ? label.slice(0, 10) + '…' : label)
+          h('text', { x: cx, y: H - pad.b + 14, fill: 'var(--sl-chart-label)', fontSize: 9, textAnchor: 'middle' }, label.length > 12 ? label.slice(0, 10) + '…' : label)
         );
       }),
       // Legend
-      h('rect', { x: W - pad.r - 80, y: pad.t, width: 8, height: 8, fill: '#6366f1' }),
-      h('text', { x: W - pad.r - 68, y: pad.t + 7, fill: '#a5b4fc', fontSize: 9 }, 'Observed'),
-      h('rect', { x: W - pad.r - 80, y: pad.t + 12, width: 8, height: 8, fill: '#fbbf24' }),
-      h('text', { x: W - pad.r - 68, y: pad.t + 19, fill: '#fbbf24', fontSize: 9 }, 'Expected')
+      h('rect', { x: W - pad.r - 80, y: pad.t, width: 8, height: 8, fill: 'var(--sl-chart-primary)' }),
+      h('text', { x: W - pad.r - 68, y: pad.t + 7, fill: 'var(--sl-chart-primary)', fontSize: 9 }, 'Observed'),
+      h('rect', { x: W - pad.r - 80, y: pad.t + 12, width: 8, height: 8, fill: 'var(--sl-chart-warning)' }),
+      h('text', { x: W - pad.r - 68, y: pad.t + 19, fill: 'var(--sl-chart-warning)', fontSize: 9 }, 'Expected')
     );
   }
 
@@ -4914,15 +4952,15 @@ window.StemLab = window.StemLab || {
     var pad_y = (maxM - minM) * 0.10 || 1;
     var sy = _scaleLinear(minM - pad_y, maxM + pad_y, H - pad.b, pad.t);
     var bandX = (W - pad.l - pad.r) / Math.max(1, cols - 1);
-    var palette = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#a855f7'];
+    var palette = ['var(--sl-chart-primary)', 'var(--sl-chart-secondary)', 'var(--sl-chart-warning)', 'var(--sl-chart-danger)', 'var(--sl-purple)'];
     var children = [
-      h('line', { key: 'ax', x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: '#475569' }),
-      h('line', { key: 'ay', x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: '#475569' })
+      h('line', { key: 'ax', x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
+      h('line', { key: 'ay', x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' })
     ];
     var yticks = _niceTicks(minM, maxM, 5);
     yticks.forEach(function(t, ti) {
-      children.push(h('text', { key: 'yt' + ti, x: pad.l - 6, y: sy(t) + 3, fill: '#94a3b8', fontSize: 9, textAnchor: 'end' }, t.toFixed ? t.toFixed(1) : t));
-      children.push(h('line', { key: 'gy' + ti, x1: pad.l, y1: sy(t), x2: W - pad.r, y2: sy(t), stroke: '#1e293b' }));
+      children.push(h('text', { key: 'yt' + ti, x: pad.l - 6, y: sy(t) + 3, fill: 'var(--sl-chart-label)', fontSize: 9, textAnchor: 'end' }, t.toFixed ? t.toFixed(1) : t));
+      children.push(h('line', { key: 'gy' + ti, x1: pad.l, y1: sy(t), x2: W - pad.r, y2: sy(t), stroke: 'var(--sl-chart-grid)' }));
     });
     // Each row = one line
     for (var ri = 0; ri < rows; ri++) {
@@ -4939,7 +4977,7 @@ window.StemLab = window.StemLab || {
       }
       // Dots
       pts.forEach(function(p, pi) {
-        children.push(h('circle', { key: 'd_' + ri + '_' + pi, cx: p.x, cy: p.y, r: 4, fill: color, stroke: '#0f172a', strokeWidth: 1 }));
+        children.push(h('circle', { key: 'd_' + ri + '_' + pi, cx: p.x, cy: p.y, r: 4, fill: color, stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1 }));
       });
       // Series legend on right edge
       var lastPt = pts[pts.length - 1];
@@ -4948,12 +4986,12 @@ window.StemLab = window.StemLab || {
     // Column labels
     for (var ci2 = 0; ci2 < cols; ci2++) {
       var cx2 = pad.l + bandX * ci2;
-      children.push(h('text', { key: 'xl' + ci2, x: cx2, y: H - pad.b + 14, fill: '#cbd5e1', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, factorBLabels[ci2] || ('B' + (ci2 + 1))));
+      children.push(h('text', { key: 'xl' + ci2, x: cx2, y: H - pad.b + 14, fill: 'var(--sl-chart-label)', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, factorBLabels[ci2] || ('B' + (ci2 + 1))));
     }
     return h('svg', {
       width: W, height: H, viewBox: '0 0 ' + W + ' ' + H,
       role: 'img', 'aria-label': 'Interaction plot of cell means across factor levels',
-      style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6 }
+      style: { background: 'var(--sl-chart-bg)', borderRadius: 6 }
     }, children);
   }
 
@@ -5519,7 +5557,7 @@ window.StemLab = window.StemLab || {
 
   // Render bootstrap CI: histogram of resampled stats + observed marker + CI shaded band
   function _renderBootstrapViz(boot, h) {
-    if (!boot || boot.error) return h('div', { style: { fontSize: 12, color: '#fca5a5', padding: 10 } }, '⚠ ' + (boot && boot.error));
+    if (!boot || boot.error) return h('div', { style: { fontSize: 12, color: 'var(--sl-danger)', padding: 10 } }, '⚠ ' + (boot && boot.error));
     var W = 380, H = 160;
     var pad = { l: 36, r: 12, t: 18, b: 30 };
     var s = boot.samples;
@@ -5540,12 +5578,12 @@ window.StemLab = window.StemLab || {
       width: W, height: H, viewBox: '0 0 ' + W + ' ' + H,
       role: 'img',
       'aria-label': boot.level * 100 + '% bootstrap CI for ' + boot.statName + ': [' + boot.ci[0].toFixed(3) + ', ' + boot.ci[1].toFixed(3) + ']',
-      style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6 }
+      style: { background: 'var(--sl-chart-bg)', borderRadius: 6 }
     },
-      h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: '#475569' }),
-      h('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: '#475569' }),
+      h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
+      h('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
       // Shaded CI band background
-      h('rect', { x: sx(boot.ci[0]), y: pad.t, width: Math.max(2, sx(boot.ci[1]) - sx(boot.ci[0])), height: H - pad.b - pad.t, fill: '#10b981', opacity: 0.15 }),
+      h('rect', { x: sx(boot.ci[0]), y: pad.t, width: Math.max(2, sx(boot.ci[1]) - sx(boot.ci[0])), height: H - pad.b - pad.t, fill: 'var(--sl-chart-secondary)', opacity: 0.15 }),
       // Histogram bars
       bins.map(function(c, bi) {
         var x0 = sx(min + bi * binW), x1 = sx(min + (bi + 1) * binW);
@@ -5554,24 +5592,24 @@ window.StemLab = window.StemLab || {
         return h('rect', {
           key: bi,
           x: x0 + 0.5, y: sy(c), width: Math.max(1, x1 - x0 - 1), height: H - pad.b - sy(c),
-          fill: inCI ? '#10b981' : '#94a3b8', opacity: 0.85
+          fill: inCI ? 'var(--sl-chart-secondary)' : 'var(--sl-chart-label)', opacity: 0.85
         });
       }),
       // CI bracket lines
-      h('line', { x1: sx(boot.ci[0]), y1: pad.t, x2: sx(boot.ci[0]), y2: H - pad.b, stroke: '#10b981', strokeWidth: 2 }),
-      h('line', { x1: sx(boot.ci[1]), y1: pad.t, x2: sx(boot.ci[1]), y2: H - pad.b, stroke: '#10b981', strokeWidth: 2 }),
+      h('line', { x1: sx(boot.ci[0]), y1: pad.t, x2: sx(boot.ci[0]), y2: H - pad.b, stroke: 'var(--sl-chart-secondary)', strokeWidth: 2 }),
+      h('line', { x1: sx(boot.ci[1]), y1: pad.t, x2: sx(boot.ci[1]), y2: H - pad.b, stroke: 'var(--sl-chart-secondary)', strokeWidth: 2 }),
       // Observed marker
-      h('line', { x1: sx(boot.observed), y1: pad.t - 4, x2: sx(boot.observed), y2: H - pad.b, stroke: '#fbbf24', strokeWidth: 2.5 }),
-      h('text', { x: sx(boot.observed), y: pad.t - 6, fill: '#fbbf24', fontSize: 10, fontWeight: 800, textAnchor: 'middle' },
+      h('line', { x1: sx(boot.observed), y1: pad.t - 4, x2: sx(boot.observed), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 2.5 }),
+      h('text', { x: sx(boot.observed), y: pad.t - 6, fill: 'var(--sl-chart-warning)', fontSize: 10, fontWeight: 800, textAnchor: 'middle' },
         '↓ ' + boot.observed.toFixed(2)
       ),
       ticks.map(function(t, ti) {
         return h('g', { key: 'tk' + ti },
-          h('line', { x1: sx(t), y1: H - pad.b, x2: sx(t), y2: H - pad.b + 4, stroke: '#475569' }),
-          h('text', { x: sx(t), y: H - pad.b + 14, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, '' + t)
+          h('line', { x1: sx(t), y1: H - pad.b, x2: sx(t), y2: H - pad.b + 4, stroke: 'var(--sl-chart-axis)' }),
+          h('text', { x: sx(t), y: H - pad.b + 14, fill: 'var(--sl-chart-label)', fontSize: 9, textAnchor: 'middle' }, '' + t)
         );
       }),
-      h('text', { x: W / 2, y: H - 4, fill: '#cbd5e1', fontSize: 10, fontWeight: 700, textAnchor: 'middle' },
+      h('text', { x: W / 2, y: H - 4, fill: 'var(--sl-chart-label)', fontSize: 10, fontWeight: 700, textAnchor: 'middle' },
         'Bootstrap distribution of ' + boot.statName + ' (green band = ' + (boot.level * 100).toFixed(0) + '% CI)'
       )
     );
@@ -5683,7 +5721,7 @@ window.StemLab = window.StemLab || {
   // Render the permutation test panel: histogram of simulated null + observed marker.
   function _renderPermutationViz(perm, h) {
     if (!perm || perm.error) {
-      return h('div', { style: { fontSize: 12, color: '#fca5a5', padding: 10 } }, '⚠ ' + (perm && perm.error));
+      return h('div', { style: { fontSize: 12, color: 'var(--sl-danger)', padding: 10 } }, '⚠ ' + (perm && perm.error));
     }
     var W = 380, H = 160;
     var pad = { l: 36, r: 12, t: 18, b: 30 };
@@ -5705,10 +5743,10 @@ window.StemLab = window.StemLab || {
       width: W, height: H, viewBox: '0 0 ' + W + ' ' + H,
       role: 'img',
       'aria-label': 'Null distribution from ' + perm.nReps + ' permutations. Observed ' + perm.statName + ' = ' + perm.observed.toFixed(3),
-      style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6 }
+      style: { background: 'var(--sl-chart-bg)', borderRadius: 6 }
     },
-      h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: '#475569' }),
-      h('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: '#475569' }),
+      h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
+      h('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
       bins.map(function(c, bi) {
         var x0 = sx(min + bi * binW), x1 = sx(min + (bi + 1) * binW);
         var y0 = sy(c);
@@ -5720,21 +5758,21 @@ window.StemLab = window.StemLab || {
         return h('rect', {
           key: bi,
           x: x0 + 0.5, y: y0, width: Math.max(1, x1 - x0 - 1), height: H - pad.b - y0,
-          fill: inExtreme ? '#ef4444' : '#94a3b8', opacity: 0.7
+          fill: inExtreme ? 'var(--sl-chart-danger)' : 'var(--sl-chart-label)', opacity: 0.7
         });
       }),
       // Observed marker
-      h('line', { x1: sx(perm.observed), y1: pad.t - 4, x2: sx(perm.observed), y2: H - pad.b, stroke: '#fbbf24', strokeWidth: 2.5 }),
-      h('text', { x: sx(perm.observed), y: pad.t - 6, fill: '#fbbf24', fontSize: 10, fontWeight: 800, textAnchor: 'middle' },
+      h('line', { x1: sx(perm.observed), y1: pad.t - 4, x2: sx(perm.observed), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 2.5 }),
+      h('text', { x: sx(perm.observed), y: pad.t - 6, fill: 'var(--sl-chart-warning)', fontSize: 10, fontWeight: 800, textAnchor: 'middle' },
         '↓ Observed = ' + perm.observed.toFixed(2)
       ),
       ticks.map(function(t, ti) {
         return h('g', { key: 'tk' + ti },
-          h('line', { x1: sx(t), y1: H - pad.b, x2: sx(t), y2: H - pad.b + 4, stroke: '#475569' }),
-          h('text', { x: sx(t), y: H - pad.b + 14, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, '' + t)
+          h('line', { x1: sx(t), y1: H - pad.b, x2: sx(t), y2: H - pad.b + 4, stroke: 'var(--sl-chart-axis)' }),
+          h('text', { x: sx(t), y: H - pad.b + 14, fill: 'var(--sl-chart-label)', fontSize: 9, textAnchor: 'middle' }, '' + t)
         );
       }),
-      h('text', { x: W / 2, y: H - 4, fill: '#cbd5e1', fontSize: 10, fontWeight: 700, textAnchor: 'middle' },
+      h('text', { x: W / 2, y: H - 4, fill: 'var(--sl-chart-label)', fontSize: 10, fontWeight: 700, textAnchor: 'middle' },
         perm.statName + ' under H₀ (red = ≥ observed)'
       )
     );
@@ -5810,7 +5848,7 @@ window.StemLab = window.StemLab || {
         borderRadius: 10, padding: 14, marginBottom: 12
       }
     },
-      h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, '⚠ Common misconceptions to avoid'),
+      h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--sl-warning)', marginBottom: 8 } }, '⚠ Common misconceptions to avoid'),
       items.map(function(it, i) {
         return h('div', { key: i, style: { fontSize: 11, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.55, marginBottom: 8, paddingLeft: 8, borderLeft: '2px solid rgba(245,158,11,0.45)' } },
           h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #fef3c7)', marginBottom: 2 } }, '✗ ' + it.wrong),

@@ -5924,6 +5924,10 @@ var createDocPipeline = function(deps) {
   var _geminiCooldownTimer = null;
   var _geminiStormAnnounced = false; // user-facing "Canvas is rate-limiting" message emitted once per sustained storm
   var _geminiLastFailureProfile = null; // representative recovery must match the route and prompt volume that actually failed
+  // A queued call is still live remediation work. Feed the owning run's watchdog while it waits
+  // behind other calls (especially foreign/batch owners at the cap-1 throttle setting), otherwise
+  // an eight-minute host watchdog can invalidate a healthy call before its transport ever starts.
+  var _GEMINI_QUEUE_PULSE_MS = 30000;
   // Queue pump: start as many waiters as the CURRENT (possibly reduced) cap allows, and never
   // during a cooldown. Replaces the old hand-off-on-release model, which couldn't shrink the cap.
   // #3 (ChatGPT review 2026-07-10): queue entries carry the run's abort signal, captured at ENQUEUE
@@ -5945,6 +5949,20 @@ var createDocPipeline = function(deps) {
       else kept.push(w);
     }
     _geminiWaiters = kept;
+  };
+  var _pulseQueuedGeminiWaiter = function (waiter) {
+    if (!waiter || waiter.settled) return;
+    if (waiter.signal && waiter.signal.aborted) { _geminiPump(); return; }
+    // The host accepts only identified owners. Ownerless direct gate users (including probes in
+    // non-remediation contexts) must not create a timer that can never renew a real lease.
+    if (!waiter.owner || !waiter.owner.runId) return;
+    try {
+      if (typeof _pulsePipelineWatchdog === 'function') _pulsePipelineWatchdog(waiter.owner || null);
+    } catch (_) {}
+    waiter.pulseTimer = setTimeout(function () {
+      waiter.pulseTimer = null;
+      _pulseQueuedGeminiWaiter(waiter);
+    }, _GEMINI_QUEUE_PULSE_MS);
   };
   var _geminiPump = function() {
     _pruneAbortedWaiters();
@@ -5984,10 +6002,41 @@ var createDocPipeline = function(deps) {
       }
     }
   };
-  var _acquireGeminiSlot = function(signal, label) {
+  var _acquireGeminiSlot = function(signal, label, owner) {
     if (signal && signal.aborted) return Promise.reject(_mkGateAbortErr(label));
     return new Promise(function(resolve, reject) {
-      _geminiWaiters.push({ resolve: resolve, reject: reject, signal: signal || null, label: label || null });
+      var waiter = {
+        signal: signal || null,
+        label: label || null,
+        owner: owner || null,
+        pulseTimer: null,
+        abortHandler: null,
+        settled: false,
+      };
+      var settle = function (fn, value) {
+        if (waiter.settled) return;
+        waiter.settled = true;
+        if (waiter.pulseTimer) { clearTimeout(waiter.pulseTimer); waiter.pulseTimer = null; }
+        try {
+          if (waiter.signal && waiter.abortHandler && typeof waiter.signal.removeEventListener === 'function') {
+            waiter.signal.removeEventListener('abort', waiter.abortHandler);
+          }
+        } catch (_) {}
+        fn(value);
+      };
+      waiter.resolve = function () { settle(resolve); };
+      waiter.reject = function (err) { settle(reject, err); };
+      waiter.abortHandler = function () {
+        var i = _geminiWaiters.indexOf(waiter);
+        if (i >= 0) _geminiWaiters.splice(i, 1);
+        waiter.reject(_mkGateAbortErr(waiter.label));
+        _geminiPump();
+      };
+      try {
+        if (signal && typeof signal.addEventListener === 'function') signal.addEventListener('abort', waiter.abortHandler, { once: true });
+      } catch (_) {}
+      _geminiWaiters.push(waiter);
+      _pulseQueuedGeminiWaiter(waiter);
       _geminiPump();
     });
   };
@@ -6000,8 +6049,8 @@ var createDocPipeline = function(deps) {
   // held until `slotUntil` settles. #3: a timed-out call is still on the wire — releasing its slot
   // at the race let TRUE transport concurrency exceed _geminiCap and deepen the very storm the
   // breaker was easing.
-  var _geminiGate = function(fn, signal, label) {
-    return _acquireGeminiSlot(signal, label).then(function() {
+  var _geminiGate = function(fn, signal, label, owner) {
+    return _acquireGeminiSlot(signal, label, owner).then(function() {
       var _released = false;
       var _free = function () { if (!_released) { _released = true; _releaseGeminiSlot(); } };
       var ret;
@@ -6344,7 +6393,7 @@ var createDocPipeline = function(deps) {
         _outcome.then(function () {}, function () {}),
       ]);
       return { result: _outcome, slotUntil: _slotUntil };
-    }, _sig, 'gemini-probe');
+    }, _sig, 'gemini-probe', o.owner || null);
   };
   // ── Wait-not-stop (2026-07-05, maintainer): pause, never abandon ── The follow-up loops
   // (auto-continue) used to fire full rounds of 17-19KB chunk calls INTO an active storm: on the 7/5
@@ -6709,7 +6758,7 @@ var createDocPipeline = function(deps) {
         );
         var _slotUntil = Promise.all([_transportHold, _outcomeRecorded]);
         return { result: _raced, slotUntil: _slotUntil };
-      }, _gateSignal, label).then(function(res) {
+      }, _gateSignal, label, owner || null).then(function(res) {
         // A transport that ignores AbortSignal may still resolve after ownership was revoked.
         // Normalize that race before it can reset the shared breaker or log a stale success.
         if (_gateSignal && _gateSignal.aborted) throw _mkGateAbortErr(label);
@@ -14093,7 +14142,10 @@ var createDocPipeline = function(deps) {
   };
   const _restoreOcrEvidenceGlobals = (record) => {
     if (!record || typeof window === 'undefined') return;
-    window.__lastGroundTruthCharCount = record.groundTruthCharCount || record.extractedText.length;
+    const restoredText = typeof record.extractedText === 'string'
+      ? record.extractedText
+      : (typeof record.text === 'string' ? record.text : '');
+    window.__lastGroundTruthCharCount = record.groundTruthCharCount || restoredText.length;
     window.__lastGroundTruthPageMap = record.groundTruthPages || null;
     window.__lastGroundTruthMethod = record.groundTruthMethod || 'vision-ocr';
     window.__lastOcrTesseractText = record.ocrTesseractText || '';
@@ -14290,6 +14342,13 @@ var createDocPipeline = function(deps) {
   // cannot happen. Reset at batch entry.
   let _batchCheckpointDegraded = false;
   let _batchTakeoverWarned = false;
+  const _BATCH_BOUNDARY_COMMIT_TIMEOUT_MS = 7000;
+  let _lastBatchCommitRevision = 0;
+  const _newBatchCommitRevision = () => {
+    const wallRevision = Date.now() * 1000;
+    _lastBatchCommitRevision = Math.max(_lastBatchCommitRevision + 1, wallRevision);
+    return _lastBatchCommitRevision;
+  };
   const _warnBatchCheckpointOnce = (message) => {
     if (_batchCheckpointWarningShown) return;
     _batchCheckpointWarningShown = true;
@@ -14305,6 +14364,26 @@ var createDocPipeline = function(deps) {
     const message = 'Another tab started a newer batch, so this batch\'s resume checkpoint was retired. This run continues; if you close this tab, unfinished files here will need to be re-added.';
     warnLog('[Batch Resume] ' + message);
     try { if (typeof addToast === 'function') addToast(message, 'warning'); } catch (_) {}
+  };
+  const _signalBatchCheckpointCommit = (state, reason, context, commitRevision) => {
+    const detail = {
+      state: state,
+      reason: String(reason || ''),
+      context: String(context || 'batch-boundary'),
+      commitRevision: Number(commitRevision) || null,
+      at: Date.now(),
+    };
+    warnLog('[Batch Resume] checkpoint commit ' + state + ' at ' + detail.context + (detail.reason ? ': ' + detail.reason : ''));
+    try {
+      if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
+        window.dispatchEvent(new CustomEvent('alloflow:batch-checkpoint-commit', { detail }));
+      }
+    } catch (_) {}
+    if (state === 'degraded') {
+      _batchCheckpointDegraded = true;
+      _warnBatchCheckpointOnce('A batch checkpoint boundary could not be committed. This run continues, but keep the tab open until the batch finishes.');
+    }
+    return detail;
   };
   const _normalizeBatchCheckpointId = (value) => {
     const id = String(value || '').trim();
@@ -14338,23 +14417,21 @@ var createDocPipeline = function(deps) {
       const lockMode = mode === 'shared' ? 'shared' : 'exclusive';
       // An unavailable lock manager (opaque-origin sandboxed iframe, not-fully-active
       // document) REJECTS the returned promise per spec rather than throwing sync.
-      // Distinguish "lock never granted" (fall back to the unlocked path, same as the
-      // no-API case) from "fn itself failed" (propagate) — re-running a partially
-      // executed fn could double-apply mutations.
+      // A rejected/unavailable lock is fail-closed. Read-then-write is not a CAS:
+      // two tabs could both pass it and one loser's cleanup could delete the winner.
       let _lockBodyStarted = false;
       const _lockBody = (...args) => { _lockBodyStarted = true; return fn(...args); };
       try {
         const req = locks.request(_ACTIVE_BATCH_ROOT_LOCK, { mode: lockMode }, _lockBody);
         if (req && typeof req.catch === 'function') {
           return req.catch((err) => {
-            if (_lockBodyStarted) throw err;
-            return Promise.resolve().then(fn);
+            throw err;
           });
         }
         return req;
-      } catch (_) {}
+      } catch (err) { return Promise.reject(err); }
     }
-    return Promise.resolve().then(fn);
+    return Promise.reject(new Error('batch_checkpoint_atomic_lock_unavailable'));
   };
   const _deleteBatchStorageKey = async (key) => {
     if (!key) return;
@@ -14376,19 +14453,26 @@ var createDocPipeline = function(deps) {
     if (current.savedAt !== expected.savedAt) return false;
     return !!expectedId || current.startedAt === expected.startedAt;
   };
-  const _statusRecordMatchesBatch = (record, batchId) => {
+  const _statusRecordMatchesBatch = (record, batchId, rootWriteId) => {
     if (!record) return false;
-    return batchId
+    const batchMatches = batchId
       ? _normalizeBatchCheckpointId(record.batchId) === batchId
       : !record.batchId;
+    if (!batchMatches) return false;
+    const expectedRootWriteId = _normalizeBatchCheckpointId(rootWriteId);
+    return !expectedRootWriteId || record.rootWriteId === expectedRootWriteId;
   };
   const _sameBatchStatusRecord = (current, expected, batchId) => {
     if (!current || !expected
         || !_statusRecordMatchesBatch(current, batchId)
         || !_statusRecordMatchesBatch(expected, batchId)) return false;
     if (current.writeId || expected.writeId) {
-      return !!expected.writeId && current.writeId === expected.writeId;
+      if (!expected.writeId || current.writeId !== expected.writeId) return false;
     }
+    if (current.rootWriteId || expected.rootWriteId) {
+      if (!expected.rootWriteId || current.rootWriteId !== expected.rootWriteId) return false;
+    }
+    if (current.writeId || expected.writeId) return true;
     return current.lastUpdatedAt === expected.lastUpdatedAt;
   };
   const _readBatchStatusForFiles = async (filesRec) => {
@@ -14396,9 +14480,9 @@ var createDocPipeline = function(deps) {
     if (batchId) {
       const scopedKey = _batchStatusKeyFor(batchId);
       const scoped = await storageDB.get(scopedKey);
-      if (_statusRecordMatchesBatch(scoped, batchId)) return { key: scopedKey, record: scoped, legacy: false };
+      if (_statusRecordMatchesBatch(scoped, batchId, filesRec.rootWriteId)) return { key: scopedKey, record: scoped, legacy: false };
       const legacy = await storageDB.get(_ACTIVE_BATCH_STATUS_KEY);
-      if (_statusRecordMatchesBatch(legacy, batchId)) return { key: _ACTIVE_BATCH_STATUS_KEY, record: legacy, legacy: true };
+      if (_statusRecordMatchesBatch(legacy, batchId, filesRec.rootWriteId)) return { key: _ACTIVE_BATCH_STATUS_KEY, record: legacy, legacy: true };
       return { key: scopedKey, record: null, legacy: false };
     }
     const legacy = await storageDB.get(_ACTIVE_BATCH_STATUS_KEY);
@@ -14447,11 +14531,25 @@ var createDocPipeline = function(deps) {
     for (const key of ownedKeys) await _deleteBatchStorageKey(key);
     for (const file of (files || [])) {
       if (ownedKeys.has(file && file._checkpointResultKey)) {
-        file._checkpointResultKey = null;
-        file._checkpointResultBytes = 0;
+        _setBatchCheckpointFileMeta(file, { _checkpointResultKey: null, _checkpointResultBytes: 0 });
       }
     }
   };
+  const _setBatchCheckpointFileMeta = (file, patch) => {
+    if (!file || !patch) return;
+    try { Object.assign(file, patch); } catch (_) {}
+    const source = file._checkpointSourceFile;
+    if (source && source !== file) {
+      try { Object.assign(source, patch); } catch (_) {}
+    }
+  };
+  const _snapshotBatchCheckpointFiles = (files) => (files || []).map((file) => {
+    if (!file || typeof file !== 'object') return file;
+    const snapshot = Object.assign({}, file);
+    try { Object.defineProperty(snapshot, '_checkpointSourceFile', { value: file, enumerable: false }); }
+    catch (_) { snapshot._checkpointSourceFile = file; }
+    return snapshot;
+  });
   const _batchResultSummary = (result) => {
     if (!result) return null;
     return {
@@ -14515,11 +14613,22 @@ var createDocPipeline = function(deps) {
         committed = true;
       });
       if (!committed) return false;
+      // A resumed run intentionally reuses batchId but owns a new rootWriteId.
+      // Result keys are deterministic by batch/file, so force this writer to
+      // republish each referenced result with its own root token.
+      for (const file of files) {
+        if (file && file._checkpointResultKey) {
+          _setBatchCheckpointFileMeta(file, {
+            _checkpointResultKey: null,
+            _checkpointResultBytes: 0,
+          });
+        }
+      }
       const previousId = _normalizeBatchCheckpointId(previousFilesRec && previousFilesRec.batchId);
       if (previousFilesRec && previousId !== cleanBatchId) {
         await _deleteLegacyBatchCheckpointData(previousFilesRec);
       }
-      return true;
+      return nextFilesRec.rootWriteId;
     } catch (e) {
       warnLog('[Batch Resume] saveFiles failed:', e?.message || e);
       _batchCheckpointDegraded = true;
@@ -14527,30 +14636,48 @@ var createDocPipeline = function(deps) {
       return false;
     }
   };
-  const _saveBatchStatusNow = async (files, batchId) => {
+  const _saveBatchStatusNow = async (files, batchId, commitMeta) => {
     if (typeof window === 'undefined' || !window.idbKeyval || !Array.isArray(files)) return false;
     const cleanBatchId = _normalizeBatchCheckpointId(batchId);
     if (!cleanBatchId) return false;
+    const meta = commitMeta && typeof commitMeta === 'object' ? commitMeta : {};
+    const requestedRevision = Number(meta.commitRevision);
+    const commitRevision = Number.isSafeInteger(requestedRevision) && requestedRevision > 0
+      ? requestedRevision : _newBatchCommitRevision();
+    const commitReason = String(meta.commitReason || 'batch-status');
+    const expectedRootWriteId = _normalizeBatchCheckpointId(meta.rootWriteId);
+    if (!expectedRootWriteId) return 'stale';
     return _withBatchCheckpointRootLock(async () => {
     const newlyStoredKeys = [];
     let writtenStatusKey = null;
     let writtenStatusRecord = null;
     try {
       const initialFilesRec = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
-      if (!initialFilesRec || _normalizeBatchCheckpointId(initialFilesRec.batchId) !== cleanBatchId) {
+      if (!initialFilesRec || _normalizeBatchCheckpointId(initialFilesRec.batchId) !== cleanBatchId
+          || initialFilesRec.rootWriteId !== expectedRootWriteId) {
         // A FOREIGN root means another tab took the checkpoint slot — disclose it
         // (the run continues; only tab-close resume is lost). A MISSING root is the
         // benign end-of-batch/cleared case and stays silent.
         if (initialFilesRec) _warnBatchTakeoverOnce();
-        return false;
+        _signalBatchCheckpointCommit('stale', 'batch root writer changed before commit', commitReason, commitRevision);
+        return 'stale';
+      }
+      // Reject an older/equal revision before writing any result blobs. This is the checkpoint's
+      // compare-before-set guard; a stale boundary must be a true no-op, not a status no-op that
+      // still overwrites per-file artifacts.
+      const statusKey = _batchStatusKeyFor(cleanBatchId);
+      const statusBeforeWrite = await storageDB.get(statusKey);
+      const priorRevision = Number(statusBeforeWrite && statusBeforeWrite.commitRevision) || 0;
+      if (_statusRecordMatchesBatch(statusBeforeWrite, cleanBatchId, expectedRootWriteId) && priorRevision >= commitRevision) {
+        _signalBatchCheckpointCommit('stale', 'newer checkpoint revision already committed', commitReason, commitRevision);
+        return 'stale';
       }
       // Legacy/global keys and cross-file keys are not valid ownership proofs for
       // this file. Re-serialize the in-memory result into its exact v3 namespace.
       for (const f of files) {
         const expectedKey = _batchResultKeyFor(cleanBatchId, f);
         if (f && f._checkpointResultKey && f._checkpointResultKey !== expectedKey) {
-          f._checkpointResultKey = null;
-          f._checkpointResultBytes = 0;
+          _setBatchCheckpointFileMeta(f, { _checkpointResultKey: null, _checkpointResultBytes: 0 });
         }
       }
       let storedBytes = files.reduce((sum, f) => sum + (Number(f._checkpointResultBytes) || 0), 0);
@@ -14559,13 +14686,13 @@ var createDocPipeline = function(deps) {
         let serialized = null;
         try { serialized = JSON.stringify(_alloStripVerificationHtmlSnapshot(f.result)); }
         catch (_) {
-          f._checkpointResultOmitted = true;
+          _setBatchCheckpointFileMeta(f, { _checkpointResultOmitted: true });
           _warnBatchCheckpointOnce('A batch result could not be checkpointed. That file will be safely re-run if you resume.');
           continue;
         }
         const bytes = typeof TextEncoder !== 'undefined' ? new TextEncoder().encode(serialized).byteLength : serialized.length * 2;
         if (bytes > _ACTIVE_BATCH_RESULT_MAX_BYTES || storedBytes + bytes > _ACTIVE_BATCH_RESULTS_MAX_BYTES) {
-          f._checkpointResultOmitted = true;
+          _setBatchCheckpointFileMeta(f, { _checkpointResultOmitted: true });
           _warnBatchCheckpointOnce('Some large batch results exceed the safe checkpoint budget. Those files will be safely re-run if you resume.');
           continue;
         }
@@ -14573,16 +14700,15 @@ var createDocPipeline = function(deps) {
         try {
           // storageDB.set reports failure as `false` (it never throws) — treat a
           // reported failure exactly like a thrown one so the omission is disclosed.
-          const _resOk = await storageDB.set(resultKey, { serialized, bytes, batchId: cleanBatchId, savedAt: Date.now(), promptVersion: _PIPELINE_PROMPT_VERSION });
+          const _resOk = await storageDB.set(resultKey, { serialized, bytes, batchId: cleanBatchId, rootWriteId: expectedRootWriteId, savedAt: Date.now(), promptVersion: _PIPELINE_PROMPT_VERSION });
           if (_resOk === false) throw new Error('result write failed');
         } catch (_) {
-          f._checkpointResultOmitted = true;
+          _setBatchCheckpointFileMeta(f, { _checkpointResultOmitted: true });
           _warnBatchCheckpointOnce('Browser storage could not save a batch result. That file will be safely re-run if you resume.');
           continue;
         }
         newlyStoredKeys.push(resultKey);
-        f._checkpointResultKey = resultKey;
-        f._checkpointResultBytes = bytes;
+        _setBatchCheckpointFileMeta(f, { _checkpointResultKey: resultKey, _checkpointResultBytes: bytes });
         storedBytes += bytes;
       }
       const activeFilesRec = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
@@ -14591,15 +14717,22 @@ var createDocPipeline = function(deps) {
         await _deleteNewlyStoredBatchResults(files, newlyStoredKeys);
         return false;
       }
-      const statusKey = _batchStatusKeyFor(cleanBatchId);
       const statusRecord = {
         schemaVersion: 4, batchId: cleanBatchId, writeId: _newBatchCheckpointId(),
+        rootWriteId: expectedRootWriteId,
+        commitRevision: commitRevision, commitReason: commitReason,
         statuses: files.map(_toStatusEntry), lastUpdatedAt: Date.now(),
       };
       writtenStatusKey = statusKey;
       writtenStatusRecord = statusRecord;
       const _statusOk = await storageDB.set(statusKey, statusRecord);
       if (_statusOk === false) throw new Error('status write failed (storage full or unavailable)');
+      // A storage adapter can report success while silently dropping a write. Read back the
+      // unique writeId before advancing the batch; a false/no-op commit is degraded, not success.
+      const persistedStatus = await storageDB.get(statusKey);
+      if (!_sameBatchStatusRecord(persistedStatus, statusRecord, cleanBatchId)) {
+        throw new Error('status write was not observable after commit');
+      }
       // A tab can lose ownership after its initial check. Its scoped write cannot
       // clobber the new batch, but remove it immediately so large blobs do not orphan.
       const activeAfterWrite = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
@@ -14629,24 +14762,71 @@ var createDocPipeline = function(deps) {
       _warnBatchCheckpointOnce('Browser storage could not update the batch checkpoint. Keep this tab open until the batch finishes.');
       return false;
     }
-    }, 'shared');
+    }, 'exclusive');
   };
   let _batchStatusWriteTail = Promise.resolve();
-  const _batchCheckpointBudgetMs = (deadlineTs) => {
+  const _batchBoundaryRemainingMs = (deadlineTs) => {
     const deadline = Number(deadlineTs);
-    const remaining = Number.isFinite(deadline) && deadline > 0 ? deadline - Date.now() : 5000;
-    return Math.max(0, Math.min(5000, remaining));
+    return Number.isFinite(deadline) && deadline > 0 ? Math.max(0, deadline - Date.now()) : 0;
   };
-  const _saveBatchStatus = (files, batchId, deadlineTs) => {
-    const budget = _batchCheckpointBudgetMs(deadlineTs);
-    if (budget <= 0) return Promise.resolve(false);
-    const run = () => _withTimeout(_saveBatchStatusNow(files, batchId), budget, 'batch checkpoint write')
-      .catch(() => false);
-    const queued = _batchStatusWriteTail.then(run, run);
-    const next = _withTimeout(queued, budget, 'batch checkpoint queue').catch(() => false);
-    _batchStatusWriteTail = next.catch(() => {});
-    return next;
-  };  const _loadActiveBatch = async () => {
+  const _saveBatchStatus = (files, batchId, options) => {
+    const o = options && typeof options === 'object' ? options : {};
+    const timeoutMs = Math.max(1, Math.min(30000, Number(o.timeoutMs) || _BATCH_BOUNDARY_COMMIT_TIMEOUT_MS));
+    const deadlineTs = Number(o.deadlineTs) > 0 ? Number(o.deadlineTs) : Date.now() + timeoutMs;
+    const commitRevision = Number.isSafeInteger(Number(o.commitRevision)) && Number(o.commitRevision) > 0
+      ? Number(o.commitRevision) : _newBatchCommitRevision();
+    const snapshot = _snapshotBatchCheckpointFiles(files);
+    const run = () => {
+      if (_batchBoundaryRemainingMs(deadlineTs) <= 0) return false;
+      return _saveBatchStatusNow(snapshot, batchId, {
+        commitRevision: commitRevision,
+        commitReason: o.commitReason || 'batch-boundary',
+        rootWriteId: o.rootWriteId,
+      });
+    };
+    // Keep serialization tied to the real operation, not its caller timeout. If IndexedDB
+    // resolves late, a newer snapshot must wait behind it rather than overtaking and then being
+    // clobbered by the stale write.
+    const operation = _batchStatusWriteTail.then(run, run);
+    _batchStatusWriteTail = operation.catch(() => {});
+    const remaining = _batchBoundaryRemainingMs(deadlineTs);
+    if (remaining <= 0) return Promise.resolve(false);
+    return _withTimeout(operation, remaining, 'batch checkpoint boundary commit').catch(() => false);
+  };
+  const _commitBatchCheckpointBoundary = async (options) => {
+    const o = options && typeof options === 'object' ? options : {};
+    const context = String(o.context || 'batch-boundary');
+    const commitRevision = Number.isSafeInteger(Number(o.commitRevision)) && Number(o.commitRevision) > 0
+      ? Number(o.commitRevision) : _newBatchCommitRevision();
+    if (typeof o.isCurrent === 'function' && !o.isCurrent()) {
+      _signalBatchCheckpointCommit('stale', 'batch ownership changed before commit', context, commitRevision);
+      return { ok: false, state: 'stale', commitRevision: commitRevision };
+    }
+    const timeoutMs = Math.max(1, Math.min(30000, Number(o.timeoutMs) || _BATCH_BOUNDARY_COMMIT_TIMEOUT_MS));
+    const deadlineTs = Date.now() + timeoutMs;
+    let rootWriteId = null;
+    try {
+      rootWriteId = _normalizeBatchCheckpointId(await _withTimeout(Promise.resolve(o.startWrite), _batchBoundaryRemainingMs(deadlineTs), 'batch checkpoint root boundary'));
+    } catch (_) { rootWriteId = null; }
+    if (!rootWriteId) {
+      _signalBatchCheckpointCommit('degraded', 'checkpoint root was not durably ready', context, commitRevision);
+      return { ok: false, state: 'degraded', commitRevision: commitRevision };
+    }
+    const committed = await _saveBatchStatus(o.files, o.batchId, {
+      deadlineTs: deadlineTs,
+      timeoutMs: timeoutMs,
+      commitRevision: commitRevision,
+      commitReason: context,
+      rootWriteId: rootWriteId,
+    });
+    if (committed !== true) {
+      const state = committed === 'stale' ? 'stale' : 'degraded';
+      _signalBatchCheckpointCommit(state, state === 'stale' ? 'checkpoint root or revision was superseded' : 'status write failed or timed out', context, commitRevision);
+      return { ok: false, state: state, commitRevision: commitRevision };
+    }
+    return { ok: true, state: 'committed', commitRevision: commitRevision };
+  };
+  const _loadActiveBatch = async () => {
     if (typeof window === 'undefined' || !window.idbKeyval) return null;
     try {
       const filesRec = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
@@ -14687,6 +14867,7 @@ var createDocPipeline = function(deps) {
             const valid = rec && typeof rec.serialized === 'string' && rec.savedAt
               && Date.now() - rec.savedAt <= _remediationRetentionMs(_ACTIVE_BATCH_TTL_MS)
               && rec.promptVersion === _PIPELINE_PROMPT_VERSION
+              && (!filesRec.rootWriteId || rec.rootWriteId === filesRec.rootWriteId)
               && (batchId ? (!rec.batchId || _normalizeBatchCheckpointId(rec.batchId) === batchId)
                 : !rec.batchId)
               && rec.bytes <= _ACTIVE_BATCH_RESULT_MAX_BYTES;
@@ -14722,7 +14903,7 @@ var createDocPipeline = function(deps) {
       };
     } catch (_) { return null; }
   };
-  const _clearActiveBatch = async (batchId) => {
+  const _clearActiveBatch = async (batchId, expectedRootWriteId) => {
     if (typeof window === 'undefined' || !window.idbKeyval) return false;
     try {
       await _batchStatusWriteTail.catch(() => {});
@@ -14730,10 +14911,14 @@ var createDocPipeline = function(deps) {
       const requestedRaw = batchId == null ? '' : String(batchId).trim();
       const requestedId = _normalizeBatchCheckpointId(requestedRaw);
       if (requestedRaw && !requestedId) return false;
+      const requiresRootWriter = expectedRootWriteId !== undefined;
+      const requestedRootWriteId = _normalizeBatchCheckpointId(expectedRootWriteId);
+      if (requiresRootWriter && !requestedRootWriteId) return false;
       const filesRec = await storageDB.get(_ACTIVE_BATCH_FILES_KEY);
       if (!filesRec || !filesRec.files || !filesRec.savedAt) return false;
       const activeId = _normalizeBatchCheckpointId(filesRec.batchId);
       if (requestedId && activeId !== requestedId) return false;
+      if (requiresRootWriter && filesRec.rootWriteId !== requestedRootWriteId) return false;
 
       const statusInfo = await _readBatchStatusForFiles(filesRec);
       const legacyResultKeys = new Set((statusInfo.legacy && statusInfo.record && statusInfo.record.statuses || [])
@@ -16230,26 +16415,30 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
     if (_saved) { try { warnLog('[Batch] Resuming with the batch\'s ORIGINAL settings (auditors ' + _batchSettings.pdfAuditorCount + ', target ' + _batchSettings.pdfTargetScore + ', passes ' + _batchSettings.pdfAutoFixPasses + ') — current slider values apply to NEW batches.'); } catch (_) {}
     }
     // Complete the heavy owner record before any lightweight status write.
+    let _batchRootWriteId = null;
     const _batchStartWrite = _withTimeout(
       _saveBatchFiles(queue, _batchSettings, startTime, _batchId, _batchRunIsCurrent),
       5000,
       'batch checkpoint initialization'
-    ).catch(() => {
+    ).then((rootWriteId) => {
+      _batchRootWriteId = _normalizeBatchCheckpointId(rootWriteId);
+      return _batchRootWriteId;
+    }).catch(() => {
       _batchCheckpointDegraded = true;
       _warnBatchCheckpointOnce('Browser storage did not finish the batch checkpoint in time. This run continues, but closing the tab may lose unfinished files.');
       return false;
     });
-    const _persistBatchStatus = (deadlineTs) => {
-      if (!_batchRunIsCurrent()) return;
-      // Fire-and-forget — never block the loop on storage writes, and re-check
-      // ownership after the heavy root write resolves.
-      _batchStartWrite.then(() => {
-        if (!_batchRunIsCurrent()) return false;
-        return _saveBatchStatus(queue, _batchId, deadlineTs);
-      }).catch(() => {});
-    };
-    _persistBatchStatus();
-    const _batchFileDeadlines = new Map();
+    const _persistBatchStatus = (context) => _commitBatchCheckpointBoundary({
+      files: queue,
+      batchId: _batchId,
+      startWrite: _batchStartWrite,
+      isCurrent: _batchRunIsCurrent,
+      context: context || 'batch-status',
+      timeoutMs: _BATCH_BOUNDARY_COMMIT_TIMEOUT_MS,
+    });
+    // Commit the initial status before file 1. Every post-file boundary below awaits the same
+    // serialized tail, so no next file starts before the prior durable outcome resolves.
+    await _persistBatchStatus('batch-start');
 
     // Batch AbortController — separate global from auto-continue so the Stop
     // Batch button doesn't interfere with a single-file auto-continue run if
@@ -16296,7 +16485,6 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
       const _PER_FILE_MS = 8 * 60 * 1000;
       const _deadlineAt = Date.now() + _PER_FILE_MS;
       const _remainingMs = () => Math.max(1, _deadlineAt - Date.now());
-      _batchFileDeadlines.set(item.id, _deadlineAt);
       // ── Tier 4: remediation cache check (covers re-batch use case) ──
       // If we've already processed this PDF with these settings within the
       // last 24 hours by default, return the cached result and skip audit + remediation.
@@ -16526,9 +16714,16 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
           window.__lastOcrLowConfidencePages = [];
           window.__lastGroundTruthDocKey = null;
         } catch (_) {}
+        // This is the durable file boundary. It deliberately uses its own seven-second deadline,
+        // not the just-expired eight-minute remediation wall, and blocks advancement to file i+1
+        // until storage reports committed, degraded, or stale.
+        try {
+          const boundaryStatus = (queue[i] && queue[i].status) || 'unknown';
+          await _persistBatchStatus('file-' + (i + 1) + '-' + boundaryStatus);
+        } catch (commitErr) {
+          _signalBatchCheckpointCommit('degraded', commitErr && commitErr.message || 'boundary commit threw', 'file-' + (i + 1), null);
+        }
       }
-      // Persist after each file so a tab close mid-batch is recoverable.
-      _persistBatchStatus(_batchFileDeadlines.get(item.id));
 
       if (i < queue.length - 1) {
         setPdfBatchStep('Cooling down before next file...');
@@ -16559,8 +16754,14 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
           warnLog(`[Batch Retry] ${_alloDiagnosticDocumentLabel(failedItem.fileName)} failed again:`, err);
           queue[idx] = { ...failedItem, status: 'failed', error: 'Failed after retry: ' + err.message };
           setPdfBatchQueue([...queue]);
+        } finally {
+          try {
+            const retryStatus = (queue[idx] && queue[idx].status) || 'unknown';
+            await _persistBatchStatus('retry-' + (idx + 1) + '-' + retryStatus);
+          } catch (commitErr) {
+            _signalBatchCheckpointCommit('degraded', commitErr && commitErr.message || 'retry boundary commit threw', 'retry-' + (idx + 1), null);
+          }
         }
-        _persistBatchStatus(_batchFileDeadlines.get(failedItem.id));
         await _batchDelay(3000);
       }
     }
@@ -16639,12 +16840,12 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
     // quota resets", so clearing here (pre-2026-07-01 behavior) destroyed the
     // very resume it advertised.
     if (!_batchAbortCtrl.signal.aborted && !_quotaStopped && pending.length === 0) {
-      _clearActiveBatch(_batchId).catch(() => {});
+      _clearActiveBatch(_batchId, _batchRootWriteId).catch(() => {});
     } else {
       // Keep the state, but persist the latest queue (so any in-progress
       // items show as still pending on resume rather than locked at
       // 'processing').
-      _persistBatchStatus();
+      await _persistBatchStatus('batch-final-interrupted');
     }
     // Release batch abort signal so post-batch Gemini calls aren't picked up
     // by a stale aborted controller. Guard against a subsequent run having
@@ -16694,7 +16895,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         }
       }
       setPdfBatchQueue([...queue]);
-      _persistBatchStatus();
+      await _persistBatchStatus('batch-fatal-error');
       const _fatalDone = queue.filter(q => q && q.status === 'done');
       const _fatalFailed = queue.filter(q => q && q.status === 'failed');
       const _fatalPending = queue.filter(q => q && (!q.status || q.status === 'pending' || q.status === 'processing'));
@@ -16726,7 +16927,6 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         }
         if (window.__alloPdfAbortSignal === _batchAbortCtrl.signal) window.__alloPdfAbortSignal = _alloLiveAbortSignalOrNull(_prevBatchAbortSlot);
       }
-      if (_batchAbortCtrl.signal.aborted) _persistBatchStatus();
     }
   };
 
@@ -23173,6 +23373,11 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     const _runDocumentEpoch = _hasExplicitDocumentEpoch
       ? _normalizeDocumentEpoch(batchOverrides.documentEpoch) : _run.documentEpoch;
     const _onProgress = batchOverrides?.onProgress || null;
+    // Hosted remediation can provide an awaited durability hook. It is intentionally
+    // absent from normal browser/desktop calls, and it only receives validated stage
+    // boundaries (never a live request, DOM node, controller, or partial AI response).
+    const _onCheckpoint = batchOverrides && typeof batchOverrides.onCheckpoint === 'function'
+      ? batchOverrides.onCheckpoint : null;
     const _silentMode = !!_onProgress;
     if (_runDocumentEpoch === null) {
       const ownershipError = new Error('Remediation could not start because this document has no valid ownership epoch. Re-select the document and try again.');
@@ -23775,6 +23980,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               if (typeof addToast === 'function') addToast(t('toasts.resume_garbled_reocr') || 'Your saved text from the unfinished session looks garbled — re-scanning with OCR for a clean copy.', 'info');
             } else {
               extractedText = _seed.text;
+              // The per-run reset above intentionally clears every OCR/global evidence field.
+              // Restore only after the seed passes identity and garbage checks so scanned-PDF
+              // word boxes, page evidence, and dual-OCR provenance survive a durable resume.
+              _restoreOcrEvidenceGlobals(_seed);
               warnLog('[Resume] Reusing cached extracted text (' + extractedText.length + ' chars) from a saved project — skipping re-extraction/OCR');
               // Honesty (multisession-resume-2): the cache is the PRIOR pass's OCR text. If the teacher changed
               // the OCR language since, this reuses the old language's text — so don't claim "no re-scanning
@@ -24302,6 +24511,38 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       // Warn if extraction seems thin (< 200 chars/page suggests truncation or image-only pages)
       if (charsPerPage < 200 && effectivePageCount > 1) {
         warnLog(`[PDF Fix] WARNING: Low extraction density (${charsPerPage} chars/page) — possible truncation or scanned/image-only document`);
+      }
+
+      // Durable extraction boundary (hosted runner only). The callback is awaited so a
+      // later throttle/timeout cannot claim this boundary before its immutable snapshot
+      // is committed. Carry the OCR word map and evidence globals: reusing text without
+      // them would make a resumed scanned PDF lose its positioned searchable-text layer.
+      if (_onCheckpoint) {
+        _throwIfRunCancelled();
+        await _onCheckpoint({
+          schema: 1,
+          stage: 'extraction',
+          extraction: {
+            fileName: _fileName,
+            documentDigest: _documentKey,
+            text: extractedText,
+            groundTruthCharCount: window.__lastGroundTruthCharCount || extractedText.length,
+            groundTruthMethod: window.__lastGroundTruthMethod || null,
+            groundTruthPages: Array.isArray(window.__lastGroundTruthPageMap) ? window.__lastGroundTruthPageMap : null,
+            ocrMethod: window.__lastOcrMethod || null,
+            ocrTesseractText: window.__lastOcrTesseractText || '',
+            ocrVisionText: window.__lastOcrVisionText || '',
+            ocrDisagreements: window.__lastOcrDisagreements || [],
+            ocrPageErrors: window.__lastOcrPageErrors || [],
+            ocrLowConfidencePages: window.__lastOcrLowConfidencePages || [],
+            detectedFolios: window.__alloDetectedFolios || [],
+            ocrDupeCollapses: window.__alloOcrDupeCollapses || [],
+            ocrColumnReorders: window.__alloOcrColumnReorders || [],
+            strippedEdgeLines: window.__alloStrippedEdgeLines || [],
+            visionStripTrail: window.__lastVisionStripTrail || [],
+          },
+        });
+        _throwIfRunCancelled();
       }
 
       // ── Step 1b (S2-extracted → _extractPdfImages) ──

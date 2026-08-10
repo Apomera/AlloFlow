@@ -601,7 +601,7 @@ describe('Geometry World visual refinement contract', () => {
   });
 
   it('keeps measurement details in a dismissible floating inspector', () => {
-    expect(SOURCE).toContain("className: 'gw-prediction-bar'");
+    expect(SOURCE).toContain("className: 'gw-prediction-bar gw-prediction-panel'");
     expect(SOURCE).toContain("className: 'gw-measure-card'");
     expect(SOURCE).toContain("'aria-label': 'Measurement inspector'");
     expect(SOURCE).toContain("'aria-label': 'Close measurement inspector'");
@@ -707,7 +707,7 @@ describe('Geometry World visual refinement contract', () => {
 
   it('styles secondary data panels and environmental alerts as accessible HUD content', () => {
     expect(SOURCE).toContain("className: 'gw-history-panel', role: 'region', 'aria-label': 'Measurement history'");
-    expect(SOURCE).toContain("className: 'gw-history-title'");
+    expect(SOURCE).toContain("className: 'gw-history-title gw-hud-panel-heading'");
     expect(SOURCE).toContain("'data-current': mi === 0 ? 'true' : 'false'");
     expect(SOURCE).toContain("className: 'gw-retrieval-card'");
     expect(SOURCE).toContain("className: 'gw-retrieval-input gw-focusable'");
@@ -723,18 +723,42 @@ describe('Geometry World visual refinement contract', () => {
     expect(SOURCE).toContain('@media(prefers-reduced-motion:reduce){.gw-environment-tint{transition:none!important}');
   });
 
-  it('organizes the toolbar into responsive branded, status and prediction zones', () => {
+  it('keeps the game bar compact and moves secondary controls into accessible overlays', () => {
     expect(SOURCE).toContain("className: 'gw-root', 'aria-label': __alloT('stem.geometryworld.tool_name', 'Geometry World')");
     expect(SOURCE).toContain("el('header', { className: 'gw-toolbar', 'aria-label': 'Geometry World lesson controls'");
     expect(SOURCE).toContain("className: 'gw-brand-lockup'");
     expect(SOURCE).toContain("el('h2', { id: 'gw-title', className: 'gw-title' }");
-    expect(SOURCE).toContain("className: 'gw-status-cluster', 'aria-label': 'Lesson status'");
-    expect(SOURCE).toContain("role: 'status', 'aria-live': 'polite', 'aria-label': 'Lesson progress: '");
-    expect(SOURCE).toContain("role: 'list', 'aria-label': Object.keys(earnedBadges).length + ' achievement badges earned'");
-    expect(SOURCE).toContain("role: 'listitem', 'aria-label': a.name + ': ' + a.desc");
-    expect(SOURCE).toContain('.gw-toolbar{display:grid!important;grid-template-columns:minmax(0,1fr) auto;');
-    expect(SOURCE).toContain('.gw-prediction-bar{grid-column:1/-1;display:grid!important;');
-    expect(SOURCE).toContain('.gw-status-cluster{grid-row:2;width:100%;justify-content:flex-start;overflow-x:auto;');
+    expect(SOURCE).toContain("className: 'gw-status-cluster', 'aria-label': 'Lesson status and game menu'");
+    expect(SOURCE).toContain("'data-geometry-settings-trigger': 'true', 'aria-haspopup': 'dialog'");
+    expect(SOURCE).toContain("id: 'gw-settings-dialog', role: 'dialog', 'aria-modal': 'true'");
+    expect(SOURCE).toContain("className: 'gw-fullscreen-quickbar'");
+    expect(SOURCE).toContain("objectivesOpen && el('section', { id: 'gw-objective-panel'");
+    expect(SOURCE).toContain('.gw-toolbar{box-sizing:border-box;display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;min-height:52px;max-height:64px;');
+    expect(SOURCE).toContain('#geoworld-fs-workspace[data-fullscreen="true"]>.gw-toolbar{display:none!important}');
+    expect(SOURCE).toContain('.gw-prediction-panel{position:absolute!important;');
+    expect(SOURCE).toContain('.gw-settings-backdrop{position:absolute;inset:0;');
+    expect(SOURCE).toContain("var hudPreset = isGeometryHudPreset(d.hudPreset)");
+    expect(SOURCE).toContain("var hudPanel = gwHasOwn(d, 'hudPanel')");
+    expect(SOURCE).toContain("GW_HUD_PRESET_KEY = 'allo.geometryworld.hud.v1'");
+    expect(SOURCE).toContain("minimal: { hudPanel: '', label: 'Minimal'");
+    expect(SOURCE).toContain("learning: { hudPanel: 'progress', label: 'Learning'");
+    expect(SOURCE).toContain("builder: { hudPanel: 'inventory', label: 'Builder'");
+    expect(SOURCE).toContain("className: 'gw-hud-preset-fieldset'");
+    expect(SOURCE).toContain("id: 'gw-hud-preset-help'");
+    expect(SOURCE).toContain("'data-geometry-hud-preset': preset.id");
+    expect(SOURCE).toContain("'aria-pressed': active");
+    expect(SOURCE).toContain("'data-hud-preset': hudPreset");
+    expect(SOURCE).toContain("hudPanel === 'inventory' && engine");
+    expect(SOURCE).toContain("'data-hud-preset': hudPreset");
+    expect(SOURCE).toContain("'Optional HUD overlays'");
+    expect(SOURCE).toContain("hudPanel === 'progress' && el('section', { id: 'gw-progress-hud'");
+    expect(SOURCE).toContain("hudPanel === 'map' && el('section', { id: 'gw-minimap'");
+    expect(SOURCE).toContain("hudPanel === 'history' && measureHistory.length > 0");
+    expect(SOURCE).toContain("hudPanel === 'inventory' && engine");
+    expect(SOURCE).toContain("hudPanel === 'transform' && (function()");
+    expect(SOURCE).toContain("className: 'gw-hud-panel-close gw-focusable'");
+    expect(SOURCE).toContain('.gw-touch-look-zone{opacity:1!important}');
+    expect(SOURCE).toContain('.gw-fullscreen-quickbar .gw-compact-action-label{display:none!important}');
   });
 
   it('presents onboarding as a named, responsive tutorial with semantic progress', () => {

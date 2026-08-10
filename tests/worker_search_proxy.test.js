@@ -236,4 +236,32 @@ describe('worker GET /search', () => {
     expect(JSON.stringify(body)).not.toContain('sk-live-123');
     expect(body.error).toBe('search-provider-error');
   });
+describe('worker GET /source-metadata', () => {
+  it('follows one safe redirect and parses structured metadata', async () => {
+    vi.stubGlobal('caches', cacheStub());
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(null, { status: 302, headers: { Location: 'https://example.org/final' } }))
+      .mockResolvedValueOnce(new Response('<html><head><title>Ignored fallback</title><meta name="citation_doi" content="10.1234/example"><script type="application/ld+json">{"@type":"Book","name":"The Yellow Wallpaper","author":{"@type":"Person","name":"Charlotte Perkins Gilman"},"datePublished":"1892","identifier":"9781234567890"}</script></head></html>', { status: 200, headers: { 'Content-Type': 'text/html' } }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const res = await worker.fetch(get('https://w.dev/source-metadata?url=https%3A%2F%2Fexample.org%2Fstart'), {});
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.finalUrl).toBe('https://example.org/final');
+    expect(body.metadata).toMatchObject({ title: 'The Yellow Wallpaper', creator: 'Charlotte Perkins Gilman', date: '1892', doi: '10.1234/example', isbn: '9781234567890' });
+    expect(body.metadata.signals.jsonLd).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[0][1].redirect).toBe('manual');
+  });
+
+  it('rejects an unsafe redirect target', async () => {
+    vi.stubGlobal('caches', cacheStub());
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(null, { status: 302, headers: { Location: 'http://127.0.0.1/private' } })));
+
+    const res = await worker.fetch(get('https://w.dev/source-metadata?url=https%3A%2F%2Fexample.org%2Fstart'), {});
+    expect(res.status).toBe(502);
+    expect((await res.json()).error).toBe('metadata-redirect-invalid');
+  });
+});
 });

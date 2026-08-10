@@ -128,7 +128,9 @@
   //   lang: 'en-US' (default)
   //   continuous: true (default — keep listening until stop)
   //   interimResults: false (default — only final transcripts)
-  //   onTranscript(text, isFinal): fires per result event
+  //   onTranscript(text, isFinal, metadata): fires per result event.
+  //     metadata is a sanitized optional object with nullable recognition
+  //     confidence; the raw browser event is never forwarded on this path.
   //   onError(err): fires on recognition error
   //   onEnd(): fires when the recognition session ends naturally
   //   restartOnEnd: false (default — set true for "always-on" surfaces)
@@ -140,6 +142,33 @@
   //   or if an error occurred during construction.
   // stop() ends the session immediately; idempotent.
   // restart() stops + starts (used internally if restartOnEnd=true).
+  function nullableRecognitionConfidence(value) {
+    return typeof value === 'number' && isFinite(value) && value >= 0 && value <= 1 ? value : null;
+  }
+
+  function webSpeechRecognitionMetadata(event) {
+    var results = event && event.results;
+    var start = event && typeof event.resultIndex === 'number' && event.resultIndex >= 0
+      ? Math.floor(event.resultIndex) : 0;
+    var length = results && typeof results.length === 'number' ? results.length : 0;
+    var segments = [];
+    for (var i = start; i < length && segments.length < 20; i++) {
+      var result = results[i];
+      if (!result || !result[0]) continue;
+      segments.push({
+        isFinal: !!result.isFinal,
+        confidence: nullableRecognitionConfidence(result[0].confidence)
+      });
+    }
+    // A combined transcript has no single engine-supplied confidence. Preserve
+    // the exact browser value only when this callback represents one segment.
+    return {
+      confidence: segments.length === 1 ? segments[0].confidence : null,
+      confidenceSource: 'web-speech',
+      segments: segments
+    };
+  }
+
   function initWebSpeechCapture(opts) {
     opts = opts || {};
     var caps = getCapabilities();
@@ -196,13 +225,15 @@
           if (res.isFinal) { finalText += chunk; sawFinal = true; }
           else interimText += chunk;
         }
+        var metadata = webSpeechRecognitionMetadata(event);
         if (hasSimple && transcript) {
-          opts.onTranscript(transcript, sawFinal);
+          opts.onTranscript(transcript, sawFinal, metadata);
         }
         if (hasRich) {
           opts.onRichResult({
             final: finalText,
             interim: interimText,
+            metadata: metadata,
             fullEvent: event
           });
         }
@@ -821,16 +852,46 @@
       if (activeDictationController === controller) activeDictationController = null;
     }
 
-    function emitTranscript(raw, isFinal) {
+    function sanitizedDictationMetadata(recognitionMetadata) {
+      var isBrowserWebSpeech = engineMeta.engine === 'web-speech';
+      var sourceSegments = isBrowserWebSpeech && recognitionMetadata && Array.isArray(recognitionMetadata.segments)
+        ? recognitionMetadata.segments : [];
+      var segments = sourceSegments.slice(0, 20).map(function (segment) {
+        return {
+          isFinal: !!(segment && segment.isFinal),
+          confidence: nullableRecognitionConfidence(segment && segment.confidence)
+        };
+      });
+      return {
+        engine: engineMeta.engine,
+        engineLabel: engineMeta.engineLabel,
+        privacy: engineMeta.privacy,
+        confidence: isBrowserWebSpeech
+          ? nullableRecognitionConfidence(recognitionMetadata && recognitionMetadata.confidence)
+          : null,
+        confidenceSource: isBrowserWebSpeech ? 'web-speech' : null,
+        segments: segments
+      };
+    }
+
+    function copyDictationMetadata(metadata) {
+      return Object.assign({}, metadata, {
+        segments: Array.isArray(metadata && metadata.segments)
+          ? metadata.segments.map(function (segment) { return Object.assign({}, segment); }) : []
+      });
+    }
+
+    function emitTranscript(raw, isFinal, recognitionMetadata) {
       var transcript = _cleanDictationTranscript(raw);
       if (!transcript) return;
+      var metadata = sanitizedDictationMetadata(recognitionMetadata);
       if (typeof opts.onTranscript === 'function') {
-        try { opts.onTranscript(transcript, isFinal !== false); } catch (e) { /* consumer isolation */ }
+        try { opts.onTranscript(transcript, isFinal !== false, copyDictationMetadata(metadata)); } catch (e) { /* consumer isolation */ }
       }
-      var alternative = { transcript: transcript, confidence: 0.9 };
+      var alternative = { transcript: transcript, confidence: metadata.confidence };
       var result = [alternative];
       result.isFinal = isFinal !== false;
-      var event = { results: [result], resultIndex: 0 };
+      var event = { results: [result], resultIndex: 0, metadata: copyDictationMetadata(metadata) };
       resultListeners.slice().forEach(function (listener) {
         try { listener(event); } catch (e) { /* consumer isolation */ }
       });
@@ -873,7 +934,9 @@
         });
       }).then(function (result) {
         if (!result || generation !== myGeneration || activeDictationController !== controller) return;
-        emitTranscript(result.transcript, true);
+        // Recorded engines return transcript text only. Do not manufacture a
+        // recognition or pronunciation confidence for Whisper or Gemini.
+        emitTranscript(result.transcript, true, null);
         releaseActive();
         setState('idle', { message: result.transcript ? 'Dictation added.' : 'No speech detected.', reason: 'completed' });
         if (typeof opts.onEnd === 'function') opts.onEnd({ reason: 'completed' });
@@ -896,8 +959,8 @@
         continuous: opts.continuous !== false,
         interimResults: !!opts.interimResults,
         restartOnEnd: !!opts.restartOnEnd,
-        onTranscript: function (transcript, isFinal) {
-          if (generation === myGeneration && activeDictationController === controller) emitTranscript(transcript, isFinal);
+        onTranscript: function (transcript, isFinal, recognitionMetadata) {
+          if (generation === myGeneration && activeDictationController === controller) emitTranscript(transcript, isFinal, recognitionMetadata);
         },
         onError: function (error) {
           if (generation !== myGeneration) return;

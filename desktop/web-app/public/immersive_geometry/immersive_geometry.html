@@ -42,6 +42,23 @@
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }
   a-scene { display: block; }
+  #immersiveBootStatus {
+    position: fixed; right: 14px; bottom: 14px; z-index: 40; width: min(370px, calc(100vw - 28px));
+    padding: 12px 14px; border: 1px solid #7f94d6; border-radius: 12px; background: #111b33;
+    color: var(--text); box-shadow: 0 14px 38px rgba(0,0,0,0.5);
+  }
+  #immersiveBootStatus[data-state="error"] { border-color: #fb7185; background: #2a1320; }
+  #immersiveBootStatus[hidden] { display: none !important; }
+  .boothead { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .bootdot { width: 10px; height: 10px; flex: 0 0 auto; border-radius: 999px; background: #facc15; box-shadow: 0 0 0 4px rgba(250,204,21,0.16); }
+  #immersiveBootStatus[data-state="ready"] .bootdot { background: #4ade80; box-shadow: 0 0 0 4px rgba(74,222,128,0.16); }
+  #immersiveBootStatus[data-state="error"] .bootdot { background: #fb7185; box-shadow: 0 0 0 4px rgba(251,113,133,0.16); }
+  #immersiveBootMessage { margin: 5px 0 0; color: var(--dim); font-size: 11.5px; line-height: 1.45; }
+  #immersiveBootReload { margin-top: 9px; min-height: 36px; padding: 7px 11px; border: 1px solid #fda4af; border-radius: 8px; background: #9f1239; color: #fff; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+  #immersiveBootReload:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  @media (max-width: 520px) {
+    #immersiveBootStatus { left: 8px; right: 8px; bottom: 8px; width: auto; }
+  }
 
   /* Desktop / flatscreen overlay UI. Hidden while an immersive session owns the display. */
   #hud {
@@ -188,6 +205,12 @@
 </style>
 </head>
 <body>
+
+<section id="immersiveBootStatus" data-state="loading" role="status" aria-live="polite" aria-atomic="true">
+  <div class="boothead"><span class="bootdot" aria-hidden="true"></span><strong id="immersiveBootTitle">Starting the 3D lab...</strong></div>
+  <p id="immersiveBootMessage">Preparing the geometry scene and its controls.</p>
+  <button id="immersiveBootReload" type="button" hidden>Reload 3D lab</button>
+</section>
 
 <!-- Flatscreen HUD (also fully keyboard-operable). Hidden during an immersive VR session. -->
 <div id="hud">
@@ -447,6 +470,83 @@
     <a-entity id="handR" laser-controls="hand: right" raycaster="objects: .clickable; lineColor: #7aa2ff; far: 8"></a-entity>
   </a-entity>
 </a-scene>
+
+<script>
+(function () {
+  var panel = document.getElementById('immersiveBootStatus');
+  var title = document.getElementById('immersiveBootTitle');
+  var message = document.getElementById('immersiveBootMessage');
+  var reload = document.getElementById('immersiveBootReload');
+  var scene = document.querySelector('a-scene');
+  var state = { renderStarted: false, componentReady: false, finished: false };
+  var timeoutId = null, readinessPoll = null;
+
+  function stopWatching() {
+    if (timeoutId) window.clearTimeout(timeoutId);
+    if (readinessPoll) window.clearInterval(readinessPoll);
+    timeoutId = null; readinessPoll = null;
+  }
+  function markReady() {
+    if (state.finished || !state.renderStarted || !state.componentReady) return;
+    state.finished = true;
+    stopWatching();
+    panel.dataset.state = 'ready';
+    title.textContent = '3D lab ready';
+    message.textContent = 'The geometry scene and controls are available.';
+    reload.hidden = true;
+    window.setTimeout(function () { panel.hidden = true; }, 900);
+  }
+  function showFailure(reason) {
+    if (state.finished) return;
+    state.finished = true;
+    stopWatching();
+    panel.hidden = false;
+    panel.dataset.state = 'error';
+    panel.setAttribute('role', 'alert');
+    title.textContent = 'The 3D lab could not start';
+    message.textContent = reason || 'Reload the lab to try the 3D scene again.';
+    reload.hidden = false;
+  }
+
+  window.__alloImmersiveBoot = {
+    markRenderStarted: function () { state.renderStarted = true; markReady(); },
+    markComponentReady: function () { state.componentReady = true; markReady(); },
+    fail: showFailure
+  };
+  reload.addEventListener('click', function () {
+    try { window.location.reload(); }
+    catch (_) { showFailure('Reloading is unavailable here. Close this view and open the Immersive Geometry Lab again.'); }
+  });
+  window.addEventListener('error', function () {
+    if (!state.finished) showFailure('The 3D scene stopped while starting. Reload the lab to try again.');
+  });
+  window.addEventListener('unhandledrejection', function () {
+    if (!state.finished) showFailure('The 3D scene could not finish loading. Reload the lab to try again.');
+  });
+
+  if (!window.AFRAME) {
+    showFailure('The local 3D engine did not load. Reload the lab or reopen it from Geometry Sandbox.');
+    return;
+  }
+  if (!scene) {
+    showFailure('The geometry scene is missing. Reload the lab to try again.');
+    return;
+  }
+  scene.addEventListener('renderstart', function () {
+    window.__alloImmersiveBoot.markRenderStarted();
+  });
+  // renderstart is a one-shot event; polling also covers a fast cached scene
+  // that rendered before this listener was attached.
+  readinessPoll = window.setInterval(function () {
+    if (scene.renderer && scene.canvas && scene.canvas.width > 1 && scene.canvas.height > 1) {
+      window.__alloImmersiveBoot.markRenderStarted();
+    }
+  }, 120);
+  timeoutId = window.setTimeout(function () {
+    showFailure('The 3D scene is taking too long to start. Reload the lab, or check that hardware acceleration is available.');
+  }, 10000);
+})();
+</script>
 
 <script>
 /* ─────────────────────────────────────────────────────────────────────────
@@ -3075,8 +3175,14 @@ window.addEventListener('load', function () {
   window.addEventListener('pagehide', function () { window.clearInterval(panelFaceTimer); });
 
   // Boot the figure now that the component is registered and the statechange
-  // listener above is ready to catch its first emit.
+  // listener above is ready to catch its first emit. Component initialization
+  // can be deferred by A-Frame, so report readiness from either path.
+  var immersiveBoot = window.__alloImmersiveBoot;
+  figure.addEventListener('componentinitialized', function (event) {
+    if (event && event.detail && event.detail.name === 'stretch-lab' && immersiveBoot) immersiveBoot.markComponentReady();
+  });
   figure.setAttribute('stretch-lab', '');
+  if (comp() && immersiveBoot) immersiveBoot.markComponentReady();
   applyInstructorMode(instructorMode, false);
   applyViewScale(viewScaleIndex, false);
 });

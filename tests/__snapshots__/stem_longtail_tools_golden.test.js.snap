@@ -112,10 +112,10 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for migration 1`] = `
 {
-  "buttons": 16,
-  "inputs": 6,
-  "lengthBucket": 84,
-  "sha": "c01eccaf3682ed1e",
+  "buttons": 13,
+  "inputs": 1,
+  "lengthBucket": 43,
+  "sha": "a336efe69bc6c191",
   "svgs": 0,
 }
 `;

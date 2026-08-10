@@ -641,8 +641,12 @@ describe('MemoryPalace - live 3D organizer HUD contract', () => {
     expect(source).toContain('if (reduce) label.scale.set(tx, ty, 1)');
     expect(source).toContain('depthTest: !occlusionSafe');
     expect(source).toContain('sp.renderOrder = occlusionSafe ? 24 : 12');
-    expect(source).toContain("makeLabelSprite(THREE, recall ? '?' : l.label, color, 24, true)");
-    expect(source).toContain('makeLabelSprite(THREE, text, ref.baseColor, 24, true)');
+    expect(source).toContain("makeLabelSprite(THREE, recall ? '?' : l.label, color, 24, false)");
+    expect(source).toContain('function _setFrameCaptionOcclusionState()');
+    expect(source).toContain('ref.locus.roomIdx === _activeRoomIdx');
+    expect(source).toContain('label.material.depthTest = !overlay');
+    expect(source).toContain('_setFrameCaptionOcclusionState();');
+    expect(source).toContain('makeLabelSprite(THREE, text, ref.baseColor, 24, overlay)');
   });
   it('provides a clickable status map and a responsive frame callout', () => {
     const source = readFileSync(resolve(process.cwd(), 'memory_palace_module.js'), 'utf8');

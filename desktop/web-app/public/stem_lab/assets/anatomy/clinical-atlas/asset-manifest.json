@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "packs": [
+    {
+      "id": "hra-kidney-female-left-v1.3",
+      "title": "Clinical Kidney Atlas",
+      "publisher": "Human Reference Atlas / HuBMAP",
+      "creators": [
+        "Kristen Browne",
+        "Heidi Schlehlein"
+      ],
+      "version": "1.3",
+      "releaseYear": 2024,
+      "assetType": "3d-reference-organ",
+      "referenceSex": "female",
+      "laterality": "left",
+      "primaryOntologyId": "UBERON:0004538",
+      "modeledStructureCount": 31,
+      "model": "hra-kidney-female-left-v1.3.glb",
+      "crosswalk": "hra-kidney-female-left-v1.3-crosswalk.csv",
+      "sha256": {
+        "model": "58f0227d45b14d7bcfd2ed05a7bcd76000051ea08d52f844feebd70d612f8084",
+        "crosswalk": "19fbe87b7df8cf6b840456c7477ae5aaada30a7d535751d59e20941214bee445"
+      },
+      "source": "https://cdn.humanatlas.io/digital-objects/ref-organ/kidney-female-left/v1.3/",
+      "canonicalIdentifier": "https://lod.humanatlas.io/ref-organ/kidney-female-left/v1.3",
+      "doi": "https://doi.org/10.48539/HBM449.JPXL.964",
+      "license": {
+        "name": "Creative Commons Attribution 4.0 International",
+        "spdx": "CC-BY-4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "attribution": "3D Reference Organ for Kidney, Female, Left v1.3, Kristen Browne and Heidi Schlehlein (2024), Human Reference Atlas/HuBMAP, DOI 10.48539/HBM449.JPXL.964, CC BY 4.0. Derived from the NLM Visible Human Dataset.",
+      "modifications": "Source GLB and CSV are vendored byte-for-byte from the versioned HRA digital object; the viewer applies runtime centering, uniform scaling, and double-sided material rendering.",
+      "usage": "Research and educational visualization; not medical advice or a diagnostic device."
+    }
+  ]
+}

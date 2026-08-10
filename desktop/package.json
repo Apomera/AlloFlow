@@ -10,6 +10,8 @@
     "ui:smoke": "node scripts/smoke-electron-ui.cjs",
     "icon:build": "node scripts/build-allobot-icon.cjs",
     "web:build": "node scripts/build-desktop-web.cjs",
+    "web:build:isolated": "node scripts/build-desktop-web.cjs --isolated-output",
+    "verify:web-build": "node scripts/check-desktop-app-build.cjs",
     "package:desktop:win-x64": "node scripts/build-edition.cjs desktop win-x64",
     "package:desktop:win": "node scripts/build-edition.cjs desktop win",
     "package:desktop:mac": "node scripts/build-edition.cjs desktop mac",

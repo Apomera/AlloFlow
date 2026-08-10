@@ -45,7 +45,7 @@ describe('beehive — simulation modes render without throwing', () => {
   it('uses a distinct visual identity and visible play-surface affordances in every role', () => {
     const keeper = render({ viewMode: 'beekeeper', day: 12 });
     const queen = render({ viewMode: 'queen', queen: { active: true, paused: true, buildMode: 'guard' } });
-    const drone = render({ viewMode: 'drone', drone: { active: true, paused: false, difficulty: 'easy' } });
+    const drone = render({ viewMode: 'drone', drone: { active: false, difficulty: 'easy' } });
 
     [keeper, queen, drone].forEach((html) => {
       expect(html).toContain('data-beehive-hero="true"');
@@ -168,80 +168,22 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(queen).toContain('Restart automatic cycles');
     expect(queen).toContain('Watch the cycle clock and rival pressure restart.');
     expect(drone).toContain('data-beehive-active-mode="drone"');
-    expect(drone).toContain('data-beehive-stage="drone"');
+    expect(drone).toContain('data-beehive-stage="drone-briefing"');
     expect(drone).toContain('href="#beehive-drone-playfield"');
     expect(drone).toContain('id="beehive-drone-playfield"');
-    expect(drone).toContain('data-beehive-stage-chip="drone"');
-    expect(drone).toContain('data-flight-state="live"');
-    expect(drone).toContain('Flight objective');
-    expect(drone).toContain('Flight state');
-    expect(drone).toContain('Launches');
-    expect(drone).toContain('High score');
-    expect(drone).toContain('data-beehive-flight-pause="true"');
-    expect(drone).toContain('data-beehive-flight-instruments="true"');
-    expect(drone).toContain('Live flight instruments');
-    expect(drone).toContain('data-flight-readout="energy"');
-    expect(drone).toContain('data-flight-readout="altitude"');
-    expect(drone).toContain('data-flight-readout="distance"');
-    expect(drone).toContain('data-flight-readout="objective"');
-    expect(drone).toContain('data-flight-meter="energy"');
-    expect(drone).toContain('Telemetry live');
-    expect(drone).toContain('data-beehive-flight-route="true"');
-    expect(drone).toContain('data-flight-checkpoint="boosts"');
-    expect(drone).toContain('data-flight-checkpoint="dca"');
-    expect(drone).toContain('data-flight-checkpoint="queen"');
-    expect(drone).toContain('data-checkpoint-state="current"');
-    expect(drone).toContain('Gather optional boosts');
-    expect(drone).toContain('data-beehive-maneuver-impact="true"');
-    expect(drone).toContain('data-flight-maneuver="action"');
-    expect(drone).toContain('data-flight-maneuver="impact"');
-    expect(drone).toContain('data-flight-maneuver="coach"');
-    expect(drone).toContain('data-beehive-flight-envelope="true"');
-    expect(drone).toContain('data-flight-envelope-item="energy"');
-    expect(drone).toContain('data-flight-envelope-item="speed"');
-    expect(drone).toContain('data-flight-envelope-item="altitude"');
-    expect(drone).toContain('data-flight-envelope-item="bearing"');
-    expect(drone).toContain('data-flight-envelope-item="hazard"');
-    expect(drone).toContain('data-envelope-overall="caution"');
-    expect(drone).toContain('Flight envelope');
-    expect(drone).toContain('Five conditions that tell you whether the route is still viable.');
-    expect(drone).toContain('Energy reserve');
-    expect(drone).toContain('Predator range');
-    expect(drone).toContain('data-control-active="false"');
-    expect(drone).toContain('Maneuver impact');
-    expect(drone).toContain('What changed');
-    expect(drone).toContain('Try next');
-    expect(drone).toContain('data-beehive-touch-controls="true"');
-    expect(drone).toContain('SPACE');
-    expect(drone).toContain('data-beehive-coach-action="pause-flight"');
-    expect(drone).toContain('Freeze the clock and inspect telemetry');
-    expect(drone).toContain('The clock should stop while telemetry holds steady.');
-    const pausedDrone = render({ viewMode: 'drone', drone: { active: true, paused: true, difficulty: 'easy' } });
-    expect(pausedDrone).toContain('data-flight-state="paused"');
-    expect(pausedDrone).toContain('data-beehive-flight-paused-overlay="true"');
-    expect(pausedDrone).toContain('FLIGHT PAUSED');
-    expect(pausedDrone).toContain('aria-label="Resume flight"');
-    expect(pausedDrone).toContain('data-beehive-coach-action="resume-flight"');
-    expect(pausedDrone).toContain('Restart the flight clock');
-    expect(pausedDrone).toContain('Telemetry frozen while you plan.');
-    expect(pausedDrone).toContain('>Paused</span>');
-    expect(pausedDrone).toContain('data-envelope-overall="paused"');
-    expect(pausedDrone).toContain('data-envelope-state="paused"');
-    expect(pausedDrone).toContain('Review the five conditions before resuming.');
-    const droneBriefing = render({ viewMode: 'drone', drone: { active: false } });
-    expect(droneBriefing).toContain('data-beehive-stage="drone-briefing"');
-    expect(droneBriefing).toContain('data-beehive-flight-plan="true"');
-    expect(droneBriefing).toContain('Preflight route');
-    expect(droneBriefing).toContain('Gather boosts');
-    expect(droneBriefing).toContain('Acquire queen');
-    expect(droneBriefing).toContain('data-beehive-coach-action="start-easy-flight"');
+    expect(drone).toContain('data-beehive-flight-plan="true"');
+    expect(drone).toContain('Preflight route');
+    expect(drone).toContain('Gather boosts');
+    expect(drone).toContain('Acquire queen');
+    expect(drone).toContain('data-beehive-coach-action="start-easy-flight"');
+    expect(drone).not.toContain('data-beehive-drone-canvas="true"');
   });
 
   it('offers a Stage-first layout that moves play ahead of supporting dashboards without removing them', () => {
     const cases = [
       [{ viewMode: 'beekeeper', focusLayout: true, day: 8 }, 'beehive-canvas-wrap'],
       [{ viewMode: 'queen', focusLayout: true, queen: { active: true, paused: true } }, 'beehive-queen-playfield'],
-      [{ viewMode: 'drone', focusLayout: true, drone: { active: true, paused: true, difficulty: 'easy' } }, 'beehive-drone-playfield'],
+      [{ viewMode: 'drone', focusLayout: true, drone: { active: false, difficulty: 'easy' } }, 'beehive-drone-playfield'],
     ];
     cases.forEach(([state, targetId]) => {
       const html = render(state);
@@ -288,7 +230,7 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(queen).toContain('What do you predict the rival or colony will do over the next few cycles?');
     expect(queen).toContain('3 / 3');
 
-    const drone = render({ viewMode: 'drone', notebookOpen: true, drone: { active: true, paused: true, difficulty: 'easy' } });
+    const drone = render({ viewMode: 'drone', notebookOpen: true, drone: { active: false, difficulty: 'easy' } });
     expect(drone).toContain('data-beehive-notebook="drone"');
     expect(drone).toContain('How should your next maneuver change energy, altitude, or route progress?');
     expect(drone).toContain('data-beehive-capture-evidence="drone"');
@@ -328,7 +270,7 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(readyKeeper).toContain('data-conservation-impact="plant_wildflowers" data-conservation-ready="true"');
     expect(keeper).toContain('Need 1 AP');
     expect(keeper).toContain('Mites below threshold');
-    expect(keeper).toContain('Need more than 15 lb');
+    expect(keeper).toContain('Need more than 18 lb');
     expect(keeper).toContain('data-beehive-coach-action="advance-for-actions"');
     expect(keeper).toContain('Begin the next day with 3 action points');
 
@@ -343,11 +285,11 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(riskKeeper).toContain('Compare disease risk with brood, ventilation, and mites.');
     expect(riskKeeper).toContain('aria-keyshortcuts="I"');
 
-    const drone = render({ viewMode: 'drone', drone: { active: true, paused: true, difficulty: 'easy' } });
-    expect(drone).toContain('data-flight-control="Space"');
-    expect(drone).toContain('Gain altitude');
-    expect(drone).toContain('Reduce speed');
-    expect(drone).toContain('Lose altitude');
+    const drone = render({ viewMode: 'drone', drone: { active: false, difficulty: 'easy' } });
+    expect(drone).toContain('data-drone-route-plan="balanced"');
+    expect(drone).toContain('data-drone-scenario="clear"');
+    expect(drone).toContain('data-mobile-rail="drone-difficulty"');
+    expect(drone).toContain('data-beehive-coach-action="start-easy-flight"');
 
     const queen = render({ viewMode: 'queen', queen: { active: true, paused: true } });
     expect(queen).toContain('data-beehive-battlefield-dock="true"');
@@ -370,7 +312,7 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(html).toContain('data-beehive-learning-brief="true"');
     expect(html).toContain('data-beehive-journey-disclosure="true"');
     expect(html).toContain('Open dashboard');
-    expect(html).toContain('Mastery path');
+    expect(html).toContain('Experience path');
 
     const modeIndex = html.indexOf('data-beehive-mode-switcher');
     const focusIndex = html.indexOf('Play focus');
@@ -429,7 +371,7 @@ describe('beehive — simulation modes render without throwing', () => {
 
     expect(briefing).toContain('Automatic cycles');
     expect(briefing).toContain('Defeat Thistle Crown');
-    expect(active).toContain('Live RTS command status');
+    expect(active).toContain('Live RTS strategy status');
     expect(active).toContain('Rival hive');
     expect(active).toContain('Scout Rival');
     expect(active).toContain('Launch Raid');
@@ -452,17 +394,17 @@ describe('beehive — simulation modes render without throwing', () => {
   it('shows a mode-specific learning brief and evidence loop for every perspective', () => {
     const keeper = render({ viewMode: 'beekeeper', day: 7, lastAdvance: { fromDay: 6, toDay: 7, days: 1, workers: 120, honey: -0.8, varroa: 0.4, morale: 1, stoppedForEvent: false } });
     const queen = render({ viewMode: 'queen', queen: { active: true, paused: true } });
-    const drone = render({ viewMode: 'drone', drone: { active: true, paused: true } });
+    const drone = render({ viewMode: 'drone', drone: { active: false, difficulty: 'easy' } });
 
-    expect(keeper).toContain('Superorganism command');
+    expect(keeper).toContain('Superorganism brief');
     expect(keeper).toContain('Evidence from days 6-7');
     expect(keeper).toContain('Explain it:');
     expect(keeper.indexOf('Evidence from days 6-7')).toBeLessThan(keeper.indexOf('data-beehive-learning-brief="true"'));
-    expect(queen).toContain('RTS command brief');
+    expect(queen).toContain('RTS strategy brief');
     expect(queen).toContain('Strategic advisor');
     expect(drone).toContain('Flight systems brief');
-    expect(drone).toContain('Flight controls');
-    expect(drone).toContain('Resume flight');
+    expect(drone).toContain('Preflight route');
+    expect(drone).toContain('data-beehive-coach-action="start-easy-flight"');
     [keeper, queen, drone].forEach((html) => {
       expect(html).toContain('Observe');
       expect(html).toContain('Decide');
@@ -476,7 +418,7 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(queen).toContain('RTS debrief');
     expect(queen).toContain('Start rematch');
 
-    const drone = render({ viewMode: 'drone', drone: { active: true, paused: false, lastRun: { score: 180, success: false, maxAlt: 85, distance: 700, nectar: 6, nectarGoal: 10, energyLeft: 12, facts: 4, difficulty: 'normal' } } });
+    const drone = render({ viewMode: 'drone', drone: { active: false, lastRun: { score: 180, success: false, maxAlt: 85, distance: 700, nectar: 6, nectarGoal: 10, energyLeft: 12, facts: 4, difficulty: 'normal' } } });
     expect(drone).toContain('Flight systems brief');
   });
 
@@ -538,3 +480,5 @@ describe('beehive — Field Guide renders every curriculum section (recursive re
     expect(html).not.toContain('75ms');
   });
 });
+
+// Brief labels intentionally distinguish colony biology from the Queen strategy model.

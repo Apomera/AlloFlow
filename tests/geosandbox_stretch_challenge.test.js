@@ -885,3 +885,58 @@ describe('geoSculptRepresentation and scale investigation', () => {
     expect(doubled.sliceThickness).toBeCloseTo(base.sliceThickness * 2, 8);
   });
 });
+
+describe('Immersive Geometry launcher resilience', () => {
+  it('carries a compatible selected prism into the local immersive lab', () => {
+    const prism = {
+      type: 'prism', position: [0, 0, 0],
+      u: [2, 0, 0], v: [0, 0, 3], w: [0, 4, 0]
+    };
+    const url = P.geoImmersiveLabUrl(
+      { hostname: '127.0.0.1', origin: 'http://127.0.0.1:8765' },
+      'stretch',
+      prism
+    );
+
+    expect(url).toBe(
+      'http://127.0.0.1:8765/immersive_geometry/immersive_geometry.html' +
+      '?v=2&source=geosandbox&d=3&L=2&W=3&H=4&axis=2&target=1&boundary=0'
+    );
+  });
+
+  it('keeps a successful popup as the WebXR-capable path', () => {
+    let focused = false;
+    let navigated = false;
+    const result = P.geoOpenImmersiveLab('https://example.test/lab', {
+      openWindow: () => ({ focus: () => { focused = true; } }),
+      navigateSameWindow: () => { navigated = true; return true; }
+    });
+
+    expect(result).toEqual({ opened: true, mode: 'popup', reason: null });
+    expect(focused).toBe(true);
+    expect(navigated).toBe(false);
+  });
+
+  it('falls back to the current tab when window.open returns null', () => {
+    let fallbackNotice = 0;
+    let navigatedTo = '';
+    const result = P.geoOpenImmersiveLab('https://example.test/lab', {
+      openWindow: () => null,
+      beforeSameWindow: () => { fallbackNotice += 1; },
+      navigateSameWindow: (url) => { navigatedTo = url; return true; }
+    });
+
+    expect(result).toEqual({ opened: true, mode: 'same-window', reason: 'popup-blocked' });
+    expect(fallbackNotice).toBe(1);
+    expect(navigatedTo).toBe('https://example.test/lab');
+  });
+
+  it('reports a visible-error path when popup and navigation are both unavailable', () => {
+    const result = P.geoOpenImmersiveLab('https://example.test/lab', {
+      openWindow: () => { throw new Error('blocked'); },
+      navigateSameWindow: () => false
+    });
+
+    expect(result).toEqual({ opened: false, mode: 'none', reason: 'navigation-blocked' });
+  });
+});

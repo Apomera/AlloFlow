@@ -30681,7 +30681,16 @@
     "run_lesson_blueprint_hint": "നിലവിലെ പ്ലാനിലെ എല്ലാ റിസോഴ്‌സുകളും സൃഷ്ടിക്കുന്നു",
     "cancelled": "റദ്ദാക്കാൻ അഭ്യർത്ഥിച്ചു. ദാതാവ് ഇത് പിന്തുണയ്ക്കുമ്പോൾ നിലവിലെ പ്രവർത്തനം നിർത്തും.",
     "cancel": "റദ്ദാക്കുക",
-    "retry": "വീണ്ടും ശ്രമിക്കുക"
+    "retry": "വീണ്ടും ശ്രമിക്കുക",
+    "open_stem_tool": "Open a specific STEM tool",
+    "open_stem_tool_ambiguous": "More than one tool matches that: ",
+    "open_stem_tool_done": "Opened ",
+    "open_stem_tool_hint": "Name any STEM Lab tool and go straight to it",
+    "open_stem_tool_miss": "No STEM tool matched ",
+    "open_stem_tool_miss_tail": ". STEM Lab opened so you can browse.",
+    "open_stem_tool_no_index": "STEM Lab opened. The tool catalog was not available, so browse the list.",
+    "open_stem_tool_none": "STEM Lab opened. Name a tool and I can go straight to it.",
+    "open_stem_tool_unsupported": "STEM Lab opened. This build cannot jump straight to a named tool."
   },
   "palette": {
     "aria": "AlloFlow കമാൻഡ് പാലറ്റ്",

@@ -157,7 +157,7 @@ describe('Anatomy 3D overview and cross-scale handoffs', () => {
     expect(html).toContain('Drag to rotate');
     expect(html).toContain('structure directory for precise labels and full keyboard access');
     expect(html).toContain('id="anatomy-3d-status"');
-    expect(html).toContain('2D detail');
+    expect(html).toContain('2D Atlas');
     expect(html).toContain('Cell scale');
     expect(html).toContain('Microscope');
     expect(html).not.toContain('data-anatomy-canvas="true"');
@@ -229,12 +229,13 @@ describe('Anatomy CT/MRI Imaging Lab', () => {
     expect(html).toContain('data-anatomy-open-source-bridge="true"');
     expect(html).toContain('https://viewer.ohif.org/');
     expect(html).toContain('https://www.cornerstonejs.org/live-examples/local');
-    expect(html).toContain('https://lifesciencedb.jp/bp3d/info/index.html');
-    expect(html).toContain('https://github.com/LluisV/Z-Anatomy');
+    expect(html).toContain('https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html');
+    expect(html).toContain('https://github.com/Z-Anatomy/Models-of-human-anatomy');
     expect(html).toContain('target="_blank" rel="noopener noreferrer"');
     expect(html).toContain('do not upload protected health information');
-    expect(html).toContain('CC BY-SA 2.1 JP');
+    expect(html).toContain('CC BY 4.0');
     expect(html).toContain('CC BY-SA 4.0');
+    expect(html).toContain('mixed and NonCommercial licenses');
   });
 
   it('normalizes the phantom renderer while preserving valid zero values', () => {
@@ -352,14 +353,15 @@ describe('Anatomy CT/MRI Imaging Lab', () => {
 
   it('supports licensed local GLB files with a resilient procedural fallback', () => {
     loadTool(ANATOMY_PATHS[0], 'anatomy');
-    const html = renderTool('anatomy', { anatomy: { _activeTab: 'explore', _bodyView3d: true } });
+    const html = renderTool('anatomy', { anatomy: { _activeTab: 'explore', _bodyView3d: true, _body3dStyle: 'realistic' } });
     expect(html).toContain('Import local GLB');
     expect(html).toContain('accept=".glb,model/gltf-binary"');
     expect(html).toContain('The file is not uploaded');
     const source = fs.readFileSync(ANATOMY_PATHS[0], 'utf8');
     expect(source).toContain('three-gltf-loader');
     expect(source).toContain('new THREE.GLTFLoader().load');
-    expect(source).toContain('silhouetteGroup.visible = false');
+    expect(source).toContain('silhouetteGroup.visible = true');
+    expect(source).toContain('imported.visible = importedVisible;');
     expect(source).toContain(".catch(function() { return THREE; })");
     expect(source).toContain('Preserve the model source attribution and share-alike terms.');
     expect(source).toContain('allImagingAnnotations.concat([ruler]).slice(-12)');

@@ -10,6 +10,7 @@ let ReactDOMClient;
 let act;
 let axe;
 let EducatorHubModal;
+let PlatformDiagnosticsSection;
 let root;
 let host;
 let opener;
@@ -22,8 +23,10 @@ beforeAll(() => {
   axe = require(resolve(modulesDir, 'axe-core'));
   global.React = window.React = React;
   global.IS_REACT_ACT_ENVIRONMENT = true;
+  loadAlloModule('view_misc_modals_module.js');
   loadAlloModule('view_educator_hub_modal_module.js');
   EducatorHubModal = window.AlloModules.EducatorHubModal.EducatorHubModal;
+  PlatformDiagnosticsSection = window.AlloModules.PlatformDiagnosticsSection;
 });
 
 afterEach(() => {
@@ -82,22 +85,14 @@ describe('Educator Hub modal runtime accessibility', () => {
 
     const dialog = host.querySelector('[role="dialog"]');
     let buttons = Array.from(dialog.querySelectorAll('button'));
-    expect(buttons).toHaveLength(19);
+    expect(dialog.querySelectorAll('button[data-hub-launch="true"]')).toHaveLength(17);
+    expect(dialog.querySelectorAll('button[data-hub-favorite="true"]')).toHaveLength(17);
+    expect(buttons.length).toBeGreaterThan(19);
     expect(document.activeElement).toBe(buttons[0]);
     expect(dialog.getAttribute('aria-labelledby')).toBe('educator-hub-title');
     expect(dialog.getAttribute('aria-describedby')).toBe('educator-hub-subtitle');
 
-    const dialogProbe = buttons.find((button) => button.textContent.includes('dialog test'));
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
-    await act(async () => { dialogProbe.click(); await Promise.resolve(); });
-    const resultsRegion = dialog.querySelector('[role="region"]');
-    const completionStatus = dialog.querySelector('[role="status"]');
-    expect(resultsRegion.getAttribute('aria-labelledby')).toBe('educator-platform-results-title');
-    expect(resultsRegion.querySelector('button').textContent).toContain('Copy report');
-    expect(completionStatus.textContent).toMatch(/Platform check complete\. 1 results available\./);
-    expect(completionStatus.querySelector('button')).toBeNull();
-    buttons = Array.from(dialog.querySelectorAll('button'));
-    expect(buttons).toHaveLength(20);
+    expect(dialog.querySelector('[data-help-key="educator_hub_platform_check_card"]')).toBeNull();
 
     const results = await axe.run(dialog, { rules: { 'color-contrast': { enabled: false }, region: { enabled: false } } });
     expect(results.violations.filter((item) => item.impact === 'serious' || item.impact === 'critical')).toEqual([]);
@@ -121,5 +116,29 @@ describe('Educator Hub modal runtime accessibility', () => {
     await act(async () => { await Promise.resolve(); });
     expect(host.querySelector('[role="dialog"]')).toBeNull();
     expect(document.activeElement).toBe(opener);
+  }, 15000);
+  it('renders the platform probe from the AI diagnostics surface', async () => {
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+
+    await act(async () => {
+      root.render(React.createElement(PlatformDiagnosticsSection, { t: () => null }));
+      await Promise.resolve();
+    });
+
+    const section = host.querySelector('#ai-platform-diagnostics-section');
+    expect(section).not.toBeNull();
+    const dialogProbe = section.querySelector('[data-a11y-ignore="diagnostic-confirm"]');
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    await act(async () => {
+      dialogProbe.click();
+      await Promise.resolve();
+    });
+
+    const resultsRegion = section.querySelector('[role="region"]');
+    expect(resultsRegion.getAttribute('aria-labelledby')).toBe('ai-platform-results-title');
+    expect(resultsRegion.querySelector('button').textContent).toContain('Copy report');
+    expect(section.querySelector('[role="status"]').textContent).toMatch(/Platform check complete\. 1 results available\./);
   }, 15000);
 });

@@ -119,7 +119,8 @@
     label: 'Data Lab',
     desc: 'Real data science in CODAP — the Concord Consortium’s open data workspace — with an AlloFlow Socratic tutor beside it that asks questions about YOUR data instead of giving answers.',
     color: 'indigo',
-    category: 'general',
+    category: 'data',
+    aliases: ['CODAP', 'data science', 'statistics', 'datasets'],
     questHooks: [
       { id: 'dl_open', label: 'Open the Data Lab', icon: '📊',
         check: function (d) { return !!(d && d.opened); } },

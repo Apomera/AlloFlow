@@ -164,10 +164,50 @@ describe('every quest can actually be earned', () => {
     expect(dead, 'unearnable quests:\n  ' + dead.join('\n  ')).toEqual([]);
   });
 
+  it('marks the annual-dose quest from every kind of estimator input', () => {
+    const start = SRC.indexOf("slider('ds-alt'");
+    const end = SRC.indexOf("sec('doseladder'", start);
+    const estimator = SRC.slice(start, end);
+    expect(estimator).toMatch(/upd\(\{ dsAlt:[^}]*doseEstimated: true/);
+    expect(estimator).toMatch(/upd\(\{ dsFlights:[^}]*doseEstimated: true/);
+    expect(estimator).toMatch(/upd\(\{ dsRadon:[^}]*doseEstimated: true/);
+    const scanUpdates = estimator.match(/upd\(\{ dsScans: nx, doseEstimated: true \}\)/g) || [];
+    expect(scanUpdates, 'both fewer and more scan controls must count as estimating').toHaveLength(2);
+  });
+
   it('gives each section that has a quest a matching anchor', () => {
     // Weak but useful: a quest whose section was deleted would survive here.
     const sections = [...SRC.matchAll(/sec\('([a-z0-9]+)'/g)].map((m) => m[1]);
     expect(sections.length).toBeGreaterThanOrEqual(19);
     expect(quests.length).toBeLessThanOrEqual(sections.length + 2);
+  });
+});
+
+describe('safety, provenance, and mobile reading safeguards', () => {
+  it('keeps official-instructions warnings beside every actionable model', () => {
+    expect(SRC).toContain('Educational model — not emergency or medical instructions');
+    expect(SRC).toContain(`safetyNotice('ki')`);
+    expect(SRC).toContain(`safetyNotice('dose')`);
+    expect(SRC).toContain(`safetyNotice('medical')`);
+    expect(SRC).toContain(`safetyNotice('emergency')`);
+    expect(SRC).toContain('follow state and local officials');
+  });
+
+  it('links reviewed primary sources and protects phone text size', () => {
+    expect(SRC).toContain(`var NK_REVIEWED = '2026-08'`);
+    expect(SRC).toContain('https://www.nrc.gov/about-nrc/emerg-preparedness/in-radiological-emerg');
+    expect(SRC).toContain('https://www.nndc.bnl.gov/nudat3/');
+    expect(SRC).toContain('https://physics.nist.gov/PhysRefData/Xcom/html/xcom1.html');
+    expect(SRC).toContain('full magnetic energy in 2036');
+    expect(SRC).toContain('deuterium-tritium operation in 2039');
+    expect(SRC).toContain('.nk-readable .text-\\\\[11px\\\\]');
+  });
+});
+
+describe('route progressive disclosure', () => {
+  it('filters rendered sections when a question route is active', () => {
+    expect(SRC).toContain('nkPath.steps.indexOf(id) === -1');
+    expect(SRC).toContain('var nkVisible = nkPath');
+    expect(SRC).toContain('showing all');
   });
 });

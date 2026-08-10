@@ -120,6 +120,7 @@ const OSS_CREDITS = [
         featured: 2, owner: 'University of Colorado Boulder',
         blurb: 'Powers the Sim Shelf. Students lock in a prediction, explore an interactive science or math simulation, then an AI coach debriefs what they actually observed.',
         site: 'https://phet.colorado.edu', repo: 'https://github.com/phetsims' },
+      { name: 'Human Reference Atlas kidney v1.3', use: 'bundled female-left 3D reference organ and ontology crosswalk for Anatomy Clinical Atlas - Kristen Browne & Heidi Schlehlein / HuBMAP; derived from the NLM Visible Human Dataset', license: 'CC BY 4.0', url: 'https://cdn.humanatlas.io/digital-objects/ref-organ/kidney-female-left/v1.3/' },
       { name: 'iframe-phone', use: 'bridge to the CODAP window — Concord Consortium', license: 'MIT', url: 'https://github.com/concord-consortium/iframe-phone' },
       { name: 'OpenSeadragon', use: 'deep-zoom image viewer (Zoom Gallery)', license: 'BSD-3-Clause', url: 'https://openseadragon.github.io',
         featured: 5,
@@ -1752,6 +1753,7 @@ function InfoModal({
   const Ear = window.Ear || noop;
   const FileQuestion = window.FileQuestion || noop;
   const MessageCircleQuestion = window.MessageCircleQuestion || noop;
+  const MonitorPlay = window.MonitorPlay || noop;
 
   const [selectedFeature, setSelectedFeature] = React.useState(null);
   const [featureQuery, setFeatureQuery] = React.useState('');
@@ -1777,6 +1779,20 @@ function InfoModal({
       try {
         window.dispatchEvent(new window.CustomEvent('alloflow:open-command-palette', {
           detail: { query: safeQuery, source },
+        }));
+      } catch (_) {}
+    });
+  };
+
+  // Same shape as openCommandPaletteFromInfo: close this modal first, then let
+  // the host open the overlay on the next frame. The host owns the state and
+  // lazy-loads the module, so nothing here is fetched until the card is clicked.
+  const openVideoLibraryFromInfo = () => {
+    handleSetShowInfoModalToFalse();
+    window.requestAnimationFrame(() => {
+      try {
+        window.dispatchEvent(new window.CustomEvent('alloflow:open-video-library', {
+          detail: { source: 'about' },
         }));
       } catch (_) {}
     });
@@ -2015,6 +2031,10 @@ function InfoModal({
                   <button type="button" onClick={() => openCommandPaletteFromInfo('', 'about')} className="min-h-11 rounded-lg border border-slate-700 bg-slate-800 p-3 text-left hover:border-indigo-400 hover:bg-slate-800/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
                     <span className="flex items-center gap-2 text-sm font-bold"><Search size={16} className="text-indigo-300" aria-hidden="true" /> Find any tool</span>
                     <span className="block text-[11px] text-slate-300 mt-1">Open the command palette and search the live app.</span>
+                  </button>
+                  <button type="button" onClick={openVideoLibraryFromInfo} className="sm:col-span-2 min-h-11 rounded-lg border border-slate-700 bg-slate-800 p-3 text-left hover:border-indigo-400 hover:bg-slate-800/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
+                    <span className="flex items-center gap-2 text-sm font-bold"><MonitorPlay size={16} className="text-indigo-300" aria-hidden="true" /> Watch how it works</span>
+                    <span className="block text-[11px] text-slate-300 mt-1">A short tour of the platform. Streams from the AlloFlow CDN, not a video platform.</span>
                   </button>
                 </div>
               </section>

@@ -98,6 +98,37 @@
     // ── SelHub Plugin Registry ──
     // Initialize before plugins load so they can register immediately.
     // Plugins (sel_tool_*.js) call window.SelHub.registerTool(id, config)
+    // Student-facing wayfinding shared by the registry shell and hub component.
+    // Keeping the data here makes safety boundaries available before any render.
+    var SEL_TOOL_GUIDANCE = {
+      zones: { mode: 'Start here', note: 'Name what is happening before choosing a strategy.' },
+      emotions: { mode: 'Name it', note: 'Build precise feeling words and notice intensity.' },
+      coping: { mode: 'Calm now', note: 'Try one body or grounding strategy, then notice what changed.' },
+      mindfulness: { mode: 'Calm now', note: 'A low-writing pause for breathing, attention, or body awareness.' },
+      anxietyToolkit: { mode: 'Make a plan', note: 'Sort worry from action and choose one practical next step.' },
+      windowOfTolerance: { mode: 'Understand patterns', note: 'Map arousal signs and supports over time; it is not a diagnosis.' },
+      stressBucket: { mode: 'Make a plan', note: 'Look at pressures and supports together, including pressures outside your control.' },
+      bigFeelings: { mode: 'Understand patterns', note: 'Use anger as information and plan a safer pause or repair.' },
+      conflict: { mode: 'Practice repair', note: 'Best for low-stakes or hypothetical conflict practice.', boundary: 'If there are threats, coercion, bullying, abuse, or an unsafe power difference, pause and involve a trusted adult instead of negotiating alone.' },
+      conflicttheater: { mode: 'Role-play', note: 'Beta immersive practice with fictional characters; do not use it to mediate active harm.', boundary: 'Real threats, abuse, or bullying need adult support and a safety response, not a role-play exercise.' },
+      restorativeCircle: { mode: 'Facilitated group', note: 'Use with established circle norms and an adult facilitator.', boundary: 'Do not use a circle to pressure someone into public disclosure or to handle active safety risk.' },
+      strengths: { mode: 'Reflect', note: 'Open-ended strengths reflection with no score, rank, or diagnosis.' },
+      viaStrengths: { mode: 'Reflect', note: 'A self-sort for reflection, not the official VIA survey or a psychometric result.' },
+      perma: { mode: 'Reflect', note: 'A wellbeing snapshot to prompt conversation, not a mental-health assessment.' },
+      advocacy: { mode: 'Practice speaking up', note: 'General scripts and rehearsal for expressing needs and asking for support.' },
+      selfAdvocacy: { mode: 'Make a support plan', note: 'Use for concrete IEP, 504, accommodation, disclosure, or school-support planning.' },
+      crisiscompanion: { mode: 'Urgent support', note: 'A support guide for you or a friend; it is not a crisis screener or a substitute for an adult.', boundary: 'If anyone may be in immediate danger or may act on thoughts of self-harm, stop here and contact a trusted adult or emergency/crisis support now.' },
+      safety: { mode: 'Get support', note: 'Learn boundaries and trusted-adult steps; this is not a test of whether a situation is safe.', boundary: 'If you are in immediate danger or someone is hurting you, stop and contact a trusted adult or emergency support now.' },
+      griefLoss: { mode: 'Move gently', note: 'A private companion for grief and loss; skip anything that feels too much.', boundary: 'If grief feels unbearable, you feel unsafe, or someone else is at risk, involve a trusted adult or crisis support.' },
+      traumaPsychoed: { mode: 'Learn, not diagnose', note: 'Psychoeducation about trauma responses; not a screener or treatment.', boundary: 'You do not need to disclose trauma here. Pause and seek a trusted adult or counselor if content brings up something unsafe.' },
+      substancePsychoed: { mode: 'Learn and get support', note: 'Harm-reduction information and reflection; not a screener or permission to use substances.', boundary: 'Do not use this tool for an overdose or urgent medical situation; contact emergency help or a trusted adult.' },
+      healthyRelationships: { mode: 'Check boundaries', note: 'Explore consent and relationship patterns without labeling a person or relationship.', boundary: 'If a relationship includes threats, coercion, or violence, seek adult help; do not confront someone alone.' },
+      identitySupport: { mode: 'Explore identity', note: 'Affirming reflection and community support; sharing is optional.', boundary: 'Keep personal information private and involve a trusted adult if you feel unsafe.' },
+      bodyStory: { mode: 'Practice body respect', note: 'Body appreciation and media literacy; not weight-loss or eating-disorder assessment.', boundary: 'If food, body image, or exercise feels unsafe or consuming, talk with a trusted adult or health professional.' },
+      genogram: { mode: 'Map carefully', note: 'Personal family reflection; not a clinical assessment and sharing is optional.', boundary: 'Skip family details that feel unsafe or private; ask a trusted adult for support.' },
+      sensoryRegulation: { mode: 'Understand needs', note: 'Build a sensory profile and accommodations; not a diagnosis.', boundary: 'Choose supports that feel safe; share accommodations only when you want to.' }
+    };
+
     if (!window.SelHub) {
       window.SelHub = {
         _registry: {},
@@ -1972,36 +2003,6 @@
         disabilityVoices: { tier: 'practice' }
       };
 
-      // Student-facing wayfinding for overlapping tool families. These short
-      // cues help students choose by purpose rather than framework name.
-      var SEL_TOOL_GUIDANCE = {
-        zones: { mode: 'Start here', note: 'Name what is happening before choosing a strategy.' },
-        emotions: { mode: 'Name it', note: 'Build precise feeling words and notice intensity.' },
-        coping: { mode: 'Calm now', note: 'Try one body or grounding strategy, then notice what changed.' },
-        mindfulness: { mode: 'Calm now', note: 'A low-writing pause for breathing, attention, or body awareness.' },
-        anxietyToolkit: { mode: 'Make a plan', note: 'Sort worry from action and choose one practical next step.' },
-        windowOfTolerance: { mode: 'Understand patterns', note: 'Map arousal signs and supports over time; it is not a diagnosis.' },
-        stressBucket: { mode: 'Make a plan', note: 'Look at pressures and supports together, including pressures outside your control.' },
-        bigFeelings: { mode: 'Understand patterns', note: 'Use anger as information and plan a safer pause or repair.' },
-        conflict: { mode: 'Practice repair', note: 'Best for low-stakes or hypothetical conflict practice.', boundary: 'If there are threats, coercion, bullying, abuse, or an unsafe power difference, pause and involve a trusted adult instead of negotiating alone.' },
-        conflicttheater: { mode: 'Role-play', note: 'Beta immersive practice with fictional characters; do not use it to mediate active harm.', boundary: 'Real threats, abuse, or bullying need adult support and a safety response, not a role-play exercise.' },
-        restorativeCircle: { mode: 'Facilitated group', note: 'Use with established circle norms and an adult facilitator.', boundary: 'Do not use a circle to pressure someone into public disclosure or to handle active safety risk.' },
-        strengths: { mode: 'Reflect', note: 'Open-ended strengths reflection with no score, rank, or diagnosis.' },
-        viaStrengths: { mode: 'Reflect', note: 'A self-sort for reflection, not the official VIA survey or a psychometric result.' },
-        perma: { mode: 'Reflect', note: 'A wellbeing snapshot to prompt conversation, not a mental-health assessment.' },
-        advocacy: { mode: 'Practice speaking up', note: 'General scripts and rehearsal for expressing needs and asking for support.' },
-        selfAdvocacy: { mode: 'Make a support plan', note: 'Use for concrete IEP, 504, accommodation, disclosure, or school-support planning.' },
-        crisiscompanion: { mode: 'Urgent support', note: 'A support guide for you or a friend; it is not a crisis screener or a substitute for an adult.', boundary: 'If anyone may be in immediate danger or may act on thoughts of self-harm, stop here and contact a trusted adult or emergency/crisis support now.' },
-        safety: { mode: 'Get support', note: 'Learn boundaries and trusted-adult steps; this is not a test of whether a situation is safe.', boundary: 'If you are in immediate danger or someone is hurting you, stop and contact a trusted adult or emergency support now.' },
-        griefLoss: { mode: 'Move gently', note: 'A private companion for grief and loss; skip anything that feels too much.', boundary: 'If grief feels unbearable, you feel unsafe, or someone else is at risk, involve a trusted adult or crisis support.' },
-        traumaPsychoed: { mode: 'Learn, not diagnose', note: 'Psychoeducation about trauma responses; not a screener or treatment.', boundary: 'You do not need to disclose trauma here. Pause and seek a trusted adult or counselor if content brings up something unsafe.' },
-        substancePsychoed: { mode: 'Learn and get support', note: 'Harm-reduction information and reflection; not a screener or permission to use substances.', boundary: 'Do not use this tool for an overdose or urgent medical situation; contact emergency help or a trusted adult.' },
-        healthyRelationships: { mode: 'Check boundaries', note: 'Explore consent and relationship patterns without labeling a person or relationship.', boundary: 'If a relationship includes threats, coercion, or violence, seek adult help; do not confront someone alone.' },
-        identitySupport: { mode: 'Explore identity', note: 'Affirming reflection and community support; sharing is optional.', boundary: 'Keep personal information private and involve a trusted adult if you feel unsafe.' },
-        bodyStory: { mode: 'Practice body respect', note: 'Body appreciation and media literacy; not weight-loss or eating-disorder assessment.', boundary: 'If food, body image, or exercise feels unsafe or consuming, talk with a trusted adult or health professional.' },
-        genogram: { mode: 'Map carefully', note: 'Personal family reflection; not a clinical assessment and sharing is optional.', boundary: 'Skip family details that feel unsafe or private; ask a trusted adult for support.' },
-        sensoryRegulation: { mode: 'Understand needs', note: 'Build a sensory profile and accommodations; not a diagnosis.', boundary: 'Choose supports that feel safe; share accommodations only when you want to.' }
-      };
       function _selShortDesc(tool) {
         var desc = (tool && tool.desc) ? String(tool.desc).trim() : '';
         if (!desc) return '';

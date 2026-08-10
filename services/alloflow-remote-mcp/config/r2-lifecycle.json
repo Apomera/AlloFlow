@@ -1,0 +1,23 @@
+{
+  "rules": [
+    {
+      "id": "alloflow-document-retention-backstop-v1",
+      "enabled": true,
+      "conditions": {
+        "prefix": "tenant/"
+      },
+      "deleteObjectsTransition": {
+        "condition": {
+          "type": "Age",
+          "maxAge": 172800
+        }
+      },
+      "abortMultipartUploadsTransition": {
+        "condition": {
+          "type": "Age",
+          "maxAge": 86400
+        }
+      }
+    }
+  ]
+}

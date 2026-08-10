@@ -127,11 +127,19 @@ describe('remaining remediation view async ownership', () => {
     expect(pendingCommit).toContain('_commitAsyncHtmlIfCurrent(token');
     expect(preview).toContain('if (_completeRemediationOperation(operationTicket)) setPreviewAuditBusy');
 
-    const audio = between('const _audioSourceSnapshotForJob =', '// Rebuild the job a saved project describes');
+    const audio = between('const _audioSourceSnapshotForJob =', '// Rebuild the job a saved project describes');    const epub = between('const _dlEpubMO = async', 'const _runAudioJob = async');
+    expect(epub).toContain('_preparePdfArtifactAudio(artifactSegments');
+    expect(epub).toContain('_pdfAuditArtifactAudioEntryToBlob(audioBySegmentId[segmentId])');
+    const previewDownload = around('id="preview-audio-dl-btn"', 0, 4200);
+    expect(previewDownload).toContain('_preparePdfArtifactAudio');
+    expect(previewDownload).toContain('_pdfAuditArtifactAudioEntryToBlob(entry)');
+
     expect(audio).toContain("sourceVariant: 'translation'");
     expect(audio).toContain("sourceVariant: 'plain'");
-    expect(audio).toContain('fetch(url, { signal: operationTicket.controller');
-    expect(audio.match(/_audioOperationIsCurrent\(operationTicket, j\)/g)?.length).toBeGreaterThanOrEqual(6);
+    expect(audio).toContain('_preparePdfArtifactAudio');
+    expect(audio).toContain('signal: operationTicket.controller && operationTicket.controller.signal');
+    expect(audio).toContain('_pdfAuditArtifactAudioEntryToBlob(entry)');
+    expect(audio.match(/_audioOperationIsCurrent\(operationTicket, j\)/g)?.length).toBeGreaterThanOrEqual(4);
     expect(audio).toContain('const token = _captureAsyncHtmlToken();');
     expect(audio).toContain('token.documentEpoch !== ticket.documentEpoch || token.html !== ticket.htmlToken.html');
     expect(audio).toContain('_commitAsyncHtmlIfCurrent(token');

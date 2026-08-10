@@ -29,6 +29,16 @@
   // ═══════════════════════════════════════════════════════════
 
   var STORAGE_KEY = "alloflow_dynamic_assessment_v1";
+  var DA_SCHEMA_VERSION = "1.3.0";
+  var DA_PROBE_BANK_VERSION = "built-in-1.0.0";
+  var DA_CUSTOM_PROBE_VERSION = "custom-1.0.0";
+  var DA_VERSION_MANIFEST_VERSION = "1.0.0";
+  var DA_FORM_VERSIONS = {
+    "matched-parallel": "matched-parallel-1.0.0",
+    "mixed": "mixed-1.0.0",
+    "same-item": "same-item-1.0.0",
+    "legacy": "legacy-1.0.0"
+  };
 
   // ── Reduced-motion CSS (WCAG 2.3.3) ──
   (function () {
@@ -1454,6 +1464,164 @@
     else return [];
     return pool.filter(function (it) { return it.difficulty === difficulty; });
   }
+  // ?? Shared codename vocabulary fallback ??
+  // The host normally supplies the localized arrays through t('codenames.*'),
+  // but DA is also a standalone lazy module. Keep the canonical English list
+  // here so the picker never falls back to arbitrary free text when the host's
+  // language bundle is not available yet.
+  var DA_DEFAULT_CODENAME_ADJECTIVES = [
+    "Alpine", "Arctic", "Bold", "Brave", "Bright", "Calm", "Clever", "Cool",
+    "Cosmic", "Daring", "Eager", "Epic", "Fair", "Fast", "Fierce", "Gentle",
+    "Grand", "Happy", "Heroic", "Hyper", "Jolly", "Kind", "Lively", "Lucky",
+    "Magic", "Mighty", "Neon", "Noble", "Proud", "Quick", "Rapid", "Royal",
+    "Silent", "Smart", "Solar", "Sonic", "Steady", "Super", "Swift", "Tough",
+    "Turbo", "Unique", "Vivid", "Wild", "Wise", "Zealous"
+  ];
+  var DA_DEFAULT_CODENAME_ANIMALS = [
+    "Badger", "Bear", "Beaver", "Bison", "Cat", "Cobra", "Cougar", "Crane",
+    "Crow", "Deer", "Dingo", "Dolphin", "Dragon", "Eagle", "Elk", "Falcon",
+    "Ferret", "Fox", "Gecko", "Goat", "Hawk", "Heron", "Horse", "Husky",
+    "Ibex", "Jaguar", "Koala", "Lemur", "Leopard", "Lion", "Lizard", "Lynx",
+    "Moose", "Otter", "Owl", "Panda", "Panther", "Parrot", "Penguin", "Puma",
+    "Rabbit", "Raven", "Ray", "Rhino", "Seal", "Shark", "Sloth", "Snake",
+    "Spider", "Swan", "Tiger", "Turtle", "Viper", "Wolf"
+  ];
+
+  function daHashString(value) {
+    var text = String(value == null ? "" : value);
+    var hash = 2166136261;
+    for (var i = 0; i < text.length; i++) {
+      hash ^= text.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return hash >>> 0;
+  }
+
+  function daSeededShuffle(items, seed) {
+    var out = Array.isArray(items) ? items.slice() : [];
+    var state = (Number(seed) >>> 0) || 1;
+    for (var i = out.length - 1; i > 0; i--) {
+      state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+      var j = state % (i + 1);
+      var tmp = out[i];
+      out[i] = out[j];
+      out[j] = tmp;
+    }
+    return out;
+  }
+
+  function daSelectBuiltInSessionItems(pool, itemCount, previouslyUsedIds, seed) {
+    var safePool = (Array.isArray(pool) ? pool : []).filter(function (it) { return it && it.id; });
+    var count = Math.max(1, Math.min(safePool.length, Number(itemCount) || 6));
+    var used = Object.create(null);
+    (Array.isArray(previouslyUsedIds) ? previouslyUsedIds : []).forEach(function (id) {
+      if (id) used[String(id)] = true;
+    });
+    var shuffled = daSeededShuffle(safePool, seed);
+    var fresh = shuffled.filter(function (it) { return !used[String(it.id)]; });
+    var prior = shuffled.filter(function (it) { return !!used[String(it.id)]; });
+    return fresh.concat(prior).slice(0, count);
+  }
+
+  function daPreviousItemIds(sessions, studentNickname, domain, difficulty) {
+    var target = String(studentNickname || "").trim().toLowerCase();
+    var ids = [];
+    (Array.isArray(sessions) ? sessions : []).forEach(function (session) {
+      if (!session || String(session.domain || "") !== String(domain || "") ||
+          String(session.difficulty || "") !== String(difficulty || "")) return;
+      if (String(session.studentNickname || "").trim().toLowerCase() !== target) return;
+      (Array.isArray(session.sessionItemIds) ? session.sessionItemIds : []).forEach(function (id) {
+        if (id && ids.indexOf(id) < 0) ids.push(id);
+      });
+    });
+    return ids;
+  }
+
+  function daParseCodename(value, adjectives, animals) {
+    var text = String(value || "").trim();
+    if (!text) return { adjective: "", animal: "" };
+    var parts = text.split(/\s+/);
+    if (parts.length < 2) return { adjective: "", animal: "" };
+    var adjective = parts.shift();
+    var animal = parts.join(" ");
+    var adjMatch = (Array.isArray(adjectives) ? adjectives : []).find(function (item) {
+      return String(item).toLowerCase() === adjective.toLowerCase();
+    });
+    var animalMatch = (Array.isArray(animals) ? animals : []).find(function (item) {
+      return String(item).toLowerCase() === animal.toLowerCase();
+    });
+    return adjMatch && animalMatch
+      ? { adjective: adjMatch, animal: animalMatch }
+      : { adjective: "", animal: "" };
+  }
+
+
+
+  function daSessionItemById(session, itemId) {
+    var key = String(itemId || "");
+    if (ITEMS_BY_ID[key]) return ITEMS_BY_ID[key];
+    var custom = session && Array.isArray(session.customBankSnapshot) ? session.customBankSnapshot : [];
+    for (var i = 0; i < custom.length; i++) {
+      if (custom[i] && String(custom[i].id || "") === key) return custom[i];
+    }
+    return null;
+  }
+
+  function daBuildParallelPosttestItem(baseItem) {
+    if (!baseItem || !baseItem.transferTwin || !baseItem.transferTwin.prompt) return null;
+    var twin = baseItem.transferTwin;
+    return Object.assign({}, baseItem, {
+      prompt: String(twin.prompt || ""),
+      correctAnswer: String(twin.correctAnswer || ""),
+      acceptableAnswers: Array.isArray(twin.acceptableAnswers) ? twin.acceptableAnswers.slice() : [],
+      _isParallelPosttest: true,
+      _parallelFromItemId: baseItem.id
+    });
+  }
+
+  function daPosttestItemForPhase(session, itemIndex, fallbackItem) {
+    var snapshot = session && Array.isArray(session.posttestItemSnapshot) ? session.posttestItemSnapshot : [];
+    return snapshot[itemIndex] || fallbackItem;
+  }
+  function daVersionedSessionItemById(session, itemId) {
+    var key = String(itemId || "");
+    var custom = session && Array.isArray(session.customBankSnapshot) ? session.customBankSnapshot : [];
+    for (var i = 0; i < custom.length; i++) if (custom[i] && String(custom[i].id || "") === key) return custom[i];
+    return ITEMS_BY_ID[key] || null;
+  }
+
+  function daItemVersion(item, fallback) {
+    if (!item || typeof item !== "object") return "missing";
+    var explicit = item.itemVersion != null ? item.itemVersion : item._version != null ? item._version : item.version;
+    return explicit != null && String(explicit).trim() ? String(explicit).trim().slice(0, 80) : String(fallback || "unversioned");
+  }
+
+  function daItemVersionFingerprint(item) {
+    if (!item || typeof item !== "object") return "missing";
+    var twin = item.transferTwin && typeof item.transferTwin === "object" ? item.transferTwin : null;
+    var payload = [item.id || "", item.construct || "", item.difficulty || "", item.gradeBand || "", item.prompt || "", item.correctAnswer || "", Array.isArray(item.acceptableAnswers) ? item.acceptableAnswers.join("|") : "", JSON.stringify(item.promptLadder || []), twin ? JSON.stringify(twin) : ""].join("\u001f");
+    return "item-" + daHashString(payload).toString(16).padStart(8, "0");
+  }
+
+  function daBuildSessionVersionMetadata(session) {
+    var s = session && typeof session === "object" ? session : {};
+    var ids = Array.isArray(s.sessionItemIds) ? s.sessionItemIds.map(function (id) { return String(id || ""); }).filter(Boolean) : [];
+    var custom = !!s.isCustomBank || (Array.isArray(s.customBankSnapshot) && s.customBankSnapshot.length > 0);
+    var probeFallback = custom ? DA_CUSTOM_PROBE_VERSION : DA_PROBE_BANK_VERSION;
+    var form = String(s.posttestForm || "legacy");
+    var formFallback = DA_FORM_VERSIONS[form] || DA_FORM_VERSIONS.legacy;
+    var snapshots = Array.isArray(s.posttestItemSnapshot) ? s.posttestItemSnapshot : [];
+    var stored = Array.isArray(s.itemVersionManifest) ? s.itemVersionManifest : null;
+    var usable = !!stored && stored.length === ids.length && stored.every(function (e) { return e && e.itemId != null && e.itemVersion && e.itemFingerprint && e.posttestItemVersion && e.posttestItemFingerprint; });
+    var manifest = usable ? stored.map(function (e) { return Object.assign({}, e); }) : ids.map(function (id, index) {
+      var base = daVersionedSessionItemById(s, id);
+      var post = snapshots[index] || (base ? daBuildParallelPosttestItem(base) : null) || base;
+      var fallback = custom ? DA_CUSTOM_PROBE_VERSION : DA_PROBE_BANK_VERSION;
+      return { itemId: id, itemVersion: daItemVersion(base, fallback), itemFingerprint: daItemVersionFingerprint(base), posttestItemId: post && post.id ? String(post.id) : id, posttestItemVersion: daItemVersion(post, fallback), posttestItemFingerprint: daItemVersionFingerprint(post) };
+    });
+    var fingerprint = "set-" + daHashString(manifest.map(function (e) { return [e.itemId || "", e.itemVersion || "", e.itemFingerprint || "", e.posttestItemId || "", e.posttestItemVersion || "", e.posttestItemFingerprint || ""].join(":"); }).join("|")).toString(16).padStart(8, "0");
+    return { manifestVersion: s.itemVersionManifestVersion || DA_VERSION_MANIFEST_VERSION, probeVersion: String(s.probeVersion || s.probeBankVersion || probeFallback), posttestForm: form, posttestFormVersion: String(s.posttestFormVersion || formFallback), itemManifest: manifest, versionFingerprint: fingerprint, legacy: !usable };
+  }
 
   // ═════════════════════════════════════════════════════════
   // SECTION 2 — Scoring + modifiability
@@ -1963,9 +2131,7 @@
   // n = 10, results are unstable; below n = 30, treat as exploratory.
   // ═════════════════════════════════════════════════════════
   function aggregateSessionStatistics(sessions) {
-    var sess = (sessions || []).filter(function (s) {
-      return s && typeof s.modifiabilityIndex === "number";
-    });
+    var sess = (sessions || []).filter(daIsSufficientSession);
     var n = sess.length;
     if (n === 0) {
       return { n: 0, miMean: null, miSD: null, miMedian: null,
@@ -2070,19 +2236,70 @@
       desc: "Average mediation produces a large effect across your caseload. Strong evidence of population-level responsiveness to the mediation approach in use." };
   }
 
+  var DA_REDACTED_SESSION_FIELDS = {
+    studentNickname: true,
+    intake: true,
+    sessionNote: true,
+    customBankSnapshot: true,
+    posttestItemSnapshot: true,
+    iepGoals: true,
+    accommodations: true,
+    familySummary: true,
+    teacherHandoff: true,
+    progressMonitoring: true,
+    secondRaterReview: true
+  };
+
+  function daRedactSessionForExport(sessionRecord) {
+    var source = sessionRecord && typeof sessionRecord === "object" ? sessionRecord : {};
+    var redacted = {};
+    Object.keys(source).forEach(function (key) {
+      if (!DA_REDACTED_SESSION_FIELDS[key] && key !== "itemResults") redacted[key] = source[key];
+    });
+    redacted.studentNickname = source.studentNickname ? "redacted" : "";
+    if (source.secondRaterReview && typeof source.secondRaterReview === "object") {
+      redacted.secondRaterReview = {};
+      ["agreementStatus", "independentModifiabilityIndex", "resolutionStatus", "startedAt", "completedAt", "resolvedAt", "revision", "reviewSchemaVersion"].forEach(function (key) {
+        if (Object.prototype.hasOwnProperty.call(source.secondRaterReview, key)) redacted.secondRaterReview[key] = source.secondRaterReview[key];
+      });
+    }
+    redacted.itemResults = (Array.isArray(source.itemResults) ? source.itemResults : []).map(function (result) {
+      var safe = {};
+      ["itemId", "phase", "promptLevelReached", "responseStatus", "supportType",
+        "finalCorrect", "scaffoldLeaked", "accessReadAloudHelped",
+        "accessSimplifiedHelped", "accessL1Helped", "scoreAwarded", "attemptedAt"]
+        .forEach(function (key) {
+          if (result && Object.prototype.hasOwnProperty.call(result, key)) safe[key] = result[key];
+        });
+      return safe;
+    });
+    redacted._redacted = true;
+    redacted._redactedFields = [
+      "studentNickname", "intake", "sessionNote", "customBankSnapshot",
+      "posttestItemSnapshot", "iepGoals", "accommodations", "familySummary",
+      "teacherHandoff", "progressMonitoring", "secondRaterReview.reviewerCodename", "secondRaterReview.reviewerRole", "secondRaterReview.itemDisagreementNotes", "secondRaterReview.disagreementRationale", "secondRaterReview.resolutionRationale", "studentResponseText",
+      "examinerObservation", "aiAttemptsLog"
+    ];
+    return redacted;
+  }
+
   // Build per-session CSV row for research export.
   function buildSessionStatsCsv(sessions) {
     var rows = [];
     rows.push([
       "session_id", "date_completed", "student_nickname", "domain", "difficulty", "mode",
       "items_n", "pretest_sum", "posttest_sum", "max_score",
-      "modifiability_index", "modifiability_tier", "transfer_n", "transfer_sum"
+      "modifiability_index", "modifiability_tier", "transfer_n", "transfer_sum",
+      "probe_version", "posttest_form_version", "version_fingerprint", "version_manifest_status",
+      "evidence_complete", "evidence_sufficient", "unscored_items", "data_quality_issues"
     ].join(","));
     (sessions || []).forEach(function (s) {
       function txt(x) { return '"' + String(x || "").replace(/"/g, '""') + '"'; }
       function num(x) { return x === null || x === undefined ? "" : (typeof x === "number" ? x.toFixed(4) : String(x)); }
       var trResults = (s.itemResults || []).filter(function (r) { return r.phase === "transfer"; });
       var trSum = sumItemResultScores(trResults);
+      var evidence = daEvidenceStatus(s);
+      var versionMeta = daBuildSessionVersionMetadata(s);
       rows.push([
         txt(s.id),
         txt(s.dateCompleted || s.dateStarted || ""),
@@ -2097,7 +2314,12 @@
         num(s.modifiabilityIndex),
         txt((s.modifiabilityTier && s.modifiabilityTier.id) || ""),
         trResults.length,
-        num(trSum)
+        num(trSum),
+        txt(versionMeta.probeVersion), txt(versionMeta.posttestFormVersion), txt(versionMeta.versionFingerprint), versionMeta.legacy ? "legacy" : "tracked",
+        evidence.complete ? "true" : "false",
+        evidence.sufficient ? "true" : "false",
+        evidence.unscoredItemCount,
+        evidence.dataQualityIssues.length
       ].join(","));
     });
     return rows.join("\n");
@@ -2119,9 +2341,10 @@
   function aggregateItemStatistics(sessions, minN) {
     if (typeof minN !== "number") minN = 3;
     var perItem = {};
-    (sessions || []).forEach(function (sess) {
+    (sessions || []).filter(daIsSufficientSession).forEach(function (sess) {
       var rs = sess.itemResults || [];
       rs.forEach(function (r) {
+        if (!isScorableResponse(r)) return;
         var id = r.itemId;
         if (!perItem[id]) {
           perItem[id] = {
@@ -2276,19 +2499,63 @@
     // Sort each student's sessions oldest → newest
     Object.keys(by).forEach(function (k) {
       by[k].sort(function (a, b) {
-        var da = new Date(a.dateCompleted || a.dateStarted || 0).getTime();
-        var db = new Date(b.dateCompleted || b.dateStarted || 0).getTime();
+        var da = new Date(a.dateCompleted || a.dateArchived || a.dateStarted || 0).getTime();
+        var db = new Date(b.dateCompleted || b.dateArchived || b.dateStarted || 0).getTime();
         return da - db;
       });
     });
     return by;
   }
 
+  function daIsSufficientSession(session) {
+    if (session && session.recordStatus === "incomplete") return false;
+    if (!session || typeof session.modifiabilityIndex !== "number" || !Number.isFinite(session.modifiabilityIndex)) return false;
+    return !session.evidenceStatus || session.evidenceStatus.sufficient !== false;
+  }
+
+  function daCompareSessionVersions(sessions) {
+    var eligible = (Array.isArray(sessions) ? sessions : []).filter(daIsSufficientSession);
+    var metadata = eligible.map(daBuildSessionVersionMetadata);
+    var unique = function (values) { return values.filter(function (v, i, list) { return v && list.indexOf(v) === i; }); };
+    var probeVersions = unique(metadata.map(function (m) { return m.probeVersion; }));
+    var formVersions = unique(metadata.map(function (m) { return m.posttestFormVersion; }));
+    var legacy = metadata.some(function (m) { return m.legacy; });
+    var mismatch = legacy || probeVersions.length > 1 || formVersions.length > 1;
+    return { sessionCount: eligible.length, comparable: !mismatch, mismatch: mismatch, legacy: legacy, probeVersions: probeVersions, formVersions: formVersions, fingerprints: unique(metadata.map(function (m) { return m.versionFingerprint; })), reason: legacy ? "One or more sessions predate item-version tracking." : mismatch ? "Probe-bank or posttest-form revisions differ across sessions." : metadata.length ? "Probe-bank and posttest-form revisions match across sessions." : "" };
+  }
+
+  function daEvidencePhaseRows(evidence) {
+    var e = evidence || {};
+    var total = Number(e.totalItems) || 0;
+    var coverage = e.coverage || {};
+    var rows = [
+      { id: "pretest", label: "Pretest", expected: total },
+      { id: "mediation", label: "Mediation", expected: total },
+      { id: "posttest", label: "Posttest", expected: total }
+    ];
+    if ((Number(e.transferExpected) || 0) > 0 || (coverage.transfer && coverage.transfer.count > 0)) {
+      rows.push({ id: "transfer", label: "Transfer", expected: Number(e.transferExpected) || total });
+    }
+    return rows.map(function (row) {
+      var phase = coverage[row.id] || { count: 0, rawCount: 0, unscoredItems: [], duplicateCount: 0, invalidCount: 0 };
+      var unscored = Array.isArray(phase.unscoredItems) ? phase.unscoredItems.length : 0;
+      return Object.assign({}, row, {
+        recorded: Number(phase.count) || 0,
+        rawRecorded: Number(phase.rawCount) || 0,
+        scorable: Math.max(0, (Number(phase.count) || 0) - unscored),
+        unscored: unscored,
+        duplicateCount: Number(phase.duplicateCount) || 0,
+        invalidCount: Number(phase.invalidCount) || 0,
+        needsAttention: (Number(phase.count) || 0) < row.expected || unscored > 0 || phase.duplicateCount > 0 || phase.invalidCount > 0
+      });
+    });
+  }
+
   // Returns { slope, label, color, desc } characterizing the MI
   // trend across sessions for one student. Requires 2+ sessions.
   function computeLongitudinalTrend(studentSessions) {
-    var pts = (studentSessions || []).map(function (s) {
-      return typeof s.modifiabilityIndex === "number" ? s.modifiabilityIndex : 0;
+    var pts = (studentSessions || []).filter(daIsSufficientSession).map(function (s) {
+      return s.modifiabilityIndex;
     });
     if (pts.length < 2) {
       return { slope: 0, label: "Insufficient data", color: "#64748b",
@@ -2722,7 +2989,10 @@
       var raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return defaultState();
       var parsed = JSON.parse(raw);
-      return Object.assign({}, defaultState(), parsed || {});
+      var base = defaultState();
+      var next = Object.assign({}, base, parsed || {});
+      next.privacy = Object.assign({}, base.privacy, parsed && parsed.privacy || {});
+      return daApplyRetention(next);
     } catch (e) { return defaultState(); }
   }
   // Save quotient state. Most failures are quota-exceeded; surface them
@@ -2744,11 +3014,306 @@
       }
     }
   }
+
+  var DA_RESPONSE_STATUSES = {
+    correct: "correct",
+    incorrect: "incorrect",
+    skipped: "skipped",
+    refused: "refused",
+    "not-administered": "not-administered"
+  };
+
+  function normalizeResponseStatus(status, finalCorrect, supportType) {
+    var raw = String(status || "").trim().toLowerCase();
+    if (Object.prototype.hasOwnProperty.call(DA_RESPONSE_STATUSES, raw)) return raw;
+    var support = String(supportType || "").trim().toLowerCase();
+    if (support === "skipped" || support === "refused" || support === "not-administered") return support;
+    return finalCorrect ? "correct" : "incorrect";
+  }
+
+  function isScorableResponse(resultOrStatus) {
+    if (!resultOrStatus) return false;
+    var status = typeof resultOrStatus === "string"
+      ? resultOrStatus
+      : normalizeResponseStatus(resultOrStatus.responseStatus, resultOrStatus.finalCorrect, resultOrStatus.supportType);
+    return status === "correct" || status === "incorrect";
+  }
+
+  function daEvidencePhaseCoverage(results, phase, expectedIds) {
+    var expected = {};
+    var orderedIds = [];
+    (expectedIds || []).forEach(function (id) {
+      var key = String(id || "");
+      if (!key || expected[key]) return;
+      expected[key] = true;
+      orderedIds.push(key);
+    });
+    var seen = {};
+    var rawCount = 0;
+    var duplicateCount = 0;
+    var invalidCount = 0;
+    var unscoredItems = [];
+    (results || []).forEach(function (result) {
+      if (!result || result.phase !== phase) return;
+      rawCount++;
+      var key = String(result.itemId || "");
+      if (!expected[key]) {
+        invalidCount++;
+        return;
+      }
+      if (seen[key]) {
+        duplicateCount++;
+        return;
+      }
+      seen[key] = true;
+      if (!isScorableResponse(result)) unscoredItems.push(key);
+    });
+    return {
+      count: Object.keys(seen).length,
+      rawCount: rawCount,
+      duplicateCount: duplicateCount,
+      invalidCount: invalidCount,
+      missingItems: orderedIds.filter(function (id) { return !seen[id]; }),
+      unscoredItems: unscoredItems
+    };
+  }
+
+  function daEvidenceStatus(session) {
+    var s = session || {};
+    var ids = Array.isArray(s.sessionItemIds) ? s.sessionItemIds : [];
+    var total = Array.from(new Set(ids.map(function (id) { return String(id || ""); }).filter(Boolean))).length;
+    var results = Array.isArray(s.itemResults) ? s.itemResults : [];
+    var legacyTransferExpected = !s.posttestForm && ids.some(function (id) {
+      var item = daSessionItemById(s, id);
+      return item && item.transferTwin && item.transferTwin.prompt;
+    });
+    var transferExpected = legacyTransferExpected ? total : 0;
+    var coverage = {
+      pretest: daEvidencePhaseCoverage(results, "pretest", ids),
+      mediation: daEvidencePhaseCoverage(results, "mediation", ids),
+      posttest: daEvidencePhaseCoverage(results, "posttest", ids),
+      transfer: daEvidencePhaseCoverage(results, "transfer", ids)
+    };
+    var counts = {
+      pretest: coverage.pretest.count,
+      mediation: coverage.mediation.count,
+      posttest: coverage.posttest.count,
+      transfer: coverage.transfer.count
+    };
+    var missing = [];
+    if (counts.pretest < total) missing.push("pretest");
+    if (counts.mediation < total) missing.push("mediation");
+    if (counts.posttest < total) missing.push("posttest");
+    if (transferExpected > 0 && counts.transfer < transferExpected) missing.push("transfer");
+    var dataQualityIssues = [];
+    Object.keys(coverage).forEach(function (phase) {
+      var itemCoverage = coverage[phase];
+      if (itemCoverage.duplicateCount > 0) dataQualityIssues.push(phase + " contains duplicate item records");
+      if (itemCoverage.invalidCount > 0) dataQualityIssues.push(phase + " contains unexpected item records");
+    });
+    var unscoredByPhase = {};
+    var unscoredItemCount = 0;
+    Object.keys(coverage).forEach(function (phase) {
+      unscoredByPhase[phase] = coverage[phase].unscoredItems.slice();
+      unscoredItemCount += coverage[phase].unscoredItems.length;
+    });
+    var complete = total > 0 && missing.length === 0 && dataQualityIssues.length === 0;
+    var sufficient = complete && total >= 3 && unscoredItemCount === 0;
+    return {
+      totalItems: total,
+      counts: counts,
+      rawCounts: {
+        pretest: coverage.pretest.rawCount,
+        mediation: coverage.mediation.rawCount,
+        posttest: coverage.posttest.rawCount,
+        transfer: coverage.transfer.rawCount
+      },
+      coverage: coverage,
+      transferExpected: transferExpected,
+      missingPhases: missing,
+      dataQualityIssues: dataQualityIssues,
+      unscoredByPhase: unscoredByPhase,
+      unscoredItemCount: unscoredItemCount,
+      complete: complete,
+      sufficient: sufficient
+    };
+  }
+
+  var DA_INCOMPLETE_REASON_LABELS = {
+    interrupted: "Interrupted",
+    fatigue: "Fatigue or regulation needs",
+    refusal: "Student declined or refused",
+    "access-barrier": "Access or language barrier",
+    administration: "Not administered",
+    other: "Other documented reason"
+  };
+
+  function daNormalizeIncompleteReason(value) {
+    var key = String(value || "").trim();
+    return Object.prototype.hasOwnProperty.call(DA_INCOMPLETE_REASON_LABELS, key) ? key : "interrupted";
+  }
+
+  function daIncompleteReasonLabel(value) {
+    return DA_INCOMPLETE_REASON_LABELS[daNormalizeIncompleteReason(value)];
+  }
+
+  function daBuildIncompleteRecord(session, selectedReason, archivedAt) {
+    if (!session || typeof session !== "object" || !session.id || !Array.isArray(session.sessionItemIds) || session.sessionItemIds.length === 0) return null;
+    var evidence = daEvidenceStatus(session);
+    if (evidence.sufficient) return null;
+    var primaryReason = daNormalizeIncompleteReason(selectedReason || session.incompleteReason);
+    var reasons = [primaryReason];
+    var results = Array.isArray(session.itemResults) ? session.itemResults : [];
+    if (results.some(function (r) { return normalizeResponseStatus(r && r.responseStatus, r && r.finalCorrect, r && r.supportType) === "refused"; })) reasons.push("refusal");
+    if (results.some(function (r) { return normalizeResponseStatus(r && r.responseStatus, r && r.finalCorrect, r && r.supportType) === "not-administered"; })) reasons.push("administration");
+    if (results.some(function (r) { return !!(r && (r.accessReadAloudHelped || r.accessSimplifiedHelped || r.accessL1Helped)); })) reasons.push("access-barrier");
+    reasons = reasons.filter(function (reason, index, list) { return list.indexOf(reason) === index; });
+    var versionMeta = daBuildSessionVersionMetadata(session);
+    var record = Object.assign({}, session, {
+      dateArchived: archivedAt || new Date().toISOString(),
+      archivedFromPhase: session.currentPhase || "pretest",
+      currentPhase: "archived",
+      paused: false,
+      recordStatus: "incomplete",
+      interpretationStatus: "not-generated",
+      sessionSchemaVersion: session.sessionSchemaVersion || DA_SCHEMA_VERSION,
+      itemVersionManifestVersion: versionMeta.manifestVersion,
+      probeVersion: versionMeta.probeVersion,
+      posttestFormVersion: versionMeta.posttestFormVersion,
+      itemVersionManifest: versionMeta.itemManifest,
+      versionFingerprint: versionMeta.versionFingerprint,
+      evidenceStatus: evidence,
+      incompleteReason: primaryReason,
+      incompleteReasons: reasons,
+      reviewStatus: "unreviewed",
+      reviewedAt: null,
+      pretestSum: null,
+      posttestSum: null,
+      modifiabilityIndex: null,
+      modifiabilityTier: {
+        id: "insufficient",
+        label: "Incomplete?no interpretation",
+        desc: "The assessment record is preserved, but the evidence is not sufficient for a Modifiability Index or interpretive outputs."
+      },
+      iepGoals: [],
+      accommodations: [],
+      familySummary: null,
+      teacherHandoff: null,
+      progressMonitoring: null
+    });
+    delete record.dateCompleted;
+    return record;
+  }
+
+  var DA_SECOND_RATER_AGREEMENTS = { agree: true, disagree: true, uncertain: true };
+  var DA_SECOND_RATER_RESOLUTIONS = { "not-applicable": true, open: true, resolved: true };
+
+  function daNormalizeSecondRaterReviewInput(input, previous, nowIso, strict) {
+    var source = input && typeof input === "object" ? input : {};
+    var prior = previous && typeof previous === "object" ? previous : {};
+    var now = nowIso || new Date().toISOString();
+    var reviewerCodename = String(source.reviewerCodename || "").trim().slice(0, 120);
+    var reviewerRole = String(source.reviewerRole || "").trim().slice(0, 120);
+    var agreementStatus = String(source.agreementStatus || "agree").trim();
+    var resolutionStatus = String(source.resolutionStatus || (agreementStatus === "disagree" ? "open" : "not-applicable")).trim();
+    if (agreementStatus !== "disagree") resolutionStatus = "not-applicable";
+    var indexRaw = source.independentModifiabilityIndex;
+    var independentIndex = indexRaw === "" || indexRaw === null || indexRaw === undefined ? null : Number(indexRaw);
+    var disagreementNotes = String(source.itemDisagreementNotes || source.disagreementRationale || "").trim().slice(0, 4000);
+    var resolutionRationale = String(source.resolutionRationale || "").trim().slice(0, 4000);
+    if (!reviewerCodename || !reviewerRole) return { valid: false, reason: "Reviewer codename and role are required." };
+    if (!Object.prototype.hasOwnProperty.call(DA_SECOND_RATER_AGREEMENTS, agreementStatus)) return { valid: false, reason: "Choose an agreement status." };
+    if (!Object.prototype.hasOwnProperty.call(DA_SECOND_RATER_RESOLUTIONS, resolutionStatus)) return { valid: false, reason: "Choose a resolution status." };
+    if (independentIndex !== null && (!Number.isFinite(independentIndex) || independentIndex < -1 || independentIndex > 1)) return { valid: false, reason: "The independent Modifiability Index must be between -1 and 1." };
+    if (agreementStatus === "disagree" && !disagreementNotes) return { valid: false, reason: "Add item-level notes or a rationale when recording disagreement." };
+    if (agreementStatus === "disagree" && resolutionStatus === "resolved" && !resolutionRationale) return { valid: false, reason: "Add a resolution rationale before marking disagreement resolved." };
+    var startedAt = prior.startedAt || now;
+    var completedAt = prior.completedAt || now;
+    var resolvedAt = prior.resolvedAt || (resolutionStatus === "resolved" ? now : null);
+    if (strict) {
+      if (typeof source.startedAt !== "string" || !Number.isFinite(Date.parse(source.startedAt))) return { valid: false, reason: "Missing or invalid second-rater start timestamp." };
+      if (typeof source.completedAt !== "string" || !Number.isFinite(Date.parse(source.completedAt))) return { valid: false, reason: "Missing or invalid second-rater completion timestamp." };
+      if (Date.parse(source.completedAt) < Date.parse(source.startedAt)) return { valid: false, reason: "Second-rater completion precedes start." };
+      if (typeof source.reviewSchemaVersion !== "string" || !source.reviewSchemaVersion) return { valid: false, reason: "Missing second-rater review schema version." };
+    }
+    return {
+      valid: true,
+      review: {
+        reviewSchemaVersion: "1.0.0",
+        reviewerCodename: reviewerCodename,
+        reviewerRole: reviewerRole,
+        agreementStatus: agreementStatus,
+        independentModifiabilityIndex: independentIndex,
+        itemDisagreementNotes: disagreementNotes,
+        disagreementRationale: disagreementNotes,
+        resolutionStatus: resolutionStatus,
+        resolutionRationale: resolutionRationale,
+        startedAt: startedAt,
+        completedAt: completedAt,
+        resolvedAt: resolvedAt,
+        revision: Math.max(1, Number(prior.revision) || 0) + (prior.completedAt ? 1 : 0),
+        lastEditedAt: now
+      }
+    };
+  }
+
+  function daBuildSecondRaterReview(input, previous, nowIso) {
+    return daNormalizeSecondRaterReviewInput(input, previous, nowIso, false);
+  }
+
+  function daValidateSecondRaterReview(review) {
+    return daNormalizeSecondRaterReviewInput(review, review, review && (review.completedAt || review.startedAt), true);
+  }
+
+  function daValidateImportedSession(session) {
+    if (!session || typeof session !== "object") return { valid: false, reason: "not-an-object" };
+    if (!session.id || !Array.isArray(session.sessionItemIds) || session.sessionItemIds.length === 0) {
+      return { valid: false, reason: "missing-session-items" };
+    }
+    if (!Array.isArray(session.itemResults)) return { valid: false, reason: "missing-results" };
+    var evidence = daEvidenceStatus(session);
+    if (session.secondRaterReview) {
+      var secondRaterValidation = daValidateSecondRaterReview(session.secondRaterReview);
+      if (!secondRaterValidation.valid) return { valid: false, reason: "invalid-second-rater-review", detail: secondRaterValidation.reason, evidence: evidence };
+    }
+    if (session.recordStatus === "incomplete") {
+      if (session.modifiabilityIndex !== null && session.modifiabilityIndex !== undefined) {
+        return { valid: false, reason: "incomplete-record-has-index", evidence: evidence };
+      }
+      if (evidence.sufficient) return { valid: false, reason: "incomplete-record-has-sufficient-evidence", evidence: evidence };
+      return { valid: true, recordStatus: "incomplete", evidence: evidence };
+    }
+    if (session.recordStatus && session.recordStatus !== "complete") return { valid: false, reason: "invalid-record-status", evidence: evidence };
+    if (typeof session.modifiabilityIndex !== "number" || !Number.isFinite(session.modifiabilityIndex)
+      || session.modifiabilityIndex < -1 || session.modifiabilityIndex > 1) {
+      return { valid: false, reason: "invalid-index", evidence: evidence };
+    }
+    if (!evidence.complete) return { valid: false, reason: "incomplete-evidence", evidence: evidence };
+    if (!evidence.sufficient) return { valid: false, reason: "insufficient-evidence", evidence: evidence };
+    return { valid: true, recordStatus: "complete", evidence: evidence };
+  }
+
+  function daApplyRetention(nextState) {
+    var state = nextState || {};
+    var privacy = state.privacy && typeof state.privacy === "object" ? state.privacy : {};
+    var days = Number(privacy.retentionDays);
+    if (!Number.isFinite(days) || days <= 0 || !Array.isArray(state.sessions)) return state;
+    var cutoff = Date.now() - (days * 86400000);
+    var sessions = state.sessions.filter(function (session) {
+      if (!session) return false;
+      var timestamp = Date.parse(session.dateCompleted || session.dateArchived || session.dateStarted || "");
+      return !Number.isFinite(timestamp) || timestamp >= cutoff;
+    });
+    if (sessions.length === state.sessions.length) return state;
+    return Object.assign({}, state, { sessions: sessions });
+  }
+
   function defaultState() {
     return {
       sessions: [],              // Completed sessions for the activeStudent
       activeSession: null,       // In-progress session (null = no active)
       onboardingSeen: false,
+      privacy: { retentionDays: 0, lastClearedAt: null },
       savedProbeTemplates: []    // Phase A-bis — clinician's reusable AI-generated probes
     };
   }
@@ -5538,6 +6103,117 @@
     var useState = React.useState;
     var useEffect = React.useEffect;
 
+    function daText(key, fallback) {
+      if (typeof props.t === "function") {
+        try {
+          var value = props.t(key);
+          if (typeof value === "string" && value && value !== key) return value;
+        } catch (_) {}
+      }
+      return fallback;
+    }
+    function daArray(key, fallback) {
+      if (typeof props.t === "function") {
+        try {
+          var value = props.t(key, { returnObjects: true });
+          if (Array.isArray(value) && value.length > 0) return value.filter(Boolean).map(String);
+        } catch (_) {}
+      }
+      return fallback.slice();
+    }
+    var daAdjectives = daArray("codenames.adjectives", DA_DEFAULT_CODENAME_ADJECTIVES);
+    var daAnimals = daArray("codenames.animals", DA_DEFAULT_CODENAME_ANIMALS);
+    var daCodenameLabel = daText("modals.student_name_label", "Student codename");
+    var daSelectAdjectiveLabel = daText("modals.entry.select_adjective", "Select Adjective");
+    var daSelectAnimalLabel = daText("modals.entry.select_animal", "Select Animal");
+    var daRandomizeLabel = daText("modals.entry.randomize_codename", "Randomize Codename");
+    var daPrivacyWarning = daText("modals.entry.warning", "Do not use your real name.");
+    var daAnonymousLabel = daText("common.anonymous", "Anonymous");
+    var daProbeLengthLabel = daText("dynamic_assessment.probe_length_label", "Core items per phase");
+    var daProbeQuickLabel = daText("dynamic_assessment.probe_length_quick", "3 core items per phase (quick probe)");
+    var daProbeFullLabel = daText("dynamic_assessment.probe_length_full", "6 core items per phase (full probe)");
+    var daProbeHelperLabel = daText("dynamic_assessment.probe_length_helper", "The count applies to each pretest, mediation, and posttest phase; new probes prefer unused items when possible.");
+    var daLocalOnlyLabel = daText("dynamic_assessment.local_only", "Stored only on this device; Dynamic Assessment does not sync this data.");
+    var daRetentionLabel = daText("dynamic_assessment.retention_label", "Automatic retention");
+    var daRetentionNeverLabel = daText("dynamic_assessment.retention_never", "Keep until manually deleted");
+    var daClearDataLabel = daText("dynamic_assessment.clear_data", "Clear all Dynamic Assessment data");
+    var daDataControlsTitle = daText("dynamic_assessment.data_controls_title", "Privacy and data controls");
+    var daInsufficientTitle = daText("dynamic_assessment.incomplete_title", "Insufficient evidence for an interpretation");
+    var daInsufficientDescription = daText("dynamic_assessment.incomplete_description", "Complete all assessment phases before interpreting this index. This tool is descriptive, not a normed measure.");
+    var daFullExportWarning = daText("dynamic_assessment.full_export_warning", "Full exports include response text, examiner notes, and AI mediation details. Store them securely and share only with authorized people.");
+    var daExportFullLabel = daText("dynamic_assessment.export_full", "Export full JSON");
+    var daExportRedactedLabel = daText("dynamic_assessment.export_redacted", "Safe JSON");
+    var daExportRedactedTitle = daText("dynamic_assessment.export_redacted_title", "Download a redacted JSON summary without response text or notes");
+    var daSkippedLabel = daText("dynamic_assessment.response_skipped", "Skip / no response");
+    var daRefusedLabel = daText("dynamic_assessment.response_refused", "Refused");
+    var daNotAdministeredLabel = daText("dynamic_assessment.response_not_administered", "Not administered");
+    var daEvidenceCoverageLabel = daText("dynamic_assessment.evidence_coverage", "Evidence coverage");
+    var daEvidencePhaseLabel = daText("dynamic_assessment.evidence_phase", "Phase");
+    var daEvidenceCoverageColumnLabel = daText("dynamic_assessment.evidence_coverage_column", "Coverage");
+    var daEvidenceScorableLabel = daText("dynamic_assessment.evidence_scorable", "Scorable");
+    var daEvidenceStatusLabel = daText("dynamic_assessment.evidence_status", "Status");
+    var daEvidenceNeedsAttentionLabel = daText("dynamic_assessment.evidence_needs_attention", "Needs attention");
+    var daEvidenceRecordedLabel = daText("dynamic_assessment.evidence_recorded", "Recorded");
+    var daMarkReviewedLabel = daText("dynamic_assessment.mark_reviewed", "Mark reviewed");
+    var daReviewedLabel = daText("dynamic_assessment.reviewed", "Reviewed");
+    var daNeedsReviewLabel = daText("dynamic_assessment.needs_review", "Needs review");
+    var daSecondRaterTitle = daText("dynamic_assessment.second_rater_title", "Second-rater review");
+    var daSecondRaterDescription = daText("dynamic_assessment.second_rater_description", "Record an independent review without changing the original session evidence or primary interpretation.");
+    var daSecondRaterReviewerLabel = daText("dynamic_assessment.second_rater_reviewer", "Reviewer codename");
+    var daSecondRaterRoleLabel = daText("dynamic_assessment.second_rater_role", "Reviewer role");
+    var daSecondRaterAgreementLabel = daText("dynamic_assessment.second_rater_agreement", "Agreement with primary interpretation");
+    var daSecondRaterIndexLabel = daText("dynamic_assessment.second_rater_index", "Independent Modifiability Index (optional)");
+    var daSecondRaterNotesLabel = daText("dynamic_assessment.second_rater_notes", "Disagreement or item-level notes");
+    var daSecondRaterResolutionLabel = daText("dynamic_assessment.second_rater_resolution", "Resolution status");
+    var daSecondRaterResolutionNotesLabel = daText("dynamic_assessment.second_rater_resolution_notes", "Resolution rationale");
+    var daSecondRaterSaveLabel = daText("dynamic_assessment.second_rater_save", "Save second-rater review");
+    var daSecondRaterRecordedLabel = daText("dynamic_assessment.second_rater_recorded", "Review recorded");
+    var daSecondRaterRevisionLabel = daText("dynamic_assessment.second_rater_revision", "Revision");
+    var daSecondRaterDifferenceLabel = daText("dynamic_assessment.second_rater_difference", "Difference from primary index");
+    var daSecondRaterAgreeLabel = daText("dynamic_assessment.second_rater_agree", "Agrees");
+    var daSecondRaterDisagreeLabel = daText("dynamic_assessment.second_rater_disagree", "Disagrees");
+    var daSecondRaterUncertainLabel = daText("dynamic_assessment.second_rater_uncertain", "Uncertain");
+    var daVersioningTitle = daText("dynamic_assessment.versioning_title", "Probe and form versioning");
+    var daProbeVersionLabel = daText("dynamic_assessment.probe_version_label", "Probe-bank version");
+    var daFormVersionLabel = daText("dynamic_assessment.form_version_label", "Posttest-form version");
+    var daItemManifestLabel = daText("dynamic_assessment.item_manifest_label", "Item version manifest");
+    var daVersionFingerprintLabel = daText("dynamic_assessment.version_fingerprint_label", "Version fingerprint");
+    var daLegacyVersionWarning = daText("dynamic_assessment.legacy_version_warning", "This saved session predates item-version tracking; comparisons with it should remain descriptive.");
+    var daVersionComparisonCaution = daText("dynamic_assessment.version_comparison_caution", "Probe or form revisions differ across these sessions. Treat the trajectory as descriptive; direct item-level comparisons are not valid.");
+    var daVersionComparisonConsistent = daText("dynamic_assessment.version_comparison_consistent", "Probe-bank and posttest-form revisions match across these sessions. The trajectory is still descriptive, not a normed growth measurement.");
+    var daVersionMismatchLabel = daText("dynamic_assessment.version_mismatch_label", "Version mismatch");
+    var daSecondRaterRoleOptions = [
+      { id: "school-psychologist", label: daText("dynamic_assessment.second_rater_role_psychologist", "School psychologist") },
+      { id: "slp", label: daText("dynamic_assessment.second_rater_role_slp", "Speech-language pathologist") },
+      { id: "teacher", label: daText("dynamic_assessment.second_rater_role_teacher", "Teacher or interventionist") },
+      { id: "other", label: daText("dynamic_assessment.second_rater_role_other", "Other qualified reviewer") }
+    ];
+    var daSecondRaterResolutionOptions = [
+      { id: "not-applicable", label: daText("dynamic_assessment.second_rater_resolution_na", "Not applicable") },
+      { id: "open", label: daText("dynamic_assessment.second_rater_resolution_open", "Open") },
+      { id: "resolved", label: daText("dynamic_assessment.second_rater_resolution_resolved", "Resolved") }
+    ];
+    var daArchiveIncompleteLabel = daText("dynamic_assessment.archive_incomplete", "Save incomplete record");
+    var daArchiveIncompleteConfirm = daText("dynamic_assessment.archive_incomplete_confirm", "Save this assessment as an incomplete record? It will preserve recorded evidence without generating a Modifiability Index or interpretive outputs.");
+    var daIncompleteReasonPromptLabel = daText("dynamic_assessment.incomplete_reason_label", "Reason for incomplete assessment");
+    var daIncompleteNoInterpretationLabel = daText("dynamic_assessment.incomplete_no_interpretation", "Incomplete—no interpretation");
+    var daIncompleteRecordDescription = daText("dynamic_assessment.incomplete_record_description", "Recorded evidence is preserved, but no Modifiability Index or interpretive outputs were generated.");
+    var daIncompleteReasonOptions = [
+      { id: "interrupted", label: daText("dynamic_assessment.incomplete_reason_interrupted", "Interrupted") },
+      { id: "fatigue", label: daText("dynamic_assessment.incomplete_reason_fatigue", "Fatigue or regulation needs") },
+      { id: "refusal", label: daText("dynamic_assessment.incomplete_reason_refusal", "Student declined or refused") },
+      { id: "access-barrier", label: daText("dynamic_assessment.incomplete_reason_access", "Access or language barrier") },
+      { id: "administration", label: daText("dynamic_assessment.incomplete_reason_not_administered", "Not administered") },
+      { id: "other", label: daText("dynamic_assessment.incomplete_reason_other", "Other documented reason") }
+    ];
+    var rosterCodenames = Array.isArray(props.rosterCodenames)
+      ? props.rosterCodenames.map(function (name) { return String(name || "").trim(); }).filter(Boolean).filter(function (name, index, list) {
+          return list.indexOf(name) === index;
+        }).sort(function (a, b) { return a.localeCompare(b); })
+      : [];
+    var canonicalHostNickname = String(props.studentNickname || "").trim();
+    var initialNicknameParts = daParseCodename(canonicalHostNickname, daAdjectives, daAnimals);
+
     // ── Theme (light | dark | contrast), self-detected from the host DOM ──
     // The host doesn't pass a theme prop; we sniff its theme-<name> class at
     // mount and observe it for live toggles. The shell element (see RENDER)
@@ -5746,7 +6422,7 @@
         // form lets callers recompute from the freshest state (e.g. restore-merge
         // dedup against prev.sessions, avoiding a stale-closure clobber).
         var p = (typeof partial === "function") ? partial(prev) : partial;
-        var next = Object.assign({}, prev, p);
+        var next = daApplyRetention(Object.assign({}, prev, p));
         saveState(next);
         return next;
       });
@@ -5773,6 +6449,94 @@
     function updateSessionNote(text) {
       patchSession({ sessionNote: String(text || "").slice(0, 4000) });
     }
+
+    function toggleSessionReview(sessionId) {
+      var now = new Date().toISOString();
+      var reviewed = false;
+      patch({
+        sessions: (state.sessions || []).map(function (session) {
+          if (!session || session.id !== sessionId) return session;
+          reviewed = session.reviewStatus !== "reviewed";
+          return Object.assign({}, session, {
+            reviewStatus: reviewed ? "reviewed" : "unreviewed",
+            reviewedAt: reviewed ? now : null
+          });
+        })
+      });
+      announce(reviewed ? "Session marked reviewed." : "Session marked as needing review.");
+    }
+
+    function updateSecondRaterDraft(field, value) {
+      setSecondRaterDraft(function (previous) {
+        var next = Object.assign({}, previous);
+        next[field] = value;
+        return next;
+      });
+    }
+
+    function saveSecondRaterReview(sessionId) {
+      var session = (state.sessions || []).filter(function (item) { return item && item.id === sessionId; })[0];
+      if (!session || !daIsSufficientSession(session)) {
+        addToast("Second-rater review is available only for a complete, interpretable session.");
+        return false;
+      }
+      var result = daBuildSecondRaterReview(secondRaterDraft, session.secondRaterReview, new Date().toISOString());
+      if (!result.valid) {
+        addToast(result.reason);
+        announce(result.reason);
+        return false;
+      }
+      patch(function (prev) {
+        return {
+          sessions: (prev.sessions || []).map(function (item) {
+            return item && item.id === sessionId ? Object.assign({}, item, { secondRaterReview: result.review }) : item;
+          })
+        };
+      });
+      setSecondRaterDraft(Object.assign({}, secondRaterDraft, { sessionId: sessionId }, result.review, {
+        independentModifiabilityIndex: result.review.independentModifiabilityIndex === null ? "" : String(result.review.independentModifiabilityIndex),
+        itemDisagreementNotes: result.review.itemDisagreementNotes
+      }));
+      announce("Second-rater review saved.");
+      return true;
+    }
+
+    function updateRetentionDays(value) {
+      var raw = Number(value);
+      var days = [0, 30, 90, 365].indexOf(raw) >= 0 ? raw : 0;
+      patch(function (prev) {
+        return {
+          privacy: Object.assign({}, prev.privacy || {}, { retentionDays: days })
+        };
+      });
+      announce(days > 0
+        ? "Automatic retention set to " + days + " days."
+        : "Sessions will remain until manually deleted.");
+    }
+
+    function clearAllLocalData() {
+      daAskConfirm({
+        message: "Clear all Dynamic Assessment sessions, templates, and in-progress data from this device? This cannot be undone.",
+        confirmLabel: "Clear all data",
+        onConfirm: function () {
+          patch({
+            sessions: [],
+            activeSession: null,
+            savedProbeTemplates: [],
+            privacy: { retentionDays: 0, lastClearedAt: new Date().toISOString() }
+          });
+          try {
+            if (typeof localStorage !== "undefined") localStorage.removeItem(DA_PERSIST_KEY);
+          } catch (_) {}
+          setStartScreenView("start");
+          setSessionFilter("");
+          setViewingSessionId(null);
+          setLongitudinalStudent(null);
+          announce("Dynamic Assessment data cleared from this device.");
+        }
+      });
+    }
+
 
     function daAlloWorkspace() {
       var sessions = Array.isArray(state.sessions) ? state.sessions.slice() : [];
@@ -6247,6 +7011,23 @@
     var viewingSessionIdTuple = useState(null);
     var viewingSessionId = viewingSessionIdTuple[0];
     var setViewingSessionId = viewingSessionIdTuple[1];
+    var secondRaterDraftTuple = useState({ sessionId: null, reviewerCodename: "", reviewerRole: "", agreementStatus: "agree", independentModifiabilityIndex: "", itemDisagreementNotes: "", resolutionStatus: "not-applicable", resolutionRationale: "" });
+    var secondRaterDraft = secondRaterDraftTuple[0];
+    var setSecondRaterDraft = secondRaterDraftTuple[1];
+    useEffect(function () {
+      var session = (state.sessions || []).filter(function (item) { return item && item.id === viewingSessionId; })[0];
+      var review = session && session.secondRaterReview;
+      setSecondRaterDraft({
+        sessionId: viewingSessionId || null,
+        reviewerCodename: review ? (review.reviewerCodename || "") : "",
+        reviewerRole: review ? (review.reviewerRole || "") : "",
+        agreementStatus: review ? (review.agreementStatus || "agree") : "agree",
+        independentModifiabilityIndex: review && review.independentModifiabilityIndex !== null && review.independentModifiabilityIndex !== undefined ? String(review.independentModifiabilityIndex) : "",
+        itemDisagreementNotes: review ? (review.itemDisagreementNotes || review.disagreementRationale || "") : "",
+        resolutionStatus: review ? (review.resolutionStatus || "not-applicable") : "not-applicable",
+        resolutionRationale: review ? (review.resolutionRationale || "") : ""
+      });
+    }, [viewingSessionId]);
     // Phase F — student-nickname filter for the sessions browser
     var sessionFilterTuple = useState("");
     var sessionFilter = sessionFilterTuple[0];
@@ -6428,18 +7209,81 @@
     // actually renders), which breaks React's hook-order invariant on the
     // first transition into an active session. See:
     //   https://reactjs.org/link/invalid-hook-call
-    var nicknameDraftTuple = useState("");
+
+    var nicknameDraftTuple = useState(canonicalHostNickname);
     var nicknameDraft = nicknameDraftTuple[0];
     var setNicknameDraft = nicknameDraftTuple[1];
+    var codenameModeTuple = useState(canonicalHostNickname ? "current" : "anonymous");
+    var codenameMode = codenameModeTuple[0];
+    var setCodenameMode = codenameModeTuple[1];
+    var selectedAdjTuple = useState(initialNicknameParts.adjective || daAdjectives[0] || "");
+    var selectedAdjDraft = selectedAdjTuple[0];
+    var setSelectedAdjDraft = selectedAdjTuple[1];
+    var selectedAnimalTuple = useState(initialNicknameParts.animal || daAnimals[0] || "");
+    var selectedAnimalDraft = selectedAnimalTuple[0];
+    var setSelectedAnimalDraft = selectedAnimalTuple[1];
+    var rosterChoiceTuple = useState(canonicalHostNickname);
+    var rosterChoice = rosterChoiceTuple[0];
+    var setRosterChoice = rosterChoiceTuple[1];
     var difficultyDraftTuple = useState("easy");
     var difficultyDraft = difficultyDraftTuple[0];
     var setDifficultyDraft = difficultyDraftTuple[1];
+    var itemCountDraftTuple = useState(6);
+    var itemCountDraft = itemCountDraftTuple[0];
+    var setItemCountDraft = itemCountDraftTuple[1];
     var modeDraftTuple = useState("clinician");
     var modeDraft = modeDraftTuple[0];
     var setModeDraft = modeDraftTuple[1];
     var domainDraftTuple = useState("math");
     var domainDraft = domainDraftTuple[0];
     var setDomainDraft = domainDraftTuple[1];
+
+    function getNicknameValue() {
+      return codenameMode === "anonymous"
+        ? ""
+        : String(nicknameDraft || "").trim().slice(0, 30);
+    }
+    function setNamedCodename(adjective, animal) {
+      var nextAdj = String(adjective || "");
+      var nextAnimal = String(animal || "");
+      if (!nextAdj || !nextAnimal) return;
+      setSelectedAdjDraft(nextAdj);
+      setSelectedAnimalDraft(nextAnimal);
+      setNicknameDraft((nextAdj + " " + nextAnimal).slice(0, 30));
+      setCodenameMode("named");
+      setRosterChoice("");
+    }
+    function randomizeCodenameDraft() {
+      if (!daAdjectives.length || !daAnimals.length) return;
+      var adjective = daAdjectives[Math.floor(Math.random() * daAdjectives.length)];
+      var animal = daAnimals[Math.floor(Math.random() * daAnimals.length)];
+      setNamedCodename(adjective, animal);
+    }
+    function chooseAnonymousCodename() {
+      setNicknameDraft("");
+      setCodenameMode("anonymous");
+      setRosterChoice("");
+    }
+    function chooseRosterCodename(value) {
+      var next = String(value || "").trim();
+      if (!next) {
+        chooseAnonymousCodename();
+        return;
+      }
+      var parsed = daParseCodename(next, daAdjectives, daAnimals);
+      if (parsed.adjective && parsed.animal) {
+        setSelectedAdjDraft(parsed.adjective);
+        setSelectedAnimalDraft(parsed.animal);
+      }
+      setNicknameDraft(next.slice(0, 30));
+      setCodenameMode("roster");
+      setRosterChoice(next);
+    }
+    function codenameDisplayValue() {
+      var value = getNicknameValue();
+      return value || daAnonymousLabel;
+    }
+
 
     // Auto-show the onboarding tour on first ever open. Lifted from below the
     // render dispatch (where it was unreachable because every branch returns
@@ -6503,33 +7347,61 @@
     }
 
     function startSession(opts) {
-      // opts: { studentNickname, domain, difficulty, mode, customBank? }
+      // opts: { studentNickname, domain, difficulty, mode, itemCount, customBank? }
       // If opts.customBank is an array of item objects, those become the
       // session's items (Phase A-bis path). Items are added to a
       // session-scoped ITEMS_BY_ID extension so the renderer can look
       // them up without modifying the global bank.
       var sessionItems;
+      var selectionSeed = null;
       var customItems = Array.isArray(opts.customBank) ? opts.customBank : null;
       if (customItems && customItems.length > 0) {
-        // Mirror custom items into the runtime lookup so renderActivePhase
-        // can resolve them via ITEMS_BY_ID.
         customItems.forEach(function (it) {
           if (it && it.id) ITEMS_BY_ID[it.id] = it;
         });
         sessionItems = customItems.map(function (it) { return it.id; });
       } else {
         var pool = getItemsByDomainAndDifficulty(opts.domain || "math", opts.difficulty || "easy");
-        var itemIds = pool.map(function (it) { return it.id; });
-        sessionItems = itemIds.slice(0, 6);
+        var previousIds = daPreviousItemIds(state.sessions, opts.studentNickname, opts.domain || "math", opts.difficulty || "easy");
+        selectionSeed = daHashString([
+          Date.now(), Math.random(), opts.studentNickname || "", opts.domain || "math",
+          opts.difficulty || "easy", (state.sessions || []).length
+        ].join("|"));
+        var selectedItems = daSelectBuiltInSessionItems(pool, opts.itemCount || 6, previousIds, selectionSeed);
+        sessionItems = selectedItems.map(function (it) { return it.id; });
       }
+      var posttestItemSnapshot = sessionItems.map(function (itemId) {
+        return daBuildParallelPosttestItem(ITEMS_BY_ID[itemId] || null);
+      });
+      var parallelPosttestCount = posttestItemSnapshot.filter(Boolean).length;
+      var posttestForm = parallelPosttestCount === sessionItems.length && parallelPosttestCount > 0
+        ? "matched-parallel"
+        : parallelPosttestCount > 0 ? "mixed" : "same-item";
+      var versionMeta = daBuildSessionVersionMetadata({
+        isCustomBank: !!customItems, customBankSnapshot: customItems ? customItems.slice() : null,
+        sessionItemIds: sessionItems, posttestItemSnapshot: posttestItemSnapshot, posttestForm: posttestForm,
+        probeVersion: customItems ? DA_CUSTOM_PROBE_VERSION : DA_PROBE_BANK_VERSION,
+        posttestFormVersion: DA_FORM_VERSIONS[posttestForm] || DA_FORM_VERSIONS.legacy
+      });
       var session = {
         id: "da-" + Date.now() + "-" + Math.floor(Math.random() * 1000),
-        studentNickname: opts.studentNickname || "",
+        sessionSchemaVersion: DA_SCHEMA_VERSION,
+        studentNickname: String(opts.studentNickname || "").trim().slice(0, 30),
         domain: opts.domain || "math",
         difficulty: opts.difficulty || (customItems ? "custom" : "easy"),
         mode: opts.mode || "clinician",
         isCustomBank: !!customItems,
         customBankSnapshot: customItems ? customItems.slice() : null,  // Persisted so reloads work
+        posttestForm: posttestForm,
+        posttestFormVersion: versionMeta.posttestFormVersion,
+        probeVersion: versionMeta.probeVersion,
+        itemVersionManifestVersion: versionMeta.manifestVersion,
+        itemVersionManifest: versionMeta.itemManifest,
+        versionFingerprint: versionMeta.versionFingerprint,
+        parallelPosttestCount: parallelPosttestCount,
+        posttestItemSnapshot: posttestItemSnapshot,
+        itemCount: sessionItems.length,
+        itemSelectionSeed: selectionSeed,
         dateStarted: new Date().toISOString(),
         sessionItemIds: sessionItems,
         currentPhase: "pretest",
@@ -7580,22 +8452,27 @@
       // args: { phase, itemId, response, levelReached, finalCorrect, examinerObservation, supportType }
       if (!state.activeSession) return;
       var nowIso = new Date().toISOString();
+      var responseStatus = normalizeResponseStatus(args.responseStatus, args.finalCorrect, args.supportType);
+      var finalCorrect = responseStatus === "correct";
       var result = {
         itemId: args.itemId,
         phase: args.phase,
         promptLevelReached: args.levelReached || 0,
+        responseStatus: responseStatus,
         studentResponseText: String(args.response || "").trim().slice(0, 1000),
         examinerObservation: String(args.examinerObservation || "").trim().slice(0, 2000),
         observationTags: Array.isArray(args.observationTags)
           ? args.observationTags.filter(function (t) { return !!OBSERVATION_TAGS_BY_ID[t]; })
           : [],
-        supportType: args.supportType || null,
-        finalCorrect: !!args.finalCorrect,
+        supportType: args.supportType || (responseStatus === "skipped" || responseStatus === "refused" || responseStatus === "not-administered" ? responseStatus : null),
+        finalCorrect: finalCorrect,
         scaffoldLeaked: !!args.scaffoldLeaked,
         accessReadAloudHelped: !!args.accessReadAloudHelped,
         accessSimplifiedHelped: !!args.accessSimplifiedHelped,
         accessL1Helped: !!args.accessL1Helped,
-        scoreAwarded: scoreForLevel(args.levelReached || 0, !!args.finalCorrect, !!args.scaffoldLeaked),
+        scoreAwarded: isScorableResponse(responseStatus)
+          ? scoreForLevel(args.levelReached || 0, finalCorrect, !!args.scaffoldLeaked)
+          : 0,
         attemptedAt: nowIso
       };
       var prev = state.activeSession;
@@ -7609,13 +8486,17 @@
         if (prev.currentPhase === "pretest") nextPhase = "mediation";
         else if (prev.currentPhase === "mediation") nextPhase = "posttest";
         else if (prev.currentPhase === "posttest") {
-          // Phase E — Transfer phase fires only if at least one item has
-          // a transferTwin defined. Otherwise jump straight to summary.
-          var hasAnyTwin = prev.sessionItemIds.some(function (id) {
-            var it = ITEMS_BY_ID[id];
-            return it && it.transferTwin && it.transferTwin.prompt;
-          });
-          nextPhase = hasAnyTwin ? "transfer" : "summary";
+          // Matched parallel posttests already provide a novel form; legacy
+          // same-item sessions retain the original transfer phase.
+          if (prev.posttestForm === "matched-parallel" || prev.posttestForm === "mixed") {
+            nextPhase = "summary";
+          } else {
+            var hasAnyTwin = prev.sessionItemIds.some(function (id) {
+              var it = daSessionItemById(prev, id);
+              return it && it.transferTwin && it.transferTwin.prompt;
+            });
+            nextPhase = hasAnyTwin ? "transfer" : "summary";
+          }
         }
         else if (prev.currentPhase === "transfer") nextPhase = "summary";
         nextItemIdx = 0;
@@ -7651,6 +8532,17 @@
     function finalizeSession() {
       // Mark complete + push into sessions list + clear active
       if (!state.activeSession) return;
+      var evidence = daEvidenceStatus(state.activeSession);
+      if (!evidence.complete) {
+        announce("Complete each item in every required assessment phase before saving this session.");
+        return false;
+      }
+      if (!evidence.sufficient) {
+        announce(evidence.totalItems < 3
+          ? "Use at least three scorable items before saving this session."
+          : "Resolve skipped, refused, or not-administered items before saving this session.");
+        return false;
+      }
       var s = state.activeSession;
       var pretestResults = s.itemResults.filter(function (r) { return r.phase === "pretest"; });
       var posttestResults = s.itemResults.filter(function (r) { return r.phase === "posttest"; });
@@ -7658,8 +8550,20 @@
       var posttestSum = sumItemResultScores(posttestResults);
       var modIdx = computeModifiabilityIndex(pretestSum, posttestSum, s.sessionItemIds.length);
       var tier = modifiabilityTier(modIdx);
+      var versionMeta = daBuildSessionVersionMetadata(s);
       var record = Object.assign({}, s, {
         dateCompleted: new Date().toISOString(),
+        recordStatus: "complete",
+        interpretationStatus: "generated",
+        sessionSchemaVersion: s.sessionSchemaVersion || DA_SCHEMA_VERSION,
+        itemVersionManifestVersion: versionMeta.manifestVersion,
+        probeVersion: versionMeta.probeVersion,
+        posttestFormVersion: versionMeta.posttestFormVersion,
+        itemVersionManifest: versionMeta.itemManifest,
+        versionFingerprint: versionMeta.versionFingerprint,
+        evidenceStatus: evidence,
+        reviewStatus: "unreviewed",
+        reviewedAt: null,
         pretestSum: pretestSum,
         posttestSum: posttestSum,
         modifiabilityIndex: modIdx,
@@ -7694,6 +8598,34 @@
       setMonitoringPanelOpen(false);
       setMonitoringError(null);
       announce("Session saved.");
+      return true;
+    }
+
+    function archiveIncompleteSession(reason) {
+      if (!state.activeSession) return false;
+      var record = daBuildIncompleteRecord(state.activeSession, reason, new Date().toISOString());
+      if (!record) {
+        announce("This session has sufficient evidence and should be saved as a completed session.");
+        return false;
+      }
+      patch({ activeSession: null, sessions: (state.sessions || []).concat([record]) });
+      setIepGoals([]);
+      setIepPanelOpen(false);
+      setIepError(null);
+      setAccommodations([]);
+      setAccomPanelOpen(false);
+      setAccomError(null);
+      setFamilySummary(null);
+      setFamilyPanelOpen(false);
+      setFamilyError(null);
+      setTeacherHandoff(null);
+      setTeacherPanelOpen(false);
+      setTeacherError(null);
+      setProgressMonitoring(null);
+      setMonitoringPanelOpen(false);
+      setMonitoringError(null);
+      announce("Incomplete assessment record saved without interpretation.");
+      return true;
     }
 
     function setLadderLevel(level) {
@@ -7830,7 +8762,7 @@
     // After an AI-mediated item resolves (correct or exhausted), commit
     // its result + advance to the next item. Mirrors submitResponse but
     // with attempts log baked in.
-    function finalizeAiItem(itemDef, attempts, wasCorrect) {
+    function finalizeAiItem(itemDef, attempts, wasCorrect, responseStatusOverride) {
       if (!state.activeSession) return;
       var prev = state.activeSession;
       // Final level reached = max levelAfter across attempts
@@ -7848,20 +8780,24 @@
       var combinedObservation = [observationDraft.trim(), aiHints ? "[AI: " + aiHints + "]" : ""]
         .filter(function (s) { return !!s; })
         .join(" ");
+      var aiSupportType = wasCorrect
+        ? (finalLevel === 0 ? "none" : (itemDef.promptLadder[finalLevel - 1] || {}).type || "none")
+        : (responseStatusOverride || "directTeach");
+      var responseStatus = normalizeResponseStatus(responseStatusOverride, wasCorrect, aiSupportType);
+      var finalCorrect = responseStatus === "correct";
       var result = {
         itemId: itemDef.id,
         phase: "mediation",
         promptLevelReached: finalLevel,
+        responseStatus: responseStatus,
         studentResponseText: lastResponse,
         examinerObservation: combinedObservation.slice(0, 2000),
         observationTags: Array.isArray(observationTagsDraft)
           ? observationTagsDraft.filter(function (t) { return !!OBSERVATION_TAGS_BY_ID[t]; })
           : [],
-        supportType: wasCorrect
-          ? (finalLevel === 0 ? "none" : (itemDef.promptLadder[finalLevel - 1] || {}).type || "none")
-          : "directTeach",
-        finalCorrect: !!wasCorrect,
-        scoreAwarded: scoreForLevel(finalLevel, !!wasCorrect),
+        supportType: aiSupportType,
+        finalCorrect: finalCorrect,
+        scoreAwarded: isScorableResponse(responseStatus) ? scoreForLevel(finalLevel, finalCorrect) : 0,
         attemptedAt: nowIso,
         aiAttemptsLog: attempts.slice() // Persisted log of the cycle for the summary
       };
@@ -8018,6 +8954,10 @@
                   "aria-label": "Resume the in-progress session",
                   style: { padding: "8px 16px", borderRadius: 8, border: "none", background: "var(--da-btn-amber)", color: "var(--da-on-accent)", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }
                 }, as.paused ? "▶ Resume" : "▶ Continue"),
+                h("label", { style: { display: "grid", gap: 3, fontSize: 10.5, color: "var(--da-ink-3)", fontWeight: 700 } }, daIncompleteReasonPromptLabel,
+                  h("select", { value: as.incompleteReason || "interrupted", onChange: function (event) { patchSession({ incompleteReason: event.target.value }); }, "aria-label": daIncompleteReasonPromptLabel, style: { padding: "6px 8px", borderRadius: 7, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink)", fontFamily: "inherit", fontSize: 11 } }, daIncompleteReasonOptions.map(function (option) { return h("option", { key: option.id, value: option.id }, option.label); }))
+                ),
+                h("button", { onClick: function () { daAskConfirm({ message: daArchiveIncompleteConfirm, confirmLabel: daArchiveIncompleteLabel, onConfirm: function () { if (archiveIncompleteSession(as.incompleteReason || "interrupted")) addToast("Incomplete assessment record saved without interpretation."); } }); }, "aria-label": daArchiveIncompleteLabel, style: { padding: "8px 12px", borderRadius: 8, border: "1px solid var(--da-amber-mid)", background: "var(--da-amber-tint)", color: "var(--da-amber-text-2)", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" } }, daArchiveIncompleteLabel),
                 h("button", {
                   onClick: function () {
                     daAskConfirm({
@@ -8043,18 +8983,78 @@
         ),
         h("div", { className: "da-card" },
           h("h2", { style: { fontSize: 16, fontWeight: 800, margin: "0 0 10px", color: "var(--da-ink)" } }, "Start a session"),
-          // Nickname
-          h("label", {
-            htmlFor: "da-nickname",
-            style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--da-muted)", marginBottom: 4 }
-          }, "Student codename (optional)"),
-          h("input", {
-            id: "da-nickname", type: "text", value: nicknameDraft, maxLength: 30,
-            "aria-label": "Student codename (optional)",
-            onChange: function (e) { setNicknameDraft(e.target.value); },
-            placeholder: "e.g., AmberSparrow",
-            style: { width: "100%", padding: "8px 10px", border: "1px solid var(--da-border-2)", borderRadius: 8, fontFamily: "inherit", fontSize: 14, boxSizing: "border-box", marginBottom: 12 }
-          }),
+
+          // Canonical codename picker matches the student-facing adjective + animal flow.
+          h("div", { style: { marginBottom: 14 } },
+            h("div", { style: { fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--da-muted)", marginBottom: 4 } }, daCodenameLabel),
+            h("div", { role: "group", "aria-label": daCodenameLabel, style: { display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 } },
+              h("button", {
+                type: "button",
+                onClick: function () {
+                  setCodenameMode("named");
+                  if (!selectedAdjDraft && daAdjectives[0]) setSelectedAdjDraft(daAdjectives[0]);
+                  if (!selectedAnimalDraft && daAnimals[0]) setSelectedAnimalDraft(daAnimals[0]);
+                  if (selectedAdjDraft && selectedAnimalDraft) setNamedCodename(selectedAdjDraft, selectedAnimalDraft);
+                },
+                "aria-pressed": codenameMode !== "anonymous",
+                style: { padding: "6px 10px", borderRadius: 7, border: codenameMode !== "anonymous" ? "2px solid var(--da-accent-2)" : "1px solid var(--da-border-2)", background: codenameMode !== "anonymous" ? "var(--da-blue-tint)" : "var(--da-surface)", color: "var(--da-ink)", fontWeight: 700, cursor: "pointer", fontFamily: "inherit", fontSize: 12 }
+              }, "Named codename"),
+              h("button", {
+                type: "button",
+                onClick: chooseAnonymousCodename,
+                "aria-pressed": codenameMode === "anonymous",
+                style: { padding: "6px 10px", borderRadius: 7, border: codenameMode === "anonymous" ? "2px solid var(--da-accent-2)" : "1px solid var(--da-border-2)", background: codenameMode === "anonymous" ? "var(--da-blue-tint)" : "var(--da-surface)", color: "var(--da-ink)", fontWeight: 700, cursor: "pointer", fontFamily: "inherit", fontSize: 12 }
+              }, daAnonymousLabel)
+            ),
+            rosterCodenames.length > 0 ? h("div", { style: { marginBottom: 8 } },
+              h("label", { htmlFor: "da-roster-student", style: { display: "block", fontSize: 11, fontWeight: 700, color: "var(--da-muted)", marginBottom: 3 } }, "Choose from current roster"),
+              h("select", {
+                id: "da-roster-student",
+                value: rosterCodenames.indexOf(rosterChoice) >= 0 ? rosterChoice : "",
+                onChange: function (e) { chooseRosterCodename(e.target.value); },
+                "aria-label": "Choose a student codename from the current roster",
+                style: { width: "100%", minHeight: 40, padding: "7px 9px", border: "1px solid var(--da-border-2)", borderRadius: 7, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }
+              },
+                h("option", { value: "" }, "Choose a roster codename"),
+                rosterCodenames.map(function (name) { return h("option", { key: "da-roster-" + name, value: name }, name); })
+              )
+            ) : null,
+            h("div", { style: { display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" } },
+              h("label", { htmlFor: "da-codename-adjective", style: { flex: "1 1 150px" } },
+                h("span", { className: "sr-only" }, daSelectAdjectiveLabel),
+                h("select", {
+                  id: "da-codename-adjective",
+                  value: selectedAdjDraft,
+                  onChange: function (e) { setNamedCodename(e.target.value, selectedAnimalDraft); },
+                  "aria-label": daSelectAdjectiveLabel,
+                  disabled: daAdjectives.length === 0,
+                  style: { width: "100%", minHeight: 40, padding: "7px 9px", border: "1px solid var(--da-border-2)", borderRadius: 7, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }
+                }, daAdjectives.map(function (adj) { return h("option", { key: "da-adj-" + adj, value: adj }, adj); }))
+              ),
+              h("label", { htmlFor: "da-codename-animal", style: { flex: "1 1 150px" } },
+                h("span", { className: "sr-only" }, daSelectAnimalLabel),
+                h("select", {
+                  id: "da-codename-animal",
+                  value: selectedAnimalDraft,
+                  onChange: function (e) { setNamedCodename(selectedAdjDraft, e.target.value); },
+                  "aria-label": daSelectAnimalLabel,
+                  disabled: daAnimals.length === 0,
+                  style: { width: "100%", minHeight: 40, padding: "7px 9px", border: "1px solid var(--da-border-2)", borderRadius: 7, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }
+                }, daAnimals.map(function (animal) { return h("option", { key: "da-animal-" + animal, value: animal }, animal); }))
+              ),
+              h("button", {
+                type: "button",
+                onClick: randomizeCodenameDraft,
+                title: daRandomizeLabel,
+                "aria-label": daRandomizeLabel,
+                style: { minHeight: 40, padding: "7px 10px", border: "1px solid var(--da-border-2)", borderRadius: 7, background: "var(--da-surface)", color: "var(--da-ink-3)", fontWeight: 700, cursor: "pointer", fontFamily: "inherit", fontSize: 12 }
+              }, "?")
+            ),
+            codenameMode === "current" && canonicalHostNickname ? h("div", { style: { marginTop: 6, fontSize: 11.5, color: "var(--da-muted)", fontStyle: "italic" } },
+              "Current app codename: " + canonicalHostNickname + "; choose Named to change it.") : null,
+            h("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", style: { marginTop: 7, padding: "7px 9px", borderRadius: 7, background: "var(--da-surface-3)", color: "var(--da-ink)", fontWeight: 800, fontSize: 14 } }, codenameDisplayValue()),
+            h("p", { style: { margin: "6px 0 0", fontSize: 11, color: "var(--da-muted)", fontStyle: "italic" } }, daPrivacyWarning)
+          ),
           // Domain picker (Phase C — all four domains shipped)
           h("div", { style: { marginBottom: 12 } },
             h("div", { style: { fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--da-muted)", marginBottom: 4 } }, "Domain"),
@@ -8110,6 +9110,23 @@
                 );
               })
             )
+          ),
+
+          // Probe length; short probes are useful when time or attention is limited.
+          h("div", { style: { marginBottom: 14 } },
+            h("label", { htmlFor: "da-item-count", style: { display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--da-muted)", marginBottom: 4 } }, daProbeLengthLabel),
+            h("select", {
+              id: "da-item-count",
+              value: String(itemCountDraft),
+              onChange: function (e) { setItemCountDraft(Number(e.target.value) === 3 ? 3 : 6); },
+              "aria-label": "Number of built-in Dynamic Assessment items",
+              style: { width: "100%", minHeight: 40, padding: "7px 9px", border: "1px solid var(--da-border-2)", borderRadius: 7, fontFamily: "inherit", fontSize: 13, boxSizing: "border-box" }
+            },
+              h("option", { value: "3" }, daProbeQuickLabel),
+              h("option", { value: "6" }, daProbeFullLabel)
+            ),
+            h("div", { style: { marginTop: 4, fontSize: 11, color: "var(--da-muted)", fontStyle: "italic" } },
+              daProbeHelperLabel)
           ),
           // Mediation mode (Phase B)
           h("div", { style: { marginBottom: 14 } },
@@ -8224,7 +9241,7 @@
             h("button", {
               onClick: function () {
                 startSession({
-                  studentNickname: nicknameDraft.trim(),
+                  studentNickname: getNicknameValue(),
                   domain: domainDraft,
                   difficulty: difficultyDraft,
                   mode: modeDraft,
@@ -8268,7 +9285,7 @@
                   h("button", {
                     onClick: function () {
                       startSession({
-                        studentNickname: nicknameDraft.trim(),
+                        studentNickname: getNicknameValue(),
                         domain: tpl.domain || "math",
                         difficulty: "custom",
                         mode: modeDraft,
@@ -8745,7 +9762,7 @@
     function renderLongitudinalView() {
       var byStudent = groupSessionsByStudent(state.sessions || []);
       var name = longitudinalStudent || "";
-      var sessionsForStudent = byStudent[name] || []; // already sorted oldest → newest
+      var sessionsForStudent = (byStudent[name] || []).filter(daIsSufficientSession); // already sorted oldest → newest
       if (!name || sessionsForStudent.length === 0) {
         return h("div", { className: "da-root", style: { padding: 20 } },
           h("p", null, "No longitudinal data available for this student."),
@@ -8756,6 +9773,7 @@
         );
       }
       var trend = computeLongitudinalTrend(sessionsForStudent);
+      var versionComparison = daCompareSessionVersions(sessionsForStudent);
 
       // Aggregate observation tags across all sessions for this student
       var aggTagsAcrossSessions = {};
@@ -8833,7 +9851,8 @@
           h("div", { style: { fontSize: 11, color: "var(--da-amber-text)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 800, marginBottom: 4 } },
             "⚠ Interpretation caveat"),
           h("p", { style: { margin: 0, fontSize: 12, color: "var(--da-orange-deep)", lineHeight: 1.55 } },
-            "Dynamic Assessment scores across sessions are not directly comparable item-for-item. Each session uses different probes, sometimes different domains, and may reflect practice effects from prior mediation exposure. Use this trajectory as a clinical pattern, NOT a normed growth measurement. Always check the per-session column for domain/difficulty consistency before interpreting trend direction.")
+            "Dynamic Assessment scores across sessions are not directly comparable item-for-item. Each session uses different probes, sometimes different domains, and may reflect practice effects from prior mediation exposure. Use this trajectory as a clinical pattern, NOT a normed growth measurement. Always check the per-session column for domain/difficulty consistency before interpreting trend direction."),
+          h("p", { style: { margin: "8px 0 0", fontSize: 12, color: versionComparison.mismatch ? "var(--da-orange-deep)" : "var(--da-ink-2)", lineHeight: 1.55, fontWeight: versionComparison.mismatch ? 700 : 400 } }, versionComparison.mismatch ? daVersionMismatchLabel + ": " + daVersionComparisonCaution : daVersionComparisonConsistent)
         ),
 
         // MI chart (SVG)
@@ -9692,7 +10711,12 @@
     // shows the modifiability-index trajectory inline.
     function renderSessionsBrowser() {
       var allSessions = (state.sessions || []).slice().reverse(); // newest first
+      var sufficientSessionCount = allSessions.filter(daIsSufficientSession).length;
       var filterText = (sessionFilter || "").trim().toLowerCase();
+
+      var privacySettings = state.privacy && typeof state.privacy === "object" ? state.privacy : {};
+      var retentionDays = Number(privacySettings.retentionDays) || 0;
+
       var filtered = filterText
         ? allSessions.filter(function (s) {
             var nick = (s.studentNickname || "").toLowerCase();
@@ -9703,7 +10727,7 @@
 
       // Group sessions by nickname for the longitudinal view
       var byStudent = {};
-      allSessions.forEach(function (s) {
+      allSessions.filter(daIsSufficientSession).forEach(function (s) {
         var key = (s.studentNickname || "").trim() || "(anonymous)";
         if (!byStudent[key]) byStudent[key] = [];
         byStudent[key].push(s);
@@ -9728,14 +10752,14 @@
               "📁 All sessions · " + allSessions.length)
           ),
           // Phase AA — item analytics entry (only meaningful with sessions)
-          allSessions.length >= 1 ? h("button", {
+          sufficientSessionCount >= 1 ? h("button", {
             onClick: function () { setStartScreenView("analytics"); },
             "aria-label": "Open item analytics — psychometric stats across all sessions",
             title: "Per-item pretest pass rate, modifiability sensitivity, scaffold escalation, transfer rate",
             style: { padding: "6px 12px", borderRadius: 8, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
           }, "📊 Item analytics") : null,
           // Phase BB — population stats entry
-          allSessions.length >= 1 ? h("button", {
+          sufficientSessionCount >= 1 ? h("button", {
             onClick: function () { setStartScreenView("population"); },
             "aria-label": "Open population statistics — effect sizes and MI distribution across your caseload",
             title: "Cohen's d, MI distribution, tier breakdown, local-norm reference data",
@@ -9743,8 +10767,14 @@
           }, "📈 Population stats") : null,
           // Phase EE — back up all sessions to a JSON file (guards the trajectory
           // + local-norm data against a cache clear / device change).
-          allSessions.length >= 1 ? h("button", {
-            onClick: function () { exportAllSessionsAsJson(); },
+          sufficientSessionCount >= 1 ? h("button", {
+            onClick: function () {
+              daAskConfirm({
+                message: daFullExportWarning,
+                confirmLabel: daExportFullLabel,
+                onConfirm: exportAllSessionsAsJson
+              });
+            },
             "aria-label": "Back up all sessions to a JSON file",
             title: "Save a JSON backup of your entire session history (protects trajectory + local-norm data)",
             style: { padding: "6px 12px", borderRadius: 8, border: "1px solid var(--da-green-mid)", background: "var(--da-green-tint)", color: "var(--da-green-text-2)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
@@ -9758,6 +10788,40 @@
             style: { padding: "6px 12px", borderRadius: 8, border: "1px solid var(--da-amber-text-3)", background: "var(--da-amber-tint)", color: "var(--da-amber-text-2)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
           }, "📂 Restore")
         ),
+
+        h("div", { className: "da-card", style: { marginBottom: 14, background: "var(--da-surface-3)", borderColor: "var(--da-border-2)" } },
+          h("div", { style: { display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, flexWrap: "wrap" } },
+            h("div", { style: { fontSize: 12, color: "var(--da-ink)", fontWeight: 800 } }, daDataControlsTitle),
+            h("div", { style: { fontSize: 10.5, color: "var(--da-muted)", fontWeight: 700 } }, (state.sessions || []).length + " saved session" + ((state.sessions || []).length === 1 ? "" : "s"))
+          ),
+          h("p", { style: { margin: "5px 0 10px", fontSize: 11.5, color: "var(--da-muted)", lineHeight: 1.5 } }, daLocalOnlyLabel),
+          h("div", { style: { display: "flex", alignItems: "flex-end", gap: 8, flexWrap: "wrap" } },
+            h("label", { style: { display: "grid", gap: 4, flex: "1 1 220px", fontSize: 11.5, color: "var(--da-ink-2)", fontWeight: 700 } },
+              daRetentionLabel,
+              h("select", {
+                id: "da-retention-days",
+                value: String(retentionDays),
+                "aria-label": daRetentionLabel,
+                onChange: function (e) { updateRetentionDays(e.target.value); },
+                style: { minHeight: 38, padding: "7px 9px", border: "1px solid var(--da-border-2)", borderRadius: 7, background: "var(--da-surface)", color: "var(--da-ink)", font: "inherit" }
+              },
+                h("option", { value: "0" }, daRetentionNeverLabel),
+                h("option", { value: "30" }, "Keep for 30 days"),
+                h("option", { value: "90" }, "Keep for 90 days"),
+                h("option", { value: "365" }, "Keep for 1 year")
+              )
+            ),
+            h("button", {
+              type: "button",
+              onClick: clearAllLocalData,
+              "aria-label": daClearDataLabel,
+              style: { minHeight: 38, padding: "7px 11px", border: "1px solid var(--da-red-border)", borderRadius: 7, background: "transparent", color: "var(--da-red-text)", fontWeight: 800, cursor: "pointer", fontFamily: "inherit", fontSize: 11.5 }
+            }, daClearDataLabel)
+          ),
+          state.activeSession ? h("div", { role: "status", style: { marginTop: 8, padding: "6px 8px", borderRadius: 6, background: "var(--da-amber-tint)", color: "var(--da-amber-text-2)", fontSize: 11, lineHeight: 1.45 } },
+            "An in-progress session is also stored locally until you resume, save, or discard it.") : null
+        ),
+
 
         // Empty state
         allSessions.length === 0 ? h("div", { className: "da-card", style: { textAlign: "center", padding: 32 } },
@@ -9827,16 +10891,17 @@
         filtered.length > 0 ? h("div", { style: { display: "flex", flexDirection: "column", gap: 8 } },
           filtered.map(function (sn) {
             var dt = "";
-            try { dt = new Date(sn.dateCompleted || sn.dateStarted).toLocaleString(); } catch (e) {}
-            var idx = (typeof sn.modifiabilityIndex === "number" ? sn.modifiabilityIndex : 0);
-            var idxColor = daHex(idx >= 0.6 ? "#16a34a" : idx >= 0.3 ? "#a16207" : idx >= 0 ? "#b91c1c" : "#475569");
-            var tierLabel = sn.modifiabilityTier ? sn.modifiabilityTier.label : "(not finalized)";
+            try { dt = new Date(sn.dateCompleted || sn.dateArchived || sn.dateStarted).toLocaleString(); } catch (e) {}
+            var isIncomplete = sn.recordStatus === "incomplete";
+            var idx = (typeof sn.modifiabilityIndex === "number" ? sn.modifiabilityIndex : null);
+            var idxColor = isIncomplete ? daHex("#64748b") : daHex(idx >= 0.6 ? "#16a34a" : idx >= 0.3 ? "#a16207" : idx >= 0 ? "#b91c1c" : "#475569");
+            var tierLabel = isIncomplete ? daIncompleteNoInterpretationLabel : (sn.modifiabilityTier ? sn.modifiabilityTier.label : "(not finalized)");
             return h("div", { key: "da-sess-" + sn.id, className: "da-card", style: { padding: 12 } },
               h("div", { style: { display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" } },
                 // Index badge
                 h("div", { style: { textAlign: "center", minWidth: 64, padding: 6, border: "2px solid " + idxColor, borderRadius: 8, background: idxColor + "11" } },
-                  h("div", { style: { fontSize: 17, fontWeight: 900, color: idxColor, lineHeight: 1 } }, (idx >= 0 ? "+" : "") + idx.toFixed(2)),
-                  h("div", { style: { fontSize: 9, color: "var(--da-muted)", marginTop: 2, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" } }, "MI")
+                  h("div", { style: { fontSize: 17, fontWeight: 900, color: idxColor, lineHeight: 1 } }, isIncomplete ? "—" : ((idx >= 0 ? "+" : "") + idx.toFixed(2))),
+                  h("div", { style: { fontSize: 9, color: "var(--da-muted)", marginTop: 2, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" } }, isIncomplete ? "Record" : "MI")
                 ),
                 // Meta
                 h("div", { style: { flex: 1, minWidth: 200 } },
@@ -9846,7 +10911,9 @@
                     dt + " · " + (sn.mode === "ai" ? "🤖 AI-mediated" : "🧑‍⚕️ Clinician-led") +
                     " · " + (sn.sessionItemIds ? sn.sessionItemIds.length : "?") + " items"),
                   h("div", { style: { fontSize: 11, color: idxColor, marginTop: 3, fontWeight: 700, fontStyle: "italic" } },
-                    tierLabel)
+                    tierLabel),
+                  h("div", { style: { fontSize: 10.5, color: sn.reviewStatus === "reviewed" ? "var(--da-green-text-2)" : "var(--da-amber-text-2)", marginTop: 3, fontWeight: 700 } },
+                    sn.reviewStatus === "reviewed" ? "✓ " + daReviewedLabel : "⚠ " + daNeedsReviewLabel)
                 ),
                 // Actions
                 h("div", { style: { display: "flex", gap: 6, flexWrap: "wrap" } },
@@ -9860,11 +10927,11 @@
                   }, "View"),
                   h("button", {
                     onClick: function () {
-                      exportSessionAsJson(sn);
+                      exportSessionAsJson(sn, "redacted");
                     },
-                    title: "Download as JSON",
+                    title: daExportRedactedTitle,
                     style: { padding: "5px 10px", borderRadius: 6, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
-                  }, "↓ JSON"),
+                  }, daExportRedactedLabel),
                   h("button", {
                     onClick: function () {
                       daAskConfirm({
@@ -9899,8 +10966,11 @@
           h("p", null, "Session not found."),
           h("button", { onClick: function () { setStartScreenView("sessions"); } }, "← Back to sessions"));
       }
-      var idx = (typeof sn.modifiabilityIndex === "number" ? sn.modifiabilityIndex : 0);
-      var tier = sn.modifiabilityTier || modifiabilityTier(idx);
+      var isIncomplete = sn.recordStatus === "incomplete";
+      var idx = (typeof sn.modifiabilityIndex === "number" ? sn.modifiabilityIndex : null);
+      var tier = isIncomplete
+        ? (sn.modifiabilityTier || { id: "insufficient", label: daIncompleteNoInterpretationLabel, desc: daIncompleteRecordDescription })
+        : (sn.modifiabilityTier || modifiabilityTier(idx));
       var pretestResults = (sn.itemResults || []).filter(function (r) { return r.phase === "pretest"; });
       var posttestResults = (sn.itemResults || []).filter(function (r) { return r.phase === "posttest"; });
       var transferResults = (sn.itemResults || []).filter(function (r) { return r.phase === "transfer"; });
@@ -9912,7 +10982,7 @@
       var transferTierObj = transferResults.length > 0
         ? transferTier(transferSum, transferMax, posttestSum, max) : null;
       var dt = "";
-      try { dt = new Date(sn.dateCompleted || sn.dateStarted).toLocaleString(); } catch (e) {}
+      try { dt = new Date(sn.dateCompleted || sn.dateArchived || sn.dateStarted).toLocaleString(); } catch (e) {}
 
       return h("div", { className: "da-root da-fade-in", style: { maxWidth: 820, margin: "0 auto", padding: 20 } },
         h("div", { style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 14, flexWrap: "wrap" } },
@@ -9928,10 +10998,93 @@
               (sn.studentNickname || "Anonymous") + " · " + sn.domain + " (" + sn.difficulty + ")")
           ),
           h("button", {
-            onClick: function () { exportSessionAsJson(sn); },
+            onClick: function () { exportSessionAsJson(sn, "redacted"); },
             style: { padding: "6px 12px", borderRadius: 8, border: "1px solid var(--da-ink-3)", background: "var(--da-surface)", color: "var(--da-ink)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
-          }, "↓ JSON")
+          }, daExportRedactedLabel),
+          h("button", {
+            type: "button",
+            onClick: function () { toggleSessionReview(sn.id); },
+            "aria-pressed": sn.reviewStatus === "reviewed",
+            style: { padding: "6px 12px", borderRadius: 8, border: "1px solid " + (sn.reviewStatus === "reviewed" ? "var(--da-green-mid)" : "var(--da-amber-border)"), background: sn.reviewStatus === "reviewed" ? "var(--da-green-tint)" : "var(--da-amber-tint)", color: sn.reviewStatus === "reviewed" ? "var(--da-green-text-2)" : "var(--da-amber-text-2)", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }
+          }, sn.reviewStatus === "reviewed" ? "✓ " + daReviewedLabel : daMarkReviewedLabel)
         ),
+
+        !isIncomplete ? (function () {
+          var savedSecondReview = sn.secondRaterReview || null;
+          var draft = secondRaterDraft.sessionId === sn.id ? secondRaterDraft : {
+            sessionId: sn.id,
+            reviewerCodename: savedSecondReview ? (savedSecondReview.reviewerCodename || "") : "",
+            reviewerRole: savedSecondReview ? (savedSecondReview.reviewerRole || "") : "",
+            agreementStatus: savedSecondReview ? (savedSecondReview.agreementStatus || "agree") : "agree",
+            independentModifiabilityIndex: savedSecondReview && savedSecondReview.independentModifiabilityIndex !== null && savedSecondReview.independentModifiabilityIndex !== undefined ? String(savedSecondReview.independentModifiabilityIndex) : "",
+            itemDisagreementNotes: savedSecondReview ? (savedSecondReview.itemDisagreementNotes || savedSecondReview.disagreementRationale || "") : "",
+            resolutionStatus: savedSecondReview ? (savedSecondReview.resolutionStatus || "not-applicable") : "not-applicable",
+            resolutionRationale: savedSecondReview ? (savedSecondReview.resolutionRationale || "") : ""
+          };
+          var secondIndexNumber = draft.independentModifiabilityIndex === "" ? null : Number(draft.independentModifiabilityIndex);
+          var hasSecondIndex = Number.isFinite(secondIndexNumber) && secondIndexNumber >= -1 && secondIndexNumber <= 1;
+          var primaryIndex = typeof sn.modifiabilityIndex === "number" ? sn.modifiabilityIndex : null;
+          var difference = hasSecondIndex && typeof primaryIndex === "number" ? Math.abs(secondIndexNumber - primaryIndex) : null;
+          return h("fieldset", { className: "da-card", style: { marginBottom: 14, padding: 14, borderColor: "var(--da-blue-border)", background: "var(--da-blue-tint)" }, "aria-describedby": "da-second-rater-help-" + sn.id },
+            h("legend", { style: { padding: "0 5px", fontSize: 13, fontWeight: 800, color: "var(--da-accent-text)" } }, daSecondRaterTitle),
+            h("p", { id: "da-second-rater-help-" + sn.id, style: { margin: "0 0 10px", fontSize: 11.5, color: "var(--da-ink-2)", lineHeight: 1.5 } }, daSecondRaterDescription),
+            h("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 9 } },
+              h("label", { style: { display: "grid", gap: 4, fontSize: 11, color: "var(--da-ink-2)", fontWeight: 700 } }, daSecondRaterReviewerLabel,
+                h("input", { type: "text", value: draft.reviewerCodename, maxLength: 120, onChange: function (event) { updateSecondRaterDraft("reviewerCodename", event.target.value); }, "aria-label": daSecondRaterReviewerLabel, placeholder: "e.g., Reviewer B", style: { padding: "7px 8px", border: "1px solid var(--da-border-2)", borderRadius: 6, background: "var(--da-surface)", color: "var(--da-ink)", font: "inherit", boxSizing: "border-box" } })
+              ),
+              h("label", { style: { display: "grid", gap: 4, fontSize: 11, color: "var(--da-ink-2)", fontWeight: 700 } }, daSecondRaterRoleLabel,
+                h("select", { value: draft.reviewerRole, onChange: function (event) { updateSecondRaterDraft("reviewerRole", event.target.value); }, "aria-label": daSecondRaterRoleLabel, style: { padding: "7px 8px", border: "1px solid var(--da-border-2)", borderRadius: 6, background: "var(--da-surface)", color: "var(--da-ink)", font: "inherit" } },
+                  h("option", { value: "" }, "Select role"),
+                  daSecondRaterRoleOptions.map(function (option) { return h("option", { key: option.id, value: option.id }, option.label); })
+                )
+              ),
+              h("label", { style: { display: "grid", gap: 4, fontSize: 11, color: "var(--da-ink-2)", fontWeight: 700 } }, daSecondRaterAgreementLabel,
+                h("select", { value: draft.agreementStatus, onChange: function (event) { updateSecondRaterDraft("agreementStatus", event.target.value); }, "aria-label": daSecondRaterAgreementLabel, style: { padding: "7px 8px", border: "1px solid var(--da-border-2)", borderRadius: 6, background: "var(--da-surface)", color: "var(--da-ink)", font: "inherit" } },
+                  h("option", { value: "agree" }, daSecondRaterAgreeLabel),
+                  h("option", { value: "disagree" }, daSecondRaterDisagreeLabel),
+                  h("option", { value: "uncertain" }, daSecondRaterUncertainLabel)
+                )
+              ),
+              h("label", { style: { display: "grid", gap: 4, fontSize: 11, color: "var(--da-ink-2)", fontWeight: 700 } }, daSecondRaterIndexLabel,
+                h("input", { type: "number", min: -1, max: 1, step: "0.01", value: draft.independentModifiabilityIndex, onChange: function (event) { updateSecondRaterDraft("independentModifiabilityIndex", event.target.value); }, "aria-label": daSecondRaterIndexLabel, placeholder: "Optional, -1 to 1", style: { padding: "7px 8px", border: "1px solid var(--da-border-2)", borderRadius: 6, background: "var(--da-surface)", color: "var(--da-ink)", font: "inherit", boxSizing: "border-box" } })
+              )
+            ),
+            h("label", { style: { display: "grid", gap: 4, marginTop: 9, fontSize: 11, color: "var(--da-ink-2)", fontWeight: 700 } }, daSecondRaterNotesLabel,
+              h("textarea", { value: draft.itemDisagreementNotes, maxLength: 4000, rows: 3, onChange: function (event) { updateSecondRaterDraft("itemDisagreementNotes", event.target.value); }, "aria-label": daSecondRaterNotesLabel, placeholder: "Note item-level differences, scoring rationale, or uncertainty.", style: { padding: "7px 8px", border: "1px solid var(--da-border-2)", borderRadius: 6, background: "var(--da-surface)", color: "var(--da-ink)", font: "inherit", resize: "vertical", boxSizing: "border-box" } })
+            ),
+            h("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 9, marginTop: 9 } },
+              h("label", { style: { display: "grid", gap: 4, fontSize: 11, color: "var(--da-ink-2)", fontWeight: 700 } }, daSecondRaterResolutionLabel,
+                h("select", { value: draft.resolutionStatus, onChange: function (event) { updateSecondRaterDraft("resolutionStatus", event.target.value); }, "aria-label": daSecondRaterResolutionLabel, style: { padding: "7px 8px", border: "1px solid var(--da-border-2)", borderRadius: 6, background: "var(--da-surface)", color: "var(--da-ink)", font: "inherit" } }, daSecondRaterResolutionOptions.map(function (option) { return h("option", { key: option.id, value: option.id }, option.label); }))
+              ),
+              h("label", { style: { display: "grid", gap: 4, fontSize: 11, color: "var(--da-ink-2)", fontWeight: 700 } }, daSecondRaterResolutionNotesLabel,
+                h("textarea", { value: draft.resolutionRationale, maxLength: 4000, rows: 2, onChange: function (event) { updateSecondRaterDraft("resolutionRationale", event.target.value); }, "aria-label": daSecondRaterResolutionNotesLabel, placeholder: "Required when resolving a disagreement.", style: { padding: "7px 8px", border: "1px solid var(--da-border-2)", borderRadius: 6, background: "var(--da-surface)", color: "var(--da-ink)", font: "inherit", resize: "vertical", boxSizing: "border-box" } })
+              )
+            ),
+            difference !== null ? h("div", { style: { marginTop: 8, fontSize: 11, color: difference <= 0.1 ? "var(--da-green-text-2)" : "var(--da-amber-text-2)", fontWeight: 700 } }, daSecondRaterDifferenceLabel + ": " + difference.toFixed(2)) : null,
+            savedSecondReview && savedSecondReview.completedAt ? h("div", { style: { marginTop: 8, fontSize: 10.5, color: "var(--da-muted)", lineHeight: 1.45 } }, daSecondRaterRecordedLabel + ": " + new Date(savedSecondReview.completedAt).toLocaleString() + " ? " + daSecondRaterRevisionLabel + " " + (savedSecondReview.revision || 1)) : null,
+            h("div", { style: { display: "flex", justifyContent: "flex-end", marginTop: 10 } },
+              h("button", { type: "button", onClick: function () { saveSecondRaterReview(sn.id); }, "aria-label": daSecondRaterSaveLabel, style: { padding: "8px 13px", borderRadius: 7, border: "none", background: "var(--da-accent)", color: "var(--da-on-accent)", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" } }, daSecondRaterSaveLabel)
+            )
+          );
+        })() : null,
+
+        (function () {
+          var versionMeta = daBuildSessionVersionMetadata(sn);
+          var manifestRows = Array.isArray(versionMeta.itemManifest) ? versionMeta.itemManifest : [];
+          return h("details", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "var(--da-surface-2)", borderColor: versionMeta.legacy ? "var(--da-amber-border)" : "var(--da-border-2)" } },
+            h("summary", { style: { cursor: "pointer", fontSize: 12, fontWeight: 800, color: "var(--da-ink)" } }, daVersioningTitle),
+            h("div", { style: { display: "flex", flexWrap: "wrap", gap: 8, marginTop: 9, fontSize: 11.5, color: "var(--da-ink-2)" } },
+              h("span", null, daProbeVersionLabel + ": ", h("strong", null, versionMeta.probeVersion)),
+              h("span", null, daFormVersionLabel + ": ", h("strong", null, versionMeta.posttestFormVersion)),
+              h("span", null, daVersionFingerprintLabel + ": ", h("code", { style: { fontSize: 10.5 } }, versionMeta.versionFingerprint))
+            ),
+            versionMeta.legacy ? h("p", { style: { margin: "8px 0 0", fontSize: 11.5, color: "var(--da-orange-deep)", lineHeight: 1.5, fontWeight: 700 } }, daLegacyVersionWarning) : null,
+            h("div", { style: { marginTop: 9, fontSize: 11, color: "var(--da-muted)", fontWeight: 700 } }, daItemManifestLabel + " (" + manifestRows.length + " items)"),
+            manifestRows.length > 0 ? h("ul", { style: { margin: "5px 0 0", paddingLeft: 20, fontSize: 10.5, lineHeight: 1.55 } }, manifestRows.map(function (entry, index) {
+              return h("li", { key: "da-version-row-" + index }, String(entry.itemId || "missing") + " | probe " + String(entry.itemVersion || "missing") + " | posttest " + String(entry.posttestItemVersion || "missing") + " | " + String(entry.itemFingerprint || "missing") + " / " + String(entry.posttestItemFingerprint || "missing"));
+            })) : null
+          );
+        })(),
 
         // Headline
         h("div", { className: "da-card", style: {
@@ -9939,14 +11092,20 @@
           background: tier.id === "high" ? "var(--da-green-tint)" : tier.id === "moderate" ? "var(--da-amber-tint)" : tier.id === "low" ? "var(--da-red-tint)" : "var(--da-surface-3)",
           borderColor: tier.id === "high" ? "var(--da-green-border)" : tier.id === "moderate" ? "var(--da-amber-border)" : tier.id === "low" ? "var(--da-red-border)" : "var(--da-border-2)"
         }},
-          h("div", { style: { fontSize: 11, color: "var(--da-ink-3)", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 800, marginBottom: 6 } }, "Modifiability Index"),
+          h("div", { style: { fontSize: 11, color: "var(--da-ink-3)", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 800, marginBottom: 6 } }, isIncomplete ? "Assessment record" : "Modifiability Index"),
           h("div", { style: { display: "flex", alignItems: "baseline", gap: 16, flexWrap: "wrap" } },
             h("div", { style: { fontSize: 42, fontWeight: 900, color: "var(--da-ink)", lineHeight: 1 } },
-              (idx >= 0 ? "+" : "") + idx.toFixed(2)),
+              isIncomplete ? "—" : ((idx >= 0 ? "+" : "") + idx.toFixed(2))),
             h("div", { style: { fontSize: 16, fontWeight: 700, color: "var(--da-ink)" } }, tier.label)
           ),
           h("p", { style: { margin: "10px 0 0", fontSize: 13, color: "var(--da-ink-2)", lineHeight: 1.65 } }, tier.desc)
         ),
+
+        isIncomplete ? h("div", { className: "da-card", style: { marginBottom: 14, padding: 12, background: "var(--da-amber-tint)", borderColor: "var(--da-amber-border-2)" } },
+          h("h3", { style: { margin: "0 0 6px", fontSize: 13, fontWeight: 800, color: "var(--da-amber-text-2)" } }, daIncompleteNoInterpretationLabel),
+          h("p", { style: { margin: 0, fontSize: 12, color: "var(--da-ink-2)", lineHeight: 1.55 } }, daIncompleteRecordDescription),
+          h("div", { style: { marginTop: 7, fontSize: 11.5, color: "var(--da-ink-3)" } }, daIncompleteReasonPromptLabel + ": " + (sn.incompleteReasons || [sn.incompleteReason || "interrupted"]).map(daIncompleteReasonLabel).join("; "))
+        ) : null,
 
         // Phase V — Intake context (read-only)
         sn.intake ? (function () {
@@ -9992,7 +11151,7 @@
         })(),
 
         // Score breakdown
-        h("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10, marginBottom: 14 } },
+        !isIncomplete ? h("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10, marginBottom: 14 } },
           h("div", { className: "da-card", style: { textAlign: "center" } },
             h("div", { style: { fontSize: 11, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } }, "Pretest"),
             h("div", { style: { fontSize: 22, fontWeight: 900, color: "var(--da-ink-3)", marginTop: 4 } }, pretestSum + " / " + max)
@@ -10010,10 +11169,10 @@
             h("div", { style: { fontSize: 11, color: "var(--da-amber-text)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 } }, "Transfer"),
             h("div", { style: { fontSize: 22, fontWeight: 900, color: "var(--da-amber-text)", marginTop: 4 } }, transferSum + " / " + transferMax)
           ) : null
-        ),
+        ) : null,
 
         // Transfer interpretation
-        transferTierObj ? h("div", { className: "da-card", style: { marginBottom: 14, padding: 14 } },
+        !isIncomplete && transferTierObj ? h("div", { className: "da-card", style: { marginBottom: 14, padding: 14 } },
           h("div", { style: { fontSize: 11, color: "var(--da-ink-3)", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 800, marginBottom: 6 } },
             "Transfer interpretation"),
           h("div", { style: { fontSize: 15, fontWeight: 800, color: daHex(transferTierObj.color), marginBottom: 6 } }, transferTierObj.label),
@@ -10260,31 +11419,45 @@
     // ─── Phase F — JSON export ───
     // Triggers a browser download of the full session record. Useful for
     // archiving outside AlloFlow and for sharing with colleagues.
-    function exportSessionAsJson(sessionRecord) {
-      try {
-        var payload = Object.assign({}, sessionRecord, {
-          _exportFormat: "alloflow-da-session",
-          _exportVersion: "1.0.0",
-          _exportedAt: new Date().toISOString()
+    function exportSessionAsJson(sessionRecord, mode) {
+      var exportMode = mode === "redacted" ? "redacted" : "full";
+      var performExport = function () {
+        try {
+          var source = exportMode === "redacted" ? daRedactSessionForExport(sessionRecord) : sessionRecord;
+          var payload = Object.assign({}, source, {
+            _exportFormat: "alloflow-da-session",
+            _exportVersion: DA_SCHEMA_VERSION,
+            _exportMode: exportMode,
+            _exportedAt: new Date().toISOString()
+          });
+          var json = JSON.stringify(payload, null, 2);
+          var blob = new Blob([json], { type: "application/json" });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement("a");
+          a.href = url;
+          var safeName = (source.studentNickname || "anonymous").replace(/[^A-Za-z0-9_-]/g, "_") || "anonymous";
+          var dateStr = new Date(source.dateCompleted || source.dateStarted || Date.now())
+            .toISOString().slice(0, 10);
+          a.download = "da-session-" + safeName + "-" + exportMode + "-" + dateStr + ".json";
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(function () {
+            try { document.body.removeChild(a); URL.revokeObjectURL(url); } catch (e) { /* ignore */ }
+          }, 100);
+          addToast("📥 Downloaded " + exportMode + " DA session export.");
+        } catch (e) {
+          addToast("JSON export failed: " + (e && e.message ? e.message : "unknown error"));
+        }
+      };
+      if (exportMode === "full") {
+        daAskConfirm({
+          message: daFullExportWarning,
+          confirmLabel: daExportFullLabel,
+          onConfirm: performExport
         });
-        var json = JSON.stringify(payload, null, 2);
-        var blob = new Blob([json], { type: "application/json" });
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement("a");
-        a.href = url;
-        var safeName = (sessionRecord.studentNickname || "anonymous").replace(/[^A-Za-z0-9_-]/g, "_") || "anonymous";
-        var dateStr = new Date(sessionRecord.dateCompleted || sessionRecord.dateStarted || Date.now())
-          .toISOString().slice(0, 10);
-        a.download = "da-session-" + safeName + "-" + dateStr + ".json";
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(function () {
-          try { document.body.removeChild(a); URL.revokeObjectURL(url); } catch (e) { /* ignore */ }
-        }, 100);
-        addToast("📥 Downloaded da-session-" + safeName + "-" + dateStr + ".json");
-      } catch (e) {
-        addToast("JSON export failed: " + (e && e.message ? e.message : "unknown error"));
+        return;
       }
+      performExport();
     }
 
     // ─── Phase EE — Full-history backup + restore (JSON, clinician-controlled) ───
@@ -10323,14 +11496,13 @@
     // Merge imported sessions into state.sessions. Dedup by id; EXISTING local
     // sessions always win (a restore never overwrites what you already have).
     function mergeImportedSessions(imported) {
-      // Validity filter. Require a FINALIZED session (numeric modifiabilityIndex):
-      // accepting an in-progress shape (itemResults but no MI) would render as a
-      // fake "+0.00" measured result in the sessions list. state.sessions is
-      // finalized-only, and finalizeSession always sets a numeric MI.
+      // Validity filter. Accept interpreted completed records and explicit
+      // incomplete archives. In-progress shapes remain invalid; incomplete records
+      // must carry recordStatus="incomplete" and no Modifiability Index.
       var candidates = [], skipped = 0;
       (imported || []).forEach(function (s) {
-        if (!s || typeof s !== "object" || !s.id) { skipped++; return; }
-        if (typeof s.modifiabilityIndex !== "number") { skipped++; return; }
+        var validation = daValidateImportedSession(s);
+        if (!validation.valid) { skipped++; return; }
         candidates.push(s);
       });
       // Count added-vs-already-present against the current view (for the toast).
@@ -10731,7 +11903,7 @@
               if (!hasIncluded) return;
               if (saveTemplate) saveProbeTemplate(customForm, includedItems);
               var session = startSession({
-                studentNickname: "",
+                studentNickname: getNicknameValue(),
                 domain: customForm.domain || "math",
                 difficulty: "custom",
                 mode: customForm.mode || "clinician",
@@ -11823,7 +12995,7 @@
       var phase = s.currentPhase;
       var idx = s.currentItemIdx;
       var itemId = s.sessionItemIds[idx];
-      var rawItem = ITEMS_BY_ID[itemId];
+      var rawItem = ITEMS_BY_ID[itemId] || daSessionItemById(s, itemId);
       if (!rawItem) {
         // Shouldn't happen; safety guard
         return h("div", { className: "da-root", style: { padding: 20 } },
@@ -11837,7 +13009,7 @@
       // so matchAnswer + scoring don't need any branching. Skip items
       // without a twin (rare — only happens if a mixed bank has some
       // items with twins and some without).
-      var item = rawItem;
+      var item = phase === "posttest" ? daPosttestItemForPhase(s, idx, rawItem) : rawItem;
       if (phase === "transfer") {
         if (!rawItem.transferTwin || !rawItem.transferTwin.prompt) {
           // Skip this item — auto-advance with a zero-credit placeholder
@@ -11870,7 +13042,7 @@
       var phaseInfo = {
         pretest:  { label: "Pretest",  color: "var(--da-ink-3)", hint: "No scaffolds. Record what the student does alone." },
         mediation:{ label: "Mediation", color: "var(--da-accent-2)", hint: "Same items — use the scaffold ladder. Record what support produced success." },
-        posttest: { label: "Posttest", color: "var(--da-green-text)", hint: "Re-test alone. Compare to pretest." },
+        posttest: { label: "Posttest", color: "var(--da-green-text)", hint: s.posttestForm === "matched-parallel" ? "Re-test alone with matched parallel items. Compare to pretest." : s.posttestForm === "mixed" ? "Re-test alone with parallel items where available. Compare to pretest." : "Re-test alone. Compare to pretest." },
         transfer: { label: "Transfer probe", color: "var(--da-amber-text)", hint: "Novel items, same construct. Tests whether learning generalized (not just memorized)." }
       }[phase] || { label: phase, color: "var(--da-muted)", hint: "" };
 
@@ -11881,7 +13053,7 @@
       // Session-arc stepper: which phases this session will run, in order.
       // Transfer appears only when at least one item ships a transferTwin
       // (same condition submitResponse uses to route posttest → transfer).
-      var hasAnyTwinStep = s.sessionItemIds.some(function (iid) {
+      var hasAnyTwinStep = s.posttestForm !== "matched-parallel" && s.posttestForm !== "mixed" && s.sessionItemIds.some(function (iid) {
         var it2 = ITEMS_BY_ID[iid];
         return it2 && it2.transferTwin && it2.transferTwin.prompt;
       });
@@ -12336,20 +13508,50 @@
               },
               style: { padding: "8px 16px", borderRadius: 10, border: "1px solid var(--da-red-mid)", background: "var(--da-red-tint)", color: "var(--da-red-text)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
             }, "Mark wrong"),
-            // Skip — record as wrong, level 0
+            // Non-scorable outcomes remain visible but cannot be used as wrong answers.
             h("button", {
               onClick: function () {
                 submitResponse({
                   phase: phase, itemId: itemId,
                   response: responseDraft || "(skipped)",
+                  responseStatus: "skipped",
                   levelReached: 0, finalCorrect: false,
                   examinerObservation: observationDraft,
                   observationTags: observationTagsDraft,
                   supportType: "skipped"
                 });
               },
+              "aria-label": daSkippedLabel,
               style: { padding: "8px 12px", borderRadius: 10, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }
-            }, "Skip")
+            }, daSkippedLabel),
+            h("button", {
+              onClick: function () {
+                submitResponse({
+                  phase: phase, itemId: itemId,
+                  response: "(refused)", responseStatus: "refused",
+                  levelReached: 0, finalCorrect: false,
+                  examinerObservation: observationDraft,
+                  observationTags: observationTagsDraft,
+                  supportType: "refused"
+                });
+              },
+              "aria-label": daRefusedLabel,
+              style: { padding: "8px 12px", borderRadius: 10, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }
+            }, daRefusedLabel),
+            h("button", {
+              onClick: function () {
+                submitResponse({
+                  phase: phase, itemId: itemId,
+                  response: "(not administered)", responseStatus: "not-administered",
+                  levelReached: 0, finalCorrect: false,
+                  examinerObservation: observationDraft,
+                  observationTags: observationTagsDraft,
+                  supportType: "not-administered"
+                });
+              },
+              "aria-label": daNotAdministeredLabel,
+              style: { padding: "8px 12px", borderRadius: 10, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }
+            }, daNotAdministeredLabel)
           )
         ),
         // Canonical answer reveal (collapsed by default)
@@ -12371,7 +13573,7 @@
       var s = state.activeSession;
       var idx = s.currentItemIdx;
       var itemId = s.sessionItemIds[idx];
-      var item = ITEMS_BY_ID[itemId];
+      var item = ITEMS_BY_ID[itemId] || daSessionItemById(s, itemId);
       if (!item) {
         return h("div", { className: "da-root", style: { padding: 20 } },
           h("p", null, "Item not found. Discard session?"),
@@ -12594,7 +13796,43 @@
               },
               disabled: aiBusy,
               style: { padding: "8px 14px", borderRadius: 10, border: "1px solid var(--da-red-mid)", background: "var(--da-red-tint)", color: "var(--da-red-text)", fontWeight: 800, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }
-            }, "Mark wrong")
+            }, "Mark wrong"),
+            h("button", {
+              onClick: function () {
+                if (aiBusy) return;
+                finalizeAiItem(item, aiAttempts.concat([{
+                  response: "(skipped)", verdict: "skipped", levelAfter: currentLevel,
+                  scaffoldShown: "", observationHint: "Examiner recorded no response."
+                }]), false, "skipped");
+              },
+              disabled: aiBusy,
+              "aria-label": daSkippedLabel,
+              style: { padding: "8px 12px", borderRadius: 10, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }
+            }, daSkippedLabel),
+            h("button", {
+              onClick: function () {
+                if (aiBusy) return;
+                finalizeAiItem(item, aiAttempts.concat([{
+                  response: "(refused)", verdict: "refused", levelAfter: currentLevel,
+                  scaffoldShown: "", observationHint: "Student refused or could not participate."
+                }]), false, "refused");
+              },
+              disabled: aiBusy,
+              "aria-label": daRefusedLabel,
+              style: { padding: "8px 12px", borderRadius: 10, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }
+            }, daRefusedLabel),
+            h("button", {
+              onClick: function () {
+                if (aiBusy) return;
+                finalizeAiItem(item, aiAttempts.concat([{
+                  response: "(not administered)", verdict: "not-administered", levelAfter: currentLevel,
+                  scaffoldShown: "", observationHint: "Item was not administered."
+                }]), false, "not-administered");
+              },
+              disabled: aiBusy,
+              "aria-label": daNotAdministeredLabel,
+              style: { padding: "8px 12px", borderRadius: 10, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }
+            }, daNotAdministeredLabel)
           )
         ),
         // Attempts log (this item's mediation cycle)
@@ -13024,11 +14262,26 @@
       var mediationResults = s.itemResults.filter(function (r) { return r.phase === "mediation"; });
       var posttestResults = s.itemResults.filter(function (r) { return r.phase === "posttest"; });
       var transferResults = s.itemResults.filter(function (r) { return r.phase === "transfer"; });
+      var evidence = daEvidenceStatus(s);
       var pretestSum = sumItemResultScores(pretestResults);
       var posttestSum = sumItemResultScores(posttestResults);
       var transferSum = sumItemResultScores(transferResults);
       var modIdx = computeModifiabilityIndex(pretestSum, posttestSum, s.sessionItemIds.length);
-      var tier = modifiabilityTier(modIdx);
+      var tier = evidence.sufficient ? modifiabilityTier(modIdx) : { id: "insufficient", label: daInsufficientTitle, desc: daInsufficientDescription };
+      var evidenceNotes = [];
+      if (evidence.missingPhases.length > 0) {
+        evidenceNotes.push("Complete the " + evidence.missingPhases.join(", ") + " phase" + (evidence.missingPhases.length === 1 ? "" : "s") + " before interpreting the Modifiability Index.");
+      }
+      if (evidence.dataQualityIssues.length > 0) {
+        evidenceNotes.push("Review evidence integrity: " + evidence.dataQualityIssues.join("; ") + ".");
+      }
+      if (evidence.unscoredItemCount > 0) {
+        evidenceNotes.push(evidence.unscoredItemCount + " response" + (evidence.unscoredItemCount === 1 ? " is" : "s are") + " not scorable because it was skipped, refused, or not administered.");
+      }
+      if (evidenceNotes.length === 0) {
+        evidenceNotes.push("This probe has " + evidence.totalItems + " core items per phase. The result is descriptive and should be read cautiously.");
+      }
+      var evidencePhaseRows = daEvidencePhaseRows(evidence);
       var max = maxPossibleScore(s.sessionItemIds.length);
       // Phase E — transfer stats. Only meaningful if transfer phase ran.
       var transferMax = maxPossibleScore(transferResults.length);
@@ -13047,7 +14300,7 @@
         // Header
         h("div", { style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 14, flexWrap: "wrap" } },
           h("div", { style: { flex: 1, minWidth: 220 } },
-            h("div", { style: { fontSize: 11, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } }, "Session complete"),
+            h("div", { style: { fontSize: 11, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 } }, evidence.complete ? "Session complete" : "Preliminary results"),
             h("h1", { style: { margin: "2px 0 0", fontSize: 22, fontWeight: 800, color: "var(--da-ink)" } },
               "Modifiability profile · " + (s.studentNickname || "Anonymous"))
           ),
@@ -13059,12 +14312,12 @@
             title: "Steps back into the session, re-presenting the most recently recorded item with its response restored.",
             style: { background: "transparent", border: "1px solid var(--da-border-2)", color: "var(--da-ink-3)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700 }
           }, "↩ Reopen last item") : null,
-          h("button", {
+          evidence.sufficient ? h("button", {
             onClick: openDaAlloReview,
             "aria-label": "Review Dynamic Assessment tables before opening AlloSheet",
             title: "Choose a bounded summary or coded probe transfer. AlloSheet cannot write back to Dynamic Assessment.",
             style: { background: "var(--da-blue-tint)", border: "1px solid var(--da-blue-border)", color: "var(--da-accent-text)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 800 }
-          }, "📊 Open in AlloSheet")
+          }, "📊 Open in AlloSheet") : null
         ),
 
         // Bridge the h1 → h3 heading jump: every result card below is an h3,
@@ -13072,6 +14325,46 @@
         // without changing anything visually.
         h("h2", { style: { position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", border: 0 } },
           "Detailed results"),
+
+
+        evidence.sufficient ? null : h("div", {
+          role: "alert",
+          className: "da-card",
+          style: { marginBottom: 14, padding: 12, background: "var(--da-amber-tint)", borderColor: "var(--da-amber-border-2)" }
+        },
+          h("div", { style: { fontSize: 12, fontWeight: 800, color: "var(--da-amber-text-2)" } }, daInsufficientTitle),
+          h("div", { style: { marginTop: 4, fontSize: 11.5, color: "var(--da-ink-2)", lineHeight: 1.5 } },
+            evidenceNotes.join(" ")
+          ),
+          h("label", { style: { display: "grid", gap: 4, marginTop: 10, fontSize: 11, color: "var(--da-ink-3)", fontWeight: 700, maxWidth: 360 } }, daIncompleteReasonPromptLabel,
+            h("select", { value: s.incompleteReason || "interrupted", onChange: function (event) { patchSession({ incompleteReason: event.target.value }); }, "aria-label": daIncompleteReasonPromptLabel, style: { padding: "7px 9px", borderRadius: 7, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink)", fontFamily: "inherit", fontSize: 12 } }, daIncompleteReasonOptions.map(function (option) { return h("option", { key: option.id, value: option.id }, option.label); }))
+          )
+        ),
+        // Evidence coverage
+        h("div", { className: "da-card", style: { marginBottom: 14, padding: 12 } },
+          h("h3", { style: { margin: "0 0 8px", fontSize: 13, fontWeight: 800, color: "var(--da-ink)" } }, daEvidenceCoverageLabel),
+          h("table", { style: { width: "100%", borderCollapse: "collapse", fontSize: 11.5 } },
+            h("thead", null,
+              h("tr", null,
+                h("th", { scope: "col", style: { textAlign: "left", padding: "5px 6px", borderBottom: "1px solid var(--da-border-2)", color: "var(--da-muted)" } }, daEvidencePhaseLabel),
+                h("th", { scope: "col", style: { textAlign: "left", padding: "5px 6px", borderBottom: "1px solid var(--da-border-2)", color: "var(--da-muted)" } }, daEvidenceCoverageColumnLabel),
+                h("th", { scope: "col", style: { textAlign: "left", padding: "5px 6px", borderBottom: "1px solid var(--da-border-2)", color: "var(--da-muted)" } }, daEvidenceScorableLabel),
+                h("th", { scope: "col", style: { textAlign: "left", padding: "5px 6px", borderBottom: "1px solid var(--da-border-2)", color: "var(--da-muted)" } }, daEvidenceStatusLabel)
+              )
+            ),
+            h("tbody", null,
+              evidencePhaseRows.map(function (row) {
+                return h("tr", { key: "da-evidence-row-" + row.id },
+                  h("th", { scope: "row", style: { textAlign: "left", padding: "6px", borderBottom: "1px solid var(--da-border)" } }, row.label),
+                  h("td", { style: { padding: "6px", borderBottom: "1px solid var(--da-border)", fontFamily: "ui-monospace, monospace" } }, row.recorded + " / " + row.expected),
+                  h("td", { style: { padding: "6px", borderBottom: "1px solid var(--da-border)", fontFamily: "ui-monospace, monospace" } }, row.scorable + " / " + row.expected),
+                  h("td", { style: { padding: "6px", borderBottom: "1px solid var(--da-border)", color: row.needsAttention ? "var(--da-amber-text-2)" : "var(--da-green-text-2)", fontWeight: 700 } },
+                    row.needsAttention ? daEvidenceNeedsAttentionLabel : daEvidenceRecordedLabel)
+                );
+              })
+            )
+          )
+        ),
 
         // Headline modifiability card
         h("div", {
@@ -13086,12 +14379,12 @@
             "Modifiability Index"),
           h("div", { style: { display: "flex", alignItems: "baseline", gap: 16, flexWrap: "wrap" } },
             h("div", { style: { fontSize: 42, fontWeight: 900, color: "var(--da-ink)", lineHeight: 1 } },
-              (modIdx >= 0 ? "+" : "") + modIdx.toFixed(2)),
+              evidence.sufficient ? ((modIdx >= 0 ? "+" : "") + modIdx.toFixed(2)) : "--"),
             h("div", { style: { fontSize: 16, fontWeight: 700, color: "var(--da-ink)" } }, tier.label)
           ),
           // MI gauge — the index placed on its full −1…+1 range with the tier
           // bands visible, so the number reads as a position, not a grade.
-          (function () {
+          evidence.sufficient ? (function () {
             var gW = 320, gH = 34, gPad = 6, barY = 10, barH = 10;
             var gx = function (v) { return gPad + ((Math.max(-1, Math.min(1, v)) + 1) / 2) * (gW - 2 * gPad); };
             var bands = [
@@ -13125,7 +14418,7 @@
               }),
               h("line", { x1: markerX, x2: markerX, y1: barY, y2: barY + barH, stroke: daTone.ink, strokeWidth: 2 })
             );
-          })(),
+          })() : null,
           h("p", { style: { margin: "10px 0 0", fontSize: 13, color: "var(--da-ink-2)", lineHeight: 1.65 } }, tier.desc),
           h("p", { style: { margin: "6px 0 0", fontSize: 10.5, color: "var(--da-muted)", fontStyle: "italic", lineHeight: 1.5 } },
             "Band cut-points (0.30 / 0.60) are interpretation conventions of this tool — they are not empirically derived or normed thresholds."),
@@ -13259,7 +14552,7 @@
           if (!nick) return null; // anonymous sessions can't be grouped meaningfully
           var nickKey = nick.toLowerCase();
           var prior = (state.sessions || []).filter(function (ss) {
-            return ss && typeof ss.modifiabilityIndex === "number"
+            return daIsSufficientSession(ss)
               && (ss.studentNickname || "").trim().toLowerCase() === nickKey
               && ss.id !== s.id;
           });
@@ -13274,6 +14567,7 @@
           });
           pts.sort(function (a, b) { return String(a.date).localeCompare(String(b.date)); });
           pts.push({ mi: modIdx, domain: s.domain || "custom", date: s.dateStarted || "", items: s.sessionItemIds.length, current: true });
+          var versionComparison = daCompareSessionVersions(prior.concat([Object.assign({}, s, { recordStatus: "complete", modifiabilityIndex: modIdx, evidenceStatus: { sufficient: true } })]));
           if (pts.length < 2) return null; // need ≥2 points for a trajectory
 
           var miColor = function (v) { return daHex(v >= 0.6 ? "#16a34a" : v >= 0.3 ? "#a16207" : v >= 0 ? "#1e3a8a" : "#b91c1c"); };
@@ -13331,7 +14625,9 @@
               multiDomain
                 ? "⚠ These sessions span more than one domain (" + Object.keys(domainsPresent).map(function (d) { return domainLabels[d] || d; }).join(", ") + "). The Modifiability Index is construct-relative — compare points WITHIN the same domain, not across. Descriptive trajectory, not a growth norm."
                 : "Descriptive trajectory across the sessions you've run with this student — not a standardized growth norm."
-            )
+            ),
+            h("div", { style: { fontSize: 11, color: versionComparison.mismatch ? "var(--da-orange-deep)" : "var(--da-sky-text)", fontStyle: "italic", marginTop: 4, lineHeight: 1.5, fontWeight: versionComparison.mismatch ? 700 : 400 } },
+              versionComparison.mismatch ? daVersionMismatchLabel + ": " + daVersionComparisonCaution : daVersionComparisonConsistent)
           );
         })(),
 
@@ -13397,7 +14693,7 @@
         // and jump-to-section / quick-generate buttons. Solves discoverability:
         // first-time clinicians no longer have to scroll through the summary
         // to learn what's available.
-        (function () {
+        evidence.sufficient ? (function () {
           var pretestResultsW = (s.itemResults || []).filter(function (r) { return r.phase === "pretest"; });
           var posttestResultsW = (s.itemResults || []).filter(function (r) { return r.phase === "posttest"; });
           var pretestSumW = sumItemResultScores(pretestResultsW);
@@ -13551,7 +14847,7 @@
               })
             )
           );
-        })(),
+        })() : null,
 
         // Phase V — Pre-session intake context (read-only on the live summary)
         s.intake ? (function () {
@@ -14613,50 +15909,50 @@
 
         // Action row
         h("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" } },
-          h("button", {
-            onClick: function () {
-              finalizeSession();
-              addToast("Session saved.");
-            },
+          evidence.sufficient ? h("button", {
+            onClick: function () { var saved = finalizeSession(); if (saved) addToast("Session saved."); },
             style: { padding: "10px 18px", borderRadius: 10, border: "none", background: "var(--da-btn-green)", color: "var(--da-on-accent)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
-          }, "✓ Save session"),
+          }, "✓ Save session") : h("button", {
+            onClick: function () { daAskConfirm({ message: daArchiveIncompleteConfirm, confirmLabel: daArchiveIncompleteLabel, onConfirm: function () { if (archiveIncompleteSession(s.incompleteReason || "interrupted")) addToast("Incomplete assessment record saved without interpretation."); } }); },
+            style: { padding: "10px 18px", borderRadius: 10, border: "none", background: "var(--da-btn-amber)", color: "var(--da-on-accent)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
+          }, daArchiveIncompleteLabel),
           // Phase K — IEP goal generator entry
-          !iepPanelOpen ? h("button", {
+          evidence.sufficient && !iepPanelOpen ? h("button", {
             onClick: function () { setIepPanelOpen(true); },
             "aria-label": "Open the IEP goal generator panel",
             title: "Draft SMART-format annual goals + short-term objectives from this DA session",
             style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-amber-text-2)", background: "var(--da-amber-tint-3)", color: "var(--da-amber-text-2)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "🎯 Draft IEP goals") : null,
           // Phase Q — UDL accommodations entry
-          !accomPanelOpen ? h("button", {
+          evidence.sufficient && !accomPanelOpen ? h("button", {
             onClick: function () { setAccomPanelOpen(true); },
             "aria-label": "Open the UDL accommodations panel",
             title: "Draft UDL-aligned classroom accommodations from this DA session",
             style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-green-mid)", background: "var(--da-green-tint)", color: "var(--da-green-text-2)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "🛠 Accommodations") : null,
           // Phase S — Family-facing summary entry
-          !familyPanelOpen ? h("button", {
+          evidence.sufficient && !familyPanelOpen ? h("button", {
             onClick: function () { setFamilyPanelOpen(true); },
             "aria-label": "Open the family-facing summary panel",
             title: "Draft a plain-language summary to share with the family before an IEP meeting",
             style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-rose-text)", background: "var(--da-rose-tint)", color: "var(--da-rose-text)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "👨‍👩‍👧 Family letter") : null,
           // Phase T — Teacher handoff entry
-          !teacherPanelOpen ? h("button", {
+          evidence.sufficient && !teacherPanelOpen ? h("button", {
             onClick: function () { setTeacherPanelOpen(true); },
             "aria-label": "Open the teacher / case-manager handoff panel",
             title: "Draft a one-page handoff for the implementing teacher",
             style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-sky-deep)", background: "var(--da-sky-tint-2)", color: "var(--da-sky-deep)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "🧑‍🏫 Teacher handoff") : null,
           // Phase X — Monitoring plan entry
-          !monitoringPanelOpen ? h("button", {
+          evidence.sufficient && !monitoringPanelOpen ? h("button", {
             onClick: function () { setMonitoringPanelOpen(true); },
             "aria-label": "Open the progress monitoring plan panel",
             title: "Draft a CBM-anchored progress monitoring plan with decision rules",
             style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-indigo-text)", background: "var(--da-indigo-tint)", color: "var(--da-indigo-text)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "📈 Monitoring plan") : null,
           // Generate-all convenience button (only if at least one not yet generated)
-          (!iepGoals.length || !accommodations.length || !familySummary || !teacherHandoff || !progressMonitoring) ? h("button", {
+          evidence.sufficient && (!iepGoals.length || !accommodations.length || !familySummary || !teacherHandoff || !progressMonitoring) ? h("button", {
             onClick: function () {
               var pretestResults = (s.itemResults || []).filter(function (r) { return r.phase === "pretest"; });
               var posttestResults = (s.itemResults || []).filter(function (r) { return r.phase === "posttest"; });
@@ -14679,7 +15975,7 @@
             style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-violet-mid-2)", background: "var(--da-violet-tint)", color: "var(--da-violet-mid-2)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "✨ Generate all outputs") : null,
           // Phase E — Print packet
-          h("button", {
+          evidence.sufficient ? h("button", {
             onClick: function () {
               try { window.print(); }
               catch (e) { addToast("Print is not available in this browser."); }
@@ -14687,9 +15983,9 @@
             "aria-label": "Print clinical observation report",
             title: "Generates a self-contained black-and-white PDF/print of the session for paste-in to a clinical report.",
             style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-ink-3)", background: "var(--da-surface)", color: "var(--da-ink)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
-          }, "🖨 Print packet"),
+          }, "🖨 Print packet") : null,
           // Phase D — Export to Report Writer
-          h("button", {
+          evidence.sufficient ? h("button", {
             onClick: function () {
               // Compose a synthetic session object that includes the
               // computed mod-index + tier (the live activeSession doesn't
@@ -14733,7 +16029,7 @@
             "aria-label": "Send DA findings to Report Writer",
             title: "Stashes DA findings on window.__alloDAExport. Open Report Writer next to ingest them as fact chunks + a pre-drafted section.",
             style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
-          }, "📝 Send to Report Writer"),
+          }, "📝 Send to Report Writer") : null,
           h("button", {
             onClick: function () {
               daAskConfirm({
@@ -14748,8 +16044,8 @@
         // Phase E — Hidden-onscreen print packet. Made visible only by
         // the @media print CSS rule. Lives inside the summary so it's
         // in the DOM the moment the clinician clicks the print button.
-        renderDaAlloReview(),
-        renderPrintPacket(),
+        evidence.sufficient ? renderDaAlloReview() : null,
+        evidence.sufficient ? renderPrintPacket() : null,
         // Phase S — Hidden-onscreen family letter block. Revealed only when
         // body[data-da-print-mode='family-letter'] is set immediately before
         // window.print() is called from the family panel.
@@ -14792,7 +16088,7 @@
   }
 
   window.AlloModules.DynamicAssessment._meta = {
-    version: "1.1.0-uplift", // WCAG/theming/ZPD uplift 2026-07-12 (themed shell, dialog semantics, learning-zone snapshot)
+    version: "1.3.0-da-flow", // codename consistency + versioned probes/forms + longitudinal comparison cautions
     storageKey: STORAGE_KEY,
     domains: ["math", "reading", "working-memory", "language"],
     itemCounts: {
@@ -14815,6 +16111,12 @@
     aggregateSessionStatistics: aggregateSessionStatistics,
     computeMiZScore: computeMiZScore,
     computeMiPercentile: computeMiPercentile,
+    isSufficientSession: daIsSufficientSession,
+    computeLongitudinalTrend: computeLongitudinalTrend,
+    buildSessionVersionMetadata: daBuildSessionVersionMetadata,
+    compareSessionVersions: daCompareSessionVersions,
+    itemVersionFingerprint: daItemVersionFingerprint,
+    evidencePhaseRows: daEvidencePhaseRows,
     interpretCohenD: interpretCohenD,
     aggregateItemStatistics: aggregateItemStatistics,
     // Phase D — export helpers exposed for cross-tool integration
@@ -14824,7 +16126,21 @@
     // Public query helper for sibling tools (Student Analytics, Report Writer, etc.)
     // Dynamic Assessment → AlloSheet one-way handoff
     buildDynamicAssessmentAlloSheetEnvelope: buildDynamicAssessmentAlloSheetEnvelope,
-    getSessionsByStudent: getSessionsByStudent
+    getSessionsByStudent: getSessionsByStudent,
+    selectBuiltInSessionItems: daSelectBuiltInSessionItems,
+    previousItemIds: daPreviousItemIds,
+    parseCodename: daParseCodename,
+    normalizeResponseStatus: normalizeResponseStatus,
+    isScorableResponse: isScorableResponse,
+    redactSessionForExport: daRedactSessionForExport,
+    validateImportedSession: daValidateImportedSession,
+    buildSecondRaterReview: daBuildSecondRaterReview,
+    validateSecondRaterReview: daValidateSecondRaterReview,
+    buildIncompleteRecord: daBuildIncompleteRecord,
+    incompleteReasonLabel: daIncompleteReasonLabel,
+    buildParallelPosttestItem: daBuildParallelPosttestItem,
+    evidenceStatus: daEvidenceStatus,
+    applyRetention: daApplyRetention
   };
   console.log("[CDN] DynamicAssessment loaded (Phases A–BB: math " + MATH_ITEMS.length + ", reading " + READING_ITEMS.length + ", working-memory " + WM_ITEMS.length + ", language " + LANGUAGE_ITEMS.length + " — " + (MATH_ITEMS.length + READING_ITEMS.length + WM_ITEMS.length + LANGUAGE_ITEMS.length) + " items total)");
 })();

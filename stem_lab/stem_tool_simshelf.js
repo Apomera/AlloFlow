@@ -61,7 +61,8 @@
     label: 'Sim Shelf',
     desc: 'A shelf of PhET simulations — the most researched sims in education — wrapped in a Predict → Explore → Explain coach. Lock in a guess before you touch anything, experiment freely, then let the coach compare what you predicted with what you saw.',
     color: 'amber',
-    category: 'general',
+    category: 'science',
+    aliases: ['PhET', 'simulations', 'physics', 'predict explore explain'],
     questHooks: [
       { id: 'ss_open', label: 'Open a simulation', icon: '🧪',
         check: function (d) { return !!(d && d.opened); } },

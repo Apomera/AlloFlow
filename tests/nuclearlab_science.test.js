@@ -141,6 +141,24 @@ describe('Shielding', () => {
   it('gives lead a half-value layer near 0.9 cm', () => {
     expect(Math.LN2 / SHIELDS.find(s => s.id === 'lead').mu).toBeCloseTo(0.9, 1);
   });
+
+  it('models alpha range differently in air and solid material', () => {
+    const nearAir = renderTool('nuclearLab', {
+      _nuclearLab: { radId: 'alpha', shieldId: 'air', thick: 0.1 },
+    });
+    const longAir = renderTool('nuclearLab', {
+      _nuclearLab: { radId: 'alpha', shieldId: 'air', thick: 4 },
+    });
+    const thinLead = renderTool('nuclearLab', {
+      _nuclearLab: { radId: 'alpha', shieldId: 'lead', thick: 0.1 },
+    });
+
+    expect(nearAir).toContain('100% of the alpha gets through 0.1 cm of air');
+    expect(longAir).toContain('0% of the alpha gets through 4 cm of air');
+    expect(thinLead).toContain('0% of the alpha gets through 0.1 cm of lead');
+    expect(nearAir).toMatch(/eye|wound|inhaled|swallowed/i);
+    expect(nearAir).not.toMatch(/danger is never external|harmless outside/i);
+  });
 });
 
 describe('Dose', () => {

@@ -79,6 +79,7 @@ function EducatorHubModal(props) {
     setIsAccessibilityLabOpen, setIsCommunityCatalogOpen, setIsSymbolStudioOpen,
     setPdfAuditResult, setPdfBatchMode, setPendingPdfBase64, setPendingPdfFile,
     setShowBehaviorLens, setShowEducatorHub, setShowReportWriter, setShowCinematicStudio = (() => {}), showEducatorHub, t,
+    userRole = '',
     setShowRecentQrShares = (() => {}),
     beginPdfDocumentIntake = (() => null),
     isPdfDocumentIntakeCurrent = (() => true),
@@ -198,120 +199,6 @@ function EducatorHubModal(props) {
     };
   }, [setShowEducatorHub]);
 
-  // ── Platform Check (2026-06-12) ──
-  // The app's primary surface is the Gemini Canvas sandboxed iframe, where
-  // platform capabilities differ from a normal browser in ways our test
-  // gates can't see (IndexedDB/localStorage don't persist across sessions —
-  // maintainer-verified; popups, WASM, dialogs, downloads are all sandbox-
-  // sensitive). This one-click probe turns those unknowns into a copyable
-  // PASS/FAIL report, so feature decisions rest on platform FACTS.
-  const [platProbe, setPlatProbe] = React.useState(null);
-  const _runPlatformProbe = async () => {
-    const rows = [];
-    const add = (name, status, detail) => rows.push({ name, status, detail: String(detail || '') });
-    try {
-      let origin = 'unknown'; try { origin = window.location.origin; } catch (_) {}
-      let inFrame = 'unknown'; try { inFrame = window.top === window ? 'no (top window)' : 'yes'; } catch (_) { inFrame = 'yes (cross-origin parent)'; }
-      add('Context', 'info', 'origin: ' + origin + ' · in iframe: ' + inFrame + ' · secure: ' + (typeof isSecureContext !== 'undefined' ? isSecureContext : '?'));
-    } catch (e) { add('Context', 'info', 'unreadable: ' + e.message); }
-    try {
-      const w = window.open('', '_blank', 'width=80,height=60');
-      if (w) { try { w.close(); } catch (_) {} add('Pop-up windows', 'pass', 'window.open works — compare view + Save-as-PDF can open'); }
-      else add('Pop-up windows', 'fail', 'window.open returned null — the compare view and the print flow CANNOT open here');
-    } catch (e) { add('Pop-up windows', 'fail', 'window.open threw: ' + e.message); }
-    try {
-      new WebAssembly.Module(new Uint8Array([0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00]));
-      add('WebAssembly', 'pass', 'compiles — Writing Check + OCR can run');
-    } catch (e) { add('WebAssembly', 'fail', 'cannot compile: ' + e.message); }
-    // Marker trick: each run looks for the PREVIOUS run's marker, which
-    // empirically answers cross-session persistence over time.
-    try {
-      const prior = localStorage.getItem('allo_platform_probe_marker');
-      localStorage.setItem('allo_platform_probe_marker', new Date().toISOString());
-      if (localStorage.getItem('allo_platform_probe_marker')) {
-        add('localStorage (this session)', 'pass', 'write + read OK');
-        add('localStorage (across sessions)', prior ? 'pass' : 'warn', prior ? ('marker from a previous run found (' + prior.slice(0, 19) + ') — storage persisted') : 'no marker from a previous run — first probe here, or storage was wiped between sessions. Run again in a NEW session to confirm.');
-      } else add('localStorage (this session)', 'fail', 'wrote but could not read back');
-    } catch (e) { add('localStorage (this session)', 'fail', e.message); }
-    try {
-      const idb = await new Promise((resolve) => {
-        const to = setTimeout(() => resolve({ status: 'fail', detail: 'open timed out (3s)' }), 3000);
-        try {
-          const req = indexedDB.open('allo_platform_probe', 1);
-          req.onupgradeneeded = () => { try { req.result.createObjectStore('kv'); } catch (_) {} };
-          req.onerror = () => { clearTimeout(to); resolve({ status: 'fail', detail: 'open error: ' + (req.error && req.error.message) }); };
-          req.onsuccess = () => {
-            try {
-              const db = req.result;
-              const tx = db.transaction('kv', 'readwrite');
-              const st = tx.objectStore('kv');
-              const get = st.get('marker');
-              get.onsuccess = () => {
-                const prior = get.result;
-                st.put(new Date().toISOString(), 'marker');
-                tx.oncomplete = () => { clearTimeout(to); try { db.close(); } catch (_) {} resolve({ status: 'pass', detail: prior ? ('works; marker from a previous run found (' + String(prior).slice(0, 19) + ') — persisted') : 'works this session; no prior marker — first probe here, or wiped between sessions. Re-run in a NEW session to confirm.' }); };
-              };
-              get.onerror = () => { clearTimeout(to); resolve({ status: 'fail', detail: 'read failed' }); };
-            } catch (e) { clearTimeout(to); resolve({ status: 'fail', detail: e.message }); }
-          };
-        } catch (e) { clearTimeout(to); resolve({ status: 'fail', detail: e.message }); }
-      });
-      add('IndexedDB', idb.status, idb.detail);
-    } catch (e) { add('IndexedDB', 'fail', e.message); }
-    try {
-      const u = URL.createObjectURL(new Blob(['probe'], { type: 'text/plain' }));
-      const r = await fetch(u); const txt = await r.text(); URL.revokeObjectURL(u);
-      add('Blob URLs (same window)', txt === 'probe' ? 'pass' : 'warn', txt === 'probe' ? 'create + fetch back OK' : 'fetched but content mismatched');
-    } catch (e) { add('Blob URLs (same window)', 'fail', e.message); }
-    try {
-      const u = URL.createObjectURL(new Blob(['AlloFlow probe OK'], { type: 'text/plain' }));
-      const a = document.createElement('a'); a.href = u; a.download = 'alloflow-platform-probe.txt';
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(u), 4000);
-      add('File downloads', 'info', 'a tiny test file was triggered — if alloflow-platform-probe.txt appears in your Downloads, downloads work end-to-end');
-    } catch (e) { add('File downloads', 'fail', e.message); }
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText('AlloFlow platform probe'); add('Clipboard (API)', 'pass', 'writeText OK'); }
-      else add('Clipboard (API)', 'warn', 'navigator.clipboard unavailable');
-    } catch (e) { add('Clipboard (API)', 'warn', 'writeText rejected: ' + String(e && e.message).slice(0, 120)); }
-    // The execCommand fallback — what every copy button actually uses when
-    // the API is policy-blocked (the Canvas case, probe-verified 2026-06-10).
-    try {
-      const ta = document.createElement('textarea');
-      ta.setAttribute('aria-label', 'Clipboard fallback text');
-      ta.value = 'AlloFlow probe'; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;left:-9999px;top:0';
-      document.body.appendChild(ta); ta.select();
-      const ok = document.execCommand('copy');
-      document.body.removeChild(ta);
-      add('Clipboard (fallback)', ok ? 'pass' : 'warn', ok ? 'execCommand copy works — copy buttons function even where the API is blocked' : 'execCommand returned false');
-    } catch (e) { add('Clipboard (fallback)', 'fail', String(e && e.message).slice(0, 120)); }
-    add('Dialogs (confirm/prompt)', 'info', 'typeof confirm = ' + (typeof window.confirm) + ' — use the "Test dialog" button for the real answer (a sandbox can define it but silently return false)');
-    const cdns = [
-      ['jsDelivr', 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/package.json'],
-      ['unpkg', 'https://unpkg.com/pdf-lib@1.17.1/package.json'],
-      ['cdnjs', 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'],
-      ['Google Fonts', 'https://fonts.googleapis.com/css2?family=Lexend&display=swap'],
-    ];
-    for (const pair of cdns) {
-      try {
-        const t0 = Date.now();
-        const ac = typeof AbortController === 'function' ? new AbortController() : null;
-        const tid = ac ? setTimeout(() => { try { ac.abort(); } catch (_) {} }, 6000) : null;
-        const r = await fetch(pair[1], ac ? { signal: ac.signal } : undefined);
-        if (tid) clearTimeout(tid);
-        add('CDN: ' + pair[0], r.ok ? 'pass' : 'warn', 'HTTP ' + r.status + ' in ' + (Date.now() - t0) + 'ms');
-      } catch (e) { add('CDN: ' + pair[0], 'fail', 'unreachable: ' + (e && e.message)); }
-    }
-    try {
-      const t0 = Date.now();
-      const r = await fetch('https://cdn.jsdelivr.net/npm/harper.js@2.4.0/dist/harper_wasm_bg.wasm', { cache: 'force-cache' });
-      if (r.ok) { await r.arrayBuffer(); const total = Date.now() - t0; add('Writing-Check cache (10 MB WASM)', 'info', 'fetched in ' + total + 'ms — under ~500ms means the HTTP cache held it; re-run in a fresh session to test cross-session caching'); }
-      else add('Writing-Check cache (10 MB WASM)', 'warn', 'HTTP ' + r.status);
-    } catch (e) { add('Writing-Check cache (10 MB WASM)', 'warn', e.message); }
-    setPlatProbe({ when: new Date().toLocaleString(), rows });
-  };
-  const _probeReportText = () => !platProbe ? '' : ('AlloFlow Platform Check — ' + platProbe.when + '\n' + (typeof navigator !== 'undefined' ? navigator.userAgent : '') + '\n\n' + platProbe.rows.map((r) => '[' + r.status.toUpperCase() + '] ' + r.name + ' — ' + r.detail).join('\n'));
-
   const _openAlloSheet = () => {
     const bridge = window.AlloSheetHostBridge;
     if (!bridge || typeof bridge.open !== 'function') {
@@ -325,6 +212,115 @@ function EducatorHubModal(props) {
     if (popup) setShowEducatorHub(false);
   };
 
+  const tr = (key, fallback) => {
+    try { const value = typeof t === 'function' ? t(key) : ''; return value && value !== key ? value : fallback; }
+    catch (_) { return fallback; }
+  };
+  const hubGridRef = React.useRef(null);
+  const [hubQuery, setHubQuery] = React.useState('');
+  const [hubCards, setHubCards] = React.useState([]);
+  const [hubFavoriteIds, setHubFavoriteIds] = React.useState(() => {
+    try { const parsed = JSON.parse(localStorage.getItem('alloflow_hub_educator_favorites') || '[]'); return Array.isArray(parsed) ? parsed : []; }
+    catch (_) { return []; }
+  });
+  const [hubRecentIds, setHubRecentIds] = React.useState(() => {
+    try { const parsed = JSON.parse(localStorage.getItem('alloflow_hub_educator_recent') || '[]'); return Array.isArray(parsed) ? parsed : []; }
+    catch (_) { return []; }
+  });
+  const [hubFavoritesOnly, setHubFavoritesOnly] = React.useState(false);
+  const [hubManageFavorites, setHubManageFavorites] = React.useState(false);
+  const [hubVisibleCount, setHubVisibleCount] = React.useState(0);
+  const [hubUsageCounts, setHubUsageCounts] = React.useState(() => {
+    try { const parsed = JSON.parse(localStorage.getItem('alloflow_hub_educator_usage') || '{}'); return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {}; }
+    catch (_) { return {}; }
+  });
+  const [hubCollapsedSections, setHubCollapsedSections] = React.useState(() => {
+    try { const parsed = JSON.parse(localStorage.getItem('alloflow_hub_educator_collapsed') || '[]'); return Array.isArray(parsed) ? parsed : []; }
+    catch (_) { return []; }
+  });
+  const [hubRoleOverride, setHubRoleOverride] = React.useState(() => {
+    try { const value = localStorage.getItem('alloflow_hub_educator_role'); return typeof value === 'string' ? value : ''; }
+    catch (_) { return ''; }
+  });
+  const toggleHubFavorite = (id) => setHubFavoriteIds((current) => current.includes(id) ? current.filter((value) => value !== id) : [...current, id]);
+  const toggleHubSection = (id) => setHubCollapsedSections((current) => current.includes(id) ? current.filter((value) => value !== id) : [...current, id]);
+  const activateHubCard = (id) => {
+    const grid = hubGridRef.current;
+    if (!grid) return;
+    const shell = Array.from(grid.querySelectorAll('[data-hub-id]')).find((element) => element.dataset.hubId === id);
+    const launch = shell && shell.querySelector('[data-hub-launch]');
+    if (launch) launch.click();
+  };
+  React.useEffect(() => {
+    try { localStorage.setItem('alloflow_hub_educator_favorites', JSON.stringify(hubFavoriteIds)); } catch (_) {}
+  }, [hubFavoriteIds]);
+  React.useEffect(() => {
+    try { localStorage.setItem('alloflow_hub_educator_recent', JSON.stringify(hubRecentIds)); } catch (_) {}
+  }, [hubRecentIds]);
+  React.useEffect(() => {
+    try { localStorage.setItem('alloflow_hub_educator_usage', JSON.stringify(hubUsageCounts)); } catch (_) {}
+  }, [hubUsageCounts]);
+  React.useEffect(() => {
+    try { localStorage.setItem('alloflow_hub_educator_collapsed', JSON.stringify(hubCollapsedSections)); } catch (_) {}
+  }, [hubCollapsedSections]);
+  React.useEffect(() => {
+    try { localStorage.setItem('alloflow_hub_educator_role', hubRoleOverride); } catch (_) {}
+  }, [hubRoleOverride]);
+  React.useEffect(() => {
+    const grid = hubGridRef.current;
+    if (!grid) return undefined;
+    const shells = Array.from(grid.querySelectorAll('[data-hub-id]'));
+    setHubCards(shells.map((shell) => ({ id: shell.dataset.hubId, label: shell.dataset.hubLabel, section: shell.dataset.hubSection })));
+    const remember = (event) => {
+      const launch = event.target && event.target.closest ? event.target.closest('[data-hub-launch]') : null;
+      const shell = launch && launch.closest('[data-hub-id]');
+      if (!shell || event.target.closest('[data-hub-favorite]')) return;
+      const id = shell.dataset.hubId;
+      setHubRecentIds((current) => [id, ...current.filter((value) => value !== id)].slice(0, 5));
+      setHubUsageCounts((current) => ({ ...current, [id]: (Number(current[id]) || 0) + 1 }));
+    };
+    grid.addEventListener('click', remember, true);
+    return () => grid.removeEventListener('click', remember, true);
+  }, []);
+  React.useEffect(() => {
+    const grid = hubGridRef.current;
+    if (!grid) return;
+    const query = hubQuery.trim().toLowerCase();
+    const shells = Array.from(grid.querySelectorAll('[data-hub-id]'));
+    const visibleSections = new Set();
+    let count = 0;
+    shells.forEach((shell) => {
+      const text = (shell.textContent || '').toLowerCase();
+      const sectionCollapsed = hubCollapsedSections.includes(shell.dataset.hubSection);
+      const visible = (!query || text.includes(query)) && (!hubFavoritesOnly || hubFavoriteIds.includes(shell.dataset.hubId)) && (!sectionCollapsed || query || hubFavoritesOnly);
+      shell.hidden = !visible;
+      shell.setAttribute('aria-hidden', visible ? 'false' : 'true');
+      if (visible) { visibleSections.add(shell.dataset.hubSection); count += 1; }
+    });
+    Array.from(grid.querySelectorAll('[data-hub-section-heading]')).forEach((heading) => {
+      const sectionId = heading.dataset.hubSectionHeading;
+      const filtered = Boolean(query || hubFavoritesOnly);
+      const visible = !filtered || visibleSections.has(sectionId);
+      heading.hidden = !visible;
+      const toggle = heading.querySelector('[data-hub-section-toggle]');
+      if (toggle) {
+        const collapsed = hubCollapsedSections.includes(sectionId);
+        const effectiveCollapsed = collapsed && !filtered;
+        toggle.setAttribute('aria-expanded', effectiveCollapsed ? 'false' : 'true');
+        toggle.textContent = effectiveCollapsed ? '+' : '-';
+      }
+    });
+    setHubVisibleCount(count);
+  }, [hubQuery, hubFavoritesOnly, hubFavoriteIds, hubCards, hubCollapsedSections]);
+  const hubRolePreference = hubRoleOverride || userRole || 'educator';
+  const hubRoleRaw = String(hubRolePreference).toLowerCase();
+  const hubRoleKey = hubRoleRaw.includes('clin') ? 'clinician' : (hubRoleRaw.includes('lead') || hubRoleRaw.includes('admin') || hubRoleRaw.includes('principal') || hubRoleRaw.includes('coach')) ? 'leader' : hubRoleRaw.includes('student') ? 'student' : hubRoleRaw.includes('family') ? 'family' : 'educator';
+  const hubRoleLabel = ({ educator: 'educators', clinician: 'clinicians', leader: 'leaders', student: 'students', family: 'families' }[hubRoleKey] || 'educators');
+  const hubRoleRecommendations = { educator: ['lesson', 'document', 'lumen', 'whiteboard', 'page-designer'], clinician: ['behavior-lens', 'dynamic-assessment', 'report-writer', 'lumen', 'accessibility-lab'], leader: ['leadership-hub', 'community-catalog', 'professional-development', 'document', 'lumen'], student: ['lumen', 'reading-library', 'stem-lab', 'text-inquiry', 'test-prep'], family: ['reading-library', 'lingua-practice', 'sel-hub', 'allohaven', 'storyforge'] };
+  const hubUsageRankedIds = Object.entries(hubUsageCounts).sort((a, b) => Number(b[1]) - Number(a[1])).map(([id]) => id);
+  const hubRecommendedIds = Array.from(new Set([...(hubRoleRecommendations[hubRoleKey] || hubRoleRecommendations.educator), ...hubUsageRankedIds])).slice(0, 5);
+  const recommendedCards = hubRecommendedIds.map((id) => hubCards.find((card) => card.id === id)).filter(Boolean);
+  const quickCards = Array.from(new Set([...hubFavoriteIds, ...hubRecentIds])).map((id) => hubCards.find((card) => card.id === id)).filter(Boolean);
   return (
         <div className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4" style={{ zIndex: 260 }} role="presentation" onClick={() => setShowEducatorHub(false)}>
           {/* allo-docsuite: portal modal rendered OUTSIDE the .allo-docsuite content wrapper,
@@ -339,117 +335,237 @@ function EducatorHubModal(props) {
               </div>
               <button type="button" onClick={() => setShowEducatorHub(false)} className="min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl" aria-label={t('educator_hub.close_aria') || 'Close educator tools'}>✕</button>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Bridge card removed 2026-07-02 (Aaron): the header Bridge button is the
-                  single entry point now. setBridgeSendOpen prop stays accepted (unused)
-                  so hosts that still pass it render unchanged. */}
-              {/* Polls, sign-up sheets and class activities. Their working
-                  surface is the Assignment Control Center; this is the front
-                  door, because a submenu item called "Recent homework links"
-                  is not where anyone looks to CREATE something. */}
-              <button type="button" data-help-key="educator_hub_activities_card" onClick={() => { setShowEducatorHub(false); setShowRecentQrShares(true); }} className="flex items-start gap-3 rounded-xl border border-teal-200 bg-teal-50 p-4 text-left transition-colors hover:bg-teal-100">
-                <span className="text-3xl mt-1" aria-hidden="true">🗓️</span>
-                <div>
-                  <h3 className="font-bold text-teal-800">{t('educator_hub.activities_title') || 'Polls & Sign-ups'}</h3>
-                  <p className="text-xs text-teal-600 mt-1">{t('educator_hub.activities_desc') || 'Find a meeting time, run a sign-up sheet, or collect a word cloud or rating. Share by link or QR; people answer without an account.'}</p>
+
+            <div className="mb-4 space-y-3" role="search" aria-label={tr('hub.search_label', 'Search tools')}>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <label htmlFor="educator-hub-search" className="sr-only">{tr('hub.search_label', 'Search tools')}</label>
+                <input id="educator-hub-search" type="search" value={hubQuery} onChange={(event) => setHubQuery(event.target.value)} placeholder={tr('hub.search_placeholder', 'Search tools by name, purpose, or workflow')} className="min-h-11 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                {hubQuery && <button type="button" onClick={() => setHubQuery('')} className="min-h-11 px-3 rounded-xl border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50">{tr('hub.clear_search', 'Clear')}</button>}
+                <button type="button" aria-pressed={hubFavoritesOnly} onClick={() => setHubFavoritesOnly((value) => !value)} className="min-h-11 px-3 rounded-xl border border-amber-300 bg-amber-50 text-sm font-bold text-amber-800 hover:bg-amber-100">{hubFavoritesOnly ? '★ ' : '☆ '}{tr('hub.favorites_only', 'Favorites')}</button>
+                <button type="button" aria-expanded={hubManageFavorites} onClick={() => setHubManageFavorites((value) => !value)} className="min-h-11 px-3 rounded-xl border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50">{tr('hub.manage_favorites', 'Manage favorites')}</button>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <label htmlFor="educator-hub-role" className="text-xs font-bold text-slate-600">{tr('hub.role_label', 'Recommendations for')}</label>
+                <select id="educator-hub-role" value={hubRoleKey} onChange={(event) => setHubRoleOverride(event.target.value)} className="min-h-10 rounded-lg border border-slate-300 bg-white px-2 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="educator">{tr('hub.role_educator', 'Educators')}</option>
+                    <option value="clinician">{tr('hub.role_clinician', 'Clinicians')}</option>
+                    <option value="leader">{tr('hub.role_leader', 'Leaders')}</option>
+                    <option value="student">{tr('hub.role_student', 'Students')}</option>
+                    <option value="family">{tr('hub.role_family', 'Families')}</option>
+                </select>
+              </div>
+              {recommendedCards.length > 0 && (
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3" role="region" aria-label={tr('hub.recommended', 'Recommended tools')}>
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <h3 className="text-xs font-black uppercase tracking-wide text-emerald-800">{tr('hub.recommended', 'Recommended tools')}</h3>
+                    <span className="text-[11px] text-emerald-700">{tr('hub.recommended_for', 'For')} {hubRoleLabel}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {recommendedCards.map((card) => (
+                      <button key={card.id} type="button" onClick={() => activateHubCard(card.id)} className="min-h-10 rounded-lg border border-emerald-200 bg-white px-3 text-left text-xs font-bold text-emerald-800 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500">{card.label}</button>
+                    ))}
+                  </div>
+                  <p className="text-[11px] text-emerald-700 mt-2">{tr('hub.recommended_hint', 'Based on your role and local tool use')}</p>
                 </div>
-              </button>
-              <button type="button" data-help-key="educator_hub_behavior_lens_card" onClick={() => { setShowEducatorHub(false); setShowBehaviorLens(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
-                <span className="text-3xl mt-1" aria-hidden="true">🧠</span>
-                <div>
-                  <h3 className="font-bold text-indigo-800">{t('educator_hub.behavior_lens_title') || 'BehaviorLens'}</h3>
-                  <p className="text-xs text-indigo-600 mt-1">{t('educator_hub.behavior_lens_desc') || 'FBA/BIP behavioral observation, ABC data collection, and 60+ clinical tools'}</p>
+              )}
+              {hubManageFavorites && hubCards.length > 0 && (
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3" role="region" aria-label={tr('hub.manage_favorites', 'Manage favorites')}>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {hubCards.map((card) => (
+                      <div key={card.id} className="flex items-center gap-2 rounded-lg bg-white border border-slate-200 p-2">
+                        <button type="button" onClick={() => activateHubCard(card.id)} className="min-h-10 flex-1 text-left text-sm font-semibold text-slate-700 hover:text-indigo-700">{card.label}</button>
+                        <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes(card.id)} aria-label={hubFavoriteIds.includes(card.id) ? tr('hub.remove_favorite', 'Remove from favorites') + ': ' + card.label : tr('hub.add_favorite', 'Add to favorites') + ': ' + card.label} onClick={() => toggleHubFavorite(card.id)} className="min-w-9 min-h-9 rounded-full text-amber-600 text-lg hover:bg-amber-50">{hubFavoriteIds.includes(card.id) ? '★' : '☆'}</button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </button>
-              <button type="button" data-help-key="educator_hub_report_writer_card" onClick={() => { setShowEducatorHub(false); setShowReportWriter(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
-                <span className="text-3xl mt-1" aria-hidden="true">📝</span>
-                <div>
-                  <h3 className="font-bold text-violet-800">{t('educator_hub.report_writer_title') || 'Report Writer'}</h3>
-                  <p className="text-xs text-violet-600 mt-1">{t('educator_hub.report_writer_desc') || 'AI-powered clinical report generation with fact-chunks, accuracy audit, and developmental norms'}</p>
+              )}
+              {quickCards.length > 0 && (
+                <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-3" role="region" aria-label={tr('hub.quick_access', 'Quick access')}>
+                  <div className="flex items-center justify-between gap-2 mb-2"><h3 className="text-xs font-black uppercase tracking-wide text-indigo-800">{tr('hub.quick_access', 'Quick access')}</h3><span className="text-[11px] text-indigo-700">{tr('hub.quick_access_hint', 'Recent and favorite tools')}</span></div>
+                  <div className="flex flex-wrap gap-2">
+                    {quickCards.map((card) => (
+                      <div key={card.id} className="inline-flex items-center rounded-lg border border-indigo-200 bg-white shadow-sm">
+                        <button type="button" onClick={() => activateHubCard(card.id)} className="min-h-10 px-3 text-left text-xs font-bold text-indigo-800 hover:bg-indigo-50">{card.label}</button>
+                        <button type="button" aria-pressed={hubFavoriteIds.includes(card.id)} aria-label={hubFavoriteIds.includes(card.id) ? tr('hub.remove_favorite', 'Remove from favorites') + ': ' + card.label : tr('hub.add_favorite', 'Add to favorites') + ': ' + card.label} onClick={() => toggleHubFavorite(card.id)} className="min-w-9 min-h-10 border-l border-indigo-200 text-amber-600 text-lg hover:bg-amber-50">{hubFavoriteIds.includes(card.id) ? '★' : '☆'}</button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </button>
-              {/* Cinematic Studio card removed 2026-07-02 (Aaron): it now lives INSIDE
-                  Video Studio as the "NotebookLM / AI-video tools" entry — one video
-                  card instead of two confusing ones. setShowCinematicStudio prop stays
-                  accepted (unused) so hosts that still pass it render unchanged. */}
-              <button type="button" data-help-key="educator_hub_video_studio_card" onClick={() => { setShowEducatorHub(false); setIsVideoStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
-                <span className="text-3xl mt-1" aria-hidden="true">🎥</span>
-                <div>
-                  <h3 className="font-bold text-sky-800">{t('educator_hub.video_studio_title') || 'Video Studio'}</h3>
-                  <p className="text-xs text-sky-600 mt-1">{t('educator_hub.video_studio_desc') || 'Record, trim, caption, and export video demos — plus prompt tools for NotebookLM and other AI video generators'}</p>
+              )}
+              <p className="sr-only" aria-live="polite">{hubVisibleCount} {tr('hub.tools_available', 'tools available')}</p>
+            </div>
+            <div ref={hubGridRef} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="col-span-full mt-1 mb-[-0.25rem]" data-hub-section-heading="start">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-black uppercase tracking-wide text-indigo-800">{tr('educator_hub.section_start_title', 'Start here')}</h3>
+                    <p className="text-xs text-slate-500 mt-1">{tr('educator_hub.section_start_desc', 'Plan the next lesson, gather evidence, and prepare the materials students will use.')}</p>
+                  </div>
+                  <button type="button" data-hub-section-toggle="start" aria-expanded={!hubCollapsedSections.includes('start')} aria-label={hubCollapsedSections.includes('start') ? tr('hub.expand_section', 'Expand section') : tr('hub.collapse_section', 'Collapse section')} onClick={() => toggleHubSection('start')} className="min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubCollapsedSections.includes('start') ? '+' : '-'}</button>
                 </div>
-              </button>
-              <button type="button" data-help-key="educator_hub_allo_studio_card" onClick={() => { setShowEducatorHub(false); setIsAlloStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-rose-50 to-orange-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
-                <span className="text-3xl mt-1" aria-hidden="true">🎨</span>
-                <div>
-                  <h3 className="font-bold text-rose-800">{t('educator_hub.allo_studio_title') || 'Page Designer'}</h3>
-                  <p className="text-xs text-rose-600 mt-1">{t('educator_hub.allo_studio_desc') || 'Design flyers, worksheets, posters, and slide decks that export born-accessible (tagged PDF, PowerPoint, real reading order, enforced alt text) — with a process timeline that shows what was made by hand vs. AI'}</p>
-                </div>
-              </button>
-              <button type="button" data-help-key="educator_hub_symbol_studio_card" onClick={() => { setShowEducatorHub(false); setIsSymbolStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
-                <span className="text-3xl mt-1" aria-hidden="true">🎨</span>
-                <div>
-                  <h3 className="font-bold text-purple-800">{t('educator_hub.symbol_studio_title') || 'Symbol Studio'}</h3>
-                  <p className="text-xs text-purple-600 mt-1">{t('educator_hub.symbol_studio_desc') || 'AI-generated PCS-style icons for visual supports, AAC boards, and schedules — powered by image-to-image editing'}</p>
-                </div>
-              </button>
-              {/* Whiteboard (2026-07-06): a freehand sketch/diagram canvas (Excalidraw, MIT)
-                  in its own window — the escape-hatch popup pattern, so it works inside the
-                  Gemini Canvas sandbox. A general, cross-subject "multiple means of
-                  expression" tool, so it lives here in the Educator Hub, not the STEM grid. */}
-              <button type="button" data-help-key="educator_hub_whiteboard_card" onClick={() => { setShowEducatorHub(false); try { openWhiteboard(); } catch (_e) {} }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
-                <span className="text-3xl mt-1" aria-hidden="true">✏️</span>
-                <div>
-                  <h3 className="font-bold text-indigo-800">{t('educator_hub.whiteboard_title') || 'Whiteboard'}</h3>
-                  <p className="text-xs text-indigo-600 mt-1">{t('educator_hub.whiteboard_desc') || 'A freehand canvas (Excalidraw) to sketch ideas, build diagrams, and map thinking — with ready-made graphic organizers (Venn, T-chart, story map, KWL, concept web, number line) and one-click image export.'}</p>
-                </div>
-              </button>
-              <button type="button" data-help-key="educator_hub_allosheet_card" onClick={_openAlloSheet} className="flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-cyan-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
-                <span className="text-3xl mt-1" aria-hidden="true">📊</span>
-                <div>
-                  <h3 className="font-bold text-emerald-800">{t('educator_hub.allosheet_title') || 'AlloSheet (Pilot)'}</h3>
-                  <p className="text-xs text-emerald-700 mt-1">{t('educator_hub.allosheet_desc') || 'Accessible, agent-assisted educator data workspace with review-before-apply changes, local audits, and an open-source Grist foundation.'}</p>
-                </div>
-              </button>
-              <button type="button" data-help-key="educator_hub_dynamic_assessment_card" onClick={() => { setShowEducatorHub(false); setIsDynamicAssessmentOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
-                <span className="text-3xl mt-1" aria-hidden="true">🔬</span>
-                <div>
-                  <h3 className="font-bold text-blue-800">{t('educator_hub.dynamic_assessment_title') || 'Dynamic Assessment'}</h3>
-                  <p className="text-xs text-blue-600 mt-1">{t('educator_hub.dynamic_assessment_desc') || 'Vygotsky/Feuerstein/Lidz test-teach-retest probes with graduated prompt ladders, modifiability scoring, IEP goals, accommodations, and family/teacher handoffs'}</p>
-                </div>
-              </button>
-              {/* Leadership Hub (2026-08-03): container card for the admin suite —
-                  UDL Walkthrough, Disproportionality Analyzer, Meeting Documentation.
-                  Mirrors the STEM Lab / SEL Hub container pattern. */}
-              <button type="button" data-help-key="educator_hub_admin_hub_card" onClick={() => { setShowEducatorHub(false); setIsAdminHubOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-cyan-50 to-indigo-50 border border-cyan-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
-                <span className="text-3xl mt-1" aria-hidden="true">🏛️</span>
-                <div>
-                  <h3 className="font-bold text-cyan-900">{t('educator_hub.admin_hub_title') || 'Leadership Hub'}</h3>
-                  <p className="text-xs text-cyan-800 mt-1">{t('educator_hub.admin_hub_desc') || 'Tools for principals, coaches, and student-services leaders: UDL classroom walkthroughs, disproportionality analytics, and meeting documentation — aggregate or de-identified data, computed on this device, descriptive not evaluative.'}</p>
-                </div>
-              </button>
-              <button type="button" data-help-key="educator_hub_lesson_builder_card" onClick={() => { setShowEducatorHub(false); startLessonFlow(); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+              </div>
+              <div className="relative group" data-hub-id="lesson" data-hub-label="Help me build a lesson" data-hub-section="start">
+                <button type="button" data-hub-launch="true" data-help-key="educator_hub_lesson_builder_card" onClick={() => { setShowEducatorHub(false); startLessonFlow(); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">🪄</span>
                 <div>
                   <h3 className="font-bold text-indigo-800">{t('educator_hub.lesson_builder_title') || 'Help me build a lesson'}</h3>
-                  <p className="text-xs text-indigo-600 mt-1">{t('educator_hub.lesson_builder_desc') || "I'll ask you a few questions and build a differentiated lesson with you, step by step."}</p>
+                  <p className="text-xs text-indigo-600 mt-1">{t('educator_hub.lesson_builder_desc') || "Answer a few questions, then build a differentiated lesson step by step with AlloBot."}</p>
                 </div>
               </button>
-              <button type="button" data-help-key="educator_hub_lumen_card" onClick={() => { setShowEducatorHub(false); setLabToolData(prev => ({ ...prev, lumen: { ...((prev && prev.lumen) || {}), mode: 'home' } })); setStemLabTool('lumen'); setShowStemLab(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('lesson')} aria-label={hubFavoriteIds.includes('lesson') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Help me build a lesson' : tr('hub.add_favorite', 'Add to favorites') + ': Help me build a lesson'} title={hubFavoriteIds.includes('lesson') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('lesson'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('lesson') ? '★' : '☆'}</button>
+              </div>
+              <div className="relative group" data-hub-id="lumen" data-hub-label="Lumen" data-hub-section="start">
+                <button type="button" data-hub-launch="true" data-help-key="educator_hub_lumen_card" onClick={() => { setShowEducatorHub(false); setLabToolData(prev => ({ ...prev, lumen: { ...((prev && prev.lumen) || {}), mode: 'home' } })); setStemLabTool('lumen'); setShowStemLab(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">💡</span>
                 <div>
                   <h3 className="font-bold text-amber-800">{t('educator_hub.lumen_title') || 'Lumen'}</h3>
-                  <p className="text-xs text-amber-600 mt-1">{t('educator_hub.lumen_desc') || 'Study sources or analyze data in one evidence workspace. Grounded answers cite exact passages; data findings keep uncertainty and provenance visible.'}</p>
+                  <p className="text-xs text-amber-600 mt-1">{t('educator_hub.lumen_desc') || 'Research sources or explore data in one evidence workspace. Cite exact passages and keep uncertainty and provenance visible.'}</p>
                 </div>
               </button>
-              <button type="button" data-help-key="educator_hub_document_hub_card" onClick={() => { setShowEducatorHub(false); openExportPreview('print'); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('lumen')} aria-label={hubFavoriteIds.includes('lumen') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Lumen' : tr('hub.add_favorite', 'Add to favorites') + ': Lumen'} title={hubFavoriteIds.includes('lumen') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('lumen'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('lumen') ? '★' : '☆'}</button>
+              </div>
+              <div className="relative group" data-hub-id="document" data-hub-label="Document Hub" data-hub-section="start">
+                <button type="button" data-hub-launch="true" data-help-key="educator_hub_document_hub_card" onClick={() => { setShowEducatorHub(false); openExportPreview('print'); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">📄</span>
                 <div>
                   <h3 className="font-bold text-emerald-800">{t('educator_hub.document_hub_title') || 'Document Hub'}</h3>
-                  <p className="text-xs text-emerald-600 mt-1">{t('educator_hub.document_hub_desc') || 'Document builder with themes, WYSIWYG editing, accessibility audit, and multi-format export (PDF, HTML, worksheet, slides)'}</p>
+                  <p className="text-xs text-emerald-600 mt-1">{t('educator_hub.document_hub_desc') || 'Build polished documents, audit accessibility, and export to PDF, HTML, worksheets, or slides.'}</p>
                 </div>
               </button>
-              <button type="button" disabled={!!pdfBatchIntakeProgress} data-help-key="educator_hub_pdf_accessibility_card" onClick={() => {
+
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('document')} aria-label={hubFavoriteIds.includes('document') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Document Hub' : tr('hub.add_favorite', 'Add to favorites') + ': Document Hub'} title={hubFavoriteIds.includes('document') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('document'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('document') ? '★' : '☆'}</button>
+              </div>
+              <div className="relative group" data-hub-id="whiteboard" data-hub-label="Whiteboard" data-hub-section="start">
+                <button type="button" data-hub-launch="true" data-help-key="educator_hub_whiteboard_card" onClick={() => { setShowEducatorHub(false); try { openWhiteboard(); } catch (_e) {} }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">✏️</span>
+                <div>
+                  <h3 className="font-bold text-indigo-800">{t('educator_hub.whiteboard_title') || 'Whiteboard'}</h3>
+                  <p className="text-xs text-indigo-600 mt-1">{t('educator_hub.whiteboard_desc') || 'Sketch ideas, build diagrams, and map thinking with graphic organizers and one-click image export.'}</p>
+                </div>
+              </button>
+
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('whiteboard')} aria-label={hubFavoriteIds.includes('whiteboard') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Whiteboard' : tr('hub.add_favorite', 'Add to favorites') + ': Whiteboard'} title={hubFavoriteIds.includes('whiteboard') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('whiteboard'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('whiteboard') ? '★' : '☆'}</button>
+              </div>
+                            <div className="col-span-full mt-1 mb-[-0.25rem]" data-hub-section-heading="plan">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-black uppercase tracking-wide text-indigo-800">{tr('educator_hub.section_plan_title', 'Plan and create')}</h3>
+                    <p className="text-xs text-slate-500 mt-1">{tr('educator_hub.section_plan_desc', 'Turn ideas and evidence into lessons, documents, and accessible learning materials.')}</p>
+                  </div>
+                  <button type="button" data-hub-section-toggle="plan" aria-expanded={!hubCollapsedSections.includes('plan')} aria-label={hubCollapsedSections.includes('plan') ? tr('hub.expand_section', 'Expand section') : tr('hub.collapse_section', 'Collapse section')} onClick={() => toggleHubSection('plan')} className="min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubCollapsedSections.includes('plan') ? '+' : '-'}</button>
+                </div>
+              </div>
+              <div className="relative group" data-hub-id="page-designer" data-hub-label="Page Designer" data-hub-section="plan">
+                <button type="button" data-hub-launch="true" data-help-key="educator_hub_allo_studio_card" onClick={() => { setShowEducatorHub(false); setIsAlloStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-rose-50 to-orange-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">🎨</span>
+                <div>
+                  <h3 className="font-bold text-rose-800">{t('educator_hub.allo_studio_title') || 'Page Designer'}</h3>
+                  <p className="text-xs text-rose-600 mt-1">{t('educator_hub.allo_studio_desc') || 'Create flyers, worksheets, posters, and slide decks with accessible exports, reading order, alt text, and a hand/AI process record.'}</p>
+                </div>
+              </button>
+
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('page-designer')} aria-label={hubFavoriteIds.includes('page-designer') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Page Designer' : tr('hub.add_favorite', 'Add to favorites') + ': Page Designer'} title={hubFavoriteIds.includes('page-designer') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('page-designer'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('page-designer') ? '★' : '☆'}</button>
+              </div>
+              <div className="relative group" data-hub-id="video-studio" data-hub-label="Video Studio" data-hub-section="plan">
+                <button type="button" data-hub-launch="true" data-help-key="educator_hub_video_studio_card" onClick={() => { setShowEducatorHub(false); setIsVideoStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">🎥</span>
+                <div>
+                  <h3 className="font-bold text-sky-800">{t('educator_hub.video_studio_title') || 'Video Studio'}</h3>
+                  <p className="text-xs text-sky-600 mt-1">{t('educator_hub.video_studio_desc') || 'Record, trim, caption, and export short videos, with prompt tools for NotebookLM and other AI video tools.'}</p>
+                </div>
+              </button>
+
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('video-studio')} aria-label={hubFavoriteIds.includes('video-studio') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Video Studio' : tr('hub.add_favorite', 'Add to favorites') + ': Video Studio'} title={hubFavoriteIds.includes('video-studio') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('video-studio'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('video-studio') ? '★' : '☆'}</button>
+              </div>
+              <div className="relative group" data-hub-id="symbol-studio" data-hub-label="Symbol Studio" data-hub-section="plan">
+                <button type="button" data-hub-launch="true" data-help-key="educator_hub_symbol_studio_card" onClick={() => { setShowEducatorHub(false); setIsSymbolStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">🎨</span>
+                <div>
+                  <h3 className="font-bold text-purple-800">{t('educator_hub.symbol_studio_title') || 'Symbol Studio'}</h3>
+                  <p className="text-xs text-purple-600 mt-1">{t('educator_hub.symbol_studio_desc') || 'Create PCS-style icons for visual supports, AAC boards, and schedules — then edit them with image-to-image tools.'}</p>
+                </div>
+              </button>
+
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('symbol-studio')} aria-label={hubFavoriteIds.includes('symbol-studio') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Symbol Studio' : tr('hub.add_favorite', 'Add to favorites') + ': Symbol Studio'} title={hubFavoriteIds.includes('symbol-studio') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('symbol-studio'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('symbol-studio') ? '★' : '☆'}</button>
+              </div>
+              <div className="relative group" data-hub-id="allosheet" data-hub-label="AlloSheet" data-hub-section="plan">
+                <button type="button" data-hub-launch="true" data-help-key="educator_hub_allosheet_card" onClick={_openAlloSheet} className="flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-cyan-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">📊</span>
+                <div>
+                  <h3 className="font-bold text-emerald-800">{t('educator_hub.allosheet_title') || 'AlloSheet (Pilot)'}</h3>
+                  <p className="text-xs text-emerald-700 mt-1">{t('educator_hub.allosheet_desc') || 'Explore educator data with agent assistance, review every change before applying it, and run local audits.'}</p>
+                </div>
+              </button>
+
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('allosheet')} aria-label={hubFavoriteIds.includes('allosheet') ? tr('hub.remove_favorite', 'Remove from favorites') + ': AlloSheet' : tr('hub.add_favorite', 'Add to favorites') + ': AlloSheet'} title={hubFavoriteIds.includes('allosheet') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('allosheet'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('allosheet') ? '★' : '☆'}</button>
+              </div>
+                            <div className="col-span-full mt-1 mb-[-0.25rem]" data-hub-section-heading="teach">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-black uppercase tracking-wide text-indigo-800">{tr('educator_hub.section_teach_title', 'Teach and assess')}</h3>
+                    <p className="text-xs text-slate-500 mt-1">{tr('educator_hub.section_teach_desc', 'Run activities, collect evidence, and respond to learner needs.')}</p>
+                  </div>
+                  <button type="button" data-hub-section-toggle="teach" aria-expanded={!hubCollapsedSections.includes('teach')} aria-label={hubCollapsedSections.includes('teach') ? tr('hub.expand_section', 'Expand section') : tr('hub.collapse_section', 'Collapse section')} onClick={() => toggleHubSection('teach')} className="min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubCollapsedSections.includes('teach') ? '+' : '-'}</button>
+                </div>
+              </div>
+              <div className="relative group" data-hub-id="polls-signups" data-hub-label="Polls &amp; Sign-ups" data-hub-section="teach">
+                <button type="button" data-hub-launch="true" data-help-key="educator_hub_activities_card" onClick={() => { setShowEducatorHub(false); setShowRecentQrShares(true); }} className="flex items-start gap-3 rounded-xl border border-teal-200 bg-teal-50 p-4 text-left transition-colors hover:bg-teal-100">
+                <span className="text-3xl mt-1" aria-hidden="true">🗓️</span>
+                <div>
+                  <h3 className="font-bold text-teal-800">{t('educator_hub.activities_title') || 'Polls & Sign-ups'}</h3>
+                  <p className="text-xs text-teal-600 mt-1">{t('educator_hub.activities_desc') || 'Schedule a meeting, collect sign-ups, or run a quick word cloud or rating. Share by link or QR code — no account required.'}</p>
+                </div>
+              </button>
+
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('polls-signups')} aria-label={hubFavoriteIds.includes('polls-signups') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Polls &amp; Sign-ups' : tr('hub.add_favorite', 'Add to favorites') + ': Polls &amp; Sign-ups'} title={hubFavoriteIds.includes('polls-signups') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('polls-signups'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('polls-signups') ? '★' : '☆'}</button>
+              </div>
+              <div className="relative group" data-hub-id="dynamic-assessment" data-hub-label="Dynamic Assessment" data-hub-section="teach">
+                <button type="button" data-hub-launch="true" data-help-key="educator_hub_dynamic_assessment_card" onClick={() => { setShowEducatorHub(false); setIsDynamicAssessmentOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">🔬</span>
+                <div>
+                  <h3 className="font-bold text-blue-800">{t('educator_hub.dynamic_assessment_title') || 'Dynamic Assessment'}</h3>
+                  <p className="text-xs text-blue-600 mt-1">{t('educator_hub.dynamic_assessment_desc') || 'Run test-teach-retest probes with graduated prompts, modifiability scoring, IEP goals, and family/teacher handoffs.'}</p>
+                </div>
+              </button>
+
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('dynamic-assessment')} aria-label={hubFavoriteIds.includes('dynamic-assessment') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Dynamic Assessment' : tr('hub.add_favorite', 'Add to favorites') + ': Dynamic Assessment'} title={hubFavoriteIds.includes('dynamic-assessment') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('dynamic-assessment'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('dynamic-assessment') ? '★' : '☆'}</button>
+              </div>
+              <div className="relative group" data-hub-id="behavior-lens" data-hub-label="BehaviorLens" data-hub-section="teach">
+                <button type="button" data-hub-launch="true" data-help-key="educator_hub_behavior_lens_card" onClick={() => { setShowEducatorHub(false); setShowBehaviorLens(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">🧠</span>
+                <div>
+                  <h3 className="font-bold text-indigo-800">{t('educator_hub.behavior_lens_title') || 'BehaviorLens'}</h3>
+                  <p className="text-xs text-indigo-600 mt-1">{t('educator_hub.behavior_lens_desc') || 'Collect ABC observations, build FBA/BIP data, and use 60+ tools for behavior support.'}</p>
+                </div>
+              </button>
+
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('behavior-lens')} aria-label={hubFavoriteIds.includes('behavior-lens') ? tr('hub.remove_favorite', 'Remove from favorites') + ': BehaviorLens' : tr('hub.add_favorite', 'Add to favorites') + ': BehaviorLens'} title={hubFavoriteIds.includes('behavior-lens') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('behavior-lens'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('behavior-lens') ? '★' : '☆'}</button>
+              </div>
+              <div className="relative group" data-hub-id="report-writer" data-hub-label="Report Writer" data-hub-section="teach">
+                <button type="button" data-hub-launch="true" data-help-key="educator_hub_report_writer_card" onClick={() => { setShowEducatorHub(false); setShowReportWriter(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">📝</span>
+                <div>
+                  <h3 className="font-bold text-violet-800">{t('educator_hub.report_writer_title') || 'Report Writer'}</h3>
+                  <p className="text-xs text-violet-600 mt-1">{t('educator_hub.report_writer_desc') || 'Draft clinical reports with fact chunks, accuracy checks, and developmental norms.'}</p>
+                </div>
+              </button>
+
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('report-writer')} aria-label={hubFavoriteIds.includes('report-writer') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Report Writer' : tr('hub.add_favorite', 'Add to favorites') + ': Report Writer'} title={hubFavoriteIds.includes('report-writer') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('report-writer'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('report-writer') ? '★' : '☆'}</button>
+              </div>
+                            <div className="col-span-full mt-1 mb-[-0.25rem]" data-hub-section-heading="access">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-black uppercase tracking-wide text-indigo-800">{tr('educator_hub.section_access_title', 'Access and review')}</h3>
+                    <p className="text-xs text-slate-500 mt-1">{tr('educator_hub.section_access_desc', 'Verify that materials work for every learner before sharing them.')}</p>
+                  </div>
+                  <button type="button" data-hub-section-toggle="access" aria-expanded={!hubCollapsedSections.includes('access')} aria-label={hubCollapsedSections.includes('access') ? tr('hub.expand_section', 'Expand section') : tr('hub.collapse_section', 'Collapse section')} onClick={() => toggleHubSection('access')} className="min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubCollapsedSections.includes('access') ? '+' : '-'}</button>
+                </div>
+              </div>
+              <div className="relative group" data-hub-id="pdf-accessibility" data-hub-label="PDF Accessibility" data-hub-section="access">
+                <button type="button" data-hub-launch="true" disabled={!!pdfBatchIntakeProgress} data-help-key="educator_hub_pdf_accessibility_card" onClick={() => {
                   const input = document.createElement('input');
                   input.type = 'file';
                   input.setAttribute('aria-label', t('educator_hub.pdf_upload_label') || 'Select PDF, DOCX, or PPTX files');
@@ -658,9 +774,12 @@ function EducatorHubModal(props) {
                 <span className="text-3xl mt-1" aria-hidden="true">♿</span>
                 <div>
                   <h3 className="font-bold text-teal-800">{t('educator_hub.pdf_accessibility_title') || 'PDF Accessibility'}</h3>
-                  <p className="text-xs text-teal-600 mt-1">{t('educator_hub.pdf_accessibility_desc') || 'Upload PDFs for WCAG accessibility audit & remediation with axe-core verification'}</p>
+                  <p className="text-xs text-teal-600 mt-1">{t('educator_hub.pdf_accessibility_desc') || 'Audit and remediate PDFs for accessibility, then verify the result with axe-core.'}</p>
                 </div>
               </button>
+
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('pdf-accessibility')} aria-label={hubFavoriteIds.includes('pdf-accessibility') ? tr('hub.remove_favorite', 'Remove from favorites') + ': PDF Accessibility' : tr('hub.add_favorite', 'Add to favorites') + ': PDF Accessibility'} title={hubFavoriteIds.includes('pdf-accessibility') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('pdf-accessibility'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('pdf-accessibility') ? '★' : '☆'}</button>
+              </div>
               {pdfBatchIntakeProgress && (
                 <div className="col-span-full rounded-xl border border-teal-300 bg-teal-50 p-3" role="status" aria-live="polite" aria-label="PDF batch preparation progress">
                   <div className="flex items-center justify-between gap-3">
@@ -673,6 +792,7 @@ function EducatorHubModal(props) {
                   <progress className="w-full mt-2 accent-teal-600" max={pdfBatchIntakeProgress.total} value={pdfBatchIntakeProgress.completed} aria-label="PDFs prepared" />
                 </div>
               )}
+
               {pdfFixResult && !pdfFixLoading && !pdfAuditResult && (
                 <button type="button"
                   onClick={() => { setShowEducatorHub(false); setPdfAuditResult({ _restored: true }); }}
@@ -683,59 +803,60 @@ function EducatorHubModal(props) {
                   {pdfFixResult._userEditedAt && <span className="opacity-70 text-[10px]">· edited</span>}
                 </button>
               )}
-              <button type="button" data-help-key="educator_hub_community_catalog_card" onClick={() => { setShowEducatorHub(false); setIsCommunityCatalogOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
-                <span className="text-3xl mt-1" aria-hidden="true">📚</span>
-                <div>
-                  <h3 className="font-bold text-amber-800">{t('educator_hub.community_catalog_title') || 'Community Catalog'}</h3>
-                  <p className="text-xs text-amber-700 mt-1">{t('educator_hub.community_catalog_desc') || 'Browse open-licensed lessons from the AlloFlow community, or submit your own for review'}</p>
-                </div>
-              </button>
-              {/* Professional Development (2026-06-19): opens the Community Catalog modal straight to
-                  its PD tab via a one-shot intent flag the catalog module reads itself — so this reuses
-                  the existing setIsCommunityCatalogOpen prop and needs no new host wiring. */}
-              <button type="button" data-help-key="educator_hub_professional_dev_card" onClick={() => { setShowEducatorHub(false); try { window.__alloPdIntent = true; localStorage.setItem('alloflow_pd_intent', '1'); } catch (_) {} setIsCommunityCatalogOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
-                <span className="text-3xl mt-1" aria-hidden="true">🎓</span>
-                <div>
-                  <h3 className="font-bold text-sky-800">{t('educator_hub.professional_dev_title') || 'Professional Development'}</h3>
-                  <p className="text-xs text-sky-700 mt-1">{t('educator_hub.professional_dev_desc') || 'Short, self-paced PD modules — learn, take a knowledge check, and download a completion record'}</p>
-                </div>
-              </button>
-              {/* Demoted to a quiet footer row (maintainer feedback 2026-06-10:
-                  it's developer-focused — keep it findable, not billboard-sized). */}
-              <div data-help-key="educator_hub_platform_check_card" className="col-span-full flex flex-col gap-2">
-                <div className="flex items-center gap-2 justify-end">
-                  <button type="button" onClick={_runPlatformProbe} className="min-h-11 px-2 text-[11px] text-slate-600 hover:text-slate-700 underline decoration-dotted" title={t('educator_hub.platform_check_desc') || 'Tests what this environment can do — pop-ups, downloads, storage, WebAssembly, clipboard, CDN reach. For troubleshooting; copy the report when something seems broken.'}><span aria-hidden="true">🔬</span> {t('educator_hub.platform_check_title') || 'Platform check (diagnostics)'}</button>
-                  <button type="button" data-help-ignore="true" data-a11y-ignore="diagnostic-confirm" onClick={() => { let v = null; try { v = window.confirm(t('educator_hub.dialog_probe_q') || 'Dialog test: click OK.'); } catch (e) { v = 'threw: ' + e.message; }
-                    setPlatProbe((p) => ({ when: (p && p.when) || new Date().toLocaleString(), rows: [...((p && p.rows) || []).filter((r) => r.name !== 'Dialogs (live test)'), { name: 'Dialogs (live test)', status: v === true ? 'pass' : (v === false ? 'warn' : 'fail'), detail: v === true ? 'confirm() returned true after OK — dialogs work' : (v === false ? 'confirm() returned FALSE — either you clicked Cancel, or the sandbox suppressed the dialog (if you never saw one, it is suppressed and confirm-gated flows auto-decline here)' : String(v)) }] })); }} className="min-h-11 px-2 text-[11px] text-slate-600 hover:text-slate-700 underline decoration-dotted"><span aria-hidden="true">🧪</span> {t('educator_hub.platform_check_dialog') || 'dialog test'}</button>
-                </div>
-                {platProbe && (
-                  <>
-                  <div className="bg-white border border-slate-300 rounded-lg p-2 text-[11px]" role="region" aria-labelledby="educator-platform-results-title">
-                    <div className="flex items-center justify-between mb-1">
-                      <span id="educator-platform-results-title" className="font-bold text-slate-700">{t('educator_hub.platform_check_results') || 'Results'} — {platProbe.when}</span>
-                      <button type="button" onClick={async () => { const txt = _probeReportText(); try { await navigator.clipboard.writeText(txt); } catch (_) { try { const ta = document.createElement('textarea');
-      ta.setAttribute('aria-label', 'Clipboard fallback text'); ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); } catch (_) {} } }} aria-label={t('educator_hub.platform_check_copy') || 'Copy report'} className="min-h-11 px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold hover:bg-slate-200"><span aria-hidden="true">📋</span> {t('educator_hub.platform_check_copy') || 'Copy report'}</button>
-                    </div>
-                    <ul className="space-y-0.5">
-                      {platProbe.rows.map((r, i) => (
-                        <li key={i} className="flex gap-1.5">
-                          <span className={'shrink-0 font-bold ' + (r.status === 'pass' ? 'text-green-700' : r.status === 'fail' ? 'text-red-700' : r.status === 'warn' ? 'text-amber-700' : 'text-slate-500')}>{r.status === 'pass' ? '✓' : r.status === 'fail' ? '✗' : r.status === 'warn' ? '⚠' : 'ℹ'}</span>
-                          <span className="min-w-0"><span className="font-bold">{r.name}:</span> {r.detail}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">Platform check complete. {platProbe.rows.length} results available.</div>
-                  </>
-                )}
-              </div>
-              <button type="button" data-help-key="educator_hub_accessibility_lab_card" onClick={() => { setShowEducatorHub(false); setIsAccessibilityLabOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-rose-50 to-amber-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+
+              <div className="relative group" data-hub-id="accessibility-lab" data-hub-label="Accessibility Lab" data-hub-section="access">
+                <button type="button" data-hub-launch="true" data-help-key="educator_hub_accessibility_lab_card" onClick={() => { setShowEducatorHub(false); setIsAccessibilityLabOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-rose-50 to-amber-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">🔍</span>
                 <div>
                   <h3 className="font-bold text-rose-800">{t('educator_hub.accessibility_lab_title') || 'Accessibility Lab'}</h3>
-                  <p className="text-xs text-rose-700 mt-1">{t('educator_hub.accessibility_lab_desc') || 'Verify the student experience: preview as student, keyboard-only tour, live WCAG audit (axe-core) with violations framed by student impact, screen-reader announcement preview, and disability simulators (low-vision, color-blindness, dyslexia, motor delay).'}</p>
+                  <p className="text-xs text-rose-700 mt-1">{t('educator_hub.accessibility_lab_desc') || 'Check the student experience with student preview, keyboard and screen-reader checks, a live WCAG audit, and disability simulations.'}</p>
                 </div>
               </button>
+
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('accessibility-lab')} aria-label={hubFavoriteIds.includes('accessibility-lab') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Accessibility Lab' : tr('hub.add_favorite', 'Add to favorites') + ': Accessibility Lab'} title={hubFavoriteIds.includes('accessibility-lab') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('accessibility-lab'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('accessibility-lab') ? '★' : '☆'}</button>
+              </div>
+                            <div className="col-span-full mt-1 mb-[-0.25rem]" data-hub-section-heading="extend">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-black uppercase tracking-wide text-indigo-800">{tr('educator_hub.section_extend_title', 'Extend and discover')}</h3>
+                    <p className="text-xs text-slate-500 mt-1">{tr('educator_hub.section_extend_desc', 'Find community resources, professional learning, and leadership-level tools.')}</p>
+                  </div>
+                  <button type="button" data-hub-section-toggle="extend" aria-expanded={!hubCollapsedSections.includes('extend')} aria-label={hubCollapsedSections.includes('extend') ? tr('hub.expand_section', 'Expand section') : tr('hub.collapse_section', 'Collapse section')} onClick={() => toggleHubSection('extend')} className="min-h-11 min-w-11 rounded-lg border border-slate-300 bg-white text-slate-700 text-lg font-black hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubCollapsedSections.includes('extend') ? '+' : '-'}</button>
+                </div>
+              </div>
+              <div className="relative group" data-hub-id="community-catalog" data-hub-label="Community Catalog" data-hub-section="extend">
+                <button type="button" data-hub-launch="true" data-help-key="educator_hub_community_catalog_card" onClick={() => { setShowEducatorHub(false); setIsCommunityCatalogOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">📚</span>
+                <div>
+                  <h3 className="font-bold text-amber-800">{t('educator_hub.community_catalog_title') || 'Community Catalog'}</h3>
+                  <p className="text-xs text-amber-700 mt-1">{t('educator_hub.community_catalog_desc') || 'Browse open-licensed lessons, or submit your own for community review.'}</p>
+                </div>
+              </button>
+
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('community-catalog')} aria-label={hubFavoriteIds.includes('community-catalog') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Community Catalog' : tr('hub.add_favorite', 'Add to favorites') + ': Community Catalog'} title={hubFavoriteIds.includes('community-catalog') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('community-catalog'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('community-catalog') ? '★' : '☆'}</button>
+              </div>
+              <div className="relative group" data-hub-id="professional-development" data-hub-label="Professional Development" data-hub-section="extend">
+                <button type="button" data-hub-launch="true" data-help-key="educator_hub_professional_dev_card" onClick={() => { setShowEducatorHub(false); try { window.__alloPdIntent = true; localStorage.setItem('alloflow_pd_intent', '1'); } catch (_) {} setIsCommunityCatalogOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">🎓</span>
+                <div>
+                  <h3 className="font-bold text-sky-800">{t('educator_hub.professional_dev_title') || 'Professional Development'}</h3>
+                  <p className="text-xs text-sky-700 mt-1">{t('educator_hub.professional_dev_desc') || 'Work through short, self-paced modules, take a knowledge check, and download a completion record.'}</p>
+                </div>
+              </button>
+
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('professional-development')} aria-label={hubFavoriteIds.includes('professional-development') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Professional Development' : tr('hub.add_favorite', 'Add to favorites') + ': Professional Development'} title={hubFavoriteIds.includes('professional-development') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('professional-development'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('professional-development') ? '★' : '☆'}</button>
+              </div>
+              <div className="relative group" data-hub-id="leadership-hub" data-hub-label="Leadership Hub" data-hub-section="extend">
+                <button type="button" data-hub-launch="true" data-help-key="educator_hub_admin_hub_card" onClick={() => { setShowEducatorHub(false); setIsAdminHubOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-cyan-50 to-indigo-50 border border-cyan-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">🏛️</span>
+                <div>
+                  <h3 className="font-bold text-cyan-900">{t('educator_hub.admin_hub_title') || 'Leadership Hub'}</h3>
+                  <p className="text-xs text-cyan-800 mt-1">{t('educator_hub.admin_hub_desc') || 'For leaders: conduct UDL walkthroughs, examine disproportionality patterns, and document meetings with aggregate or de-identified, device-only data. Reports are descriptive, not evaluative.'}</p>
+                </div>
+              </button>
+
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('leadership-hub')} aria-label={hubFavoriteIds.includes('leadership-hub') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Leadership Hub' : tr('hub.add_favorite', 'Add to favorites') + ': Leadership Hub'} title={hubFavoriteIds.includes('leadership-hub') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('leadership-hub'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('leadership-hub') ? '★' : '☆'}</button>
+              </div>
             </div>
           </div>
         </div>

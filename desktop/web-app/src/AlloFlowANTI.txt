@@ -33,7 +33,7 @@ import { Activity, Inbox, BookOpen, Globe, Layers, Sparkles, FileText, Layout, H
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously as _fbSignInAnonymously, signInWithCustomToken, onAuthStateChanged as _fbOnAuthStateChanged } from 'firebase/auth';
 import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken as _fbGetAppCheckToken } from 'firebase/app-check';
-import { getFirestore, terminate as terminateFirestore, doc as _fbDoc, setDoc as _fbSetDoc, onSnapshot as _fbOnSnapshot, updateDoc as _fbUpdateDoc, getDoc as _fbGetDoc, deleteDoc as _fbDeleteDoc, deleteField as _fbDeleteField, collection as _fbCollection, query as _fbQuery, where as _fbWhere, getDocs as _fbGetDocs, writeBatch as _fbWriteBatch, limit as _fbLimit } from 'firebase/firestore';
+import { getFirestore, terminate as terminateFirestore, doc as _fbDoc, setDoc as _fbSetDoc, onSnapshot as _fbOnSnapshot, updateDoc as _fbUpdateDoc, getDoc as _fbGetDoc, deleteDoc as _fbDeleteDoc, deleteField as _fbDeleteField, collection as _fbCollection, query as _fbQuery, where as _fbWhere, getDocs as _fbGetDocs, writeBatch as _fbWriteBatch, runTransaction as _fbRunTransaction, limit as _fbLimit } from 'firebase/firestore';
 
 if (typeof window !== 'undefined' && typeof document !== 'undefined' && !window.VexFlow) {
   const vexFlowScript = document.createElement('script');
@@ -65,6 +65,7 @@ let query = (...args) => _fbQuery(...args);
 let where = (f, o, v) => _fbWhere(f, o, v);
 let limit = (n) => _fbLimit(n);
 let writeBatch = (db) => _fbWriteBatch(db);
+let runTransaction = (db, updateFunction, options) => _fbRunTransaction(db, updateFunction, options);
 let signInAnonymously = (auth) => _fbSignInAnonymously(auth);
 let onAuthStateChanged = (auth, cb) => _fbOnAuthStateChanged(auth, cb);
 
@@ -4612,7 +4613,7 @@ const getFunctionSecurityHeaders = async () => {
   if (!appCheckResult?.token) throw new Error('Firebase App Check token is unavailable.');
   return { Authorization: `Bearer ${idToken}`, 'X-Firebase-AppCheck': appCheckResult.token };
 };
-window.__alloFirebase = { auth, appCheck, getFunctionSecurityHeaders, db, doc, setDoc, getDoc, onSnapshot, updateDoc, deleteDoc, deleteField: _fbDeleteField, collection, query, where, getDocs, writeBatch, signInAnonymously, onAuthStateChanged };
+window.__alloFirebase = { auth, appCheck, getFunctionSecurityHeaders, db, doc, setDoc, getDoc, onSnapshot, updateDoc, deleteDoc, deleteField: _fbDeleteField, collection, query, where, getDocs, writeBatch, runTransaction, signInAnonymously, onAuthStateChanged };
 
 window.addEventListener('pagehide', () => {
     try { terminateFirestore(db).catch(() => {}); } catch(e) {}
@@ -5185,18 +5186,14 @@ if (typeof window !== 'undefined' && window.speechSynthesis && !window.speechSyn
 // an AbortSignal so the in-flight fetch terminates instead of running to
 // completion (saves the Gemini API budget on rapid click-stop sequences).
 if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
-    let _state = { isPlaying: false, currentText: null, currentId: null };
+    let _state = { isPlaying: false, status: 'idle', currentText: null, currentId: null, error: null };
     let _audio = null;
+    let _attemptCleanup = null;
     let _sessionCounter = 0;
-    // AbortController per active session — abort()ed on stop() so an in-flight
-    // fetchTTSBytes terminates immediately. callTTS accepts opts.signal and
-    // converts the AbortError into a clean rejection that we recognize below.
     let _abortController = null;
     const _isAbortError = (e) => e && (e.name === 'AbortError' || /aborted/i.test(e.message || ''));
     const _emit = () => {
-        try {
-            window.dispatchEvent(new CustomEvent('allo-speech-state', { detail: { ..._state } }));
-        } catch (e) {}
+        try { window.dispatchEvent(new CustomEvent('allo-speech-state', { detail: { ..._state } })); } catch (e) {}
     };
     const _toast = (msg, type) => {
         const fn = window.__alloAddToast;
@@ -5211,111 +5208,238 @@ if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
         return fallback;
     };
     const _clearAudio = () => {
+        const cleanup = _attemptCleanup;
+        _attemptCleanup = null;
+        if (cleanup) { try { cleanup(); } catch (e) {} }
         if (_audio) { try { _audio.pause(); } catch (e) {} _audio = null; }
         try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
     };
     const _stop = () => {
+        // Error is already a terminal, non-playing state. Clearing it before a
+        // new request must not emit a second legacy isPlaying:false event.
         const wasPlaying = _state.isPlaying;
         _clearAudio();
-        // Abort any in-flight callTTS fetch so we stop burning quota for
-        // audio the user already cancelled. New speak() creates a fresh
-        // controller so this is safe to call without consequences.
         if (_abortController) { try { _abortController.abort(); } catch (e) {} _abortController = null; }
-        _state = { isPlaying: false, currentText: null, currentId: null };
+        _state = { isPlaying: false, status: 'idle', currentText: null, currentId: null, error: null };
         if (wasPlaying) _emit();
     };
     const _finishIfCurrent = (id) => {
         if (_state.currentId !== id) return;
         _audio = null;
-        _state = { isPlaying: false, currentText: null, currentId: null };
+        _abortController = null;
+        _state = { isPlaying: false, status: 'idle', currentText: null, currentId: null, error: null };
         _emit();
     };
-    const _playAudioUrl = (url, id, rate) => new Promise((resolve) => {
-        if (_state.currentId !== id) { resolve(false); return; }
-        const audio = new Audio(url);
-        audio.playbackRate = rate;
-        _audio = audio;
-        audio.onended = () => _finishIfCurrent(id);
-        audio.onerror = () => { resolve(false); };
-        audio.play().then(() => resolve(true)).catch(() => resolve(false));
-    });
-    const _browserFallback = (text, id, rate) => {
-        if (_state.currentId !== id) return false;
-        if (!window.speechSynthesis) return false;
-        const utterance = new SpeechSynthesisUtterance(text);
+    const _failIfCurrent = (id, message) => {
+        if (_state.currentId !== id) return;
+        _clearAudio();
+        _abortController = null;
+        _state = { isPlaying: false, status: 'error', currentText: _state.currentText, currentId: id, error: message };
+        _emit();
+    };
+    const _browserFallback = (text, id, rate, locale) => new Promise((resolve) => {
+        if (_state.currentId !== id || !window.speechSynthesis || typeof SpeechSynthesisUtterance === 'undefined') {
+            resolve(false);
+            return;
+        }
+        let utterance;
+        try { utterance = new SpeechSynthesisUtterance(text); } catch (e) { resolve(false); return; }
+        let settled = false;
+        let started = false;
+        let cancelled = false;
+        let startTimer = null;
+        const settle = (value) => { if (settled) return; settled = true; resolve(value); };
+        const detach = () => {
+            if (startTimer) { clearTimeout(startTimer); startTimer = null; }
+            utterance.onstart = null;
+            utterance.onend = null;
+            utterance.onerror = null;
+        };
+        const cancelAttempt = () => {
+            if (cancelled) return;
+            cancelled = true;
+            detach();
+            settle(false);
+        };
+        const release = () => { if (_attemptCleanup === cancelAttempt) _attemptCleanup = null; };
+        _attemptCleanup = cancelAttempt;
         utterance.rate = rate || 0.9;
         utterance.pitch = 1;
-        utterance.onend = () => _finishIfCurrent(id);
-        utterance.onerror = () => {
-            if (_state.currentId !== id) return;
-            _stop();
-            _toast(_localized('toasts.tts_failed', 'Read-aloud failed. Please try again.'), 'error');
+        if (locale) utterance.lang = locale;
+        utterance.onstart = () => {
+            if (cancelled || started) return;
+            if (_state.currentId !== id) { cancelAttempt(); return; }
+            started = true;
+            if (startTimer) { clearTimeout(startTimer); startTimer = null; }
+            _state = { ..._state, isPlaying: true, status: 'playing', error: null };
+            _emit();
+            settle(true);
         };
-        // The speak call goes through the mute gate installed above, so a
-        // muted user still gets no audio even though we reached this point.
-        window.speechSynthesis.speak(utterance);
-        return true;
+        utterance.onend = () => {
+            if (cancelled) return;
+            release();
+            detach();
+            if (!started) { settle(false); return; }
+            _finishIfCurrent(id);
+        };
+        utterance.onerror = () => {
+            if (cancelled) return;
+            release();
+            detach();
+            if (!started) { settle(false); return; }
+            if (_state.currentId !== id) return;
+            const message = _localized('toasts.tts_failed', 'Read-aloud failed. Please try again.');
+            _failIfCurrent(id, message);
+            _toast(message, 'error');
+        };
+        startTimer = setTimeout(() => {
+            if (cancelled || started) return;
+            release();
+            cancelAttempt();
+            try { window.speechSynthesis.cancel(); } catch (e) {}
+        }, 12000);
+        if (_state.status !== 'generating') {
+            _state = { ..._state, isPlaying: true, status: 'generating', error: null };
+            _emit();
+        }
+        try { window.speechSynthesis.speak(utterance); }
+        catch (e) { release(); cancelAttempt(); }
+    });
+    const _invalidateUrl = (url) => {
+        try { if (typeof window.__alloInvalidateTtsUrl === 'function') window.__alloInvalidateTtsUrl(url); } catch (e) {}
     };
+    const _playAudioUrl = (url, id, rate, text, locale) => new Promise((resolve) => {
+        if (_state.currentId !== id) { resolve(false); return; }
+        const audio = new Audio(url);
+        let settled = false;
+        let started = false;
+        let terminal = false;
+        let cancelled = false;
+        let startTimer = null;
+        const settle = (value) => { if (settled) return; settled = true; resolve(value); };
+        const detach = () => {
+            if (startTimer) { clearTimeout(startTimer); startTimer = null; }
+            audio.onended = null;
+            audio.onerror = null;
+            audio.onplaying = null;
+        };
+        const cancelAttempt = () => {
+            if (cancelled) return;
+            cancelled = true;
+            detach();
+            settle(false);
+        };
+        const release = () => { if (_attemptCleanup === cancelAttempt) _attemptCleanup = null; };
+        const shouldInvalidate = (error) => {
+            const name = String(error && error.name || '');
+            return name !== 'AbortError' && name !== 'NotAllowedError';
+        };
+        const reportFailure = () => {
+            if (_state.currentId !== id) return;
+            const message = _localized('toasts.tts_failed', 'Read-aloud failed. Please try again.');
+            _failIfCurrent(id, message);
+            _toast(message, 'error');
+        };
+        const fallbackAfterStart = () => {
+            _browserFallback(text, id, rate, locale).then((ok) => {
+                if (!ok) reportFailure();
+            }).catch(reportFailure);
+        };
+        const mediaFailure = (error) => {
+            if (cancelled || terminal) return;
+            terminal = true;
+            release();
+            detach();
+            try { audio.pause(); } catch (e) {}
+            if (_audio === audio) _audio = null;
+            if (_state.currentId !== id) { settle(false); return; }
+            if (shouldInvalidate(error)) _invalidateUrl(url);
+            if (!started) { settle(false); return; }
+            fallbackAfterStart();
+        };
+        _attemptCleanup = cancelAttempt;
+        startTimer = setTimeout(() => {
+            const error = new Error('Audio playback start timed out');
+            error.name = 'TimeoutError';
+            mediaFailure(error);
+        }, 12000);
+        audio.playbackRate = rate;
+        _audio = audio;
+        audio.onended = () => {
+            if (cancelled || terminal) return;
+            terminal = true;
+            release();
+            detach();
+            if (_audio === audio) _audio = null;
+            if (!started) { settle(false); return; }
+            _finishIfCurrent(id);
+        };
+        audio.onerror = mediaFailure;
+        const markPlaying = () => {
+            if (cancelled || terminal || started) return;
+            if (_state.currentId !== id) {
+                cancelAttempt();
+                try { audio.pause(); } catch (e) {}
+                return;
+            }
+            started = true;
+            if (startTimer) { clearTimeout(startTimer); startTimer = null; }
+            _state = { ..._state, isPlaying: true, status: 'playing', error: null };
+            _emit();
+            settle(true);
+        };
+        audio.onplaying = markPlaying;
+        try { Promise.resolve(audio.play()).then(markPlaying).catch(mediaFailure); }
+        catch (e) { mediaFailure(e); }
+    });
     const speak = async (text, opts) => {
-        if (!text) return null;
-        if (isGlobalMuted()) return null;
+        if (!text || isGlobalMuted()) return null;
         const o = opts || {};
         _stop();
         const id = ++_sessionCounter;
         _abortController = new AbortController();
         const signal = _abortController.signal;
-        _state = { isPlaying: true, currentText: text, currentId: id };
+        _state = { isPlaying: true, status: 'generating', currentText: text, currentId: id, error: null };
         _emit();
         const voice = o.voice || window.__alloSelectedVoice || 'Kore';
         const rate = (typeof o.rate === 'number') ? o.rate
                      : (typeof window.__alloPlaybackRate === 'number' ? window.__alloPlaybackRate : 0.95);
         const language = o.language || window.__alloTextLanguage || 'English';
-        // Primary: Gemini TTS via callTTS (closure var, hot-swapped after CDN load).
-        // The opts.signal threads down to fetchTTSBytes so stop() actually
-        // terminates the in-flight request instead of just discarding its result.
+        const locale = o.locale || '';
         try {
             if (typeof callTTS === 'function') {
-                const url = await callTTS(text, voice, 1, { maxRetries: 2, language, signal });
-                if (_state.currentId !== id) return null; // stop() was called mid-fetch
+                const retries = Number.isFinite(Number(o.maxRetries)) ? Math.max(0, Math.min(2, Math.floor(Number(o.maxRetries)))) : 1;
+                const url = await callTTS(text, voice, 1, {
+                    maxRetries: retries,
+                    language,
+                    locale,
+                    dialect: o.dialect || '',
+                    signal,
+                    priority: o.priority || 'interactive',
+                    reason: o.reason || 'shared-player',
+                    force: o.force === true
+                });
+                if (_state.currentId !== id) return null;
                 if (url) {
-                    const ok = await _playAudioUrl(url, id, rate);
+                    const ok = await _playAudioUrl(url, id, rate, text, locale);
                     if (ok) return id;
                 }
             }
         } catch (e) {
             if (_state.currentId !== id || _isAbortError(e)) return null;
-            console.warn('[AlloSpeechPlayer] Gemini TTS failed, trying fallback:', e && e.message);
+            console.warn('[AlloSpeechPlayer] TTS failed, trying browser speech:', e && e.message);
         }
-        // Kokoro fallback (English, offline)
-        if (_state.currentId === id && window._kokoroTTS && typeof window._kokoroTTS.speak === 'function') {
-            try {
-                const url = await window._kokoroTTS.speak(text, voice.startsWith('af_') || voice.startsWith('am_') ? voice : 'af_heart', 1);
-                if (_state.currentId !== id) return null;
-                if (url) {
-                    const ok = await _playAudioUrl(url, id, rate);
-                    if (ok) return id;
-                }
-            } catch (e) {
-                console.warn('[AlloSpeechPlayer] Kokoro failed, trying browser:', e && e.message);
-            }
-        }
-        // Browser SpeechSynthesis fallback (always available, lowest quality)
-        if (_state.currentId === id && _browserFallback(text, id, rate)) return id;
-        // Everything failed — toast and clear state
+        if (_state.currentId === id && await _browserFallback(text, id, rate, locale)) return id;
         if (_state.currentId === id) {
-            _stop();
-            _toast(_localized('toasts.tts_failed', 'Read-aloud is not available in this browser.'), 'error');
+            const message = _localized('toasts.tts_failed', 'Read-aloud is not available in this browser.');
+            _failIfCurrent(id, message);
+            _toast(message, 'error');
         }
         return null;
     };
-    // Auto-stop on global mute toggle
     window.addEventListener('alloflow-mute-changed', (e) => {
         if (e.detail && e.detail.muted) _stop();
     });
-    // §15.6 tier 1. AlloSpeechPlayer already exists to be the single front door
-    // for read-aloud (it replaced ~20 scattered speak() sites), so instrumenting
-    // HERE covers browser TTS, Kokoro, Piper and Gemini TTS at once. Recording
-    // must never delay or alter playback, hence the try/catch and no await.
     const _instrumentedSpeak = function () {
         try {
             if (window.__alloNoteSupport) window.__alloNoteSupport('read_aloud', 'none', { assistiveTech: true });
@@ -8046,8 +8170,11 @@ const getIconForType = (type) => {
         case 'poettree-submission': return <Sparkles size={16} />;
         case 'litlab-config': return <BookOpen size={16} />;
         case 'litlab-submission': return <Sparkles size={16} />;
+        case 'lingua-config': return <BookOpen size={16} />;
+        case 'lingua-submission': return <Star size={16} />;
         case 'readingBook': return <BookOpen size={16} />;
         case 'readingSet': return <BookOpen size={16} />;
+        case 'aac-board': return <Layout size={16} />;
         default: return <FileText size={16} />;
     }
 };
@@ -8133,8 +8260,11 @@ const MAX_OFFLINE_ITEMS = 50;
 // make a future bump unreadable instead of upgradable.
 const ALLO_BLUEPRINT_STORE_KEY = 'alloflow-blueprint-run-v1';
 const ALLO_BLUEPRINT_STORE_VERSION = 1;
+const ALLO_BLUEPRINT_CAPABILITY_FINGERPRINT = 'blueprint-execution-v2';
 const ALLO_FULL_PACK_STORE_KEY = 'alloflow-full-pack-run-v1';
 const ALLO_FULL_PACK_STORE_VERSION = 1;
+const ALLO_FULL_PACK_CAPABILITY_FINGERPRINT = 'full-pack-plan-v2';
+const ALLO_FULL_PACK_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 const ALLO_WORKSPACE_RECOVERY_NAMESPACE = 'workspace_recovery';
 const ALLO_WORKSPACE_RECOVERY_KEY = 'store_v1';
 const ALLO_WORKSPACE_RECOVERY = (() => {
@@ -9964,6 +10094,9 @@ const SESSION_TIER1_LEAVES = new Set([
   'currentScene', 'sceneImage', 'xpToNextLevel', 'inventory',
   'currentResourceId', 'activeAdventureScene', 'activeAdventureState',
   'pushedBy', 'forceStatic', 'createdAt', 'expiresAt',
+  // Teacher-authored AAC payloads pass a strict version, media, size, and TTL
+  // validator below. The sender is always the pseudonym Teacher.
+  'visualSupportsPayload',
   // Concept Pictionary: per-student role for the active round (drawer/guesser/null).
   // Structurally enum-only, not student-typed; cleared at round end. Tier-1 safe.
   'role',
@@ -10425,6 +10558,17 @@ const writeToSession = async (sessionRef, payload) => {
       return Promise.reject(new Error('writeToSession: invalid AlloHaven recognition config'));
     }
     safePayload = { ...safePayload, havenRecognitionConfig: normalizedConfig };
+  }
+  if (Object.prototype.hasOwnProperty.call(safePayload, 'visualSupportsPayload')) {
+    if (safePayload.visualSupportsPayload == null) {
+      safePayload = { ...safePayload, visualSupportsPayload: null };
+    } else {
+      const validatedAacPayload = _alloReadLiveAacPayload(safePayload.visualSupportsPayload, Date.now());
+      if (!validatedAacPayload) {
+        return Promise.reject(new Error('writeToSession: invalid AAC Board payload'));
+      }
+      safePayload = { ...safePayload, visualSupportsPayload: validatedAacPayload };
+    }
   }
   if (Object.prototype.hasOwnProperty.call(safePayload, 'aiPolicy')) {
     // Shape-enforce the allowlisted aiPolicy leaf: strictly the enum object,
@@ -11115,6 +11259,491 @@ function wsReducer(state, action) {
   if (action.type === 'WS_RESET') return { ...WS_INITIAL_STATE };
   return state;
 }
+const ALLO_AAC_BOARD_FORMAT = 'alloflow.aac-board';
+const ALLO_AAC_BOARD_VERSION = 1;
+const ALLO_LIVE_AAC_SCHEMA = 'alloflow.live-aac';
+const ALLO_LIVE_AAC_VERSION = 2;
+const ALLO_LIVE_AAC_TTL_MS = 15 * 60 * 1000;
+const ALLO_AAC_MAX_PAGES = 12;
+const ALLO_AAC_MAX_CELLS_PER_PAGE = 64;
+const ALLO_AAC_MAX_CELLS = 256;
+const ALLO_AAC_MAX_IMAGE_CHARS = 128 * 1024;
+const ALLO_AAC_LIVE_IMAGE_ITEM_CHARS = 256 * 1024;
+const ALLO_AAC_PACK_IMAGE_ITEM_CHARS = 2 * 1024 * 1024;
+const ALLO_AAC_LIVE_IMAGE_CHARS = 480 * 1024;
+const ALLO_AAC_PACK_IMAGE_CHARS = 4 * 1024 * 1024;
+const ALLO_AAC_MAX_AUDIO_CHARS = 256 * 1024;
+const ALLO_AAC_PACK_AUDIO_ITEM_CHARS = 1024 * 1024;
+const ALLO_AAC_PACK_AUDIO_CHARS = 1024 * 1024;
+const _alloAacText = (value, max = 240) => String(value == null ? String() : value)
+  .replace(/[\u0000-\u001f\u007f]/g, ' ')
+  .replace(/\s+/g, ' ')
+  .trim()
+  .slice(0, max);
+const _alloAacInteger = (value, min, max, fallback) => {
+  const number = Number(value);
+  return Number.isFinite(number) ? Math.max(min, Math.min(max, Math.round(number))) : fallback;
+};
+const _alloAacHash = (value) => {
+  const text = typeof value === 'string' ? value : JSON.stringify(value || null);
+  let hash = 2166136261;
+  for (let index = 0; index < text.length; index += 1) {
+    hash ^= text.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(36);
+};
+const _alloAacId = (value, fallback) => {
+  const clean = _alloAacText(value, 96).replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '');
+  return clean || fallback;
+};
+const _alloAacLocale = (value) => {
+  const locale = _alloAacText(value, 40);
+  return /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8}){0,2}$/.test(locale) ? locale : 'en-US';
+};
+const _alloAacIsRtlLocale = (locale) => /^(?:ar|fa|he|ur|ps|sd|ug)(?:-|$)/i.test(locale);
+const _alloAacTimestamp = (value) => {
+  if (value instanceof Date) return value.getTime();
+  if (value && typeof value.toMillis === 'function') return Number(value.toMillis());
+  const number = Number(value);
+  if (Number.isFinite(number)) return number;
+  const parsed = Date.parse(String(value || String()));
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+const _alloAacSafeImage = (value, remaining, perItemLimit = ALLO_AAC_MAX_IMAGE_CHARS) => {
+  if (typeof value !== 'string' || value.length > perItemLimit || value.length > remaining) return null;
+  if (/^data:image\/(?:png|jpe?g|webp|gif|avif);base64,[A-Za-z0-9+/]*={0,2}$/i.test(value)) return value;
+  const match = value.match(/^data:image\/svg\+xml;base64,([A-Za-z0-9+/]*={0,2})$/i);
+  if (!match || typeof atob !== 'function') return null;
+  try {
+    const svg = atob(match[1]);
+    if (svg.length > perItemLimit || !/<svg(?:\s|>)/i.test(svg)) return null;
+    const unsafe = /<\s*(?:script|foreignObject|iframe|object|embed|link|style|image|audio|video)\b/i.test(svg)
+      || /<!\s*(?:DOCTYPE|ENTITY)\b|<\?xml-stylesheet\b/i.test(svg)
+      || /\son[a-z]+\s*=/i.test(svg)
+      || /(?:href|xlink:href)\s*=\s*['"]\s*(?:https?:|\/\/|blob:|data:|javascript:)/i.test(svg)
+      || /(?:url\s*\(|@import|javascript:|expression\s*\()/i.test(svg);
+    return unsafe ? null : value;
+  } catch (_) {
+    return null;
+  }
+};
+const _alloAacSafeAudio = (audio, remaining, preparedOnly, perItemLimit = ALLO_AAC_MAX_AUDIO_CHARS) => {
+  if (!audio || typeof audio !== 'object' || Array.isArray(audio)) return null;
+  const kind = audio.kind === 'prepared' ? 'prepared' : audio.kind === 'custom' ? 'custom' : null;
+  if (!kind || (preparedOnly && kind !== 'prepared')) return null;
+  const data = typeof audio.data === 'string' ? audio.data : String();
+  if (!data || data.length > perItemLimit || data.length > remaining) return null;
+  const match = data.match(/^data:(audio\/(?:mpeg|mp3|mp4|aac|ogg|wav|webm|flac|x-wav));base64,[A-Za-z0-9+/]*={0,2}$/i);
+  if (!match) return null;
+  const mime = _alloAacText(audio.mime, 80).toLowerCase();
+  if (!mime || mime !== match[1].toLowerCase()) return null;
+  const clean = { kind, mime, data };
+  if (audio.profile && typeof audio.profile === 'object' && !Array.isArray(audio.profile)) {
+    const profile = {};
+    ['voice', 'language', 'provider', 'engine', 'model', 'voiceResolverVersion'].forEach((key) => {
+      const text = _alloAacText(audio.profile[key], 80);
+      if (text) profile[key] = text;
+    });
+    const rate = Number(audio.profile.synthesisRate);
+    if (Number.isFinite(rate)) profile.synthesisRate = Math.max(0.25, Math.min(4, rate));
+    if (Object.keys(profile).length) clean.profile = profile;
+  }
+  return clean;
+};
+const _alloAacLegacyPackage = (raw) => {
+  if (!raw || typeof raw !== 'object') return null;
+  const type = raw.type === 'board' ? 'board' : (raw.type === 'schedule' || raw.type === 'sequence') ? 'schedule' : null;
+  if (!type) return null;
+  const title = _alloAacText(raw.title, 160) || (type === 'board' ? 'AAC Board' : 'Visual Sequence');
+  const pageSources = type === 'board'
+    ? (Array.isArray(raw.pages) && raw.pages.length ? raw.pages : [{ id: 'page-1', title, cols: raw.cols, words: raw.words }])
+    : [{ id: 'page-1', title, cols: 1, words: raw.items }];
+  return {
+    format: ALLO_AAC_BOARD_FORMAT,
+    version: ALLO_AAC_BOARD_VERSION,
+    exportedAt: new Date(_alloAacTimestamp(raw.timestamp) || Date.now()).toISOString(),
+    board: { id: _alloAacId(raw.id, 'legacy-board'), title, locale: _alloAacLocale(raw.locale), direction: raw.direction },
+    pages: pageSources.map((page, pageIndex) => ({
+      id: _alloAacId(page && page.id, 'page-' + (pageIndex + 1)),
+      title: _alloAacText(page && page.title, 160) || title,
+      cols: type === 'schedule' ? 1 : _alloAacInteger(page && page.cols, 1, 12, _alloAacInteger(raw.cols, 1, 12, 4)),
+      cells: (Array.isArray(page && page.cells) ? page.cells : Array.isArray(page && page.words) ? page.words : []).map((cell, cellIndex) => {
+        const source = cell && typeof cell === 'object' ? cell : { word: cell };
+        const label = _alloAacText(source.displayLabel || source.label || source.word, 160);
+        const cols = Math.max(1, Number(page && page.cols) || Number(raw.cols) || 4);
+        return {
+          id: _alloAacId(source.id, 'cell-' + (pageIndex + 1) + '-' + (cellIndex + 1)),
+          index: cellIndex,
+          row: type === 'schedule' ? cellIndex : Math.floor(cellIndex / cols),
+          col: type === 'schedule' ? 0 : cellIndex % cols,
+          displayLabel: label,
+          vocalLabel: _alloAacText(source.vocalLabel || source.word || source.label, 240) || label,
+          originalLabel: _alloAacText(source.originalLabel || source.label || source.word, 160) || label,
+          description: _alloAacText(source.description, 400),
+          category: _alloAacText(source.category || source.wordType, 80),
+          image: source.image || null
+        };
+      })
+    })),
+    metadata: {
+      privacy: { customAudioIncluded: false, preparedAudioIncluded: false },
+      omittedNonportableImages: 0,
+      omittedCustomAudio: 0,
+      omittedPreparedAudio: 0,
+      warnings: ['Opened from a legacy visual support.']
+    }
+  };
+};
+const _alloNormalizePortableAacBoardPackage = (value, options = {}) => {
+  const isVersioned = !!(value && value.format === ALLO_AAC_BOARD_FORMAT && Number(value.version) === ALLO_AAC_BOARD_VERSION);
+  const source = isVersioned
+    ? value
+    : options.allowLegacy ? _alloAacLegacyPackage(value) : null;
+  if (!source || !source.board || !Array.isArray(source.pages)) return null;
+  const allowAudio = options.allowAudio === true;
+  const preparedOnly = options.preparedOnly === true;
+  const privacy = source.metadata && source.metadata.privacy && typeof source.metadata.privacy === 'object' ? source.metadata.privacy : {};
+  let remainingImages = Math.max(0, Number(options.maxImageChars) || ALLO_AAC_PACK_IMAGE_CHARS);
+  let remainingAudio = Math.max(0, Number(options.maxAudioChars) || ALLO_AAC_PACK_AUDIO_CHARS);
+  const imageItemLimit = Math.max(1, Number(options.maxImageItemChars) || ALLO_AAC_MAX_IMAGE_CHARS);
+  const audioItemLimit = Math.max(1, Number(options.maxAudioItemChars) || ALLO_AAC_MAX_AUDIO_CHARS);
+  let cellCount = 0;
+  let customIncluded = false;
+  let preparedIncluded = false;
+  let omittedImages = Math.max(0, _alloAacInteger(source.metadata && source.metadata.omittedNonportableImages, 0, 100000, 0));
+  let omittedCustom = Math.max(0, _alloAacInteger(source.metadata && source.metadata.omittedCustomAudio, 0, 100000, 0));
+  let omittedPrepared = Math.max(0, _alloAacInteger(source.metadata && source.metadata.omittedPreparedAudio, 0, 100000, 0));
+  const pages = source.pages.slice(0, ALLO_AAC_MAX_PAGES).map((page, pageIndex) => {
+    const sourceCells = Array.isArray(page && page.cells) ? page.cells : [];
+    const columns = _alloAacInteger(page && page.cols, 1, 12, 4);
+    const cells = sourceCells.slice(0, ALLO_AAC_MAX_CELLS_PER_PAGE).flatMap((cell, cellIndex) => {
+      if (!cell || typeof cell !== 'object' || cellCount >= ALLO_AAC_MAX_CELLS) return [];
+      cellCount += 1;
+      const displayLabel = _alloAacText(cell.displayLabel || cell.vocalLabel || cell.originalLabel, 160);
+      const vocalLabel = _alloAacText(cell.vocalLabel || cell.displayLabel || cell.originalLabel, 240) || displayLabel;
+      const safeImage = _alloAacSafeImage(cell.image, remainingImages, imageItemLimit);
+      if (safeImage) remainingImages -= safeImage.length;
+      else if (cell.image) omittedImages += 1;
+      const clean = {
+        id: _alloAacId(cell.id, 'cell-' + (pageIndex + 1) + '-' + (cellIndex + 1)),
+        index: _alloAacInteger(cell.index, 0, 999, cellIndex),
+        row: _alloAacInteger(cell.row, 0, 99, Math.floor(cellIndex / columns)),
+        col: _alloAacInteger(cell.col, 0, 99, cellIndex % columns),
+        displayLabel,
+        vocalLabel,
+        originalLabel: _alloAacText(cell.originalLabel || cell.displayLabel || cell.vocalLabel, 160) || displayLabel,
+        description: _alloAacText(cell.description, 400),
+        category: _alloAacText(cell.category, 80),
+        image: safeImage
+      };
+      if (cell.audio && cell.audio.kind === 'custom') {
+        if (allowAudio && !preparedOnly && privacy.customAudioIncluded === true) {
+          const audio = _alloAacSafeAudio(cell.audio, remainingAudio, false, audioItemLimit);
+          if (audio && audio.kind === 'custom') {
+            clean.audio = audio;
+            remainingAudio -= audio.data.length;
+            customIncluded = true;
+          } else {
+            omittedCustom += 1;
+          }
+        } else {
+          omittedCustom += 1;
+        }
+      } else if (cell.audio && cell.audio.kind === 'prepared') {
+        if (allowAudio && privacy.preparedAudioIncluded === true) {
+          const audio = _alloAacSafeAudio(cell.audio, remainingAudio, preparedOnly, audioItemLimit);
+          if (audio && audio.kind === 'prepared') {
+            clean.audio = audio;
+            remainingAudio -= audio.data.length;
+            preparedIncluded = true;
+          } else {
+            omittedPrepared += 1;
+          }
+        } else {
+          omittedPrepared += 1;
+        }
+      }
+      return isVersioned || displayLabel || vocalLabel || safeImage ? [clean] : [];
+    });
+    return {
+      id: _alloAacId(page && page.id, 'page-' + (pageIndex + 1)),
+      title: _alloAacText(page && page.title, 160) || 'Page ' + (pageIndex + 1),
+      cols: columns,
+      cells
+    };
+  }).filter((page) => isVersioned || page.cells.length);
+  if (!pages.length) return null;
+  const locale = _alloAacLocale(source.board.locale);
+  const warnings = (Array.isArray(source.metadata && source.metadata.warnings) ? source.metadata.warnings : [])
+    .slice(0, 20)
+    .map((warning) => _alloAacText(warning, 240))
+    .filter(Boolean);
+  return {
+    format: ALLO_AAC_BOARD_FORMAT,
+    version: ALLO_AAC_BOARD_VERSION,
+    exportedAt: _alloAacText(source.exportedAt, 80),
+    board: {
+      id: _alloAacId(source.board.id, 'board'),
+      title: _alloAacText(source.board.title, 160) || 'AAC Board',
+      locale,
+      direction: source.board.direction === 'rtl' || (source.board.direction !== 'ltr' && _alloAacIsRtlLocale(locale)) ? 'rtl' : 'ltr'
+    },
+    pages,
+    metadata: {
+      privacy: { customAudioIncluded: customIncluded, preparedAudioIncluded: preparedIncluded },
+      omittedNonportableImages: omittedImages,
+      omittedCustomAudio: omittedCustom,
+      omittedPreparedAudio: omittedPrepared,
+      warnings
+    }
+  };
+};
+const _alloBuildLiveAacPayload = (raw, now = Date.now()) => {
+  const portable = _alloNormalizePortableAacBoardPackage(raw, {
+    allowLegacy: true,
+    allowAudio: false,
+    maxImageChars: ALLO_AAC_LIVE_IMAGE_CHARS,
+    maxImageItemChars: ALLO_AAC_LIVE_IMAGE_ITEM_CHARS
+  });
+  if (!portable) return null;
+  const timestamp = Math.round(Number(now) || Date.now());
+  const hash = _alloAacHash(portable);
+  return {
+    schema: ALLO_LIVE_AAC_SCHEMA,
+    version: ALLO_LIVE_AAC_VERSION,
+    payloadId: 'aac-' + timestamp.toString(36) + '-' + hash,
+    timestamp,
+    expiresAt: timestamp + ALLO_LIVE_AAC_TTL_MS,
+    sender: 'Teacher',
+    package: portable
+  };
+};
+const _alloReadLiveAacPayload = (raw, now = Date.now()) => {
+  if (!raw || typeof raw !== 'object') return null;
+  const current = Number(now) || Date.now();
+  const isVersioned = raw.schema === ALLO_LIVE_AAC_SCHEMA && Number(raw.version) === ALLO_LIVE_AAC_VERSION;
+  const timestamp = _alloAacTimestamp(raw.timestamp);
+  const expiresAt = isVersioned ? _alloAacTimestamp(raw.expiresAt) : timestamp + ALLO_LIVE_AAC_TTL_MS;
+  if (!timestamp || timestamp > current + 5 * 60 * 1000 || expiresAt <= current || expiresAt <= timestamp || expiresAt > timestamp + 60 * 60 * 1000) return null;
+  const portable = _alloNormalizePortableAacBoardPackage(isVersioned ? raw.package : raw, {
+    allowLegacy: !isVersioned,
+    allowAudio: false,
+    maxImageChars: ALLO_AAC_LIVE_IMAGE_CHARS,
+    maxImageItemChars: ALLO_AAC_LIVE_IMAGE_ITEM_CHARS
+  });
+  if (!portable) return null;
+  return {
+    schema: ALLO_LIVE_AAC_SCHEMA,
+    version: ALLO_LIVE_AAC_VERSION,
+    payloadId: _alloAacId(isVersioned ? raw.payloadId : null, 'aac-' + timestamp.toString(36) + '-' + _alloAacHash(portable)),
+    timestamp,
+    expiresAt,
+    sender: 'Teacher',
+    package: portable
+  };
+};
+const _alloBuildLocalAacPayload = (raw, resourceId, now = Date.now()) => {
+  const portable = _alloNormalizePortableAacBoardPackage(raw, {
+    allowAudio: true,
+    maxImageChars: ALLO_AAC_PACK_IMAGE_CHARS,
+    maxImageItemChars: ALLO_AAC_PACK_IMAGE_ITEM_CHARS,
+    maxAudioChars: ALLO_AAC_PACK_AUDIO_CHARS,
+    maxAudioItemChars: ALLO_AAC_PACK_AUDIO_ITEM_CHARS
+  });
+  if (!portable) return null;
+  const timestamp = Math.round(Number(now) || Date.now());
+  return {
+    schema: ALLO_LIVE_AAC_SCHEMA,
+    version: ALLO_LIVE_AAC_VERSION,
+    payloadId: 'history-' + _alloAacId(resourceId, _alloAacHash(portable)) + '-' + timestamp.toString(36),
+    timestamp,
+    expiresAt: timestamp + 24 * 60 * 60 * 1000,
+    sender: 'Teacher',
+    localOnly: true,
+    package: portable
+  };
+};
+const LiveAacBoardDialog = ({ payload, onDismiss, onSpeak }) => {
+  const portable = payload && payload.package;
+  const pages = portable && Array.isArray(portable.pages) ? portable.pages : [];
+  const [pageIndex, setPageIndex] = useState(0);
+  const [sentence, setSentence] = useState([]);
+  const [scanning, setScanning] = useState(false);
+  const [scanIndex, setScanIndex] = useState(0);
+  const dialogRef = useRef(null);
+  const openerRef = useRef(null);
+  const safePageIndex = Math.max(0, Math.min(pageIndex, Math.max(0, pages.length - 1)));
+  const page = pages[safePageIndex] || { title: 'AAC Board', cols: 4, cells: [] };
+  const cells = Array.isArray(page.cells) ? page.cells : [];
+  const interactiveCells = cells.filter((cell) => !!(cell && (cell.displayLabel || cell.vocalLabel || cell.originalLabel || cell.image)));
+  const locale = portable && portable.board ? portable.board.locale : 'en-US';
+  const direction = portable && portable.board && portable.board.direction === 'rtl' ? 'rtl' : 'ltr';
+  const speak = React.useCallback((text, cell) => {
+    const phrase = _alloAacText(text, 2000);
+    if (!phrase || typeof onSpeak !== 'function') return;
+    try {
+      const result = onSpeak(phrase, cell || null);
+      if (result && typeof result.catch === 'function') result.catch(() => {});
+    } catch (_) {}
+  }, [onSpeak]);
+  const activateCell = React.useCallback((cell) => {
+    if (!cell) return;
+    const phrase = cell.vocalLabel || cell.displayLabel || cell.originalLabel;
+    if (!phrase) return;
+    setSentence((previous) => previous.concat([_alloAacText(cell.displayLabel || phrase, 160)]).slice(-24));
+    speak(phrase, cell);
+  }, [speak]);
+  useEffect(() => {
+    openerRef.current = document.activeElement;
+    return () => {
+      const opener = openerRef.current;
+      try {
+        if (opener && typeof opener.focus === 'function' && document.contains(opener)) opener.focus();
+      } catch (_) {}
+    };
+  }, []);
+  useEffect(() => {
+    setPageIndex(0);
+    setSentence([]);
+    setScanning(false);
+    setScanIndex(0);
+    const timer = setTimeout(() => {
+      try { dialogRef.current && dialogRef.current.focus(); } catch (_) {}
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [payload && payload.payloadId]);
+  useEffect(() => {
+    if (!scanning || interactiveCells.length < 1) return undefined;
+    const timer = setInterval(() => setScanIndex((current) => (current + 1) % interactiveCells.length), 1400);
+    return () => clearInterval(timer);
+  }, [scanning, interactiveCells.length, safePageIndex]);
+  useEffect(() => {
+    setScanIndex(0);
+  }, [safePageIndex]);
+  useEffect(() => {
+    const handleKey = (event) => {
+      if (event.key === 'Tab') {
+        const focusable = dialogRef.current ? Array.from(dialogRef.current.querySelectorAll('button:not([disabled]), [href]')) : [];
+        if (!focusable.length) {
+          event.preventDefault();
+          try { dialogRef.current && dialogRef.current.focus(); } catch (_) {}
+          return;
+        }
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && (document.activeElement === first || !dialogRef.current.contains(document.activeElement))) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+        return;
+      }
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onDismiss();
+        return;
+      }
+      if (event.key === 'Backspace') {
+        event.preventDefault();
+        setSentence((previous) => previous.slice(0, -1));
+        return;
+      }
+      if (event.key === 'ArrowLeft' && pages.length > 1) {
+        event.preventDefault();
+        setPageIndex((current) => Math.max(0, current - 1));
+        return;
+      }
+      if (event.key === 'ArrowRight' && pages.length > 1) {
+        event.preventDefault();
+        setPageIndex((current) => Math.min(pages.length - 1, current + 1));
+        return;
+      }
+      if (scanning && (event.key === 'Enter' || event.key === ' ')) {
+        event.preventDefault();
+        activateCell(interactiveCells[scanIndex % Math.max(1, interactiveCells.length)]);
+        return;
+      }
+      if (/^[1-9]$/.test(event.key)) {
+        const index = Number(event.key) - 1;
+        if (interactiveCells[index]) {
+          event.preventDefault();
+          activateCell(interactiveCells[index]);
+        }
+      }
+    };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [activateCell, interactiveCells, scanIndex, scanning, pages.length, onDismiss]);
+  const sentenceText = sentence.join(' ');
+  const cellColors = { noun: '#fef9c3', verb: '#dcfce7', adjective: '#dbeafe', other: '#f3f4f6' };
+  return (
+    <div
+      role='dialog'
+      aria-modal='true'
+      aria-label='AAC Board from Teacher'
+      lang={locale}
+      dir={direction}
+      ref={dialogRef}
+      tabIndex={-1}
+      onClick={(event) => { if (event.target === event.currentTarget) onDismiss(); }}
+      style={{ position: 'fixed', inset: 0, zIndex: 99998, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.58)', padding: 12 }}
+    >
+      <div onClick={(event) => event.stopPropagation()} style={{ background: '#fff', borderRadius: 20, width: 'min(900px,96vw)', maxHeight: '94vh', overflowY: 'auto', boxShadow: '0 25px 60px rgba(0,0,0,0.24)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '14px 18px', borderBottom: '1px solid #e2e8f0' }}>
+          <div>
+            <h2 style={{ margin: 0, color: '#3730a3', fontSize: 20 }}>{portable && portable.board ? portable.board.title : 'AAC Board'}</h2>
+            <div style={{ color: '#64748b', fontSize: 12 }}>Shared by Teacher</div>
+          </div>
+          <button type='button' onClick={onDismiss} aria-label='Close AAC Board' style={{ border: 0, borderRadius: 10, width: 36, height: 36, cursor: 'pointer', fontSize: 18 }}>x</button>
+        </div>
+        <div style={{ padding: '14px 18px' }}>
+          {pages.length > 1 && (
+            <div aria-label='AAC Board pages' style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 12 }}>
+              <button type='button' onClick={() => setPageIndex((current) => Math.max(0, current - 1))} disabled={safePageIndex === 0}>Previous page</button>
+              <strong>{page.title} ({safePageIndex + 1} of {pages.length})</strong>
+              <button type='button' onClick={() => setPageIndex((current) => Math.min(pages.length - 1, current + 1))} disabled={safePageIndex === pages.length - 1}>Next page</button>
+            </div>
+          )}
+          <div role='status' aria-live='polite' aria-label='Sentence strip' style={{ minHeight: 48, border: '2px solid #c7d2fe', borderRadius: 12, padding: 10, marginBottom: 10, background: '#eef2ff', fontWeight: 700 }}>
+            {sentenceText || 'Select symbols to build a sentence.'}
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
+            <button type='button' onClick={() => speak(sentenceText)} disabled={!sentenceText} aria-keyshortcuts='Enter'>Speak sentence</button>
+            <button type='button' onClick={() => setSentence((previous) => previous.slice(0, -1))} disabled={!sentence.length} aria-keyshortcuts='Backspace'>Undo</button>
+            <button type='button' onClick={() => setSentence([])} disabled={!sentence.length}>Clear</button>
+            <button type='button' aria-pressed={scanning} onClick={() => setScanning((current) => !current)}>{scanning ? 'Stop scanning' : 'Start scanning'}</button>
+          </div>
+          <div role='grid' aria-label={page.title || 'AAC Board symbols'} style={{ display: 'grid', gridTemplateColumns: 'repeat(' + Math.max(1, Math.min(12, page.cols || 4)) + ', minmax(76px,1fr))', gap: 9 }}>
+            {cells.map((cell, index) => {
+              const isScanning = scanning && cell === interactiveCells[scanIndex % Math.max(1, interactiveCells.length)];
+              const category = cell.category && cellColors[cell.category] ? cell.category : 'other';
+              const isBlank = !(cell.displayLabel || cell.vocalLabel || cell.originalLabel || cell.image);
+              return (
+                <button
+                  type='button'
+                  role='gridcell'
+                  key={cell.id || index}
+                  onClick={() => activateCell(cell)}
+                  disabled={isBlank}
+                  aria-label={isBlank ? 'Empty AAC slot' : (cell.displayLabel || cell.vocalLabel || 'Symbol') + (index < 9 ? ', shortcut ' + (index + 1) : String())}
+                  aria-current={isScanning ? 'true' : undefined}
+                  style={{ minHeight: 104, border: isScanning ? '4px solid #7c3aed' : '2px solid rgba(15,23,42,0.15)', borderRadius: 12, background: cellColors[category], padding: 8, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, boxShadow: isScanning ? '0 0 0 3px #ddd6fe' : 'none' }}
+                >
+                  {cell.image ? <img src={cell.image} alt={String()} style={{ width: 64, height: 64, objectFit: 'contain' }} /> : <span aria-hidden='true' style={{ fontSize: 28 }}>Aa</span>}
+                  <span style={{ fontSize: 14, fontWeight: 800, color: '#0f172a', overflowWrap: 'anywhere' }}>{cell.displayLabel || cell.vocalLabel}</span>
+                </button>
+              );
+            })}
+          </div>
+          {scanning && <p style={{ margin: '12px 0 0', color: '#5b21b6', fontWeight: 700 }}>Press Enter or Space to choose the highlighted symbol.</p>}
+        </div>
+      </div>
+    </div>
+  );
+};
 const AlloFlowContent = () => {
     const lastHandleSpeakRef = useRef(null);
   const { t, setUiLanguage, currentUiLanguage, isTranslating } = React.useContext(LanguageContext);
@@ -13673,7 +14302,18 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('AlloSheetTransferAdapter', 'https://alloflow-cdn.pages.dev/allo_sheet/transfer_adapter.js?v=afc130a59');
     loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=afc130a59');
     loadModule('AlloSheetHostBridge', 'https://alloflow-cdn.pages.dev/allo_sheet/host_bridge.js?v=afc130a59');
-    loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=afc130a59');
+    (function queueBehaviorLensModules() {
+      const startBehaviorLens = function() {
+        if (!(window.AlloModules && window.AlloModules.BehaviorLensWorkspace)) return false;
+        window.removeEventListener('alloflow:module-registry-changed', startBehaviorLens);
+        loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=afc130a59');
+        return true;
+      };
+      if (!startBehaviorLens()) {
+        window.addEventListener('alloflow:module-registry-changed', startBehaviorLens);
+        loadModule('BehaviorLensWorkspace', 'https://alloflow-cdn.pages.dev/behavior_lens_workspace_module.js?v=afc130a59');
+      }
+    })();
     loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=afc130a59');
     loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=afc130a59');
     loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=afc130a59');
@@ -13703,6 +14343,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyAdminHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AdminHub', 'https://alloflow-cdn.pages.dev/admin_hub_module.js?v=ah080304'); }; })();
     window.__alloLazyMeetingDocs = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MeetingDocs', 'https://alloflow-cdn.pages.dev/meeting_docs_module.js?v=md080302'); }; })();
     window.__alloLazySpedTimelines = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SpedTimelines', 'https://alloflow-cdn.pages.dev/sped_timelines_module.js?v=st080301'); }; })();
+    window.__alloLazyDiagnosisEligibility = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DiagnosisEligibility', 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_eligibility.js?v=de080801'); }; })();
     window.__alloLazyFamilyAnnouncements = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FamilyAnnouncements', 'https://alloflow-cdn.pages.dev/family_announcements_module.js?v=fa080301'); }; })();
     window.__alloLazyMtssTriage = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MtssTriage', 'https://alloflow-cdn.pages.dev/mtss_triage_module.js?v=mt080301'); }; })();
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
@@ -13754,6 +14395,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=afc130a59'); }; })();
     window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=059104c5'); }; })();
     window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=afc130a59'); }; })();
+    window.__alloLazyVideoLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoLibrary', 'https://alloflow-cdn.pages.dev/view_video_library_module.js?v=afc130a59'); }; })();
     window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=afc130a59'); }; })();
     window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=0b3560bb'); }; })();
     window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=afc130a59'); }; })();
@@ -13975,6 +14617,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_probability.js', 'stem_lab/stem_tool_logiclab.js',
         'stem_lab/stem_tool_calculus.js', 'stem_lab/stem_tool_unitconvert.js',
         'stem_lab/stem_tool_cell.js', 'stem_lab/stem_tool_chembalance.js',
+        'stem_lab/stem_tool_heatlab.js', 'stem_lab/stem_tool_nuclearlab.js',
         'stem_lab/stem_tool_punnett.js', 'stem_lab/stem_tool_semiconductor.js',
         'stem_lab/stem_tool_gamestudio.js',
         'stem_lab/stem_tool_a11yauditor.js',
@@ -14059,8 +14702,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         // Aug 4 2026: Education Law Navigator — verbatim IDEA Part B / Section 504
         // text from law_corpus/ (ingested by dev-tools/build_law_corpus.cjs).
         'stem_lab/stem_tool_lawnavigator.js',
-        // Aug 4 2026: Diagnosis vs. Eligibility — quotes the 13 IDEA categories
-        // from law_corpus/ (34 CFR 300.8). No DSM text: that is APA-copyrighted.
+        // Aug 8 2026: rehomed to Educator Tools > Leadership Hub.
+        // Keep this hidden compatibility load so old saved links still resolve.
         'stem_lab/stem_tool_eligibility.js',
         // Aug 4 2026: PaperTrail - field-level official-document trainer;
         // transition-skill companion to the Law Navigator and Parenting Lab M9.
@@ -14153,14 +14796,191 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'arcade_mode_concept_pictionary.js',
       ];
 
-      // Generic ensure-loader factory: idempotent (closure flag), polls for the
-      // registry to exist (host module may still be loading), then appends each
-      // plugin script. Failures are logged but don't block subsequent plugins.
+      // Generic ensure-loader factory: idempotent initial load, plus an explicit
+      // per-file state/retry surface. A failed lazy script used to leave its tile
+      // on the loading skeleton forever: the only state was one batch-level
+      // boolean and the closure's `loaded` flag made a second request impossible.
       function makeEnsureLoader(label, manifest, registryProbe) {
-        var loaded = false;
+        var started = false;
+        var stateKey = '__allo' + label + 'PluginStates';
+        var states = window[stateKey] || {};
+        window[stateKey] = states;
+        var loadTimeoutMs = 20000;
+
+        function publicState(state) {
+          if (!state) return null;
+          return {
+            module: state.module,
+            status: state.status,
+            error: state.error || '',
+            attempt: state.attempt || 0,
+            startedAt: state.startedAt || 0,
+            finishedAt: state.finishedAt || 0
+          };
+        }
+
+        function fireProgress(mod) {
+          try {
+            window.dispatchEvent(new CustomEvent('allo-plugins-changed', {
+              detail: { label: label, module: mod || null, state: publicState(mod ? states[mod] : null) }
+            }));
+          } catch (_) {}
+        }
+
+        function syncLoadingFlag() {
+          var loading = Object.keys(states).some(function(mod) {
+            return states[mod] && states[mod].status === 'loading';
+          });
+          window['__allo' + label + 'PluginsLoading'] = loading;
+        }
+
+        // Registration IDs are the public retry/state keys. Most normalize to
+        // their stem_tool filename, but these intentional aliases do not.
+        var stemRegistrationModuleAliases = {
+          alphaFoldExplorer: 'stem_lab/stem_tool_alphafold.js',
+          aquacultureLab: 'stem_lab/stem_tool_aquaculture.js',
+          arithmeticStudio: 'stem_lab/stem_tool_arithmetic.js',
+          base10: 'stem_lab/stem_tool_manipulatives.js',
+          cellAtlasLab: 'stem_lab/stem_tool_cellatlas.js',
+          cellularLab: 'stem_lab/stem_tool_cellular.js',
+          codingPlayground: 'stem_lab/stem_tool_coding.js',
+          consciousnessLab: 'stem_lab/stem_tool_consciousness.js',
+          coordinate: 'stem_lab/stem_tool_coordgrid.js',
+          dnaLab: 'stem_lab/stem_tool_dna.js',
+          epidemicSim: 'stem_lab/stem_tool_epidemic.js',
+          fractionViz: 'stem_lab/stem_tool_fractions.js',
+          geoQuiz: 'stem_lab/stem_tool_geo.js',
+          geometryProver: 'stem_lab/stem_tool_geo.js',
+          moneyMath: 'stem_lab/stem_tool_money.js',
+          musicSynth: 'stem_lab/stem_tool_music.js',
+          opticsLab: 'stem_lab/stem_tool_optics.js',
+          petsLab: 'stem_lab/stem_tool_pets.js',
+          protractor: 'stem_lab/stem_tool_angles.js',
+          ratioLab: 'stem_lab/stem_tool_ratios.js',
+          renewablesLab: 'stem_lab/stem_tool_renewables.js',
+          rockCycle: 'stem_lab/stem_tool_rocks.js',
+          stewardshipHub: 'stem_lab/stem_tool_stewardship.js',
+          titrationLab: 'stem_lab/stem_tool_titration.js'
+        };
+
+        function normalizedToolKey(value) {
+          return String(value || '')
+            .replace(/^.*\//, '')
+            .replace(/^stem_tool_/, '')
+            .replace(/\.js(?:[?#].*)?$/, '')
+            .replace(/[^a-z0-9]/gi, '')
+            .toLowerCase();
+        }
+
+        function resolveModule(toolOrModule) {
+          if (!toolOrModule) return null;
+          if (manifest.indexOf(toolOrModule) !== -1) return toolOrModule;
+          var aliasedModule = label === 'Stem' ? stemRegistrationModuleAliases[toolOrModule] : null;
+          if (aliasedModule && manifest.indexOf(aliasedModule) !== -1) return aliasedModule;
+          var wanted = normalizedToolKey(toolOrModule);
+          for (var i = 0; i < manifest.length; i++) {
+            if (normalizedToolKey(manifest[i]) === wanted) return manifest[i];
+          }
+          return null;
+        }
+
+        function removePriorScript(mod) {
+          try {
+            document.querySelectorAll('script[data-allo-plugin-module]').forEach(function(node) {
+              if (node.getAttribute('data-allo-plugin-module') === mod && node.parentNode) node.parentNode.removeChild(node);
+            });
+          } catch (_) {}
+        }
+
+        function loadOne(mod, force) {
+          if (!mod) return false;
+          var previous = states[mod];
+          if (!force && previous && (previous.status === 'loading' || previous.status === 'loaded')) return true;
+          if (force) removePriorScript(mod);
+
+          var attempt = (previous && previous.attempt || 0) + 1;
+          var state = states[mod] = {
+            module: mod,
+            status: 'loading',
+            error: '',
+            attempt: attempt,
+            startedAt: Date.now(),
+            finishedAt: 0
+          };
+          syncLoadingFlag();
+          fireProgress(mod);
+
+          var s = document.createElement('script');
+          var retrySuffix = attempt > 1 ? '&retry=' + Date.now() : '';
+          s.src = pluginCdnBase + mod + '?v=' + pluginCdnVersion + retrySuffix;
+          s.setAttribute('data-allo-plugin-module', mod);
+          s.setAttribute('data-allo-plugin-attempt', String(attempt));
+          // Keep the generated Cell Atlas snapshot and its consumer ordered;
+          // every unrelated plugin remains parallel.
+          var orderedCellAtlasDependency = mod === 'stem_lab/stem_data_cellatlas_muraro.js' || mod === 'stem_lab/stem_tool_cellatlas.js';
+          var orderedDataKernelDependency = mod === 'data_kernel_loader.js' || mod === 'stem_lab/stem_tool_datastudio.js';
+          s.async = !(orderedCellAtlasDependency || orderedDataKernelDependency);
+          s.crossOrigin = 'anonymous';
+
+          var timeoutId = null;
+          function finish(status, error) {
+            // A late event from a superseded request must not overwrite the retry.
+            if (!states[mod] || states[mod].attempt !== attempt) return;
+            if (timeoutId) { clearTimeout(timeoutId); timeoutId = null; }
+            state.status = status;
+            state.error = error || '';
+            state.finishedAt = Date.now();
+            syncLoadingFlag();
+            fireProgress(mod);
+          }
+          s.onload = function() {
+            console.log('[' + label + ' Plugin] Loaded: ' + mod);
+            finish('loaded', '');
+          };
+          s.onerror = function() {
+            console.warn('[' + label + ' Plugin] Failed to load: ' + mod);
+            finish('error', 'The plugin file could not be downloaded. Check the connection or school network filter, then try again.');
+          };
+          timeoutId = setTimeout(function() {
+            finish('error', 'The plugin took longer than 20 seconds to load. Check the connection, then try again.');
+          }, loadTimeoutMs);
+          document.head.appendChild(s);
+          return true;
+        }
+
+        if (label === 'Stem') {
+          function loadStemModuleWithDependencies(mod) {
+            if (mod === 'stem_lab/stem_tool_cellatlas.js') loadOne('stem_lab/stem_data_cellatlas_muraro.js', false);
+            if (mod === 'stem_lab/stem_tool_datastudio.js') loadOne('data_kernel_loader.js', false);
+            return loadOne(mod, false);
+          }
+          window.__alloEnsureStemPluginLoaded = function(toolOrModule) {
+            var mod = resolveModule(toolOrModule);
+            if (!mod) return false;
+            return loadStemModuleWithDependencies(mod);
+          };
+          window.__alloGetStemPluginState = function(toolOrModule) {
+            var mod = resolveModule(toolOrModule);
+            return publicState(mod ? states[mod] : null);
+          };
+          window.__alloRetryStemPlugin = function(toolOrModule) {
+            var mod = resolveModule(toolOrModule);
+            if (!mod) return false;
+            return loadOne(mod, true);
+          };
+        }
+
         return function() {
-          if (loaded) return;
-          loaded = true;
+          if (started) return;
+          started = true;
+          // STEM keeps catalog metadata eager but loads each substantial lab only
+          // when selected (or prefetched on tile intent). SEL and Arcade retain
+          // their existing batch behavior.
+          if (label === 'Stem') {
+            syncLoadingFlag();
+            fireProgress(null);
+            return;
+          }
           window['__allo' + label + 'PluginsLoading'] = true;
           var waitForRegistry = function(cb) {
             if (registryProbe()) { cb(); return; }
@@ -14172,30 +14992,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
             }, 100);
           };
           waitForRegistry(function() {
-            var remaining = manifest.length;
-            var fireProgress = function() {
-              try { window.dispatchEvent(new CustomEvent('allo-plugins-changed', { detail: { label: label } })); } catch(_) {}
-            };
-            manifest.forEach(function(mod) {
-              var s = document.createElement('script');
-              s.src = pluginCdnBase + mod + '?v=' + pluginCdnVersion;
-              // Keep the generated Cell Atlas snapshot and its consumer ordered;
-              // every unrelated plugin remains parallel.
-              var orderedCellAtlasDependency = mod === 'stem_lab/stem_data_cellatlas_muraro.js' || mod === 'stem_lab/stem_tool_cellatlas.js';
-              var orderedDataKernelDependency = mod === 'data_kernel_loader.js' || mod === 'stem_lab/stem_tool_datastudio.js';
-              s.async = !(orderedCellAtlasDependency || orderedDataKernelDependency);
-              s.crossOrigin = 'anonymous';
-              s.onload = function() {
-                console.log('[' + label + ' Plugin] Loaded: ' + mod);
-                fireProgress();
-                if (--remaining <= 0) { window['__allo' + label + 'PluginsLoading'] = false; fireProgress(); }
-              };
-              s.onerror = function() {
-                console.warn('[' + label + ' Plugin] Failed to load: ' + mod + ' (using inline fallback)');
-                if (--remaining <= 0) { window['__allo' + label + 'PluginsLoading'] = false; fireProgress(); }
-              };
-              document.head.appendChild(s);
-            });
+            manifest.forEach(function(mod) { loadOne(mod, false); });
+            syncLoadingFlag();
           });
         };
       }
@@ -14638,6 +15436,31 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const setShowVisualSupports = React.useCallback((v) => { if (v && window.__alloLazyVisualSupportsModal) { try { window.__alloLazyVisualSupportsModal(); } catch(_) {} } _setShowVisualSupportsRaw(v); }, []);
   const [vsTab, setVsTab] = useState('boards');
   const [visualSupportsPayload, setVisualSupportsPayload] = useState(null);
+  const visualSupportsPayloadRef = useRef(null);
+  const visualSupportsDismissedIdsRef = useRef(new Set());
+  const visualSupportsLastTimestampRef = useRef(0);
+  const visualSupportsSessionRef = useRef(null);
+  const aacPlaybackRef = useRef({ epoch: 0, audio: null });
+  const pendingAacHistoryShareRef = useRef(null);
+  const [aacHistoryRevision, setAacHistoryRevision] = useState(0);
+  visualSupportsPayloadRef.current = visualSupportsPayload;
+  const dismissVisualSupportsPayload = React.useCallback(() => {
+    const current = visualSupportsPayloadRef.current;
+    if (current && current.payloadId) visualSupportsDismissedIdsRef.current.add(current.payloadId);
+    setVisualSupportsPayload(null);
+  }, []);
+  useEffect(() => {
+    if (!visualSupportsPayload || !visualSupportsPayload.expiresAt) return undefined;
+    const remaining = Number(visualSupportsPayload.expiresAt) - Date.now();
+    if (remaining <= 0) {
+      setVisualSupportsPayload(null);
+      return undefined;
+    }
+    const timer = setTimeout(() => {
+      setVisualSupportsPayload((current) => current && current.payloadId === visualSupportsPayload.payloadId ? null : current);
+    }, Math.min(remaining + 50, 2147483647));
+    return () => clearTimeout(timer);
+  }, [visualSupportsPayload && visualSupportsPayload.payloadId, visualSupportsPayload && visualSupportsPayload.expiresAt]);
   const [storyForgeSubmissions, setStoryForgeSubmissions] = useState([]);
   const [activeView, setActiveView] = useState('input');
   const [showReadThisPage, setShowReadThisPage] = useState(false);
@@ -15364,6 +16187,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isUdlWalkthroughOpen, setIsUdlWalkthroughOpen] = useState(false);
   const [isDisproAnalyzerOpen, setIsDisproAnalyzerOpen] = useState(false);
   const [isAdminHubOpen, setIsAdminHubOpen] = useState(false);
+  const [isDiagnosisEligibilityOpen, setIsDiagnosisEligibilityOpen] = useState(false);
+  const [diagnosisEligibilityFocusSection, setDiagnosisEligibilityFocusSection] = useState(null);
   const [isMeetingDocsOpen, setIsMeetingDocsOpen] = useState(false);
   const [isSpedTimelinesOpen, setIsSpedTimelinesOpen] = useState(false);
   const [isFamilyAnnouncementsOpen, setIsFamilyAnnouncementsOpen] = useState(false);
@@ -15633,6 +16458,51 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (typeof window.callTTS === 'function') return await window.callTTS(text, _voice, 1, _ttsOpts);
     } catch (e) { warnLog && warnLog('[handleAudio] TTS failed:', e); }
   }, []);
+  const stopAacPlayback = useCallback(() => {
+    const playback = aacPlaybackRef.current;
+    playback.epoch += 1;
+    const audio = playback.audio;
+    playback.audio = null;
+    if (audio) {
+      try { audio.pause(); } catch (_) {}
+      try { audio.currentTime = 0; } catch (_) {}
+    }
+    try {
+      if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
+    } catch (_) {}
+  }, []);
+  const playAacSpeech = useCallback(async (text, cell) => {
+    stopAacPlayback();
+    const playback = aacPlaybackRef.current;
+    const epoch = playback.epoch;
+    const playUrl = async (value) => {
+      if (!value || playback.epoch !== epoch) return false;
+      let audio;
+      try {
+        audio = value && typeof value.play === 'function' ? value : new Audio(value);
+        playback.audio = audio;
+        const clear = () => {
+          if (playback.epoch === epoch && playback.audio === audio) playback.audio = null;
+        };
+        audio.onended = clear;
+        audio.onerror = clear;
+        await audio.play();
+        return playback.epoch === epoch;
+      } catch (_) {
+        if (playback.epoch === epoch && playback.audio === audio) playback.audio = null;
+        return false;
+      }
+    };
+    if (cell && cell.audio && typeof cell.audio.data === 'string') {
+      if (await playUrl(cell.audio.data)) return true;
+      if (playback.epoch !== epoch) return false;
+    }
+    const locale = visualSupportsPayloadRef.current?.package?.board?.locale;
+    const resolved = await handleAudio(text, locale);
+    if (playback.epoch !== epoch) return false;
+    return playUrl(resolved);
+  }, [handleAudio, stopAacPlayback]);
+  useEffect(() => () => stopAacPlayback(), [visualSupportsPayload && visualSupportsPayload.payloadId, stopAacPlayback]);
   // The interstitial->running battery advance now lives INSIDE the StudentAnalytics
   // module (which owns the real launchBenchmarkProbe). The old host effect here
   // called a dead phantom-ref stub (launchBenchmarkProbe above) and stalled batteries
@@ -16567,6 +17437,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [autoRemoveWords, setAutoRemoveWords] = useState(true);
   const [activeSessionCode, setActiveSessionCode] = useState(null);
   const [activeSessionAppId, setActiveSessionAppId] = useState(appId);
+  useEffect(() => {
+    const identity = String(activeSessionAppId || appId) + '|' + String(activeSessionCode || String());
+    if (visualSupportsSessionRef.current === identity) return;
+    visualSupportsSessionRef.current = identity;
+    visualSupportsDismissedIdsRef.current = new Set();
+    visualSupportsLastTimestampRef.current = 0;
+    setVisualSupportsPayload(null);
+  }, [activeSessionAppId, activeSessionCode, appId]);
   const [showSessionStartOptions, setShowSessionStartOptions] = useState(false);
   const [showLiveLessonPrep, setShowLiveLessonPrep] = useState(false);
   const [mbPanelOpen, setMbPanelOpen] = useState(false);
@@ -19002,8 +19880,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       if (Array.isArray(branches)) {
           // Create all branch nodes first
           branches.forEach((branch, idx) => {
-              const branchId = 
-ode-b-${idx}`;
+              const branchId = `node-b-${idx}`;
               const isDecision = branch.title.includes('?') || (Array.isArray(branch.connectsTo) && branch.connectsTo.length > 1);
               const type = isDecision ? 'flow-decision' : 'flow-process';
               nodes.push({
@@ -19016,8 +19893,7 @@ ode-b-${idx}`;
               yOffset += 120;
               if (branch.items && branch.items.length > 0) {
                    branch.items.forEach((item, iIdx) => {
-                        const itemId = 
-ode-i-${idx}-${iIdx}`;
+                        const itemId = `node-i-${idx}-${iIdx}`;
                         nodes.push({
                             id: itemId,
                             type: 'flow-note',
@@ -19034,12 +19910,10 @@ ode-i-${idx}-${iIdx}`;
               // Connect main to first branch
               edges.push({ id: `e-main-b0`, fromId: mainId, toId: 'node-b-0' });
               branches.forEach((branch, idx) => {
-                  const branchId = 
-ode-b-${idx}`;
+                  const branchId = `node-b-${idx}`;
                   if (Array.isArray(branch.connectsTo) && branch.connectsTo.length > 0) {
                       branch.connectsTo.forEach(target => {
-                          const targetId = 
-ode-b-${target}`;
+                          const targetId = `node-b-${target}`;
                           edges.push({ id: `e-${branchId}-${targetId}`, fromId: branchId, toId: targetId });
                       });
                   }
@@ -19049,8 +19923,7 @@ ode-b-${target}`;
               // Linear fallback
               let previousId = mainId;
               branches.forEach((branch, idx) => {
-                  const branchId = 
-ode-b-${idx}`;
+                  const branchId = `node-b-${idx}`;
                   edges.push({ id: `e-${previousId}-${branchId}`, fromId: previousId, toId: branchId });
                   previousId = branchId;
               });
@@ -19067,13 +19940,11 @@ ode-b-${idx}`;
           branches.forEach((branch, idx) => {
               const hasOutgoing = Array.isArray(branch.connectsTo) && branch.connectsTo.length > 0;
               if (!hasOutgoing) {
-                  edges.push({ id: `e-b${idx}-end`, fromId: 
-ode-b-${idx}`, toId: endId });
+                  edges.push({ id: `e-b${idx}-end`, fromId: `node-b-${idx}`, toId: endId });
               }
           });
       } else {
-          const lastBranchId = Array.isArray(branches) && branches.length > 0 ? 
-ode-b-${branches.length - 1}` : mainId;
+          const lastBranchId = Array.isArray(branches) && branches.length > 0 ? `node-b-${branches.length - 1}` : mainId;
           edges.push({ id: `e-${lastBranchId}-end`, fromId: lastBranchId, toId: endId });
       }
       return { nodes, edges };
@@ -19880,6 +20751,21 @@ ode-b-${branches.length - 1}` : mainId;
   // opens this overlay (bytes are never in packs — playback comes from the
   // teacher's hosted link or a re-attached local file).
   const [videoRefPlayerItem, setVideoRefPlayerItem] = useState(null);
+  // ── Video library (curated product videos) ──
+  // Opened from the About tab's "Start here" grid, which dispatches this event
+  // after closing itself (same shape as the command-palette card). The module is
+  // fetched on first open only, so a teacher who never clicks the card never
+  // pays for it. Videos stream from the AlloFlow CDN; nothing is uploaded and
+  // nothing about playback is recorded.
+  const [showVideoLibrary, setShowVideoLibrary] = useState(false);
+  useEffect(() => {
+    const onOpenVideoLibrary = () => {
+      try { if (window.__alloLazyVideoLibrary) window.__alloLazyVideoLibrary(); } catch (_) {}
+      setShowVideoLibrary(true);
+    };
+    window.addEventListener('alloflow:open-video-library', onOpenVideoLibrary);
+    return () => window.removeEventListener('alloflow:open-video-library', onOpenVideoLibrary);
+  }, []);
   // ── AlloFlow Whiteboard bridge (companion window) ──
   // The Whiteboard (Excalidraw) runs in its own top-level window opened from the
   // Educator Hub — a deliberate escape from the Gemini Canvas iframe. We retain the
@@ -20645,8 +21531,17 @@ ode-b-${branches.length - 1}` : mainId;
                       }
                     }
                   }
-                  if (data.visualSupportsPayload && data.visualSupportsPayload.timestamp) {
-                    setVisualSupportsPayload(data.visualSupportsPayload);
+                  if (data.visualSupportsPayload) {
+                    const incomingAacPayload = _alloReadLiveAacPayload(data.visualSupportsPayload, Date.now());
+                    if (!incomingAacPayload) {
+                      setVisualSupportsPayload(null);
+                    } else if (
+                      !visualSupportsDismissedIdsRef.current.has(incomingAacPayload.payloadId)
+                      && incomingAacPayload.timestamp >= visualSupportsLastTimestampRef.current
+                    ) {
+                      visualSupportsLastTimestampRef.current = incomingAacPayload.timestamp;
+                      setVisualSupportsPayload((current) => current && current.payloadId === incomingAacPayload.payloadId ? current : incomingAacPayload);
+                    }
                   } else {
                     setVisualSupportsPayload(null);
                   }
@@ -22980,6 +23875,46 @@ ode-b-${branches.length - 1}` : mainId;
   // treated as biometric-class data) stays stripped regardless of future sanitizer changes.
   const _alloSerializeResourceForStudentPack = (item) => {
       if (!item || typeof item !== 'object' || !item.id || !item.type) return null;
+      // AAC homework and QR packs use an explicit portable-media contract.
+      // The package privacy flag is the teacher's per-export consent boundary:
+      // prepared speech may travel only when that flag is true. Custom voice
+      // recordings are never serialized to a student pack.
+      if (item.type === 'aac-board') {
+          const portable = _alloNormalizePortableAacBoardPackage(item.data, {
+              allowAudio: true,
+              preparedOnly: true,
+              maxImageChars: ALLO_AAC_PACK_IMAGE_CHARS,
+              maxImageItemChars: ALLO_AAC_PACK_IMAGE_ITEM_CHARS,
+              maxAudioChars: ALLO_AAC_PACK_AUDIO_CHARS,
+              maxAudioItemChars: ALLO_AAC_PACK_AUDIO_ITEM_CHARS
+          });
+          if (!portable) return null;
+          portable.pages.forEach((page) => {
+              page.cells.forEach((cell) => {
+                  if (cell.audio) {
+                      cell.audio = {
+                          kind: cell.audio.kind,
+                          mime: cell.audio.mime,
+                          data: cell.audio.data
+                      };
+                  }
+              });
+          });
+          const timestamp = _alloAacTimestamp(item.timestamp);
+          const meta = typeof item.meta === 'string' ? _alloAacText(item.meta, 240) : String();
+          const source = typeof item.source === 'string' && /^[a-z0-9][a-z0-9._-]{0,63}$/i.test(item.source.trim())
+              ? item.source.trim()
+              : String();
+          return stripUndefined({
+              id: _alloAacId(item.id, 'aac-board-' + _alloAacHash(portable)),
+              type: 'aac-board',
+              title: _alloAacText(item.title, 160) || portable.board.title || 'AAC Board',
+              data: portable,
+              meta: meta || undefined,
+              timestamp: timestamp > 0 ? timestamp : undefined,
+              source: source || undefined
+          });
+      }
       let cleaned = item;
       try {
           const viaCloud = sanitizeHistoryForCloud([item]);
@@ -23972,6 +24907,60 @@ ode-b-${branches.length - 1}` : mainId;
           return createSelfContainedHomeworkLink(selectedResourceIds);
       }
   }, [appId, buildAlloShareUrl, copyToClipboard, createSelfContainedHomeworkLink, homeworkExpiryDays, hostPackOnMailbox, mbConfig, generatedContent, openQrShareModal, resolveAssignmentResources, sharedAssignmentActivity.enabled, sourceTopic, user?.uid, studentAiPolicyForShare]);
+  const savePortableAacResourceToHistory = React.useCallback((rawPackage) => {
+      const portable = _alloNormalizePortableAacBoardPackage(rawPackage, {
+          allowAudio: true,
+          maxImageChars: ALLO_AAC_PACK_IMAGE_CHARS,
+          maxImageItemChars: ALLO_AAC_PACK_IMAGE_ITEM_CHARS,
+          maxAudioChars: ALLO_AAC_PACK_AUDIO_CHARS,
+          maxAudioItemChars: ALLO_AAC_PACK_AUDIO_ITEM_CHARS
+      });
+      if (!portable) return null;
+      const fingerprint = _alloAacHash({
+          board: portable.board,
+          pages: portable.pages,
+          metadata: portable.metadata
+      });
+      const id = 'aac-board-' + _alloAacId(portable.board.id, 'board') + '-' + fingerprint;
+      const timestamp = Date.now();
+      const resource = {
+          id,
+          type: 'aac-board',
+          title: _alloAacText(portable.board.title, 160) || 'AAC Board',
+          data: portable,
+          meta: 'Portable AAC Board',
+          timestamp,
+          source: 'symbol-studio'
+      };
+      setHistory((previous) => {
+          const list = Array.isArray(previous) ? previous : [];
+          const existingIndex = list.findIndex((candidate) => candidate && candidate.id === id && candidate.type === 'aac-board');
+          if (existingIndex < 0) return list.concat([resource]);
+          const next = list.slice();
+          next[existingIndex] = resource;
+          return next;
+      });
+      return id;
+  }, []);
+  const sharePortableAacResource = React.useCallback((rawPackage) => {
+      const id = savePortableAacResourceToHistory(rawPackage);
+      if (!id) return Promise.resolve(false);
+      if (pendingAacHistoryShareRef.current && typeof pendingAacHistoryShareRef.current.resolve === 'function') {
+          pendingAacHistoryShareRef.current.resolve(false);
+      }
+      return new Promise((resolve) => {
+          pendingAacHistoryShareRef.current = { id, resolve };
+          setAacHistoryRevision((revision) => revision + 1);
+      });
+  }, [savePortableAacResourceToHistory]);
+  useEffect(() => {
+      const pending = pendingAacHistoryShareRef.current;
+      if (!pending || !history.some((item) => item && item.id === pending.id && item.type === 'aac-board')) return;
+      pendingAacHistoryShareRef.current = null;
+      Promise.resolve(createHomeworkAssignmentLink([pending.id]))
+          .then((url) => pending.resolve(!!url))
+          .catch(() => pending.resolve(false));
+  }, [history, aacHistoryRevision, createHomeworkAssignmentLink]);
   const openStudentQrPreview = useCallback((url, label = 'student link') => {
       if (!url || typeof window === 'undefined') return false;
       const preview = window.open(url, '_blank');
@@ -24211,8 +25200,36 @@ ode-b-${branches.length - 1}` : mainId;
     // OTHER calls keep completing, so the step label sits unchanged though work IS advancing. 8 min
     // of total pipeline silence = a real stall.
     const IDLE_LIMIT = 8 * 60 * 1000;
-    let id;
+    const WAKE_GRACE_MS = 60 * 1000;
+    const LATE_TIMER_GRACE_THRESHOLD_MS = 15 * 1000;
+    const _watchdogNow = () => Date.now();
+    let id = null;
+    let lastAcceptedActivityAt = _watchdogNow();
+    let wakeGraceUntil = 0;
+    let timerDueAt = 0;
+    let wasHidden = typeof document !== 'undefined' && !!document.hidden;
     const fire = () => {
+      const firedAt = _watchdogNow();
+      // Browser suspension and background timer clamping are not evidence that remediation
+      // stalled. Pause while hidden; if a timer resumes substantially late, grant one minute for
+      // an owner-scoped heartbeat to arrive before considering destructive invalidation.
+      if (typeof document !== 'undefined' && document.hidden) {
+        wasHidden = true;
+        if (id !== null) clearTimeout(id);
+        id = null;
+        timerDueAt = 0;
+        return;
+      }
+      if (timerDueAt && firedAt - timerDueAt > LATE_TIMER_GRACE_THRESHOLD_MS) {
+        wakeGraceUntil = Math.max(wakeGraceUntil, firedAt + WAKE_GRACE_MS);
+        timerDueAt = 0;
+        arm();
+        return;
+      }
+      if (firedAt < wakeGraceUntil || firedAt - lastAcceptedActivityAt < IDLE_LIMIT) {
+        arm();
+        return;
+      }
       // A replaced run can leave this effect alive when loading/step text does not change.
       // Prove that the captured document, run, and controller still own the live slot before
       // invalidating generation or touching any shared abort state.
@@ -24261,7 +25278,7 @@ ode-b-${branches.length - 1}` : mainId;
         };
         warnLog('[PdfFix] Ignoring superseded remediation watchdog timeout; a newer run owns the host. ' + (() => { try { return JSON.stringify(_wdDetail); } catch (_) { return ''; } })());
         try { if (typeof _docPipeline?.logHostDiagnostic === 'function') _docPipeline.logHostDiagnostic('Watchdog', 'Idle timeout ignored — a newer run owns the host.', _wdDetail); } catch (_) {}
-        arm(); // this one CAN resolve: the newer run may finish and strand the flag in turn
+        arm(true); // this one CAN resolve: the newer run may finish and strand the flag in turn
         return;
       }
       if (!liveOwner) {
@@ -24279,7 +25296,7 @@ ode-b-${branches.length - 1}` : mainId;
         // We never saw a heartbeat to adopt a runId from, but a live owner exists — adopt ITS id
         // rather than bailing forever (M20: several entry paths never emit an identified heartbeat).
         watchdogRunId = liveOwner.runId || null;
-        if (!watchdogRunId) { arm(); return; }
+        if (!watchdogRunId) { arm(true); return; }
       }
       warnLog('[PdfFix] Dead-man switch fired: no pipeline activity for ' + (IDLE_LIMIT / 60000) + 'min on "' + stepAtStart + '" — clearing.');
       // (2026-06-20) Don't just clear the UI — INVALIDATE the stalled run so its late-resolving promise
@@ -24324,7 +25341,21 @@ ode-b-${branches.length - 1}` : mainId;
       setPdfFixStep('');
       if (typeof addToast === 'function') addToast(t('toasts.pdf_fix_appears_stuck_reset'), 'warning');
     };
-    const arm = () => { clearTimeout(id); id = setTimeout(fire, IDLE_LIMIT); };
+    const arm = (deferFromNow = false) => {
+      if (id !== null) clearTimeout(id);
+      const now = _watchdogNow();
+      if (deferFromNow) lastAcceptedActivityAt = now;
+      if (typeof document !== 'undefined' && document.hidden) {
+        wasHidden = true;
+        id = null;
+        timerDueAt = 0;
+        return;
+      }
+      const dueAt = Math.max(lastAcceptedActivityAt + IDLE_LIMIT, wakeGraceUntil);
+      const delay = Math.max(0, dueAt - now);
+      timerDueAt = now + delay;
+      id = setTimeout(fire, delay);
+    };
     const onActivity = (event) => {
       const detail = event && event.detail;
       if (!detail || detail.documentEpoch !== watchdogEpoch || !detail.runId) return;
@@ -24332,11 +25363,37 @@ ode-b-${branches.length - 1}` : mainId;
       if (liveOwner && liveOwner.documentEpoch === watchdogEpoch && liveOwner.runId !== detail.runId) return;
       if (!watchdogRunId) watchdogRunId = detail.runId;
       if (detail.runId !== watchdogRunId) return;
+      lastAcceptedActivityAt = _watchdogNow();
+      wakeGraceUntil = 0;
       arm();
+    };
+    const onVisibilityOrPageShow = (event) => {
+      const hidden = typeof document !== 'undefined' && !!document.hidden;
+      if (hidden) {
+        wasHidden = true;
+        if (id !== null) clearTimeout(id);
+        id = null;
+        timerDueAt = 0;
+        return;
+      }
+      if (wasHidden || (event && event.type === 'pageshow')) {
+        wasHidden = false;
+        wakeGraceUntil = Math.max(wakeGraceUntil, _watchdogNow() + WAKE_GRACE_MS);
+        arm();
+      }
     };
     arm();
     if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('alloflow:pipeline-warn', onActivity);
-    return () => { clearTimeout(id); if (typeof window !== 'undefined' && window.removeEventListener) window.removeEventListener('alloflow:pipeline-warn', onActivity); };
+    if (typeof document !== 'undefined' && document.addEventListener) document.addEventListener('visibilitychange', onVisibilityOrPageShow);
+    if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('pageshow', onVisibilityOrPageShow);
+    return () => {
+      if (id !== null) clearTimeout(id);
+      if (typeof window !== 'undefined' && window.removeEventListener) {
+        window.removeEventListener('alloflow:pipeline-warn', onActivity);
+        window.removeEventListener('pageshow', onVisibilityOrPageShow);
+      }
+      if (typeof document !== 'undefined' && document.removeEventListener) document.removeEventListener('visibilitychange', onVisibilityOrPageShow);
+    };
   }, [pdfFixLoading, pdfFixStep]);
   const [pdfAuditTab, setPdfAuditTab] = useState('results');
   const [diffViewOpen, setDiffViewOpen] = useState(false);
@@ -25368,8 +26425,34 @@ ode-b-${branches.length - 1}` : mainId;
     // time. This detector killed slow-but-ALIVE rounds ("appeared stuck and was reset") in exactly
     // the storm regime wait-not-stop protects. Re-arm on every 'alloflow:pipeline-warn' heartbeat;
     // fire only after 12 SILENT minutes with an unchanged step.
+    const AUTO_IDLE_LIMIT = 12 * 60 * 1000;
+    const AUTO_WAKE_GRACE_MS = 60 * 1000;
+    const AUTO_LATE_TIMER_GRACE_THRESHOLD_MS = 15 * 1000;
+    const _autoWatchdogNow = () => Date.now();
     let id = null;
+    let lastAcceptedActivityAt = _autoWatchdogNow();
+    let wakeGraceUntil = 0;
+    let timerDueAt = 0;
+    let wasHidden = typeof document !== 'undefined' && !!document.hidden;
     const fire = () => {
+      const firedAt = _autoWatchdogNow();
+      if (typeof document !== 'undefined' && document.hidden) {
+        wasHidden = true;
+        if (id !== null) clearTimeout(id);
+        id = null;
+        timerDueAt = 0;
+        return;
+      }
+      if (timerDueAt && firedAt - timerDueAt > AUTO_LATE_TIMER_GRACE_THRESHOLD_MS) {
+        wakeGraceUntil = Math.max(wakeGraceUntil, firedAt + AUTO_WAKE_GRACE_MS);
+        timerDueAt = 0;
+        arm();
+        return;
+      }
+      if (firedAt < wakeGraceUntil || firedAt - lastAcceptedActivityAt < AUTO_IDLE_LIMIT) {
+        arm();
+        return;
+      }
       // The shared controller ref can already belong to a replacement loop. Require the
       // captured document/run plus the exact controller instance before stopping anything.
       const liveOwner = (typeof window !== 'undefined'
@@ -25405,7 +26488,20 @@ ode-b-${branches.length - 1}` : mainId;
         if (typeof addToast === 'function') addToast(t('toasts.pdf_fix_appears_stuck_reset') || 'Auto-continue appeared stuck and was reset — your latest result is kept.', 'warning');
       }
     };
-    const arm = () => { if (id) clearTimeout(id); id = setTimeout(fire, 12 * 60 * 1000); };
+    const arm = () => {
+      if (id !== null) clearTimeout(id);
+      const now = _autoWatchdogNow();
+      if (typeof document !== 'undefined' && document.hidden) {
+        wasHidden = true;
+        id = null;
+        timerDueAt = 0;
+        return;
+      }
+      const dueAt = Math.max(lastAcceptedActivityAt + AUTO_IDLE_LIMIT, wakeGraceUntil);
+      const delay = Math.max(0, dueAt - now);
+      timerDueAt = now + delay;
+      id = setTimeout(fire, delay);
+    };
     const onActivity = (event) => {
       const detail = event && event.detail;
       if (!detail || detail.documentEpoch !== watchdogEpoch || !detail.runId) return;
@@ -25413,11 +26509,37 @@ ode-b-${branches.length - 1}` : mainId;
       if (liveOwner && liveOwner.documentEpoch === watchdogEpoch && liveOwner.runId !== detail.runId) return;
       if (!watchdogRunId) watchdogRunId = detail.runId;
       if (detail.runId !== watchdogRunId) return;
+      lastAcceptedActivityAt = _autoWatchdogNow();
+      wakeGraceUntil = 0;
       arm();
+    };
+    const onVisibilityOrPageShow = (event) => {
+      const hidden = typeof document !== 'undefined' && !!document.hidden;
+      if (hidden) {
+        wasHidden = true;
+        if (id !== null) clearTimeout(id);
+        id = null;
+        timerDueAt = 0;
+        return;
+      }
+      if (wasHidden || (event && event.type === 'pageshow')) {
+        wasHidden = false;
+        wakeGraceUntil = Math.max(wakeGraceUntil, _autoWatchdogNow() + AUTO_WAKE_GRACE_MS);
+        arm();
+      }
     };
     arm();
     if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('alloflow:pipeline-warn', onActivity);
-    return () => { if (id) clearTimeout(id); if (typeof window !== 'undefined' && window.removeEventListener) window.removeEventListener('alloflow:pipeline-warn', onActivity); };
+    if (typeof document !== 'undefined' && document.addEventListener) document.addEventListener('visibilitychange', onVisibilityOrPageShow);
+    if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('pageshow', onVisibilityOrPageShow);
+    return () => {
+      if (id !== null) clearTimeout(id);
+      if (typeof window !== 'undefined' && window.removeEventListener) {
+        window.removeEventListener('alloflow:pipeline-warn', onActivity);
+        window.removeEventListener('pageshow', onVisibilityOrPageShow);
+      }
+      if (typeof document !== 'undefined' && document.removeEventListener) document.removeEventListener('visibilitychange', onVisibilityOrPageShow);
+    };
   }, [pdfAutoContinueRunning, pdfFixStep]);
 
   // Re-entry stash (2026-06-16): when the remediation modal closes, the result
@@ -26441,6 +27563,23 @@ ode-b-${branches.length - 1}` : mainId;
   // JSON.stringify's its argument would write the literal string "undefined"
   // when handed a callback — which JSON.parse then throws on, silently.
   const _blueprintHydratedRef = useRef(false);
+  const _blueprintStorageWarningRef = useRef(false);
+  const _compactBlueprintRunForStorage = (run, diagnosticsOnly = false) => {
+    if (!run || typeof run !== 'object') return run;
+    const rows = Object.fromEntries(Object.entries(run.rows || {}).map(([key, row]) => {
+      if (!row || typeof row !== 'object') return [key, row];
+      const allowed = diagnosticsOnly
+        ? ['uiId', 'stepId', 'tool', 'status', 'failReason', 'resourceId', 'startedAt', 'finishedAt', 'elapsedMs']
+        : Object.keys(row).filter(field => !['error', 'stack', 'rawResponse', 'generatedContent'].includes(field));
+      const compact = {};
+      allowed.forEach(field => {
+        if (row[field] === undefined) return;
+        compact[field] = field === 'failReason' && typeof row[field] === 'string' ? row[field].slice(0, 2000) : row[field];
+      });
+      return [key, compact];
+    }));
+    return Object.assign({}, run, { rows });
+  };
   useEffect(() => {
     if (_blueprintHydratedRef.current) return;
     _blueprintHydratedRef.current = true;
@@ -26453,13 +27592,21 @@ ode-b-${branches.length - 1}` : mainId;
       // with no migration path, so borrowing it would make a future bump
       // unreadable rather than upgradable.
       if (!env || env.v !== ALLO_BLUEPRINT_STORE_VERSION) return;
+      const incompatibleCapability = env.capabilityFingerprint !== ALLO_BLUEPRINT_CAPABILITY_FINGERPRINT;
       if (env.plan) setActiveBlueprint(env.plan);
       if (env.run && env.run.rows) {
         // A run that was in flight when the tab closed must NOT come back as
         // 'running' — that is a spinner that never resolves on a row that can
         // never be rebuilt. Demote to interrupted so the board can offer retry.
         const rows = _demoteInFlightRows(env.run.rows);
-        setBlueprintExecutionResult(Object.assign({}, env.run, { rows: rows, done: true, restored: true }));
+        setBlueprintExecutionResult(Object.assign({}, env.run, {
+          rows,
+          done: true,
+          restored: true,
+          persistenceWarning: incompatibleCapability
+            ? 'This Blueprint run came from an older generator. Rebuild affected steps before relying on its outputs.'
+            : env.run.persistenceWarning,
+        }));
       }
     } catch (e) {
       // A corrupt envelope must not take the app down on boot.
@@ -26468,23 +27615,47 @@ ode-b-${branches.length - 1}` : mainId;
   }, []);
   useEffect(() => {
     if (!_blueprintHydratedRef.current) return; // never write before we've read
+    if (!activeBlueprint && !blueprintExecutionResult) {
+      safeRemoveItem(ALLO_BLUEPRINT_STORE_KEY);
+      return;
+    }
+    const savedAt = new Date().toISOString();
     try {
-      if (!activeBlueprint && !blueprintExecutionResult) {
-        safeRemoveItem(ALLO_BLUEPRINT_STORE_KEY);
-        return;
-      }
-      safeSetItem(ALLO_BLUEPRINT_STORE_KEY, JSON.stringify({
+      localStorage.setItem(ALLO_BLUEPRINT_STORE_KEY, JSON.stringify({
         v: ALLO_BLUEPRINT_STORE_VERSION,
-        savedAt: new Date().toISOString(),
+        capabilityFingerprint: ALLO_BLUEPRINT_CAPABILITY_FINGERPRINT,
+        savedAt,
         plan: activeBlueprint || null,
-        run: blueprintExecutionResult || null,
+        run: _compactBlueprintRunForStorage(blueprintExecutionResult),
       }));
-    } catch (e) { warnLog('[Blueprint] could not save plan:', e?.message || e); }
+      _blueprintStorageWarningRef.current = false;
+    } catch (primaryError) {
+      const warning = 'Browser storage was full, so only compact Blueprint diagnostics were saved.';
+      try {
+        localStorage.setItem(ALLO_BLUEPRINT_STORE_KEY, JSON.stringify({
+          v: ALLO_BLUEPRINT_STORE_VERSION,
+          capabilityFingerprint: ALLO_BLUEPRINT_CAPABILITY_FINGERPRINT,
+          savedAt,
+          compactFallback: true,
+          plan: null,
+          run: Object.assign({}, _compactBlueprintRunForStorage(blueprintExecutionResult, true), { persistenceWarning: warning }),
+        }));
+        warnLog('[Blueprint] saved compact diagnostics after storage quota failure:', primaryError?.message || primaryError);
+      } catch (fallbackError) {
+        safeRemoveItem(ALLO_BLUEPRINT_STORE_KEY);
+        warnLog('[Blueprint] could not save even compact diagnostics:', fallbackError?.message || fallbackError);
+      }
+      if (!_blueprintStorageWarningRef.current) {
+        _blueprintStorageWarningRef.current = true;
+        addToast(warning + ' Download diagnostics before reloading.', 'warning');
+      }
+    }
   }, [activeBlueprint, blueprintExecutionResult]);
   // ── Stage 6: in-place resource preview ────────────────────────────────
   // Full Pack durability mirrors Blueprint durability: a reload demotes any
   // resource that was in flight so diagnostics never show a permanent spinner.
   const _fullPackHydratedRef = useRef(false);
+  const _fullPackStorageWarningRef = useRef(false);
   const _demoteFullPackResources = (resourcesIn) => {
     const out = {};
     Object.keys(resourcesIn || {}).forEach((k) => {
@@ -26492,6 +27663,44 @@ ode-b-${branches.length - 1}` : mainId;
       out[k] = (r && r.status === 'running') ? Object.assign({}, r, { status: 'interrupted' }) : r;
     });
     return out;
+  };
+  const _demoteFullPackGroups = (groupsIn) => {
+    const out = {};
+    Object.keys(groupsIn || {}).forEach((key) => {
+      const group = groupsIn[key];
+      const missingReadyPlan = group && group.status === 'ready' && !group.planPayload;
+      out[key] = group ? Object.assign({}, group, {
+        status: (group.status === 'running' || group.status === 'planning' || missingReadyPlan) ? 'interrupted' : group.status,
+        reason: missingReadyPlan ? (group.persistenceWarning || 'This saved group plan was incomplete. Refresh the plan before generating.') : group.reason,
+        resources: _demoteFullPackResources(group.resources),
+      }) : group;
+    });
+    return out;
+  };
+  const _compactFullPackRunForStorage = (run, diagnosticsOnly = false) => {
+    if (!run || typeof run !== 'object') return run;
+    const compactResource = (resource) => {
+      if (!resource || typeof resource !== 'object') return resource;
+      const keep = diagnosticsOnly
+        ? ['key', 'type', 'index', 'uiId', 'directive', 'status', 'reason', 'elapsedMs', 'attempts', 'startedAt', 'finishedAt']
+        : Object.keys(resource).filter(key => !['error', 'stack', 'rawResponse'].includes(key));
+      const out = {};
+      keep.forEach(key => {
+        if (resource[key] === undefined) return;
+        out[key] = key === 'reason' && typeof resource[key] === 'string' ? resource[key].slice(0, 2000) : resource[key];
+      });
+      return out;
+    };
+    const compactResources = resources => Object.fromEntries(Object.entries(resources || {}).map(([key, resource]) => [key, compactResource(resource)]));
+    const compactGroup = group => group ? Object.assign({}, group, {
+      planPayload: diagnosticsOnly ? null : group.planPayload,
+      resources: compactResources(group.resources),
+    }) : group;
+    return Object.assign({}, run, {
+      planPayload: diagnosticsOnly ? null : run.planPayload,
+      resources: compactResources(run.resources),
+      groups: Object.fromEntries(Object.entries(run.groups || {}).map(([key, group]) => [key, compactGroup(group)])),
+    });
   };
   useEffect(() => {
     if (_fullPackHydratedRef.current) return;
@@ -26501,24 +27710,62 @@ ode-b-${branches.length - 1}` : mainId;
       if (!raw) return;
       const env = JSON.parse(raw);
       if (!env || env.v !== ALLO_FULL_PACK_STORE_VERSION || !env.run) return;
-      const wasRunning = env.run.status === 'running';
+      const savedMs = Date.parse(env.savedAt || '');
+      if (Number.isFinite(savedMs) && Date.now() - savedMs > ALLO_FULL_PACK_RETENTION_MS) {
+        safeRemoveItem(ALLO_FULL_PACK_STORE_KEY);
+        return;
+      }
+      const wasRunning = env.run.status === 'running' || env.run.status === 'planning';
+      const hasSavedGroupPlan = Object.values(env.run.groups || {}).some(group => group && group.planPayload);
+      const missingReadyPlan = env.run.status === 'ready' && !env.run.planPayload && !hasSavedGroupPlan;
+      const incompatibleCapability = env.capabilityFingerprint !== ALLO_FULL_PACK_CAPABILITY_FINGERPRINT;
+      const planCannotResume = missingReadyPlan || (env.run.status === 'ready' && incompatibleCapability);
       setFullPackRun(Object.assign({}, env.run, {
-        status: wasRunning ? 'interrupted' : env.run.status,
+        status: (wasRunning || planCannotResume) ? 'interrupted' : env.run.status,
+        reason: planCannotResume ? (env.run.persistenceWarning || 'This saved plan is incomplete or from an older generator. Refresh the plan before generating.') : env.run.reason,
         resources: _demoteFullPackResources(env.run.resources),
+        groups: _demoteFullPackGroups(env.run.groups),
         restored: true,
       }));
     } catch (e) { warnLog('[FullPack] could not restore saved run:', e?.message || e); }
   }, []);
   useEffect(() => {
     if (!_fullPackHydratedRef.current) return;
+    if (!fullPackRun) { safeRemoveItem(ALLO_FULL_PACK_STORE_KEY); return; }
+    const savedAt = new Date().toISOString();
     try {
-      if (!fullPackRun) { safeRemoveItem(ALLO_FULL_PACK_STORE_KEY); return; }
-      safeSetItem(ALLO_FULL_PACK_STORE_KEY, JSON.stringify({
+      localStorage.setItem(ALLO_FULL_PACK_STORE_KEY, JSON.stringify({
         v: ALLO_FULL_PACK_STORE_VERSION,
-        savedAt: new Date().toISOString(),
-        run: fullPackRun,
+        capabilityFingerprint: ALLO_FULL_PACK_CAPABILITY_FINGERPRINT,
+        savedAt,
+        run: _compactFullPackRunForStorage(fullPackRun),
       }));
-    } catch (e) { warnLog('[FullPack] could not save run:', e?.message || e); }
+      _fullPackStorageWarningRef.current = false;
+    } catch (primaryError) {
+      const warning = 'Browser storage was full, so only compact diagnostics were saved. Refresh the plan before generating.';
+      const diagnosticRun = Object.assign({}, _compactFullPackRunForStorage(fullPackRun, true), {
+        status: fullPackRun.status === 'ready' ? 'interrupted' : fullPackRun.status,
+        reason: fullPackRun.status === 'ready' ? warning : fullPackRun.reason,
+        persistenceWarning: warning,
+      });
+      try {
+        localStorage.setItem(ALLO_FULL_PACK_STORE_KEY, JSON.stringify({
+          v: ALLO_FULL_PACK_STORE_VERSION,
+          capabilityFingerprint: ALLO_FULL_PACK_CAPABILITY_FINGERPRINT,
+          savedAt,
+          compactFallback: true,
+          run: diagnosticRun,
+        }));
+        warnLog('[FullPack] saved compact diagnostics after storage quota failure:', primaryError?.message || primaryError);
+        if (!_fullPackStorageWarningRef.current) {
+          _fullPackStorageWarningRef.current = true;
+          addToast(warning + ' Copy or download diagnostics before reloading.', 'warning');
+        }
+      } catch (fallbackError) {
+        safeRemoveItem(ALLO_FULL_PACK_STORE_KEY);
+        warnLog('[FullPack] could not save even compact diagnostics:', fallbackError?.message || fallbackError);
+      }
+    }
   }, [fullPackRun]);
   // Renders one generated resource beside its plan row, so the teacher can
   // check what landed without navigating away and losing the plan.
@@ -27511,6 +28758,7 @@ ode-b-${branches.length - 1}` : mainId;
       applyDetailedAutoConfig,
       getGroupDifferentiationContext,
       getAssetManifest,
+      getDifferentiationGrades,
       complexityLevel,
       generatedContent,
       saveOriginalOnAdjust,
@@ -28831,13 +30079,21 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
   // rate-limit fallback. Simpler images than Imagen — but private, free, and
   // on-device when the cloud has no key, is rate-limited, or is out of quota.
   const sdTurboOfferedRef = React.useRef(false);
-  const _sdTurboTryLocal = async (prompt, width, qual) => {
+  const _sdTurboTryLocal = async (prompt, width, qual, signal = null) => {
     try {
+      if (signal && signal.aborted) { const abortError = new Error('Image generation cancelled.'); abortError.name = 'AbortError'; throw abortError; }
       if (window._sdTurbo?.ready) {
         const localUrl = await window._sdTurbo.generate(prompt);
-        if (localUrl) return await optimizeImage(localUrl, width, qual);
+        if (localUrl) {
+          const optimized = await optimizeImage(localUrl, width, qual);
+          if (signal && signal.aborted) { const abortError = new Error('Image generation cancelled.'); abortError.name = 'AbortError'; throw abortError; }
+          return optimized;
+        }
       }
-    } catch (e) { console.warn('[Imagen] Local SD-Turbo generation failed:', e?.message); }
+    } catch (e) {
+      if ((e && e.name === 'AbortError') || (signal && signal.aborted)) throw e;
+      console.warn('[Imagen] Local SD-Turbo generation failed:', e?.message);
+    }
     return null;
   };
   // SAFETY GATE: the local generator is an AVAILABILITY fallback, never a
@@ -28892,7 +30148,15 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       setShowSdTurboOfferModal(true);
     });
   };
-  const callImagen = async (prompt, width = 300, qual = 0.7) => {
+  const callImagen = async (prompt, width = 300, qual = 0.7, options = null) => {
+    const _signal = options && options.signal
+      ? options.signal
+      : (options && typeof options.aborted === 'boolean' ? options : null);
+    const _throwIfImageAborted = () => {
+      if (!_signal || !_signal.aborted) return;
+      const abortError = new Error('Image generation cancelled.'); abortError.name = 'AbortError'; throw abortError;
+    };
+    _throwIfImageAborted();
     if (_isQrStudentAiDisabled()) {
       const err = new Error('AI image generation is off for this teacher-prepared QR activity.');
       err.code = 'allo-qr-ai-disabled';
@@ -28913,7 +30177,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       let _imgPref = 'auto';
       try { _imgPref = _readAlloAiUserConfig()?.imageProvider || 'auto'; } catch (_) {}
       if (_imgPref === 'sd-local') {
-        const localPick = await _sdTurboTryLocal(prompt, width, qual);
+        const localPick = await _sdTurboTryLocal(prompt, width, qual, _signal);
         if (localPick) return localPick;
         if (!window.__sdTurboDownloading && window.__loadSdTurbo && await _webGpuAdapterOk()) {
           window.__sdTurboDownloading = true;
@@ -28930,7 +30194,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     }
     const effectiveImagenKey = _alloEffectiveGeminiApiKey();
     if (!_isCanvasEnv && !effectiveImagenKey) {
-      const localOnly = await _sdTurboTryLocal(prompt, width, qual);
+      const localOnly = await _sdTurboTryLocal(prompt, width, qual, _signal);
       if (localOnly) return localOnly;
       imagenKeyNotice('AI images are off — no image API key is set. Add one in AI Settings to enable image generation. Everything else works without it.');
       const configErr = new Error('Imagen skipped: no API key configured');
@@ -28945,7 +30209,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       parameters: { sampleCount: 1 }
     };
     const executeRequest = async () => {
-      const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(effectiveImagenKey ? { 'x-goog-api-key': effectiveImagenKey } : {}) }, body: JSON.stringify(payload) });
+      const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(effectiveImagenKey ? { 'x-goog-api-key': effectiveImagenKey } : {}) }, body: JSON.stringify(payload), ...(_signal ? { signal: _signal } : {}) });
       console.log("[Imagen] Response status:", response.status, response.statusText);
       if (response.status === 401 || response.status === 429 || response.status === 503) {
         imagenRateLimitedRef.current = true;
@@ -28981,30 +30245,52 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
         setTimeout(() => { imagenRateLimitedRef.current = false; }, 30000);
       }
       const rawUrl = `data:image/png;base64,${base64}`;
-      return await optimizeImage(rawUrl, width, qual);
+      const optimized = await optimizeImage(rawUrl, width, qual);
+      _throwIfImageAborted();
+      return optimized;
     };
+    const waitForImagenRetry = (delayMs) => new Promise((resolve, reject) => {
+      let timer = null;
+      const cleanup = () => { if (_signal) _signal.removeEventListener('abort', onAbort); };
+      const onAbort = () => {
+        if (timer) clearTimeout(timer);
+        cleanup();
+        const abortError = new Error('Image generation aborted');
+        abortError.name = 'AbortError';
+        reject(abortError);
+      };
+      if (_signal && _signal.aborted) return onAbort();
+      if (_signal) _signal.addEventListener('abort', onAbort, { once: true });
+      timer = setTimeout(() => { cleanup(); resolve(); }, Math.max(0, delayMs));
+    });
     const executeWithRetry = async (attempt = 0, maxAttempts = 3) => {
       try {
         return await executeRequest();
       } catch (err) {
+        if ((err && err.name === 'AbortError') || (_signal && _signal.aborted)) throw err;
         if (err.isConfigState || (err.message && (err.message.includes("Safety") || err.message.includes("Block") || err.message.includes("400")))) {
           throw err;
         }
         if (attempt < maxAttempts - 1) {
-          const delay = Math.pow(2, attempt) * 1000;
-          warnLog(`⏳ Imagen retry ${attempt + 1}/${maxAttempts} in ${delay}ms...`);
+          const retryAfterMs = Number(err && err.retryAfterMs);
+          const exponentialMs = Math.min(8000, Math.pow(2, attempt) * 1000);
+          const jitterMs = Math.floor(Math.random() * 350);
+          const delay = Number.isFinite(retryAfterMs) && retryAfterMs > 0 ? retryAfterMs : exponentialMs + jitterMs;
+          warnLog(`Imagen retry ${attempt + 1}/${maxAttempts} in ${delay}ms...`);
+          await waitForImagenRetry(delay);
+          _throwIfImageAborted();
           return executeWithRetry(attempt + 1, maxAttempts);
         }
         console.error("[Imagen] All retries exhausted:", err.message);
         throw err;
       }
-    };
-    const runWithLocalFallback = async (runner) => {
+    };    const runWithLocalFallback = async (runner) => {
       try {
         return await runner();
       } catch (err) {
+        if ((err && err.name === 'AbortError') || (_signal && _signal.aborted)) throw err;
         if (!_sdTurboEligibleError(err)) throw err; // safety/content refusals stay refused
-        const local = await _sdTurboTryLocal(prompt, width, qual);
+        const local = await _sdTurboTryLocal(prompt, width, qual, _signal);
         if (local) {
           console.warn('[Imagen] Cloud image generation unavailable (' + (err?.message || 'error') + ') — used the local image generator instead.');
           return local;
@@ -29016,10 +30302,11 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     if (imagenRateLimitedRef.current) {
       // imagenQueueRef.current never rejects (it is always assigned with a
       // trailing .catch(() => {})), so a single fulfillment handler suffices.
-      const queuedRequest = imagenQueueRef.current.then(() => runWithLocalFallback(executeWithRetry));
+      const queuedRequest = imagenQueueRef.current.then(() => { _throwIfImageAborted(); return runWithLocalFallback(executeWithRetry); });
       imagenQueueRef.current = queuedRequest.catch(() => {});
       return queuedRequest;
     } else {
+      _throwIfImageAborted();
       return runWithLocalFallback(executeWithRetry);
     }
   };
@@ -29666,7 +30953,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
         cleaned = cleaned.replace(/\n{4,}/g, '\n\n\n');
         return cleaned.trim();
     };
-  const generateVisualPlan = async (concept, gradeLevel, studentLanguage, artStyle = "", customInstructions = "") => {
+  const generateVisualPlan = async (concept, gradeLevel, studentLanguage, artStyle = "", customInstructions = "", signal = null) => {
       const planPrompt = `You are an educational Art Director. Analyze this concept and plan a multi-panel visual explanation.
 CONCEPT: "${concept}"
 GRADE LEVEL: ${gradeLevel}
@@ -29706,7 +30993,7 @@ Return ONLY valid JSON in this format:
   ]
 }
 Notes on the schema: "type" defaults to "image" if omitted — only specify it as "process_animation" when the panel needs to animate per the ANIMATION rule above. "motionPrompt" is REQUIRED and "frameCount" is OPTIONAL (defaults to 6, max 12) when type is "process_animation"; both can be omitted otherwise.`;
-      const result = await callGemini(planPrompt, true);
+      const result = await callGemini(planPrompt, true, false, null, null, signal);
       try {
           const plan = JSON.parse(cleanJson(result));
           if (!plan.layout || !plan.panels || !Array.isArray(plan.panels)) {
@@ -29724,17 +31011,17 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // frame instead of regenerating each frame text-to-image (which drifts).
   // Failure modes degrade gracefully: a failed edit holds the previous frame
   // (GIF pauses briefly), and a missing motionPrompt downgrades to static.
-  const generateAnimatedPanel = async (panel, targetWidth = 400, targetQual = 0.8, artStyle = "") => {
+  const generateAnimatedPanel = async (panel, targetWidth = 400, targetQual = 0.8, artStyle = "", signal = null) => {
       const frameCount = Math.max(2, Math.min(12, panel.frameCount || 6));
       const motionPrompt = (panel.motionPrompt || '').trim();
       const styleSuffix = artStyle ? `. Style: ${artStyle}.` : "";
       if (!motionPrompt) {
           warnLog('[ArtDirector] process_animation panel missing motionPrompt — falling back to static');
-          const fallback = await callImagen(panel.imagenPrompt + styleSuffix, targetWidth, targetQual);
+          const fallback = await callImagen(panel.imagenPrompt + styleSuffix, targetWidth, targetQual, { signal });
           return { ...panel, imageUrl: fallback };
       }
       // Frame 0: anchor frame via text-to-image
-      const frame0 = await callImagen(panel.imagenPrompt + styleSuffix, targetWidth, targetQual);
+      const frame0 = await callImagen(panel.imagenPrompt + styleSuffix, targetWidth, targetQual, { signal });
       if (!frame0) throw new Error('frame 0 generation failed');
       // Storyboard the remaining steps so each frame is one INCREMENTAL change
       const storyboardPrompt =
@@ -29750,7 +31037,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           'Return ONLY a JSON array of exactly ' + (frameCount - 1) + ' strings, one per step.';
       let steps;
       try {
-          const raw = await callGemini(storyboardPrompt, true);
+          const raw = await callGemini(storyboardPrompt, true, false, null, null, signal);
           let parsed = raw;
           if (typeof raw === 'string') {
               parsed = JSON.parse(raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim());
@@ -29774,7 +31061,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           try {
               const editPrompt = 'Keep the subject IDENTICAL in style, anatomy, and color. Only change: ' + steps[i] + '. Educational illustration, no text, no labels.';
               const prevB64 = prevFrame.split(',')[1];
-              const next = await callGeminiImageEdit(editPrompt, prevB64, targetWidth, targetQual);
+              const next = await callGeminiImageEdit(editPrompt, prevB64, targetWidth, targetQual, null, { signal });
               if (next) {
                   frames.push(next);
                   prevFrame = next;
@@ -30008,7 +31295,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           warnLog('[VisualPanel] handleSetPanelFps failed:', e);
       }
   };
-  const executeVisualPlan = async (plan, targetWidth = 400, targetQual = 0.8, artStyle = "") => {
+  const executeVisualPlan = async (plan, targetWidth = 400, targetQual = 0.8, artStyle = "", signal = null) => {
       const panels = [...plan.panels];
       console.log('[ArtDirector] Executing plan:', plan.layout, panels.length, 'panels');
       const imagePromises = panels.map(async (panel, idx) => {
@@ -30019,18 +31306,18 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               // a single broken animation doesn't take down the whole visual plan.
               if (panel.type === 'process_animation') {
                   try {
-                      return await generateAnimatedPanel(panel, targetWidth, targetQual, artStyle);
+                      return await generateAnimatedPanel(panel, targetWidth, targetQual, artStyle, signal);
                   } catch (animErr) {
                       warnLog(`[ArtDirector] process_animation panel ${idx} failed, falling back to static:`, animErr);
                       // fall through to static path
                   }
               }
-              let imageUrl = await callImagen(panel.imagenPrompt + (artStyle ? `. Style: ${artStyle}.` : ""), targetWidth, targetQual);
+              let imageUrl = await callImagen(panel.imagenPrompt + (artStyle ? `. Style: ${artStyle}.` : ""), targetWidth, targetQual, { signal });
               if (imageUrl) {
                   try {
                       const rawBase64 = imageUrl.split(',')[1];
                       const cleanPrompt = 'Remove all text, labels, letters, numbers, and words from this image. Keep the visual illustration perfectly intact.';
-                      const cleaned = await callGeminiImageEdit(cleanPrompt, rawBase64, targetWidth, targetQual);
+                      const cleaned = await callGeminiImageEdit(cleanPrompt, rawBase64, targetWidth, targetQual, null, { signal });
                       if (cleaned) imageUrl = cleaned;
                   } catch (cleanErr) {
                       warnLog(`[ArtDirector] Text cleanup failed for panel ${idx}:`, cleanErr);
@@ -33532,7 +34819,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     }
     setShowExportPreview(v);
   };
-  const NON_EXPORTABLE_TYPES = new Set(['adventure', 'persona', 'word-sounds', 'storyforge-config', 'storyforge-submission', 'poettree-config', 'poettree-submission', 'litlab-config', 'litlab-submission', 'math-fluency-probe', 'explore-challenge', 'stem-assessment', 'video-ref']);
+  const NON_EXPORTABLE_TYPES = new Set(['adventure', 'persona', 'word-sounds', 'storyforge-config', 'storyforge-submission', 'poettree-config', 'poettree-submission', 'litlab-config', 'litlab-submission', 'lingua-config', 'lingua-submission', 'math-fluency-probe', 'explore-challenge', 'stem-assessment', 'video-ref']);
   const getExportableHistory = (items = history) => (Array.isArray(items) ? items : []).filter(item => item && !NON_EXPORTABLE_TYPES.has(item.type));
   const _getBuilderHistorySignature = (items = history) => {
     let raw = '';
@@ -34877,7 +36164,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           'concept-sort', 'math', 'lesson-plan', 'glossary', 'word-sounds',
           'note-taking', 'anchor-chart', 'dbq', 'faq', 'outline', 'image',
           'fluency-record', 'storyforge-submission', 'poettree-submission',
-          'litlab-submission',
+          'litlab-submission', 'lingua-submission',
       ];
       const filteredContent = history.filter(item => relevantTypes.includes(item.type));
       const cleanContent = sanitizeSubmissionData(filteredContent);
@@ -35190,6 +36477,18 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           });
   };
   const handleRestoreView = (item, options = {}) => {
+      if (item && item.type === 'aac-board') {
+          const localAacPayload = _alloBuildLocalAacPayload(item.data, item.id, Date.now());
+          if (!localAacPayload) {
+              addToast('This AAC Board could not be opened because its portable data is invalid.', 'error');
+              return;
+          }
+          visualSupportsDismissedIdsRef.current.delete(localAacPayload.payloadId);
+          visualSupportsLastTimestampRef.current = Math.max(visualSupportsLastTimestampRef.current, localAacPayload.timestamp);
+          setVisualSupportsPayload(localAacPayload);
+          if (!options.suppressLiveFollow) _alloFollowResourceLive(item);
+          return;
+      }
       // Reading Library book pinned to the lesson (2026-07-05): open the reader
       // on the saved book. Surface-opener — early return, no activeView swap.
       // Reading sets are metadata-only ordered resource lists. Restore opens
@@ -35332,6 +36631,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       }
       if (item.type === 'litlab-config' || item.type === 'litlab-submission') {
           setShowLitLab(true);
+      }
+      if (item.type === 'lingua-config' || item.type === 'lingua-submission') {
+          setIsLinguaPracticeOpen(true);
       }
       if (!options.suppressLiveFollow) _alloFollowResourceLive(item, { blockedToast: t('adventure.toasts.teacher_sync_warning') });
   };
@@ -35959,10 +37261,13 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           case 'poettree-submission': return t('output.title_poettree_submission') || '🌳 Poem Submission';
           case 'litlab-config': return t('output.title_litlab_config') || '🎭 LitLab Assignment';
           case 'litlab-submission': return t('output.title_litlab_submission') || '🎭 Performance Submission';
+          case 'lingua-config': return t('output.title_lingua_config') || 'Lingua Lesson';
+          case 'lingua-submission': return t('output.title_lingua_submission') || 'Lingua Learning Record';
           case 'note-taking': return t('help_mode.tool_note_taking') || 'Note-Taking Templates';
           case 'anchor-chart': return t('help_mode.tool_anchor_chart') || 'Anchor Chart';
           case 'readingBook': return t('readinglib_book_resource') || 'Illustrated story';
           case 'readingSet': return t('readinglib_set_resource') || 'Reading set';
+          case 'aac-board': return 'AAC Board';
           default: return t('common.resource') || 'Resource';
       }
   };
@@ -39067,9 +40372,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
   // Auto-config writes settings that now live in the (collapsed by default)
   // Universal Settings card. Open it when a plan applies, so what the plan
   // chose is visible instead of silently landing behind a closed disclosure.
-  const autoConfigureSettings = async (text, grade, standards, language, customInput, existingResources = [], targetCount = 'Auto') => {
+  const autoConfigureSettings = async (text, grade, standards, language, customInput, existingResources = [], targetCount = 'Auto', signal = null) => {
     const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
-    if (_m && typeof _m.autoConfigureSettings === "function") { setIsUniversalSettingsOpen(true); return _m.autoConfigureSettings(text, grade, standards, language, customInput, existingResources, targetCount, _alloPhaseKHelpersDeps()); }
+    if (_m && typeof _m.autoConfigureSettings === "function") { setIsUniversalSettingsOpen(true); return _m.autoConfigureSettings(text, grade, standards, language, customInput, existingResources, targetCount, { ..._alloPhaseKHelpersDeps(), generationSignal: signal }); }
     throw new Error("[autoConfigureSettings] PhaseKHelpers module not loaded - reload the page");
   };
   const applyDetailedAutoConfig = (config) => {
@@ -39146,6 +40451,32 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       return _m.handleRebuildBlueprintStep({ ..._alloPhaseOHandlersDeps(), activeBlueprint, blueprintExecutionResult }, uiId);
     }
     throw new Error("[handleRebuildBlueprintStep] PhaseOHandlers module not loaded - reload the page");
+  };
+  const handleDownloadBlueprintDiagnostics = () => {
+    if (!blueprintExecutionResult) return false;
+    try {
+      const rows = Object.fromEntries(Object.entries(blueprintExecutionResult.rows || {}).map(([key, row]) => [key, row ? {
+        uiId: row.uiId || key, tool: row.tool || null, status: row.status,
+        failReason: row.failReason || null, resourceId: row.resourceId || null,
+        elapsedMs: row.elapsedMs || 0, startedAt: row.startedAt || null, finishedAt: row.finishedAt || null,
+      } : row]));
+      const report = { reportVersion: 1, generatorCapability: ALLO_BLUEPRINT_CAPABILITY_FINGERPRINT, exportedAt: new Date().toISOString(), runId: blueprintExecutionResult.runId || null, done: !!blueprintExecutionResult.done, persistenceWarning: blueprintExecutionResult.persistenceWarning || null, rows };
+      const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'blueprint-diagnostics-' + String(report.runId || 'run').slice(-12) + '.json';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      addToast('Sanitized Blueprint diagnostic report downloaded.', 'success');
+      return true;
+    } catch (error) {
+      warnLog('[Blueprint] could not download diagnostics:', error && (error.message || error));
+      addToast('Could not download Blueprint diagnostics.', 'warning');
+      return false;
+    }
   };
   // Stops the in-flight blueprint run. Cooperative: the executor checks the
   // abort signal between steps, so the current resource finishes and every
@@ -39561,12 +40892,110 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
     if (_m && typeof _m.handleGenerateFullPack === "function") return _m.handleGenerateFullPack(chatContextOverride, _alloGenerationHelpersDeps());
     throw new Error("[handleGenerateFullPack] GenerationHelpers module not loaded - reload the page");
   };
+  const handlePlanFullPack = async () => {
+    const _m = window.AlloModules && window.AlloModules.GenerationHelpers;
+    if (_m && typeof _m.handlePlanFullPack === 'function') return _m.handlePlanFullPack(_alloGenerationHelpersDeps());
+    return handleGenerateFullPack({ __fullPackPreflightOnly: true });
+  };
+  const handleApproveFullPack = async () => {
+    const _m = window.AlloModules && window.AlloModules.GenerationHelpers;
+    if (_m && typeof _m.handleApproveFullPack === 'function') return _m.handleApproveFullPack(fullPackRun, _alloGenerationHelpersDeps());
+    addToast('Create or refresh the Full Pack plan before generating.', 'info');
+    return false;
+  };
   const handleStopFullPack = () => {
     const _m = window.AlloModules && window.AlloModules.GenerationHelpers;
     if (_m && typeof _m.handleStopFullPack === "function") return _m.handleStopFullPack();
     return false;
   };
-  const handleAutoCorrectSource = async () => {
+  const handleRetryFailedFullPack = async () => {
+    const _m = window.AlloModules && window.AlloModules.GenerationHelpers;
+    if (_m && typeof _m.handleRetryFailedFullPack === 'function') {
+      return _m.handleRetryFailedFullPack(fullPackRun, _alloGenerationHelpersDeps());
+    }
+    addToast('Full Pack retry is unavailable until the generation module reloads.', 'warning');
+    return false;
+  };
+  const handleDismissFullPackRun = () => setFullPackRun(null);
+  const buildSanitizedFullPackDiagnostic = () => {
+    if (!fullPackRun) return null;
+    const sanitizeSettings = settings => {
+      const out = Object.assign({}, settings || {});
+      delete out.studentInterests;
+      delete out.rosterSignature;
+      return out;
+    };
+    const sanitizeResource = resource => {
+      if (!resource || typeof resource !== 'object') return resource;
+      const out = {};
+      ['key', 'type', 'index', 'uiId', 'status', 'reason', 'failureCategory', 'retryable', 'suggestedDelayMs', 'elapsedMs', 'attempts', 'startedAt', 'finishedAt'].forEach(key => {
+        if (resource[key] !== undefined) out[key] = resource[key];
+      });
+      return out;
+    };
+    const sanitizeResources = resources => Object.fromEntries(Object.entries(resources || {}).map(([key, resource]) => [key, sanitizeResource(resource)]));
+    const sanitizeGroup = group => group ? {
+      groupId: group.groupId || null,
+      status: group.status,
+      reason: group.reason || null,
+      elapsedMs: group.elapsedMs || 0,
+      settingsSnapshot: sanitizeSettings(group.settingsSnapshot),
+      preflight: group.preflight || null,
+      resources: sanitizeResources(group.resources),
+    } : group;
+    return {
+      reportVersion: 1,
+      generatorCapability: ALLO_FULL_PACK_CAPABILITY_FINGERPRINT,
+      exportedAt: new Date().toISOString(),
+      runId: fullPackRun.runId,
+      retryOf: fullPackRun.retryOf || null,
+      approvedFrom: fullPackRun.approvedFrom || null,
+      status: fullPackRun.status,
+      reason: fullPackRun.reason || null,
+      startedAt: fullPackRun.startedAt,
+      finishedAt: fullPackRun.finishedAt || null,
+      elapsedMs: fullPackRun.elapsedMs || 0,
+      failureCount: fullPackRun.failureCount || 0,
+      settingsSnapshot: sanitizeSettings(fullPackRun.settingsSnapshot),
+      preflight: fullPackRun.preflight || null,
+      resources: sanitizeResources(fullPackRun.resources),
+      groups: Object.fromEntries(Object.entries(fullPackRun.groups || {}).map(([key, group]) => [key, sanitizeGroup(group)])),
+    };
+  };
+  const handleCopyFullPackDiagnostics = async () => {
+    const diagnostic = buildSanitizedFullPackDiagnostic();
+    if (!diagnostic) return false;
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(diagnostic, null, 2));
+      addToast('Sanitized Full Pack diagnostics copied.', 'success');
+      return true;
+    } catch (error) {
+      warnLog('[FullPack] could not copy diagnostics:', error && (error.message || error));
+      addToast('Could not copy Full Pack diagnostics.', 'warning');
+      return false;
+    }
+  };
+  const handleDownloadFullPackDiagnostics = () => {
+    const diagnostic = buildSanitizedFullPackDiagnostic();
+    if (!diagnostic) return false;
+    try {
+      const blob = new Blob([JSON.stringify(diagnostic, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'full-pack-diagnostics-' + String(diagnostic.runId || 'run').slice(-12) + '.json';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      addToast('Sanitized Full Pack diagnostic report downloaded.', 'success');
+      return true;
+    } catch (error) {
+      warnLog('[FullPack] could not download diagnostics:', error && (error.message || error));
+      addToast('Could not download Full Pack diagnostics.', 'warning');
+      return false;
+    }
+  };  const handleAutoCorrectSource = async () => {
     const _m = window.AlloModules && window.AlloModules.CmapHandlers;
     if (_m && typeof _m.handleAutoCorrectSource === "function") return _m.handleAutoCorrectSource(_alloCmapHandlersDeps());
     throw new Error("[handleAutoCorrectSource] CmapHandlers module not loaded - reload the page");
@@ -44483,7 +45912,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       })}
         {/* ── UDL Guide Modal — extracted to view_misc_modals_module.js (CDN) ── */}
         {(showUDLGuide) && window.AlloModules && window.AlloModules.UDLGuideModal && React.createElement(window.AlloModules.UDLGuideModal, {
-          InteractiveBlueprintCard, activeBlueprint, addToast, blueprintExecutionResult, setBlueprintExecutionResult, isExecutingBlueprint, handleStopBlueprintRun, handleRebuildBlueprintStep, handlePreviewBlueprintStep, blueprintPreview, closeBlueprintPreview, lessonTemplates, archivedPlans, handleRestoreArchivedPlan, handleDeleteArchivedPlan, archiveLivePlan, handleSaveLessonTemplate, handleApplyLessonTemplate, handleDeleteLessonTemplate, aiStandardQuery,
+          InteractiveBlueprintCard, activeBlueprint, addToast, blueprintExecutionResult, setBlueprintExecutionResult, isExecutingBlueprint, handleStopBlueprintRun, handleRebuildBlueprintStep, handleDownloadBlueprintDiagnostics, handlePreviewBlueprintStep, blueprintPreview, closeBlueprintPreview, lessonTemplates, archivedPlans, handleRestoreArchivedPlan, handleDeleteArchivedPlan, archiveLivePlan, handleSaveLessonTemplate, handleApplyLessonTemplate, handleDeleteLessonTemplate, aiStandardQuery,
           aiStandardRegion, autoSendVoice, chatStyles, handleAutoFillToggle, handleBlueprintUIUpdate,
           handleExecuteBlueprint, handleFindStandards, handleSendUDLMessage, handleSetShowUDLGuideToFalse, handleToggleAutoSendVoice,
           handleToggleIsShowMeMode, handleToggleIsUDLGuideExpanded, hasUsedAutoFill, isAutoFillMode, isChatProcessing,
@@ -45348,32 +46777,194 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     )}
                 </div>
                 <button
-                    aria-label={t('common.generate_full_pack')}
+                    aria-label={fullPackRun?.status === 'ready' ? 'Generate original Full Pack plan' : 'Plan Full Pack'}
                     data-help-key="fullpack_generate"
-                    onClick={handleGenerateFullPack}
+                    onClick={fullPackRun?.status === 'ready' ? handleApproveFullPack : handlePlanFullPack}
                     disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
                     className="w-full p-3 bg-white rounded-2xl text-start flex justify-between items-center disabled:opacity-80 disabled:cursor-not-allowed"
                 >
                     <div>
                         <span className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-700 to-purple-700 group-hover:from-indigo-600 group-hover:to-purple-600 flex items-center gap-2">
                             {isProcessing ? <RefreshCw className="animate-spin text-indigo-600" size={18} /> : <Sparkles size={18} className="text-yellow-600 fill-yellow-600" />}
-                            {t('fullpack.button_label')}
+                            {fullPackRun?.status === 'ready' ? 'Generate original plan' : 'Plan full pack'}
                         </span>
-                        <span className="text-[11px] text-slate-600 block mt-0.5">{t('fullpack.helper_text')}</span>
+                        <span className="text-[11px] text-slate-600 block mt-0.5">{fullPackRun?.status === 'ready' ? 'Plan reviewed? Generate these exact resources.' : 'Review resources, settings, and estimated generations before creating them.'}</span>
                     </div>
                     <ArrowRight size={16} className="text-indigo-300 group-hover:text-indigo-600" />
                 </button>
-                {fullPackRun?.status === 'running' && (
+                {['running', 'planning'].includes(fullPackRun?.status) && (
                     <button
                         type="button"
                         onClick={handleStopFullPack}
                         className="mt-2 w-full rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 flex items-center justify-center gap-2"
-                        title="Stop after the current resource"
+                        title="Stop generation now"
                     >
                         <StopCircle size={15} />
-                        Stop after current resource
+                        Stop generation
                     </button>
                 )}
+                {fullPackRun && (() => {
+                    const statusLabels = { planning: 'Planning', ready: 'Ready for review', queued: 'Queued', running: 'Generating', retrying: 'Retrying', landed: 'Complete', completed: 'Complete', partial: 'Partially complete', failed: 'Needs attention', interrupted: 'Interrupted', stopped: 'Stopped' };
+                    const statusStyles = {
+                        planning: 'border-blue-200 bg-blue-50 text-blue-800',
+                        ready: 'border-indigo-200 bg-indigo-50 text-indigo-800',
+                        queued: 'border-slate-200 bg-slate-50 text-slate-600',
+                        running: 'border-blue-200 bg-blue-50 text-blue-800',
+                        retrying: 'border-violet-200 bg-violet-50 text-violet-800',
+                        landed: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+                        completed: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+                        partial: 'border-amber-200 bg-amber-50 text-amber-900',
+                        failed: 'border-rose-200 bg-rose-50 text-rose-800',
+                        interrupted: 'border-amber-200 bg-amber-50 text-amber-900',
+                        stopped: 'border-slate-300 bg-slate-100 text-slate-700',
+                    };
+                    const buildRows = (run) => {
+                        const resources = run && run.resources || {};
+                        const actual = Object.values(resources);
+                        const selected = run && run.preflight && Array.isArray(run.preflight.selected) ? run.preflight.selected : [];
+                        const used = new Set();
+                        const planned = selected.map((item, index) => {
+                            const match = actual.find(resource => resource && resource.type === item.type && Number(resource.index) === Number(item.index == null ? index : item.index));
+                            if (match && match.key) used.add(match.key);
+                            return Object.assign({ key: item.type + '-' + index, type: item.type, index, directive: item.directive || '', status: 'queued' }, match || {});
+                        });
+                        actual.forEach(resource => { if (resource && !used.has(resource.key)) planned.push(resource); });
+                        return planned;
+                    };
+                    const groupRuns = Object.values(fullPackRun.groups || {}).filter(Boolean);
+                    const sections = groupRuns.length ? groupRuns : [fullPackRun];
+                    const planSummaries = sections.map(section => section && section.preflight).filter(Boolean);
+                    const planSelected = planSummaries.reduce((sum, plan) => sum + (plan.selected?.length || 0), 0);
+                    const planSkipped = planSummaries.reduce((sum, plan) => sum + (plan.skipped?.length || 0), 0);
+                    const planGenerations = planSummaries.reduce((sum, plan) => sum + (plan.estimatedResourceGenerations || 0), 0);
+                    const planImageCalls = planSummaries.reduce((sum, plan) => sum + (plan.capacity?.imageCalls || 0), 0);
+                    const planMinutes = planSummaries.reduce((sum, plan) => sum + (plan.capacity?.estimatedMinutes || 0), 0);
+                    const capacityWarnings = Array.from(new Set(planSummaries.flatMap(plan => plan.capacity?.warnings || [])));
+                    const allRows = sections.flatMap(buildRows);
+                    const settled = allRows.filter(row => row && !['queued', 'running', 'retrying'].includes(row.status)).length;
+                    const total = allRows.length;
+                    const retryable = allRows.some(row => row && ['failed', 'interrupted', 'stopped'].includes(row.status) && row.retryable !== false);
+                    const progress = total ? Math.round((settled / total) * 100) : 0;
+                    const elapsedSeconds = Math.max(0, Math.round(Number(fullPackRun.elapsedMs || 0) / 1000));
+                    const currentRosterSignature = JSON.stringify(Object.entries(rosterKey?.groups || {}).sort(([a], [b]) => String(a).localeCompare(String(b))).map(([id, group]) => {
+                        const profile = group?.profile || {};
+                        return { id, name: group?.name || id, gradeLevel: profile.gradeLevel || '', leveledTextLanguage: profile.leveledTextLanguage || '', studentInterests: Array.isArray(profile.studentInterests) ? profile.studentInterests : String(profile.studentInterests || ''), dokLevel: profile.dokLevel || '', selectedLanguages: Array.isArray(profile.selectedLanguages) ? profile.selectedLanguages : [], targetStandards: Array.isArray(profile.targetStandards) ? profile.targetStandards : [], useEmojis: profile.useEmojis, textFormat: profile.textFormat || '' };
+                    }));
+                    const currentPlanSettings = { gradeLevel, leveledTextLanguage, studentInterests, dokLevel, selectedLanguages, targetStandards, useEmojis, textFormat, differentiationRange, differentiationTypes, differentiationCustomGrades, resourceCount, isAutoConfigEnabled, fullPackTargetGroup, rosterSignature: currentRosterSignature };
+                    const changeLabels = { gradeLevel: 'grade', leveledTextLanguage: 'language', studentInterests: 'interests', dokLevel: 'depth of knowledge', selectedLanguages: 'translation languages', targetStandards: 'standards', useEmojis: 'emoji preference', textFormat: 'text format', differentiationRange: 'differentiation range', differentiationTypes: 'differentiated resources', differentiationCustomGrades: 'custom grade levels', resourceCount: 'pack size', isAutoConfigEnabled: 'auto-configure', fullPackTargetGroup: 'target group', rosterSignature: 'roster groups' };
+                    const originalPlanSettings = fullPackRun.settingsSnapshot || {};
+                    const planChanges = fullPackRun.status === 'ready' ? Object.keys(changeLabels).filter(key => JSON.stringify(originalPlanSettings[key] ?? null) !== JSON.stringify(currentPlanSettings[key] ?? null)) : [];
+                    const formatPlanValue = value => {
+                        if (value === undefined || value === null || value === '') return 'Not set';
+                        if (typeof value === 'boolean') return value ? 'On' : 'Off';
+                        if (Array.isArray(value)) return value.length ? value.join(', ') : 'None';
+                        const rendered = String(value);
+                        return rendered.length > 120 ? rendered.slice(0, 117) + '...' : rendered;
+                    };
+                    return (
+                        <div className="mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">Full Pack {statusLabels[fullPackRun.status] || fullPackRun.status}. {settled} of {total} resources finished.</div>
+                            <div className="flex items-start justify-between gap-3 border-b border-slate-100 bg-slate-50/80 px-3 py-2.5">
+                                <div>
+                                    <div className="text-[11px] font-black uppercase tracking-wide text-slate-800">{fullPackRun.status === 'ready' ? 'Full Pack plan' : 'Full Pack progress'}</div>
+                                    <div className="mt-0.5 text-[10px] text-slate-600">
+                                        {planSummaries.length ? `${planSelected} selected · ${planSkipped} skipped · ~${planGenerations} resource generations` : 'Preparing generation plan…'}
+                                    </div>
+                                </div>
+                                <span className={`shrink-0 rounded-full border px-2 py-1 text-[9px] font-black uppercase tracking-wide ${statusStyles[fullPackRun.status] || statusStyles.queued}`}>
+                                    {statusLabels[fullPackRun.status] || fullPackRun.status}
+                                </span>
+                            </div>
+                            {fullPackRun.status === 'ready' && planChanges.length > 0 && (
+                                <div role="status" aria-live="polite" className="mx-3 mt-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-[10px] leading-relaxed text-amber-950">
+                                    <div className="font-black">Settings changed after this plan was created</div>
+                                    <div className="mt-0.5 break-words">{planChanges.map(key => changeLabels[key]).join(', ')}.</div>
+                                    <div className="mt-1 font-semibold">Generate original plan uses the reviewed settings. Choose Refresh plan to use the current settings.</div>
+                                    <details className="mt-2 rounded-lg border border-amber-300 bg-white/70">
+                                        <summary className="cursor-pointer px-2 py-1 font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">Review original and current values</summary>
+                                        <div className="space-y-1 border-t border-amber-200 px-2 py-1.5">
+                                            {planChanges.map(key => (
+                                                <div key={key} className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-1">
+                                                    <span className="min-w-0 break-words"><span className="font-bold">{changeLabels[key]}:</span> {formatPlanValue(originalPlanSettings[key])}</span>
+                                                    <span aria-hidden="true">→</span>
+                                                    <span className="min-w-0 break-words">{formatPlanValue(currentPlanSettings[key])}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </details>
+                                </div>
+                            )}
+                            {fullPackRun.status === 'ready' && planSummaries.length > 0 && (
+                                <div className={'mx-3 mt-2 rounded-xl border px-3 py-2 text-[10px] leading-relaxed ' + (capacityWarnings.length ? 'border-amber-300 bg-amber-50 text-amber-950' : 'border-sky-200 bg-sky-50 text-sky-900')}>
+                                    <div className="font-black">Capacity preview</div>
+                                    <div>~{planGenerations} AI calls · {planImageCalls} image calls · approximately {Math.max(1, planMinutes)} minutes</div>
+                                    {capacityWarnings.map((warning, index) => <div key={index} className="mt-1 font-semibold">{warning}</div>)}
+                                </div>
+                            )}
+                            {total > 0 && (
+                                <div className="px-3 pt-2.5">
+                                    <div className="mb-1 flex justify-between text-[10px] font-bold text-slate-600"><span>{settled} of {total} finished</span><span>{progress}%</span></div>
+                                    <div className="h-2 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-label="Full Pack generation progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow={progress}>
+                                        <div className="h-full rounded-full bg-indigo-600 transition-[width] motion-reduce:transition-none" style={{ width: `${progress}%` }} />
+                                    </div>
+                                </div>
+                            )}
+                            <div className="max-h-64 space-y-3 overflow-y-auto px-3 py-2.5">
+                                {sections.map((section, sectionIndex) => {
+                                    const rows = buildRows(section);
+                                    return (
+                                        <div key={section.groupId || section.runId || sectionIndex}>
+                                            {groupRuns.length > 0 && <div className="mb-1.5 text-[10px] font-black uppercase tracking-wide text-indigo-800">{section.groupName || `Group ${sectionIndex + 1}`}</div>}
+                                            <div className="space-y-1.5">
+                                                {rows.length === 0 && <div className="rounded-lg border border-dashed border-slate-200 px-2.5 py-2 text-[10px] text-slate-500">Waiting to plan this group…</div>}
+                                                {rows.map((row, index) => {
+                                                    const rowKey = row.key || `${row.type}-${index}`;
+                                                    const rowTitle = String(row.type || 'resource').replace(/-/g, ' ');
+                                                    const rowStatus = <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-bold ${statusStyles[row.status] || statusStyles.queued}`}>{statusLabels[row.status] || row.status || 'Queued'}{row.elapsedMs ? ` · ${Math.max(1, Math.round(row.elapsedMs / 1000))}s` : ''}</span>;
+                                                    if (fullPackRun.status === 'ready') {
+                                                        const snapshot = section.settingsSnapshot || originalPlanSettings;
+                                                        const differentiation = section.preflight?.differentiation;
+                                                        const isDifferentiated = Array.isArray(differentiation?.types) && differentiation.types.includes(row.type);
+                                                        return (
+                                                            <details key={rowKey} className="group/plan overflow-hidden rounded-lg border border-slate-200 bg-slate-50/70">
+                                                                <summary className="flex min-w-0 cursor-pointer list-none items-center justify-between gap-2 px-2.5 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 [&::-webkit-details-marker]:hidden">
+                                                                    <span className="min-w-0 truncate text-[11px] font-bold capitalize text-slate-800">{rowTitle}</span>
+                                                                    <span className="flex shrink-0 items-center gap-1.5">{rowStatus}<ChevronDown size={13} aria-hidden="true" className="text-slate-500 transition-transform motion-reduce:transition-none group-open/plan:rotate-180" /></span>
+                                                                </summary>
+                                                                <div className="space-y-1 border-t border-slate-200 bg-white px-2.5 py-2 text-[10px] leading-relaxed text-slate-700">
+                                                                    <div className="break-words"><span className="font-bold text-slate-900">Instruction:</span> {row.directive || 'Standard generation guidance'}</div>
+                                                                    <div><span className="font-bold text-slate-900">Audience:</span> {snapshot.gradeLevel || 'Current grade'} · {snapshot.leveledTextLanguage || 'Default language'}</div>
+                                                                    <div><span className="font-bold text-slate-900">Differentiation:</span> {isDifferentiated ? `${Math.max(1, differentiation.levelCount || 1)} levels` : 'Single version'}</div>
+                                                                </div>
+                                                            </details>
+                                                        );
+                                                    }
+                                                    return (
+                                                        <div key={rowKey} className="flex items-center justify-between gap-2 rounded-lg border border-slate-100 bg-slate-50/70 px-2.5 py-2">
+                                                            <div className="min-w-0">
+                                                                <div className="truncate text-[11px] font-bold capitalize text-slate-800">{rowTitle}</div>
+                                                                {row.reason && <div className="truncate text-[9px] text-rose-700" title={row.reason}>{row.reason}</div>}
+                                                            </div>
+                                                            {rowStatus}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            <div className="sticky bottom-0 z-10 flex flex-wrap items-center gap-2 border-t border-slate-200 bg-white/95 px-3 py-2 shadow-[0_-4px_12px_rgba(15,23,42,0.06)] backdrop-blur motion-reduce:backdrop-blur-none">
+                                {elapsedSeconds > 0 && <span className="me-auto text-[9px] font-semibold text-slate-500">Run {fullPackRun.runId?.slice(-8)} · {elapsedSeconds}s</span>}
+                                {fullPackRun.status === 'ready' && <button type="button" onClick={handlePlanFullPack} className="rounded-lg border border-indigo-200 bg-white px-2.5 py-1.5 text-[10px] font-bold text-indigo-700 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">Refresh plan</button>}
+                                {retryable && fullPackRun.status !== 'running' && <button type="button" onClick={handleRetryFailedFullPack} className="rounded-lg bg-indigo-700 px-2.5 py-1.5 text-[10px] font-bold text-white hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">Retry failures</button>}
+                                <button type="button" onClick={handleCopyFullPackDiagnostics} className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">Copy diagnostics</button>
+                                <button type="button" onClick={handleDownloadFullPackDiagnostics} className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">Download report</button>
+                                {fullPackRun.status !== 'running' && <button type="button" onClick={handleDismissFullPackRun} className="rounded-lg px-2 py-1.5 text-[10px] font-bold text-slate-600 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">Dismiss</button>}
+                            </div>
+                        </div>
+                    );
+                })()}
             </div>
             <div style={{display: (!guidedMode || guidedActiveSteps[guidedStep]?.id === 'alignment') ? undefined : 'none'}} id="tour-tool-alignment" data-help-key="tool_alignment" className="bg-gradient-to-r from-teal-500 to-emerald-500 p-1 rounded-3xl shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 transition-all group">
                 <button
@@ -47280,6 +48871,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                        configSummary: configSummary || (t('output.quick_practice_mode') || 'Quick Practice Mode'),
                        isProbeMode: _isProbe,
                        probeActivity: _isProbe ? (_probeAct || null) : null,
+                       probeStudent: _isProbe ? ((probeOptions && probeOptions.student) || null) : null,
                        _fingerprint: _wsFingerprint,
                    };
                    setGeneratedContent(wordSoundsResource);
@@ -47298,6 +48890,21 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                    setWsPreloadedWords(words);
                    if (sequence && sequence.length > 0) setWsActivitySequence(sequence);
                    setIsProbeMode(_isProbe);
+                   // Whose record this probe belongs in. probeTargetStudent is a
+                   // single sticky value that only the Assessment Center's Active
+                   // Student selector ever wrote, and nothing cleared — so a probe
+                   // started from the Word Sounds setup screen was filed under
+                   // whichever child the teacher had selected over there earlier in
+                   // the sitting, or (with none selected) banked nowhere at all
+                   // while still showing a result toast. Setting it explicitly here,
+                   // including to null, closes both. Only on a probe launch: the
+                   // Assessment Center launches its own probes without passing
+                   // through here and relies on the selector's value surviving.
+                   if (_isProbe) {
+                       setProbeTargetStudent(
+                           (probeOptions && probeOptions.student) || null,
+                       );
+                   }
                    let initialActivity;
                    if (_isProbe && _probeAct) {
                        setProbeActivity(_probeAct);
@@ -48596,7 +50203,14 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           </div>
         </div>
       )}
-      {visualSupportsPayload && !isTeacherMode && (() => {
+      {visualSupportsPayload && (!isTeacherMode || visualSupportsPayload.localOnly) && (
+        <LiveAacBoardDialog
+          payload={visualSupportsPayload}
+          onDismiss={() => { stopAacPlayback(); dismissVisualSupportsPayload(); }}
+          onSpeak={playAacSpeech}
+        />
+      )}
+      {false && visualSupportsPayload && !isTeacherMode && (() => {
         const _vsp = visualSupportsPayload;
         const _aacColors = { noun:'#fef9c3', verb:'#dcfce7', adjective:'#dbeafe', other:'#f3f4f6' };
         return (
@@ -48746,10 +50360,23 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             else if (toolId === 'timelines') { if (typeof window.__alloLazySpedTimelines === 'function') { try { window.__alloLazySpedTimelines(); } catch (_) {} } setIsSpedTimelinesOpen(true); }
             else if (toolId === 'announcements') { if (typeof window.__alloLazyFamilyAnnouncements === 'function') { try { window.__alloLazyFamilyAnnouncements(); } catch (_) {} } setIsFamilyAnnouncementsOpen(true); }
             else if (toolId === 'mtss') { if (typeof window.__alloLazyMtssTriage === 'function') { try { window.__alloLazyMtssTriage(); } catch (_) {} } setIsMtssTriageOpen(true); }
+            else if (toolId === 'diagnosisEligibility') { if (typeof window.__alloLazyDiagnosisEligibility === 'function') { try { window.__alloLazyDiagnosisEligibility(); } catch (_) {} } setDiagnosisEligibilityFocusSection(null); setIsDiagnosisEligibilityOpen(true); }
           },
         })}
       </CDNModuleGate>
-      <CDNModuleGate moduleKey="MtssTriage.MtssTriagePanel" isOpen={isMtssTriageOpen} onClose={() => setIsMtssTriageOpen(false)} icon="🧮" displayName="MTSS Triage" t={t}>
+      <CDNModuleGate moduleKey="DiagnosisEligibility.DiagnosisEligibilityPanel" isOpen={isDiagnosisEligibilityOpen} onClose={() => { setIsDiagnosisEligibilityOpen(false); setDiagnosisEligibilityFocusSection(null); }} icon={'\uD83E\uDDE9'} displayName="Diagnosis, Evaluation & School Eligibility" t={t}>
+        {(DiagnosisEligibilityPanel) => React.createElement(DiagnosisEligibilityPanel, {
+          isOpen: true,
+          onClose: () => { setIsDiagnosisEligibilityOpen(false); setDiagnosisEligibilityFocusSection(null); },
+          onBack: () => { setIsDiagnosisEligibilityOpen(false); setDiagnosisEligibilityFocusSection(null); if (typeof window.__alloLazyAdminHub === 'function') { try { window.__alloLazyAdminHub(); } catch (_) {} } setIsAdminHubOpen(true); },
+          t,
+          addToast,
+          labToolData,
+          setLabToolData,
+          theme,
+          focusSection: diagnosisEligibilityFocusSection,
+        })}
+      </CDNModuleGate>      <CDNModuleGate moduleKey="MtssTriage.MtssTriagePanel" isOpen={isMtssTriageOpen} onClose={() => setIsMtssTriageOpen(false)} icon="🧮" displayName="MTSS Triage" t={t}>
         {(MtssTriagePanel) => React.createElement(MtssTriagePanel, {
           isOpen: true,
           onClose: () => setIsMtssTriageOpen(false),
@@ -48772,6 +50399,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           onClose: () => setIsSpedTimelinesOpen(false),
           t,
           addToast,
+          onOpenEligibility: (section) => { setIsSpedTimelinesOpen(false); setDiagnosisEligibilityFocusSection(section || 'elig-documents-title'); if (typeof window.__alloLazyDiagnosisEligibility === 'function') { try { window.__alloLazyDiagnosisEligibility(); } catch (_) {} } setIsDiagnosisEligibilityOpen(true); },
         })}
       </CDNModuleGate>
       <CDNModuleGate moduleKey="MeetingDocs.MeetingDocsPanel" isOpen={isMeetingDocsOpen} onClose={() => setIsMeetingDocsOpen(false)} icon="📋" displayName="Meeting Documentation" t={t}>
@@ -48781,6 +50409,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           t,
           addToast,
           callGemini,
+          onOpenEligibility: (section) => { setIsMeetingDocsOpen(false); setDiagnosisEligibilityFocusSection(section || 'elig-prep-title'); if (typeof window.__alloLazyDiagnosisEligibility === 'function') { try { window.__alloLazyDiagnosisEligibility(); } catch (_) {} } setIsDiagnosisEligibilityOpen(true); },
         })}
       </CDNModuleGate>
       <CDNModuleGate moduleKey="DisproAnalyzer.DisproAnalyzerPanel" isOpen={isDisproAnalyzerOpen} onClose={() => setIsDisproAnalyzerOpen(false)} icon="⚖️" displayName="Disproportionality Analyzer" t={t}>
@@ -49144,7 +50773,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             <button onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label={t('common.close') || "Close"}><X size={20}/></button>
             <div className="flex items-center gap-2 mb-5 text-violet-900">
                 <div className="bg-violet-100 p-2 rounded-full"><Settings size={20} className="text-violet-600"/></div>
-                <h3 id="ai-backend-canvas-title" className="font-black text-lg">{t('canvas_settings.title') || 'Advanced Settings'}</h3>
+                <h3 id="ai-backend-canvas-title" className="font-black text-lg">{t('canvas_settings.title') || 'AI Settings & Diagnostics'}</h3>
             </div>
             <div className="space-y-4">
                 {/* Web search key. This REPLACED a "Google Search API Key" field that
@@ -49192,6 +50821,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 {/* AI Model Diagnostics (shared component — same one used in the deploy modal) */}
                 {window.AlloModules && window.AlloModules.ModelDiagnosticsSection && React.createElement(window.AlloModules.ModelDiagnosticsSection, {
                     t, _isCanvasEnv, GEMINI_MODELS
+                })}
+                {window.AlloModules && window.AlloModules.PlatformDiagnosticsSection && React.createElement(window.AlloModules.PlatformDiagnosticsSection, {
+                    t
                 })}
                 {/* Device storage (2026-07-14): permanent, discoverable home for the
                     on-device storage manager — the probe/review panel is otherwise only
@@ -49332,6 +50964,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               isProbeMode={isProbeMode}
               setIsProbeMode={setIsProbeMode}
               probeTargetStudent={probeTargetStudent}
+              probeStudentNames={Object.keys(probeHistory || {})}
               saveProbeResult={saveProbeResult}
               setProbeTargetStudent={setProbeTargetStudent}
               setWsPreloadedWords={setWsPreloadedWords}
@@ -50002,6 +51635,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         </CDNModuleGate>
 
         {videoRefPlayerItem && <VideoRefPlayerOverlay item={videoRefPlayerItem} onClose={() => setVideoRefPlayerItem(null)} addToast={addToast} t={t} />}
+        {showVideoLibrary && <VideoLibraryOverlay onClose={() => setShowVideoLibrary(false)} t={t} />}
 
         <CDNModuleGate moduleKey="AlloStudio" isOpen={isAlloStudioOpen} onClose={() => { setIsAlloStudioOpen(false); setAlloStudioInitialAction(null); }} icon="🎨" displayName="Page Designer" t={t}>
             {(AlloStudio) => React.createElement(AlloStudio, {
@@ -50132,12 +51766,17 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     onCallGemini: callGemini,
                     onCallTTS: callTTS,
                     selectedVoice,
+                    voiceSpeed,
+                    ttsProvider: (_aiConfig && _aiConfig.ttsProvider) || 'auto',
+                    ttsModel: (_aiConfig && _aiConfig.models && _aiConfig.models.tts) || '',
                     onSetVoice: (voice) => setSelectedVoice(voice),
                     geminiVoices: GEMINI_VOICES,
                     kokoroVoices: KOKORO_VOICES,
                     isCanvasEnv: _isCanvasEnv,
                     primaryLanguage: leveledTextLanguage,
                     addToast,
+                    onSaveAACResource: (portablePackage) => !!savePortableAacResourceToHistory(portablePackage),
+                    onShareAACResource: sharePortableAacResource,
                     user,
                     firestore: db,
                     appId,
@@ -50156,12 +51795,14 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         active: true,
                         sessionCode: activeSessionCode,
                         push: async (payload) => {
-                            const sRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
-                            await updateDoc(sRef, { visualSupportsPayload: { ...payload, timestamp: Date.now(), pushedBy: user?.displayName || 'Teacher' } });
+                            const liveAacPayload = _alloBuildLiveAacPayload(payload, Date.now());
+                            if (!liveAacPayload) throw new Error('Symbol Studio produced an invalid AAC Board payload.');
+                            const sRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
+                            await writeToSession(sRef, { visualSupportsPayload: liveAacPayload });
                         },
                         clear: async () => {
-                            const sRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
-                            await updateDoc(sRef, { visualSupportsPayload: deleteField() });
+                            const sRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
+                            await writeToSession(sRef, { visualSupportsPayload: null });
                         },
                     } : null,
             })}
@@ -50989,6 +52630,74 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 sourceText: inputText,
                 initialSource: pendingLinguaSource,
                 onInitialSourceConsumed: () => setPendingLinguaSource(null),
+                isTeacherMode,
+                studentCodename: studentNickname || '',
+                visualStyle,
+                visualCustomStyle,
+                initialConfig: generatedContent?.type === 'lingua-config' ? generatedContent.data : null,
+                initialSubmission: generatedContent?.type === 'lingua-submission' ? generatedContent.data : null,
+                configRecords: isTeacherMode
+                    ? (Array.isArray(history) ? history : [])
+                        .filter(item => item && item.type === 'lingua-config' && item.data && typeof item.data === 'object' && !Array.isArray(item.data))
+                        .slice(-200)
+                        .map(item => ({
+                            historyId: String(item.id || '').slice(0, 180),
+                            savedAt: item.timestamp instanceof Date && Number.isFinite(item.timestamp.getTime())
+                                ? item.timestamp.toISOString()
+                                : String(item.timestamp || '').slice(0, 80),
+                            data: item.data,
+                        }))
+                    : [],
+                submissionRecords: isTeacherMode
+                    ? (Array.isArray(history) ? history : [])
+                        .filter(item => item && item.type === 'lingua-submission' && item.data && typeof item.data === 'object' && !Array.isArray(item.data))
+                        .slice(-200)
+                        .map(item => ({
+                            historyId: String(item.id || '').slice(0, 180),
+                            savedAt: item.timestamp instanceof Date && Number.isFinite(item.timestamp.getTime())
+                                ? item.timestamp.toISOString()
+                                : String(item.timestamp || item.data?.generatedAt || '').slice(0, 80),
+                            data: item.data,
+                        }))
+                    : [],
+                onSaveConfig: isTeacherMode ? (config) => {
+                    const practiceSet = config?.practiceSet || {};
+                    const lesson = practiceSet.lesson || practiceSet;
+                    const language = config?.profile?.target || practiceSet.language || 'Language';
+                    const vocabCount = Array.isArray(lesson?.vocabulary) ? lesson.vocabulary.length : 0;
+                    const assignmentTitle = String(config?.assignment?.title || '').trim().replace(/\s+/g, ' ').slice(0, 120);
+                    const assignmentRevision = Math.max(0, Math.min(999, Math.floor(Number(config?.assignment?.revision) || 0)));
+                    const item = {
+                        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                        type: 'lingua-config',
+                        title: 'A/\u6587 ' + (assignmentTitle || practiceSet.name || lesson?.title || 'Lingua Lesson'),
+                        data: config,
+                        timestamp: new Date(),
+                        meta: [language, vocabCount + ' vocabulary items', assignmentRevision ? 'Revision ' + assignmentRevision : ''].filter(Boolean).join(' \u00b7 '),
+                    };
+                    setHistory(prev => [...prev, item]);
+                } : null,
+                onSaveSubmission: (submission) => {
+                    const language = submission?.targetLanguage || submission?.language?.target || submission?.profile?.target || (typeof submission?.language === 'string' ? submission.language : '') || 'Language';
+                    const learnerCodename = String(submission?.learnerCodename || '').trim().replace(/\s+/g, ' ').slice(0, 100);
+                    const learner = learnerCodename || studentNickname || 'Learner';
+                    const assignmentTitle = String(submission?.assignment?.title || '').trim().replace(/\s+/g, ' ').slice(0, 120);
+                    const assignmentRevision = Math.max(0, Math.min(999, Math.floor(Number(submission?.assignment?.revision) || 0)));
+                    const activityCount = Array.isArray(submission?.activity)
+                        ? submission.activity.reduce((total, event) => total + Math.max(0, Number(event?.count || 0)), 0)
+                        : (Array.isArray(submission?.events)
+                            ? submission.events.length
+                            : (Array.isArray(submission?.activityLog) ? submission.activityLog.length : Number(submission?.summary?.activityCount || 0)));
+                    const item = {
+                        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                        type: 'lingua-submission',
+                        title: 'A/\u6587 ' + (submission?.title || (learner + ': ' + (assignmentTitle || language + ' Learning Record'))),
+                        data: submission,
+                        timestamp: new Date(),
+                        meta: [language, learnerCodename, activityCount + ' activities', assignmentRevision ? 'Revision ' + assignmentRevision : ''].filter(Boolean).join(' \u00b7 '),
+                    };
+                    setHistory(prev => [...prev, item]);
+                },
                 t,
             })}
         </CDNModuleGate>
@@ -51122,6 +52831,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     firestore: db,
                     firebaseAuth: auth,
                     isCanvasEnv: _isCanvasEnv,
+                    appId,
                     onOpenAlloSheet: (artifact) => {
                         const bridge = window.AlloSheetHostBridge;
                         if (!bridge || typeof bridge.open !== 'function') {
@@ -51551,6 +53261,14 @@ function StorybookExportModal(props) {
 function InfoModal(props) {
     return (
         <CDNModuleGate moduleKey="InfoModal.InfoModal" icon="ℹ️" displayName="Info" t={props.t}>
+            {(Real) => React.createElement(Real, props)}
+        </CDNModuleGate>
+    );
+}
+// ── VideoLibraryOverlay extracted to view_video_library_module.js (CDN) ──
+function VideoLibraryOverlay(props) {
+    return (
+        <CDNModuleGate moduleKey="VideoLibrary.VideoLibraryOverlay" icon="🎬" displayName="Video library" onClose={props.onClose} t={props.t}>
             {(Real) => React.createElement(Real, props)}
         </CDNModuleGate>
     );

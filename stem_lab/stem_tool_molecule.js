@@ -325,7 +325,6 @@ window.StemLab = window.StemLab || {
       var srOnly = ctx.srOnly;
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
-      var props = ctx.props;
       var canvasNarrate = ctx.canvasNarrate;
 
       var useRef = React.useRef;
@@ -433,7 +432,7 @@ window.StemLab = window.StemLab || {
           const reactionCoeffs = d.reactionCoeffs || null;
           const reactionResult = d.reactionResult || null;
           const updMulti = (obj) => setLabToolData(prev => ({ ...prev, molecule: { ...prev.molecule, ...obj } }));
-          const isDark = !!(props && props.darkMode);
+          const isDark = !!ctx.isDark || !!ctx.isContrast;
 
           // ═══ Keyboard Shortcuts ═══
           // Note: these execute on every render but are lightweight
@@ -1764,7 +1763,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
             React.createElement("section", { "data-molecule-command": "true", "aria-label": "Molecule Lab command deck", className: "mb-3 rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-cyan-50 to-indigo-50 p-3 shadow-sm" },
               React.createElement("div", { className: "grid gap-3 lg:grid-cols-[minmax(230px,0.9fr)_minmax(0,1.7fr)]" },
-                React.createElement("div", { className: "rounded-xl border border-cyan-200 bg-white/80 p-3" },
+                React.createElement("div", { className: "rounded-xl border border-cyan-200 bg-white p-3" },
                   React.createElement("div", { className: "text-[11px] font-black uppercase text-cyan-700", style: { letterSpacing: 0 } }, "Molecular workbench"),
                   React.createElement("div", { className: "mt-1 text-xl font-black leading-tight text-slate-900" }, "Pick the chemistry lens first."),
                   React.createElement("p", { className: "mt-2 text-xs leading-relaxed text-slate-600" }, "The lab is easier when students choose a mode by task: inspect, combine, build, research, or balance."),
@@ -1948,7 +1947,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               (() => {
                 const teaching = getMoleculeTeachingModel(d.formula);
                 return teaching && React.createElement("section", {
-                  className: "mt-3 border border-cyan-200 bg-cyan-50/70 p-3 text-left",
+                  className: "mt-3 border border-cyan-200 bg-cyan-50 p-3 text-left",
                   style: { borderRadius: 8 },
                   "aria-labelledby": "molecule-shape-polarity-title"
                 },
@@ -2791,7 +2790,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                         React.createElement("div", { className: "flex flex-wrap gap-1" },
 
-                          (detail.uses || []).map((use, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white/60 rounded-full text-[11px] font-medium text-slate-700 border border-slate-400/80" }, use))
+                          (detail.uses || []).map((use, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white rounded-full text-[11px] font-medium text-slate-700 border border-slate-400" }, use))
 
                         )
 
@@ -2803,7 +2802,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                         React.createElement("div", { className: "flex flex-wrap gap-1" },
 
-                          (detail.compounds || []).map((comp, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white/60 rounded-full text-[11px] font-medium text-slate-700 border border-slate-400/80" }, comp))
+                          (detail.compounds || []).map((comp, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white rounded-full text-[11px] font-medium text-slate-700 border border-slate-400" }, comp))
 
                         )
 

@@ -75,15 +75,18 @@ describe('ChemBalance form-control accessibility', () => {
     }
   });
 
-  it('keeps all 14 form declarations and repaired names explicit in source', () => {
+  it('keeps all 16 form declarations and repaired names explicit in source', () => {
     const source = readFileSync(SOURCE, 'utf8');
 
-    expect(source.match(/h\('(input|textarea|select)'/g)).toHaveLength(14);
+    expect(source.match(/h\('(input|textarea|select)'/g)).toHaveLength(16);
     expect(source).toContain('filter_chemistry_glossary_terms');
     expect(source).toContain("htmlFor: 'chem-ph-hypothesis'");
     expect(source).toContain("id: 'chem-ph-hypothesis'");
     expect(source).toContain("htmlFor: 'chem-ph-explanation'");
     expect(source).toContain("id: 'chem-ph-explanation'");
+    expect(source).toContain('search_elements_label');
+    expect(source).toContain("htmlFor: 'chem-periodic-element-picker'");
+    expect(source).toContain("id: 'chem-periodic-element-picker'");
   });
 
   it('preserves byte-for-byte deploy parity', () => {

@@ -7,34 +7,39 @@ const ANATOMY_PATHS = [
 ];
 
 describe('anatomy canvas animation loop', () => {
-  it('cleans up rerendered anatomy canvases and respects motion/visibility preferences', () => {
+  it('keeps one 2D controller lifecycle and respects resize, DPR, motion, and visibility changes', () => {
     ANATOMY_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
 
-      expect(source).toContain('if (!canvas) {');
-      expect(source).toContain('if (window.__alloAnatomyCanvasCleanup) window.__alloAnatomyCanvasCleanup();');
-      expect(source).toContain('if (canvas._anatomyCleanup) canvas._anatomyCleanup();');
-      expect(source).toContain('window.__alloAnatomyCanvasCleanup = canvas._anatomyCleanup;');
-      expect(source).toContain('function cleanupAnatomyCanvas()');
-      expect(source).toContain('canvas._anatomyCleanup = null;');
+      expect(source).toContain('var anatomy2dController = (function()');
+      expect(source).toContain('function stableAnatomy2dRef(canvas)');
+      expect(source).toContain('anatomy2dController.attach(canvas);');
+      expect(source).toContain('anatomy2dController.push(paintAnatomyFrame);');
+      expect(source).toContain('ref: stableAnatomy2dRef');
+      expect(source).not.toContain('ref: canvasRef');
+
+      expect(source).toContain('function detach()');
+      expect(source).toContain('if (resizeObserver) resizeObserver.disconnect();');
+      expect(source).toContain("window.removeEventListener('resize', scheduleResize)");
+      expect(source).toContain("document.removeEventListener('visibilitychange', onVisibilityChange)");
+      expect(source).toContain('detachedCanvas._anatomyCleanup = null;');
+      expect(source).toContain('anatomyTick = 0;');
 
       expect(source).toContain("window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null");
-      expect(source).toContain('function onAnatomyMotionPreferenceChange(event)');
-      expect(source).toContain("anatomyMotionQuery.addEventListener('change', onAnatomyMotionPreferenceChange)");
-      expect(source).toContain("anatomyMotionQuery.removeEventListener('change', onAnatomyMotionPreferenceChange)");
-      expect(source).toContain('anatomyMotionReduced = !!(event && event.matches);');
-      expect(source).toContain('if (anatomyAlive && canvas.isConnected && !isAnatomyHidden()) drawAnatomyFrame();');
-      expect(source).toContain('function isAnatomyHidden()');
-      expect(source).toContain('function cancelAnatomyFrame()');
-      expect(source).toContain('function scheduleAnatomyFrame()');
-      expect(source).toContain('if (!anatomyAlive || anatomyMotionReduced || canvas._anatomyAnim || isAnatomyHidden()) return;');
-      expect(source).toContain('if (!anatomyMotionReduced) anatTick++;');
-      expect(source).toContain('scheduleAnatomyFrame();');
+      expect(source).toContain('function onMotionPreferenceChange(event)');
+      expect(source).toContain("motionQuery.addEventListener('change', onMotionPreferenceChange)");
+      expect(source).toContain("motionQuery.removeEventListener('change', onMotionPreferenceChange)");
+      expect(source).toContain('motionReduced = !!(event && event.matches);');
+      expect(source).toContain('function isDocumentHidden()');
+      expect(source).toContain('function cancelPaint()');
+      expect(source).toContain('function requestPaint()');
+      expect(source).toContain("if (!canvas || !canvas.isConnected || isDocumentHidden() || typeof latestPainter !== 'function') return;");
+      expect(source).toContain('if (!motionReduced) anatomyTick++;');
+      expect(source).toContain("if (!motionReduced && typeof requestAnimationFrame === 'function') requestPaint();");
 
-      expect(source).toContain("document.addEventListener('visibilitychange', onAnatomyVisibilityChange);");
-      expect(source).toContain("document.removeEventListener('visibilitychange', onAnatomyVisibilityChange);");
-      expect(source).toContain('if (!canvas.isConnected) { cleanupAnatomyCanvas(); return; }');
-      expect(source).toContain('if (isAnatomyHidden()) cancelAnatomyFrame();');
+      expect(source).toContain("document.addEventListener('visibilitychange', onVisibilityChange)");
+      expect(source).toContain('if (!canvas || !canvas.isConnected) { detach(); return; }');
+      expect(source).toContain('if (isDocumentHidden()) cancelPaint();');
     });
   });
 });

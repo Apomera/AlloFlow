@@ -515,8 +515,18 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'DiagnosisEligibility',
+        filename: 'stem_lab/stem_tool_eligibility.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'WordSoundsModal',
         filename: 'word_sounds_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'BehaviorLensWorkspace',
+        filename: 'behavior_lens_workspace_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
@@ -808,6 +818,11 @@ const MODULES = [
     {
         name: 'InfoModal',
         filename: 'view_info_modal_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'VideoLibrary',
+        filename: 'view_video_library_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
@@ -1166,7 +1181,6 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_nuclearlab.js',
     'stem_lab/stem_tool_parentinglab.js',
     'stem_lab/stem_tool_lawnavigator.js',
-    'stem_lab/stem_tool_eligibility.js',
     'stem_lab/stem_tool_papertrail.js',
     'stem_lab/stem_tool_gamestudio.js',
     'stem_lab/stem_tool_geosandbox.js',

@@ -1,6 +1,6 @@
 {
   "name": "@alloflow/remediation-runner",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Isolated per-job HTTP runner for the AlloFlow institution pilot",
   "type": "commonjs",

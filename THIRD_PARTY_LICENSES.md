@@ -184,6 +184,7 @@ uses an open range.
 | [Mol*](https://molstar.org) | 3D molecular-structure viewer | MIT | Copyright (c) 2017-present Mol* contributors |
 | [CODAP](https://codap.concord.org) | data-science workspace (Data Lab; iframe) | MIT | Copyright (c) 2010-present Concord Consortium |
 | [PhET Interactive Simulations](https://phet.colorado.edu) | science & math sims (iframe) | GPLv3 (code) / CC-BY (content) | © University of Colorado Boulder |
+| [Human Reference Atlas kidney v1.3](https://cdn.humanatlas.io/digital-objects/ref-organ/kidney-female-left/v1.3/) | bundled female-left 3D reference organ and ontology crosswalk (Anatomy Clinical Atlas; see [`ATTRIBUTION.md`](./stem_lab/assets/anatomy/clinical-atlas/ATTRIBUTION.md)) | CC BY 4.0 | Copyright 2024 Kristen Browne and Heidi Schlehlein; Human Reference Atlas / HuBMAP; derived from the NLM Visible Human Dataset |
 | [iframe-phone](https://github.com/concord-consortium/iframe-phone) | bridge to the CODAP window | MIT | Copyright (c) 2014 Concord Consortium |
 | [OpenSeadragon](https://openseadragon.github.io) | deep-zoom image viewer (Zoom Gallery) | BSD-3-Clause | Copyright (C) 2009 CodePlex Foundation; (C) 2010-present OpenSeadragon contributors |
 | [Smithsonian Open Access](https://www.si.edu/openaccess) | museum images (Zoom Gallery) | CC0 1.0 | Public domain (CC0) — Smithsonian Institution |

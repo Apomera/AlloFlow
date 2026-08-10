@@ -3612,9 +3612,9 @@ window.StemLab = window.StemLab || {
                 var pathCompleted = Math.max(0, Math.min(pathTotal, Number(pathRecord.completed) || 0));
                 var pathDone = !!pathRecord.complete || pathCompleted >= pathTotal;
                 return h('div', { key: lab.id, className: 'min-w-0 text-center' },
-                  h('span', { className: 'mx-auto flex h-8 w-8 items-center justify-center rounded-full text-sm shadow-sm', style: { background: pathDone ? '#059669' : '#f1f5f9', color: pathDone ? '#ffffff' : lab.accent, border: '2px solid ' + (pathDone ? '#059669' : lab.accent + '66') } }, lab.icon),
-                  h('span', { className: 'mt-1 block truncate text-[9px] font-bold text-slate-600' }, lab.title),
-                  h('span', { className: 'block text-[9px] font-black ' + (pathDone ? 'text-emerald-700' : 'text-slate-500') }, pathDone ? 'DONE' : pathCompleted + '/' + pathTotal)
+                  h('span', { className: 'mx-auto flex h-8 w-8 items-center justify-center rounded-full text-sm shadow-sm', style: { background: pathDone ? '#059669' : '#f1f5f9', color: pathDone ? '#ffffff' : (lab.id === 'safety' ? '#b91c1c' : lab.id === 'kitchen' ? '#c2410c' : lab.accent), border: '2px solid ' + (pathDone ? '#059669' : lab.accent + '66') } }, lab.icon),
+                  h('span', { className: 'mt-1 block truncate text-[10px] font-bold text-slate-600' }, lab.title),
+                  h('span', { className: 'block text-[10px] font-black ' + (pathDone ? 'text-emerald-700' : 'text-slate-500') }, pathDone ? 'DONE' : pathCompleted + '/' + pathTotal)
                 );
               })
             ),
@@ -3831,8 +3831,8 @@ window.StemLab = window.StemLab || {
                     h('text', { x: padL + 69, y: H - 4, fontSize: 7, fill: INK, textAnchor: 'middle' }, '2024'));
                 };
                 return h('div', { className: 'grid grid-cols-2 gap-3 my-3' },
-                  h('div', null, h('div', { className: 'text-[10px] font-bold text-red-600 mb-1' }, __alloT('stem.lifeskills.y_axis_starts_at_950', '😱 Y-axis starts at 950')), mkBars(950, 1000), h('div', { className: 'text-[9px] text-slate-500 text-center mt-0.5' }, __alloT('stem.lifeskills.looks_like_a_huge_jump', 'Looks like a HUGE jump'))),
-                  h('div', null, h('div', { className: 'text-[10px] font-bold text-emerald-600 mb-1' }, __alloT('stem.lifeskills.y_axis_starts_at_0', '✅ Y-axis starts at 0')), mkBars(0, 1000), h('div', { className: 'text-[9px] text-slate-500 text-center mt-0.5' }, __alloT('stem.lifeskills.same_data_barely_2', 'Same data — barely +2%'))));
+                  h('div', null, h('div', { className: 'text-[10px] font-bold text-red-600 mb-1' }, __alloT('stem.lifeskills.y_axis_starts_at_950', '😱 Y-axis starts at 950')), mkBars(950, 1000), h('div', { className: 'text-[10px] text-slate-500 text-center mt-0.5' }, __alloT('stem.lifeskills.looks_like_a_huge_jump', 'Looks like a HUGE jump'))),
+                  h('div', null, h('div', { className: 'text-[10px] font-bold text-emerald-600 mb-1' }, __alloT('stem.lifeskills.y_axis_starts_at_0', '✅ Y-axis starts at 0')), mkBars(0, 1000), h('div', { className: 'text-[10px] text-slate-500 text-center mt-0.5' }, __alloT('stem.lifeskills.same_data_barely_2', 'Same data — barely +2%'))));
               }
               if (dlScenario === 2) { // Vanishing baseline: $3M(2022) -> $1M(2023) -> $2M(2024)
                 var mkLine = function(pts) {
@@ -3847,8 +3847,8 @@ window.StemLab = window.StemLab || {
                     pts.map(function(p, i) { return h('text', { key: 't' + i, x: px(i), y: H - 4, fontSize: 7, fill: INK, textAnchor: 'middle' }, p[0]); }));
                 };
                 return h('div', { className: 'grid grid-cols-2 gap-3 my-3' },
-                  h('div', null, h('div', { className: 'text-[10px] font-bold text-red-600 mb-1' }, __alloT('stem.lifeskills.cherry_picked_window', '😱 Cherry-picked window')), mkLine([['2023', 1], ['2024', 2]]), h('div', { className: 'text-[9px] text-slate-500 text-center mt-0.5' }, __alloT('stem.lifeskills.revenue_doubled', '"Revenue DOUBLED!"'))),
-                  h('div', null, h('div', { className: 'text-[10px] font-bold text-emerald-600 mb-1' }, __alloT('stem.lifeskills.full_history', '✅ Full history')), mkLine([['2022', 3], ['2023', 1], ['2024', 2]]), h('div', { className: 'text-[9px] text-slate-500 text-center mt-0.5' }, __alloT('stem.lifeskills.down_from_3m_not_doubled', 'Down from $3M — not "doubled"'))));
+                  h('div', null, h('div', { className: 'text-[10px] font-bold text-red-600 mb-1' }, __alloT('stem.lifeskills.cherry_picked_window', '😱 Cherry-picked window')), mkLine([['2023', 1], ['2024', 2]]), h('div', { className: 'text-[10px] text-slate-500 text-center mt-0.5' }, __alloT('stem.lifeskills.revenue_doubled', '"Revenue DOUBLED!"'))),
+                  h('div', null, h('div', { className: 'text-[10px] font-bold text-emerald-600 mb-1' }, __alloT('stem.lifeskills.full_history', '✅ Full history')), mkLine([['2022', 3], ['2023', 1], ['2024', 2]]), h('div', { className: 'text-[10px] text-slate-500 text-center mt-0.5' }, __alloT('stem.lifeskills.down_from_3m_not_doubled', 'Down from $3M — not "doubled"'))));
               }
               if (dlScenario === 5) { // 3D pie distortion: same data, but a 3D tilt makes the front 30% slice look bigger than the back 35% ones
                 var slices = [{ v: 30, c: '#6366f1' }, { v: 35, c: '#10b981' }, { v: 35, c: '#f59e0b' }];
@@ -3869,11 +3869,11 @@ window.StemLab = window.StemLab || {
                     h('div', { className: 'text-[10px] font-bold text-red-600 mb-2' }, __alloT('stem.lifeskills.same_pie_3d_tilted', '😱 Same pie, 3D-tilted')),
                     h('div', { style: { perspective: '240px', display: 'flex', justifyContent: 'center', height: 80 } },
                       h('div', { style: { transform: 'rotateX(58deg)', transformOrigin: 'center bottom' } }, pie())),
-                    h('div', { className: 'text-[9px] text-slate-500 mt-1' }, __alloT('stem.lifeskills.front_30_slice_looks_the_biggest', 'front 30% slice looks the biggest'))),
+                    h('div', { className: 'text-[10px] text-slate-500 mt-1' }, __alloT('stem.lifeskills.front_30_slice_looks_the_biggest', 'front 30% slice looks the biggest'))),
                   h('div', { className: 'text-center' },
                     h('div', { className: 'text-[10px] font-bold text-emerald-600 mb-2' }, __alloT('stem.lifeskills.flat_2d', '✅ Flat 2D')),
                     h('div', { style: { display: 'flex', justifyContent: 'center' } }, pie()),
-                    h('div', { className: 'text-[9px] text-slate-500 mt-1' }, __alloT('stem.lifeskills.the_two_35_slices_are_actually_biggest', 'the two 35% slices are actually biggest'))));
+                    h('div', { className: 'text-[10px] text-slate-500 mt-1' }, __alloT('stem.lifeskills.the_two_35_slices_are_actually_biggest', 'the two 35% slices are actually biggest'))));
               }
               return null;
             })(),

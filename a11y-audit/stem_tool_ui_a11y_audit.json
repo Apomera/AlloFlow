@@ -1,23 +1,32 @@
 {
-  "generatedAt": "2026-08-06T01:24:12.127Z",
+  "generatedAt": "2026-08-09T16:48:04.634Z",
   "source": {
     "stemToolFileCount": 137,
-    "registeredToolCount": 140
+    "registeredToolCount": 138
   },
-  "toolCount": 140,
-  "loadErrors": [],
+  "toolCount": 138,
+  "loadErrors": [
+    {
+      "file": "stem_tool_epidemic.js",
+      "error": "Unexpected string"
+    },
+    {
+      "file": "stem_tool_firstresponse.js",
+      "error": "Unexpected token 'else'"
+    }
+  ],
   "renderErrors": [],
   "summary": {
-    "issueCount": 39,
+    "issueCount": 2,
     "errorCount": 0,
-    "warningCount": 21,
-    "noticeCount": 18,
-    "toolsWithIssues": 26,
+    "warningCount": 0,
+    "noticeCount": 2,
+    "toolsWithIssues": 2,
     "toolsWithErrors": 0,
-    "toolsWithWarnings": 8,
-    "toolsWithCanvas": 41,
+    "toolsWithWarnings": 0,
+    "toolsWithCanvas": 38,
     "shellCoverage": {
-      "standardShellTools": 140,
+      "standardShellTools": 138,
       "lightBackgroundTools": [],
       "toolsWithoutStandardShell": []
     },
@@ -28,16 +37,16 @@
         "warningCount": 0,
         "noticeCount": 0
       },
-      "general": {
-        "toolCount": 10,
+      "accessibility": {
+        "toolCount": 1,
         "errorCount": 0,
         "warningCount": 0,
-        "noticeCount": 10
+        "noticeCount": 0
       },
       "math": {
-        "toolCount": 26,
+        "toolCount": 27,
         "errorCount": 0,
-        "warningCount": 1,
+        "warningCount": 0,
         "noticeCount": 1
       },
       "Games": {
@@ -47,13 +56,13 @@
         "noticeCount": 0
       },
       "science": {
-        "toolCount": 57,
+        "toolCount": 58,
         "errorCount": 0,
-        "warningCount": 16,
+        "warningCount": 0,
         "noticeCount": 1
       },
       "technology": {
-        "toolCount": 2,
+        "toolCount": 3,
         "errorCount": 0,
         "warningCount": 0,
         "noticeCount": 0
@@ -64,17 +73,17 @@
         "warningCount": 0,
         "noticeCount": 0
       },
-      "explore": {
-        "toolCount": 4,
+      "engineering": {
+        "toolCount": 3,
         "errorCount": 0,
         "warningCount": 0,
-        "noticeCount": 4
+        "noticeCount": 0
       },
       "creative": {
-        "toolCount": 7,
+        "toolCount": 8,
         "errorCount": 0,
         "warningCount": 0,
-        "noticeCount": 1
+        "noticeCount": 0
       },
       "Literacy": {
         "toolCount": 1,
@@ -89,25 +98,19 @@
         "noticeCount": 0
       },
       "life-skills": {
-        "toolCount": 7,
+        "toolCount": 6,
         "errorCount": 0,
         "warningCount": 0,
         "noticeCount": 0
       },
       "biology": {
-        "toolCount": 2,
-        "errorCount": 0,
-        "warningCount": 1,
-        "noticeCount": 0
-      },
-      "tech": {
-        "toolCount": 1,
+        "toolCount": 5,
         "errorCount": 0,
         "warningCount": 0,
-        "noticeCount": 1
+        "noticeCount": 0
       },
-      "Life Science": {
-        "toolCount": 1,
+      "data": {
+        "toolCount": 2,
         "errorCount": 0,
         "warningCount": 0,
         "noticeCount": 0
@@ -124,13 +127,19 @@
         "warningCount": 0,
         "noticeCount": 0
       },
+      "geology": {
+        "toolCount": 1,
+        "errorCount": 0,
+        "warningCount": 0,
+        "noticeCount": 0
+      },
       "Life Skills": {
         "toolCount": 1,
         "errorCount": 0,
-        "warningCount": 3,
+        "warningCount": 0,
         "noticeCount": 0
       },
-      "data": {
+      "chemistry": {
         "toolCount": 1,
         "errorCount": 0,
         "warningCount": 0,
@@ -165,69 +174,16 @@
         "errorCount": 0,
         "warningCount": 0,
         "noticeCount": 0
+      },
+      "history": {
+        "toolCount": 1,
+        "errorCount": 0,
+        "warningCount": 0,
+        "noticeCount": 0
       }
     }
   },
   "topFindings": [
-    {
-      "code": "canvas-focus",
-      "severity": "warning",
-      "count": 13,
-      "toolCount": 4,
-      "exampleTools": [
-        "beehive",
-        "heatLab",
-        "moonMission",
-        "nuclearLab"
-      ],
-      "recommendation": "Make interactive canvases keyboard-focusable. For static output, use role=img, a meaningful name and description, plus data-a11y-static=true."
-    },
-    {
-      "code": "tiny-text",
-      "severity": "warning",
-      "count": 4,
-      "toolCount": 4,
-      "exampleTools": [
-        "beehive",
-        "dnaLab",
-        "lifeSkills",
-        "probability"
-      ],
-      "recommendation": "Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height."
-    },
-    {
-      "code": "inline-contrast",
-      "severity": "warning",
-      "count": 4,
-      "toolCount": 3,
-      "exampleTools": [
-        "galaxy",
-        "heatLab",
-        "lifeSkills"
-      ],
-      "recommendation": "Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text."
-    },
-    {
-      "code": "metadata",
-      "severity": "notice",
-      "count": 16,
-      "toolCount": 16,
-      "exampleTools": [
-        "accessLens",
-        "archStudio",
-        "circuitShelf",
-        "codingPlayground",
-        "cyberDefense",
-        "dataLab",
-        "dinoLab",
-        "evoLab",
-        "geologyExplorer",
-        "geometryWorld",
-        "moleculeShelf",
-        "nutritionLab"
-      ],
-      "recommendation": "Fill in label, description, category, and aliases so discovery and context labels stay clear."
-    },
     {
       "code": "horizontal-overflow-risk",
       "severity": "notice",
@@ -299,17 +255,22 @@
     {
       "id": "accessLens",
       "label": "Access Lens",
-      "category": "general",
+      "category": "accessibility",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
+      "aliases": [
+        "camera",
+        "photo description",
+        "OCR",
+        "low vision"
+      ],
       "desc": "Point your camera at the world: get a scene description read aloud (built for students who are blind or have low vision), re-read any text in large print, translate signs and handouts into your language, or investigate an object Socratic-style with an AI that asks questions instead of pronouncing answers.",
       "renderedBytes": 5414,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 8,
         "roleButtons": 0,
@@ -322,14 +283,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "accessLens",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry category is missing or generic."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "algebraCAS",
@@ -423,14 +377,14 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 10 body systems with layered anatomical visualization",
-      "renderedBytes": 46543,
+      "renderedBytes": 47607,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 93,
+        "buttons": 96,
         "roleButtons": 0,
         "fields": 1,
         "canvases": 1,
@@ -558,17 +512,22 @@
     {
       "id": "archStudio",
       "label": "Architecture Studio",
-      "category": "explore",
+      "category": "engineering",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
-      "desc": "",
-      "renderedBytes": 26494,
+      "aliases": [
+        "architecture",
+        "3D building",
+        "blocks",
+        "structural geometry"
+      ],
+      "desc": "Build 3D structures with blocks, columns, arches, and ramps. Snap to a grid, measure shapes, and export a model.",
+      "renderedBytes": 27107,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 83,
         "roleButtons": 0,
@@ -581,14 +540,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "archStudio",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry description is missing or too short for catalog/context UI."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "areaPerimeter",
@@ -892,11 +844,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Colony dynamics, nectar flow, and the science of superorganisms",
-      "renderedBytes": 127386,
+      "renderedBytes": 127515,
       "standardShell": true,
-      "issueCount": 2,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 2,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 86,
@@ -907,30 +859,10 @@
         "images": 0,
         "headings": 12,
         "links": 5,
-        "tinyTextClassHits": 105,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "beehive",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas may be interactive but is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div#beehive-canvas-wrap > canvas"
-        },
-        {
-          "toolId": "beehive",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 105,
-          "classes": [
-            "text-[8px]",
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "behaviorLab",
@@ -996,7 +928,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Interactive bird-spotting and species ID for adolescents. Layered habitat scenes with animated birds whose movement signatures double as field marks. Pairs with Cornell Lab's free Merlin Bird ID app for real photos and audio. Maine-relevant without being Maine-only.",
-      "renderedBytes": 144225,
+      "renderedBytes": 144218,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1220,20 +1152,20 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Balance equations, explore reactions, stoichiometry, molecular models & lab safety",
-      "renderedBytes": 8908,
+      "renderedBytes": 9136,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 12,
+        "buttons": 11,
         "roleButtons": 0,
         "fields": 1,
-        "canvases": 1,
+        "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 4,
+        "headings": 3,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -1271,17 +1203,22 @@
     {
       "id": "circuitShelf",
       "label": "Circuit Shelf",
-      "category": "general",
+      "category": "engineering",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
+      "aliases": [
+        "circuits",
+        "CircuitJS",
+        "electronics",
+        "Ohm law"
+      ],
       "desc": "Build and run real electronic circuits in CircuitJS — Paul Falstad’s open-source simulator — wrapped in a Predict → Explore → Explain coach. Pick a challenge, lock in a guess before you wire anything, build it, then let the coach compare what you predicted with what the meters actually read.",
       "renderedBytes": 2318,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 2,
         "roleButtons": 0,
@@ -1294,14 +1231,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "circuitShelf",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry category is missing or generic."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "climateExplorer",
@@ -1365,14 +1295,19 @@
       "category": "creative",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
-      "desc": "",
+      "aliases": [
+        "coding",
+        "block coding",
+        "turtle",
+        "loops"
+      ],
+      "desc": "Learn sequencing, loops, and conditionals by programming a turtle with visual blocks or text code.",
       "renderedBytes": 22885,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 45,
         "roleButtons": 0,
@@ -1385,14 +1320,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "codingPlayground",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry description is missing or too short for catalog/context UI."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "companionPlanting",
@@ -1488,17 +1416,22 @@
     {
       "id": "cyberDefense",
       "label": "Cyber Defense Lab",
-      "category": "tech",
+      "category": "technology",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
-      "desc": "",
+      "aliases": [
+        "cybersecurity",
+        "phishing",
+        "passwords",
+        "digital citizenship"
+      ],
+      "desc": "Practice spotting phishing, making strong passwords, and solving ciphers through digital-citizenship challenges.",
       "renderedBytes": 10999,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 20,
         "roleButtons": 0,
@@ -1511,29 +1444,27 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "cyberDefense",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry description is missing or too short for catalog/context UI."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "dataLab",
       "label": "Data Lab",
-      "category": "general",
+      "category": "data",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
+      "aliases": [
+        "CODAP",
+        "data science",
+        "statistics",
+        "datasets"
+      ],
       "desc": "Real data science in CODAP — the Concord Consortium’s open data workspace — with an AlloFlow Socratic tutor beside it that asks questions about YOUR data instead of giving answers.",
       "renderedBytes": 2145,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 2,
         "roleButtons": 0,
@@ -1546,14 +1477,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "dataLab",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry category is missing or generic."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "dataPlot",
@@ -1641,27 +1565,27 @@
     },
     {
       "id": "diagnosisEligibility",
-      "label": "Diagnosis vs. Eligibility",
+      "label": "Diagnosis, Evaluation & School Eligibility",
       "category": "applied",
       "ready": true,
       "lightBackground": false,
       "aliases": [],
-      "desc": "Why a diagnosis does not equal an IEP — and why a child can qualify with no diagnosis at all. The two-prong federal test, the 13 eligibility categories quoted verbatim from 34 CFR 300.8, worked cases, and what a private evaluation can and cannot do. Never decides eligibility: that is the team's job.",
-      "renderedBytes": 8613,
+      "desc": "Compare clinical diagnosis, IDEA, and Section 504; follow the evaluation path; review source-linked federal definitions and safeguards; explore open-question cases; and build a printable meeting-preparation guide without entering student data. Never decides eligibility, services, or placement.",
+      "renderedBytes": 47778,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 4,
+        "buttons": 13,
         "roleButtons": 0,
-        "fields": 1,
+        "fields": 30,
         "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 5,
-        "links": 0,
+        "headings": 26,
+        "links": 19,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
@@ -1670,17 +1594,22 @@
     {
       "id": "dinoLab",
       "label": "Dino Lab",
-      "category": "explore",
+      "category": "biology",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
-      "desc": "",
+      "aliases": [
+        "dinosaurs",
+        "paleontology",
+        "fossils",
+        "food webs"
+      ],
+      "desc": "Explore dinosaurs across deep time, compare species, dig fossils, build food webs, and connect birds to dinosaurs.",
       "renderedBytes": 430995,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 408,
         "roleButtons": 0,
@@ -1693,14 +1622,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "dinoLab",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry description is missing or too short for catalog/context UI."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "dissection",
@@ -1710,20 +1632,20 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 57516,
+      "renderedBytes": 59367,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 82,
+        "buttons": 83,
         "roleButtons": 0,
         "fields": 11,
         "canvases": 1,
         "svgs": 1,
         "images": 0,
-        "headings": 9,
+        "headings": 10,
         "links": 3,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -1738,36 +1660,25 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Build, replicate, transcribe, translate, mutate, CRISPR-edit, forensics & more.",
-      "renderedBytes": 38926,
+      "renderedBytes": 40139,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 94,
+        "buttons": 97,
         "roleButtons": 0,
         "fields": 1,
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 6,
+        "headings": 7,
         "links": 0,
-        "tinyTextClassHits": 5,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "dnaLab",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 5,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "echoTrainer",
@@ -1861,48 +1772,20 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Model predator-prey dynamics with Lotka–Volterra equations, live canvas, sandbox mode, event injection, quiz & AI tutor.",
-      "renderedBytes": 25410,
+      "renderedBytes": 35369,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 33,
+        "buttons": 44,
         "roleButtons": 0,
-        "fields": 8,
+        "fields": 10,
         "canvases": 1,
         "svgs": 0,
         "images": 0,
-        "headings": 3,
-        "links": 0,
-        "tinyTextClassHits": 0,
-        "fixedWidthRiskCount": 0
-      },
-      "issues": []
-    },
-    {
-      "id": "epidemicSim",
-      "label": "Epidemic Modeling Lab",
-      "category": "Life Science",
-      "ready": true,
-      "lightBackground": false,
-      "aliases": [],
-      "desc": "Simulate disease spread with SIR/SEIR models, vaccination strategies, and outbreak maps.",
-      "renderedBytes": 90893,
-      "standardShell": true,
-      "issueCount": 0,
-      "errorCount": 0,
-      "warningCount": 0,
-      "noticeCount": 0,
-      "metrics": {
-        "buttons": 21,
-        "roleButtons": 0,
-        "fields": 4,
-        "canvases": 1,
-        "svgs": 1,
-        "images": 0,
-        "headings": 3,
+        "headings": 4,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -1912,17 +1795,22 @@
     {
       "id": "evoLab",
       "label": "EvoLab — Evolution",
-      "category": "general",
+      "category": "biology",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
+      "aliases": [
+        "evolution",
+        "natural selection",
+        "Darwin",
+        "Hardy-Weinberg"
+      ],
       "desc": "Evolution and natural selection — three interactive simulators (Selection Sandbox, Galápagos Beak Lab, Phylogenetic Tree Builder) plus four quick labs covering Hardy-Weinberg, genetic drift, common ancestry, and the most common evolution misconceptions. Real-world relevance: includes Maine wildlife examples (snowshoe hare coat color, Maine finches, moose tick mortality).",
       "renderedBytes": 38430,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 28,
         "roleButtons": 0,
@@ -1935,14 +1823,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "evoLab",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry category is missing or generic."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "fireEcology",
@@ -1952,7 +1833,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 25936,
+      "renderedBytes": 25957,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1967,34 +1848,6 @@
         "images": 0,
         "headings": 4,
         "links": 0,
-        "tinyTextClassHits": 0,
-        "fixedWidthRiskCount": 0
-      },
-      "issues": []
-    },
-    {
-      "id": "firstResponse",
-      "label": "First Response Lab",
-      "category": "life-skills",
-      "ready": true,
-      "lightBackground": false,
-      "aliases": [],
-      "desc": "Recognize and respond to medical emergencies. Hands-only CPR rhythm trainer, AED walkthrough, Stop the Bleed, choking, seizure, stroke, anaphylaxis. Disability-affirming peer response. Maine 911 + text-to-911. Educational only — get certified at redcross.org or heart.org.",
-      "renderedBytes": 2085,
-      "standardShell": true,
-      "issueCount": 0,
-      "errorCount": 0,
-      "warningCount": 0,
-      "noticeCount": 0,
-      "metrics": {
-        "buttons": 1,
-        "roleButtons": 0,
-        "fields": 0,
-        "canvases": 0,
-        "svgs": 0,
-        "images": 0,
-        "headings": 2,
-        "links": 3,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
@@ -2206,9 +2059,9 @@
       "desc": "Explore galaxy types, stellar lifecycles, star classification, and metallicity in an interactive 3D Milky Way simulation.",
       "renderedBytes": 44961,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 57,
@@ -2222,20 +2075,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "galaxy",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 34,
-          "selector": "div#galaxy-panel-view > button.flex.min-h-[44px] > span.rounded-full.px-2:nth-of-type(2)",
-          "ratio": 4.47,
-          "color": "#ffffff",
-          "background": "#6366f1",
-          "text": "On"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "gameStudio",
@@ -2324,37 +2164,35 @@
     {
       "id": "geologyExplorer",
       "label": "Geology Explorer",
-      "category": "explore",
+      "category": "geology",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
-      "desc": "",
-      "renderedBytes": 20015,
+      "aliases": [
+        "geology",
+        "rocks",
+        "minerals",
+        "crust layers"
+      ],
+      "desc": "Excavate a 3D crust cross-section, identify rocks, read layers, and find the pluton that cuts through them.",
+      "renderedBytes": 23588,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
-        "buttons": 28,
+        "buttons": 32,
         "roleButtons": 0,
         "fields": 1,
         "canvases": 0,
         "svgs": 1,
         "images": 0,
-        "headings": 3,
+        "headings": 4,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "geologyExplorer",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry description is missing or too short for catalog/context UI."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "geometryProver",
@@ -2387,17 +2225,22 @@
     {
       "id": "geometryWorld",
       "label": "Geometry World",
-      "category": "explore",
+      "category": "math",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
-      "desc": "",
-      "renderedBytes": 1033,
+      "aliases": [
+        "geometry",
+        "3D shapes",
+        "spatial reasoning",
+        "shape puzzles"
+      ],
+      "desc": "Explore a 3D geometry world where shape questions unlock areas, NPC conversations, and construction puzzles.",
+      "renderedBytes": 1011,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 0,
         "roleButtons": 0,
@@ -2410,14 +2253,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "geometryWorld",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry description is missing or too short for catalog/context UI."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "gisStudio",
@@ -2466,7 +2302,7 @@
         "map projections"
       ],
       "desc": "Build, plan, compare, compose, sequence, review, and export accessible GIS and remote-sensing investigations.",
-      "renderedBytes": 24000,
+      "renderedBytes": 24022,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2542,11 +2378,11 @@
         "second law"
       ],
       "desc": "Conduction, convection and radiation on a real heat-equation model; insulation R-values; calorimetry mixing; the water heating curve with its two latent plateaus; and why no heat engine reaches 100 percent.",
-      "renderedBytes": 67651,
+      "renderedBytes": 68987,
       "standardShell": true,
-      "issueCount": 4,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 4,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 105,
@@ -2555,49 +2391,12 @@
         "canvases": 4,
         "svgs": 0,
         "images": 0,
-        "headings": 2,
+        "headings": 16,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "heatLab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas may be interactive but is not focusable in initial markup.",
-          "index": 1,
-          "selector": "div#htsec-insulation > div.mt-2.rounded-lg:nth-of-type(4) > canvas"
-        },
-        {
-          "toolId": "heatLab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas may be interactive but is not focusable in initial markup.",
-          "index": 2,
-          "selector": "div#htsec-heatingcurve > div.rounded-lg.overflow-hidden:nth-of-type(1) > canvas"
-        },
-        {
-          "toolId": "heatLab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas may be interactive but is not focusable in initial markup.",
-          "index": 3,
-          "selector": "div#htsec-entropy > div.rounded-lg.overflow-hidden:nth-of-type(1) > canvas"
-        },
-        {
-          "toolId": "heatLab",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 179,
-          "selector": "div#htsec-mixing > div.grid.grid-cols-1:nth-of-type(1) > div.rounded-lg.p-2:nth-of-type(2) > div.flex.flex-wrap:nth-of-type(1) > button.min-h-11.px-3:nth-of-type(6)",
-          "ratio": 3.92,
-          "color": "#0b1020",
-          "background": "#71717a",
-          "text": "Iron"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "inequality",
@@ -2719,11 +2518,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Essential knowledge for adulting — taxes, data literacy, contracts, records, transportation, job readiness, resume building, portfolio proof organization, interview practice, communication, time management, dental care, body care, sleep routines, medication labels, appointments, home safety, digital safety, food confidence, car care, laundry science, home systems, and critical thinking.",
-      "renderedBytes": 62616,
+      "renderedBytes": 62628,
       "standardShell": true,
-      "issueCount": 3,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 3,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 65,
@@ -2734,45 +2533,10 @@
         "images": 0,
         "headings": 6,
         "links": 0,
-        "tinyTextClassHits": 12,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "lifeSkills",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 7,
-          "selector": "div.space-y-4:nth-of-type(4) > div.bg-white/70.backdrop-blur-md:nth-of-type(1) > div.grid.grid-cols-3:nth-of-type(3) > div.min-w-0.text-center:nth-of-type(1) > span.mx-auto.flex:nth-of-type(1)",
-          "ratio": 4.41,
-          "color": "#dc2626",
-          "background": "#f1f5f9",
-          "text": "🛡️"
-        },
-        {
-          "toolId": "lifeSkills",
-          "severity": "warning",
-          "code": "inline-contrast",
-          "message": "Inline foreground/background contrast is below 4.5:1.",
-          "index": 9,
-          "selector": "div.space-y-4:nth-of-type(4) > div.bg-white/70.backdrop-blur-md:nth-of-type(1) > div.grid.grid-cols-3:nth-of-type(3) > div.min-w-0.text-center:nth-of-type(3) > span.mx-auto.flex:nth-of-type(1)",
-          "ratio": 3.25,
-          "color": "#ea580c",
-          "background": "#f1f5f9",
-          "text": "🍳"
-        },
-        {
-          "toolId": "lifeSkills",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 12,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "llmLiteracy",
@@ -2921,21 +2685,21 @@
       "ready": true,
       "lightBackground": false,
       "aliases": [],
-      "desc": "V-formation aerodynamics, wind currents, bird migration routes & flight physics",
-      "renderedBytes": 17090,
+      "desc": "3D migration flight, Monarch journeys, V-formation aerodynamics, wind currents & flyways",
+      "renderedBytes": 8914,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 10,
-        "roleButtons": 6,
-        "fields": 6,
-        "canvases": 1,
+        "buttons": 13,
+        "roleButtons": 0,
+        "fields": 4,
+        "canvases": 0,
         "svgs": 0,
         "images": 0,
-        "headings": 8,
+        "headings": 4,
         "links": 0,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
@@ -2950,7 +2714,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore chemistry with a 3D molecule viewer, compound creator, bond builder, 118-element periodic table, reaction simulator, and orbital clouds.",
-      "renderedBytes": 35996,
+      "renderedBytes": 36003,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2973,17 +2737,22 @@
     {
       "id": "moleculeShelf",
       "label": "Molecule Shelf",
-      "category": "general",
+      "category": "chemistry",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
+      "aliases": [
+        "molecules",
+        "3D structures",
+        "Mol*",
+        "Protein Data Bank"
+      ],
       "desc": "Explore real 3D molecular structures in Mol* — the viewer used by the world’s Protein Data Bank — from crambin and B-DNA to hemoglobin, an antibody, and the coronavirus spike. Rotate, zoom, and switch representations, with a Notice → Wonder observation coach beside it.",
       "renderedBytes": 2247,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 2,
         "roleButtons": 0,
@@ -2996,14 +2765,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "moleculeShelf",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry category is missing or generic."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "moneyMath",
@@ -3041,11 +2803,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.",
-      "renderedBytes": 14287,
+      "renderedBytes": 14381,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 8,
@@ -3059,16 +2821,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "moonMission",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas may be interactive but is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div.space-y-3:nth-of-type(3) > div.bg-gradient-to-br.from-slate-900 > div.mb-3:nth-of-type(3) > div.relative.rounded-lg > canvas"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "multtable",
@@ -3227,11 +2980,11 @@
         "exclusion zone"
       ],
       "desc": "Half-life and decay you can run, what actually stops alpha, beta and gamma, how fission and fusion work, radiation doses on a scale you can read, a simulated Geiger counter that shows why one short count lies, the three accidents in honest numbers, what to do with the waste, and where small modular reactors really stand.",
-      "renderedBytes": 150836,
+      "renderedBytes": 159071,
       "standardShell": true,
-      "issueCount": 8,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 8,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 196,
@@ -3241,76 +2994,11 @@
         "svgs": 0,
         "images": 0,
         "headings": 22,
-        "links": 0,
+        "links": 15,
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "nuclearLab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas may be interactive but is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div#nksec-halflife > div.rounded-lg.overflow-hidden:nth-of-type(2) > canvas"
-        },
-        {
-          "toolId": "nuclearLab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas may be interactive but is not focusable in initial markup.",
-          "index": 1,
-          "selector": "div#nksec-chain > div.rounded-lg.overflow-hidden:nth-of-type(1) > canvas"
-        },
-        {
-          "toolId": "nuclearLab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas may be interactive but is not focusable in initial markup.",
-          "index": 2,
-          "selector": "div#nksec-binding > div.rounded-lg.overflow-hidden:nth-of-type(1) > canvas"
-        },
-        {
-          "toolId": "nuclearLab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas may be interactive but is not focusable in initial markup.",
-          "index": 3,
-          "selector": "div#nksec-biohalf > div.rounded-lg.overflow-hidden:nth-of-type(3) > canvas"
-        },
-        {
-          "toolId": "nuclearLab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas may be interactive but is not focusable in initial markup.",
-          "index": 4,
-          "selector": "div#nksec-detect > div.rounded-lg.overflow-hidden:nth-of-type(6) > canvas"
-        },
-        {
-          "toolId": "nuclearLab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas may be interactive but is not focusable in initial markup.",
-          "index": 5,
-          "selector": "div#nksec-protect > div.rounded-lg.overflow-hidden:nth-of-type(5) > canvas"
-        },
-        {
-          "toolId": "nuclearLab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas may be interactive but is not focusable in initial markup.",
-          "index": 6,
-          "selector": "div#nksec-shelter > div.rounded-lg.overflow-hidden:nth-of-type(5) > canvas"
-        },
-        {
-          "toolId": "nuclearLab",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas may be interactive but is not focusable in initial markup.",
-          "index": 7,
-          "selector": "div#nksec-operate > div.grid.grid-cols-1:nth-of-type(1) > div.rounded-xl.overflow-hidden:nth-of-type(2) > canvas"
-        }
-      ]
+      "issues": []
     },
     {
       "id": "numberline",
@@ -3343,17 +3031,22 @@
     {
       "id": "nutritionLab",
       "label": "NutritionLab — Nutrition Science",
-      "category": "general",
+      "category": "biology",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
+      "aliases": [
+        "nutrition",
+        "food labels",
+        "macros",
+        "micronutrients"
+      ],
       "desc": "Adolescent-safe nutrition science: macronutrients, micronutrients, food labels, metabolism, digestion, common myths, food + mental health, eating-disorder awareness, Maine food reality, and registered-dietitian career pathways. Frame is physiology-first (\"what your body uses food for\"), not weight-loss. Sources cited inline: USDA FoodData Central, NIH ODS, Harvard T.H. Chan, AAP, NEDA.",
       "renderedBytes": 24124,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 19,
         "roleButtons": 0,
@@ -3366,14 +3059,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "nutritionLab",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry category is missing or generic."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "opticsLab",
@@ -3523,7 +3209,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Companion-animal SCIENCE: physiology, ethology, nutrition, genetics, domestication, zoonoses, service animals. Cross-species pet training that assumes BehaviorLab's operant theory and applies it to real homes. UDL-aligned via Service & Support Animals coverage.",
-      "renderedBytes": 34094,
+      "renderedBytes": 45388,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3534,7 +3220,7 @@
         "roleButtons": 0,
         "fields": 7,
         "canvases": 0,
-        "svgs": 1,
+        "svgs": 2,
         "images": 0,
         "headings": 4,
         "links": 0,
@@ -3607,7 +3293,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 18636,
+      "renderedBytes": 18638,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3663,11 +3349,11 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Coin flips, dice, spinners, real sports stats & custom experiments.",
-      "renderedBytes": 29993,
+      "renderedBytes": 29997,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
-      "warningCount": 1,
+      "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
         "buttons": 39,
@@ -3678,21 +3364,10 @@
         "images": 0,
         "headings": 4,
         "links": 0,
-        "tinyTextClassHits": 4,
+        "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "probability",
-          "severity": "warning",
-          "code": "tiny-text",
-          "message": "Tool uses persistent 8px/9px text utility classes.",
-          "count": 4,
-          "classes": [
-            "text-[9px]"
-          ]
-        }
-      ]
+      "issues": []
     },
     {
       "id": "protractor",
@@ -3758,7 +3433,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Three.js stoop simulator + deep science of raptor hunt mechanics: talon grip force, vision, flight physics, silent flight, and the DDT-era recovery story. 8 species roster from peregrine to harpy.",
-      "renderedBytes": 25680,
+      "renderedBytes": 25377,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3842,7 +3517,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Pseudo-3D driving simulator + US permit test + fuel efficiency physics. Maine state focus.",
-      "renderedBytes": 40962,
+      "renderedBytes": 40970,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3870,7 +3545,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Earth Science: the rock cycle as a branching network, not a one-way circle. Animated cross-section diagram with all six pathways clickable, and a transformation machine that takes a named specimen and an agent of change and returns the specific named product with its real temperatures, depths, timescale and field evidence — shale to slate, limestone to marble, granite to gneiss.",
-      "renderedBytes": 33648,
+      "renderedBytes": 33636,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3898,7 +3573,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Earth Science: identify 20 rock specimens and 18 minerals by what you can actually see. Interactive landscape cross-section, textured specimen art, a no-AI Visual ID drill, AI Mystery Rock clues, and the real hand-sample tests — Mohs scratch, streak plate, acid fizz — plus a rotatable 3D view of each mineral’s crystal structure and a weathering-climate investigation.",
-      "renderedBytes": 6503,
+      "renderedBytes": 6500,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -3954,14 +3629,14 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore band gaps, doping, junctions, transistors, gates, I-V curves, wafer fab, LEDs, solar cells, quantum wells, memory & amplifiers.",
-      "renderedBytes": 17906,
+      "renderedBytes": 19748,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
       "noticeCount": 0,
       "metrics": {
-        "buttons": 15,
+        "buttons": 17,
         "roleButtons": 3,
         "fields": 4,
         "canvases": 1,
@@ -3977,17 +3652,22 @@
     {
       "id": "simShelf",
       "label": "Sim Shelf",
-      "category": "general",
+      "category": "science",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
+      "aliases": [
+        "PhET",
+        "simulations",
+        "physics",
+        "predict explore explain"
+      ],
       "desc": "A shelf of PhET simulations — the most researched sims in education — wrapped in a Predict → Explore → Explain coach. Lock in a guess before you touch anything, experiment freely, then let the coach compare what you predicted with what you saw.",
       "renderedBytes": 2225,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 2,
         "roleButtons": 0,
@@ -4000,14 +3680,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "simShelf",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry category is missing or generic."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "singing",
@@ -4045,7 +3718,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Skate / BMX physics: kickflips, halfpipe pumps, and gap jumps. Same physics that lands a 720.",
-      "renderedBytes": 70737,
+      "renderedBytes": 70684,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4185,7 +3858,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Inferential statistics: t-tests, ANOVA, correlation, regression, chi-square, non-parametric, power analysis. AP Psych / AP Bio focus. Transparent computation, plain-English results, APA write-ups, AI interpretation grader.",
-      "renderedBytes": 17755,
+      "renderedBytes": 18113,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4269,7 +3942,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Sports physics: how spin, speed, and release point shape the ball's path",
-      "renderedBytes": 53519,
+      "renderedBytes": 53526,
       "standardShell": true,
       "issueCount": 1,
       "errorCount": 0,
@@ -4334,17 +4007,22 @@
     {
       "id": "timelineStudio",
       "label": "Timeline Studio",
-      "category": "general",
+      "category": "history",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
+      "aliases": [
+        "timeline",
+        "TimelineJS",
+        "history",
+        "dated events"
+      ],
       "desc": "Turn any reading — history, a biography, a science-discovery passage — into an interactive TimelineJS timeline. Paste or drop in text and the AI pulls out the dated events; scroll, zoom, and step through them. You can also build a timeline event by event yourself.",
       "renderedBytes": 2892,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 2,
         "roleButtons": 0,
@@ -4357,14 +4035,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "timelineStudio",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry category is missing or generic."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "titrationLab",
@@ -4402,7 +4073,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Keyboarding designed for students with disabilities — accommodations are the product, not a menu. AI-personalized passages, IEP-ready progress, no ads or racing.",
-      "renderedBytes": 39975,
+      "renderedBytes": 39977,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4486,7 +4157,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Build 3D solids, solve volume challenges, and measure irregular objects with water displacement.",
-      "renderedBytes": 39839,
+      "renderedBytes": 41655,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4514,7 +4185,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Live water cycle canvas plus Journey Mode: ride one droplet through evaporation, condensation, precipitation, collection, transpiration, and infiltration with real choices along the way.",
-      "renderedBytes": 34125,
+      "renderedBytes": 34668,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -4599,17 +4270,22 @@
     {
       "id": "weldLab",
       "label": "WeldLab — Welding & Metal Joining",
-      "category": "general",
+      "category": "engineering",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
+      "aliases": [
+        "welding",
+        "MIG TIG",
+        "weld defects",
+        "skilled trades"
+      ],
       "desc": "Vocational welding simulator covering MIG / TIG / Stick / Oxy-Fuel processes, heat-input physics, weld bead geometry, defect identification, AWS welding symbols, OSHA-aligned PPE, and Maine career pathways (Bath Iron Works, EMCC welding program, AWS certification ladder). Real procedural and conceptual content for skilled-trades exploration — not a watered-down toy.",
       "renderedBytes": 34438,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 26,
         "roleButtons": 0,
@@ -4622,14 +4298,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "weldLab",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry category is missing or generic."
-        }
-      ]
+      "issues": []
     },
     {
       "id": "worldBuilder",
@@ -4662,17 +4331,22 @@
     {
       "id": "zoomGallery",
       "label": "Zoom Gallery",
-      "category": "general",
+      "category": "creative",
       "ready": true,
       "lightBackground": false,
-      "aliases": [],
+      "aliases": [
+        "deep zoom",
+        "OpenSeadragon",
+        "NASA images",
+        "Smithsonian"
+      ],
       "desc": "Zoom deep into real, openly-licensed images — Smithsonian Open Access artifacts (CC0) and famous NASA photographs (public domain) — in OpenSeadragon, the viewer museums use. Magnify to the pixel: the Pillars of Creation, an Apollo bootprint, the Apollo 11 capsule, a coral fan. A Notice → Wonder coach sits beside the viewer.",
       "renderedBytes": 2370,
       "standardShell": true,
-      "issueCount": 1,
+      "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
-      "noticeCount": 1,
+      "noticeCount": 0,
       "metrics": {
         "buttons": 2,
         "roleButtons": 0,
@@ -4685,14 +4359,7 @@
         "tinyTextClassHits": 0,
         "fixedWidthRiskCount": 0
       },
-      "issues": [
-        {
-          "toolId": "zoomGallery",
-          "severity": "notice",
-          "code": "metadata",
-          "message": "Tool registry category is missing or generic."
-        }
-      ]
+      "issues": []
     }
   ]
 }

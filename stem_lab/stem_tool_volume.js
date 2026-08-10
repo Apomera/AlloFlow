@@ -3360,16 +3360,32 @@ window.StemLab = window.StemLab || {
           className: 'space-y-3 rounded-2xl'
         },
           h('style', null,
-            '#volume-3d-workspace:fullscreen,#volume-3d-workspace:-webkit-full-screen{' +
+            '#volume-3d-workspace:fullscreen,#volume-3d-workspace:-webkit-full-screen,' +
+            '#volume-3d-workspace[data-allo-fullscreen-active="true"]{' +
               'box-sizing:border-box;display:flex;flex-direction:column;gap:12px;width:100vw;height:100vh;' +
-              'padding:clamp(12px,2vw,24px);overflow:auto;background:#020617}' +
-            '#volume-3d-workspace:fullscreen [data-volume-dimension-controls="true"],' +
-            '#volume-3d-workspace:-webkit-full-screen [data-volume-dimension-controls="true"]{flex:0 0 auto;margin:0}' +
+              'padding:clamp(10px,1.5vw,20px);overflow:hidden;background:#020617}' +
             '#volume-3d-workspace:fullscreen #volume-3d-viewport,' +
-            '#volume-3d-workspace:-webkit-full-screen #volume-3d-viewport{' +
-              'flex:1 1 auto;min-height:min(58vh,640px)!important;border-radius:16px}'
+            '#volume-3d-workspace:-webkit-full-screen #volume-3d-viewport,' +
+            '#volume-3d-workspace[data-allo-fullscreen-active="true"] #volume-3d-viewport{' +
+              'order:1;flex:1 1 0;height:auto!important;min-height:0!important;border-radius:16px}' +
+            '#volume-3d-workspace:fullscreen [data-volume-dimension-controls="true"],' +
+            '#volume-3d-workspace:-webkit-full-screen [data-volume-dimension-controls="true"],' +
+            '#volume-3d-workspace[data-allo-fullscreen-active="true"] [data-volume-dimension-controls="true"]{' +
+              'order:2;flex:0 0 auto;max-height:min(32vh,180px);margin:0;overflow:auto;padding:8px!important;' +
+              'border-color:#6ee7b7;background:#f8fafc}' +
+            '#volume-3d-workspace:fullscreen [data-volume-dimension-controls="true"]>div,' +
+            '#volume-3d-workspace:-webkit-full-screen [data-volume-dimension-controls="true"]>div,' +
+            '#volume-3d-workspace[data-allo-fullscreen-active="true"] [data-volume-dimension-controls="true"]>div{' +
+              'grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important}' +
+            '#volume-3d-workspace:fullscreen [data-volume-dimension-controls="true"]>div>div,' +
+            '#volume-3d-workspace:-webkit-full-screen [data-volume-dimension-controls="true"]>div>div,' +
+            '#volume-3d-workspace[data-allo-fullscreen-active="true"] [data-volume-dimension-controls="true"]>div>div{padding:8px!important}' +
+            '@media(max-width:640px){#volume-3d-workspace:fullscreen [data-volume-dimension-controls="true"]>div,' +
+              '#volume-3d-workspace:-webkit-full-screen [data-volume-dimension-controls="true"]>div,' +
+              '#volume-3d-workspace[data-allo-fullscreen-active="true"] [data-volume-dimension-controls="true"]>div{grid-template-columns:1fr!important}' +
+              '#volume-3d-workspace:fullscreen [data-volume-dimension-controls="true"],#volume-3d-workspace:-webkit-full-screen [data-volume-dimension-controls="true"],' +
+              '#volume-3d-workspace[data-allo-fullscreen-active="true"] [data-volume-dimension-controls="true"]{max-height:42vh}}'
           ),
-          renderDimensionSliders(),
           h('div', {
           id: 'volume-3d-viewport',
           className: 'relative bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl border-2 border-emerald-300/30 flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing select-none focus:outline-none focus:ring-2 focus:ring-emerald-400',
@@ -3506,7 +3522,8 @@ window.StemLab = window.StemLab || {
             position: 'relative', width: fw+'px', height: fh+'px',
             visibility: glLive ? 'hidden' : 'visible'
           }
-          }, cubes))
+          }, cubes)),
+          renderDimensionSliders()
         ),
 
         // Layer slider (slider mode)

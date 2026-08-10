@@ -23,6 +23,7 @@ var CheckCircle2 = _lazyIcon('CheckCircle2');
 var ChevronDown = _lazyIcon('ChevronDown');
 var ChevronUp = _lazyIcon('ChevronUp');
 var GripVertical = _lazyIcon('GripVertical');
+var Download = _lazyIcon('Download');
 var Lock = _lazyIcon('Lock');
 var Pencil = _lazyIcon('Pencil');
 var Plus = _lazyIcon('Plus');
@@ -147,7 +148,7 @@ const GoldenThreadPanel = ({
         concept: c
       }) || 'Remove concept ' + c,
       className: "ml-1 text-amber-600 hover:text-red-500 font-bold leading-none"
-    }, "\xD7"));
+    }, "×"));
   }), isEditing && /*#__PURE__*/React.createElement("span", {
     className: "inline-flex items-center gap-1"
   }, /*#__PURE__*/React.createElement("input", {
@@ -181,7 +182,7 @@ const GoldenThreadPanel = ({
         term: term
       }) || 'Remove term ' + term,
       className: "ml-1 text-indigo-600 hover:text-red-500 font-bold leading-none"
-    }, "\xD7"));
+    }, "×"));
   }), isEditing && /*#__PURE__*/React.createElement("span", {
     className: "inline-flex items-center gap-1"
   }, /*#__PURE__*/React.createElement("input", {
@@ -208,6 +209,7 @@ const InteractiveBlueprintCard = React.memo(({
   isRunning,
   onStopRun,
   onRebuildStep,
+  onDownloadDiagnostics,
   onPreviewStep,
   onSaveTemplate,
   onUpdate,
@@ -426,7 +428,19 @@ const InteractiveBlueprintCard = React.memo(({
     className: "font-bold text-indigo-900 text-sm"
   }, t('blueprint.header'), " ", isEditing ? `(${t('common.edit')})` : ""), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600"
-  }, isEditing ? t('blueprint.drag_instruction') + ' ' + (t('blueprint.keyboard_reorder_instruction') || 'Use Move up and Move down to reorder without dragging.') : t('blueprint.review_instruction')))), /*#__PURE__*/React.createElement("button", {
+  }, isEditing ? t('blueprint.drag_instruction') + ' ' + (t('blueprint.keyboard_reorder_instruction') || 'Use Move up and Move down to reorder without dragging.') : t('blueprint.review_instruction')))), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-1.5"
+  }, run && typeof onDownloadDiagnostics === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-testid": "bp-download-diagnostics",
+    onClick: onDownloadDiagnostics,
+    className: "p-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500",
+    title: "Download a sanitized Blueprint diagnostic report",
+    "aria-label": "Download Blueprint diagnostic report"
+  }, /*#__PURE__*/React.createElement(Download, {
+    size: 14,
+    "aria-hidden": "true"
+  })), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "blueprint_edit_toggle_btn",
     "aria-label": isEditing ? t('blueprint.done_editing') : t('blueprint.edit_plan'),
@@ -438,7 +452,12 @@ const InteractiveBlueprintCard = React.memo(({
     size: 14
   }) : /*#__PURE__*/React.createElement(Pencil, {
     size: 14
-  }), isEditing ? t('blueprint.done_editing') : t('blueprint.edit_plan'))), /*#__PURE__*/React.createElement(GoldenThreadPanel, {
+  }), isEditing ? t('blueprint.done_editing') : t('blueprint.edit_plan')))), run?.persistenceWarning && /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    className: "mb-3 rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-950"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-bold"
+  }, "Saved-run warning:"), " ", run.persistenceWarning), /*#__PURE__*/React.createElement(GoldenThreadPanel, {
     config: config,
     isEditing: isEditing,
     onUpdate: onUpdate
@@ -771,7 +790,7 @@ const InteractiveBlueprintCard = React.memo(({
       className: "font-bold"
     }, getToolLabel(it.type)), /*#__PURE__*/React.createElement("span", {
       className: keep ? 'text-slate-700' : 'text-slate-500 line-through'
-    }, " \u2014 \"", it.directive, "\"")));
+    }, " — \"", it.directive, "\"")));
   })), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
   }, /*#__PURE__*/React.createElement("button", {

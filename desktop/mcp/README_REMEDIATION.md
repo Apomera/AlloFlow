@@ -259,10 +259,9 @@ the connector for best results.
 `dataHandling` tier -> `pdf_remediate_start` -> poll `remediation_job_status` every 30-60 s
 -> `remediation_job_result`. The Gemini key is optional for every tool named in
 `keylessToolNames`; do not route those requests away merely because `fullAiPipelineReady` is
-false. Job records persist
-locally for 30 days and survive a server restart; a job that was actively running returns as
-`interrupted` because its browser process cannot survive the restart. See **Jobs survive a
-restart** below.
+false. Job records persist locally for 30 days and survive a server restart. Schema-3 queued
+and running jobs are automatically requeued after their input, options, engine, journal, and
+checkpoint compatibility are validated. See **Jobs survive a restart** below.
 
 The result carries AlloFlow's honesty surfaces verbatim: the distribution verdict
 (ready / cautions / review-before-handing-out), before/after scores with their source,
@@ -343,15 +342,18 @@ Job records persist to `~/.alloflow-mcp/jobs` (override with `ALLOFLOW_MCP_STATE
 reloaded when the server starts, so a client restart or a sleeping laptop no longer erases the
 bookkeeping for a multi-hour batch. Records are kept 30 days.
 
-A job the previous process was still running comes back as **`interrupted`**, not `running` and
-not `failed`. It cannot be resumed, because the browser context died with that process, but it was
-not a failure either and its outputs are on disk. `remediation_job_status` says so and names the
-way forward: re-run the same batch with `skip_existing` (the default) and it picks up where it
-left off without re-spending quota.
+Schema-3 queued and running jobs are requeued in their original FIFO order. A running
+single-file remediation resumes from its last validated extraction/accepted-round checkpoint;
+batches reuse digest-bound per-file journal rows and verified completion manifests. A manifest
+is accepted only when its source/options/engine identity and every artifact hash match.
 
-Persistence is best-effort. On a read-only or full disk the connector degrades to the old
-in-memory behaviour rather than failing a run, and `remediation_capabilities` reports
-`jobs.durable: false` so you can see that it did.
+**`interrupted`** now means the stored state was legacy, incomplete, corrupt, or
+compatibility-unsafe. AlloFlow stops that job instead of guessing against a changed input or
+engine. Verified files already published remain on disk.
+
+Durable acceptance and every checkpoint/file-boundary commit are fail-closed. If the state
+directory is read-only or full, a new job or durability boundary fails explicitly rather than
+claiming restart safety that was not actually committed.
 
 ## Restricting where it can read and write
 

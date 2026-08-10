@@ -90,8 +90,9 @@ describe('AdminHubPanel', () => {
     clickText(c, 'UDL Walkthrough');
     clickText(c, 'Disproportionality Analyzer');
     clickText(c, 'SpEd Timelines');
+    clickText(c, 'Diagnosis, Evaluation & School Eligibility');
     clickText(c, 'Meeting Documentation');
-    expect(opened).toEqual(['mtss', 'announcements', 'walkthrough', 'dispro', 'timelines', 'meetings']);
+    expect(opened).toEqual(['mtss', 'announcements', 'walkthrough', 'dispro', 'timelines', 'diagnosisEligibility', 'meetings']);
   });
 });
 
@@ -234,13 +235,16 @@ describe('SpedTimelinesPanel', () => {
       { id: 'c1', code: 'JD', type: 'annual', provider: 'AP', keyDate: '2025-09-01', dueDate: '2026-07-01', completedAt: null },
       { id: 'c2', code: 'MR', type: 'initial_eval', provider: 'JB', keyDate: '2026-07-20', dueDate: '2099-12-31', completedAt: null },
     ]));
-    const c = mount(Mods.SpedTimelines.SpedTimelinesPanel, baseProps());
+    const opened = [];
+    const c = mount(Mods.SpedTimelines.SpedTimelinesPanel, { ...baseProps(), onOpenEligibility: (section) => opened.push(section) });
     expect(c.textContent).toContain('SpEd Timelines');
     expect(c.textContent).toContain('Open timelines, most urgent first');
     // Overdue case listed before the far-future one.
     const rows = Array.from(c.querySelectorAll('tbody th')).map((th) => th.textContent);
     expect(rows[0]).toBe('JD');
     expect(c.textContent).toContain('Caseload by provider');
+    clickText(c, 'Review evaluation, eligibility & safeguards');
+    expect(opened).toEqual(['elig-documents-title']);
     clickText(c, 'Timelines');
     expect(c.textContent).toContain('Add a timeline');
     const box = Array.from(c.querySelectorAll('input[type="checkbox"]')).find((b) => (b.getAttribute('aria-label') || '').includes('JD'));
@@ -352,8 +356,11 @@ describe('MeetingDocsPanel', () => {
 
   it('walks template pick -> input -> manual review -> save, then Meetings and Actions', () => {
     seed();
-    const c = mount(Mods.MeetingDocs.MeetingDocsPanel, { ...baseProps(), callGemini: null });
+    const opened = [];
+    const c = mount(Mods.MeetingDocs.MeetingDocsPanel, { ...baseProps(), callGemini: null, onOpenEligibility: (section) => opened.push(section) });
     expect(c.textContent).toContain('Pick a format');
+    clickText(c, 'Open the meeting-preparation guide');
+    expect(opened).toEqual(['elig-prep-title']);
     clickText(c, 'Student Support Team (SST)');
     expect(c.textContent).toContain('Notes or transcript');
     expect(c.textContent).toContain('Names to mask');

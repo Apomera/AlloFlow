@@ -4,7 +4,7 @@
     return;
   }
 
-  // symbol_studio_module.js — AlloFlow Visual Supports Studio
+  // symbol_studio_module.js — AlloFlow Symbol Studio
   // AI-powered visual communication toolkit: symbols, boards, schedules, social stories
   // Leverages Imagen + image-to-image editing for unlimited personalized PCS-style content
   // Version: 2.0.0 (Mar 2026)
@@ -260,6 +260,11 @@
   var STORAGE_BOOKS = 'alloActivitySets';
   var STORAGE_USAGE = 'alloAACUsage';
   var STORAGE_FAMILIARITY = 'alloSymbolFamiliarity';
+  var STORAGE_BANK_SCHEMA = 'alloSymbolBankSchemaVersion';
+  var SYMBOL_BANK_SCHEMA_VERSION = 1;
+  var STORAGE_PACK_SCHEMA = 'alloVisualPackSchemaVersion';
+  var VISUAL_PACK_SCHEMA_VERSION = 1;
+  var SYMBOL_SPEECH_NAMESPACE = 'symbol_studio_audio_v1';
   var MAX_PROFILES = 8;
 
   // Codename system — privacy-safe student identifiers (Adjective + Animal)
@@ -284,12 +289,12 @@
   var CAT_BORDER = { noun: '#ca8a04', verb: '#16a34a', adjective: '#1d4ed8', other: '#6b7280' };
 
   var TABS = [
-    { id: 'symbols', icon: '🎨', label: 'Symbols' },
+    { id: 'symbols', icon: '🎨', label: 'Symbol Bank' },
     { id: 'board', icon: '📋', label: 'Board Builder' },
-    { id: 'schedule', icon: '📅', label: 'Visual Schedule' },
+    { id: 'schedule', icon: '📅', label: 'Sequences' },
     { id: 'stories', icon: '📖', label: 'Social Stories' },
     { id: 'quickboards', icon: '⚡', label: 'Quick Boards' },
-    { id: 'books', icon: '📚', label: 'Activity Sets' },
+    { id: 'books', icon: '📚', label: 'Visual Packs' },
     { id: 'quest', icon: '🎮', label: 'Symbol Quest' },
     { id: 'search', icon: '🔍', label: 'Symbol Search' },
     { id: 'garden', icon: '🌱', label: 'Word Garden' },
@@ -502,6 +507,884 @@
   function loadScoped(base, def, pid) { migrateGlobalKey(base, pid); return load(profKey(base, pid), def); }
   function uid() { return (crypto && crypto.randomUUID) ? crypto.randomUUID() : ('id-' + Date.now() + '-' + Math.random().toString(36).slice(2)); }
 
+  // Additive Symbol Bank contract. Legacy gallery rows remain valid; these
+  // helpers supply stable identity, aliases, variants, and a local review lane
+  // without changing the persisted key or the image snapshots in saved tools.
+  function normalizeSymbolLabel(value) {
+    var text = String(value == null ? '' : value).trim().toLowerCase();
+    try { text = text.normalize('NFKD').replace(/[\u0300-\u036f]/g, ''); } catch (_) {}
+    return text.replace(/[\u2018\u2019]/g, "'").replace(/[^a-z0-9'\s-]/g, ' ')
+      .replace(/\s+/g, ' ').trim();
+  }
+  function normalizeBankAsset(asset) {
+    var source = asset && typeof asset === 'object' ? asset : {};
+    var id = String(source.id || uid());
+    var aliases = Array.isArray(source.aliases) ? source.aliases : [];
+    var seen = Object.create(null); var cleanAliases = [];
+    aliases.forEach(function (alias) {
+      var value = String(alias || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+      var key = normalizeSymbolLabel(value);
+      if (!key || key === normalizeSymbolLabel(source.label) || seen[key]) return;
+      seen[key] = true; cleanAliases.push(value);
+    });
+    var review = ['unreviewed', 'approved', 'needs_changes'].indexOf(source.reviewStatus) >= 0
+      ? source.reviewStatus : 'unreviewed';
+    return Object.assign({}, source, {
+      id: id,
+      conceptId: String(source.conceptId || id),
+      aliases: cleanAliases,
+      reviewStatus: review,
+      reviewedAt: source.reviewedAt || null,
+      reviewNote: String(source.reviewNote || '').slice(0, 500),
+      updatedAt: Number(source.updatedAt || source.createdAt || Date.now()),
+      isPreferred: source.isPreferred === true
+    });
+  }
+  function normalizeBank(assets) {
+    return (Array.isArray(assets) ? assets : []).map(normalizeBankAsset);
+  }
+  function assetSearchText(asset) {
+    var item = normalizeBankAsset(asset);
+    return normalizeSymbolLabel([
+      item.label, item.description, item.category, item.style, item.source,
+      (item.aliases || []).join(' '), item.variantLabel
+    ].join(' '));
+  }
+  function matchesBankQuery(asset, query) {
+    var words = normalizeSymbolLabel(query).split(' ').filter(Boolean);
+    if (!words.length) return true;
+    var haystack = assetSearchText(asset);
+    return words.every(function (word) { return haystack.indexOf(word) >= 0; });
+  }
+  function bankAssetRank(asset) {
+    var item = normalizeBankAsset(asset);
+    return (item.isPreferred ? 32 : 0) + (item.reviewStatus === 'approved' ? 16 : 0)
+      + (item.validated ? 8 : 0) + (item.locked ? 4 : 0) + (item.isFavorite ? 2 : 0);
+  }
+  function findExactBankAsset(assets, label) {
+    var wanted = normalizeSymbolLabel(label);
+    if (!wanted) return null;
+    var matches = (Array.isArray(assets) ? assets : []).filter(function (asset) {
+      return asset && asset.image && normalizeSymbolLabel(asset.label) === wanted;
+    });
+    matches.sort(function (a, b) {
+      var rankDiff = bankAssetRank(b) - bankAssetRank(a);
+      if (rankDiff) return rankDiff;
+      var timeDiff = Number(b.updatedAt || b.createdAt || 0) - Number(a.updatedAt || a.createdAt || 0);
+      if (timeDiff) return timeDiff;
+      return String(a.id || '').localeCompare(String(b.id || ''));
+    });
+    return matches[0] || null;
+  }
+  function loadScopedBank(pid) {
+    var assets = normalizeBank(loadScoped(STORAGE_GALLERY, [], pid));
+    var schemaKey = profKey(STORAGE_BANK_SCHEMA, pid);
+    if (load(schemaKey, 0) < SYMBOL_BANK_SCHEMA_VERSION) {
+      store(profKey(STORAGE_GALLERY, pid), assets);
+      store(schemaKey, SYMBOL_BANK_SCHEMA_VERSION);
+    }
+    return assets;
+  }
+  function uniqueStringIds(values) {
+    var seen = Object.create(null);
+    var result = [];
+    (Array.isArray(values) ? values : []).some(function (value) {
+      if (typeof value !== 'string' && typeof value !== 'number') return false;
+      var id = String(value).trim().slice(0, 160);
+      if (id && !seen[id]) {
+        seen[id] = true;
+        result.push(id);
+      }
+      return result.length >= 500;
+    });
+    return result;
+  }
+  function normalizeVisualPack(pack) {
+    var source = pack && typeof pack === 'object' ? pack : {};
+    return Object.assign({}, source, {
+      id: String(source.id || uid()),
+      title: String(source.title || 'Visual Pack').slice(0, 120),
+      description: String(source.description || '').slice(0, 500),
+      boardIds: uniqueStringIds(source.boardIds),
+      assetIds: uniqueStringIds(source.assetIds),
+      scheduleIds: uniqueStringIds(source.scheduleIds),
+      packVersion: 1,
+      updatedAt: Number(source.updatedAt || source.createdAt || Date.now())
+    });
+  }
+  function loadScopedPacks(pid) {
+    var packs = (loadScoped(STORAGE_BOOKS, [], pid) || []).map(normalizeVisualPack);
+    var schemaKey = profKey(STORAGE_PACK_SCHEMA, pid);
+    if (load(schemaKey, 0) < VISUAL_PACK_SCHEMA_VERSION) {
+      store(profKey(STORAGE_BOOKS, pid), packs);
+      store(schemaKey, VISUAL_PACK_SCHEMA_VERSION);
+    }
+    return packs;
+  }
+  function portablePackImage(value) {
+    var image = typeof value === 'string' ? value.trim() : '';
+    if (!image || image.length > 8 * 1024 * 1024) return null;
+    if (/^data:image\/(?:png|jpe?g|webp|gif|avif);base64,[a-z0-9+/=\s]+$/i.test(image)) return image;
+    if (!/^data:image\/svg\+xml(?:;charset=[^;,]+)?(?:;base64)?,/i.test(image) || image.length > 1024 * 1024) return null;
+    try {
+      if (!window.DOMParser || !window.XMLSerializer || !window.btoa) return null;
+      var comma = image.indexOf(',');
+      var meta = image.slice(0, comma);
+      var payload = image.slice(comma + 1);
+      var svgText = /;base64/i.test(meta)
+        ? window.atob(payload.replace(/\s+/g, ''))
+        : decodeURIComponent(payload);
+      if (/<!DOCTYPE|<!ENTITY|<\?xml-stylesheet/i.test(svgText)) return null;
+      var documentSvg = new window.DOMParser().parseFromString(svgText, 'image/svg+xml');
+      if (!documentSvg || documentSvg.getElementsByTagName('parsererror').length || !documentSvg.documentElement || documentSvg.documentElement.tagName.toLowerCase() !== 'svg') return null;
+      var allowedTags = {
+        svg: 1, g: 1, path: 1, rect: 1, circle: 1, ellipse: 1, line: 1,
+        polyline: 1, polygon: 1, text: 1, tspan: 1, title: 1, desc: 1,
+        defs: 1, clippath: 1, mask: 1, lineargradient: 1, radialgradient: 1, stop: 1
+      };
+      var allowedAttrs = {
+        xmlns: 1, width: 1, height: 1, viewbox: 1, x: 1, y: 1, x1: 1, y1: 1,
+        x2: 1, y2: 1, cx: 1, cy: 1, r: 1, rx: 1, ry: 1, d: 1, points: 1,
+        transform: 1, fill: 1, stroke: 1, opacity: 1, 'fill-opacity': 1,
+        'stroke-opacity': 1, 'stroke-width': 1, 'stroke-linecap': 1,
+        'stroke-linejoin': 1, 'stroke-dasharray': 1, 'fill-rule': 1,
+        'clip-rule': 1, id: 1, 'clip-path': 1, offset: 1, 'stop-color': 1,
+        'stop-opacity': 1, gradientunits: 1, gradienttransform: 1, fx: 1, fy: 1,
+        'font-family': 1, 'font-size': 1, 'font-weight': 1, 'text-anchor': 1,
+        dx: 1, dy: 1, role: 1, 'aria-label': 1, preserveaspectratio: 1
+      };
+      var nodes = documentSvg.getElementsByTagName('*');
+      if (nodes.length > 5000) return null;
+      for (var ni = 0; ni < nodes.length; ni++) {
+        var node = nodes[ni];
+        if (!Object.prototype.hasOwnProperty.call(allowedTags, String(node.tagName || '').toLowerCase())) return null;
+        var attrs = Array.prototype.slice.call(node.attributes || []);
+        for (var ai = 0; ai < attrs.length; ai++) {
+          var attrName = String(attrs[ai].name || '').toLowerCase();
+          var attrValue = String(attrs[ai].value || '');
+          if (!Object.prototype.hasOwnProperty.call(allowedAttrs, attrName) || /^on/.test(attrName) || attrName === 'style' || attrName.indexOf('href') >= 0
+              || (attrName !== 'xmlns' && (/(?:javascript|data|blob|https?|file|ftp):/i.test(attrValue) || /^\s*\/\//.test(attrValue)))
+              || (/url\(/i.test(attrValue) && !/^\s*url\(\s*#[a-z0-9_.:-]+\s*\)\s*$/i.test(attrValue))) {
+            node.removeAttribute(attrs[ai].name);
+          }
+        }
+      }
+      var cleanSvg = new window.XMLSerializer().serializeToString(documentSvg.documentElement);
+      return 'data:image/svg+xml;base64,' + window.btoa(unescape(encodeURIComponent(cleanSvg)));
+    } catch (_) {
+      return null;
+    }
+  }
+  function portableAACAudio(value, mimeHint) {
+    var data = typeof value === 'string' ? value.trim() : '';
+    if (!data || data.length > 16 * 1024 * 1024) return null;
+    var match = /^data:(audio\/(?:mpeg|mp3|mp4|aac|wav|x-wav|wave|webm|ogg|flac|opus));base64,([a-z0-9+/=\s]+)$/i.exec(data);
+    if (!match) return null;
+    var mime = String(mimeHint || match[1]).toLowerCase().replace(/[^a-z0-9.+\/-]/g, '').slice(0, 80);
+    if (!/^audio\//.test(mime)) mime = String(match[1]).toLowerCase();
+    return { mime: mime, data: 'data:' + String(match[1]).toLowerCase() + ';base64,' + match[2].replace(/\s+/g, '') };
+  }
+  function portableAACSpeechProfile(value) {
+    var source = value && typeof value === 'object' ? value : null;
+    if (!source) return null;
+    var profile = {};
+    ['voice', 'language', 'provider', 'engine', 'engineVersion', 'model', 'modelVersion'].forEach(function (key) {
+      if (source[key] != null && String(source[key]).trim()) profile[key] = String(source[key]).replace(/\s+/g, ' ').trim().slice(0, 120);
+    });
+    var rate = Number(source.synthesisRate);
+    if (isFinite(rate) && rate > 0) profile.synthesisRate = Math.max(0.25, Math.min(4, rate));
+    var resolverVersion = Number(source.voiceResolverVersion);
+    if (isFinite(resolverVersion) && resolverVersion > 0) profile.voiceResolverVersion = Math.floor(resolverVersion);
+    return Object.keys(profile).length ? profile : null;
+  }
+  function normalizePortableAACLocale(value) {
+    var raw = String(value || 'en').trim();
+    var aliases = {
+      english: 'en', spanish: 'es', french: 'fr', german: 'de', portuguese: 'pt',
+      chinese: 'zh', arabic: 'ar', hebrew: 'he', hindi: 'hi', japanese: 'ja',
+      korean: 'ko', vietnamese: 'vi', tagalog: 'tl', russian: 'ru', swahili: 'sw',
+      somali: 'so', burmese: 'my', amharic: 'am'
+    };
+    var alias = aliases[raw.toLowerCase()];
+    if (alias) return alias;
+    var locale = raw.replace(/_/g, '-').replace(/[^a-z0-9-]/gi, '').slice(0, 35);
+    return locale && /^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i.test(locale) ? locale : 'en';
+  }
+  function buildPortableAACPackage(board, options) {
+    var source = board && typeof board === 'object' ? board : {};
+    var settings = options && typeof options === 'object' ? options : {};
+    var includeCustom = settings.includeCustomAudio === true;
+    var includePrepared = settings.includePreparedAudio === true;
+    var locale = normalizePortableAACLocale(source.language || settings.locale || 'en');
+    var direction = source.direction === 'rtl' || source.direction === 'ltr'
+      ? source.direction : (/^(?:ar|he|fa|ur)(?:-|$)/i.test(locale) ? 'rtl' : 'ltr');
+    var sourceBoardId = String(source.id || 'draft');
+    var boardId = String(source.id || 'board').replace(/\s+/g, '-').slice(0, 160) || 'board';
+    var pageSources = Array.isArray(source.pages) && source.pages.length
+      ? source.pages.slice(0, 50)
+      : [{ id: 'page-0', title: source.title || 'Communication Board', cols: source.cols, words: Array.isArray(source.words) ? source.words : [] }];
+    var preparedByTarget = Object.create(null);
+    (Array.isArray(settings.preparedAudioRecords) ? settings.preparedAudioRecords : []).forEach(function (record) {
+      var target = record && record.target && typeof record.target === 'object' ? record.target : null;
+      if (!target) return;
+      preparedByTarget[String(target.scopeId || '') + '\n' + String(target.segmentId || '') + '\n' + String(target.spokenText || '')] = record;
+    });
+    var counts = { images: 0, customOmitted: 0, preparedOmitted: 0, customIncluded: 0, preparedIncluded: 0 };
+    var pages = pageSources.map(function (page, pageIndex) {
+      var pageSource = page && typeof page === 'object' ? page : {};
+      var sourcePageId = String(pageSource.id || ('page-' + pageIndex));
+      var pageId = sourcePageId.replace(/\s+/g, '-').slice(0, 160) || ('page-' + pageIndex);
+      var cols = Math.max(1, Math.min(8, Number(pageSource.cols || source.cols) || 4));
+      var words = Array.isArray(pageSource.words) ? pageSource.words.slice(0, 500) : [];
+      return {
+        id: pageId,
+        title: String(pageSource.title || ('Page ' + (pageIndex + 1))).replace(/\s+/g, ' ').trim().slice(0, 160),
+        cols: cols,
+        cells: words.map(function (word, cellIndex) {
+          var cell = word && typeof word === 'object' ? word : {};
+          var sourceCellId = String(cell.id || ('cell-' + cellIndex));
+          var cellId = String(cell.id || (pageId + ':cell-' + cellIndex)).replace(/\s+/g, '-').slice(0, 200) || (pageId + ':cell-' + cellIndex);
+          var label = String(cell.label || '').replace(/\s+/g, ' ').trim().slice(0, 240);
+          var translated = String(cell.translatedLabel || '').replace(/\s+/g, ' ').trim().slice(0, 240);
+          var display = translated || label;
+          var vocal = String(cell.vocalLabel || display).replace(/\s+/g, ' ').trim().slice(0, 500);
+          var image = portablePackImage(cell.image);
+          if (cell.image && !image) counts.images++;
+          var audio = null;
+          if (cell.audioData) {
+            if (includeCustom) {
+              var custom = portableAACAudio(cell.audioData);
+              if (custom) {
+                audio = { kind: 'custom', mime: custom.mime, data: custom.data };
+                counts.customIncluded++;
+              } else counts.customOmitted++;
+            } else counts.customOmitted++;
+          }
+          var targetKey = 'board:' + sourceBoardId + ':page:' + sourcePageId + '\ncell:' + sourceCellId + '\n' + vocal;
+          var prepared = preparedByTarget[targetKey];
+          if (!audio && prepared) {
+            if (includePrepared) {
+              var payload = portableAACAudio(prepared.data, prepared.mime);
+              if (payload) {
+                audio = { kind: 'prepared', mime: payload.mime, data: payload.data };
+                var profile = portableAACSpeechProfile(prepared.profile);
+                if (profile) audio.profile = profile;
+                counts.preparedIncluded++;
+              } else counts.preparedOmitted++;
+            } else counts.preparedOmitted++;
+          }
+          var result = {
+            id: cellId,
+            index: cellIndex,
+            row: Math.floor(cellIndex / cols),
+            col: cellIndex % cols,
+            displayLabel: display,
+            vocalLabel: vocal,
+            originalLabel: String(cell.originalLabel || (translated ? label : '')).replace(/\s+/g, ' ').trim().slice(0, 240),
+            description: String(cell.description || '').slice(0, 500),
+            category: String(cell.category || 'other').replace(/\s+/g, ' ').trim().slice(0, 60) || 'other',
+            image: image
+          };
+          if (audio) result.audio = audio;
+          return result;
+        })
+      };
+    });
+    var warnings = [];
+    if (counts.images) warnings.push('Some images were not included because they were not portable.');
+    if (counts.customOmitted) warnings.push('Some custom recordings were not included.');
+    if (counts.preparedOmitted || (settings.preparedAudioExpected === true && !counts.preparedIncluded)) warnings.push('Some prepared speech was not included from this device.');
+    if (settings.preparedAudioLoadFailed === true) warnings.push('Prepared speech could not be read from this device.');
+    var date = settings.exportedAt ? new Date(settings.exportedAt) : new Date(settings.now == null ? Date.now() : settings.now);
+    if (!isFinite(date.getTime())) date = new Date(0);
+    return {
+      format: 'alloflow.aac-board',
+      version: 1,
+      exportedAt: date.toISOString(),
+      board: {
+        id: boardId,
+        title: String(source.title || 'Communication Board').replace(/\s+/g, ' ').trim().slice(0, 160) || 'Communication Board',
+        locale: locale,
+        direction: direction
+      },
+      pages: pages,
+      metadata: {
+        privacy: { customAudioIncluded: includeCustom, preparedAudioIncluded: includePrepared },
+        includedCustomAudio: counts.customIncluded,
+        includedPreparedAudio: counts.preparedIncluded,
+        omittedNonportableImages: counts.images,
+        omittedCustomAudio: counts.customOmitted,
+        omittedPreparedAudio: counts.preparedOmitted,
+        warnings: warnings
+      }
+    };
+  }
+  function portableAACViewerRuntime(pack, isRtl) {
+    'use strict';
+    var words = [], cells = [], pageIndex = 0, cols = 4, strip, liveRegion, currentAudio;
+    var scanOn = false, manualScan = false, scanIndex = 0, scanSpeed = 2000, scanTimer = null;
+    var cellMap = Object.create(null);
+    function key(page, cell) { return String(page.id || 'page') + '|' + String(cell.id || 'cell') + '|' + String(cell.index == null ? 0 : cell.index); }
+    (pack.pages || []).forEach(function (page) { (page.cells || []).forEach(function (cell) { cellMap[key(page, cell)] = cell; }); });
+    function announce(text) {
+      if (!liveRegion) return;
+      liveRegion.textContent = '';
+      setTimeout(function () { liveRegion.textContent = text; }, 25);
+    }
+    function refresh() {
+      var panel = document.querySelector('.page-panel:not([hidden])') || document.querySelector('.page-panel');
+      cells = panel ? Array.prototype.slice.call(panel.querySelectorAll('[role=gridcell]')) : [];
+      cols = Number(pack.pages[pageIndex] && pack.pages[pageIndex].cols) || 4;
+      cells.forEach(function (cell, index) { cell.tabIndex = index === 0 ? 0 : -1; });
+    }
+    function stopAudio() {
+      if (currentAudio) { try { currentAudio.pause(); } catch (_) {} currentAudio = null; }
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+    }
+    function browserSpeak(text, done) {
+      if (!text || !window.speechSynthesis || typeof window.SpeechSynthesisUtterance !== 'function') { if (done) done(); return; }
+      var utterance = new window.SpeechSynthesisUtterance(text), finished = false;
+      utterance.lang = pack.board.locale || 'en';
+      function finish() { if (!finished) { finished = true; if (done) done(); } }
+      utterance.onend = finish;
+      utterance.onerror = finish;
+      window.speechSynthesis.speak(utterance);
+    }
+    function play(item, done) {
+      var audio = item && item.audio;
+      if (!audio || !/^data:audio\//i.test(audio.data || 'invalid')) { browserSpeak(item && item.label || '', done); return; }
+      var finished = false;
+      function finish() { if (!finished) { finished = true; currentAudio = null; if (done) done(); } }
+      function fallback() { if (!finished) { finished = true; currentAudio = null; browserSpeak(item && item.label || '', done); } }
+      try {
+        currentAudio = new window.Audio(audio.data);
+        currentAudio.onended = finish;
+        currentAudio.onerror = fallback;
+        var result = currentAudio.play();
+        if (result && result.catch) result.catch(fallback);
+      } catch (_) { fallback(); }
+    }
+    function renderStrip() {
+      Array.prototype.slice.call(strip.querySelectorAll('.strip-word')).forEach(function (node) { node.remove(); });
+      var placeholder = document.getElementById('placeholder'), buttons = document.getElementById('strip-btns');
+      placeholder.style.display = words.length ? 'none' : '';
+      buttons.className = words.length ? 'visible' : '';
+      words.forEach(function (word) {
+        var node = document.createElement('span');
+        node.className = 'strip-word';
+        if (word.src) {
+          var image = document.createElement('img');
+          image.src = word.src;
+          image.alt = '';
+          node.appendChild(image);
+        }
+        node.appendChild(document.createTextNode(word.label));
+        strip.insertBefore(node, buttons);
+      });
+      strip.setAttribute('aria-label', 'Message: ' + words.map(function (word) { return word.label; }).join(' '));
+    }
+    function tap(element) {
+      var cell = cellMap[element.getAttribute('data-cell-key')];
+      var label = cell && (cell.vocalLabel || cell.displayLabel) || element.getAttribute('data-label') || '';
+      if (!label) return;
+      var image = element.querySelector('img');
+      var item = { label: label, src: image ? image.src : '', audio: cell && cell.audio || null };
+      words.push(item);
+      renderStrip();
+      announce(label + ' added to message');
+      stopAudio();
+      play(item);
+      element.classList.add('flash');
+      setTimeout(function () { element.classList.remove('flash'); }, 300);
+    }
+    function speakAll() {
+      stopAudio();
+      var queue = words.slice(), index = 0;
+      function next() { if (index < queue.length) play(queue[index++], next); }
+      next();
+    }
+    function deleteLast() {
+      if (!words.length) return;
+      var item = words.pop();
+      renderStrip();
+      announce(item.label + ' removed');
+    }
+    function clearAll() {
+      words = [];
+      stopAudio();
+      renderStrip();
+      announce('Message cleared');
+    }
+    function highlight(index) {
+      cells.forEach(function (cell) { cell.classList.remove('scan-hl'); });
+      if (cells[index]) {
+        cells[index].classList.add('scan-hl');
+        announce(cells[index].getAttribute('data-label') || 'Symbol');
+      }
+    }
+    function advanceScan() {
+      if (!cells.length) { announce('No selectable cells on this page.'); return; }
+      scanIndex = (scanIndex + 1) % cells.length;
+      highlight(scanIndex);
+    }
+    function stopScan() {
+      scanOn = false;
+      clearInterval(scanTimer);
+      cells.forEach(function (cell) { cell.classList.remove('scan-hl'); });
+      document.getElementById('scan-bar').className = '';
+      announce('Scanning stopped.');
+    }
+    function toggleScan() {
+      if (scanOn) { stopScan(); return; }
+      if (!cells.length) { announce('No selectable cells on this page.'); return; }
+      scanOn = true;
+      scanIndex = 0;
+      highlight(0);
+      if (!manualScan) scanTimer = setInterval(advanceScan, scanSpeed);
+      document.getElementById('scan-bar').className = 'active';
+      announce(manualScan ? 'Manual scanning started. Tab to advance, Space to select.' : 'Scanning started. Press Space to select. Escape to stop.');
+    }
+    function setScanSpeed(value) {
+      scanSpeed = value;
+      if (scanOn && !manualScan) {
+        clearInterval(scanTimer);
+        scanTimer = setInterval(advanceScan, scanSpeed);
+      }
+    }
+    function toggleScanMode() {
+      manualScan = !manualScan;
+      if (scanOn) { stopScan(); toggleScan(); }
+      document.getElementById('scan-mode-btn').textContent = manualScan ? '2-Switch' : '1-Switch';
+    }
+    function toggleHighContrast() {
+      document.body.classList.toggle('hc');
+      announce(document.body.classList.contains('hc') ? 'High contrast on' : 'High contrast off');
+    }
+    function toggleHelp() {
+      var panel = document.getElementById('help-panel');
+      panel.classList.toggle('visible');
+      announce(panel.classList.contains('visible') ? 'Help shown' : 'Help hidden');
+    }
+    function switchPage(index) {
+      Array.prototype.slice.call(document.querySelectorAll('.page-panel')).forEach(function (panel, current) { panel.hidden = current !== index; });
+      Array.prototype.slice.call(document.querySelectorAll('[role=tab]')).forEach(function (tab, current) {
+        tab.setAttribute('aria-selected', current === index ? 'true' : 'false');
+        tab.tabIndex = current === index ? 0 : -1;
+        tab.className = 'page-tab' + (current === index ? ' active' : '');
+      });
+      pageIndex = index;
+      refresh();
+      if (scanOn) stopScan();
+      announce('Page ' + (index + 1));
+    }
+    function isControl(element) {
+      return !!(element && /^(INPUT|SELECT|TEXTAREA|BUTTON)$/.test(element.tagName));
+    }
+    function cellAtPosition(panel, position) {
+      return Array.prototype.slice.call(panel.querySelectorAll('[role=gridcell]')).find(function (cell) {
+        return Number(cell.getAttribute('data-index')) === position;
+      }) || null;
+    }
+    function onKey(event) {
+      var active = document.activeElement;
+      var switchControl = !!(active && active.getAttribute && active.getAttribute('data-scan-switch') === 'true');
+      if (scanOn && event.key === 'Escape') { event.preventDefault(); stopScan(); return; }
+      if (scanOn && manualScan && (event.key === 'Tab' || event.key === 'ArrowRight') && (!isControl(active) || switchControl)) {
+        event.preventDefault(); advanceScan(); return;
+      }
+      if (scanOn && (event.key === ' ' || event.key === 'Enter') && (!isControl(active) || switchControl)) {
+        event.preventDefault(); if (cells[scanIndex]) tap(cells[scanIndex]); return;
+      }
+      if (active && active.getAttribute('role') === 'tab') {
+        var tabs = Array.prototype.slice.call(document.querySelectorAll('[role=tab]'));
+        var currentTab = tabs.indexOf(active), targetTab = currentTab;
+        if (event.key === 'ArrowRight') targetTab = isRtl ? Math.max(0, currentTab - 1) : Math.min(tabs.length - 1, currentTab + 1);
+        else if (event.key === 'ArrowLeft') targetTab = isRtl ? Math.min(tabs.length - 1, currentTab + 1) : Math.max(0, currentTab - 1);
+        else if (event.key === 'Home') targetTab = 0;
+        else if (event.key === 'End') targetTab = tabs.length - 1;
+        else targetTab = currentTab;
+        if (targetTab !== currentTab) {
+          event.preventDefault();
+          switchPage(targetTab);
+          tabs[targetTab].focus();
+          return;
+        }
+      }
+      if (active && active.getAttribute('role') === 'gridcell') {
+        var index = Number(active.getAttribute('data-index')), target = index, step = 0, row = null;
+        if (event.key === 'ArrowRight') { step = isRtl ? -1 : 1; target += step; row = Math.floor(index / cols); }
+        else if (event.key === 'ArrowLeft') { step = isRtl ? 1 : -1; target += step; row = Math.floor(index / cols); }
+        else if (event.key === 'ArrowDown') { step = cols; target += step; }
+        else if (event.key === 'ArrowUp') { step = -cols; target += step; }
+        else if (event.key === 'Home') { step = 1; target = Math.floor(index / cols) * cols; row = Math.floor(index / cols); }
+        else if (event.key === 'End') { step = -1; target = Math.floor(index / cols) * cols + cols - 1; row = Math.floor(index / cols); }
+        else if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); tap(active); return; }
+        if (target !== index && target >= 0) {
+          var panel = active.closest('.page-panel');
+          var total = pack.pages[pageIndex] && pack.pages[pageIndex].cells ? pack.pages[pageIndex].cells.length : 0;
+          var next = cellAtPosition(panel, target);
+          while (!next && step && target >= 0 && target < total) {
+            target += step;
+            if (row != null && Math.floor(target / cols) !== row) break;
+            next = cellAtPosition(panel, target);
+          }
+          if (next) {
+            event.preventDefault();
+            active.tabIndex = -1;
+            next.tabIndex = 0;
+            next.focus();
+          }
+        }
+      }
+      if (!isControl(active) && (event.key === 's' || event.key === 'S')) { event.preventDefault(); toggleScan(); }
+      if (!isControl(active) && (event.key === 'h' || event.key === 'H')) { event.preventDefault(); toggleHighContrast(); }
+      if (!isControl(active) && event.key === 'Backspace') { event.preventDefault(); deleteLast(); }
+    }
+    function init() {
+      strip = document.getElementById('sentence-strip');
+      liveRegion = document.getElementById('live-region');
+      refresh();
+      document.addEventListener('keydown', onKey);
+      document.addEventListener('click', function (event) {
+        var cell = event.target.closest && event.target.closest('[role=gridcell]');
+        if (cell) tap(cell);
+      });
+    }
+    window.AlloFlowAACPackage = pack;
+    window.AlloFlowAACViewer = {
+      speakAll: speakAll,
+      deleteLast: deleteLast,
+      clear: clearAll,
+      toggleScan: toggleScan,
+      advanceScan: advanceScan,
+      switchPage: switchPage
+    };
+    window.speakAll = speakAll;
+    window.delLast = deleteLast;
+    window.clearAll = clearAll;
+    window.toggleScan = toggleScan;
+    window.advScan = advanceScan;
+    window.setScanSpd = setScanSpeed;
+    window.toggleScanMode = toggleScanMode;
+    window.toggleHC = toggleHighContrast;
+    window.toggleHelp = toggleHelp;
+    window.switchPage = switchPage;
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+  }
+  function portableAACViewerStyles(isRtl) {
+    return '*,*::before,*::after{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#f8fafc;color:#1f2937;user-select:none}'
+      + '.skip-link{position:absolute;left:-9999px}.skip-link:focus{position:fixed;left:0;top:0;padding:8px 16px;background:#1e293b;color:#fff;outline:3px solid #facc15;z-index:10000}'
+      + 'header[role=banner]{background:linear-gradient(135deg,#7c3aed,#4338ca);color:#fff;padding:12px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}header h1{margin:0;font-size:18px}.controls{display:flex;gap:6px;flex-wrap:wrap;' + (isRtl ? 'margin-right:auto' : 'margin-left:auto') + '}'
+      + '.ctrl-btn{border:0;border-radius:8px;padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer;min-height:44px;min-width:44px}.ctrl-btn:focus-visible{outline:3px solid #facc15;outline-offset:2px}'
+      + '#sentence-strip{background:#1a1a2e;min-height:58px;padding:10px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.strip-word{background:#312e81;color:#e0e7ff;font-weight:700;padding:5px 10px;border-radius:8px;display:inline-flex;align-items:center;gap:4px}.strip-word img{width:28px;height:28px;object-fit:contain}#placeholder{color:#94a3b8;font-style:italic}#strip-btns{display:none;gap:8px;' + (isRtl ? 'margin-right:auto' : 'margin-left:auto') + '}#strip-btns.visible{display:flex}'
+      + '#page-tabs{display:flex;background:#f1f5f9;border-bottom:2px solid #e2e8f0;padding:0 16px}.page-tab{border:0;background:transparent;padding:10px 18px;font-weight:700;cursor:pointer;border-bottom:3px solid transparent;color:#64748b;min-height:44px}.page-tab.active{color:#7c3aed;border-bottom-color:#7c3aed}.page-tab:focus-visible{outline:3px solid #7c3aed}'
+      + '.board-grid{display:grid;gap:12px;padding:16px}.board-slot{border-radius:12px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;min-height:112px;min-width:44px}.board-slot[role=gridcell]{cursor:pointer;transition:transform .12s}.board-slot img{width:72px;height:72px;object-fit:contain;border-radius:6px;pointer-events:none}.board-slot span{font-weight:700;text-align:center}.text-only-mark{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.75);display:flex;align-items:center;justify-content:center;font-size:32px!important}.orig-label{font-size:10px!important;font-weight:400!important;color:#6b7280!important}.empty-slot{border:2px dashed #d1d5db;background:rgba(255,255,255,.35)}'
+      + '[role=gridcell]:focus-visible{outline:3px solid #4f46e5;outline-offset:2px;box-shadow:0 0 0 6px rgba(79,70,229,.25)}[role=gridcell].flash{box-shadow:0 0 0 4px #fbbf24;transform:scale(1.05)}[role=gridcell].scan-hl{border-color:#facc15!important;border-width:4px!important;transform:scale(1.05);box-shadow:0 0 0 6px rgba(250,204,21,.4)}'
+      + '#scan-bar{display:none;background:#1e293b;padding:8px 16px;align-items:center;gap:12px;flex-wrap:wrap;color:#fff}#scan-bar.active{display:flex}#scan-bar select{min-height:36px;background:#334155;color:#fff}#help-panel{display:none;background:#1e293b;color:#e2e8f0;padding:16px 20px}#help-panel.visible{display:block}#help-panel dl{display:grid;grid-template-columns:auto 1fr;gap:4px 16px}#help-panel dd{margin:0}'
+      + '#export-warnings{margin:12px 16px;padding:12px 16px;border:2px solid #b45309;border-radius:8px;background:#fffbeb;color:#78350f}#export-warnings h2{font-size:14px;margin:0 0 6px}footer{text-align:center;padding:16px;color:#64748b;border-top:1px solid #e2e8f0}.a11y-stmt{max-width:700px;margin:12px auto 0;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;color:#166534}#live-region{position:absolute;left:-9999px}'
+      + 'body.hc{background:#000;color:#fff}body.hc header,body.hc #sentence-strip{background:#000}body.hc .board-slot{background:#000!important;border-color:#fff!important}body.hc .board-slot span{color:#fff!important}body.hc .ctrl-btn{border:2px solid #fff}'
+      + '@media(prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;animation-duration:.01ms!important}}@media(forced-colors:active){[role=gridcell]{border:2px solid CanvasText}[role=gridcell]:focus-visible{outline:3px solid Highlight}}@media print{.controls,#sentence-strip,#scan-bar,#help-panel,.a11y-stmt,#live-region{display:none!important}.board-slot{page-break-inside:avoid;border:1px solid #333!important}}';
+  }
+  function buildStandaloneAACHTML(portablePackage) {
+    var pack = portablePackage && typeof portablePackage === 'object' ? portablePackage : null;
+    if (!pack || pack.format !== 'alloflow.aac-board' || pack.version !== 1) throw new Error('Unsupported portable AAC package');
+    var board = pack.board && typeof pack.board === 'object' ? pack.board : {};
+    var pages = Array.isArray(pack.pages) && pack.pages.length ? pack.pages : [{ id: 'page-0', title: 'Board', cols: 4, cells: [] }];
+    var title = escHtml(board.title || 'AAC Board');
+    var locale = normalizePortableAACLocale(board.locale || 'en');
+    var direction = board.direction === 'rtl' ? 'rtl' : 'ltr';
+    var isRtl = direction === 'rtl';
+    var multiPage = pages.length > 1;
+    function cellKey(page, cell) {
+      return String(page.id || 'page') + '|' + String(cell.id || 'cell') + '|' + String(cell.index == null ? 0 : cell.index);
+    }
+    var quote = String.fromCharCode(34);
+    var pageData = pages.map(function (page, pageIndex) {
+      var cols = Math.max(1, Math.min(8, Number(page.cols) || 4));
+      var firstAssigned = false;
+      var cellsHTML = (Array.isArray(page.cells) ? page.cells : []).map(function (cell, fallbackIndex) {
+        var source = cell && typeof cell === 'object' ? cell : {};
+        var index = isFinite(Number(source.index)) ? Number(source.index) : fallbackIndex;
+        var display = String(source.displayLabel || '');
+        var vocal = String(source.vocalLabel || display);
+        var description = String(source.description || '');
+        var image = portablePackImage(source.image);
+        if (!display && !vocal && !image) {
+          return '<div class=' + quote + 'board-slot empty-slot' + quote + ' data-index=' + quote + index + quote + ' aria-hidden=' + quote + 'true' + quote + '></div>';
+        }
+        var category = String(source.category || 'other');
+        var background = CAT_COLORS[category] || CAT_COLORS.other;
+        var border = CAT_BORDER[category] || CAT_BORDER.other;
+        var alt = description ? (display ? display + ': ' + description : description) : (display || vocal || 'Communication symbol');
+        var media = image
+          ? '<img src=' + quote + escHtml(image) + quote + ' alt=' + quote + escHtml(alt) + quote + ' draggable=' + quote + 'false' + quote + '>'
+          : '<span class=' + quote + 'text-only-mark' + quote + ' aria-hidden=' + quote + 'true' + quote + '>' + escHtml((display || vocal || '?').slice(0, 1).toUpperCase()) + '</span>';
+        var original = source.originalLabel && source.originalLabel !== display
+          ? '<span class=' + quote + 'orig-label' + quote + ' aria-hidden=' + quote + 'true' + quote + '>' + escHtml(source.originalLabel) + '</span>' : '';
+        var tabIndex = pageIndex === 0 && !firstAssigned ? '0' : '-1';
+        firstAssigned = true;
+        return '<div role=' + quote + 'gridcell' + quote + ' class=' + quote + 'board-slot' + quote
+          + ' tabindex=' + quote + tabIndex + quote + ' data-index=' + quote + index + quote
+          + ' data-cell-key=' + quote + escHtml(cellKey(page, source)) + quote
+          + ' data-label=' + quote + escHtml(display || vocal) + quote
+          + ' aria-label=' + quote + escHtml(alt) + quote
+          + ' style=' + quote + 'background:' + background + ';border:2px solid ' + border + quote + '>'
+          + media + '<span aria-hidden=' + quote + 'true' + quote + '>' + escHtml(display) + '</span>' + original + '</div>';
+      }).join('\n');
+      return { title: String(page.title || ('Page ' + (pageIndex + 1))), cols: cols, cellsHTML: cellsHTML };
+    });
+    var tabs = multiPage
+      ? '<nav aria-label=' + quote + 'Board pages' + quote + ' id=' + quote + 'page-tabs' + quote + ' role=' + quote + 'tablist' + quote + '>'
+        + pageData.map(function (page, index) {
+          return '<button role=' + quote + 'tab' + quote + ' id=' + quote + 'tab-' + index + quote
+            + ' aria-selected=' + quote + (index === 0 ? 'true' : 'false') + quote
+            + ' aria-controls=' + quote + 'page-' + index + quote
+            + ' tabindex=' + quote + (index === 0 ? '0' : '-1') + quote
+            + ' onclick=' + quote + 'switchPage(' + index + ')' + quote
+            + ' class=' + quote + 'page-tab' + (index === 0 ? ' active' : '') + quote + '>'
+            + escHtml(page.title) + '</button>';
+        }).join('') + '</nav>' : '';
+    var panels = pageData.map(function (page, index) {
+      var naming = multiPage
+        ? ' aria-labelledby=' + quote + 'tab-' + index + quote
+        : ' aria-label=' + quote + escHtml(page.title) + ' communication board' + quote;
+      return '<section role=' + quote + 'tabpanel' + quote + ' id=' + quote + 'page-' + index + quote
+        + ' class=' + quote + 'page-panel' + quote + naming + (index ? ' hidden' : '') + '>'
+        + '<div role=' + quote + 'grid' + quote
+        + ' aria-label=' + quote + escHtml(page.title) + ' communication symbols' + quote
+        + ' class=' + quote + 'board-grid' + quote
+        + ' style=' + quote + 'grid-template-columns:repeat(' + page.cols + ',1fr)' + quote + '>'
+        + page.cellsHTML + '</div></section>';
+    }).join('\n');
+    var warnings = pack.metadata && Array.isArray(pack.metadata.warnings) ? pack.metadata.warnings : [];
+    var warningHTML = warnings.length
+      ? '<aside id=' + quote + 'export-warnings' + quote + ' role=' + quote + 'note' + quote
+        + ' aria-labelledby=' + quote + 'export-warnings-title' + quote + '>'
+        + '<h2 id=' + quote + 'export-warnings-title' + quote + '>Export notes</h2><ul>'
+        + warnings.map(function (warning) { return '<li>' + escHtml(warning) + '</li>'; }).join('')
+        + '</ul></aside>' : '';
+    var packageJson = JSON.stringify(pack).replace(/</g, '\\u003c');
+    var runtime = '(' + portableAACViewerRuntime.toString() + ')(' + packageJson + ',' + (isRtl ? 'true' : 'false') + ');';
+    var controls = '<header role=' + quote + 'banner' + quote + '><h1>' + title + '</h1>'
+      + '<nav class=' + quote + 'controls' + quote + ' aria-label=' + quote + 'Board controls' + quote + '>'
+      + '<button class=' + quote + 'ctrl-btn' + quote + ' data-scan-switch=' + quote + 'true' + quote
+      + ' onclick=' + quote + 'toggleScan()' + quote + ' aria-label=' + quote + 'Toggle scanning mode' + quote + '>Scan</button>'
+      + '<button class=' + quote + 'ctrl-btn' + quote + ' id=' + quote + 'scan-mode-btn' + quote
+      + ' data-scan-switch=' + quote + 'true' + quote + ' onclick=' + quote + 'toggleScanMode()' + quote
+      + ' aria-label=' + quote + 'Switch between 1-switch and 2-switch scanning' + quote + '>1-Switch</button>'
+      + '<button class=' + quote + 'ctrl-btn' + quote + ' onclick=' + quote + 'toggleHC()' + quote + ' aria-label=' + quote + 'Toggle high contrast' + quote + '>Contrast</button>'
+      + '<button class=' + quote + 'ctrl-btn' + quote + ' onclick=' + quote + 'toggleHelp()' + quote + ' aria-label=' + quote + 'Show keyboard shortcuts' + quote + '>? Help</button>'
+      + '</nav></header>';
+    var sentence = '<div id=' + quote + 'sentence-strip' + quote + ' role=' + quote + 'log' + quote
+      + ' aria-live=' + quote + 'polite' + quote + ' aria-label=' + quote + 'Message being composed' + quote + '>'
+      + '<span id=' + quote + 'placeholder' + quote + '>Tap symbols to build a message</span>'
+      + '<div id=' + quote + 'strip-btns' + quote + ' aria-label=' + quote + 'Message controls' + quote + '>'
+      + '<button class=' + quote + 'ctrl-btn' + quote + ' onclick=' + quote + 'speakAll()' + quote + ' aria-label=' + quote + 'Speak entire message' + quote + '>Speak</button>'
+      + '<button class=' + quote + 'ctrl-btn' + quote + ' onclick=' + quote + 'delLast()' + quote + ' aria-label=' + quote + 'Delete last word' + quote + '>Undo</button>'
+      + '<button class=' + quote + 'ctrl-btn' + quote + ' onclick=' + quote + 'clearAll()' + quote + ' aria-label=' + quote + 'Clear entire message' + quote + '>Clear</button>'
+      + '</div></div>';
+    var scan = '<div id=' + quote + 'scan-bar' + quote + ' role=' + quote + 'status' + quote + ' aria-live=' + quote + 'polite' + quote + '>'
+      + '<span>Scanning active</span><label>Speed: <select onchange=' + quote + 'setScanSpd(Number(this.value))' + quote
+      + ' aria-label=' + quote + 'Scanning speed' + quote + '><option value=' + quote + '1000' + quote + '>1s</option>'
+      + '<option value=' + quote + '2000' + quote + ' selected>2s</option><option value=' + quote + '3000' + quote + '>3s</option>'
+      + '<option value=' + quote + '4000' + quote + '>4s</option></select></label>'
+      + '<button class=' + quote + 'ctrl-btn' + quote + ' data-scan-switch=' + quote + 'true' + quote
+      + ' onclick=' + quote + 'advScan()' + quote
+      + ' aria-label=' + quote + 'Advance to next symbol' + quote + '>Next</button><span>Space to select. Escape to stop.</span></div>';
+    var help = '<div id=' + quote + 'help-panel' + quote + ' role=' + quote + 'region' + quote
+      + ' aria-label=' + quote + 'Keyboard shortcuts' + quote + '><h2>Keyboard Shortcuts</h2><dl>'
+      + '<dt>Arrow keys</dt><dd>Navigate symbols</dd><dt>Enter or Space</dt><dd>Select symbol</dd>'
+      + '<dt>S</dt><dd>Toggle scanning</dd><dt>H</dt><dd>Toggle high contrast</dd>'
+      + '<dt>Backspace</dt><dd>Delete last word</dd></dl></div>';
+    return '<!DOCTYPE html>\n<html lang=' + quote + escHtml(locale) + quote + ' dir=' + quote + direction + quote + '><head>'
+      + '<meta charset=' + quote + 'UTF-8' + quote + '><meta name=' + quote + 'viewport' + quote
+      + ' content=' + quote + 'width=device-width,initial-scale=1' + quote + '><meta name=' + quote + 'alloflow-aac-format' + quote
+      + ' content=' + quote + 'alloflow.aac-board@1' + quote + '><title>' + title + ' - AAC Communication Board</title>'
+      + '<style>' + portableAACViewerStyles(isRtl) + '</style></head><body>'
+      + '<a href=' + quote + '#board-main' + quote + ' class=' + quote + 'skip-link' + quote + '>Skip to communication board</a>'
+      + '<div id=' + quote + 'live-region' + quote + ' role=' + quote + 'status' + quote
+      + ' aria-live=' + quote + 'assertive' + quote + ' aria-atomic=' + quote + 'true' + quote + '></div>'
+      + controls + sentence + scan + help + warningHTML
+      + '<main id=' + quote + 'board-main' + quote + ' role=' + quote + 'main' + quote + '>' + tabs + panels + '</main>'
+      + '<footer role=' + quote + 'contentinfo' + quote + '><p>AlloFlow Symbol Studio | ' + escHtml(locale) + '</p>'
+      + '<div class=' + quote + 'a11y-stmt' + quote + ' role=' + quote + 'note' + quote
+      + ' aria-label=' + quote + 'Accessibility' + quote + '><strong>Accessibility</strong> Designed for WCAG 2.2 AA accessibility | Keyboard navigation'
+      + ' | 1-switch and 2-switch scanning | High contrast | Screen reader support | RTL | 44px targets</div></footer>'
+      + '<script>' + runtime + '<\/script></body></html>';
+  }
+  function packAttributionForShare(attribution) {
+    var source = attribution && typeof attribution === 'object' ? attribution : null;
+    if (!source) return null;
+    return {
+      set: String(source.set || '').slice(0, 120),
+      license: String(source.license || '').slice(0, 120),
+      via: String(source.via || '').slice(0, 120),
+      url: /^https?:\/\//i.test(String(source.url || '')) ? String(source.url).slice(0, 500) : ''
+    };
+  }
+  function packWordForShare(word) {
+    var source = word && typeof word === 'object' ? word : {};
+    return {
+      id: String(source.id || uid()).slice(0, 160),
+      label: String(source.label || '').replace(/\s+/g, ' ').trim().slice(0, 160),
+      translatedLabel: String(source.translatedLabel || '').replace(/\s+/g, ' ').trim().slice(0, 160),
+      vocalLabel: String(source.vocalLabel || '').replace(/\s+/g, ' ').trim().slice(0, 160),
+      description: String(source.description || '').slice(0, 300),
+      category: String(source.category || 'other').replace(/\s+/g, ' ').trim().slice(0, 60),
+      image: portablePackImage(source.image),
+      assetId: typeof source.assetId === 'string' || typeof source.assetId === 'number' ? String(source.assetId).trim().slice(0, 160) || null : null,
+      conceptId: typeof source.conceptId === 'string' || typeof source.conceptId === 'number' ? String(source.conceptId).trim().slice(0, 160) || null : null
+    };
+  }
+  function packBoardForShare(board) {
+    var source = board && typeof board === 'object' ? board : {};
+    var words = (Array.isArray(source.words) ? source.words : []).slice(0, 500).map(packWordForShare);
+    var pages = Array.isArray(source.pages) ? source.pages.slice(0, 50).map(function (page, index) {
+      var safePage = page && typeof page === 'object' ? page : {};
+      return {
+        id: String(safePage.id || uid()).slice(0, 160),
+        title: String(safePage.title || ('Page ' + (index + 1))).replace(/\s+/g, ' ').trim().slice(0, 120),
+        cols: Math.max(1, Math.min(8, Number(safePage.cols) || 4)),
+        words: (Array.isArray(safePage.words) ? safePage.words : []).slice(0, 500).map(packWordForShare)
+      };
+    }) : null;
+    return {
+      id: String(source.id || uid()).slice(0, 160),
+      title: String(source.title || 'Communication Board').replace(/\s+/g, ' ').trim().slice(0, 120),
+      words: words,
+      cols: Math.max(1, Math.min(8, Number(source.cols) || 4)),
+      pages: pages && pages.length ? pages : null,
+      language: String(source.language || 'en').replace(/[^a-z0-9_-]/gi, '').slice(0, 24) || 'en'
+    };
+  }
+  function packScheduleForShare(schedule) {
+    var source = schedule && typeof schedule === 'object' ? schedule : {};
+    return {
+      id: String(source.id || uid()).slice(0, 160),
+      title: String(source.title || 'Sequence').replace(/\s+/g, ' ').trim().slice(0, 120),
+      items: (Array.isArray(source.items) ? source.items : []).slice(0, 500).map(function (item) {
+        return Object.assign(packWordForShare(item), { complete: false });
+      }),
+      orientation: source.orientation === 'vertical' ? 'vertical' : 'horizontal',
+      nowId: null
+    };
+  }
+  function packAssetForShare(asset) {
+    var source = asset && typeof asset === 'object' ? asset : {};
+    var id = String(source.id || uid()).trim().slice(0, 160);
+    var aliases = Array.isArray(source.aliases) ? source.aliases.map(function (alias) {
+      return String(alias || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+    }).filter(Boolean).slice(0, 40) : [];
+    return {
+      id: id,
+      conceptId: String(source.conceptId || id).trim().slice(0, 160),
+      label: String(source.label || 'Imported symbol').replace(/\s+/g, ' ').trim().slice(0, 160) || 'Imported symbol',
+      aliases: aliases,
+      description: String(source.description || '').slice(0, 300),
+      image: portablePackImage(source.image),
+      style: String(source.style || '').replace(/\s+/g, ' ').trim().slice(0, 80),
+      category: String(source.category || 'other').replace(/\s+/g, ' ').trim().slice(0, 60),
+      source: String(source.source || '').replace(/\s+/g, ' ').trim().slice(0, 80),
+      validated: source.validated === true,
+      attribution: packAttributionForShare(source.attribution),
+      reviewStatus: ['unreviewed', 'approved', 'needs_changes'].indexOf(source.reviewStatus) >= 0 ? source.reviewStatus : 'unreviewed',
+      isPreferred: source.isPreferred === true,
+      variantLabel: String(source.variantLabel || '').replace(/\s+/g, ' ').trim().slice(0, 80)
+    };
+  }
+  function buildVisualPackEnvelope(pack, assets, boards, schedules) {
+    var safePack = normalizeVisualPack(pack);
+    var boardBank = Array.isArray(boards) ? boards : [];
+    var scheduleBank = Array.isArray(schedules) ? schedules : [];
+    var assetBank = Array.isArray(assets) ? assets : [];
+    var selectedBoardSources = safePack.boardIds.map(function (id) {
+      return boardBank.find(function (board) { return board && String(board.id) === id; });
+    }).filter(Boolean);
+    var selectedScheduleSources = safePack.scheduleIds.map(function (id) {
+      return scheduleBank.find(function (schedule) { return schedule && String(schedule.id) === id; });
+    }).filter(Boolean);
+    var selectedBoards = selectedBoardSources.map(packBoardForShare);
+    var selectedSchedules = selectedScheduleSources.map(packScheduleForShare);
+    var requiredAssets = Object.create(null);
+    safePack.assetIds.forEach(function (id) { requiredAssets[id] = true; });
+    function collectCellAssets(cells) {
+      (Array.isArray(cells) ? cells : []).forEach(function (cell) {
+        if (cell && cell.assetId) requiredAssets[String(cell.assetId)] = true;
+        if (cell && cell.conceptId) requiredAssets[String(cell.conceptId)] = true;
+      });
+    }
+    selectedBoards.forEach(function (board) {
+      collectCellAssets(board.words);
+      (board.pages || []).forEach(function (page) { collectCellAssets(page.words); });
+    });
+    selectedSchedules.forEach(function (schedule) { collectCellAssets(schedule.items); });
+    assetBank.forEach(function (asset) {
+      if (asset && requiredAssets[String(asset.id)] && asset.conceptId) requiredAssets[String(asset.conceptId)] = true;
+    });
+    var selectedAssetSources = assetBank.filter(function (asset) {
+      return asset && requiredAssets[String(asset.id)];
+    });
+    var selectedAssets = selectedAssetSources.map(packAssetForShare);
+    var sharedAssetById = Object.create(null);
+    selectedAssets.forEach(function (asset) { sharedAssetById[asset.id] = asset; });
+    var deduplicatedCellImages = 0;
+    function removeDuplicateCellImages(cells) {
+      (Array.isArray(cells) ? cells : []).forEach(function (cell) {
+        var asset = cell && cell.assetId ? sharedAssetById[cell.assetId] : null;
+        if (asset && asset.image && cell.image === asset.image) {
+          cell.image = null;
+          deduplicatedCellImages++;
+        }
+      });
+    }
+    selectedBoards.forEach(function (board) {
+      removeDuplicateCellImages(board.words);
+      (board.pages || []).forEach(function (page) { removeDuplicateCellImages(page.words); });
+    });
+    selectedSchedules.forEach(function (schedule) { removeDuplicateCellImages(schedule.items); });
+    var omittedImageCount = 0;
+    function noteImage(value) {
+      if (value && !portablePackImage(value)) omittedImageCount++;
+    }
+    selectedBoardSources.forEach(function (board) {
+      (Array.isArray(board.words) ? board.words : []).forEach(function (cell) { noteImage(cell && cell.image); });
+      (Array.isArray(board.pages) ? board.pages : []).forEach(function (page) {
+        (page && Array.isArray(page.words) ? page.words : []).forEach(function (cell) { noteImage(cell && cell.image); });
+      });
+    });
+    selectedScheduleSources.forEach(function (schedule) {
+      (Array.isArray(schedule.items) ? schedule.items : []).forEach(function (cell) { noteImage(cell && cell.image); });
+    });
+    selectedAssetSources.forEach(function (asset) { noteImage(asset && asset.image); });
+    var licenses = selectedAssets.filter(function (asset) { return asset.attribution; }).map(function (asset) {
+      return { assetId: asset.id, label: asset.label, attribution: asset.attribution };
+    });
+    var reviewWarningCount = selectedAssets.filter(function (asset) { return asset.reviewStatus !== 'approved'; }).length;
+    return {
+      format: 'alloflow.visual-pack',
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      pack: {
+        id: safePack.id,
+        title: safePack.title,
+        description: safePack.description,
+        boardIds: selectedBoards.map(function (board) { return board.id; }),
+        assetIds: selectedAssets.map(function (asset) { return asset.id; }),
+        scheduleIds: selectedSchedules.map(function (schedule) { return schedule.id; }),
+        packVersion: 1
+      },
+      assets: selectedAssets,
+      boards: selectedBoards,
+      sequences: selectedSchedules,
+      licenses: licenses,
+      metadata: {
+        omittedNonportableImages: omittedImageCount,
+        deduplicatedCellImages: deduplicatedCellImages,
+        assetsNeedingLocalReview: reviewWarningCount
+      }
+    };
+  }
   // Load profiles with migration from legacy single-avatar format
   function loadProfiles() {
     var saved = load(STORAGE_PROFILES, null);
@@ -647,12 +1530,77 @@
   }
 
   // ── Main component ────────────────────────────────────────────────────────
+  function vocalLabelForCell(cell) {
+    return String(cell && (cell.translatedLabel || cell.label) || '').replace(/\s+/g, ' ').trim();
+  }
+
+  function collectBoardSpeechCells(board) {
+    if (!board) return [];
+    var pages = Array.isArray(board.pages) && board.pages.length ? board.pages : [board];
+    var out = [];
+    pages.forEach(function (page, pageIndex) {
+      (Array.isArray(page.words) ? page.words : []).forEach(function (cell, cellIndex) {
+        var label = vocalLabelForCell(cell);
+        if (!label) return;
+        out.push(Object.assign({}, cell, {
+          _speechPageIndex: pageIndex,
+          _speechPageId: String(page.id || ('page-' + pageIndex)),
+          _speechPageTitle: String(page.title || ('Page ' + (pageIndex + 1))),
+          _speechCellId: String(cell.id || ('cell-' + cellIndex)),
+          _speechCellIndex: cellIndex
+        }));
+      });
+    });
+    return out;
+  }
+
+  function withoutDeviceSpeechReference(board) {
+    var copy = Object.assign({}, board && typeof board === 'object' ? board : {});
+    delete copy.speechAudioRef;
+    delete copy.speechAudioUpdatedAt;
+    return copy;
+  }
+  function audioUrlToDurablePayload(url) {
+    if (!url) return Promise.reject(new Error('No audio URL'));
+    return fetch(url).then(function (response) {
+      if (!response.ok) throw new Error('Audio fetch failed');
+      return response.blob();
+    }).then(function (blob) {
+      return new Promise(function (resolve, reject) {
+        var reader = new FileReader();
+        reader.onloadend = function () {
+          resolve({ data: reader.result, mime: blob.type || 'audio/mpeg' });
+        };
+        reader.onerror = function () { reject(reader.error || new Error('Audio encoding failed')); };
+        reader.readAsDataURL(blob);
+      });
+    });
+  }
+
+  function promiseWithTimeout(promise, ms, message) {
+    return new Promise(function (resolve, reject) {
+      var timer = setTimeout(function () { reject(new Error(message || 'Timed out')); }, ms);
+      Promise.resolve(promise).then(function (value) {
+        clearTimeout(timer); resolve(value);
+      }, function (error) {
+        clearTimeout(timer); reject(error);
+      });
+    });
+  }
+
+  // ── Main component ──────────────────────────────────────────────────────────
   var SymbolStudio = React.memo(function SymbolStudio(props) {
     var onCallImagen = props.onCallImagen;
     var onCallGeminiImageEdit = props.onCallGeminiImageEdit;
     var onCallGemini = props.onCallGemini;
     var onCallTTS = props.onCallTTS;
     var selectedVoice = props.selectedVoice;
+    var voiceSpeed = Number(props.voiceSpeed || window.__alloPlaybackRate || 1);
+    if (!isFinite(voiceSpeed) || voiceSpeed <= 0) voiceSpeed = 1;
+    var primaryLanguage = props.primaryLanguage || 'English';
+    var ttsProvider = String(props.ttsProvider || 'auto').toLowerCase();
+    var ttsEngine = String(props.ttsEngine || '');
+    var ttsModel = String(props.ttsModel || '');
     var onSetVoice = props.onSetVoice || null; // callback to update app-wide voice
     var geminiVoices = props.geminiVoices || []; // Gemini TTS voice list from main app
     var kokoroVoices = props.kokoroVoices || []; // Kokoro TTS voice list from main app
@@ -662,6 +1610,8 @@
     var isOpen = props.isOpen;
     var cloudSync = props.cloudSync || null; // { save: async(data)=>void, load: async()=>data|null }
     var liveSession = props.liveSession || null; // { active, sessionCode, push: async(payload)=>void, clear: async()=>void }
+    var onSaveAACResource = typeof props.onSaveAACResource === 'function' ? props.onSaveAACResource : null;
+    var onShareAACResource = typeof props.onShareAACResource === 'function' ? props.onShareAACResource : null;
     var dashboardData = props.dashboardData || null; // teacher dashboard student array
     var setDashboardData = props.setDashboardData || null;
     var selectedStudentId = props.selectedStudentId || null;
@@ -724,6 +1674,7 @@
     var scheduleFileRef = useRef(null);
     var importFileRef = useRef(null);
     var importBoardRef = useRef(null);
+    var importPackRef = useRef(null);
     var qbUploadRef = useRef(null);
     // Holds FCT metadata (function + phase + optional goal text) between the moment the
     // Communication Builder builds a new board and the moment the save pipeline persists
@@ -731,7 +1682,7 @@
     var pendingFctMetaRef = useRef(null);
 
     // Symbols tab state
-    var _gallery = useState(function () { return loadScoped(STORAGE_GALLERY, [], activeProfileId); });
+    var _gallery = useState(function () { return loadScopedBank(activeProfileId); });
     var gallery = _gallery[0]; var setGallery = _gallery[1];
     var _selectedId = useState(null); var selectedId = _selectedId[0]; var setSelectedId = _selectedId[1];
     var _symLabel = useState(''); var symLabel = _symLabel[0]; var setSymLabel = _symLabel[1];
@@ -742,6 +1693,7 @@
     var _symRefine = useState({}); var symRefine = _symRefine[0]; var setSymRefine = _symRefine[1];
     var _symFilter = useState(''); var symFilter = _symFilter[0]; var setSymFilter = _symFilter[1];
     var _symCatFilter = useState(''); var symCatFilter = _symCatFilter[0]; var setSymCatFilter = _symCatFilter[1];
+    var _symReviewFilter = useState(''); var symReviewFilter = _symReviewFilter[0]; var setSymReviewFilter = _symReviewFilter[1];
     var _symCategory = useState(''); var symCategory = _symCategory[0]; var setSymCategory = _symCategory[1];
     var _symShowFavs = useState(false); var symShowFavs = _symShowFavs[0]; var setSymShowFavs = _symShowFavs[1];
     // Mulberry validated-symbol picker (Global Symbols API)
@@ -771,12 +1723,12 @@
       setMulberryAdding(result.id);
       fetchSymbolAsDataUri(result.svgUrl).then(function (img) {
         var label = ((mulberryQuery || result.label || '').trim()) || result.label || 'symbol';
-        var entry = {
+        var entry = normalizeBankAsset({
           id: uid(), label: label, description: '', image: safeImgUrl(img) || result.svgUrl,
           style: 'mulberry', category: symCategory || 'other', isFavorite: false, createdAt: Date.now(),
           source: 'mulberry', validated: true,
           attribution: { set: 'Mulberry Symbols', license: 'CC BY-SA', via: 'Global Symbols', url: 'https://globalsymbols.com' }
-        };
+        });
         var updated = [entry].concat(gallery);
         setGallery(updated); store(scopedKey(STORAGE_GALLERY), updated);
         setSelectedId(entry.id); setMulberryAdding(null);
@@ -802,6 +1754,7 @@
     var _boardColor = useState(true); var boardColor = _boardColor[0]; var setBoardColor = _boardColor[1];
     var _savedBoards = useState(function () { return loadScoped(STORAGE_BOARDS, [], activeProfileId); });
     var savedBoards = _savedBoards[0]; var setSavedBoards = _savedBoards[1];
+    var savedBoardsRef = useRef(savedBoards); savedBoardsRef.current = savedBoards;
     var _showBoardGallery = useState(false); var showBoardGallery = _showBoardGallery[0]; var setShowBoardGallery = _showBoardGallery[1];
     var _boardProfileFilter = useState(''); var boardProfileFilter = _boardProfileFilter[0]; var setBoardProfileFilter = _boardProfileFilter[1];
     // Board drag-to-reorder
@@ -817,29 +1770,53 @@
     var _showGalleryPicker = useState(false); var showGalleryPicker = _showGalleryPicker[0]; var setShowGalleryPicker = _showGalleryPicker[1];
     var _gpFilter = useState(''); var gpFilter = _gpFilter[0]; var setGpFilter = _gpFilter[1];
     // Activity Sets (multi-board books)
-    var _books = useState(function () { return loadScoped(STORAGE_BOOKS, [], activeProfileId); });
+    var _books = useState(function () { return loadScopedPacks(activeProfileId); });
     var books = _books[0]; var setBooks = _books[1];
     var _activeBookId = useState(null); var activeBookId = _activeBookId[0]; var setActiveBookId = _activeBookId[1];
     var _newBookTitle = useState(''); var newBookTitle = _newBookTitle[0]; var setNewBookTitle = _newBookTitle[1];
+    var _packAssetFilter = useState(''); var packAssetFilter = _packAssetFilter[0]; var setPackAssetFilter = _packAssetFilter[1];
 
-    // Schedule state
+    // Schedule state - internal names and storage stay unchanged for compatibility
     var _schedItems = useState([]); var schedItems = _schedItems[0]; var setSchedItems = _schedItems[1];
     var _schedInput = useState(''); var schedInput = _schedInput[0]; var setSchedInput = _schedInput[1];
+    var _schedTopic = useState(''); var schedTopic = _schedTopic[0]; var setSchedTopic = _schedTopic[1];
+    var _schedPlanning = useState(false); var schedPlanning = _schedPlanning[0]; var setSchedPlanning = _schedPlanning[1];
     var _schedGenerating = useState(false); var schedGenerating = _schedGenerating[0]; var setSchedGenerating = _schedGenerating[1];
     var _schedOrientation = useState('horizontal'); var schedOrientation = _schedOrientation[0]; var setSchedOrientation = _schedOrientation[1];
     var _schedTitle = useState(''); var schedTitle = _schedTitle[0]; var setSchedTitle = _schedTitle[1];
     var _schedNowId = useState(null); var schedNowId = _schedNowId[0]; var setSchedNowId = _schedNowId[1];
     var _savedSchedules = useState(function () { return loadScoped(STORAGE_SCHEDULES, [], activeProfileId); });
     var savedSchedules = _savedSchedules[0]; var setSavedSchedules = _savedSchedules[1];
+    var visualPackImportEpochRef = useRef(0);
+    var visualPackImportStateRef = useRef(null);
+    visualPackImportStateRef.current = {
+      profileId: activeProfileId || 'default',
+      gallery: gallery,
+      boards: savedBoards,
+      schedules: savedSchedules,
+      books: books
+    };
     var schedGenerationEpochRef = useRef(0);
     // Reload per-profile data when the active student profile changes (skip the initial mount).
     var ssDidMountRef = useRef(false);
     useEffect(function () {
       if (!ssDidMountRef.current) { ssDidMountRef.current = true; return; }
-      setGallery(loadScoped(STORAGE_GALLERY, [], activeProfileId));
+      boardSpeechGenerationRef.current += 1;
+      Object.keys(boardSpeechStoresRef.current).forEach(function (key) {
+        var entry = boardSpeechStoresRef.current[key];
+        if (entry) entry.disposed = true;
+        if (entry && entry.store) entry.store.clear();
+      });
+      boardSpeechStoresRef.current = {};
+      boardSpeechInflightRef.current = {};
+      boardSpeechTombstonesRef.current = {};
+      speechStorageWarningRef.current = false;
+      setSpeechPreparing(false);
+      setSpeechProgress({ ready: 0, total: 0 });
+      setGallery(loadScopedBank(activeProfileId));
       setSavedBoards(loadScoped(STORAGE_BOARDS, [], activeProfileId));
       setSavedSchedules(loadScoped(STORAGE_SCHEDULES, [], activeProfileId));
-      setBooks(loadScoped(STORAGE_BOOKS, [], activeProfileId));
+      setBooks(loadScopedPacks(activeProfileId));
       setIepGoals(loadScoped(STORAGE_GOALS, [], activeProfileId));
       setUsageLog(loadScoped(STORAGE_USAGE, {}, activeProfileId));
       setPrevGrowthMap(loadScoped(STORAGE_GROWTH_LOG, {}, activeProfileId));
@@ -848,8 +1825,10 @@
       // for one student cannot accidentally be saved into another profile.
       schedGenerationEpochRef.current += 1;
       setSchedGenerating(false);
+      setSchedPlanning(false);
       setBoardTopic(''); setBoardWords([]); setBoardPages(null); setActivePageIdx(0); setBoardTitle('');
       setSchedItems([]); setSchedInput(''); setSchedTitle(''); setSchedNowId(null);
+      setSchedTopic('');
     }, [activeProfileId]);
     var _showSchedGallery = useState(false); var showSchedGallery = _showSchedGallery[0]; var setShowSchedGallery = _showSchedGallery[1];
 
@@ -1038,6 +2017,9 @@
     var scanIntervalRef = useRef(null);
     var scanOverlayRef = useRef(null);
     var scanOpenerRef = useRef(null);
+    var useOverlayRef = useRef(null);
+    var useOpenerRef = useRef(null);
+    var exitUseRef = useRef(null);
     var modalRef = useRef(null);
     var ssLiveRef = useRef(null);
     var dialogOpenerRef = useRef(null);
@@ -1049,6 +2031,18 @@
     var _stripSpeaking = useState(false); var stripSpeaking = _stripSpeaking[0]; var setStripSpeaking = _stripSpeaking[1];
     var _commLog = useState([]); var commLog = _commLog[0]; var setCommLog = _commLog[1];
     var _showCommLog = useState(false); var showCommLog = _showCommLog[0]; var setShowCommLog = _showCommLog[1];
+    var _tapBehavior = useState(function () { return load('alloAACTapBehavior', 'speak-compose'); });
+    var tapBehavior = _tapBehavior[0]; var setTapBehavior = _tapBehavior[1];
+    var _speechPreparing = useState(false); var speechPreparing = _speechPreparing[0]; var setSpeechPreparing = _speechPreparing[1];
+    var _speechProgress = useState({ ready: 0, total: 0 }); var speechProgress = _speechProgress[0]; var setSpeechProgress = _speechProgress[1];
+    var _speechRevision = useState(0); var speechRevision = _speechRevision[0]; var setSpeechRevision = _speechRevision[1];
+    var boardSpeechStoresRef = useRef({});
+    var boardSpeechInflightRef = useRef({});
+    var boardSpeechGenerationRef = useRef(1);
+    var boardSpeechTombstonesRef = useRef({});
+    var symbolStudioMountedRef = useRef(true);
+    var speechStorageWarningRef = useRef(false);
+    var boardSpeechPrepareEpochRef = useRef(0);
     var _usageLog = useState(function () { return loadScoped(STORAGE_USAGE, {}, activeProfileId); }); var usageLog = _usageLog[0]; var setUsageLog = _usageLog[1];
     var _showAnalytics = useState(false); var showAnalytics = _showAnalytics[0]; var setShowAnalytics = _showAnalytics[1];
 
@@ -1056,6 +2050,7 @@
     var _predictions = useState([]); var predictions = _predictions[0]; var setPredictions = _predictions[1];
     var _predLoading = useState(false); var predLoading = _predLoading[0]; var setPredLoading = _predLoading[1];
     var predTimerRef = useRef(null);
+    var predEpochRef = useRef(0);
     // AI word-prediction consent: OFF by default. When off, NO student message text
     // is ever sent to the model. Teacher opts in per device (informed consent dialog).
     var _aiPredict = useState(function () { return load('alloAACPredictConsent', false) === true; });
@@ -1186,15 +2181,36 @@
       return function () { clearTimeout(t); };
     }, [syncToCloud, isCanvasEnv]); // syncToCloud ref changes whenever profiles/boards/schedules/gallery change
 
-    // Keyboard handler for use mode (Escape = exit, Backspace = delete last word)
+    // Use-mode keyboard shortcuts stay out of editable controls and route Escape
+    // through the normal session exit so logs and debriefs are not lost.
     useEffect(function () {
       if (!useBoardId) return;
+      var focusTimer = setTimeout(function () {
+        try { if (useOverlayRef.current && useOverlayRef.current.focus) useOverlayRef.current.focus(); } catch (_) {}
+      }, 0);
       var handler = function (ev) {
-        if (ev.code === 'Escape') { setUseBoardId(null); setStrip([]); setShowCommLog(false); }
-        else if (ev.code === 'Backspace') { setStrip(function (s) { return s.slice(0, -1); }); }
+        var target = ev.target;
+        var editable = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable);
+        if (editable) return;
+        if (ev.code === 'Escape') {
+          ev.preventDefault();
+          if (exitUseRef.current) exitUseRef.current();
+        } else if (ev.code === 'Backspace') {
+          ev.preventDefault();
+          predEpochRef.current += 1;
+          setPredictions([]);
+          setStrip(function (items) { return items.slice(0, -1); });
+        }
       };
       window.addEventListener('keydown', handler);
-      return function () { window.removeEventListener('keydown', handler); };
+      return function () {
+        clearTimeout(focusTimer);
+        window.removeEventListener('keydown', handler);
+        try {
+          var opener = useOpenerRef.current;
+          if (opener && opener.focus && document.contains(opener)) opener.focus();
+        } catch (_) {}
+      };
     }, [useBoardId]);
 
     // Scanning interval — auto-advance highlighted cell
@@ -1203,7 +2219,7 @@
       if (!scanBoardId || scanPaused || scanManual) return;
       var board = savedBoards.find(function (b) { return b.id === scanBoardId; });
       if (!board) return;
-      var cells = (board.words || []).filter(function (w) { return w.image; });
+      var cells = collectBoardSpeechCells(board).filter(function (cell) { return cell.image; });
       if (!cells.length) return;
       scanIntervalRef.current = setInterval(function () {
         setScanIndex(function (prev) { return (prev + 1) % cells.length; });
@@ -1333,7 +2349,7 @@
       try {
         var prompt = buildSymbolPrompt(symLabel, symDesc, globalStyle, avatarRef ? avatarDesc : '');
         var imageUrl = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, 400);
-        var entry = { id: uid(), label: symLabel.trim(), description: symDesc.trim(), image: imageUrl, style: globalStyle || 'flat vector', category: symCategory || 'other', isFavorite: false, createdAt: Date.now() };
+        var entry = normalizeBankAsset({ id: uid(), label: symLabel.trim(), description: symDesc.trim(), image: imageUrl, style: globalStyle || 'flat vector', category: symCategory || 'other', isFavorite: false, createdAt: Date.now(), source: 'ai-symbol-studio' });
         var updated = [entry].concat(gallery);
         setGallery(updated); store(scopedKey(STORAGE_GALLERY), updated);
         setSelectedId(entry.id);
@@ -1355,7 +2371,7 @@
         items, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, globalStyle,
         function (id) { setSymLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
       );
-      var valid = batchOut.results.filter(function (r) { return r.image; });
+      var valid = batchOut.results.filter(function (r) { return r.image; }).map(function (r) { return normalizeBankAsset(Object.assign({}, r, { source: 'ai-symbol-studio' })); });
       if (valid.length > 0) {
         var updated = valid.concat(gallery);
         setGallery(updated); store(scopedKey(STORAGE_GALLERY), updated);
@@ -1377,7 +2393,7 @@
       try {
         var prompt = buildSymbolPrompt(item.label, item.description, item.style, avatarRef ? avatarDesc : '');
         var imageUrl = await genWithRetry(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, 400);
-        var updated = gallery.map(function (i) { return i.id === id ? Object.assign({}, i, { image: imageUrl }) : i; });
+        var updated = gallery.map(function (i) { return i.id === id ? Object.assign({}, i, { image: imageUrl, reviewStatus: 'unreviewed', reviewedAt: null, reviewNote: '', updatedAt: Date.now() }) : i; });
         setGallery(updated); store(scopedKey(STORAGE_GALLERY), updated);
       } catch (e) {
         addToast && addToast(t('toasts.regen_failed'), 'error');
@@ -1398,7 +2414,7 @@
         var refinementPrompt = 'Edit this educational icon. Instruction: ' + instruction + '. Maintain the simple, flat vector art style. White background. STRICTLY NO TEXT.';
         var refined = await onCallGeminiImageEdit(refinementPrompt, raw, 400, 0.85);
         if (refined) {
-          var updated = gallery.map(function (i) { return i.id === id ? Object.assign({}, i, { image: refined }) : i; });
+          var updated = gallery.map(function (i) { return i.id === id ? Object.assign({}, i, { image: refined, reviewStatus: 'unreviewed', reviewedAt: null, reviewNote: '', updatedAt: Date.now() }) : i; });
           setGallery(updated); store(scopedKey(STORAGE_GALLERY), updated);
           setSymRefine(function (p) { var n = Object.assign({}, p); n[id] = ''; return n; });
           addToast && addToast(t('toasts.icon_refined'), 'success');
@@ -1411,11 +2427,127 @@
       } finally { setSymLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
     }, [gallery, onCallGeminiImageEdit, addToast]);
 
+    var setSymbolReview = useCallback(function (id, status) {
+      if (['unreviewed', 'approved', 'needs_changes'].indexOf(status) < 0) return;
+      setGallery(function (prev) {
+        var updated = prev.map(function (item) {
+          return item.id === id ? Object.assign({}, item, {
+            reviewStatus: status,
+            reviewedAt: status === 'unreviewed' ? null : new Date().toISOString(),
+            updatedAt: Date.now()
+          }) : item;
+        });
+        if (!store(scopedKey(STORAGE_GALLERY), updated)) {
+          addToast && addToast('Could not save the Symbol Bank review. Device storage may be full.', 'error');
+          return prev;
+        }
+        return updated;
+      });
+    }, [addToast]);
+
+    var setSymbolAliases = useCallback(function (id, text) {
+      var aliases = String(text || '').split(',').map(function (value) {
+        return value.replace(/\s+/g, ' ').trim().slice(0, 80);
+      }).filter(Boolean);
+      setGallery(function (prev) {
+        var updated = prev.map(function (item) {
+          return item.id === id ? normalizeBankAsset(Object.assign({}, item, { aliases: aliases, updatedAt: Date.now() })) : item;
+        });
+        if (!store(scopedKey(STORAGE_GALLERY), updated)) return prev;
+        return updated;
+      });
+    }, []);
+
+    var setSymbolReviewNote = useCallback(function (id, note) {
+      setGallery(function (prev) {
+        var updated = prev.map(function (item) {
+          return item.id === id ? Object.assign({}, item, { reviewNote: String(note || '').slice(0, 500), updatedAt: Date.now() }) : item;
+        });
+        if (!store(scopedKey(STORAGE_GALLERY), updated)) return prev;
+        return updated;
+      });
+    }, []);
+
+    var setPreferredSymbolVariant = useCallback(function (id) {
+      setGallery(function (prev) {
+        var target = prev.find(function (item) { return item.id === id; });
+        if (!target) return prev;
+        var updated = prev.map(function (item) {
+          if (item.conceptId !== target.conceptId) return item;
+          return Object.assign({}, item, { isPreferred: item.id === id, updatedAt: Date.now() });
+        });
+        if (!store(scopedKey(STORAGE_GALLERY), updated)) {
+          addToast && addToast('Could not save the preferred symbol variant.', 'error');
+          return prev;
+        }
+        return updated;
+      });
+    }, [addToast]);
+
+    var createSymbolVariant = useCallback(async function (id, instruction) {
+      var item = gallery.find(function (candidate) { return candidate.id === id; });
+      var edit = String(instruction || '').trim();
+      if (!item || !item.image || !edit) return;
+      if (!onCallGeminiImageEdit) {
+        addToast && addToast(t('toasts.image_editing_available_2'), 'error');
+        return;
+      }
+      setSymLoading(function (prev) { var next = Object.assign({}, prev); next[id] = true; return next; });
+      try {
+        var raw = await ensureBase64(item.image);
+        if (!raw) throw new Error('Could not extract image data');
+        var prompt = 'Create a new visual variant of this educational icon. Instruction: ' + edit
+          + '. Keep the meaning and simple AAC-friendly composition. White background. STRICTLY NO TEXT.';
+        var image = await onCallGeminiImageEdit(prompt, raw, 400, 0.85);
+        if (!image) throw new Error('No image returned');
+        var conceptId = item.conceptId || item.id;
+        var variantCount = gallery.filter(function (candidate) { return (candidate.conceptId || candidate.id) === conceptId; }).length;
+        var variant = normalizeBankAsset(Object.assign({}, item, {
+          id: uid(),
+          conceptId: conceptId,
+          image: image,
+          variantLabel: 'Variant ' + (variantCount + 1),
+          isPreferred: false,
+          isFavorite: false,
+          locked: false,
+          reviewStatus: 'unreviewed',
+          reviewedAt: null,
+          reviewNote: '',
+          source: 'ai-symbol-studio-variant',
+          createdAt: Date.now(),
+          updatedAt: Date.now()
+        }));
+        var updated = [variant].concat(gallery);
+        if (!store(scopedKey(STORAGE_GALLERY), updated)) {
+          addToast && addToast('Could not save the new variant. Device storage may be full.', 'error');
+          return;
+        }
+        setGallery(updated);
+        setSelectedId(variant.id);
+        setSymRefine(function (prev) { var next = Object.assign({}, prev); next[id] = ''; return next; });
+        addToast && addToast('New symbol variant saved for review.', 'success');
+      } catch (error) {
+        addToast && addToast('Could not create the symbol variant.', 'error');
+      } finally {
+        setSymLoading(function (prev) { var next = Object.assign({}, prev); delete next[id]; return next; });
+      }
+    }, [gallery, onCallGeminiImageEdit, addToast]);
+
     var deleteSymbol = useCallback(function (id) {
-      var updated = gallery.filter(function (i) { return i.id !== id; });
-      setGallery(updated); store(scopedKey(STORAGE_GALLERY), updated);
+      var updated = gallery.filter(function (item) { return item.id !== id; });
+      if (!store(scopedKey(STORAGE_GALLERY), updated)) {
+        addToast && addToast('Could not delete the symbol because device storage is unavailable.', 'error');
+        return;
+      }
+      var updatedBooks = books.map(function (book) {
+        return book.assetIds.indexOf(id) >= 0
+          ? normalizeVisualPack(Object.assign({}, book, { assetIds: book.assetIds.filter(function (assetId) { return assetId !== id; }), updatedAt: Date.now() }))
+          : book;
+      });
+      if (store(scopedKey(STORAGE_BOOKS), updatedBooks)) setBooks(updatedBooks);
+      setGallery(updated);
       if (selectedId === id) setSelectedId(updated.length ? updated[0].id : null);
-    }, [gallery, selectedId]);
+    }, [gallery, selectedId, books, addToast]);
 
     var downloadSym = useCallback(function (item) {
       var a = document.createElement('a');
@@ -1432,8 +2564,8 @@
     }, [gallery]);
 
     var clearGallery = useCallback(async function () {
-      if (!(await askSymbolStudioConfirmation('Clear all ' + gallery.length + ' symbols from the gallery? This cannot be undone.', {
-        title: 'Clear symbol gallery', confirmText: 'Clear all symbols'
+      if (!(await askSymbolStudioConfirmation('Clear all ' + gallery.length + ' symbols from the Symbol Bank? This cannot be undone.', {
+        title: 'Clear Symbol Bank', confirmText: 'Clear all symbols'
       }))) return;
       setGallery([]); store(scopedKey(STORAGE_GALLERY), []);
       setSelectedId(null);
@@ -1450,7 +2582,7 @@
         version: 7,
         exportDate: new Date().toISOString(),
         gallery: gallery,
-        boards: savedBoards,
+        boards: savedBoards.map(withoutDeviceSpeechReference),
         schedules: savedSchedules,
         profiles: profiles,
         books: books,
@@ -1484,18 +2616,20 @@
           var summary = [];
           if (Array.isArray(data.gallery) && data.gallery.length) {
             // Merge: keep existing items not already in the imported set (match by id)
+            var importedAssets = normalizeBank(data.gallery);
             var importedIds = {};
-            data.gallery.forEach(function (g) { importedIds[g.id] = true; });
-            var merged = data.gallery.concat(gallery.filter(function (g) { return !importedIds[g.id]; }));
+            importedAssets.forEach(function (g) { importedIds[g.id] = true; });
+            var merged = importedAssets.concat(gallery.filter(function (g) { return !importedIds[g.id]; }));
             setGallery(merged); store(scopedKey(STORAGE_GALLERY), merged);
             summary.push(data.gallery.length + ' symbol(s)');
           }
           if (Array.isArray(data.boards) && data.boards.length) {
+            var portableImportedBoards = data.boards.map(withoutDeviceSpeechReference);
             var importedBoardIds = {};
-            data.boards.forEach(function (b) { importedBoardIds[b.id] = true; });
-            var mergedBoards = data.boards.concat(savedBoards.filter(function (b) { return !importedBoardIds[b.id]; }));
+            portableImportedBoards.forEach(function (board) { importedBoardIds[board.id] = true; });
+            var mergedBoards = portableImportedBoards.concat(savedBoards.filter(function (board) { return !importedBoardIds[board.id]; }));
             setSavedBoards(mergedBoards); store(scopedKey(STORAGE_BOARDS), mergedBoards);
-            summary.push(data.boards.length + ' board(s)');
+            summary.push(portableImportedBoards.length + ' board(s)');
           }
           if (Array.isArray(data.schedules) && data.schedules.length) {
             var importedSchedIds = {};
@@ -1522,11 +2656,12 @@
             summary.push('student profile');
           }
           if (Array.isArray(data.books) && data.books.length) {
+            var importedPacks = data.books.map(normalizeVisualPack);
             var impBookIds = {};
-            data.books.forEach(function (b) { impBookIds[b.id] = true; });
-            var mergedBooks = data.books.concat(books.filter(function (b) { return !impBookIds[b.id]; }));
-            setBooks(mergedBooks); store(scopedKey(STORAGE_BOOKS),mergedBooks);
-            summary.push(data.books.length + ' activity set(s)');
+            importedPacks.forEach(function (b) { impBookIds[b.id] = true; });
+            var mergedBooks = importedPacks.concat(books.filter(function (b) { return !impBookIds[b.id]; }));
+            setBooks(mergedBooks); store(scopedKey(STORAGE_BOOKS), mergedBooks);
+            summary.push(importedPacks.length + ' Visual Pack(s)');
           }
           // Import familiarity data (merge: imported values override existing per-word)
           if (data.familiarity && typeof data.familiarity === 'object') {
@@ -1734,20 +2869,21 @@
       var items = boardWords.filter(function (w) { return !w.image; });
       if (!items.length) { addToast && addToast(t('toasts.all_images_already_generated'), 'info'); return; }
       // ── Symbol reuse: check gallery before calling Imagen ──────────────
-      var galleryMap = {};
-      gallery.forEach(function (g) { if (g.image) galleryMap[g.label.toLowerCase().trim()] = g.image; });
       var preMatched = []; var toGenerate = [];
       items.forEach(function (item) {
-        var cached = galleryMap[item.label.toLowerCase().trim()];
-        if (cached) preMatched.push({ id: item.id, image: cached });
+        var cached = findExactBankAsset(gallery, item.label);
+        if (cached) preMatched.push({ id: item.id, image: cached.image, assetId: cached.id, conceptId: cached.conceptId || cached.id });
         else toGenerate.push(item);
       });
       if (preMatched.length) {
         setBoardWords(function (prev) {
-          var map = {}; preMatched.forEach(function (r) { map[r.id] = r.image; });
-          return prev.map(function (w) { return map[w.id] ? Object.assign({}, w, { image: map[w.id] }) : w; });
+          var map = {}; preMatched.forEach(function (result) { map[result.id] = result; });
+          return prev.map(function (word) {
+            var match = map[word.id];
+            return match ? Object.assign({}, word, { image: match.image, assetId: match.assetId, conceptId: match.conceptId }) : word;
+          });
         });
-        addToast && addToast(preMatched.length + ' symbol(s) reused from gallery \u2013 saving API calls!', 'info');
+        addToast && addToast(preMatched.length + ' symbol(s) reused from the Symbol Bank: saving API calls!', 'info');
       }
       if (!toGenerate.length) { addToast && addToast(t('toasts.all_images_ready'), 'success'); return; }
       var loadMap = {};
@@ -1757,10 +2893,35 @@
         toGenerate, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, globalStyle,
         function (id) { setBoardLoading(function (p) { var n = Object.assign({}, p); delete n[id]; return n; }); }
       );
+      var generatedMap = {}; var generatedAssets = [];
+      batchOut.results.forEach(function (result) {
+        var asset = normalizeBankAsset({
+          id: uid(),
+          label: result.label,
+          description: result.description || '',
+          image: result.image,
+          style: globalStyle || 'flat vector',
+          category: result.category || 'other',
+          source: 'board-builder',
+          createdAt: Date.now()
+        });
+        generatedAssets.push(asset);
+        generatedMap[result.id] = { image: result.image, assetId: asset.id, conceptId: asset.conceptId };
+      });
+      if (generatedAssets.length) {
+        var bankUpdate = generatedAssets.concat(gallery);
+        if (store(scopedKey(STORAGE_GALLERY), bankUpdate)) setGallery(bankUpdate);
+        else {
+          generatedMap = {};
+          batchOut.results.forEach(function (result) { generatedMap[result.id] = { image: result.image }; });
+          addToast && addToast('Board images are ready, but could not be added to the Symbol Bank.', 'error');
+        }
+      }
       setBoardWords(function (prev) {
-        var map = {};
-        batchOut.results.forEach(function (r) { map[r.id] = r; });
-        return prev.map(function (w) { return map[w.id] ? Object.assign({}, w, { image: map[w.id].image }) : w; });
+        return prev.map(function (word) {
+          var result = generatedMap[word.id];
+          return result ? Object.assign({}, word, result) : word;
+        });
       });
       setBoardLoading({});
       addToast && addToast(t('toasts.board_images_generated'), 'success');
@@ -1876,6 +3037,519 @@
       audio.play().catch(function () {});
     }, []);
 
+    function stableSpeechHash(value) {
+      var textValue = String(value == null ? '' : value);
+      var first = 2166136261;
+      var second = 2246822507;
+      for (var index = 0; index < textValue.length; index++) {
+        var code = textValue.charCodeAt(index);
+        first = Math.imul(first ^ code, 16777619);
+        second = Math.imul(second ^ code, 3266489909);
+      }
+      return (first >>> 0).toString(36) + (second >>> 0).toString(36);
+    }
+
+    function boardSpeechStorageKey(board, profileScopeId) {
+      var profilePart = String(profileScopeId || activeProfileIdRef.current || 'default');
+      var boardPart = String(board && board.id || 'draft');
+      return 'v1:p-' + stableSpeechHash(profilePart) + ':b-' + stableSpeechHash(boardPart);
+    }
+
+    function currentBoardSpeechProfile(board) {
+      var provider = String(ttsProvider || 'auto').toLowerCase();
+      var profile = {
+        voice: selectedVoice || 'Kore',
+        language: String((board && board.language) || boardLang || primaryLanguage || 'English'),
+        synthesisRate: voiceSpeed,
+        voiceResolverVersion: 2
+      };
+      // Auto intentionally accepts a valid clip from any resolver route. When
+      // the user explicitly chooses a provider, provenance becomes a strict
+      // compatibility requirement so a local fallback is not mistaken for it.
+      if (provider && provider !== 'auto') profile.provider = provider;
+      if (ttsEngine) profile.engine = ttsEngine;
+      if (ttsModel && provider !== 'auto' && provider !== 'local' && provider !== 'browser' && provider !== 'off') {
+        profile.model = ttsModel;
+      }
+      return profile;
+    }
+
+    function mergeResolvedSpeechProfile(requested, resolved) {
+      var profile = Object.assign({}, requested || {});
+      if (!resolved || typeof resolved !== 'object') return profile;
+      ['provider', 'engine', 'engineVersion', 'model', 'modelVersion'].forEach(function (key) {
+        if (resolved[key] != null && String(resolved[key]).trim()) profile[key] = String(resolved[key]).trim();
+      });
+      return profile;
+    }
+
+    function speechProfileSignature(profile) {
+      return JSON.stringify([
+        profile.voice || '',
+        profile.language || '',
+        Number(profile.synthesisRate) || 1,
+        profile.voiceResolverVersion || 2,
+        profile.provider || '',
+        profile.engine || '',
+        profile.model || ''
+      ]);
+    }
+
+    useEffect(function () {
+      boardSpeechPrepareEpochRef.current += 1;
+      setSpeechPreparing(false);
+      setSpeechProgress({ ready: 0, total: 0 });
+    }, [selectedVoice, voiceSpeed, ttsProvider, ttsEngine, ttsModel, boardLang, primaryLanguage]);
+
+    function boardSpeechTarget(board, cell, spokenText, segmentOverride) {
+      var pageId = String(cell && cell._speechPageId || 'page-0');
+      var cellId = String(cell && (cell._speechCellId || cell.id) || 'cell-0');
+      return {
+        identityVersion: 4,
+        adapterId: 'alloflow.symbol-studio.cell-speech',
+        adapterVersion: 1,
+        scopeId: 'board:' + String(board && board.id || 'draft') + ':page:' + pageId,
+        segmentId: segmentOverride || ('cell:' + cellId),
+        spokenText: spokenText
+      };
+    }
+
+    function phraseSegmentId(text) {
+      var value = String(text || '');
+      var hash = 2166136261;
+      for (var i = 0; i < value.length; i++) {
+        hash ^= value.charCodeAt(i);
+        hash = Math.imul(hash, 16777619);
+      }
+      return 'phrase:' + (hash >>> 0).toString(36);
+    }
+
+    function speechEntryAlive(entry) {
+      return !!entry && !entry.disposed && symbolStudioMountedRef.current
+        && entry.generation === boardSpeechGenerationRef.current
+        && boardSpeechStoresRef.current[entry.key] === entry
+        && !boardSpeechTombstonesRef.current[entry.key];
+    }
+
+    function ensureBoardSpeechEntry(board) {
+      var audioModule = window.AlloModules && window.AlloModules.KaraokeAudioStore;
+      if (!audioModule || typeof audioModule.createStore !== 'function' || !board) return Promise.resolve(null);
+      var profileScopeId = activeProfileIdRef.current || 'default';
+      var key = boardSpeechStorageKey(board, profileScopeId);
+      if (boardSpeechTombstonesRef.current[key]) return Promise.resolve(null);
+      var cached = boardSpeechStoresRef.current[key];
+      if (cached) return cached.ready;
+      var entry = {
+        key: key,
+        store: audioModule.createStore(),
+        hydrated: false,
+        hydrationState: 'pending',
+        storageAvailable: false,
+        boardId: board.id,
+        profileScopeId: profileScopeId,
+        boardStorageKey: profKey(STORAGE_BOARDS, profileScopeId === 'default' ? null : profileScopeId),
+        generation: boardSpeechGenerationRef.current,
+        disposed: false,
+        deletionRequested: false,
+        writeChain: Promise.resolve(false),
+        latestRequestBySegment: Object.create(null),
+        requestSequence: 0
+      };
+      boardSpeechStoresRef.current[key] = entry;
+      var deviceStorage = window.alloDeviceStorage;
+      var rawHydration = Promise.resolve().then(function () {
+        if (!deviceStorage || typeof deviceStorage.ready !== 'function' || typeof deviceStorage.get !== 'function') {
+          throw new Error('Saved speech storage is unavailable');
+        }
+        return deviceStorage.ready().then(function () {
+          return deviceStorage.get(SYMBOL_SPEECH_NAMESPACE, key);
+        });
+      });
+      entry.hydrationCompletion = rawHydration.then(function (payload) {
+        if (!speechEntryAlive(entry)) return entry;
+        if (typeof payload === 'string') {
+          try { payload = JSON.parse(payload); } catch (_) { payload = null; }
+        }
+        if (payload) entry.store.hydrate(payload);
+        entry.hydrated = true;
+        entry.hydrationState = 'ready';
+        entry.storageAvailable = !!deviceStorage;
+        if (speechEntryAlive(entry)) setSpeechRevision(function (value) { return value + 1; });
+        return entry;
+      }).catch(function () {
+        if (!speechEntryAlive(entry)) return entry;
+        entry.hydrated = true;
+        entry.hydrationState = 'failed';
+        entry.storageAvailable = false;
+        setSpeechRevision(function (value) { return value + 1; });
+        return entry;
+      });
+      entry.ready = promiseWithTimeout(entry.hydrationCompletion, 750, 'Saved speech hydration is still pending').catch(function () {
+        return entry;
+      });
+      return entry.ready;
+    }
+    function persistBoardSpeech(board, entry) {
+      var deviceStorage = window.alloDeviceStorage;
+      if (!board || !speechEntryAlive(entry) || entry.hydrationState !== 'ready'
+          || !deviceStorage || typeof deviceStorage.set !== 'function') return Promise.resolve(false);
+      var previousWrite = Promise.resolve(entry.writeChain).catch(function () { return false; });
+      var rawWrite = previousWrite.then(function () {
+        if (!speechEntryAlive(entry) || entry.deletionRequested || entry.hydrationState !== 'ready') return false;
+        var snapshot = entry.store.serialize();
+        return Promise.resolve().then(function () { return deviceStorage.ready(); }).then(function () {
+          if (!speechEntryAlive(entry) || entry.deletionRequested) return false;
+          return deviceStorage.set(SYMBOL_SPEECH_NAMESPACE, entry.key, snapshot, { queue: true });
+        });
+      });
+      entry.writeChain = rawWrite.then(function (writeResult) {
+        if (writeResult === false || (writeResult && writeResult.queued === true)
+            || !speechEntryAlive(entry) || entry.deletionRequested) return false;
+        entry.storageAvailable = true;
+        var ref = { version: 1, namespace: SYMBOL_SPEECH_NAMESPACE, key: entry.key };
+        var current = entry.profileScopeId === (activeProfileIdRef.current || 'default')
+          ? (savedBoardsRef.current || [])
+          : load(entry.boardStorageKey, []);
+        var found = false;
+        var updated = current.map(function (saved) {
+          if (saved.id !== board.id) return saved;
+          found = true;
+          return Object.assign({}, saved, {
+            speechAudioRef: ref,
+            speechAudioUpdatedAt: new Date().toISOString(),
+            language: saved.language || board.language || boardLang || 'en'
+          });
+        });
+        if (!found) return true;
+        if (!store(entry.boardStorageKey, updated)) {
+          if (!speechStorageWarningRef.current) {
+            speechStorageWarningRef.current = true;
+            addToast && addToast('Speech was saved on this device, but the board reference could not be updated.', 'error');
+          }
+          return true;
+        }
+        if (entry.profileScopeId === (activeProfileIdRef.current || 'default') && speechEntryAlive(entry)) {
+          savedBoardsRef.current = updated;
+          setSavedBoards(updated);
+          notifyVisualSupportsUpdated();
+        }
+        return true;
+      }, function () {
+        if (speechEntryAlive(entry)) entry.storageAvailable = false;
+        return false;
+      });
+      return promiseWithTimeout(entry.writeChain, 8000, 'Saved speech write is still pending').catch(function () {
+        if (speechEntryAlive(entry) && !speechStorageWarningRef.current) {
+          speechStorageWarningRef.current = true;
+          addToast && addToast('Generated speech works for this session. Saving is still pending on this device.', 'info');
+        }
+        return false;
+      }).then(function (saved) {
+        if (!saved && speechEntryAlive(entry) && !speechStorageWarningRef.current) {
+          speechStorageWarningRef.current = true;
+          addToast && addToast('Generated speech works for this session but could not be saved on this device.', 'error');
+        }
+        return saved;
+      });
+    }
+    function captureGeneratedSpeech(board, entry, target, profile, url, shouldPersist, segmentKey, requestToken, requestedSignature) {
+      if (!url || !speechEntryAlive(entry)) return Promise.resolve({ url: url || null, stored: false, persisted: false });
+      return promiseWithTimeout(audioUrlToDurablePayload(url), 15000, 'Speech capture did not respond').then(function (payload) {
+        if (!speechEntryAlive(entry) || entry.latestRequestBySegment[segmentKey] !== requestToken
+            || speechProfileSignature(currentBoardSpeechProfile(board)) !== requestedSignature) {
+          return { url: speechEntryAlive(entry) ? url : null, stored: false, persisted: false };
+        }
+        return promiseWithTimeout(entry.hydrationCompletion, 8000, 'Saved speech hydration is still pending').then(function () {
+          if (!speechEntryAlive(entry) || entry.latestRequestBySegment[segmentKey] !== requestToken
+              || speechProfileSignature(currentBoardSpeechProfile(board)) !== requestedSignature) {
+            return { url: speechEntryAlive(entry) ? url : null, stored: false, persisted: false };
+          }
+          var durableUrl = entry.store.put(target, payload.data, payload.mime, 'ai-symbol-studio', profile);
+          if (!durableUrl) return { url: url, stored: false, persisted: false };
+          if (speechEntryAlive(entry)) setSpeechRevision(function (value) { return value + 1; });
+          if (shouldPersist === false || entry.hydrationState !== 'ready') {
+            return { url: durableUrl, stored: true, persisted: false };
+          }
+          return persistBoardSpeech(board, entry).then(function (saved) {
+            return { url: durableUrl, stored: true, persisted: saved };
+          });
+        }).catch(function () {
+          return { url: speechEntryAlive(entry) ? url : null, stored: false, persisted: false };
+        });
+      }).catch(function () {
+        return { url: speechEntryAlive(entry) ? url : null, stored: false, persisted: false };
+      });
+    }
+    function resolveBoardSpeech(board, cell, text, options) {
+      var spokenText = String(text || vocalLabelForCell(cell)).trim();
+      if (!spokenText) return Promise.resolve(null);
+      if (cell && cell.audioData) return Promise.resolve(cell.audioData);
+      var audioModule = window.AlloModules && window.AlloModules.KaraokeAudioStore;
+      if (!audioModule || !onCallTTS) return Promise.resolve(null);
+      return ensureBoardSpeechEntry(board).then(function (entry) {
+        if (!speechEntryAlive(entry)) return null;
+        var target = boardSpeechTarget(board, cell, spokenText, options && options.segmentId);
+        var profile = currentBoardSpeechProfile(board);
+        var requestedSignature = speechProfileSignature(profile);
+        var portableKey = audioModule.portableKeyForIdentity(target);
+        var inflightKey = entry.key + '|' + portableKey + '|text:' + stableSpeechHash(spokenText) + '|profile:' + stableSpeechHash(requestedSignature);
+        var existing = boardSpeechInflightRef.current[inflightKey];
+        if (existing) {
+          entry.latestRequestBySegment[portableKey] = existing.requestToken;
+          return options && options.awaitCapture
+            ? existing.capture.then(function (result) { return result && result.url; })
+            : existing.playback;
+        }
+
+        // Every new intent owns the segment before checking the cache. This
+        // means a cached B tap invalidates an older in-flight A capture.
+        entry.requestSequence += 1;
+        var requestToken = entry.requestSequence;
+        entry.latestRequestBySegment[portableKey] = requestToken;
+        var savedUrl = entry.store.getCompatible(target, profile);
+        if (savedUrl) return savedUrl;
+
+        var record = { requestToken: requestToken };
+        var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        var resolvedProfile = profile;
+        var ttsOptions = {
+          language: profile.language,
+          priority: options && options.priority || 'interactive',
+          maxRetries: options && options.maxRetries != null ? options.maxRetries : 1,
+          reason: options && options.reason || 'symbol-studio-cell',
+          signal: controller ? controller.signal : undefined,
+          onResolvedProfile: function (actual) {
+            resolvedProfile = mergeResolvedSpeechProfile(profile, actual);
+          }
+        };
+        record.synthesis = Promise.resolve().then(function () {
+          return onCallTTS(spokenText, profile.voice, profile.synthesisRate, ttsOptions);
+        }).then(function (url) {
+          return {
+            source: 'tts',
+            url: speechEntryAlive(entry) ? (url || null) : null,
+            profile: resolvedProfile
+          };
+        }).catch(function () {
+          return { source: 'tts', url: null, profile: resolvedProfile };
+        });
+
+        var hydrationLookup = entry.hydrationState === 'pending'
+          ? entry.hydrationCompletion.then(function () {
+              var url = speechEntryAlive(entry) ? entry.store.getCompatible(target, profile) : null;
+              return { source: 'saved', url: url || null, profile: profile };
+            }).catch(function () {
+              return { source: 'saved', url: null, profile: profile };
+            })
+          : Promise.resolve({ source: 'saved', url: null, profile: profile });
+
+        record.resolution = Promise.race([hydrationLookup, record.synthesis]).then(function (winner) {
+          if (winner.source === 'saved' && winner.url) {
+            try { if (controller) controller.abort(); } catch (_) {}
+            return winner;
+          }
+          return winner.source === 'saved' ? record.synthesis : winner;
+        });
+        record.playback = record.resolution.then(function (result) { return result && result.url; });
+        record.capture = record.resolution.then(function (result) {
+          if (result && result.source === 'saved' && result.url) {
+            return { url: result.url, stored: true, persisted: true };
+          }
+          return captureGeneratedSpeech(
+            board,
+            entry,
+            target,
+            result && result.profile || profile,
+            result && result.url,
+            !(options && options.persist === false),
+            portableKey,
+            requestToken,
+            requestedSignature
+          );
+        }).then(function (result) {
+          if (boardSpeechInflightRef.current[inflightKey] === record) delete boardSpeechInflightRef.current[inflightKey];
+          return result;
+        }, function () {
+          if (boardSpeechInflightRef.current[inflightKey] === record) delete boardSpeechInflightRef.current[inflightKey];
+          return { url: null, stored: false, persisted: false };
+        });
+        boardSpeechInflightRef.current[inflightKey] = record;
+        return options && options.awaitCapture
+          ? record.capture.then(function (result) { return result && result.url; })
+          : record.playback;
+      });
+    }
+
+    function fallbackBrowserSpeech(text, onDone) {
+      if (!window.speechSynthesis) { if (onDone) onDone(); return; }
+      var utterance = new window.SpeechSynthesisUtterance(text);
+      applyVoice(utterance);
+      if (onDone) { utterance.onend = onDone; utterance.onerror = onDone; }
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function playResolvedBoardSpeech(board, cell, text, options) {
+      var spokenText = String(text || vocalLabelForCell(cell)).trim();
+      var done = options && options.onDone;
+      return resolveBoardSpeech(board, cell, spokenText, options).then(function (url) {
+        if (!url) { fallbackBrowserSpeech(spokenText, done); return null; }
+        var audio = new Audio(url);
+        if (done) audio.onended = done;
+        return audio.play().then(function () { return url; }).catch(function () {
+          fallbackBrowserSpeech(spokenText, done);
+          return null;
+        });
+      }).catch(function () {
+        fallbackBrowserSpeech(spokenText, done);
+        return null;
+      });
+    }
+
+    function boardSpeechStatus(board, cells) {
+      var list = Array.isArray(cells) ? cells : collectBoardSpeechCells(board);
+      var profile = currentBoardSpeechProfile(board);
+      var key = boardSpeechStorageKey(board);
+      var entry = boardSpeechStoresRef.current[key];
+      var ready = 0;
+      list.forEach(function (cell) {
+        if (cell.audioData) { ready++; return; }
+        if (!entry || !entry.hydrated || !speechEntryAlive(entry)) return;
+        var text = vocalLabelForCell(cell);
+        var target = boardSpeechTarget(board, cell, text);
+        if (entry.store.getCompatible(target, profile)) ready++;
+      });
+      return { ready: ready, total: list.length, loading: !!entry && !entry.hydrated, revision: speechRevision };
+    }
+
+    function prepareBoardSpeech(board) {
+      if (!board || speechPreparing) return;
+      var cells = collectBoardSpeechCells(board);
+      var generation = boardSpeechGenerationRef.current;
+      var prepareEpoch = ++boardSpeechPrepareEpochRef.current;
+      var requestedSignature = speechProfileSignature(currentBoardSpeechProfile(board));
+      var prepareIsCurrent = function (entry) {
+        return speechEntryAlive(entry)
+          && entry.generation === generation
+          && boardSpeechPrepareEpochRef.current === prepareEpoch
+          && speechProfileSignature(currentBoardSpeechProfile(board)) === requestedSignature;
+      };
+      setSpeechPreparing(true);
+      setSpeechProgress({ ready: 0, total: cells.length });
+      ensureBoardSpeechEntry(board).then(async function (entry) {
+        if (!prepareIsCurrent(entry)) return;
+        var ready = 0;
+        var needsDeviceSave = false;
+        for (var i = 0; i < cells.length; i++) {
+          if (!prepareIsCurrent(entry)) return;
+          var cell = cells[i];
+          if (cell.audioData) {
+            ready++;
+          } else {
+            needsDeviceSave = true;
+            await resolveBoardSpeech(board, cell, vocalLabelForCell(cell), {
+              priority: 'normal',
+              maxRetries: 1,
+              reason: 'symbol-studio-prepare',
+              awaitCapture: true,
+              persist: false
+            });
+            if (!prepareIsCurrent(entry)) return;
+            var profile = currentBoardSpeechProfile(board);
+            var target = boardSpeechTarget(board, cell, vocalLabelForCell(cell));
+            if (entry.store.getCompatible(target, profile)) ready++;
+          }
+          if (prepareIsCurrent(entry)) setSpeechProgress({ ready: ready, total: cells.length });
+        }
+        var persisted = needsDeviceSave ? await persistBoardSpeech(board, entry) : true;
+        if (!prepareIsCurrent(entry)) return;
+        if (ready === cells.length && persisted) {
+          addToast && addToast(ready + ' of ' + cells.length + ' board voices are saved on this device.', 'success');
+        } else if (ready === cells.length) {
+          addToast && addToast('All board voices are ready for this session, but some could not be saved on this device.', 'info');
+        } else {
+          addToast && addToast(ready + ' of ' + cells.length + ' board voices are ready. Missing voices will use the browser fallback.', 'info');
+        }
+      }).finally(function () {
+        if (symbolStudioMountedRef.current && boardSpeechGenerationRef.current === generation
+            && boardSpeechPrepareEpochRef.current === prepareEpoch) setSpeechPreparing(false);
+      });
+    }
+
+    function clearBoardSpeechCache(board) {
+      if (!board) return null;
+      var key = boardSpeechStorageKey(board);
+      var entry = boardSpeechStoresRef.current[key];
+      if (entry) {
+        entry.deletionRequested = true;
+        entry.disposed = true;
+        if (entry.store) entry.store.clear();
+      }
+      delete boardSpeechStoresRef.current[key];
+      Object.keys(boardSpeechInflightRef.current).forEach(function (inflightKey) {
+        if (inflightKey.indexOf(key + '|') === 0) delete boardSpeechInflightRef.current[inflightKey];
+      });
+      return entry || null;
+    }
+
+    function removeBoardSpeech(board) {
+      if (!board) return Promise.resolve(false);
+      var profileScopeId = activeProfileIdRef.current || 'default';
+      var key = boardSpeechStorageKey(board, profileScopeId);
+      boardSpeechTombstonesRef.current[key] = true;
+      var entry = clearBoardSpeechCache(board);
+      var deviceStorage = window.alloDeviceStorage;
+      if (!deviceStorage || typeof deviceStorage.remove !== 'function') {
+        addToast && addToast('Saved speech could not be removed because device storage is unavailable.', 'error');
+        return Promise.resolve(false);
+      }
+      var waitForWrites = entry && entry.writeChain
+        ? Promise.resolve(entry.writeChain).catch(function () { return false; })
+        : Promise.resolve(false);
+      var rawRemoval = waitForWrites.then(function () {
+        return Promise.resolve().then(function () { return deviceStorage.ready(); }).then(function () {
+          return deviceStorage.remove(SYMBOL_SPEECH_NAMESPACE, key, { queue: true });
+        });
+      });
+      var removalCompletion = rawRemoval.then(function (removeResult) {
+        if (removeResult === false || (removeResult && removeResult.queued === true)) return false;
+        delete boardSpeechTombstonesRef.current[key];
+        return true;
+      }, function () {
+        return false;
+      });
+      return promiseWithTimeout(removalCompletion, 8000, 'Saved speech removal is still pending').then(function (removed) {
+        if (!removed) addToast && addToast('The board was deleted, but its saved speech could not be removed from this device.', 'error');
+        return removed;
+      }).catch(function () {
+        addToast && addToast('The board was deleted. Saved speech removal is still pending on this device.', 'info');
+        return false;
+      });
+    }
+    useEffect(function () {
+      var activeId = useBoardId || scanBoardId;
+      if (!activeId) return;
+      var board = savedBoardsRef.current.find(function (item) { return item.id === activeId; });
+      if (board) ensureBoardSpeechEntry(board);
+    }, [useBoardId, scanBoardId]);
+
+    useEffect(function () {
+      symbolStudioMountedRef.current = true;
+      return function () {
+        symbolStudioMountedRef.current = false;
+        boardSpeechGenerationRef.current += 1;
+        Object.keys(boardSpeechStoresRef.current).forEach(function (key) {
+          var entry = boardSpeechStoresRef.current[key];
+          if (entry) entry.disposed = true;
+          if (entry && entry.store) entry.store.clear();
+        });
+        boardSpeechStoresRef.current = {};
+        boardSpeechInflightRef.current = {};
+        boardSpeechTombstonesRef.current = {};
+      };
+    }, []);
+    // ── Multi-page board helpers ──────────────────────────────────────────────
+
     // ── Multi-page board helpers ───────────────────────────────────────────
     // boardPages = null (single page) or array of { id, title, words, cols }
     // activePageIdx = which page is currently loaded into boardWords/boardCols
@@ -1942,6 +3616,7 @@
         id: uid(), title: boardTitle || boardTopic, profileId: activeProfileId || null, createdAt: Date.now(),
         words: boardWords, cols: boardCols,
         pages: finalPages || null,
+        language: boardLang || 'en',
         fctFunction: fctMeta && fctMeta.fctFunction || null,
         fctPhase: fctMeta && fctMeta.fctPhase != null ? fctMeta.fctPhase : null,
         fctGoal: fctMeta && fctMeta.fctGoal || null
@@ -2078,6 +3753,7 @@
       setBoardWords((firstPage.words || []).map(function (w) { return Object.assign({}, w); }));
       setBoardTitle(board.title || '');
       setBoardCols(firstPage.cols || board.cols || 4);
+      if (board.language) { setBoardLang(board.language); store(STORAGE_BOARD_LANG, board.language); }
       setBoardPages(pages);
       setActivePageIdx(0);
       setShowBoardGallery(false);
@@ -2085,17 +3761,26 @@
     }, [addToast]);
 
     var deleteSavedBoard = useCallback(function (id) {
+      var deletedBoard = savedBoards.find(function (b) { return b.id === id; }) || null;
       var updated = savedBoards.filter(function (b) { return b.id !== id; });
       if (!store(scopedKey(STORAGE_BOARDS), updated)) {
         addToast && addToast('Could not delete the saved board because device storage is unavailable.', 'error');
         return;
       }
+      savedBoardsRef.current = updated;
       setSavedBoards(updated);
+      var updatedBooks = books.map(function (book) {
+        return book.boardIds.indexOf(id) >= 0
+          ? normalizeVisualPack(Object.assign({}, book, { boardIds: book.boardIds.filter(function (boardId) { return boardId !== id; }), updatedAt: Date.now() }))
+          : book;
+      });
+      if (store(scopedKey(STORAGE_BOOKS), updatedBooks)) setBooks(updatedBooks);
+      if (deletedBoard) removeBoardSpeech(deletedBoard);
       notifyVisualSupportsUpdated();
-    }, [savedBoards, addToast]);
+    }, [savedBoards, books, addToast]);
 
     var exportBoard = useCallback(function (board) {
-      var data = { version: 1, type: 'alloBoard', board: board };
+      var data = { version: 1, type: 'alloBoard', board: withoutDeviceSpeechReference(board) };
       var json = JSON.stringify(data, null, 2);
       var blob = new Blob([json], { type: 'application/json' });
       var url = URL.createObjectURL(blob);
@@ -2312,7 +3997,7 @@
         addToast && addToast(t('toasts.import_failed_valid_board_file'), 'error');
         return;
       }
-      var imported = Object.assign({}, board, { id: uid(), importedAt: Date.now() });
+      var imported = Object.assign(withoutDeviceSpeechReference(board), { id: uid(), importedAt: Date.now() });
       setSavedBoards(function (prev) {
         var updated = [imported].concat(prev);
         store(scopedKey(STORAGE_BOARDS), updated);
@@ -2392,7 +4077,7 @@
     }, [savedBoards, addToast]);
 
     // ── HTML board export (WCAG 2.1 AA accessible) ─────────────────────────
-    var exportBoardHTML = useCallback(function (board) {
+    var exportBoardHTMLLegacy = useCallback(function (board) {
       var pages = board.pages && board.pages.length ? board.pages : [{ title: board.title, words: board.words || [], cols: board.cols || 4 }];
       var isMultiPage = pages.length > 1;
       var title = (board.title || 'AAC Board').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -2516,6 +4201,122 @@
     // ── Quick Board HTML export (WCAG 2.1 AA accessible) ──────────────────
     // Exports First-Then boards as standalone accessible HTML with TTS,
     // keyboard activation, high contrast, and WCAG 2.1 AA compliance.
+    function portableAACPackageForBoard(board, audioOptions) {
+      var audioSettings = audioOptions && typeof audioOptions === 'object' ? audioOptions : {};
+      var includeCustomAudio = audioSettings.includeCustomAudio === true;
+      var includePreparedAudio = audioSettings.includePreparedAudio === true;
+      var expectedPrepared = !!(board && board.speechAudioRef);
+      var baseOptions = {
+        includeCustomAudio: includeCustomAudio,
+        includePreparedAudio: includePreparedAudio,
+        preparedAudioExpected: expectedPrepared
+      };
+      if (!includePreparedAudio || !expectedPrepared) return Promise.resolve(buildPortableAACPackage(board, baseOptions));
+      return ensureBoardSpeechEntry(board).then(function (entry) {
+        if (!entry || !entry.store) {
+          return buildPortableAACPackage(board, Object.assign({}, baseOptions, { preparedAudioLoadFailed: true }));
+        }
+        return promiseWithTimeout(entry.hydrationCompletion || entry.ready, 8000, 'Prepared speech is still loading').then(function () {
+          var snapshot = entry.store.serialize();
+          return buildPortableAACPackage(board, Object.assign({}, baseOptions, {
+            preparedAudioRecords: snapshot && Array.isArray(snapshot.records) ? snapshot.records : []
+          }));
+        }).catch(function () {
+          return buildPortableAACPackage(board, Object.assign({}, baseOptions, { preparedAudioLoadFailed: true }));
+        });
+      }).catch(function () {
+        return buildPortableAACPackage(board, Object.assign({}, baseOptions, { preparedAudioLoadFailed: true }));
+      });
+    }
+    function downloadPortableAACHTML(board, portablePackage) {
+      var html = buildStandaloneAACHTML(portablePackage);
+      var blob = new Blob([html], { type: 'text/html' });
+      var link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'aacboard_' + (board.title || 'board').replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.html';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+      var notes = portablePackage.metadata && portablePackage.metadata.warnings || [];
+      addToast && addToast(notes.length
+        ? 'Board saved as accessible HTML with ' + notes.length + ' export note' + (notes.length === 1 ? '.' : 's.')
+        : 'Board saved as accessible offline HTML.', notes.length ? 'info' : 'success');
+      return portablePackage;
+    }
+    var exportBoardHTML = useCallback(function (board) {
+      var speechCells = collectBoardSpeechCells(board);
+      var hasCustomAudio = speechCells.some(function (cell) { return !!cell.audioData; });
+      var hasPreparedAudio = !!(board && board.speechAudioRef);
+      var decision = hasCustomAudio || hasPreparedAudio
+        ? askSymbolStudioConfirmation(
+            'This board has saved audio. Include it only if you have permission to share the recorded or generated voice. Audio increases the file size.',
+            {
+              title: 'Include saved audio?',
+              confirmText: 'Include audio',
+              cancelText: 'Export without audio'
+            }
+          )
+        : Promise.resolve(false);
+      return decision.then(function (includeAudio) {
+        return portableAACPackageForBoard(board, {
+          includeCustomAudio: includeAudio === true,
+          includePreparedAudio: includeAudio === true
+        });
+      }).then(function (portablePackage) {
+        return downloadPortableAACHTML(board, portablePackage);
+      }).catch(function () {
+        addToast && addToast('The accessible board could not be exported.', 'error');
+        return null;
+      });
+    }, [addToast, selectedVoice, voiceSpeed, ttsProvider, ttsEngine, ttsModel, boardLang, primaryLanguage]);
+    function sendPortableAACResource(callback, board, successMessage, failureMessage) {
+      var portablePackage;
+      try {
+        portablePackage = buildPortableAACPackage(board);
+      } catch (_) {
+        addToast && addToast(failureMessage, 'error');
+        return Promise.resolve(false);
+      }
+      return Promise.resolve().then(function () {
+        return callback(portablePackage);
+      }).then(function (result) {
+        if (result === false) throw new Error('Host rejected the resource');
+        addToast && addToast(successMessage, 'success');
+        return true;
+      }).catch(function () {
+        addToast && addToast(failureMessage, 'error');
+        return false;
+      });
+    }
+    function sharePortableAACResource(board) {
+      var decision = board && board.speechAudioRef
+        ? askSymbolStudioConfirmation(
+            'Include prepared speech in this QR board only if you have permission to share the generated voice and language. Custom recordings are never included.',
+            {
+              title: 'Include prepared speech?',
+              confirmText: 'Include prepared speech',
+              cancelText: 'Share without audio'
+            }
+          )
+        : Promise.resolve(false);
+      return decision.then(function (includePreparedAudio) {
+        return portableAACPackageForBoard(board, {
+          includeCustomAudio: false,
+          includePreparedAudio: includePreparedAudio === true
+        });
+      }).then(function (portablePackage) {
+        return Promise.resolve(onShareAACResource(portablePackage));
+      }).then(function (result) {
+        if (result === false) throw new Error('Host rejected the resource');
+        addToast && addToast('Board sent to sharing.', 'success');
+        return true;
+      }).catch(function () {
+        addToast && addToast('The board could not be shared.', 'error');
+        return false;
+      });
+    }
+
     var exportQuickBoardHTML = useCallback(function (type) {
       var title, bodyHTML, lang = boardLang || 'en';
       var isRtl = lang === 'ar' || lang === 'he';
@@ -2611,8 +4412,7 @@
       setSentenceParsing(true);
       setSentenceMapping([]);
       try {
-        var galleryMap = {};
-        gallery.forEach(function (g) { if (g.image) galleryMap[g.label.toLowerCase().trim()] = g; });
+        // Exact canonical-label reuse only; aliases remain search suggestions.
         var prompt = 'You are an AAC (Augmentative and Alternative Communication) symbol mapper.\n'
           + 'Sentence: "' + sentenceInput.trim() + '"\n'
           + 'Task: Map this sentence to AAC symbols. For each meaningful word or concept:\n'
@@ -2628,7 +4428,7 @@
         var items = JSON.parse(clean);
         var mapped = items.map(function (item) {
           var key = (item.label || item.word || '').toLowerCase().trim();
-          var galleryMatch = galleryMap[key] || null;
+          var galleryMatch = findExactBankAsset(gallery, key);
           return Object.assign({}, item, { id: uid(), selected: !item.skip, galleryMatch: galleryMatch });
         });
         setSentenceMapping(mapped);
@@ -2643,7 +4443,7 @@
       if (!selected.length) return;
       var newWords = selected.map(function (m) {
         var img = m.galleryMatch ? m.galleryMatch.image : null;
-        return { id: uid(), label: m.label || m.word, category: m.category || 'other', description: m.description || '', image: img };
+        return { id: uid(), label: m.label || m.word, category: m.category || 'other', description: m.description || '', image: img, assetId: m.galleryMatch ? m.galleryMatch.id : null, conceptId: m.galleryMatch ? (m.galleryMatch.conceptId || m.galleryMatch.id) : null };
       });
       setBoardWords(function (prev) { return prev.concat(newWords); });
       setShowSentencePanel(false);
@@ -2655,6 +4455,7 @@
 
     // ── Word prediction ────────────────────────────────────────────────────
     var fetchPredictions = useCallback(async function (currentStrip, availableLabels) {
+      var requestEpoch = ++predEpochRef.current;
       if (!onCallGemini || currentStrip.length === 0) { setPredictions([]); return; }
       setPredLoading(true);
       try {
@@ -2664,19 +4465,27 @@
           + 'Available symbols on the board: ' + availableLabels.join(', ') + '\n'
           + 'Predict the 4 most likely NEXT words/symbols this student wants to communicate.\n'
           + 'Prefer words from the available symbols list when relevant.\n'
-          + 'Return ONLY a JSON array of 4 short strings, e.g. ["more","please","go","help"].\n'
+          + 'Return ONLY a JSON array of 4 short strings.\n'
           + 'No markdown, no explanation.';
         var raw = await onCallGemini(prompt, false, null, 200);
-        var clean = raw.replace(/```json|```/g, '').trim();
-        var preds = JSON.parse(clean);
-        setPredictions(Array.isArray(preds) ? preds.slice(0, 4) : []);
+        var parsed = JSON.parse(cleanJson(String(raw || '')));
+        var seen = {};
+        var preds = (Array.isArray(parsed) ? parsed : []).filter(function (value) {
+          if (typeof value !== 'string') return false;
+          var key = normalizeSymbolLabel(value);
+          if (!key || seen[key]) return false;
+          seen[key] = true;
+          return true;
+        }).map(function (value) { return value.replace(/\s+/g, ' ').trim().slice(0, 60); }).slice(0, 4);
+        if (requestEpoch === predEpochRef.current) setPredictions(preds);
       } catch (e) {
-        setPredictions([]);
-      } finally { setPredLoading(false); }
+        if (requestEpoch === predEpochRef.current) setPredictions([]);
+      } finally {
+        if (requestEpoch === predEpochRef.current) setPredLoading(false);
+      }
     }, [onCallGemini]);
-
     var toggleAiPredict = useCallback(async function () {
-      if (aiPredict) { setAiPredict(false); store('alloAACPredictConsent', false); setPredictions([]); return; }
+      if (aiPredict) { predEpochRef.current += 1; if (predTimerRef.current) clearTimeout(predTimerRef.current); setAiPredict(false); store('alloAACPredictConsent', false); setPredictions([]); return; }
       var ok = await askSymbolStudioConfirmation('When ON, the words the student taps (their in-progress message) are sent to the AI model to suggest likely next words. Only the tapped word labels are sent — no student names, photos, profiles, or logs. AlloFlow does not store the predictions.\n\n'
         + 'Turn this on only if sending the student\'s message text to the AI is acceptable for this student and setting. You can turn it off anytime.', {
         title: 'Enable AI word prediction', confirmText: 'Enable AI prediction'
@@ -2695,7 +4504,7 @@
           // Support both wrapped { type:'alloBoard', board:{...} } and raw board objects
           var board = (data.type === 'alloBoard' && data.board) ? data.board : data;
           if (!board || !Array.isArray(board.words)) throw new Error('Not a valid board file');
-          var imported = Object.assign({}, board, { id: uid(), importedAt: Date.now() });
+          var imported = Object.assign(withoutDeviceSpeechReference(board), { id: uid(), importedAt: Date.now() });
           var updated = [imported].concat(savedBoards);
           setSavedBoards(updated); store(scopedKey(STORAGE_BOARDS), updated);
           setShowBoardGallery(true);
@@ -2714,7 +4523,7 @@
     }, [savedBoards]);
 
     var addFromGallery = useCallback(function (item) {
-      var newWord = { id: uid(), label: item.label, description: item.label, category: 'other', image: item.image };
+      var newWord = { id: uid(), label: item.label, description: item.description || item.label, category: item.category || 'other', image: item.image, assetId: item.id, conceptId: item.conceptId || item.id };
       setBoardWords(function (prev) { return prev.concat([newWord]); });
       addToast && addToast('\u201c' + item.label + '\u201d added to board', 'success');
     }, [addToast]);
@@ -2737,35 +4546,429 @@
     // ── Activity Sets (multi-board books) ─────────────────────────────────
     var createBook = useCallback(function () {
       if (!newBookTitle.trim()) return;
-      var book = { id: uid(), title: newBookTitle.trim(), profileId: activeProfileId || null, boardIds: [], createdAt: Date.now() };
+      var book = normalizeVisualPack({ id: uid(), title: newBookTitle.trim(), profileId: activeProfileId || null, boardIds: [], assetIds: [], scheduleIds: [], createdAt: Date.now() });
       var updated = [book].concat(books);
-      setBooks(updated); store(scopedKey(STORAGE_BOOKS),updated);
+      if (!store(scopedKey(STORAGE_BOOKS), updated)) {
+        addToast && addToast('Could not create the Visual Pack because device storage is full.', 'error');
+        return;
+      }
+      setBooks(updated);
       setNewBookTitle(''); setActiveBookId(book.id);
-      addToast && addToast(t('toasts.activity_set_u201c') + book.title + '\u201d created!', 'success');
+      addToast && addToast('Visual Pack "' + book.title + '" created!', 'success');
     }, [newBookTitle, activeProfileId, books, addToast]);
 
-    var deleteBook = useCallback(function (bookId) {
-      var updated = books.filter(function (b) { return b.id !== bookId; });
-      setBooks(updated); store(scopedKey(STORAGE_BOOKS),updated);
+    var deleteBook = useCallback(async function (bookId) {
+      var target = books.find(function (book) { return book.id === bookId; });
+      var confirmed = await askSymbolStudioConfirmation(
+        'Delete the Visual Pack "' + ((target && target.title) || 'Untitled') + '"? The boards, sequences, and Symbol Bank assets inside it will be kept.',
+        { title: 'Delete Visual Pack', confirmText: 'Delete Pack' }
+      );
+      if (!confirmed) return;
+      var updated = books.filter(function (book) { return book.id !== bookId; });
+      if (!store(scopedKey(STORAGE_BOOKS), updated)) {
+        addToast && addToast('Could not delete the Visual Pack because device storage is unavailable.', 'error');
+        return;
+      }
+      setBooks(updated);
       if (activeBookId === bookId) setActiveBookId(null);
-    }, [books, activeBookId]);
+    }, [books, activeBookId, addToast]);
 
-    var toggleBoardInBook = useCallback(function (bookId, boardId) {
+    var updatePackField = useCallback(function (bookId, changes) {
+      var updated = books.map(function (book) {
+        return book.id === bookId ? normalizeVisualPack(Object.assign({}, book, changes, { updatedAt: Date.now() })) : book;
+      });
+      if (!store(scopedKey(STORAGE_BOOKS), updated)) {
+        addToast && addToast('Could not update the Visual Pack because device storage is full.', 'error');
+        return false;
+      }
+      setBooks(updated);
+      return true;
+    }, [books, addToast]);
+
+    var togglePackItem = useCallback(function (bookId, field, itemId) {
       var updated = books.map(function (book) {
         if (book.id !== bookId) return book;
-        var ids = book.boardIds.includes(boardId)
-          ? book.boardIds.filter(function (id) { return id !== boardId; })
-          : book.boardIds.concat([boardId]);
-        return Object.assign({}, book, { boardIds: ids });
+        var current = uniqueStringIds(book[field]);
+        var ids = current.indexOf(itemId) >= 0
+          ? current.filter(function (id) { return id !== itemId; })
+          : current.concat([itemId]);
+        var changes = { updatedAt: Date.now() };
+        changes[field] = ids;
+        return normalizeVisualPack(Object.assign({}, book, changes));
       });
-      setBooks(updated); store(scopedKey(STORAGE_BOOKS),updated);
-    }, [books]);
+      if (!store(scopedKey(STORAGE_BOOKS), updated)) {
+        addToast && addToast('Could not update the Visual Pack because device storage is full.', 'error');
+        return;
+      }
+      setBooks(updated);
+    }, [books, addToast]);
+
+    var movePackItem = useCallback(function (bookId, field, itemId, direction) {
+      var resources = field === 'boardIds' ? savedBoards : (field === 'scheduleIds' ? savedSchedules : gallery);
+      var validIds = Object.create(null);
+      resources.forEach(function (resource) {
+        if (resource && resource.id != null) validIds[String(resource.id)] = true;
+      });
+      var updated = books.map(function (book) {
+        if (book.id !== bookId) return book;
+        // Reorder the same resolved list the UI displays and prune stale
+        // references so a visible Earlier/Later action always moves one item.
+        var ids = uniqueStringIds(book[field]).filter(function (id) { return validIds[id]; });
+        var from = ids.indexOf(itemId);
+        var to = from + direction;
+        if (from < 0 || to < 0 || to >= ids.length) return book;
+        var moved = ids.splice(from, 1)[0];
+        ids.splice(to, 0, moved);
+        var changes = { updatedAt: Date.now() };
+        changes[field] = ids;
+        return normalizeVisualPack(Object.assign({}, book, changes));
+      });
+      if (!store(scopedKey(STORAGE_BOOKS), updated)) {
+        addToast && addToast('Could not reorder the Visual Pack because device storage is full.', 'error');
+        return;
+      }
+      setBooks(updated);
+    }, [books, savedBoards, savedSchedules, gallery, addToast]);
+
+    var toggleBoardInBook = useCallback(function (bookId, boardId) {
+      togglePackItem(bookId, 'boardIds', boardId);
+    }, [togglePackItem]);
+
+    var toggleAssetInBook = useCallback(function (bookId, assetId) {
+      togglePackItem(bookId, 'assetIds', assetId);
+    }, [togglePackItem]);
+
+    var toggleScheduleInBook = useCallback(function (bookId, scheduleId) {
+      togglePackItem(bookId, 'scheduleIds', scheduleId);
+    }, [togglePackItem]);
 
     var tagBookProfile = useCallback(function (bookId, profileId) {
-      var updated = books.map(function (b) { return b.id === bookId ? Object.assign({}, b, { profileId: profileId || null }) : b; });
-      setBooks(updated); store(scopedKey(STORAGE_BOOKS),updated);
-    }, [books]);
+      updatePackField(bookId, { profileId: profileId || null });
+    }, [updatePackField]);
 
+    var exportVisualPack = useCallback(async function (book) {
+      var envelope = buildVisualPackEnvelope(book, gallery, savedBoards, savedSchedules);
+      var contentCount = envelope.assets.length + envelope.boards.length + envelope.sequences.length;
+      if (!contentCount) {
+        addToast && addToast('Add at least one bank asset, board, or sequence before exporting this Visual Pack.', 'error');
+        return;
+      }
+      var exportNotice = 'This shareable file excludes student profiles, logs, goals, review notes, saved TTS, and voice recordings. Titles, descriptions, labels, aliases, translated or spoken labels, attribution text, and images may still contain identifying details, so review them before sharing.';
+      if (envelope.metadata && envelope.metadata.omittedNonportableImages) {
+        exportNotice += '\n\n' + envelope.metadata.omittedNonportableImages + ' nonportable or unsafe image(s) will be omitted.';
+      }
+      if (envelope.metadata && envelope.metadata.assetsNeedingLocalReview) {
+        exportNotice += '\n\n' + envelope.metadata.assetsNeedingLocalReview + ' included asset(s) are not locally approved yet.';
+      }
+      var ok = await askSymbolStudioConfirmation(
+        exportNotice,
+        { title: 'Export shareable Visual Pack', confirmText: 'Export Visual Pack' }
+      );
+      if (!ok) return;
+      var blob = new Blob([JSON.stringify(envelope, null, 2)], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      var safeName = String(book.title || 'visual-pack').replace(/[^a-z0-9_-]+/gi, '_').replace(/^_+|_+$/g, '').slice(0, 80) || 'visual-pack';
+      a.href = url;
+      a.download = safeName + '.alloflow-visual-pack.json';
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
+      addToast && addToast('Shareable Visual Pack exported.', 'success');
+    }, [gallery, savedBoards, savedSchedules, addToast]);
+
+    var importVisualPack = useCallback(function (ev) {
+      var input = ev.target;
+      var file = input.files && input.files[0];
+      if (!file) return;
+      if (file.size > 50 * 1024 * 1024) {
+        addToast && addToast('That Visual Pack is larger than 50 MB and cannot be imported.', 'error');
+        input.value = '';
+        return;
+      }
+      visualPackImportEpochRef.current += 1;
+      var importEpoch = visualPackImportEpochRef.current;
+      var targetProfileId = activeProfileIdRef.current || 'default';
+      var importSnapshot = visualPackImportStateRef.current;
+      var reader = new FileReader();
+      reader.onload = function (event) {
+        var completed = [];
+        try {
+          var currentImportState = visualPackImportStateRef.current;
+          if (importEpoch !== visualPackImportEpochRef.current
+              || (activeProfileIdRef.current || 'default') !== targetProfileId
+              || !currentImportState
+              || currentImportState.profileId !== targetProfileId
+              || currentImportState.gallery !== importSnapshot.gallery
+              || currentImportState.boards !== importSnapshot.boards
+              || currentImportState.schedules !== importSnapshot.schedules
+              || currentImportState.books !== importSnapshot.books) {
+            throw new Error('The active profile or its Visual Pack data changed while the file was loading. Import again to avoid overwriting newer work.');
+          }
+          var data = JSON.parse(event.target.result);
+          if (!data || data.format !== 'alloflow.visual-pack' || data.version !== 1 || !data.pack || typeof data.pack !== 'object') {
+            throw new Error('This is not a supported AlloFlow Visual Pack.');
+          }
+          var manifest = data.pack;
+          var allAssets = Array.isArray(data.assets) ? data.assets : [];
+          var allBoards = Array.isArray(data.boards) ? data.boards : [];
+          var allSchedules = Array.isArray(data.sequences) ? data.sequences : [];
+          if (allAssets.length > 500 || allBoards.length > 100 || allSchedules.length > 100) {
+            throw new Error('This Visual Pack contains too many resources.');
+          }
+          var idsSeen = Object.create(null);
+          function requireUniqueIds(items, kind) {
+            items.forEach(function (item) {
+              var id = item && (typeof item.id === 'string' || typeof item.id === 'number') ? String(item.id).trim() : '';
+              if (!id || id.length > 160 || idsSeen[kind + ':' + id]) throw new Error('The Visual Pack has invalid or duplicate ' + kind + ' IDs.');
+              idsSeen[kind + ':' + id] = true;
+            });
+          }
+          requireUniqueIds(allAssets, 'asset');
+          requireUniqueIds(allBoards, 'board');
+          requireUniqueIds(allSchedules, 'sequence');
+
+          var assetById = Object.create(null);
+          var boardById = Object.create(null);
+          var scheduleById = Object.create(null);
+          allAssets.forEach(function (asset) { assetById[String(asset.id)] = asset; });
+          allBoards.forEach(function (board) { boardById[String(board.id)] = board; });
+          allSchedules.forEach(function (schedule) { scheduleById[String(schedule.id)] = schedule; });
+          var manifestBoardIds = uniqueStringIds(manifest.boardIds);
+          var manifestScheduleIds = uniqueStringIds(manifest.scheduleIds);
+          var sourceBoards = manifestBoardIds.map(function (id) { return boardById[id]; }).filter(Boolean);
+          var sourceSchedules = manifestScheduleIds.map(function (id) { return scheduleById[id]; }).filter(Boolean);
+          var aggregatePageCount = 0;
+          var aggregateCellCount = 0;
+          var aggregateImageCharacters = 0;
+          function countImportImage(value) {
+            if (typeof value === 'string') aggregateImageCharacters += value.length;
+            if (aggregateImageCharacters > 32 * 1024 * 1024) throw new Error('This Visual Pack contains too much image data.');
+          }
+          function countImportCells(cells) {
+            if (!Array.isArray(cells)) return;
+            aggregateCellCount += cells.length;
+            if (aggregateCellCount > 10000) throw new Error('This Visual Pack contains more than 10,000 cells and steps.');
+            cells.forEach(function (cell) { countImportImage(cell && cell.image); });
+          }
+          sourceBoards.forEach(function (board) {
+            countImportCells(Array.isArray(board.words) ? board.words : []);
+            var pages = Array.isArray(board.pages) ? board.pages : [];
+            aggregatePageCount += pages.length;
+            if (aggregatePageCount > 500) throw new Error('This Visual Pack contains more than 500 board pages.');
+            pages.forEach(function (page) { countImportCells(page && Array.isArray(page.words) ? page.words : []); });
+          });
+          sourceSchedules.forEach(function (schedule) {
+            countImportCells(Array.isArray(schedule.items) ? schedule.items : []);
+          });
+          var requiredAssetIds = Object.create(null);
+          uniqueStringIds(manifest.assetIds).forEach(function (id) { requiredAssetIds[id] = true; });
+          function collectRawRefs(cells) {
+            (Array.isArray(cells) ? cells : []).forEach(function (cell) {
+              if (!cell || typeof cell !== 'object') return;
+              if (typeof cell.assetId === 'string' || typeof cell.assetId === 'number') requiredAssetIds[String(cell.assetId)] = true;
+              if (typeof cell.conceptId === 'string' || typeof cell.conceptId === 'number') requiredAssetIds[String(cell.conceptId)] = true;
+            });
+          }
+          sourceBoards.forEach(function (board) {
+            collectRawRefs(Array.isArray(board.words) ? board.words : []);
+            (Array.isArray(board.pages) ? board.pages : []).forEach(function (page) {
+              collectRawRefs(page && Array.isArray(page.words) ? page.words : []);
+            });
+          });
+          sourceSchedules.forEach(function (schedule) { collectRawRefs(Array.isArray(schedule.items) ? schedule.items : []); });
+          var sourceAssets = allAssets.filter(function (asset) { return requiredAssetIds[String(asset.id)]; });
+          sourceAssets.forEach(function (asset) {
+            if (asset && asset.conceptId && assetById[String(asset.conceptId)]) requiredAssetIds[String(asset.conceptId)] = true;
+          });
+          sourceAssets = allAssets.filter(function (asset) { return requiredAssetIds[String(asset.id)]; });
+          sourceAssets.forEach(function (asset) { countImportImage(asset && asset.image); });
+
+          var oversizedImage = false;
+          function checkImage(value) {
+            if (typeof value === 'string' && value.length > 8 * 1024 * 1024) oversizedImage = true;
+          }
+          sourceAssets.forEach(function (asset) { checkImage(asset && asset.image); });
+          sourceBoards.forEach(function (board) {
+            (Array.isArray(board.words) ? board.words : []).forEach(function (cell) { checkImage(cell && cell.image); });
+            (Array.isArray(board.pages) ? board.pages : []).forEach(function (page) {
+              (page && Array.isArray(page.words) ? page.words : []).forEach(function (cell) { checkImage(cell && cell.image); });
+            });
+          });
+          sourceSchedules.forEach(function (schedule) {
+            (Array.isArray(schedule.items) ? schedule.items : []).forEach(function (cell) { checkImage(cell && cell.image); });
+          });
+          if (oversizedImage) throw new Error('A Visual Pack image is larger than 8 MB.');
+          var strippedImageCount = 0;
+          function noteStrippedImage(value) {
+            if (value && !portablePackImage(value)) strippedImageCount++;
+          }
+          sourceAssets.forEach(function (asset) { noteStrippedImage(asset && asset.image); });
+          sourceBoards.forEach(function (board) {
+            (Array.isArray(board.words) ? board.words : []).forEach(function (cell) { noteStrippedImage(cell && cell.image); });
+            (Array.isArray(board.pages) ? board.pages : []).forEach(function (page) {
+              (page && Array.isArray(page.words) ? page.words : []).forEach(function (cell) { noteStrippedImage(cell && cell.image); });
+            });
+          });
+          sourceSchedules.forEach(function (schedule) {
+            (Array.isArray(schedule.items) ? schedule.items : []).forEach(function (cell) { noteStrippedImage(cell && cell.image); });
+          });
+
+          var existingByContent = Object.create(null);
+          gallery.forEach(function (asset) {
+            var normalized = normalizeBankAsset(asset);
+            var portableImage = portablePackImage(normalized.image);
+            if (portableImage) existingByContent[normalizeSymbolLabel(normalized.label) + '\n' + portableImage] = normalized;
+          });
+          var assetIdMap = Object.create(null);
+          var importedAssets = [];
+          var reusedAssetCount = 0;
+          sourceAssets.forEach(function (source) {
+            var oldId = String(source.id);
+            var safeSource = packAssetForShare(source);
+            var fingerprint = safeSource.image ? normalizeSymbolLabel(safeSource.label) + '\n' + safeSource.image : '';
+            var existing = fingerprint ? existingByContent[fingerprint] : null;
+            if (existing) {
+              assetIdMap[oldId] = existing.id;
+              reusedAssetCount++;
+            } else {
+              assetIdMap[oldId] = uid();
+            }
+          });
+          sourceAssets.forEach(function (source) {
+            var oldId = String(source.id);
+            var newId = assetIdMap[oldId];
+            if (gallery.some(function (asset) { return asset.id === newId; })) return;
+            var safeSource = packAssetForShare(source);
+            var oldConceptId = safeSource.conceptId || oldId;
+            var newConceptId = assetIdMap[oldConceptId] || newId;
+            importedAssets.push(normalizeBankAsset(Object.assign({}, safeSource, {
+              id: newId,
+              conceptId: newConceptId,
+              source: 'visual-pack-import',
+              validated: false,
+              isPreferred: false,
+              reviewStatus: 'unreviewed',
+              reviewedAt: null,
+              reviewNote: '',
+              createdAt: Date.now(),
+              updatedAt: Date.now()
+            })));
+          });
+          var importedAssetLookup = Object.create(null);
+          gallery.concat(importedAssets).forEach(function (asset) { importedAssetLookup[asset.id] = asset; });
+
+          function importCell(source) {
+            var cell = packWordForShare(source);
+            var oldAssetId = source && (typeof source.assetId === 'string' || typeof source.assetId === 'number') ? String(source.assetId) : '';
+            var mappedAssetId = oldAssetId && assetIdMap[oldAssetId] ? assetIdMap[oldAssetId] : null;
+            var mappedAsset = mappedAssetId ? importedAssetLookup[mappedAssetId] : null;
+            var oldConceptId = source && (typeof source.conceptId === 'string' || typeof source.conceptId === 'number') ? String(source.conceptId) : '';
+            cell.id = uid();
+            cell.assetId = mappedAssetId;
+            cell.conceptId = (oldConceptId && assetIdMap[oldConceptId]) || (mappedAsset && (mappedAsset.conceptId || mappedAsset.id)) || mappedAssetId || null;
+            if (!cell.image && mappedAsset && mappedAsset.image) cell.image = mappedAsset.image;
+            return cell;
+          }
+          var boardIdMap = Object.create(null);
+          sourceBoards.forEach(function (board) { boardIdMap[String(board.id)] = uid(); });
+          var importedBoards = sourceBoards.map(function (source) {
+            var safe = packBoardForShare(source);
+            safe.id = boardIdMap[String(source.id)];
+            safe.profileId = activeProfileId || null;
+            safe.createdAt = Date.now();
+            safe.words = (Array.isArray(source.words) ? source.words : []).slice(0, 500).map(importCell);
+            safe.pages = Array.isArray(source.pages) ? source.pages.slice(0, 50).map(function (page, index) {
+              return {
+                id: uid(),
+                title: String((page && page.title) || ('Page ' + (index + 1))).replace(/\s+/g, ' ').trim().slice(0, 120),
+                cols: Math.max(1, Math.min(8, Number(page && page.cols) || 4)),
+                words: (page && Array.isArray(page.words) ? page.words : []).slice(0, 500).map(importCell)
+              };
+            }) : null;
+            return safe;
+          });
+          var scheduleIdMap = Object.create(null);
+          sourceSchedules.forEach(function (schedule) { scheduleIdMap[String(schedule.id)] = uid(); });
+          var importedSchedules = sourceSchedules.map(function (source) {
+            var safe = packScheduleForShare(source);
+            safe.id = scheduleIdMap[String(source.id)];
+            safe.items = (Array.isArray(source.items) ? source.items : []).slice(0, 500).map(function (item) {
+              return Object.assign(importCell(item), { complete: false });
+            });
+            safe.nowId = safe.items[0] ? safe.items[0].id : null;
+            safe.createdAt = Date.now();
+            return safe;
+          });
+
+          var importedPack = normalizeVisualPack({
+            id: uid(),
+            title: String(manifest.title || 'Imported Visual Pack').replace(/\s+/g, ' ').trim().slice(0, 120) || 'Imported Visual Pack',
+            description: String(manifest.description || '').trim().slice(0, 500),
+            profileId: activeProfileId || null,
+            boardIds: manifestBoardIds.map(function (id) { return boardIdMap[id]; }).filter(Boolean),
+            assetIds: sourceAssets.map(function (asset) { return assetIdMap[String(asset.id)]; }).filter(Boolean),
+            scheduleIds: manifestScheduleIds.map(function (id) { return scheduleIdMap[id]; }).filter(Boolean),
+            createdAt: Date.now(),
+            updatedAt: Date.now()
+          });
+          var nextGallery = importedAssets.concat(gallery);
+          var nextBoards = importedBoards.concat(savedBoards);
+          var nextSchedules = importedSchedules.concat(savedSchedules);
+          var nextBooks = [importedPack].concat(books);
+          var targetProfileKey = targetProfileId === 'default' ? null : targetProfileId;
+          var commits = [
+            { key: profKey(STORAGE_GALLERY, targetProfileKey), next: nextGallery },
+            { key: profKey(STORAGE_BOARDS, targetProfileKey), next: nextBoards },
+            { key: profKey(STORAGE_SCHEDULES, targetProfileKey), next: nextSchedules },
+            { key: profKey(STORAGE_BOOKS, targetProfileKey), next: nextBooks }
+          ];
+          for (var ci = 0; ci < commits.length; ci++) {
+            commits[ci].previousRaw = localStorage.getItem(commits[ci].key);
+            if (!store(commits[ci].key, commits[ci].next)) throw new Error('Device storage is full. The import was rolled back.');
+            completed.push(commits[ci]);
+          }
+          setGallery(nextGallery);
+          setSavedBoards(nextBoards);
+          setSavedSchedules(nextSchedules);
+          setBooks(nextBooks);
+          setActiveBookId(importedPack.id);
+          notifyVisualSupportsUpdated();
+          var skippedCount = (allAssets.length - sourceAssets.length) + (allBoards.length - sourceBoards.length) + (allSchedules.length - sourceSchedules.length);
+          var missingCount = (manifestBoardIds.length - sourceBoards.length) + (manifestScheduleIds.length - sourceSchedules.length)
+            + uniqueStringIds(manifest.assetIds).filter(function (id) { return !assetById[id]; }).length;
+          addToast && addToast(
+            'Visual Pack imported: ' + importedBoards.length + ' board(s), ' + importedSchedules.length + ' sequence(s), '
+            + importedAssets.length + ' new asset(s), ' + reusedAssetCount + ' reused asset(s)'
+            + (skippedCount ? ', ' + skippedCount + ' unlisted resource(s) skipped' : '')
+            + (missingCount ? ', ' + missingCount + ' missing reference(s) ignored' : '')
+            + (strippedImageCount ? ', ' + strippedImageCount + ' unsafe or nonportable image(s) omitted' : '') + '.',
+            'success'
+          );
+        } catch (error) {
+          var rollbackFailed = false;
+          for (var ri = completed.length - 1; ri >= 0; ri--) {
+            try {
+              if (completed[ri].previousRaw == null) localStorage.removeItem(completed[ri].key);
+              else localStorage.setItem(completed[ri].key, completed[ri].previousRaw);
+            } catch (_) {
+              rollbackFailed = true;
+            }
+          }
+          addToast && addToast(
+            (error && error.message ? error.message : 'Could not import that Visual Pack.')
+            + (rollbackFailed ? ' Some storage changes could not be restored. Download a full backup before continuing.' : ''),
+            'error'
+          );
+        } finally {
+          input.value = '';
+        }
+      };
+      reader.onerror = function () {
+        if (importEpoch === visualPackImportEpochRef.current) addToast && addToast('Could not read that Visual Pack file.', 'error');
+        input.value = '';
+      };
+      reader.readAsText(file);
+    }, [gallery, savedBoards, savedSchedules, books, activeProfileId, addToast]);
     var printBook = useCallback(function (book) {
       var boardsInSet = book.boardIds.map(function (id) { return savedBoards.find(function (b) { return b.id === id; }); }).filter(Boolean);
       if (!boardsInSet.length) { addToast && addToast(t('toasts.boards_set_yet'), 'error'); return; }
@@ -2801,44 +5004,171 @@
       window.print();
     }, []);
 
-    var speakCell = useCallback(function (label) {
-      if (!onCallTTS) return;
+    var speakCell = useCallback(function (value) {
+      var cell = value && typeof value === 'object' ? value : null;
+      var label = cell ? vocalLabelForCell(cell) : String(value || '').trim();
+      if (!label) return;
       recordFamiliarity(label, 'speak');
-      if (ssLiveRef.current) ssLiveRef.current.textContent = label; // announce spoken word to screen readers
-      var voice = selectedVoice || 'Kore';
-      onCallTTS(label, voice, 1).then(function (url) {
-        if (url) { var a = new Audio(url); a.play().catch(function () {}); }
+      if (ssLiveRef.current) ssLiveRef.current.textContent = label;
+      if (cell) {
+        var activeEditorPage = boardPages && boardPages[activePageIdx];
+        var editorCell = Object.assign({}, cell, {
+          _speechPageId: activeEditorPage && activeEditorPage.id || 'page-0',
+          _speechCellId: cell.id || 'cell-0'
+        });
+        playResolvedBoardSpeech({
+          id: 'draft-editor',
+          profileId: activeProfileId || null,
+          language: boardLang || 'en'
+        }, editorCell, label, {
+          priority: 'interactive',
+          maxRetries: 1,
+          reason: 'symbol-studio-editor',
+          persist: false
+        });
+        return;
+      }
+      if (!onCallTTS) return;
+      onCallTTS(label, selectedVoice || 'Kore', voiceSpeed, {
+        language: boardLang || primaryLanguage || 'English',
+        priority: 'interactive',
+        maxRetries: 1,
+        reason: 'symbol-studio-support'
+      }).then(function (url) {
+        if (url) { var audio = new Audio(url); audio.play().catch(function () {}); }
       }).catch(function () {});
-    }, [onCallTTS, selectedVoice, recordFamiliarity]);
+    }, [onCallTTS, selectedVoice, voiceSpeed, ttsProvider, ttsEngine, ttsModel, boardLang, primaryLanguage, boardPages, activePageIdx, activeProfileId, recordFamiliarity]);
 
     // ── Schedule actions ──────────────────────────────────────────────────
-    var generateSchedule = useCallback(async function () {
-      var lines = schedInput.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
-      if (!lines.length || !onCallImagen) return;
+    var generateSequenceItems = useCallback(async function (lines) {
+      var safeLines = (Array.isArray(lines) ? lines : [])
+        .map(function (line) { return String(line || '').replace(/\s+/g, ' ').trim().slice(0, 80); })
+        .filter(Boolean)
+        .slice(0, 12);
+      if (!safeLines.length || !onCallImagen) return false;
+
       var generationEpoch = ++schedGenerationEpochRef.current;
       setSchedGenerating(true);
-      var items = lines.map(function (l) { return { id: uid(), label: l, image: null, complete: false }; });
+      var items = safeLines.map(function (label) {
+        var cached = findExactBankAsset(gallery, label);
+        return {
+          id: uid(),
+          label: label,
+          image: cached ? cached.image : null,
+          assetId: cached ? cached.id : null,
+          conceptId: cached ? (cached.conceptId || cached.id) : null,
+          complete: false
+        };
+      });
       setSchedItems(items);
       setSchedNowId(items[0].id);
+      var toGenerate = items.filter(function (item) { return !item.image; });
+      if (!toGenerate.length) {
+        setSchedGenerating(false);
+        addToast && addToast('Sequence ready from the Symbol Bank!', 'success');
+        return true;
+      }
       try {
         var batchOut = await batchGenerate(
-          items, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, globalStyle,
+          toGenerate, onCallImagen, onCallGeminiImageEdit, autoClean, avatarRef, globalStyle,
           null
         );
-        if (generationEpoch !== schedGenerationEpochRef.current) return;
-        var results = Array.isArray(batchOut.results) ? batchOut.results : [];
+        if (generationEpoch !== schedGenerationEpochRef.current) return false;
+        var generatedById = {}; var generatedAssets = [];
+        (Array.isArray(batchOut.results) ? batchOut.results : []).forEach(function (item) {
+          var asset = normalizeBankAsset({
+            id: uid(),
+            label: item.label,
+            description: item.description || '',
+            image: item.image,
+            style: globalStyle || 'flat vector',
+            category: item.category || 'other',
+            source: 'sequence-builder',
+            createdAt: Date.now()
+          });
+          generatedAssets.push(asset);
+          generatedById[item.id] = Object.assign({}, item, { assetId: asset.id, conceptId: asset.conceptId });
+        });
+        if (generatedAssets.length) {
+          var bankUpdate = generatedAssets.concat(gallery);
+          if (store(scopedKey(STORAGE_GALLERY), bankUpdate)) setGallery(bankUpdate);
+          else {
+            Object.keys(generatedById).forEach(function (id) {
+              generatedById[id] = Object.assign({}, generatedById[id], { assetId: null, conceptId: null });
+            });
+            addToast && addToast('Sequence images are ready, but could not be added to the Symbol Bank.', 'error');
+          }
+        }
+        var results = items.map(function (item) { return generatedById[item.id] || item; });
         setSchedItems(results);
         setSchedNowId(results[0] ? results[0].id : null);
-        addToast && addToast(t('toasts.schedule_generated'), 'success');
+        addToast && addToast('Sequence generated!', 'success');
         if (batchOut.failed && batchOut.failed.length > 0) {
           addToast && addToast(t('toasts.failed_2') + batchOut.failed.join(', '), 'error');
         }
+        return true;
       } catch (e) {
-        if (generationEpoch === schedGenerationEpochRef.current) addToast && addToast(t('toasts.schedule_generation_failed'), 'error');
+        if (generationEpoch === schedGenerationEpochRef.current) addToast && addToast('Sequence generation failed.', 'error');
+        return false;
       } finally {
         if (generationEpoch === schedGenerationEpochRef.current) setSchedGenerating(false);
       }
-    }, [schedInput, autoClean, avatarRef, globalStyle, onCallImagen, onCallGeminiImageEdit, addToast]);
+    }, [autoClean, avatarRef, globalStyle, gallery, onCallImagen, onCallGeminiImageEdit, addToast]);
+
+    var generateSchedule = useCallback(async function () {
+      return generateSequenceItems(schedInput.split('\n'));
+    }, [schedInput, generateSequenceItems]);
+
+    var generateSequenceFromTopic = useCallback(async function () {
+      var topic = schedTopic.replace(/\s+/g, ' ').trim().slice(0, 160);
+      if (!topic || !onCallGemini || schedPlanning || schedGenerating) return;
+
+      var planningEpoch = ++schedGenerationEpochRef.current;
+      setSchedPlanning(true);
+      try {
+        var prompt = 'Create an ordered visual sequence for a learner about: "' + topic + '".\n'
+          + 'The sequence may be a routine, process, story arc, lifecycle, experiment, or set of stages.\n'
+          + 'Return ONLY JSON in this exact shape:\n'
+          + '{"title":"short sequence title","steps":["first step","second step","third step"]}\n'
+          + 'Use 3-8 concrete, observable, student-friendly steps in the correct order. '
+          + 'Each step must be 2-7 words. Do not number the strings. Do not add explanations.';
+        var result = await onCallGemini(prompt, true);
+        if (planningEpoch !== schedGenerationEpochRef.current) return;
+
+        var parsed = parseJson(result);
+        var rawSteps = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.steps) ? parsed.steps : []);
+        var seen = {};
+        var steps = rawSteps.map(function (step) {
+          var value = typeof step === 'string' ? step : (step && (step.label || step.step));
+          return String(value || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+        }).filter(function (label) {
+          var key = label.toLowerCase();
+          if (!label || seen[key]) return false;
+          seen[key] = true;
+          return true;
+        }).slice(0, 8);
+        if (steps.length < 2) throw new Error('The planner did not return enough ordered steps.');
+
+        var plannedTitle = parsed && !Array.isArray(parsed) && typeof parsed.title === 'string'
+          ? parsed.title.replace(/\s+/g, ' ').trim().slice(0, 120)
+          : '';
+        setSchedInput(steps.join('\n'));
+        setSchedTitle(plannedTitle || topic);
+        // The image helper starts its own epoch, so clear planning first.
+        setSchedPlanning(false);
+        if (onCallImagen) {
+          await generateSequenceItems(steps);
+        } else {
+          addToast && addToast('Sequence steps are ready. Image generation is currently unavailable.', 'info');
+        }
+      } catch (e) {
+        if (planningEpoch === schedGenerationEpochRef.current) {
+          addToast && addToast('Could not build a sequence from that topic. Try a more specific task or process.', 'error');
+        }
+      } finally {
+        if (planningEpoch === schedGenerationEpochRef.current) setSchedPlanning(false);
+      }
+    }, [schedTopic, schedPlanning, schedGenerating, onCallGemini, onCallImagen, generateSequenceItems, addToast]);
 
     var announceScheduleChange = function (message) {
       if (!ssLiveRef.current) return;
@@ -2877,7 +5207,7 @@
       if (from < 0) return;
       var to = Math.max(0, Math.min(schedItems.length - 1, from + delta));
       if (to === from) {
-        announceScheduleChange((schedItems[from].label || 'Activity') + ' is already at the schedule edge');
+        announceScheduleChange((schedItems[from].label || 'Activity') + ' is already at the sequence edge');
         return;
       }
       var next = schedItems.slice();
@@ -2896,14 +5226,14 @@
         var nextCurrent = next.find(function (item) { return !item.complete; }) || next[0] || null;
         setSchedNowId(nextCurrent ? nextCurrent.id : null);
       }
-      announceScheduleChange((removed ? removed.label : 'Activity') + ' removed from the schedule');
+      announceScheduleChange((removed ? removed.label : 'Activity') + ' removed from the sequence');
     }, [schedItems, schedNowId]);
 
     var saveSchedule = useCallback(function () {
       if (!schedItems.length) return;
       var saved = {
         id: uid(),
-        title: (schedTitle || 'Schedule').trim().slice(0, 120) || 'Schedule',
+        title: (schedTitle || 'Sequence').trim().slice(0, 120) || 'Sequence',
         items: schedItems.map(function (item) { return Object.assign({}, item); }),
         orientation: schedOrientation === 'vertical' ? 'vertical' : 'horizontal',
         nowId: schedNowId || null,
@@ -2912,19 +5242,19 @@
       var updated = [saved].concat(savedSchedules);
       var saveOk = store(scopedKey(STORAGE_SCHEDULES), updated);
       if (!saveOk) {
-        addToast && addToast('Could not save the schedule - device storage is full. Remove some saved supports or images and try again.', 'error');
+        addToast && addToast('Could not save the sequence - device storage is full. Remove some saved supports or images and try again.', 'error');
         return;
       }
       setSavedSchedules(updated);
       notifyVisualSupportsUpdated();
-      addToast && addToast(t('toasts.schedule_saved'), 'success');
+      addToast && addToast('Sequence saved!', 'success');
       if (cloudSync && !isCanvasEnv) setTimeout(function () { syncToCloud(); }, 300);
     }, [schedItems, schedTitle, schedOrientation, schedNowId, savedSchedules, cloudSync, syncToCloud, addToast]);
 
     var resetSchedule = useCallback(function () {
       setSchedItems(function (prev) { return prev.map(function (i) { return Object.assign({}, i, { complete: false }); }); });
       setSchedNowId(schedItems.length ? schedItems[0].id : null);
-      announceScheduleChange('Schedule progress reset to the first step');
+      announceScheduleChange('Sequence progress reset to the first step');
     }, [schedItems]);
 
     var loadSchedule = useCallback(function (sched) {
@@ -2948,18 +5278,24 @@
         || null;
       setSchedNowId(current ? current.id : null);
       setShowSchedGallery(false);
-      addToast && addToast(t('toasts.schedule_loaded'), 'success');
+      addToast && addToast('Sequence loaded!', 'success');
     }, [addToast]);
 
     var deleteSavedSchedule = useCallback(function (id) {
       var updated = savedSchedules.filter(function (s) { return s.id !== id; });
       if (!store(scopedKey(STORAGE_SCHEDULES), updated)) {
-        addToast && addToast('Could not delete the saved schedule because device storage is unavailable.', 'error');
+        addToast && addToast('Could not delete the saved sequence because device storage is unavailable.', 'error');
         return;
       }
       setSavedSchedules(updated);
+      var updatedBooks = books.map(function (book) {
+        return book.scheduleIds.indexOf(id) >= 0
+          ? normalizeVisualPack(Object.assign({}, book, { scheduleIds: book.scheduleIds.filter(function (scheduleId) { return scheduleId !== id; }), updatedAt: Date.now() }))
+          : book;
+      });
+      if (store(scopedKey(STORAGE_BOOKS), updatedBooks)) setBooks(updatedBooks);
       notifyVisualSupportsUpdated();
-    }, [savedSchedules, addToast]);
+    }, [savedSchedules, books, addToast]);
 
     // ── Social Story actions ──────────────────────────────────────────────
     var generateStory = useCallback(async function () {
@@ -4077,7 +6413,7 @@
         return e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '12px', color: '#6b7280', padding: '40px' } },
           e('div', { style: { fontSize: '48px' } }, '🎮'),
           e('h3', { style: { fontWeight: 700, color: '#374151' } }, 'Symbol Quest'),
-          e('p', { style: { fontSize: '13px', textAlign: 'center', maxWidth: '360px' } }, 'Generate at least 3 symbols in the Symbols tab first, then come back to play games that teach you the symbols!')
+          e('p', { style: { fontSize: '13px', textAlign: 'center', maxWidth: '360px' } }, 'Generate at least 3 symbols in the Symbol Bank tab first, then come back to play games that teach you the symbols!')
         );
       }
 
@@ -4493,7 +6829,7 @@
     function computeWordBank() {
       var bank = {};
       function ensure(lbl, cat) { var k = lbl.trim().toLowerCase(); if (!k) return null; if (!bank[k]) bank[k] = { d: lbl.trim(), cat: cat || 'other', cx: [], img: null, hasVoice: false }; return k; }
-      gallery.forEach(function (s) { var k = ensure(s.label, s.category); if (k) { bank[k].cx.push({ type: 'gallery', source: 'Symbol Gallery' }); if (s.image && !bank[k].img) bank[k].img = s.image; } });
+      gallery.forEach(function (s) { var k = ensure(s.label, s.category); if (k) { bank[k].cx.push({ type: 'gallery', source: 'Symbol Bank' }); if (s.image && !bank[k].img) bank[k].img = s.image; } });
       savedBoards.forEach(function (b) { var t = b.title || 'Board';
         (b.words || []).forEach(function (w) { var k = ensure(w.label, w.category); if (k) { bank[k].cx.push({ type: 'board', source: t }); if (w.image && !bank[k].img) bank[k].img = w.image; if (w.audioData) bank[k].hasVoice = true; } });
         (b.pages || []).forEach(function (p) { (p.words || []).forEach(function (w) { var k = ensure(w.label, w.category); if (k) { bank[k].cx.push({ type: 'board', source: t + '/' + (p.title || 'Page') }); if (w.image && !bank[k].img) bank[k].img = w.image; if (w.audioData) bank[k].hasVoice = true; } }); });
@@ -4631,15 +6967,27 @@
         action: function () {
           setBoardWords(function (prev) {
             if (prev.some(function (w) { return w.label.toLowerCase() === word.key; })) return prev;
-            return prev.concat([{ id: uid(), label: word.displayLabel, category: word.category, description: '', image: word.image || null }]);
+            var asset = findExactBankAsset(gallery, word.displayLabel);
+            return prev.concat([{ id: uid(), label: word.displayLabel, category: word.category, description: '', image: word.image || (asset && asset.image) || null, assetId: asset ? asset.id : null, conceptId: asset ? (asset.conceptId || asset.id) : null }]);
           });
           setTab('board');
           addToast && addToast('"' + word.displayLabel + '" added to board!', 'success');
         } });
-      if (!has.schedule) sug.push({ icon: '📅', text: 'Include in a visual schedule to reinforce in routine contexts' });
-      if (!has.story) sug.push({ icon: '📖', text: 'Generate a social story featuring "' + word.displayLabel + '"',
+      if (!has.schedule) sug.push({ icon: '📅', text: 'Add to a Sequence for routine practice',
+        action: function () {
+          var asset = findExactBankAsset(gallery, word.displayLabel);
+          var item = { id: uid(), label: word.displayLabel, image: word.image || (asset && asset.image) || null, assetId: asset ? asset.id : null, conceptId: asset ? (asset.conceptId || asset.id) : null, complete: false };
+          setSchedItems(function (prev) {
+            if (prev.some(function (existing) { return normalizeSymbolLabel(existing.label) === word.key; })) return prev;
+            return prev.concat([item]);
+          });
+          setSchedNowId(function (current) { return current || item.id; });
+          setSchedTitle(function (current) { return current || 'Word Garden Practice Sequence'; });
+          setTab('schedule');
+          addToast && addToast('"' + word.displayLabel + '" added to a Sequence.', 'success');
+        } });      if (!has.story) sug.push({ icon: '📖', text: 'Generate a social story featuring "' + word.displayLabel + '"',
         action: function () { setStorySituation('a child learning to use the word "' + word.displayLabel + '" in everyday situations'); setTab('stories'); } });
-      if (!has.gallery && !word.image) sug.push({ icon: '🎨', text: 'Create a symbol image — go to Symbols tab',
+      if (!has.gallery && !word.image) sug.push({ icon: '🎨', text: 'Create a symbol image: go to Symbol Bank',
         action: function () { setSymLabel(word.displayLabel); setSymCategory(word.category); setTab('symbols'); } });
       if (word.image && word.aacUses === 0) sug.push({ icon: '🎮', text: 'Practice in Symbol Quest to build recognition',
         action: function () { setTab('quest'); setQuestMode('imgToLabel'); questPickRound('imgToLabel', gallery.filter(function (g) { return g.image; })); } });
@@ -4683,7 +7031,7 @@
         return e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '12px', color: '#6b7280', padding: '40px' } },
           e('div', { style: { fontSize: '48px' } }, '🔍'),
           e('h3', { style: { fontWeight: 700, color: '#374151' } }, 'Symbol Search'),
-          e('p', { style: { fontSize: '13px', textAlign: 'center', maxWidth: '360px' } }, 'Generate at least 3 symbols in the Symbols tab first, then come back to practice finding symbols by listening!')
+          e('p', { style: { fontSize: '13px', textAlign: 'center', maxWidth: '360px' } }, 'Generate at least 3 symbols in the Symbol Bank tab first, then come back to practice finding symbols by listening!')
         );
       }
 
@@ -5744,7 +8092,7 @@
       }
       // Footer
       html += '<div class="footer">';
-      html += 'Generated by AlloFlow Visual Supports Studio · Word Garden<br>';
+      html += 'Generated by AlloFlow Symbol Studio · Word Garden<br>';
       html += name + '\'s vocabulary is tracked across all tools automatically. No words are lost. Every interaction counts.<br>';
       html += '<strong>Every word in this garden belongs to ' + name + '.</strong>';
       html += '</div></body></html>';
@@ -7187,10 +9535,14 @@
     }
     function renderSymbolsTab() {
       var selectedItem = gallery.find(function (i) { return i.id === selectedId; }) || null;
+      var selectedVariants = selectedItem ? gallery.filter(function (item) {
+        return (item.conceptId || item.id) === (selectedItem.conceptId || selectedItem.id);
+      }) : [];
       var filtered = gallery.filter(function (i) {
         if (symShowFavs && !i.isFavorite) return false;
-        if (symFilter.trim() && !i.label.toLowerCase().includes(symFilter.toLowerCase())) return false;
+        if (symFilter.trim() && !matchesBankQuery(i, symFilter)) return false;
         if (symCatFilter && i.category !== symCatFilter) return false;
+        if (symReviewFilter && i.reviewStatus !== symReviewFilter) return false;
         return true;
       });
       var isLoading = Object.keys(symLoading).length > 0;
@@ -7258,7 +9610,7 @@
           e('button', { onClick: openMulberryPicker, disabled: symMode === 'single' && !symLabel.trim(), 'aria-label': 'Find a validated Mulberry symbol', title: 'Search the Mulberry symbol set — hand-designed, validated AAC symbols (CC BY-SA)', style: S.btn('#ecfeff', '#0e7490', symMode === 'single' && !symLabel.trim()) }, '🔎 Find validated symbol'),
           e('p', { style: { fontSize: '10px', color: '#6b7280', margin: '6px 0 0', lineHeight: 1.4 } }, 'AI-generated symbols are not a validated set (e.g. PCS / SymbolStix) — review each before classroom or clinical use, or use ', e('b', { style: { color: '#0e7490' } }, 'Find validated symbol'), ' for hand-designed Mulberry symbols.'),
           gallery.length > 0 && e('button', { onClick: downloadAll, 'aria-label': 'Download all ' + gallery.length + ' symbols', style: S.btn('#f3f4f6', '#374151', false) }, '⬇️ Download All (' + gallery.length + ')'),
-          gallery.length > 0 && e('button', { onClick: clearGallery, 'aria-label': 'Clear all symbols from gallery', style: S.btn('#fee2e2', '#dc2626', false) }, '🗑️ Clear All')
+          gallery.length > 0 && e('button', { onClick: clearGallery, 'aria-label': 'Clear all symbols from Symbol Bank', style: S.btn('#fee2e2', '#dc2626', false) }, '🗑️ Clear All')
         ),
         // Preview + gallery
         e('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', gap: '10px' } },
@@ -7269,17 +9621,43 @@
               : e('img', { src: selectedItem.image, alt: selectedItem.label, style: { width: 120, height: 120, objectFit: 'contain', borderRadius: '8px', border: '1px solid #e5e7eb', background: '#fff', padding: '4px', flexShrink: 0 } }),
             e('div', { style: { flex: 1 } },
               e('h3', { style: { fontWeight: 700, fontSize: '16px', color: '#111827', margin: '0 0 6px' } }, selectedItem.label),
+              e('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap', marginBottom: '8px', alignItems: 'center' } },
+                e('span', { style: { padding: '2px 8px', borderRadius: '10px', fontSize: '10px', fontWeight: 700, background: selectedItem.reviewStatus === 'approved' ? '#dcfce7' : selectedItem.reviewStatus === 'needs_changes' ? '#fee2e2' : '#f3f4f6', color: selectedItem.reviewStatus === 'approved' ? '#166534' : selectedItem.reviewStatus === 'needs_changes' ? '#b91c1c' : '#6b7280' } }, selectedItem.reviewStatus === 'approved' ? 'Approved' : selectedItem.reviewStatus === 'needs_changes' ? 'Needs changes' : 'Unreviewed'),
+                selectedItem.validated && e('span', { style: { padding: '2px 8px', borderRadius: '10px', fontSize: '10px', fontWeight: 700, background: '#ecfeff', color: '#0e7490' } }, 'Validated source'),
+                selectedItem.isPreferred && e('span', { style: { padding: '2px 8px', borderRadius: '10px', fontSize: '10px', fontWeight: 700, background: '#ede9fe', color: PURPLE } }, 'Preferred variant')
+              ),
               e('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap', marginBottom: '10px' } },
                 e('button', { onClick: function () { toggleSymbolLock(selectedItem.id); }, 'aria-pressed': !!selectedItem.locked, 'aria-label': (selectedItem.locked ? 'Unlock ' : 'Lock ') + selectedItem.label + (selectedItem.locked ? ' to allow regeneration' : ' to protect it from regeneration and restyling'), title: selectedItem.locked ? 'Locked - protected from regen, refine and restyle. Click to unlock.' : 'Lock to protect this symbol from regen, refine and restyle', style: S.btn(selectedItem.locked ? '#fef9c3' : '#f3f4f6', selectedItem.locked ? '#a16207' : '#374151', false) }, selectedItem.locked ? '🔒 Locked' : '🔓 Lock'),
+                !selectedItem.isPreferred && e('button', { onClick: function () { setPreferredSymbolVariant(selectedItem.id); }, 'aria-label': 'Make ' + selectedItem.label + ' the preferred variant', style: S.btn('#ede9fe', PURPLE, false) }, '★ Prefer'),
                 e('button', { onClick: function () { regenSymbol(selectedItem.id); }, disabled: !!symLoading[selectedItem.id] || !!selectedItem.locked, 'aria-label': 'Regenerate symbol for ' + selectedItem.label, style: S.btn(LIGHT_PURPLE, PURPLE, !!symLoading[selectedItem.id] || !!selectedItem.locked) }, '🔄 Regen'),
                 e('button', { onClick: function () { refineSymbol(selectedItem.id, 'Remove all text, labels, letters, and words from the image. Keep the illustration clean.'); }, disabled: !!symLoading[selectedItem.id] || !!selectedItem.locked, 'aria-label': 'Remove text from ' + selectedItem.label + ' symbol', style: S.btn('#fee2e2', '#b91c1c', !!symLoading[selectedItem.id] || !!selectedItem.locked) }, '🚫 Remove Text'),
                 e('button', { onClick: function () { speakCell(selectedItem.label); }, 'aria-label': 'Speak ' + selectedItem.label, style: S.btn('#dcfce7', '#166534', false) }, '🔊 Speak'),
                 e('button', { onClick: function () { downloadSym(selectedItem); }, 'aria-label': 'Download ' + selectedItem.label + ' as PNG', style: S.btn('#dbeafe', '#1e40af', false) }, '⬇️ PNG'),
                 e('button', { onClick: function () { deleteSymbol(selectedItem.id); }, 'aria-label': 'Delete ' + selectedItem.label + ' symbol', style: S.btn('#fee2e2', '#dc2626', false) }, '🗑️')
               ),
-              e('div', { style: { display: 'flex', gap: '6px' } },
-                e('input', { type: 'text', disabled: !!selectedItem.locked, value: symRefine[selectedItem.id] || '', onChange: function (ev) { var v = ev.target.value; setSymRefine(function (p) { var n = Object.assign({}, p); n[selectedItem.id] = v; return n; }); }, onKeyDown: function (ev) { if (ev.key === 'Enter' && symRefine[selectedItem.id]) refineSymbol(selectedItem.id, symRefine[selectedItem.id]); }, placeholder: selectedItem.locked ? '🔒 Locked — unlock to edit' : 'Edit: make it a girl, add red X, change background...', 'aria-label': 'Refinement instruction for ' + selectedItem.label, style: Object.assign({}, S.input, { border: '1px solid #fbbf24' }) }),
-                e('button', { onClick: function () { if (symRefine[selectedItem.id]) refineSymbol(selectedItem.id, symRefine[selectedItem.id]); }, disabled: !symRefine[selectedItem.id] || !!symLoading[selectedItem.id] || !!selectedItem.locked, 'aria-label': 'Apply refinement to ' + selectedItem.label, style: S.btn('#fef3c7', '#92400e', !symRefine[selectedItem.id] || !!symLoading[selectedItem.id] || !!selectedItem.locked) }, '✏️')
+              e('div', { style: { display: 'flex', gap: '6px', marginBottom: '8px' } },
+                e('input', { type: 'text', disabled: !!selectedItem.locked, value: symRefine[selectedItem.id] || '', onChange: function (ev) { var v = ev.target.value; setSymRefine(function (p) { var n = Object.assign({}, p); n[selectedItem.id] = v; return n; }); }, onKeyDown: function (ev) { if (ev.key === 'Enter' && symRefine[selectedItem.id]) refineSymbol(selectedItem.id, symRefine[selectedItem.id]); }, placeholder: selectedItem.locked ? '🔒 Locked - unlock to edit' : 'Edit: make it a girl, add red X, change background...', 'aria-label': 'Refinement instruction for ' + selectedItem.label, style: Object.assign({}, S.input, { border: '1px solid #fbbf24' }) }),
+                e('button', { onClick: function () { if (symRefine[selectedItem.id]) refineSymbol(selectedItem.id, symRefine[selectedItem.id]); }, disabled: !symRefine[selectedItem.id] || !!symLoading[selectedItem.id] || !!selectedItem.locked, 'aria-label': 'Apply refinement to ' + selectedItem.label, style: S.btn('#fef3c7', '#92400e', !symRefine[selectedItem.id] || !!symLoading[selectedItem.id] || !!selectedItem.locked) }, '✏️ Apply'),
+                e('button', { onClick: function () { createSymbolVariant(selectedItem.id, symRefine[selectedItem.id]); }, disabled: !symRefine[selectedItem.id] || !!symLoading[selectedItem.id], 'aria-label': 'Save refinement as a new variant of ' + selectedItem.label, style: S.btn('#ede9fe', PURPLE, !symRefine[selectedItem.id] || !!symLoading[selectedItem.id]) }, '✨ New Variant')
+              ),
+              e('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap', marginBottom: '8px' } },
+                e('button', { onClick: function () { setSymbolReview(selectedItem.id, 'approved'); }, 'aria-pressed': selectedItem.reviewStatus === 'approved', style: S.btn('#dcfce7', '#166534', false), 'aria-label': 'Approve ' + selectedItem.label + ' for local use' }, '✓ Approve'),
+                e('button', { onClick: function () { setSymbolReview(selectedItem.id, 'needs_changes'); }, 'aria-pressed': selectedItem.reviewStatus === 'needs_changes', style: S.btn('#fee2e2', '#b91c1c', false), 'aria-label': 'Mark ' + selectedItem.label + ' as needing changes' }, 'Needs changes'),
+                selectedItem.reviewStatus !== 'unreviewed' && e('button', { onClick: function () { setSymbolReview(selectedItem.id, 'unreviewed'); }, style: S.btn('#f3f4f6', '#6b7280', false), 'aria-label': 'Reset review for ' + selectedItem.label }, 'Reset')
+              ),
+              e('label', { style: Object.assign({}, S.lbl, { display: 'block', marginBottom: '7px' }) },
+                'Search aliases',
+                e('input', { type: 'text', value: (selectedItem.aliases || []).join(', '), onChange: function (ev) { setSymbolAliases(selectedItem.id, ev.target.value); }, placeholder: 'restroom, toilet, washroom', 'aria-label': 'Search aliases for ' + selectedItem.label, style: Object.assign({}, S.input, { marginTop: '3px' }) })
+              ),
+              e('label', { style: Object.assign({}, S.lbl, { display: 'block' }) },
+                'Review note',
+                e('input', { type: 'text', value: selectedItem.reviewNote || '', onChange: function (ev) { setSymbolReviewNote(selectedItem.id, ev.target.value); }, placeholder: 'Context or change needed', 'aria-label': 'Review note for ' + selectedItem.label, style: Object.assign({}, S.input, { marginTop: '3px' }) })
+              ),
+              selectedVariants.length > 1 && e('div', { style: { marginTop: '8px', display: 'flex', gap: '5px', alignItems: 'center', flexWrap: 'wrap' } },
+                e('span', { style: { fontSize: '10px', fontWeight: 700, color: '#6b7280' } }, 'Variants:'),
+                selectedVariants.map(function (variant, index) {
+                  return e('button', { key: variant.id, onClick: function () { setSelectedId(variant.id); }, 'aria-pressed': variant.id === selectedItem.id, 'aria-label': 'Select variant ' + (index + 1) + ' of ' + selectedItem.label, style: S.btn(variant.id === selectedItem.id ? LIGHT_PURPLE : '#f3f4f6', variant.id === selectedItem.id ? PURPLE : '#6b7280', false) }, variant.variantLabel || ('Variant ' + (index + 1)));
+                })
               )
             )
           ),
@@ -7287,8 +9665,8 @@
           e('div', { style: { flex: 1, overflowY: 'auto' } },
             e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '8px' } },
               e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
-                e('span', { style: { fontWeight: 600, fontSize: '12px', color: '#374151' } }, 'Gallery (' + filtered.length + (filtered.length !== gallery.length ? '/' + gallery.length : '') + ')'),
-                e('input', { type: 'text', value: symFilter, onChange: function (ev) { setSymFilter(ev.target.value); }, placeholder: '🔍 Search symbols…', 'aria-label': 'Search symbols in gallery', style: { border: '1px solid #e5e7eb', borderRadius: '6px', padding: '3px 10px', fontSize: '11px', flex: 1 } }),
+                e('span', { style: { fontWeight: 600, fontSize: '12px', color: '#374151' } }, 'Symbol Bank (' + filtered.length + (filtered.length !== gallery.length ? '/' + gallery.length : '') + ')'),
+                e('input', { type: 'text', value: symFilter, onChange: function (ev) { setSymFilter(ev.target.value); }, placeholder: '🔍 Search symbols…', 'aria-label': 'Search symbols in the Symbol Bank', style: { border: '1px solid #e5e7eb', borderRadius: '6px', padding: '3px 10px', fontSize: '11px', flex: 1 } }),
                 e('button', { onClick: function () { setSymShowFavs(!symShowFavs); }, 'aria-label': symShowFavs ? 'Show all symbols' : 'Show favorite symbols only', style: { padding: '3px 8px', border: '1px solid ' + (symShowFavs ? PURPLE : '#e5e7eb'), borderRadius: '12px', background: symShowFavs ? LIGHT_PURPLE : '#fff', color: symShowFavs ? PURPLE : '#6b7280', fontSize: '11px', cursor: 'pointer', fontWeight: symShowFavs ? 700 : 400, flexShrink: 0 } }, '⭐')
               ),
               e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
@@ -7300,6 +9678,19 @@
                     onClick: function () { setSymCatFilter(cat); },
                     style: { padding: '2px 8px', border: '1px solid ' + (active ? PURPLE : '#e5e7eb'), borderRadius: '10px', background: active ? LIGHT_PURPLE : '#f9fafb', color: active ? PURPLE : '#6b7280', fontSize: '10px', cursor: 'pointer', fontWeight: active ? 700 : 400 }
                   }, lbl);
+                })
+              ),
+              e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' } },
+                e('span', { style: { fontSize: '9px', color: '#6b7280', fontWeight: 700 } }, 'Review:'),
+                [['', 'All'], ['unreviewed', 'Unreviewed'], ['approved', 'Approved'], ['needs_changes', 'Needs changes']].map(function (pair) {
+                  var status = pair[0]; var label = pair[1];
+                  var active = symReviewFilter === status;
+                  return e('button', {
+                    key: status || 'all-review',
+                    onClick: function () { setSymReviewFilter(status); },
+                    'aria-label': 'Filter Symbol Bank review status by ' + label,
+                    style: { padding: '2px 8px', border: '1px solid ' + (active ? PURPLE : '#e5e7eb'), borderRadius: '10px', background: active ? LIGHT_PURPLE : '#f9fafb', color: active ? PURPLE : '#6b7280', fontSize: '10px', cursor: 'pointer', fontWeight: active ? 700 : 400 }
+                  }, label);
                 })
               )
             ),
@@ -7319,6 +9710,7 @@
                         ? e('div', { style: { width: 72, height: 72, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f9fafb', borderRadius: '6px' } }, spinner(20))
                         : e('img', { src: item.image, alt: item.label, style: { width: 72, height: 72, objectFit: 'contain', borderRadius: '6px', background: '#fff' } }),
                       e('span', { style: { fontSize: '10px', color: '#4b5563', textAlign: 'center', wordBreak: 'break-word', lineHeight: 1.3 } }, item.label),
+                      e('span', { style: { fontSize: '8px', fontWeight: 700, color: item.reviewStatus === 'approved' ? '#166534' : item.reviewStatus === 'needs_changes' ? '#b91c1c' : '#6b7280' } }, item.reviewStatus === 'approved' ? 'Approved' : item.reviewStatus === 'needs_changes' ? 'Needs changes' : 'Unreviewed'),
                       e('button', { onClick: function (ev) { ev.stopPropagation(); toggleFavorite(item.id); }, 'aria-label': (item.isFavorite ? 'Remove ' : 'Add ') + item.label + (item.isFavorite ? ' from favorites' : ' to favorites'), style: { position: 'absolute', top: 3, right: 3, background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', opacity: item.isFavorite ? 1 : 0.3, padding: '1px' }, title: item.isFavorite ? 'Remove from favorites' : 'Add to favorites' }, '⭐'),
                       item.locked && e('div', { 'aria-hidden': 'true', title: 'Locked - protected from regenerate/refine', style: { position: 'absolute', top: 3, left: 3, fontSize: '11px', lineHeight: 1, pointerEvents: 'none' } }, '🔒')
                     );
@@ -7484,7 +9876,7 @@
             translating && e('span', { style: { fontSize: '10px', color: PURPLE } }, '⏳')
           ),
           e('button', { onClick: function () { setShowSentencePanel(!showSentencePanel); if (!showSentencePanel) { setSentenceMapping([]); setSentenceInput(''); } }, 'aria-label': 'From Sentence', style: S.btn(showSentencePanel ? LIGHT_PURPLE : '#f3f4f6', showSentencePanel ? PURPLE : '#374151', false), title: 'Type a sentence and let AI map each word to an AAC symbol' }, '🔤 From Sentence'),
-          e('button', { onClick: function () { setShowGalleryPicker(!showGalleryPicker); }, 'aria-label': 'From Gallery', style: S.btn(showGalleryPicker ? LIGHT_PURPLE : '#f3f4f6', showGalleryPicker ? PURPLE : '#374151', false), title: 'Add a symbol from your gallery directly to the board' }, '🖼️ From Gallery'),
+          e('button', { onClick: function () { setShowGalleryPicker(!showGalleryPicker); }, 'aria-label': 'From Symbol Bank', style: S.btn(showGalleryPicker ? LIGHT_PURPLE : '#f3f4f6', showGalleryPicker ? PURPLE : '#374151', false), title: 'Add a symbol from the Symbol Bank directly to the board' }, '🖼️ From Symbol Bank'),
           boardWords.length > 0 && !boardPages && e('button', {
             onClick: enablePages,
             title: 'Enable multi-page mode — add linked pages to this board', 'aria-label': 'Enable multi-page mode — add linked pages to this board',
@@ -7562,7 +9954,7 @@
                   // Title + word count
                   e('div', null,
                     e('div', { style: { fontWeight: 600, fontSize: '12px', color: '#1f2937', marginBottom: '2px' } }, b.title || 'Untitled Board'),
-                    e('div', { style: { fontSize: '10px', color: '#6b7280' } }, b.words.length + ' words')
+                    e('div', { style: { fontSize: '10px', color: '#6b7280' } }, collectBoardSpeechCells(b).length + ' words')
                   ),
                   // Profile tag selector
                   e('select', {
@@ -7577,26 +9969,44 @@
                   // Action buttons row
                   e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
                     e('button', { onClick: function () { loadBoard(b); }, 'aria-label': 'Load', style: S.btn(LIGHT_PURPLE, PURPLE, false) }, 'Load'),
-                    b.words && b.words.some(function (w) { return w.image; }) && e('button', {
-                      onClick: function () { setUseBoardId(b.id); setStrip([]); setShowCommLog(false); setUsePageIdx(0); setPredictions([]); },
-                      title: 'Use this board — tap symbols to speak and build messages', 'aria-label': 'Use board in AAC mode',
+                    collectBoardSpeechCells(b).some(function (cell) { return cell.image; }) && e('button', {
+                      onClick: function (ev) { ensureBoardSpeechEntry(b); useOpenerRef.current = ev.currentTarget; predEpochRef.current += 1; setUseBoardId(b.id); setStrip([]); setShowCommLog(false); setUsePageIdx(0); setPredictions([]); },
+                      title: 'Use this board: tap symbols to speak and build messages', 'aria-label': 'Use board in AAC mode',
                       style: S.btn('#eff6ff', '#1d4ed8', false)
                     }, '\u25b6 Use'),
-                    b.words && b.words.some(function (w) { return w.image; }) && e('button', {
-                      onClick: function () { scanOpenerRef.current = b.id; setScanBoardId(b.id); setScanIndex(0); setScanPaused(false); },
+                    collectBoardSpeechCells(b).length > 0 && e('button', {
+                      onClick: function () { prepareBoardSpeech(b); },
+                      disabled: speechPreparing,
+                      title: 'Generate and save missing cell speech on this device',
+                      'aria-label': 'Prepare saved speech for ' + (b.title || 'this board'),
+                      style: S.btn('#e0f2fe', '#0369a1', speechPreparing)
+                    }, speechPreparing ? 'Saving...' : '🔊 Prepare'),
+                    collectBoardSpeechCells(b).some(function (cell) { return cell.image; }) && e('button', {
+                      onClick: function () { ensureBoardSpeechEntry(b); scanOpenerRef.current = b.id; setScanBoardId(b.id); setScanIndex(0); setScanPaused(false); },
                       'data-scan-board-id': b.id,
                       title: 'Partner-assisted single-switch scanning mode', 'aria-label': 'Start scanning mode',
                       style: S.btn('#ecfdf5', '#065f46', false)
                     }, '\u267f Scan'),
                     e('button', { onClick: function () { exportBoard(b); }, title: 'Export this board as a .json file', 'aria-label': 'Export ' + (b.title || 'saved board') + ' as JSON', style: S.btn('#f3f4f6', '#374151', false) }, '⬇️'),
-                    b.words && b.words.some(function (w) { return w.image; }) && e('button', { onClick: function () { exportBoardHTML(b); }, title: 'Export standalone HTML board — opens in any browser without AlloFlow', 'aria-label': 'Export ' + (b.title || 'saved board') + ' as standalone HTML', style: S.btn('#fef9c3', '#92400e', false) }, '🌐'),
+                    ((b.words && b.words.length) || (b.pages && b.pages.some(function (page) { return page && page.words && page.words.length; }))) && e('button', { onClick: function () { exportBoardHTML(b); }, title: 'Export a standalone HTML board that opens without AlloFlow', 'aria-label': 'Export ' + (b.title || 'saved board') + ' as standalone HTML', style: S.btn('#fef9c3', '#92400e', false) }, '🌐'),
+                    onSaveAACResource && e('button', {
+                      onClick: function () { sendPortableAACResource(onSaveAACResource, b, 'Board sent to the lesson.', 'The board could not be saved to the lesson.'); },
+                      title: 'Save this portable board to a lesson',
+                      'aria-label': 'Save ' + (b.title || 'saved board') + ' to a lesson',
+                      style: S.btn('#ecfeff', '#155e75', false)
+                    }, 'Lesson'),
+                    onShareAACResource && e('button', {
+                      onClick: function () { sharePortableAACResource(b); },
+                      title: 'Share this portable board with a QR code',
+                      'aria-label': 'Share ' + (b.title || 'saved board') + ' with a QR code',
+                      style: S.btn('#f0fdf4', '#166534', false)
+                    }, 'Share QR'),
                     b.words && b.words.length > 0 && e('button', { onClick: function () { exportBoardOBF(b); }, title: 'Export as Open Board Format (.obf) — single board; import into Cboard or another AAC app', 'aria-label': 'Export as Open Board Format for Cboard', style: S.btn('#ede9fe', '#5b21b6', false) }, '💬 OBF'),
                     b.pages && b.pages.length > 1 && e('button', { onClick: function () { exportBoardOBZ(b); }, title: 'Export all pages as an Open Board Format set (.obz) — import into Cboard or another AAC app', 'aria-label': 'Export all pages as Open Board Format set for Cboard', style: S.btn('#ede9fe', '#5b21b6', false) }, '💬 OBZ'),
                     liveSession && liveSession.active && e('button', {
                       title: 'Push board to student screens', 'aria-label': 'Push board to student screens',
                       onClick: function () {
-                        var stripped = b.words.map(function (w) { return { word: w.word, wordType: w.wordType }; });
-                        liveSession.push({ type: 'board', title: b.title, words: stripped, cols: b.cols || 4 })
+                        liveSession.push(buildPortableAACPackage(b))
                           .then(function () { addToast(t('toasts.board_pushed_students'), 'success'); })
                           .catch(function () { addToast(t('toasts.push_failed_check_session_connection'), 'error'); });
                       },
@@ -7611,12 +10021,12 @@
         // Gallery picker panel
         showGalleryPicker && gallery.length > 0 && e('div', { style: { flexShrink: 0, background: '#faf5ff', border: '1px solid #ede9fe', borderRadius: '10px', padding: '10px', maxHeight: '160px', overflowY: 'auto' } },
           e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' } },
-            e('span', { style: { fontSize: '11px', fontWeight: 600, color: PURPLE } }, 'Gallery \u2014 click any symbol to add it to the board'),
-            e('input', { type: 'text', value: gpFilter, onChange: function (ev) { setGpFilter(ev.target.value); }, placeholder: 'Filter\u2026', 'aria-label': 'Filter gallery symbols', style: { border: '1px solid #d8b4fe', borderRadius: '5px', padding: '3px 7px', fontSize: '11px', marginLeft: 'auto', width: '80px' } })
+            e('span', { style: { fontSize: '11px', fontWeight: 600, color: PURPLE } }, 'Symbol Bank: click any symbol to add it to the board'),
+            e('input', { type: 'text', value: gpFilter, onChange: function (ev) { setGpFilter(ev.target.value); }, placeholder: 'Filter\u2026', 'aria-label': 'Filter Symbol Bank', style: { border: '1px solid #d8b4fe', borderRadius: '5px', padding: '3px 7px', fontSize: '11px', marginLeft: 'auto', width: '80px' } })
           ),
           e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(70px, 1fr))', gap: '6px' } },
             gallery
-              .filter(function (g) { return !gpFilter || g.label.toLowerCase().includes(gpFilter.toLowerCase()); })
+              .filter(function (g) { return matchesBankQuery(g, gpFilter); })
               .map(function (item) {
                 return e('div', { key: item.id, onClick: function () { addFromGallery(item); }, style: { cursor: 'pointer', border: '1px solid #d8b4fe', borderRadius: '7px', padding: '5px', background: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', transition: 'background 0.1s' }, title: 'Add \u201c' + item.label + '\u201d to board',
                   onMouseOver: function (ev) { ev.currentTarget.style.background = LIGHT_PURPLE; },
@@ -7628,7 +10038,7 @@
               })
           )
         ),
-        showGalleryPicker && gallery.length === 0 && e('div', { style: { flexShrink: 0, background: '#faf5ff', border: '1px solid #ede9fe', borderRadius: '10px', padding: '12px', textAlign: 'center', fontSize: '12px', color: '#7c3aed' } }, 'Your symbol gallery is empty. Generate symbols in the Symbols tab first, then add them here.'),
+        showGalleryPicker && gallery.length === 0 && e('div', { style: { flexShrink: 0, background: '#faf5ff', border: '1px solid #ede9fe', borderRadius: '10px', padding: '12px', textAlign: 'center', fontSize: '12px', color: '#7c3aed' } }, 'Your Symbol Bank is empty. Generate symbols in the Symbol Bank tab first, then add them here.'),
         // ── Sentence-to-symbols panel ──
         showSentencePanel && e('div', { style: { flexShrink: 0, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' } },
           e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
@@ -7664,7 +10074,7 @@
                   m.galleryMatch && m.galleryMatch.image && e('img', { src: m.galleryMatch.image, style: { width: 36, height: 36, objectFit: 'contain', borderRadius: '5px' } }),
                   !m.galleryMatch && !m.skip && e('div', { style: { width: 36, height: 36, borderRadius: '5px', background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' } }, '✨'),
                   e('span', { style: { fontSize: '11px', fontWeight: 700, color: '#1f2937', textAlign: 'center' } }, m.label || m.word),
-                  e('span', { style: { fontSize: '9px', color: '#6b7280' } }, m.galleryMatch ? '✓ gallery' : (m.skip ? 'skipped' : 'needs gen')),
+                  e('span', { style: { fontSize: '9px', color: '#6b7280' } }, m.galleryMatch ? '✓ bank' : (m.skip ? 'skipped' : 'needs gen')),
                   !m.skip && e('label', { style: { display: 'flex', alignItems: 'center', gap: '3px', fontSize: '10px', cursor: 'pointer', color: '#374151' } },
                     e('input', {
                       type: 'checkbox',
@@ -7811,7 +10221,7 @@
                       'aria-keyshortcuts': 'Alt+ArrowLeft Alt+ArrowRight Alt+ArrowUp Alt+ArrowDown',
                       'aria-describedby': 'ss-cell-reorder-help',
                       'aria-label': 'Speak ' + (word.translatedLabel || word.label) + '. Position ' + (wordIndex + 1) + ' of ' + boardWords.length,
-                      onClick: function () { speakCell(word.translatedLabel || word.label); },
+                      onClick: function () { speakCell(word); },
                       onKeyDown: function (ev) {
                         if (!ev.altKey) return;
                         var delta = ev.key === 'ArrowLeft' ? -1 : ev.key === 'ArrowRight' ? 1 : ev.key === 'ArrowUp' ? -boardCols : ev.key === 'ArrowDown' ? boardCols : 0;
@@ -7855,9 +10265,31 @@
 
     // ── Visual Schedule tab ────────────────────────────────────────────────
     function renderScheduleTab() {
+      var sequenceBusy = schedPlanning || schedGenerating;
       return e('div', { style: { display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden', padding: '16px', gap: '12px' } },
-        e('p', { id: 'ss-schedule-reorder-help', style: { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, 'Use Earlier and Later to change activity order. Completion moves Now to the next unfinished step.'),
-        // Garden hint — words that would benefit from schedule context
+        e('p', { id: 'ss-schedule-reorder-help', style: { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, 'Use Earlier and Later to change step order. Completion moves Now to the next unfinished step.'),
+        e('div', {
+          className: 'ss-no-print',
+          style: { flexShrink: 0, display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap', padding: '10px', background: '#faf5ff', border: '1px solid #ddd6fe', borderRadius: '10px' }
+        },
+          e('div', { style: { flex: 1, minWidth: '220px' } },
+            e('label', { style: S.lbl }, 'Topic, process, or story'),
+            e('input', {
+              type: 'text', value: schedTopic,
+              onChange: function (ev) { setSchedTopic(ev.target.value); },
+              onKeyDown: function (ev) { if (ev.key === 'Enter') generateSequenceFromTopic(); },
+              placeholder: 'e.g. getting ready for school, planting a seed, beginning-middle-end',
+              'aria-label': 'Sequence topic or task', style: S.input
+            })
+          ),
+          e('button', {
+            onClick: generateSequenceFromTopic,
+            disabled: !schedTopic.trim() || sequenceBusy || !onCallGemini,
+            'aria-label': 'Build visual sequence from topic',
+            style: S.btn(PURPLE, '#fff', !schedTopic.trim() || sequenceBusy || !onCallGemini)
+          }, schedPlanning ? '⏳ Planning...' : (schedGenerating ? '⏳ Building...' : '✨ Build from Topic'))
+        ),
+        // Garden hint — words that would benefit from sequence context
         (function () {
           var bank = computeWordBank();
           var needsSched = bank.filter(function (w) {
@@ -7865,11 +10297,11 @@
           }).slice(0, 5);
           if (needsSched.length === 0) return null;
           return e('div', { style: { flexShrink: 0, display: 'flex', gap: '6px', alignItems: 'center', padding: '6px 10px', background: '#f0fdf4', borderRadius: '8px', border: '1px solid #d1fae5', flexWrap: 'wrap' } },
-            e('span', { style: { fontSize: '10px', fontWeight: 600, color: '#059669', whiteSpace: 'nowrap' } }, '🌱 Could grow in a schedule:'),
+            e('span', { style: { fontSize: '10px', fontWeight: 600, color: '#059669', whiteSpace: 'nowrap' } }, '🌱 Could grow in a sequence:'),
             needsSched.map(function (w) {
               return e('button', { key: w.key, onClick: function () {
                 setSchedInput(function (prev) { return prev ? prev + '\n' + w.displayLabel : w.displayLabel; });
-              }, 'aria-label': 'Add ' + w.displayLabel + ' to schedule input', title: 'Add to schedule activities',
+              }, 'aria-label': 'Add ' + w.displayLabel + ' to sequence input', title: 'Add to sequence steps',
                 style: { padding: '2px 8px', background: '#fff', border: '1px solid #4ade80', borderRadius: '12px', fontSize: '10px', fontWeight: 600, color: '#15803d', cursor: 'pointer' } },
                 w.displayLabel, e('span', { style: { color: '#9ca3af', marginLeft: '2px' } }, '+'));
             }));
@@ -7877,25 +10309,25 @@
         // Controls
         e('div', { style: { display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap', flexShrink: 0 } },
           e('div', { style: { flex: 1 } },
-            e('label', { style: S.lbl }, 'Activities (one per line)'),
-            e('textarea', { value: schedInput, onChange: function (ev) { setSchedInput(ev.target.value); }, placeholder: 'brush teeth\nget dressed\neat breakfast\nboard the bus\narrive at school', 'aria-label': 'Schedule activities, one per line', style: Object.assign({}, S.textarea, { height: '70px' }) })
+            e('label', { style: S.lbl }, 'Steps (one per line)'),
+            e('textarea', { value: schedInput, onChange: function (ev) { setSchedInput(ev.target.value); }, placeholder: 'brush teeth\nget dressed\neat breakfast\nboard the bus\narrive at school', 'aria-label': 'Sequence steps, one per line', style: Object.assign({}, S.textarea, { height: '70px' }) })
           ),
           e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
             e('div', null,
               e('label', { style: S.lbl }, 'Layout'),
-              e('select', { value: schedOrientation, onChange: function (ev) { setSchedOrientation(ev.target.value); }, 'aria-label': 'Schedule layout', style: Object.assign({}, S.input, { width: 'auto' }) },
+              e('select', { value: schedOrientation, onChange: function (ev) { setSchedOrientation(ev.target.value); }, 'aria-label': 'Sequence layout', style: Object.assign({}, S.input, { width: 'auto' }) },
                 e('option', { value: 'horizontal' }, 'Horizontal Strip'),
                 e('option', { value: 'vertical' }, 'Vertical List')
               )
             ),
-            e('button', { onClick: generateSchedule, disabled: !schedInput.trim() || schedGenerating, 'aria-label': 'Generate visual schedule', style: S.btn(PURPLE, '#fff', !schedInput.trim() || schedGenerating) }, schedGenerating ? '⏳ Generating...' : '✨ Generate Schedule')
+            e('button', { onClick: generateSchedule, disabled: !schedInput.trim() || sequenceBusy || !onCallImagen, 'aria-label': 'Generate visual sequence', style: S.btn(PURPLE, '#fff', !schedInput.trim() || sequenceBusy || !onCallImagen) }, schedGenerating ? '⏳ Generating...' : '✨ Generate Sequence')
           ),
           schedItems.length > 0 && e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
             e('button', { onClick: resetSchedule, 'aria-label': 'Reset', style: S.btn('#f3f4f6', '#374151', false) }, '🔄 Reset'),
             e('button', { onClick: saveSchedule, 'aria-label': 'Save', style: S.btn('#f3f4f6', '#374151', false) }, '💾 Save'),
             e('button', { onClick: function () { window.print(); }, 'aria-label': 'Print', style: S.btn('#dbeafe', '#1e40af', false) }, '🖨️ Print')
           ),
-          savedSchedules.length > 0 && e('button', { onClick: function () { setShowSchedGallery(!showSchedGallery); }, 'aria-label': 'Toggle saved schedules gallery', style: S.btn(showSchedGallery ? LIGHT_PURPLE : '#f3f4f6', showSchedGallery ? PURPLE : '#374151', false) }, '📂 Saved (' + savedSchedules.length + ')')
+          savedSchedules.length > 0 && e('button', { onClick: function () { setShowSchedGallery(!showSchedGallery); }, 'aria-label': 'Toggle saved sequences', style: S.btn(showSchedGallery ? LIGHT_PURPLE : '#f3f4f6', showSchedGallery ? PURPLE : '#374151', false) }, '📂 Saved (' + savedSchedules.length + ')')
         ),
         // Saved schedules panel
         showSchedGallery && e('div', { style: { flexShrink: 0, borderBottom: '1px solid #e5e7eb', paddingBottom: '10px' } },
@@ -7903,12 +10335,12 @@
             savedSchedules.map(function (s) {
               return e('div', { key: s.id, style: { flexShrink: 0, border: '1px solid #e5e7eb', borderRadius: '8px', padding: '8px 12px', background: '#fff', display: 'flex', alignItems: 'center', gap: '10px' } },
                 e('div', null,
-                  e('div', { style: { fontWeight: 600, fontSize: '12px', color: '#1f2937' } }, s.title || 'Untitled Schedule'),
-                  e('div', { style: { fontSize: '10px', color: '#6b7280' } }, s.items.length + ' activities')
+                  e('div', { style: { fontWeight: 600, fontSize: '12px', color: '#1f2937' } }, s.title || 'Untitled Sequence'),
+                  e('div', { style: { fontSize: '10px', color: '#6b7280' } }, s.items.length + ' steps')
                 ),
                 e('button', { onClick: function () { loadSchedule(s); }, 'aria-label': 'Load', style: S.btn(LIGHT_PURPLE, PURPLE, false) }, 'Load'),
                 liveSession && liveSession.active && e('button', {
-                  title: 'Push to student screens (images excluded)', 'aria-label': 'Push schedule to student screens',
+                  title: 'Push to student screens (images excluded)', 'aria-label': 'Push sequence to student screens',
                   onClick: function () {
                     var stripped = s.items.map(function (item) { return { label: item.label }; });
                     liveSession.push({ type: 'schedule', title: s.title, items: stripped, nowIndex: 0 })
@@ -7917,18 +10349,18 @@
                   },
                   style: S.btn('#ecfdf5', '#065f46', false)
                 }, '📡'),
-                e('button', { onClick: function () { deleteSavedSchedule(s.id); }, 'aria-label': 'Delete saved schedule ' + (s.title || 'Untitled Schedule'), style: { background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', fontSize: '14px', padding: '2px 4px' } }, '🗑️')
+                e('button', { onClick: function () { deleteSavedSchedule(s.id); }, 'aria-label': 'Delete saved sequence ' + (s.title || 'Untitled Sequence'), style: { background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', fontSize: '14px', padding: '2px 4px' } }, '🗑️')
               );
             })
           )
         ),
         // Schedule title
-        schedItems.length > 0 && e('input', { type: 'text', value: schedTitle, onChange: function (ev) { setSchedTitle(ev.target.value); }, placeholder: 'Schedule title, e.g. Marcus\'s Morning Routine', 'aria-label': 'Schedule title', style: Object.assign({}, S.input, { fontWeight: 700, fontSize: '14px', maxWidth: '400px' }) }),
+        schedItems.length > 0 && e('input', { type: 'text', value: schedTitle, onChange: function (ev) { setSchedTitle(ev.target.value); }, placeholder: 'Sequence title, e.g. Marcus\'s Morning Routine', 'aria-label': 'Sequence title', style: Object.assign({}, S.input, { fontWeight: 700, fontSize: '14px', maxWidth: '400px' }) }),
         // Schedule strip
         schedItems.length > 0
           ? e('div', { id: 'ss-ps', style: { flex: 1, overflowY: 'auto', overflowX: schedOrientation === 'horizontal' ? 'auto' : 'hidden' } },
               schedTitle && e('h2', { style: { fontWeight: 800, fontSize: '16px', color: '#1f2937', margin: '0 0 12px' } }, schedTitle),
-              e('div', { role: 'list', 'aria-label': (schedTitle || 'Visual schedule') + ' ordered activities', style: {
+              e('div', { role: 'list', 'aria-label': (schedTitle || 'Visual sequence') + ' ordered steps', style: {
                 display: 'flex',
                 flexDirection: schedOrientation === 'horizontal' ? 'row' : 'column',
                 gap: '8px',
@@ -7970,12 +10402,12 @@
                     e('span', { id: 'ss-schedule-step-' + item.id, style: { fontSize: '12px', fontWeight: isDone ? 500 : 700, color: isDone ? '#475569' : '#1f2937', textAlign: 'center', textDecoration: isDone ? 'line-through' : 'none', lineHeight: 1.3 } }, item.label),
                     isDone && e('span', { style: { fontSize: '11px', fontWeight: 800, color: '#166534' } }, 'DONE'),
                     e('button', { type: 'button', className: 'ss-no-print', onClick: function () { toggleComplete(item.id); }, 'aria-pressed': isDone, 'aria-label': (isDone ? 'Mark ' + item.label + ' not done' : 'Mark ' + item.label + ' done'), style: { minHeight: '44px', minWidth: '44px', padding: '7px 10px', border: '1px solid #86efac', borderRadius: '8px', background: isDone ? '#dcfce7' : '#fff', color: '#166534', cursor: 'pointer', fontSize: '11px', fontWeight: 700 } }, isDone ? 'Mark not done' : 'Mark done'),
-                    e('button', { type: 'button', className: 'ss-no-print', onClick: function () { setSchedNowId(item.id); announceScheduleChange(item.label + ' is now the current step'); }, disabled: isNow, 'aria-label': isNow ? item.label + ' is the current activity' : 'Set ' + item.label + ' as current activity', style: { minHeight: '44px', minWidth: '44px', padding: '7px 10px', border: '1px solid #c4b5fd', borderRadius: '8px', background: isNow ? LIGHT_PURPLE : '#fff', color: PURPLE, cursor: isNow ? 'default' : 'pointer', fontSize: '11px', fontWeight: 700 } }, isNow ? 'Current step' : 'Set as now'),
+                    e('button', { type: 'button', className: 'ss-no-print', onClick: function () { setSchedNowId(item.id); announceScheduleChange(item.label + ' is now the current step'); }, disabled: isNow, 'aria-label': isNow ? item.label + ' is the current step' : 'Set ' + item.label + ' as current step', style: { minHeight: '44px', minWidth: '44px', padding: '7px 10px', border: '1px solid #c4b5fd', borderRadius: '8px', background: isNow ? LIGHT_PURPLE : '#fff', color: PURPLE, cursor: isNow ? 'default' : 'pointer', fontSize: '11px', fontWeight: 700 } }, isNow ? 'Current step' : 'Set as now'),
                     e('div', { className: 'ss-no-print', style: { display: 'flex', gap: '4px', justifyContent: 'center', flexWrap: 'wrap' } },
                       e('button', { type: 'button', 'data-schedule-move-id': item.id, onClick: function () { moveScheduleItem(item.id, -1); }, disabled: idx === 0, 'aria-label': 'Move ' + item.label + ' earlier', style: { minHeight: '36px', minWidth: '44px', padding: '5px 8px', border: '1px solid #cbd5e1', borderRadius: '7px', background: '#fff', color: '#334155', cursor: idx === 0 ? 'default' : 'pointer', fontSize: '11px', fontWeight: 700 } }, 'Earlier'),
                       e('button', { type: 'button', onClick: function () { moveScheduleItem(item.id, 1); }, disabled: idx === schedItems.length - 1, 'aria-label': 'Move ' + item.label + ' later', style: { minHeight: '36px', minWidth: '44px', padding: '5px 8px', border: '1px solid #cbd5e1', borderRadius: '7px', background: '#fff', color: '#334155', cursor: idx === schedItems.length - 1 ? 'default' : 'pointer', fontSize: '11px', fontWeight: 700 } }, 'Later')
                     ),
-                    e('button', { type: 'button', className: 'ss-no-print', onClick: function () { removeScheduleItem(item.id); }, 'aria-label': 'Remove ' + item.label + ' from schedule', style: { minHeight: '36px', minWidth: '44px', padding: '5px 8px', border: '1px solid #fecaca', borderRadius: '7px', background: '#fff1f2', color: '#be123c', cursor: 'pointer', fontSize: '11px', fontWeight: 700 } }, 'Remove')
+                    e('button', { type: 'button', className: 'ss-no-print', onClick: function () { removeScheduleItem(item.id); }, 'aria-label': 'Remove ' + item.label + ' from sequence', style: { minHeight: '36px', minWidth: '44px', padding: '5px 8px', border: '1px solid #fecaca', borderRadius: '7px', background: '#fff1f2', color: '#be123c', cursor: 'pointer', fontSize: '11px', fontWeight: 700 } }, 'Remove')
                   );
                 })
               ),
@@ -7983,8 +10415,8 @@
             )
           : e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', flexDirection: 'column', gap: '10px' } },
               e('div', { style: { fontSize: '48px' } }, '📅'),
-              e('p', { style: { fontWeight: 600 } }, 'Build a personalized visual schedule'),
-              e('p', { style: { fontSize: '12px', maxWidth: '360px', textAlign: 'center' } }, 'Enter activities, generate AI symbols, then tap to mark each as complete. Print as a laminated strip for the classroom or home.')
+              e('p', { style: { fontWeight: 600 } }, 'Build a personalized visual sequence'),
+              e('p', { style: { fontSize: '12px', maxWidth: '360px', textAlign: 'center' } }, 'Enter steps yourself or build an ordered sequence from a topic. Generate symbols, mark steps done, and print it for classroom or home use.')
             )
       );
     }
@@ -8105,118 +10537,274 @@
 
     // ── Activity Sets tab ──────────────────────────────────────────────────
     function renderBooksTab() {
-      var activeBook = books.find(function (b) { return b.id === activeBookId; }) || null;
+      var activeBook = books.find(function (book) { return book.id === activeBookId; }) || null;
+      var selectedBoards = activeBook ? activeBook.boardIds.map(function (id) {
+        return savedBoards.find(function (board) { return board.id === id; });
+      }).filter(Boolean) : [];
+      var selectedSchedules = activeBook ? activeBook.scheduleIds.map(function (id) {
+        return savedSchedules.find(function (schedule) { return schedule.id === id; });
+      }).filter(Boolean) : [];
+      var selectedAssets = activeBook ? activeBook.assetIds.map(function (id) {
+        return gallery.find(function (asset) { return asset.id === id; });
+      }).filter(Boolean) : [];
+      var availableAssets = activeBook ? gallery.filter(function (asset) {
+        return activeBook.assetIds.indexOf(asset.id) < 0 && matchesBankQuery(asset, packAssetFilter);
+      }).slice(0, 60) : [];
+      var missingReferenceCount = activeBook
+        ? (activeBook.boardIds.length - selectedBoards.length) + (activeBook.scheduleIds.length - selectedSchedules.length) + (activeBook.assetIds.length - selectedAssets.length)
+        : 0;
+      function repairPackReferences() {
+        if (!activeBook) return;
+        updatePackField(activeBook.id, {
+          boardIds: selectedBoards.map(function (board) { return board.id; }),
+          scheduleIds: selectedSchedules.map(function (schedule) { return schedule.id; }),
+          assetIds: selectedAssets.map(function (asset) { return asset.id; })
+        });
+      }
+
+      function packSectionTitle(title, count, helper) {
+        return e('div', { style: { marginBottom: '8px' } },
+          e('div', { style: { fontSize: '12px', fontWeight: 800, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.05em' } }, title + ' (' + count + ')'),
+          helper && e('div', { style: { fontSize: '11px', color: '#6b7280', marginTop: '2px' } }, helper)
+        );
+      }
+
       return e('div', { style: { display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden', padding: '16px', gap: '14px' } },
-        // Create new set row
+        e('input', {
+          type: 'file',
+          accept: '.json,.alloflow-visual-pack.json',
+          ref: importPackRef,
+          style: { display: 'none' },
+          onChange: importVisualPack
+        }),
         e('div', { style: { display: 'flex', gap: '8px', alignItems: 'flex-end', flexShrink: 0, flexWrap: 'wrap' } },
-          e('div', { style: { flex: 1, minWidth: '200px' } },
-            e('label', { style: S.lbl }, 'New Activity Set Name'),
-            e('input', { type: 'text', value: newBookTitle, onChange: function (ev) { setNewBookTitle(ev.target.value); }, onKeyDown: function (ev) { if (ev.key === 'Enter') createBook(); }, placeholder: 'e.g. Marcus \u2014 School Day Boards', 'aria-label': 'New activity set name', style: S.input })
+          e('div', { style: { flex: 1, minWidth: '220px' } },
+            e('label', { style: S.lbl }, 'New Visual Pack Name'),
+            e('input', {
+              type: 'text',
+              value: newBookTitle,
+              onChange: function (event) { setNewBookTitle(event.target.value); },
+              onKeyDown: function (event) { if (event.key === 'Enter') createBook(); },
+              placeholder: 'e.g. School Day Communication Supports',
+              'aria-label': 'New Visual Pack name',
+              style: S.input
+            })
           ),
-          e('button', { onClick: createBook, disabled: !newBookTitle.trim(), 'aria-label': 'Create new activity book', style: S.btn(PURPLE, '#fff', !newBookTitle.trim()) }, '+ Create Set')
+          e('button', { type: 'button', onClick: createBook, disabled: !newBookTitle.trim(), style: S.btn(PURPLE, '#fff', !newBookTitle.trim()) }, '+ Create Pack'),
+          e('button', {
+            type: 'button',
+            onClick: function () { if (importPackRef.current) importPackRef.current.click(); },
+            style: S.btn('#e0f2fe', '#075985', false)
+          }, 'Import Pack')
         ),
-        // Body: left = set list, right = set contents
-        e('div', { style: { display: 'flex', gap: '14px', flex: 1, overflow: 'hidden' } },
-          // Left: list of books
-          e('div', { style: { width: '220px', flexShrink: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' } },
+        e('div', { style: { display: 'flex', gap: '14px', flex: 1, minHeight: 0, overflow: 'hidden' } },
+          e('div', { style: { width: '240px', flexShrink: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' } },
             books.length === 0
-              ? e('div', { style: { color: '#6b7280', fontSize: '13px', padding: '20px 0', textAlign: 'center' } }, 'No activity sets yet.\nCreate one above and add your saved boards.')
+              ? e('div', { style: { color: '#6b7280', fontSize: '13px', padding: '20px 4px', textAlign: 'center', lineHeight: 1.6 } }, 'No Visual Packs yet. Create one or import a shareable pack.')
               : books.map(function (book) {
                   var isActive = book.id === activeBookId;
-                  var taggedProf = profiles.find(function (p) { return p.id === book.profileId; }) || null;
-                  return e('div', {
+                  var taggedProfile = profiles.find(function (profile) { return profile.id === book.profileId; }) || null;
+                  var resolvedBoardCount = book.boardIds.filter(function (id) { return savedBoards.some(function (board) { return board.id === id; }); }).length;
+                  var resolvedScheduleCount = book.scheduleIds.filter(function (id) { return savedSchedules.some(function (schedule) { return schedule.id === id; }); }).length;
+                  var resolvedAssetCount = book.assetIds.filter(function (id) { return gallery.some(function (asset) { return asset.id === id; }); }).length;
+                  var missingCount = (book.boardIds.length - resolvedBoardCount) + (book.scheduleIds.length - resolvedScheduleCount) + (book.assetIds.length - resolvedAssetCount);
+                  return e('button', {
                     key: book.id,
-                    onClick: function () { setActiveBookId(isActive ? null : book.id); },
-                    style: { border: '2px solid ' + (isActive ? PURPLE : '#e5e7eb'), borderRadius: '10px', padding: '10px', background: isActive ? LIGHT_PURPLE : '#fff', cursor: 'pointer', transition: 'border-color 0.1s' }
+                    type: 'button',
+                    onClick: function () { setActiveBookId(book.id); },
+                    'aria-pressed': isActive,
+                    style: {
+                      width: '100%',
+                      border: '2px solid ' + (isActive ? PURPLE : '#e5e7eb'),
+                      borderRadius: '10px',
+                      padding: '10px',
+                      background: isActive ? LIGHT_PURPLE : '#fff',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      color: '#1f2937'
+                    }
                   },
                     e('div', { style: { fontWeight: 700, fontSize: '13px', color: isActive ? PURPLE : '#1f2937', marginBottom: '3px' } }, book.title),
-                    e('div', { style: { fontSize: '10px', color: '#6b7280' } }, book.boardIds.length + ' board' + (book.boardIds.length !== 1 ? 's' : '') + (taggedProf ? ' \u00b7 ' + (taggedProf.name || 'Student') : ''))
+                    e('div', { style: { fontSize: '10px', color: '#6b7280', lineHeight: 1.5 } },
+                      resolvedBoardCount + ' board' + (resolvedBoardCount === 1 ? '' : 's') + ' \u00b7 '
+                      + resolvedScheduleCount + ' sequence' + (resolvedScheduleCount === 1 ? '' : 's') + ' \u00b7 '
+                      + resolvedAssetCount + ' asset' + (resolvedAssetCount === 1 ? '' : 's')
+                      + (missingCount ? ' \u00b7 ' + missingCount + ' missing' : '')
+                    ),
+                    taggedProfile && e('div', { style: { fontSize: '10px', color: PURPLE, marginTop: '3px' } }, 'Local assignment: ' + (taggedProfile.name || 'Student'))
                   );
                 })
           ),
-          // Right: active book detail
           activeBook
-            ? e('div', { style: { flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' } },
-                // Book header
-                e('div', { style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '12px', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', flexShrink: 0 } },
-                  e('div', { style: { flex: 1 } },
-                    e('h3', { style: { fontWeight: 800, fontSize: '16px', color: '#1f2937', margin: '0 0 6px' } }, activeBook.title),
-                    e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
-                      e('span', { style: { fontSize: '11px', color: '#6b7280' } }, 'Student:'),
-                      e('select', {
-                        value: activeBook.profileId || '',
-                        onChange: function (ev) { tagBookProfile(activeBook.id, ev.target.value || null); },
-                        'aria-label': 'Assign student profile to activity set',
-                        style: { fontSize: '11px', border: '1px solid #e5e7eb', borderRadius: '5px', padding: '2px 5px', color: activeBook.profileId ? PURPLE : '#6b7280', background: activeBook.profileId ? LIGHT_PURPLE : '#f9fafb' }
-                      },
-                        e('option', { value: '' }, '— None —'),
-                        profiles.map(function (p) { return e('option', { key: p.id, value: p.id }, p.name || 'Student'); })
+            ? e('div', { style: { flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '14px', paddingRight: '4px' } },
+                e('section', { 'aria-labelledby': 'ss-pack-heading', style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '14px' } },
+                  e('div', { style: { display: 'flex', gap: '12px', alignItems: 'flex-start', flexWrap: 'wrap' } },
+                    e('div', { style: { flex: 1, minWidth: '240px' } },
+                      e('h3', { id: 'ss-pack-heading', style: { fontWeight: 800, fontSize: '18px', color: '#1f2937', margin: '0 0 8px' } }, activeBook.title),
+                      e('label', { style: S.lbl }, 'Pack Description'),
+                      e('textarea', {
+                        key: activeBook.id + ':description',
+                        defaultValue: activeBook.description || '',
+                        onBlur: function (event) {
+                          var value = event.target.value.trim().slice(0, 500);
+                          if (value !== (activeBook.description || '') && !updatePackField(activeBook.id, { description: value })) {
+                            event.target.value = activeBook.description || '';
+                          }
+                        },
+                        placeholder: 'What this pack supports and when to use it',
+                        'aria-label': 'Visual Pack description',
+                        style: Object.assign({}, S.textarea, { minHeight: '60px', marginBottom: '8px' })
+                      }),
+                      e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' } },
+                        e('label', { htmlFor: 'ss-pack-profile', style: { fontSize: '11px', color: '#6b7280' } }, 'Local student assignment:'),
+                        e('select', {
+                          id: 'ss-pack-profile',
+                          value: activeBook.profileId || '',
+                          onChange: function (event) { tagBookProfile(activeBook.id, event.target.value || null); },
+                          style: { fontSize: '11px', border: '1px solid #e5e7eb', borderRadius: '5px', padding: '4px 6px', color: activeBook.profileId ? PURPLE : '#6b7280', background: activeBook.profileId ? LIGHT_PURPLE : '#f9fafb' }
+                        },
+                          e('option', { value: '' }, 'No assignment'),
+                          profiles.map(function (profile) { return e('option', { key: profile.id, value: profile.id }, profile.name || 'Student'); })
+                        ),
+                        e('span', { style: { fontSize: '10px', color: '#6b7280' } }, 'Local assignments are never included in shareable exports.')
                       )
+                    ),
+                    e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'flex-end' } },
+                      e('button', { type: 'button', onClick: function () { exportVisualPack(activeBook); }, 'aria-label': 'Export shareable Visual Pack ' + (activeBook.title || 'Untitled'), style: S.btn('#dcfce7', '#166534', false) }, 'Export Shareable'),
+                      e('button', { type: 'button', onClick: function () { printBook(activeBook); }, disabled: selectedBoards.length === 0, 'aria-label': 'Print all boards in ' + (activeBook.title || 'Visual Pack'), style: S.btn('#dbeafe', '#1e40af', selectedBoards.length === 0) }, 'Print Boards (' + selectedBoards.length + ')'),
+                      missingReferenceCount > 0 && e('button', { type: 'button', onClick: repairPackReferences, 'aria-label': 'Repair missing references in ' + (activeBook.title || 'Visual Pack'), style: S.btn('#fef3c7', '#92400e', false) }, 'Repair ' + missingReferenceCount + ' Missing'),
+                      e('button', { type: 'button', onClick: function () { deleteBook(activeBook.id); }, 'aria-label': 'Delete Visual Pack ' + (activeBook.title || 'Untitled'), style: S.btn('#fee2e2', '#dc2626', false) }, 'Delete Pack')
                     )
                   ),
-                  e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
-                    e('button', { onClick: function () { printBook(activeBook); }, disabled: activeBook.boardIds.length === 0, 'aria-label': 'Print all boards in ' + (activeBook.title || 'activity set'), style: S.btn('#dbeafe', '#1e40af', activeBook.boardIds.length === 0) }, '\uD83D\uDDB6 Print All (' + activeBook.boardIds.length + ')'),
-                    e('button', { onClick: function () { deleteBook(activeBook.id); }, 'aria-label': 'Delete activity set', style: S.btn('#fee2e2', '#dc2626', false) }, '\uD83D\uDDD1\uFE0F Delete Set')
+                  e('div', { style: { marginTop: '10px', padding: '8px 10px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', color: '#854d0e', fontSize: '11px', lineHeight: 1.5 } },
+                    'Shareable exports omit profiles, goals, logs, review notes, generated speech, and voice recordings. Review titles, descriptions, labels, aliases, translated or spoken labels, attribution text, and images for identifying details before sharing.'
                   )
                 ),
-                // Board list within this set
-                e('div', { style: { flexShrink: 0 } },
-                  e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' } }, 'Boards in this set \u2014 drag to reorder, click + to add'),
-                  activeBook.boardIds.length === 0
-                    ? e('div', { style: { color: '#6b7280', fontSize: '12px', padding: '12px 0' } }, 'No boards added yet. Pick boards from your saved library below.')
-                    : e('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
-                        activeBook.boardIds.map(function (boardId, idx) {
-                          var board = savedBoards.find(function (b) { return b.id === boardId; });
-                          if (!board) return null;
-                          var preview = board.words.slice(0, 4);
-                          return e('div', { key: boardId, style: { border: '1px solid #e5e7eb', borderRadius: '10px', padding: '10px', background: '#fff', width: '140px', flexShrink: 0 } },
-                            // Mini thumbnail grid
-                            e('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px', marginBottom: '7px' } },
-                              preview.map(function (w) {
-                                return e('div', { key: w.id, style: { width: '100%', aspectRatio: '1', background: '#f9fafb', borderRadius: '4px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' } },
-                                  w.image ? e('img', { src: w.image, alt: w.label, style: { width: '100%', height: '100%', objectFit: 'contain', padding: '2px' } }) : e('span', { style: { fontSize: '8px', color: '#6b7280' } }, w.label)
-                                );
-                              })
-                            ),
-                            e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#1f2937', marginBottom: '5px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, board.title || 'Untitled'),
-                            e('div', { style: { display: 'flex', gap: '4px' } },
-                              e('button', { onClick: function () { loadBoard(board); setTab('board'); }, 'aria-label': 'Open', style: Object.assign({}, S.btn(LIGHT_PURPLE, PURPLE, false), { flex: 1, fontSize: '10px', padding: '4px' }) }, 'Open'),
-                              e('button', { onClick: function () { toggleBoardInBook(activeBook.id, boardId); }, 'aria-label': 'u00d7', style: Object.assign({}, S.btn('#fee2e2', '#dc2626', false), { padding: '4px 8px', fontSize: '10px' }) }, '\u00d7')
+
+                e('section', { 'aria-label': 'Boards in this Visual Pack', style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '14px' } },
+                  packSectionTitle('Communication Boards', selectedBoards.length, 'Launch boards in interactive AAC mode, prepare reusable speech on this device, or open them for editing.'),
+                  selectedBoards.length === 0
+                    ? e('p', { style: { color: '#6b7280', fontSize: '12px' } }, 'No boards in this pack yet.')
+                    : e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(190px,1fr))', gap: '8px', marginBottom: '10px' } },
+                        selectedBoards.map(function (board, boardIndex) {
+                          var cells = collectBoardSpeechCells(board);
+                          var speechStatus = boardSpeechStatus(board, cells);
+                          return e('article', { key: board.id, style: { border: '1px solid #dbeafe', borderRadius: '10px', padding: '10px', background: '#f8fbff' } },
+                            e('div', { style: { fontWeight: 700, fontSize: '12px', color: '#1f2937' } }, board.title || 'Untitled Board'),
+                            e('div', { style: { fontSize: '10px', color: '#6b7280', margin: '3px 0 8px' } }, cells.length + ' cells · speech saved ' + speechStatus.ready + '/' + speechStatus.total),
+                            e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+                              e('button', {
+                                type: 'button',
+                                onClick: function (event) {
+                                  useOpenerRef.current = event.currentTarget;
+                                  predEpochRef.current += 1;
+                                  ensureBoardSpeechEntry(board);
+                                  setUseBoardId(board.id); setStrip([]); setShowCommLog(false); setUsePageIdx(0); setPredictions([]);
+                                },
+                                disabled: cells.length === 0,
+                                style: S.btn('#eff6ff', '#1d4ed8', cells.length === 0)
+                              }, 'Use'),
+                              e('button', { type: 'button', onClick: function () { prepareBoardSpeech(board); }, disabled: speechPreparing || cells.length === 0, style: S.btn('#e0f2fe', '#0369a1', speechPreparing || cells.length === 0) }, speechPreparing ? 'Saving...' : 'Prepare Speech'),
+                              e('button', { type: 'button', onClick: function () { loadBoard(board); setTab('board'); }, style: S.btn(LIGHT_PURPLE, PURPLE, false) }, 'Edit'),
+                              e('button', { type: 'button', onClick: function () { movePackItem(activeBook.id, 'boardIds', board.id, -1); }, disabled: boardIndex === 0, 'aria-label': 'Move ' + (board.title || 'board') + ' earlier', style: S.btn('#f3f4f6', '#374151', boardIndex === 0) }, 'Earlier'),
+                              e('button', { type: 'button', onClick: function () { movePackItem(activeBook.id, 'boardIds', board.id, 1); }, disabled: boardIndex === selectedBoards.length - 1, 'aria-label': 'Move ' + (board.title || 'board') + ' later', style: S.btn('#f3f4f6', '#374151', boardIndex === selectedBoards.length - 1) }, 'Later'),
+                              e('button', { type: 'button', onClick: function () { toggleBoardInBook(activeBook.id, board.id); }, 'aria-label': 'Remove ' + (board.title || 'board') + ' from Visual Pack', style: S.btn('#fee2e2', '#dc2626', false) }, 'Remove')
                             )
                           );
                         })
-                      )
-                ),
-                // Add boards from saved library
-                savedBoards.length > 0 && e('div', { style: { flexShrink: 0 } },
-                  e('div', { style: { fontSize: '11px', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' } }, 'Add from saved boards'),
-                  e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
-                    savedBoards
-                      .filter(function (b) { return !activeBook.boardIds.includes(b.id); })
-                      .map(function (b) {
-                        return e('button', {
-                          key: b.id,
-                          onClick: function () { toggleBoardInBook(activeBook.id, b.id); },
-                          'aria-label': 'Add board: ' + (b.title || 'Untitled') + ' to activity set',
-                          style: { padding: '5px 10px', border: '1px dashed #d1d5db', borderRadius: '20px', background: '#f9fafb', fontSize: '11px', cursor: 'pointer', color: '#374151', display: 'flex', alignItems: 'center', gap: '4px' },
-                          onMouseOver: function (ev) { ev.currentTarget.style.borderColor = PURPLE; ev.currentTarget.style.color = PURPLE; ev.currentTarget.style.background = LIGHT_PURPLE; },
-                          onMouseOut: function (ev) { ev.currentTarget.style.borderColor = '#d1d5db'; ev.currentTarget.style.color = '#374151'; ev.currentTarget.style.background = '#f9fafb'; }
-                        }, '+ ', b.title || 'Untitled');
+                      ),
+                  savedBoards.some(function (board) { return activeBook.boardIds.indexOf(board.id) < 0; }) && e('div', null,
+                    e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#6b7280', marginBottom: '6px' } }, 'Add saved boards'),
+                    e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+                      savedBoards.filter(function (board) { return activeBook.boardIds.indexOf(board.id) < 0; }).map(function (board) {
+                        return e('button', { key: board.id, type: 'button', onClick: function () { toggleBoardInBook(activeBook.id, board.id); }, style: { padding: '6px 10px', border: '1px dashed #93c5fd', borderRadius: '18px', background: '#eff6ff', color: '#1d4ed8', cursor: 'pointer', fontSize: '11px' } }, '+ ' + (board.title || 'Untitled Board'));
                       })
+                    )
+                  )
+                ),
+
+                e('section', { 'aria-label': 'Sequences in this Visual Pack', style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '14px' } },
+                  packSectionTitle('Sequences', selectedSchedules.length, 'Bundle visual routines and step-by-step supports with the communication boards that use them.'),
+                  selectedSchedules.length === 0
+                    ? e('p', { style: { color: '#6b7280', fontSize: '12px' } }, 'No sequences in this pack yet.')
+                    : e('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' } },
+                        selectedSchedules.map(function (schedule, scheduleIndex) {
+                          return e('article', { key: schedule.id, style: { width: '210px', border: '1px solid #ddd6fe', borderRadius: '10px', padding: '10px', background: '#faf5ff' } },
+                            e('div', { style: { fontWeight: 700, fontSize: '12px' } }, schedule.title || 'Sequence'),
+                            e('div', { style: { fontSize: '10px', color: '#6b7280', margin: '3px 0 8px' } }, (schedule.items || []).length + ' steps'),
+                            e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+                              e('button', { type: 'button', onClick: function () { loadSchedule(schedule); setTab('schedule'); }, style: S.btn(LIGHT_PURPLE, PURPLE, false) }, 'Open'),
+                              e('button', { type: 'button', onClick: function () { movePackItem(activeBook.id, 'scheduleIds', schedule.id, -1); }, disabled: scheduleIndex === 0, 'aria-label': 'Move ' + (schedule.title || 'sequence') + ' earlier', style: S.btn('#f3f4f6', '#374151', scheduleIndex === 0) }, 'Earlier'),
+                              e('button', { type: 'button', onClick: function () { movePackItem(activeBook.id, 'scheduleIds', schedule.id, 1); }, disabled: scheduleIndex === selectedSchedules.length - 1, 'aria-label': 'Move ' + (schedule.title || 'sequence') + ' later', style: S.btn('#f3f4f6', '#374151', scheduleIndex === selectedSchedules.length - 1) }, 'Later'),
+                              e('button', { type: 'button', onClick: function () { toggleScheduleInBook(activeBook.id, schedule.id); }, 'aria-label': 'Remove ' + (schedule.title || 'sequence') + ' from Visual Pack', style: S.btn('#fee2e2', '#dc2626', false) }, 'Remove')
+                            )
+                          );
+                        })
+                      ),
+                  savedSchedules.some(function (schedule) { return activeBook.scheduleIds.indexOf(schedule.id) < 0; }) && e('div', null,
+                    e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#6b7280', marginBottom: '6px' } }, 'Add saved sequences'),
+                    e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+                      savedSchedules.filter(function (schedule) { return activeBook.scheduleIds.indexOf(schedule.id) < 0; }).map(function (schedule) {
+                        return e('button', { key: schedule.id, type: 'button', onClick: function () { toggleScheduleInBook(activeBook.id, schedule.id); }, style: { padding: '6px 10px', border: '1px dashed #c4b5fd', borderRadius: '18px', background: '#faf5ff', color: '#6d28d9', cursor: 'pointer', fontSize: '11px' } }, '+ ' + (schedule.title || 'Sequence'));
+                      })
+                    )
+                  )
+                ),
+
+                e('section', { 'aria-label': 'Symbol Bank assets in this Visual Pack', style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '14px' } },
+                  packSectionTitle('Symbol Bank Assets', selectedAssets.length, 'Include reusable symbols, variants, review status, and attribution with the pack.'),
+                  selectedAssets.length === 0
+                    ? e('p', { style: { color: '#6b7280', fontSize: '12px' } }, 'No standalone bank assets in this pack yet. Assets used by selected boards and sequences are included automatically when exported.')
+                    : e('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' } },
+                        selectedAssets.map(function (asset) {
+                          return e('article', { key: asset.id, style: { width: '132px', border: '1px solid #d1fae5', borderRadius: '10px', padding: '8px', background: '#f0fdf4' } },
+                            asset.image && e('img', { src: asset.image, alt: '', style: { width: '100%', height: '76px', objectFit: 'contain', background: '#fff', borderRadius: '6px' } }),
+                            e('div', { style: { fontWeight: 700, fontSize: '11px', marginTop: '5px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, asset.label),
+                            e('div', { style: { fontSize: '9px', color: asset.reviewStatus === 'approved' ? '#166534' : '#6b7280', margin: '2px 0 6px' } }, asset.reviewStatus === 'approved' ? 'Approved locally' : 'Review: ' + String(asset.reviewStatus || 'unreviewed').replace('_', ' ')),
+                            e('div', { style: { display: 'flex', gap: '3px' } },
+                              e('button', { type: 'button', onClick: function () { setSelectedId(asset.id); setTab('symbols'); }, style: S.btn('#ecfdf5', '#065f46', false) }, 'View'),
+                              e('button', { type: 'button', onClick: function () { toggleAssetInBook(activeBook.id, asset.id); }, 'aria-label': 'Remove ' + asset.label + ' from Visual Pack', style: S.btn('#fee2e2', '#dc2626', false) }, 'Remove')
+                            )
+                          );
+                        })
+                      ),
+                  gallery.length > 0 && e('div', null,
+                    e('label', { style: S.lbl }, 'Find bank assets to add'),
+                    e('input', {
+                      type: 'search',
+                      value: packAssetFilter,
+                      onChange: function (event) { setPackAssetFilter(event.target.value); },
+                      placeholder: 'Search labels, aliases, categories, or sources',
+                      'aria-label': 'Search Symbol Bank assets for this Visual Pack',
+                      style: Object.assign({}, S.input, { marginBottom: '8px' })
+                    }),
+                    availableAssets.length === 0
+                      ? e('p', { style: { color: '#6b7280', fontSize: '11px' } }, 'No matching bank assets are available.')
+                      : e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+                          availableAssets.map(function (asset) {
+                            return e('button', {
+                              key: asset.id,
+                              type: 'button',
+                              onClick: function () { toggleAssetInBook(activeBook.id, asset.id); },
+                              'aria-label': 'Add ' + asset.label + ' to Visual Pack',
+                              style: { display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '5px 9px', border: '1px dashed #86efac', borderRadius: '18px', background: '#f0fdf4', color: '#166534', cursor: 'pointer', fontSize: '11px' }
+                            },
+                              asset.image && e('img', { src: asset.image, alt: '', style: { width: '22px', height: '22px', objectFit: 'contain', borderRadius: '3px', background: '#fff' } }),
+                              '+ ' + asset.label
+                            );
+                          })
+                        )
                   )
                 )
               )
-            : e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', flexDirection: 'column', gap: '10px' } },
+            : e('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', flexDirection: 'column', gap: '10px', padding: '24px', textAlign: 'center' } },
                 e('div', { style: { fontSize: '52px' } }, '📚'),
-                e('p', { style: { fontWeight: 600 } }, 'Activity Sets bundle your boards into student-specific sets'),
-                e('div', { style: { maxWidth: '400px', fontSize: '13px', lineHeight: 1.7, textAlign: 'center' } },
-                  e('p', null, 'Create a set for each student, add their boards, and print the whole set in one click \u2014 all boards in the correct order with consistent cell sizing.')
-                )
+                e('p', { style: { fontWeight: 700, color: '#374151', margin: 0 } }, 'Build a complete visual support kit'),
+                e('p', { style: { maxWidth: '470px', fontSize: '13px', lineHeight: 1.7, margin: 0 } }, 'A Visual Pack combines interactive communication boards, visual sequences, and selected Symbol Bank assets. Prepared speech stays saved locally on this device and is not included in shareable exports.')
               )
         )
       );
     }
-
     // ── Main render ────────────────────────────────────────────────────────
 
     // ── Direct-use AAC overlay ────────────────────────────────────────────
@@ -8256,8 +10844,14 @@
       var usePages = useBoard && useBoard.pages && useBoard.pages.length > 1 ? useBoard.pages : null;
       var safeUsePageIdx = usePages ? Math.min(usePageIdx, usePages.length - 1) : 0;
       var usePageData = usePages ? usePages[safeUsePageIdx] : useBoard;
-      var useCells = usePageData ? (usePageData.words || []).filter(function (w) { return w.image; }) : [];
+      var allUseCells = collectBoardSpeechCells(useBoard);
+      var useCells = allUseCells.filter(function (cell) {
+        return cell.image && (!usePages || cell._speechPageIndex === safeUsePageIdx);
+      });
+      var useSpeechStatus = boardSpeechStatus(useBoard, allUseCells);
       var exitUse = function () {
+        predEpochRef.current += 1;
+        if (predTimerRef.current) clearTimeout(predTimerRef.current);
         // Persist session to usage log before clearing
         if (commLog.length > 0) {
           var pid = activeProfileId || '__global__';
@@ -8307,63 +10901,58 @@
             wishLabels: recentWishes.map(function (w) { return w.label; }),
             boardTitle: useBoard ? (useBoard.title || 'Board') : 'Board'
           });
-          // Auto-dismiss after 5 seconds
-          setTimeout(function () {
-            setSessionDebrief(null);
-            setUseBoardId(null); setStrip([]); setShowCommLog(false); setPredictions([]);
-          }, 5000);
+          setUseBoardId(null); setStrip([]); setShowCommLog(false); setPredictions([]);
+          // Keep the debrief visible briefly after the AAC dialog closes.
+          setTimeout(function () { setSessionDebrief(null); }, 5000);
         } else {
           setUseBoardId(null); setStrip([]); setShowCommLog(false); setPredictions([]);
         }
       };
-      var speakWordFn = function (label, audioData) {
-        // Play custom recorded audio if available
-        if (audioData) { var a = new Audio(audioData); a.play().catch(function () {}); return; }
-        if (onCallTTS) {
-          var voice = selectedVoice || 'Kore';
-          onCallTTS(label, voice).then(function (url) {
-            if (url) { var a = new Audio(url); a.play().catch(function () {}); }
-            else if (window.speechSynthesis) { var u = new window.SpeechSynthesisUtterance(label); applyVoice(u); window.speechSynthesis.speak(u); }
-          }).catch(function () {
-            if (window.speechSynthesis) { var u = new window.SpeechSynthesisUtterance(label); applyVoice(u); window.speechSynthesis.speak(u); }
-          });
-        } else if (window.speechSynthesis) {
-          var u = new window.SpeechSynthesisUtterance(label); applyVoice(u); window.speechSynthesis.speak(u);
-        }
+      exitUseRef.current = exitUse;
+      var speakWordFn = function (cell) {
+        return playResolvedBoardSpeech(useBoard, cell, vocalLabelForCell(cell), {
+          priority: 'interactive',
+          reason: 'symbol-studio-aac-tap'
+        });
       };
       var speakPhraseFn = function (words) {
-        var phrase = words.map(function (w) { return w.label; }).join(' ');
+        var phrase = words.map(function (word) { return word.label; }).join(' ').replace(/\s+/g, ' ').trim();
         if (!phrase) return;
-        // Record utterance for MLU computation
         setCommLog(function (log) { return log.concat([{ label: '__UTTERANCE__', length: words.length, phrase: phrase, ts: new Date().toISOString() }]); });
         setStripSpeaking(true);
-        var done = function () { setStripSpeaking(false); };
-        if (onCallTTS) {
-          var voice = selectedVoice || 'Kore';
-          onCallTTS(phrase, voice).then(function (url) {
-            if (url) { var a = new Audio(url); a.onended = done; a.play().catch(done); }
-            else { done(); }
-          }).catch(done);
-        } else if (window.speechSynthesis) {
-          var utt = new window.SpeechSynthesisUtterance(phrase);
-          applyVoice(utt);
-          utt.onend = done; utt.onerror = done;
-          window.speechSynthesis.speak(utt);
-        } else { done(); }
+        var doneCalled = false;
+        var done = function () {
+          if (doneCalled) return;
+          doneCalled = true;
+          setStripSpeaking(false);
+        };
+        var phraseCell = { _speechPageId: 'phrases', _speechCellId: phraseSegmentId(phrase) };
+        playResolvedBoardSpeech(useBoard, phraseCell, phrase, {
+          segmentId: phraseSegmentId(phrase),
+          priority: 'interactive',
+          reason: 'symbol-studio-aac-phrase',
+          onDone: done
+        }).then(function (url) { if (!url) done(); }).catch(done);
       };
       var tapCell = function (cell) {
+        var spokenLabel = vocalLabelForCell(cell);
+        if (!spokenLabel) return;
         var boardTitle = useBoard ? (useBoard.title || 'Board') : 'Board';
-        var newStrip = strip.concat([{ label: cell.label, image: cell.image }]);
-        setStrip(newStrip);
-        setCommLog(function (log) { return log.concat([{ label: cell.label, image: cell.image, boardTitle: boardTitle, ts: new Date().toISOString() }]); });
-        recordFamiliarity(cell.label, 'aac-tap');
-        speakWordFn(cell.label, cell.audioData);
-        // (IEP trials are clinician-recorded only — no auto-logging from AAC taps.)
-        // Debounced word prediction
+        var stripCell = { label: spokenLabel, image: cell.image, sourceCellId: cell.id || cell._speechCellId };
+        var shouldCompose = tapBehavior !== 'speak-only';
+        var shouldSpeak = tapBehavior !== 'compose-only';
+        var newStrip = shouldCompose ? strip.concat([stripCell]) : strip;
+        if (shouldCompose) setStrip(newStrip);
+        setCommLog(function (log) { return log.concat([{ label: spokenLabel, image: cell.image, boardTitle: boardTitle, ts: new Date().toISOString() }]); });
+        recordFamiliarity(spokenLabel, 'aac-tap');
+        if (shouldSpeak) speakWordFn(cell);
         if (predTimerRef.current) clearTimeout(predTimerRef.current);
+        predEpochRef.current += 1;
+        setPredictions([]);
+        if (!shouldCompose) return;
         predTimerRef.current = setTimeout(function () {
           if (!aiPredict) { setPredictions([]); return; }
-          var availableLabels = useCells.map(function (c) { return c.label; });
+          var availableLabels = useCells.map(vocalLabelForCell);
           fetchPredictions(newStrip, availableLabels);
         }, 700);
       };
@@ -8379,12 +10968,38 @@
         a.download = 'comm_log_' + new Date().toISOString().slice(0, 10) + '.csv';
         document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
       };
+      var handleUseDialogKeyDown = function (ev) {
+        if (ev.key !== 'Tab') return;
+        var controls = Array.prototype.filter.call(
+          ev.currentTarget.querySelectorAll('button:not([disabled]), select:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'),
+          function (control) {
+            if (control === ev.currentTarget || control.hidden || control.getAttribute('aria-hidden') === 'true') return false;
+            var computed = window.getComputedStyle ? window.getComputedStyle(control) : null;
+            return !computed || (computed.display !== 'none' && computed.visibility !== 'hidden');
+          }
+        );
+        if (!controls.length) return;
+        var first = controls[0]; var last = controls[controls.length - 1];
+        if ((ev.shiftKey && document.activeElement === first) || (!ev.shiftKey && document.activeElement === last)) {
+          ev.preventDefault();
+          (ev.shiftKey ? last : first).focus();
+        }
+      };
       var useCols = Math.min(usePageData ? (usePageData.cols || useBoard.cols || 4) : 4, useCells.length || 1);
-      return e('div', { className: 'ss-modal-root ss-theme-' + ssTheme, style: { position: 'fixed', inset: 0, zIndex: 9999, background: '#0f172a', display: 'flex', flexDirection: 'column' } },
+      return e('div', {
+        className: 'ss-modal-root ss-theme-' + ssTheme,
+        style: { position: 'fixed', inset: 0, zIndex: 9999, background: '#0f172a', display: 'flex', flexDirection: 'column' },
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-labelledby': 'ss-aac-use-title',
+        tabIndex: -1,
+        ref: useOverlayRef,
+        onKeyDown: handleUseDialogKeyDown
+      },
         // ── Header ──
-        e('div', { style: { background: '#1e293b', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 } },
+        e('div', { style: { background: '#1e293b', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, flexWrap: 'wrap' } },
           e('span', { style: { color: '#a78bfa', fontSize: '18px' } }, '▶'),
-          e('span', { style: { color: '#fff', fontWeight: 800, fontSize: '15px', marginRight: 'auto' } }, useBoard ? (useBoard.title || 'Communication Board') : 'Communication Board'),
+          e('span', { id: 'ss-aac-use-title', style: { color: '#fff', fontWeight: 800, fontSize: '15px', marginRight: 'auto' } }, useBoard ? (useBoard.title || 'Communication Board') : 'Communication Board'),
           // "Model These" hint — shows weekly focus words on this board
           (function () {
             var boardLabels = {};
@@ -8429,6 +11044,25 @@
                 title: 'The student is reaching for a word that isn\'t here. Capture it.',
                 style: { background: '#1e1b4b', color: '#c4b5fd', border: '1px solid #4c1d95', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
               }, '💫'),
+          e('label', { style: { color: '#cbd5e1', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px' } },
+            'Tap:',
+            e('select', {
+              value: tapBehavior,
+              onChange: function (ev) { var value = ev.target.value; setTapBehavior(value); store('alloAACTapBehavior', value); },
+              'aria-label': 'Choose what happens when a communication cell is tapped',
+              style: { background: '#334155', color: '#fff', border: '1px solid #475569', borderRadius: '6px', padding: '5px 7px', fontSize: '11px' }
+            },
+              e('option', { value: 'speak-compose' }, 'Speak + compose'),
+              e('option', { value: 'compose-only' }, 'Compose only'),
+              e('option', { value: 'speak-only' }, 'Speak only')
+            )
+          ),
+          e('button', {
+            onClick: function () { prepareBoardSpeech(useBoard); },
+            disabled: speechPreparing || useSpeechStatus.total === 0 || useSpeechStatus.ready === useSpeechStatus.total,
+            'aria-label': speechPreparing ? 'Preparing saved board speech' : 'Prepare and save speech for every board cell',
+            style: { background: useSpeechStatus.ready === useSpeechStatus.total && useSpeechStatus.total > 0 ? '#166534' : '#0369a1', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 10px', cursor: speechPreparing ? 'wait' : 'pointer', fontWeight: 700, fontSize: '11px' }
+          }, speechPreparing ? ('Saving ' + speechProgress.ready + '/' + speechProgress.total) : ('🔊 Saved ' + useSpeechStatus.ready + '/' + useSpeechStatus.total)),
           e('button', {
             onClick: toggleAiPredict,
             'aria-pressed': aiPredict,
@@ -8443,12 +11077,15 @@
           e('button', { onClick: exitUse, 'aria-label': 'Exit AAC mode', style: { background: '#ef4444', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' } }, '✕ Exit')
         ),
         // ── Page tabs (multi-page boards) ──
-        usePages && e('div', { style: { background: '#0f172a', borderBottom: '1px solid #1e293b', padding: '6px 16px', display: 'flex', gap: '6px', flexShrink: 0, overflowX: 'auto' } },
+        usePages && e('div', { role: 'tablist', 'aria-label': 'Communication board pages', style: { background: '#0f172a', borderBottom: '1px solid #1e293b', padding: '6px 16px', display: 'flex', gap: '6px', flexShrink: 0, overflowX: 'auto' } },
           usePages.map(function (pg, pi) {
             var active = pi === safeUsePageIdx;
             return e('button', {
               key: pg.id,
-              onClick: function () { setUsePageIdx(pi); setPredictions([]); },
+              onClick: function () { predEpochRef.current += 1; if (predTimerRef.current) clearTimeout(predTimerRef.current); setUsePageIdx(pi); setPredictions([]); },
+              role: 'tab',
+              'aria-selected': active,
+              tabIndex: active ? 0 : -1,
               'aria-label': (pg.title || ('Page ' + (pi + 1))) + ' tab',
               style: { padding: '5px 14px', border: 'none', borderRadius: '7px', background: active ? '#4f46e5' : '#1e293b', color: active ? '#fff' : '#94a3b8', fontWeight: active ? 700 : 400, fontSize: '12px', cursor: active ? 'default' : 'pointer', flexShrink: 0 }
             }, pg.title || ('Page ' + (pi + 1)));
@@ -8459,9 +11096,16 @@
           strip.length === 0
             ? e('span', { style: { color: '#94a3b8', fontSize: '14px', fontStyle: 'italic' } }, 'Tap symbols below to build a message\u2026')
             : strip.map(function (w, i) {
-                return e('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: '4px', background: '#312e81', borderRadius: '8px', padding: '4px 10px' } },
-                  w.image && e('img', { src: w.image, style: { width: '26px', height: '26px', objectFit: 'contain', borderRadius: '4px' } }),
-                  e('span', { style: { color: '#e0e7ff', fontWeight: 700, fontSize: '13px' } }, w.label)
+                return e('button', {
+                  key: i,
+                  type: 'button',
+                  onClick: function () { predEpochRef.current += 1; setPredictions([]); setStrip(function (items) { return items.filter(function (_, index) { return index !== i; }); }); },
+                  'aria-label': 'Remove ' + w.label + ' from the message',
+                  style: { display: 'flex', alignItems: 'center', gap: '4px', background: '#312e81', color: '#e0e7ff', border: '1px solid #4c1d95', borderRadius: '8px', padding: '4px 10px', cursor: 'pointer' }
+                },
+                  w.image && e('img', { src: w.image, alt: '', style: { width: '26px', height: '26px', objectFit: 'contain', borderRadius: '4px' } }),
+                  e('span', { style: { color: '#e0e7ff', fontWeight: 700, fontSize: '13px' } }, w.label),
+                  e('span', { 'aria-hidden': 'true', style: { color: '#a5b4fc', fontSize: '10px' } }, '×')
                 );
               }),
           e('div', { style: { marginLeft: 'auto', display: 'flex', gap: '6px', flexShrink: 0 } },
@@ -8472,12 +11116,12 @@
               style: { background: stripSpeaking ? '#6b7280' : '#4f46e5', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
             }, stripSpeaking ? '\u2026' : '\uD83D\uDD0A Speak'),
             strip.length > 0 && e('button', {
-              onClick: function () { setStrip(function (s) { return s.slice(0, -1); }); },
+              onClick: function () { predEpochRef.current += 1; if (predTimerRef.current) clearTimeout(predTimerRef.current); setPredictions([]); setStrip(function (s) { return s.slice(0, -1); }); },
               'aria-label': 'Delete last word from sentence strip',
               style: { background: '#374151', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
             }, '\u2190 Del'),
             strip.length > 0 && e('button', {
-              onClick: function () { setStrip([]); },
+              onClick: function () { predEpochRef.current += 1; if (predTimerRef.current) clearTimeout(predTimerRef.current); setPredictions([]); setStrip([]); },
               'aria-label': 'Clear sentence strip', style: { background: '#374151', color: '#cbd5e1', border: 'none', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer', fontSize: '13px' }
             }, '\uD83D\uDDD1')
           )
@@ -8589,26 +11233,18 @@
     // ── Partner-assisted scanning overlay ────────────────────────────────
     if (scanBoardId) {
       var scanBoard = savedBoards.find(function (b) { return b.id === scanBoardId; });
-      var scanCells = scanBoard ? (scanBoard.words || []).filter(function (w) { return w.image; }) : [];
+      var scanCells = scanBoard ? collectBoardSpeechCells(scanBoard).filter(function (cell) { return cell.image; }) : [];
       var safeIdx = scanCells.length ? scanIndex % scanCells.length : 0;
       var exitScan = function () { setScanBoardId(null); setScanIndex(0); setScanPaused(false); setScanManual(false); };
       var activateCell = function (i) {
         var cell = scanCells[typeof i === 'number' ? i : safeIdx];
         if (!cell) return;
-        if (onCallTTS) {
-          var voice = selectedVoice || 'Kore';
-          onCallTTS(cell.label, voice).then(function (url) {
-            if (url) { var a = new Audio(url); a.play().catch(function () {}); }
-            else if (window.speechSynthesis) { var utt2 = new window.SpeechSynthesisUtterance(cell.label); applyVoice(utt2); window.speechSynthesis.speak(utt2); }
-          }).catch(function () {});
-        } else if (window.speechSynthesis) {
-          var utt = new window.SpeechSynthesisUtterance(cell.label);
-          applyVoice(utt);
-          window.speechSynthesis.speak(utt);
-        }
-        // (IEP trials are clinician-recorded only — no auto-logging from scanning.)
-      };
-      var advanceScan = function () { setScanIndex(function (prev) { return (prev + 1) % (scanCells.length || 1); }); };
+        playResolvedBoardSpeech(scanBoard, cell, vocalLabelForCell(cell), {
+          priority: 'interactive',
+          reason: 'symbol-studio-scan'
+        });
+        // IEP trials are clinician-recorded only. Scanning does not auto-log a trial.
+      };      var advanceScan = function () { setScanIndex(function (prev) { return (prev + 1) % (scanCells.length || 1); }); };
       var handleScanKeyDown = function (ev) {
         if (ev.code === 'Escape') { ev.preventDefault(); ev.stopPropagation(); exitScan(); return; }
         if (ev.key === 'Tab') {
@@ -8650,7 +11286,7 @@
       },
         // Live region: announces the highlighted cell + its position so switch / screen-reader
         // users can track where the scan is (this overlay renders outside the modal's ssLiveRef).
-        e('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, scanCells[safeIdx] ? (scanCells[safeIdx].label + ' (' + (safeIdx + 1) + ' of ' + scanCells.length + ')') : ''),
+        e('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }, scanCells[safeIdx] ? (vocalLabelForCell(scanCells[safeIdx]) + ', ' + scanCells[safeIdx]._speechPageTitle + ' (' + (safeIdx + 1) + ' of ' + scanCells.length + ')') : ''),
         // Scanning header bar
         e('div', { style: { background: '#1e293b', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0, flexWrap: 'wrap' } },
           e('h2', { id: 'ss-scan-title', style: { color: '#fff', fontWeight: 800, fontSize: '15px', margin: 0 } }, '♿ ' + (scanBoard ? scanBoard.title || 'Board' : 'Board')),
@@ -8694,7 +11330,7 @@
             return e('button', {
               key: cell.id || idx,
               type: 'button',
-              'aria-label': 'Speak ' + cell.label + ', position ' + (idx + 1) + ' of ' + scanCells.length,
+              'aria-label': 'Speak ' + vocalLabelForCell(cell) + ', ' + cell._speechPageTitle + ', position ' + (idx + 1) + ' of ' + scanCells.length,
               'aria-current': isHighlighted ? 'true' : undefined,
               onClick: function () { setScanIndex(idx); activateCell(idx); },
               style: {
@@ -8715,7 +11351,8 @@
               }
             },
               e('img', { src: cell.image, alt: cell.label, style: { width: '80px', height: '80px', objectFit: 'contain', borderRadius: '8px' } }),
-              e('span', { style: { color: isHighlighted ? '#facc15' : '#cbd5e1', fontWeight: 700, fontSize: '14px', textAlign: 'center' } }, cell.label)
+              e('span', { style: { color: isHighlighted ? '#facc15' : '#cbd5e1', fontWeight: 700, fontSize: '14px', textAlign: 'center' } }, vocalLabelForCell(cell)),
+              scanBoard && scanBoard.pages && e('span', { style: { color: '#94a3b8', fontSize: '10px' } }, cell._speechPageTitle)
             );
           })
         )
@@ -8777,11 +11414,11 @@
             e('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
               e('span', { style: { fontSize: '22px' }, 'aria-hidden': 'true' }, '🎨'),
               e('div', null,
-                e('h2', { id: 'ss-dialog-title', style: { color: '#fff', fontWeight: 800, fontSize: '17px', margin: 0 } }, 'Visual Supports Studio'),
-                e('p', { id: 'ss-dialog-description', style: { color: 'rgba(255,255,255,0.9)', fontSize: '11px', margin: '2px 0 0' } }, 'AI-powered symbols • boards • schedules • social stories')
+                e('h2', { id: 'ss-dialog-title', style: { color: '#fff', fontWeight: 800, fontSize: '17px', margin: 0 } }, 'Symbol Studio'),
+                e('p', { id: 'ss-dialog-description', style: { color: 'rgba(255,255,255,0.9)', fontSize: '11px', margin: '2px 0 0' } }, 'AI-powered symbol bank • boards • sequences • social stories')
               )
             ),
-            e('button', { onClick: onClose, style: { color: '#fff', background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '6px', padding: '5px 11px', cursor: 'pointer', fontSize: '20px', lineHeight: 1 }, 'aria-label': 'Close Visual Supports Studio' }, '×')
+            e('button', { onClick: onClose, style: { color: '#fff', background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '6px', padding: '5px 11px', cursor: 'pointer', fontSize: '20px', lineHeight: 1 }, 'aria-label': 'Close Symbol Studio' }, '×')
           ),
           // Tab bar
           e('div', { style: S.tabBar, role: 'tablist', 'aria-label': 'Studio sections' }, TABS.map(tabBtn))
@@ -8808,6 +11445,26 @@
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.SymbolStudio = SymbolStudio;
+  window.AlloModules.SymbolStudioInternals = {
+    normalizeSymbolLabel: normalizeSymbolLabel,
+    normalizeBankAsset: normalizeBankAsset,
+    normalizeBank: normalizeBank,
+    matchesBankQuery: matchesBankQuery,
+    findExactBankAsset: findExactBankAsset,
+    normalizeVisualPack: normalizeVisualPack,
+    portablePackImage: portablePackImage,
+    portableAACAudio: portableAACAudio,
+    normalizePortableAACLocale: normalizePortableAACLocale,
+    buildPortableAACPackage: buildPortableAACPackage,
+    buildStandaloneAACHTML: buildStandaloneAACHTML,
+    packWordForShare: packWordForShare,
+    packBoardForShare: packBoardForShare,
+    packScheduleForShare: packScheduleForShare,
+    packAssetForShare: packAssetForShare,
+    buildVisualPackEnvelope: buildVisualPackEnvelope,
+    collectBoardSpeechCells: collectBoardSpeechCells,
+    withoutDeviceSpeechReference: withoutDeviceSpeechReference
+  };
   // GardenBridge — exposes vocabulary data for cross-module integration (e.g., Word Sounds)
   // Reads from localStorage so it works even when Symbol Studio modal is closed
   window.AlloModules.GardenBridge = {
@@ -8822,12 +11479,32 @@
         var _saved = load(STORAGE_ACTIVE_PROFILE, null);
         var _pid = (_saved && _profs.find(function (p) { return p.id === _saved; })) ? _saved : (_profs[0] ? _profs[0].id : 'default');
         var _rd = function (base, def) { var v = load(profKey(base, _pid), null); return v != null ? v : load(base, def); };
-        var gallery = _rd(STORAGE_GALLERY, []);
+        var gallery = normalizeBank(_rd(STORAGE_GALLERY, []));
         var boards = _rd(STORAGE_BOARDS, []);
+        var schedules = _rd(STORAGE_SCHEDULES, []);
         var fam = _rd(STORAGE_FAMILIARITY, {});
         var words = {};
-        gallery.forEach(function (s) { var k = s.label.trim().toLowerCase(); if (k) words[k] = { label: s.label.trim(), category: s.category || 'other', image: s.image || null }; });
-        boards.forEach(function (b) { (b.words || []).forEach(function (w) { var k = w.label.trim().toLowerCase(); if (k && !words[k]) words[k] = { label: w.label.trim(), category: w.category || 'other', image: w.image || null }; }); });
+        function addVocabularyCell(cell) {
+          if (!cell || !String(cell.label || '').trim()) return;
+          var key = normalizeSymbolLabel(cell.label);
+          if (!key || words[key]) return;
+          var asset = cell.assetId ? gallery.find(function (item) { return item.id === cell.assetId; }) : null;
+          words[key] = {
+            label: String(cell.label).trim(),
+            category: cell.category || asset && asset.category || 'other',
+            image: cell.image || asset && asset.image || null
+          };
+        }
+        gallery.forEach(addVocabularyCell);
+        boards.forEach(function (board) {
+          (Array.isArray(board.words) ? board.words : []).forEach(addVocabularyCell);
+          (Array.isArray(board.pages) ? board.pages : []).forEach(function (page) {
+            (page && Array.isArray(page.words) ? page.words : []).forEach(addVocabularyCell);
+          });
+        });
+        schedules.forEach(function (schedule) {
+          (Array.isArray(schedule.items) ? schedule.items : []).forEach(addVocabularyCell);
+        });
         return Object.keys(words).map(function (k) {
           var w = words[k]; var f = fam[k] || {};
           var score = ((f.taps || 0) + (f.questCorrect || 0) * 2 + (f.exposures || 0) * 0.3) / 25;
@@ -8850,5 +11527,5 @@
       return candidates.slice(0, count).map(function (w) { return w.label; });
     }
   };
-  console.log("[CDN] Visual Supports Studio (SymbolStudio v2) loaded");
+  console.log("[CDN] Symbol Studio (SymbolStudio v2) loaded");
 })();

@@ -53,11 +53,11 @@ const SURFACES = [
   ['light theme', {}, { theme: 'light' }],
   ['decay curve mid-run', { isoId: 'cs137', halves: 3.25 }],
   ['carbon date revealed', { c14Frac: 12, datedOnce: true }],
-  ['chain step open', { chainIdx: 6, chainSeen: ['U-238', 'Rn-222'] }],
-  ['enrichment level open', { enrIdx: 5 }],
+  ['chain step open', { chainPick: 6, chainSeen: ['U-238', 'Rn-222'] }],
+  ['enrichment level open', { enrPick: 5 }],
   ['shielding — neutron through lead', { radId: 'neutron', shieldId: 'lead', thick: 12 }],
   ['criticality supercritical', { rods: 10 }],
-  ['binding reaction open', { reactionId: 'dt' }],
+  ['binding reaction open', { bePick: 'dt' }],
   ['weighting — alpha to lung', { wrId: 'alpha', wtId: 'lung', absorbedMGy: 4.5 }],
   ['weighting — whole body', { wrId: 'gamma', wtId: 'whole', absorbedMGy: 1 }],
   ['biohalf — caesium', { bioId: 'cs137', bioSeen: ['cs137'] }],
@@ -71,9 +71,9 @@ const SURFACES = [
   }],
   ['detector — below detection limit', { cdSrc: 'kcl', cdDist: 40, cdTime: 10, cdRuns: [{ g: 5, b: 4, t: 10, d: 40, s: 'kcl' }] }],
   ['detector — background only, negative net', { cdSrc: 'none', cdTime: 30, cdRuns: [{ g: 10, b: 14, t: 30, d: 10, s: 'none' }] }],
-  ['accident open', { incidentId: 'chernobyl', incidentsRead: ['chernobyl'] }],
-  ['reactor design open', { reactorId: 'smr', reactorsSeen: ['smr'] }],
-  ['waste card open', { wasteIdx: 4, wasteSeen: ['How much there is'] }],
+  ['accident open', { incPick: 'chernobyl', incidentsRead: ['chernobyl'] }],
+  ['reactor design open', { reactorPick: 'smr', reactorsSeen: ['smr'] }],
+  ['waste card open', { wastePick: 4, wasteSeen: ['How much there is'] }],
   ['topic index filtered', { nkQuery: 'radon', nkGroup: 'radiation' }],
   // jsdom reports a 1024 px viewport, so the index defaults to OPEN in every
   // surface above and the collapsed state went unaudited — including whether
@@ -212,6 +212,39 @@ describe('nuclearLab — checks axe cannot make for us', () => {
       }
     }
   }, 60000);
+
+  it('exposes reactor telemetry as semantic text linked from the canvas', () => {
+    host.innerHTML = renderTool('nuclearLab', {});
+    const readings = host.querySelector('#rx-live-readings');
+    expect(readings, 'semantic reactor readings are missing').toBeTruthy();
+    expect(readings.tagName).toBe('DL');
+    expect(readings.getAttribute('aria-label')).toBe('Live reactor readings');
+    for (const id of ['rx-live-power', 'rx-live-temperature', 'rx-live-reactivity', 'rx-live-xenon', 'rx-live-state']) {
+      const output = readings.querySelector('#' + id);
+      expect(output, id + ' is missing').toBeTruthy();
+      expect(output.tagName).toBe('OUTPUT');
+      expect((output.textContent || '').trim(), id + ' is empty').not.toBe('');
+    }
+    const canvas = host.querySelector('canvas[aria-label^="Reactor control panel"]');
+    expect(canvas, 'reactor canvas is missing').toBeTruthy();
+    expect(canvas.getAttribute('aria-describedby')).toBe('rx-live-readings');
+  });
+
+  it('renders reactor details as a disclosure with content outside the button', () => {
+    host.innerHTML = renderTool('nuclearLab', {
+      _nuclearLab: { reactorPick: 'smr', reactorsSeen: ['smr'] },
+    });
+    const button = host.querySelector('button[aria-label^="Hide details for Small modular (SMR)"]');
+    expect(button, 'open SMR disclosure button is missing').toBeTruthy();
+    expect(button.getAttribute('aria-expanded')).toBe('true');
+    expect(button.hasAttribute('aria-pressed')).toBe(false);
+    const bodyId = button.getAttribute('aria-controls');
+    expect(bodyId).toBeTruthy();
+    const body = host.querySelector('#' + bodyId);
+    expect(body, 'disclosure body is missing').toBeTruthy();
+    expect(button.contains(body), 'revealed prose is still swallowed by the button').toBe(false);
+    expect(body.textContent).toMatch(/Safety:|The catch:/);
+  });
 });
 
 // ── The collapsible index ──────────────────────────────────────────────────

@@ -635,7 +635,7 @@ describe('multilingual hard-deadline queue release (2026-08-03)', () => {
     return fetchMock;
   }
 
-  it('settles a zombie non-English fetch at the app deadline and frees the lane for the next sentence', async () => {
+  it('settles a zombie non-English fetch, cools down, and recovers the cloud lane', async () => {
     vi.useFakeTimers();
     const fetchMock = stubZombieThenAudioFetch('blob:segunda-frase');
     const state = { queue: Promise.resolve(), botQueue: Promise.resolve(), urlCache: new Map(), rateLimitedUntil: 0 };
@@ -649,16 +649,25 @@ describe('multilingual hard-deadline queue release (2026-08-03)', () => {
     await vi.advanceTimersByTimeAsync(11900);
     expect(firstSettled).toBe(false); // still inside the 12s interactive budget
     await vi.advanceTimersByTimeAsync(300);
-    expect(firstSettled).toBe(true); // settled at ~12s, NOT at the provider's ~60s response
+    expect(firstSettled).toBe(true); // settled at ~12s, not at the provider's ~60s response
     expect(firstUrl).toBeNull();
 
-    let secondUrl = null;
-    const second = callTTS('Segunda frase.', 'Puck', 1, { language: 'Spanish', priority: 'interactive', maxRetries: 0 })
-      .then((url) => { secondUrl = url; return url; });
+    let cooldownUrl = 'unset';
+    const cooldown = callTTS('Segunda frase.', 'Puck', 1, { language: 'Spanish', priority: 'interactive', maxRetries: 0 })
+      .then((url) => { cooldownUrl = url; return url; });
     await vi.advanceTimersByTimeAsync(300); // 150ms lane settle gap + margin
-    await second;
-    expect(secondUrl).toBe('blob:segunda-frase');
-    expect(fetchMock).toHaveBeenCalledTimes(2); // the zombie never blocked the fresh request
+    await cooldown;
+    expect(cooldownUrl).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1); // cooldown avoids another known-hanging proxy request
+
+    await vi.advanceTimersByTimeAsync(60001);
+    let recoveredUrl = null;
+    const recovered = callTTS('Segunda frase.', 'Puck', 1, { language: 'Spanish', priority: 'interactive', maxRetries: 0 })
+      .then((url) => { recoveredUrl = url; return url; });
+    await vi.advanceTimersByTimeAsync(300);
+    await recovered;
+    expect(recoveredUrl).toBe('blob:segunda-frase');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
   it('caller cancellation releases the request and the lane promptly as AbortError', async () => {

@@ -52,6 +52,65 @@ window.StemLab = window.StemLab || {
   function sfxSemiClick() { semiTone(600,0.03,"sine",0.04); }
   function sfxSemiSuccess() { semiTone(523,0.08,"sine",0.07); setTimeout(function(){semiTone(659,0.08,"sine",0.07);},70); setTimeout(function(){semiTone(784,0.1,"sine",0.08);},140); }
   if(!document.getElementById("semi-a11y")){var _s=document.createElement("style");_s.id="semi-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}";document.head.appendChild(_s);}
+  // High-contrast, lab-specific interaction layer. Keeping this scoped to the
+  // Semiconductor Lab prevents the richer controls from changing other tools.
+  if (!document.getElementById('semi-contrast-ui')) {
+    var semiUiStyle = document.createElement('style');
+    semiUiStyle.id = 'semi-contrast-ui';
+    semiUiStyle.textContent = [
+      '.semiconductor-lab{--semi-cyan:#22d3ee;--semi-cyan-bright:#67e8f9;--allo-stem-text:#e2e8f0;--allo-stem-text-soft:#cbd5e1;position:relative;isolation:isolate;min-height:100%;padding:clamp(12px,2vw,20px);border:1px solid rgba(103,232,249,.38);border-radius:18px;color:#f8fafc;color-scheme:dark;background:radial-gradient(circle at 86% -8%,rgba(34,211,238,.18),transparent 34%),radial-gradient(circle at -8% 45%,rgba(99,102,241,.14),transparent 28%),#020617;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 22px 60px rgba(2,6,23,.34);overflow:hidden}',
+      '.semiconductor-lab::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.13;background-image:linear-gradient(rgba(103,232,249,.22) 1px,transparent 1px),linear-gradient(90deg,rgba(103,232,249,.22) 1px,transparent 1px);background-size:32px 32px;mask-image:linear-gradient(to bottom,black,transparent 72%)}',
+      '[data-stem-theme="dark"] [data-stem-tool-surface="semiconductor"]{background:#020617!important;color:#f8fafc!important}',
+      '.semiconductor-lab button,.semiconductor-lab select,.semiconductor-lab input,.semiconductor-lab textarea{font:inherit}',
+      '.semiconductor-lab button:not(:disabled){transition:transform 150ms ease,box-shadow 150ms ease,background-color 150ms ease,border-color 150ms ease,color 150ms ease}',
+      '.semiconductor-lab button:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 9px 22px rgba(2,8,23,.34)}',
+      '.semiconductor-lab button:not(:disabled):active{transform:translateY(0) scale(.98)}',
+      '.semiconductor-lab :is(button,select,input,textarea,summary):focus-visible{outline:3px solid #f8fafc!important;outline-offset:3px!important;box-shadow:0 0 0 6px rgba(34,211,238,.34)!important}',
+      '.semi-lab-header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;padding:14px;border:1px solid rgba(103,232,249,.34);border-radius:14px;background:linear-gradient(120deg,rgba(8,47,73,.9),rgba(15,23,42,.88));box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 12px 28px rgba(2,8,23,.22)}',
+      '.semi-brand-mark{display:grid;place-items:center;width:48px;height:48px;flex:0 0 48px;border:2px solid rgba(103,232,249,.72);border-radius:13px;background:rgba(8,47,73,.95);font-size:26px;box-shadow:0 0 0 5px rgba(34,211,238,.09),0 0 26px rgba(34,211,238,.28);animation:semiGlow 2.8s ease-in-out infinite}',
+      '.semi-header-copy{flex:1;min-width:min(100%,230px)}',
+      '.semi-header-kicker{font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#67e8f9}',
+      '.semi-header-subtitle{margin-top:3px;color:#e2e8f0;font-size:12px;font-weight:650}',
+      '.semi-progress-card{min-width:min(100%,225px);padding:10px 12px;border:1px solid rgba(148,163,184,.52);border-radius:11px;background:rgba(2,6,23,.72)}',
+      '.semi-progress-track{height:7px;margin-top:8px;overflow:hidden;border:1px solid #64748b;border-radius:999px;background:#0f172a}',
+      '.semi-progress-fill{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#22d3ee,#a5f3fc);box-shadow:0 0 12px rgba(34,211,238,.65);transition:width 260ms ease}',
+      '.semi-live-badge{display:inline-flex;align-items:center;gap:7px;min-height:30px;padding:5px 9px;border:1px solid rgba(74,222,128,.65);border-radius:999px;background:rgba(20,83,45,.55);color:#f0fdf4;font-size:11px;font-weight:850;white-space:nowrap}',
+      '.semi-live-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;box-shadow:0 0 0 4px rgba(74,222,128,.16),0 0 14px rgba(74,222,128,.75);animation:semiPulse 1.7s ease-out infinite}',
+      '.semi-mode-tabs{padding:8px!important;border:1px solid #64748b!important;border-radius:13px;background:rgba(2,6,23,.72)}',
+      '.semi-mode-tab{position:relative;overflow:hidden;border:1px solid #64748b!important}',
+      '.semi-mode-tab[data-active="true"]{border-color:#cffafe!important;box-shadow:0 0 0 1px rgba(165,243,252,.5),0 9px 24px rgba(8,145,178,.25)!important}',
+      '.semi-tab-hero{box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 10px 24px rgba(2,8,23,.2)}',
+      '.semi-subtool-nav{border-width:2px!important;background:linear-gradient(135deg,rgba(15,23,42,.98),rgba(8,47,73,.82))!important;box-shadow:0 10px 25px rgba(2,8,23,.2)}',
+      '.semi-simulation-select{border-width:2px!important;border-color:#67e8f9!important;background-color:#020617!important;box-shadow:inset 0 0 0 1px rgba(34,211,238,.12)}',
+      '.semi-nav-step{display:grid;place-items:center;width:42px;height:42px;border:1px solid #67e8f9;border-radius:10px;background:#155e75;color:#fff;font-size:18px;font-weight:900}',
+      '.semi-guided-card{border-width:2px!important;background:linear-gradient(135deg,rgba(8,47,73,.9),rgba(15,23,42,.98))!important;box-shadow:0 14px 32px rgba(2,8,23,.24)}',
+      '.semi-guided-step{position:relative;min-height:92px;border-width:2px!important;transition:transform 160ms ease,border-color 160ms ease,background-color 160ms ease}',
+      '.semi-guided-step[data-state="active"]{transform:translateY(-2px);box-shadow:0 0 0 1px rgba(103,232,249,.45),0 10px 24px rgba(8,145,178,.2)}',
+      '.semi-guided-step[data-state="done"]{box-shadow:inset 0 0 0 1px rgba(74,222,128,.2)}',
+      '.semi-action{min-height:40px;border:1px solid rgba(255,255,255,.28)!important}',
+      '.semi-pill{min-height:36px;border:1px solid #64748b!important}',
+      '.semi-pill[data-active="true"]{border-color:#cffafe!important;background:#0e7490!important;color:#fff!important;box-shadow:0 0 0 2px rgba(34,211,238,.2),0 7px 16px rgba(8,145,178,.22)}',
+      '.semi-slider-row{min-height:44px;padding:7px 9px;border:1px solid #475569;border-radius:10px;background:rgba(2,6,23,.58)}',
+      '.semi-slider-label{color:#e2e8f0!important;font-weight:750}',
+      '.semi-slider-output{display:inline-flex;justify-content:flex-end;align-items:center;min-height:28px;padding:3px 7px;border:1px solid rgba(103,232,249,.48);border-radius:7px;background:#083344;color:#cffafe!important;font-weight:850}',
+      '.semiconductor-lab input[type="range"]{height:9px;border:1px solid #64748b;border-radius:999px;appearance:none;-webkit-appearance:none;cursor:pointer}',
+      '.semiconductor-lab input[type="range"]::-webkit-slider-thumb{width:21px;height:21px;border:3px solid #ecfeff;border-radius:50%;appearance:none;-webkit-appearance:none;background:#0891b2;box-shadow:0 0 0 3px rgba(34,211,238,.22),0 2px 7px rgba(0,0,0,.5)}',
+      '.semiconductor-lab input[type="range"]::-moz-range-thumb{width:17px;height:17px;border:3px solid #ecfeff;border-radius:50%;background:#0891b2;box-shadow:0 0 0 3px rgba(34,211,238,.22),0 2px 7px rgba(0,0,0,.5)}',
+      '.semiconductor-lab input[type="checkbox"]{width:18px;height:18px;flex:0 0 18px;accent-color:#22d3ee}',
+      '.semi-stat-card{min-height:58px;border-color:#64748b!important;background:linear-gradient(145deg,rgba(30,41,59,.96),rgba(15,23,42,.98))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}',
+      '.semiconductor-lab canvas{border:2px solid #64748b!important;background-color:#020617!important;box-shadow:0 0 0 1px rgba(103,232,249,.12),inset 0 0 28px rgba(8,145,178,.08),0 14px 30px rgba(2,8,23,.28)!important}',
+      '.semi-workspace{padding:10px;border:1px solid rgba(100,116,139,.82);border-radius:14px;background:rgba(2,6,23,.48)}',
+      '.semi-command-drawer,.semi-notebook-preview{border-width:2px!important}',
+      '.semi-command-drawer>summary,.semi-notebook-preview>summary{min-height:44px;display:flex;align-items:center}',
+      '.semi-snapshot{min-height:44px;border:1px solid rgba(207,250,254,.8)!important;box-shadow:0 10px 24px rgba(8,145,178,.24)!important}',
+      '@keyframes semiPulse{0%{box-shadow:0 0 0 0 rgba(74,222,128,.55),0 0 14px rgba(74,222,128,.75)}70%{box-shadow:0 0 0 9px rgba(74,222,128,0),0 0 14px rgba(74,222,128,.75)}100%{box-shadow:0 0 0 0 rgba(74,222,128,0),0 0 14px rgba(74,222,128,.75)}}',
+      '@keyframes semiGlow{0%,100%{box-shadow:0 0 0 5px rgba(34,211,238,.09),0 0 22px rgba(34,211,238,.22)}50%{box-shadow:0 0 0 6px rgba(34,211,238,.13),0 0 32px rgba(34,211,238,.38)}}',
+      '@media(max-width:640px){.semiconductor-lab{padding:10px;border-radius:14px}.semi-lab-header{align-items:flex-start;padding:11px}.semi-brand-mark{width:42px;height:42px;flex-basis:42px}.semi-progress-card{width:100%}.semi-subtool-nav{gap:8px!important}.semi-simulation-select{order:2;min-width:calc(100% - 100px)!important}.semi-live-badge{order:3}.semi-slider-row{display:grid!important;grid-template-columns:1fr auto}.semi-slider-row input[type="range"]{grid-column:1/-1;grid-row:2}.semi-slider-label{width:auto!important}.semi-slider-output{width:auto!important}.semi-workspace{padding:7px}}',
+      '@media(prefers-reduced-motion:reduce){.semi-brand-mark,.semi-live-dot{animation:none!important}.semiconductor-lab button:not(:disabled):hover,.semi-guided-step[data-state="active"]{transform:none}}',
+      '@media(forced-colors:active){.semiconductor-lab,.semi-lab-header,.semi-guided-card,.semi-workspace{border:2px solid CanvasText}.semi-live-dot{background:Highlight}.semi-progress-fill{background:Highlight}.semiconductor-lab :is(button,select,input,textarea,summary):focus-visible{outline:3px solid Highlight!important}}'
+    ].join('');
+    document.head.appendChild(semiUiStyle);
+  }
 
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
@@ -407,44 +466,52 @@ window.StemLab = window.StemLab || {
       function btn(label, onClick, extraClass, key) {
         return h('button', Object.assign({
           key: key != null ? key : label,
+          type: 'button',
           onClick: onClick,
-          className: 'px-3 py-1.5 text-xs font-bold rounded-lg transition-all shadow-sm hover:shadow-md ' + (extraClass || 'bg-cyan-700 text-white hover:bg-cyan-700')
+          className: 'semi-action px-3 py-1.5 text-xs font-bold rounded-lg transition-all shadow-sm hover:shadow-md ' + (extraClass || 'bg-cyan-700 text-white hover:bg-cyan-600')
         }, a11yClick ? a11yClick(onClick) : {}), label);
       }
 
       function pill(label, active, onClick, key) {
         return h('button', Object.assign({
           key: key != null ? key : label,
+          type: 'button',
           onClick: onClick,
-          className: 'px-2.5 py-1 text-xs font-semibold rounded-full transition-all ' +
-            (active ? 'bg-cyan-700 text-white shadow-md' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
+          'aria-pressed': !!active,
+          'data-active': active ? 'true' : 'false',
+          className: 'semi-pill px-2.5 py-1 text-xs font-semibold rounded-full transition-all ' +
+            (active ? 'bg-cyan-700 text-white shadow-md' : 'bg-slate-800 text-slate-200 hover:bg-slate-700')
         }, a11yClick ? a11yClick(onClick) : {}), label);
       }
 
       function sliderRow(label, value, min, max, step, onChange, unit) {
-        return h('div', { className: 'flex items-center gap-2 mt-1' },
-          h('span', { className: 'text-xs text-slate-400 w-20 shrink-0' }, label),
+        var sliderPercent = max === min ? 0 : Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
+        var sliderValueText = value + (unit || '');
+        return h('div', { className: 'semi-slider-row flex items-center gap-2 mt-1' },
+          h('span', { className: 'semi-slider-label text-xs w-20 shrink-0' }, label),
           h('input', {
             type: 'range', min: min, max: max, step: step, value: value,
             onChange: function(e) { onChange(parseFloat(e.target.value)); },
-            className: 'flex-1 accent-cyan-500 h-1.5',
-            'aria-label': label
+            className: 'flex-1 accent-cyan-500',
+            style: { background: 'linear-gradient(90deg, #22d3ee 0%, #22d3ee ' + sliderPercent + '%, #334155 ' + sliderPercent + '%, #334155 100%)' },
+            'aria-label': label,
+            'aria-valuetext': sliderValueText
           }),
-          h('span', { className: 'text-xs font-mono text-cyan-300 w-16 text-right' }, value + (unit || ''))
+          h('output', { className: 'semi-slider-output text-xs font-mono w-16 text-right' }, sliderValueText)
         );
       }
 
       function infoBox(text, color) {
-        return h('div', { className: 'mt-2 p-2 rounded-lg border text-xs leading-relaxed ' +
+        return h('div', { role: 'note', className: 'mt-2 p-2 rounded-lg border text-xs leading-relaxed ' +
           (color === 'green' ? 'bg-emerald-900/30 border-emerald-700 text-emerald-200' :
            color === 'amber' ? 'bg-amber-900/30 border-amber-700 text-amber-200' :
            color === 'red' ? 'bg-red-900/30 border-red-700 text-red-200' :
-           'bg-slate-800/60 border-slate-700 text-slate-300') }, text);
+           'bg-slate-800/80 border-slate-600 text-slate-200') }, text);
       }
 
       function statBadge(label, value, color, key) {
-        return h('div', { key: key != null ? key : label, className: 'flex flex-col items-center px-2 py-1 rounded-lg bg-slate-800/60 border border-slate-700' },
-          h('span', { className: 'text-[11px] text-slate-400 uppercase tracking-wider font-semibold' }, label),
+        return h('div', { key: key != null ? key : label, className: 'semi-stat-card flex flex-col items-center justify-center px-2 py-1 rounded-lg bg-slate-800/80 border border-slate-600' },
+          h('span', { className: 'text-[11px] text-slate-300 uppercase tracking-wider font-semibold' }, label),
           h('span', { className: 'text-sm font-bold ' + (color || 'text-cyan-400') }, value)
         );
       }
@@ -1548,7 +1615,7 @@ window.StemLab = window.StemLab || {
 
           // Input wires with signal propagation glow
           cx.lineWidth = 3;
-          cx.strokeStyle = inA ? '#34D399' : '#475569';
+          cx.strokeStyle = inA ? '#34D399' : '#94A3B8';
           if (inA) { cx.shadowColor = '#34D399'; cx.shadowBlur = 6; }
           cx.beginPath();
           cx.moveTo(30, gate.inputs === 1 ? midY : midY - 15);
@@ -1560,7 +1627,7 @@ window.StemLab = window.StemLab || {
           cx.fillText('A=' + (inA ? '1' : '0'), 18, (gate.inputs === 1 ? midY : midY - 15) - 10);
 
           if (gate.inputs === 2) {
-            cx.strokeStyle = inB ? '#34D399' : '#475569';
+            cx.strokeStyle = inB ? '#34D399' : '#94A3B8';
             if (inB) { cx.shadowColor = '#34D399'; cx.shadowBlur = 6; }
             cx.beginPath(); cx.moveTo(30, midY + 15); cx.lineTo(midX - gateW / 2, midY + 15); cx.stroke();
             cx.shadowBlur = 0;
@@ -1591,7 +1658,7 @@ window.StemLab = window.StemLab || {
 
           // Output wire with glow
           var outStartX = midX + gateW / 2 + (['NOT', 'NAND', 'NOR', 'XNOR'].indexOf(gateType) >= 0 ? 12 : 0);
-          cx.strokeStyle = output ? '#34D399' : '#475569'; cx.lineWidth = 3;
+          cx.strokeStyle = output ? '#34D399' : '#94A3B8'; cx.lineWidth = 3;
           if (output) { cx.shadowColor = '#34D399'; cx.shadowBlur = 6; }
           cx.beginPath(); cx.moveTo(outStartX, midY); cx.lineTo(W - 30, midY); cx.stroke();
           cx.shadowBlur = 0;
@@ -1761,7 +1828,7 @@ window.StemLab = window.StemLab || {
           var scaleY = (originY - plotTop) / fullScaleMa;   // px per mA
 
           // Grid
-          cx.strokeStyle = '#1E293B'; cx.lineWidth = 0.5;
+          cx.strokeStyle = '#64748B'; cx.lineWidth = 1;
           for (var gv = IV_V_MIN; gv <= IV_V_MAX; gv++) {
             var gx = originX + gv * scaleX;
             cx.beginPath(); cx.moveTo(gx, 10); cx.lineTo(gx, H - 10); cx.stroke();
@@ -1775,7 +1842,7 @@ window.StemLab = window.StemLab || {
           for (var ti = 1; ti <= 4; ti++) {
             var ma = fullScaleMa * ti / 4;
             var ty = originY - ma * scaleY;
-            cx.strokeStyle = '#1E293B';
+            cx.strokeStyle = '#64748B';
             cx.beginPath(); cx.moveTo(originX - 3, ty); cx.lineTo(W - 5, ty); cx.stroke();
             cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif';
             cx.fillText(ma.toFixed(0), originX - 5, ty + 3);
@@ -1784,7 +1851,7 @@ window.StemLab = window.StemLab || {
           var negMa = -fullScaleMa / 4;
           var negY = originY - negMa * scaleY;
           if (negY < H - 16) {
-            cx.strokeStyle = '#1E293B';
+            cx.strokeStyle = '#64748B';
             cx.beginPath(); cx.moveTo(originX - 3, negY); cx.lineTo(W - 5, negY); cx.stroke();
             cx.fillStyle = '#94A3B8'; cx.fillText(negMa.toFixed(0), originX - 5, negY + 3);
           }
@@ -2200,31 +2267,43 @@ window.StemLab = window.StemLab || {
             role: 'img', 'aria-label': 'Wafer fabrication stage ' + (stage + 1) + ': ' + currentStage.name
           }),
           // Stage navigation
-          h('div', { className: 'flex items-center gap-2 mt-3' },
-            btn('\u2190 Prev', function() { if (stage > 0) upd('fabStage', stage - 1); }, 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600' + (stage === 0 ? ' opacity-40' : '')),
-            h('div', { className: 'flex-1 flex gap-1 justify-center' },
+          h('div', { className: 'flex items-center gap-2 mt-3', role: 'group', 'aria-label': 'Wafer fabrication stages' },
+            h('button', {
+              type: 'button', disabled: stage === 0,
+              onClick: function() { upd('fabStage', stage - 1); },
+              className: 'semi-action min-h-11 rounded-lg border border-slate-500 bg-slate-800 px-3 py-2 text-xs font-bold text-slate-100 hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40'
+            }, '\u2190 Prev'),
+            h('div', { className: 'flex-1 flex gap-1.5 justify-start overflow-x-auto py-1' },
               FAB_STAGES.map(function(fs, i) {
-                return h('div', { 
+                return h('button', {
                   key: i,
+                  type: 'button',
                   onClick: function() { upd('fabStage', i); },
-                  className: 'w-6 h-6 rounded-full flex items-center justify-center text-[11px] cursor-pointer transition-all ' +
-                    (i === stage ? 'ring-2 ring-offset-1 ring-offset-slate-900' : '') + ' ' +
-                    (i <= stage ? 'bg-opacity-100' : 'bg-opacity-30'),
-                  style: { backgroundColor: fs.color + (i <= stage ? '' : '40') },
+                  'aria-label': 'Stage ' + (i + 1) + ': ' + fs.name,
+                  'aria-pressed': i === stage,
+                  'aria-current': i === stage ? 'step' : undefined,
+                  className: 'h-11 w-11 shrink-0 rounded-full flex items-center justify-center text-sm font-black cursor-pointer transition-all border-2 ' +
+                    (i === stage ? 'border-white ring-2 ring-cyan-300 ring-offset-2 ring-offset-slate-950' : 'border-slate-500 opacity-80 hover:opacity-100'),
+                  style: { backgroundColor: fs.color, color: canvasInkFor(fs.color) },
                   title: fs.name
                 }, fs.icon);
               })
             ),
-            btn('Next \u2192', function() {
+            h('button', {
+              type: 'button',
+              className: 'semi-action min-h-11 rounded-lg border border-cyan-300/60 bg-cyan-700 px-3 py-2 text-xs font-black text-white hover:bg-cyan-600',
+              onClick: function() {
               if (stage < FAB_STAGES.length - 1) {
-                upd('fabStage', stage + 1);
+                var nextFabStage = stage + 1;
+                upd('fabStage', nextFabStage);
                 tryAwardXP('fab-' + stage, 10, 'Completed fab stage: ' + currentStage.name);
+                if (announceToSR) announceToSR('Advanced to stage ' + (stage + 2));
               } else {
                 tryAwardXP('fab-complete', 50, 'Completed full wafer fabrication!');
                 addToast('\uD83C\uDFC6 Fabrication Complete!', 'success');
+                if (announceToSR) announceToSR('Wafer fabrication complete');
               }
-              if (announceToSR) announceToSR('Advanced to stage ' + (stage + 2));
-            }, 'transition-colors bg-cyan-700 text-white hover:bg-cyan-800')
+            }}, stage >= FAB_STAGES.length - 1 ? 'Finish wafer \u2713' : 'Next \u2192')
           ),
           // Stage info card
           h('div', { className: 'mt-3 p-3 rounded-xl border', style: { borderColor: currentStage.color + '60', backgroundColor: currentStage.color + '10' } },
@@ -2373,13 +2452,17 @@ window.StemLab = window.StemLab || {
           !mixMode && h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
             Object.keys(LED_MATERIALS).map(function(key) {
               var m = LED_MATERIALS[key];
-              return h('button', Object.assign({
+              var ledActive = d.ledMaterial === key;
+              return h('button', {
                 key: key,
+                type: 'button',
+                'aria-pressed': ledActive,
+                'aria-label': m.name + ' LED',
                 onClick: function() { upd('ledMaterial', key); tryAwardXP('led-' + key, 5, 'Explored ' + m.name + ' LED'); },
-                className: 'px-2 py-1 text-[11px] font-semibold rounded-full transition-all ' +
-                  (d.ledMaterial === key ? 'ring-2 ring-white shadow-lg' : 'opacity-70 hover:opacity-100'),
-                style: { backgroundColor: m.color, color: key === 'white' || key === 'yellow' ? '#000' : '#FFF' }
-              }, a11yClick ? a11yClick(function() { upd('ledMaterial', key); }) : {}), m.name.split(' ')[0]);
+                className: 'min-h-9 border-2 px-3 py-1 text-[11px] font-black rounded-full transition-all ' +
+                  (ledActive ? 'border-white ring-2 ring-cyan-200 shadow-lg' : 'border-transparent opacity-85 hover:opacity-100'),
+                style: { backgroundColor: m.color, color: canvasInkFor(m.color) }
+              }, m.name.split(' ')[0]);
             })
           ),
           h('canvas', { 
@@ -2650,7 +2733,7 @@ window.StemLab = window.StemLab || {
           var yearMin = 1965, yearMax = 2030;
 
           // Grid
-          cx.strokeStyle = '#1E293B'; cx.lineWidth = 0.5;
+          cx.strokeStyle = '#64748B'; cx.lineWidth = 1;
           for (var gy = yearMin; gy <= yearMax; gy += 5) {
             var gx = padL + (gy - yearMin) / (yearMax - yearMin) * gW;
             cx.beginPath(); cx.moveTo(gx, padT); cx.lineTo(gx, padT + gH); cx.stroke();
@@ -3034,8 +3117,8 @@ window.StemLab = window.StemLab || {
               var ry = 30 + r * cellH;
               cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif'; cx.textAlign = 'right';
               cx.fillText('WL' + r, 35, ry + cellH / 2 + 3);
-              cx.strokeStyle = r === 0 && writeEn ? '#F59E0B' : '#334155';
-              cx.lineWidth = r === 0 && writeEn ? 2 : 0.5;
+              cx.strokeStyle = r === 0 && writeEn ? '#F59E0B' : '#64748B';
+              cx.lineWidth = r === 0 && writeEn ? 2 : 1;
               cx.beginPath(); cx.moveTo(40, ry + cellH / 2); cx.lineTo(W - 20, ry + cellH / 2); cx.stroke();
 
               for (var c = 0; c < cols; c++) {
@@ -3048,7 +3131,7 @@ window.StemLab = window.StemLab || {
                 cx.fillRect(cx2, ry + 3, cellW - 4, cellH - 6);
                 cx.strokeRect(cx2, ry + 3, cellW - 4, cellH - 6);
                 // Bit value
-                cx.fillStyle = randomBit ? '#FFF' : '#475569';
+                cx.fillStyle = randomBit ? '#FFF' : '#CBD5E1';
                 cx.font = 'bold 11px monospace'; cx.textAlign = 'center';
                 cx.fillText(String(randomBit), cx2 + (cellW - 4) / 2, ry + cellH / 2 + 3);
               }
@@ -3056,8 +3139,8 @@ window.StemLab = window.StemLab || {
             // Bit lines (columns)
             for (var bl = 0; bl < cols; bl++) {
               var bx = 45 + bl * cellW + (cellW - 4) / 2;
-              cx.strokeStyle = bl === 0 && writeEn ? '#F59E0B' : '#334155';
-              cx.lineWidth = bl === 0 && writeEn ? 2 : 0.5;
+              cx.strokeStyle = bl === 0 && writeEn ? '#F59E0B' : '#64748B';
+              cx.lineWidth = bl === 0 && writeEn ? 2 : 1;
               cx.beginPath(); cx.moveTo(bx, 25); cx.lineTo(bx, H - 15); cx.stroke();
               cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif'; cx.textAlign = 'center';
               cx.fillText('BL' + bl, bx, H - 5);
@@ -3307,7 +3390,7 @@ window.StemLab = window.StemLab || {
             var gW = W - padL - padR, gH = H - padT - padB;
 
             // Background grid
-            cx.strokeStyle = '#1E293B'; cx.lineWidth = 0.5;
+            cx.strokeStyle = '#64748B'; cx.lineWidth = 1;
             for (var bx = 0; bx <= 6; bx++) {
               var x = padL + bx * gW / 6;
               cx.beginPath(); cx.moveTo(x, padT); cx.lineTo(x, padT + gH); cx.stroke();
@@ -3575,10 +3658,13 @@ window.StemLab = window.StemLab || {
                 if (showResult && isSelected && isCorrect) optClass += 'bg-emerald-700 text-white ring-2 ring-emerald-400';
                 else if (showResult && isSelected && !isCorrect) optClass += 'bg-red-600 text-white';
                 else if (showResult && isCorrect) optClass += 'bg-emerald-600/30 text-emerald-300 border border-emerald-500';
-                else optClass += 'transition-colors bg-slate-700 text-slate-200 hover:bg-slate-600';
+                else optClass += 'border border-slate-500 bg-slate-800 text-slate-100 hover:border-cyan-300 hover:bg-slate-700';
 
-                return h('button', Object.assign({
-                  key: opt, disabled: showResult,
+                // Native buttons already provide Enter/Space support. Do not merge a
+                // no-op a11yClick object here: it overwrites this real answer handler.
+                return h('button', {
+                  key: opt, type: 'button', disabled: showResult,
+                  'aria-pressed': isSelected,
                   onClick: function() {
                     var correct = opt === current.a;
                     var newStreak = correct ? streak + 1 : 0;
@@ -3592,8 +3678,8 @@ window.StemLab = window.StemLab || {
                     }
                     if (announceToSR) announceToSR(correct ? 'Correct!' : 'Incorrect. The answer is ' + current.a);
                   },
-                  className: optClass
-                }, a11yClick ? a11yClick(function() {}) : {}), opt);
+                  className: 'min-h-11 ' + optClass
+                }, opt);
               })
             ),
             // Hint (show after 1 miss on this question)
@@ -3912,10 +3998,23 @@ window.StemLab = window.StemLab || {
       // ════════════════════════════════════════════
       var subtool = d.subtool || 'bandgap';
       var tab = d.mode || 'explore';
+      var navSubtoolIndex = Math.max(0, SUBTOOLS.findIndex(function(item) { return item.id === subtool; }));
+
+      function selectSubtool(next) {
+        updMulti({ subtool: next, aiExplain: null, guidedSetupSubtool: null, guidedObservationSaved: null });
+        if (typeof canvasNarrate === 'function') canvasNarrate('semiconductor', 'subtoolSwitch', 'Switched to ' + getSubtoolLabel(next) + ' simulation.', { debounce: 500 });
+        if (announceToSR) announceToSR('Selected ' + getSubtoolLabel(next) + ' simulation');
+      }
+
+      function moveSubtool(direction) {
+        var nextIndex = (navSubtoolIndex + direction + SUBTOOLS.length) % SUBTOOLS.length;
+        var nextTool = SUBTOOLS[nextIndex] || SUBTOOLS[0];
+        selectSubtool(nextTool.id);
+      }
 
       var backBtn = h('button', Object.assign({
         onClick: function() { setStemLabTool(null); if (announceToSR) announceToSR('Returned to STEM Lab tools'); },
-        className: 'flex items-center gap-1 text-xs text-slate-200 hover:text-white transition-colors mb-2'
+        className: 'semi-action flex items-center gap-1 rounded-lg border border-slate-600 bg-slate-900/80 px-3 py-2 text-xs font-bold text-slate-100 hover:border-cyan-400 hover:bg-slate-800 hover:text-white transition-colors mb-3'
       }, a11yClick ? a11yClick(function() { setStemLabTool(null); }) : {}),
         h(ArrowLeft, { size: 14 }), t('stem.semiconductor.back_to_stem_lab', ' Back to STEM Lab')
       );
@@ -3933,30 +4032,32 @@ window.StemLab = window.StemLab || {
         if (nextTab) { nextTab.focus(); nextTab.click(); }
       };
 
-      var tabBar = h('div', { className: 'flex flex-wrap gap-2 mb-3 border-b border-slate-600 pb-3', role: 'tablist', 'aria-label': t('stem.semiconductor.semiconductor_lab_navigation', 'Semiconductor Lab navigation') },
+      var tabBar = h('div', { className: 'semi-mode-tabs flex flex-wrap gap-2 mb-3', role: 'tablist', 'aria-label': t('stem.semiconductor.semiconductor_lab_navigation', 'Semiconductor Lab navigation') },
         ['explore', 'challenge', 'battle', 'learn'].map(function(tb, tabIndex) {
           var labels = { explore: '\uD83D\uDD2C Explore', challenge: '\uD83C\uDFC6 Challenge', battle: '\u2694\uFE0F Battle', learn: '\uD83D\uDCDA Learn' };
           var active = tab === tb;
           return h('button', { key: 'tab-' + tb, type: 'button', role: 'tab',
             id: 'semiconductor-tab-' + tb, 'aria-controls': 'semiconductor-panel-' + tb,
             'aria-selected': active, tabIndex: active ? 0 : -1,
+            'data-active': active ? 'true' : 'false',
             onKeyDown: function(e) { semiconductorTabKeyDown(e, tabIndex); },
             onClick: function() { updMulti({ mode: tb, aiExplain: null }); if (announceToSR) announceToSR(tb + ' tab selected'); },
-            className: 'px-3 py-2 min-h-10 text-sm font-semibold rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400 ' +
-              (active ? 'bg-cyan-700 text-white shadow-md' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
+            className: 'semi-mode-tab px-4 py-2 min-h-11 text-sm font-bold rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400 ' +
+              (active ? 'bg-cyan-700 text-white shadow-md' : 'bg-slate-800 text-slate-100 hover:bg-slate-700')
           }, labels[tb]);
         })
       );
 
       // Topic-accent hero band per tab
       var TAB_META = {
-        explore:   { accent: '#38bdf8', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDD2C', title: t('stem.semiconductor.explore_diodes_transistors_doping', 'Explore semiconductor behavior'), hint: t('stem.semiconductor.doping_silicon_with_phosphorus_n_type_', 'Begin with one observable change. Compare materials, add a dopant, or bias a junction, then explain what changed and why.') },
-        challenge: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83C\uDFC6', title: t('stem.semiconductor.challenge_graded_problems', 'Challenge \u2014 graded problems'),              hint: t('stem.semiconductor.bias_a_transistor_calculate_band_gap_e', 'Bias a transistor, calculate band-gap energy, predict current vs voltage. AP Physics 2 + intro EE problems with step-by-step feedback.') },
-        battle:    { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u2694\uFE0F', title: t('stem.semiconductor.battle_head_to_head_circuit_duels', 'Battle \u2014 head-to-head circuit duels'),       hint: t('stem.semiconductor.time_pressure_rounds_build_a_circuit_f', 'Time-pressure rounds: build a circuit faster than the timer. Tests whether semiconductor reasoning is automatic, not just recognized.') },
-        learn:     { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDCDA', title: t('stem.semiconductor.learn_reference_history', 'Learn \u2014 reference + history'),               hint: t('stem.semiconductor.bardeen_brattain_shockley_invented_the', 'Bardeen + Brattain + Shockley invented the transistor at Bell Labs (1947); Nobel 1956. Moore\'s Law: transistor count doubles every ~2 years; held for 50+ years before slowing.') }
+        explore:   { accent: '#67e8f9', soft: 'rgba(14,165,233,0.18)', icon: '\uD83D\uDD2C', title: t('stem.semiconductor.explore_diodes_transistors_doping', 'Explore semiconductor behavior'), hint: t('stem.semiconductor.doping_silicon_with_phosphorus_n_type_', 'Begin with one observable change. Compare materials, add a dopant, or bias a junction, then explain what changed and why.') },
+        challenge: { accent: '#fbbf24', soft: 'rgba(245,158,11,0.18)', icon: '\uD83C\uDFC6', title: t('stem.semiconductor.challenge_graded_problems', 'Challenge \u2014 graded problems'),              hint: t('stem.semiconductor.bias_a_transistor_calculate_band_gap_e', 'Bias a transistor, calculate band-gap energy, predict current vs voltage. AP Physics 2 + intro EE problems with step-by-step feedback.') },
+        battle:    { accent: '#f87171', soft: 'rgba(239,68,68,0.18)',  icon: '\u2694\uFE0F', title: t('stem.semiconductor.battle_head_to_head_circuit_duels', 'Battle \u2014 head-to-head circuit duels'),       hint: t('stem.semiconductor.time_pressure_rounds_build_a_circuit_f', 'Time-pressure rounds: build a circuit faster than the timer. Tests whether semiconductor reasoning is automatic, not just recognized.') },
+        learn:     { accent: '#4ade80', soft: 'rgba(34,197,94,0.18)',  icon: '\uD83D\uDCDA', title: t('stem.semiconductor.learn_reference_history', 'Learn \u2014 reference + history'),               hint: t('stem.semiconductor.bardeen_brattain_shockley_invented_the', 'Bardeen + Brattain + Shockley invented the transistor at Bell Labs (1947); Nobel 1956. Moore\'s Law: transistor count doubles every ~2 years; held for 50+ years before slowing.') }
       };
       var meta = TAB_META[tab] || TAB_META.explore;
       var tabHero = h('div', {
+        className: 'semi-tab-hero',
         style: {
           margin: '4px 0 12px',
           padding: '12px 14px',
@@ -3975,24 +4076,24 @@ window.StemLab = window.StemLab || {
       );
 
       var subtoolNav = tab === 'explore' ? h('div', {
-        className: 'flex items-center gap-3 mb-3 p-3 rounded-xl bg-slate-800/70 border border-slate-600 flex-wrap',
+        className: 'semi-subtool-nav flex items-center gap-3 mb-3 p-3 rounded-xl bg-slate-800/70 border border-slate-600 flex-wrap',
         role: 'navigation', 'aria-label': t('stem.semiconductor.semiconductor_sub_tools', 'Semiconductor simulations')
       },
         h('label', { htmlFor: 'semiconductor-simulation-select', className: 'text-xs font-bold text-slate-200' }, t('stem.semiconductor.simulation', 'Simulation')),
+        h('button', { type: 'button', className: 'semi-nav-step', onClick: function() { moveSubtool(-1); }, 'aria-label': 'Previous simulation', title: 'Previous simulation' }, '\u2190'),
         h('select', {
           id: 'semiconductor-simulation-select', value: subtool,
-          onChange: function(e) {
-            var next = e.target.value;
-            updMulti({ subtool: next, aiExplain: null });
-            if (typeof canvasNarrate === 'function') canvasNarrate('semiconductor', 'subtoolSwitch', 'Switched to ' + getSubtoolLabel(next) + ' simulation.', { debounce: 500 });
-            if (announceToSR) announceToSR('Selected ' + getSubtoolLabel(next) + ' simulation');
-          },
-          className: 'min-h-10 flex-1 min-w-[220px] rounded-lg bg-slate-950 text-slate-100 border border-slate-500 px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-cyan-400',
+          onChange: function(e) { selectSubtool(e.target.value); },
+          className: 'semi-simulation-select min-h-11 flex-1 min-w-[220px] rounded-lg bg-slate-950 text-slate-100 border border-slate-500 px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-cyan-400',
           'aria-label': t('stem.semiconductor.choose_simulation', 'Choose a semiconductor simulation')
         }, SUBTOOLS.map(function(st) {
           return h('option', { key: st.id, value: st.id }, st.label);
         })),
-        h('span', { className: 'text-xs text-cyan-200 font-semibold' }, getSubtoolLabel(subtool))
+        h('button', { type: 'button', className: 'semi-nav-step', onClick: function() { moveSubtool(1); }, 'aria-label': 'Next simulation', title: 'Next simulation' }, '\u2192'),
+        h('span', { className: 'semi-live-badge', role: 'status' },
+          h('span', { className: 'semi-live-dot', 'aria-hidden': 'true' }),
+          t('stem.semiconductor.live_model', 'Live model')
+        )
       ) : null;
 
       // Render every mode/subtool in one stable order so hooks inside canvas
@@ -4129,7 +4230,7 @@ window.StemLab = window.StemLab || {
           addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
           if (announceToSR) announceToSR('Snapshot saved');
         },
-        className: 'mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-cyan-700 to-indigo-600 rounded-full hover:from-cyan-700 hover:to-indigo-600 shadow-md hover:shadow-lg transition-all',
+        className: 'semi-snapshot mt-3 ml-auto px-5 py-2 text-xs font-black text-white bg-gradient-to-r from-cyan-700 to-indigo-600 rounded-full hover:from-cyan-600 hover:to-indigo-500 shadow-md hover:shadow-lg transition-all',
         'aria-label': snapshotLabel + '. Save the current Semiconductor Lab state to your notebook.',
         title: 'Save current state to notebook'
       }, snapshotLabel);
@@ -4288,6 +4389,8 @@ window.StemLab = window.StemLab || {
       var currentSubtoolIndex = SUBTOOLS.findIndex(function(item) { return item.id === subtool; });
       var nextSubtool = SUBTOOLS[(currentSubtoolIndex + 1 + SUBTOOLS.length) % SUBTOOLS.length] || SUBTOOLS[0];
       var progressText = tab === 'challenge' ? 'Answer one question to earn XP.' : tab === 'battle' ? 'Defend the chip one round at a time.' : tab === 'learn' ? 'Read one concept, then test it in Explore.' : guidedSaved ? 'Complete — choose another workspace to keep going.' : guidedChanged ? 'Explain your change to finish this experiment.' : guidedReady ? 'Change one variable to continue.' : 'Start with a guided setup.';
+      var guidedProgressStep = guidedSaved ? 3 : guidedChanged ? 2 : guidedReady ? 1 : 0;
+      var guidedProgressPercent = Math.round((guidedProgressStep / 3) * 100);
       function openNextWorkspace() {
         updMulti({ mode: 'explore', subtool: nextSubtool.id, guidedSetupSubtool: null, guidedObservationSaved: null, aiExplain: null });
         if (announceToSR) announceToSR('Opened next workspace: ' + nextSubtool.label);
@@ -4333,27 +4436,30 @@ window.StemLab = window.StemLab || {
         if (announceToSR) announceToSR('Observation saved to your lab notebook. Guided experiment complete.');
       }
       function guidedStepClass(done, active) {
-        return 'rounded-lg border p-2 text-sm ' + (done
+        return 'semi-guided-step rounded-lg border p-2 text-sm ' + (done
           ? 'border-emerald-500/80 bg-emerald-950/40 text-slate-100'
-          : active ? 'border-cyan-400 bg-cyan-950/60 text-slate-100' : 'border-slate-600 bg-slate-950/60 text-slate-300');
+          : active ? 'border-cyan-300 bg-cyan-950/70 text-slate-100' : 'border-slate-500 bg-slate-950/70 text-slate-200');
+      }
+      function guidedStepState(done, active) {
+        return done ? 'done' : active ? 'active' : 'upcoming';
       }
       var quickStart = tab === 'explore' ? h('section', {
-        className: 'mb-3 rounded-xl border border-cyan-500/60 bg-cyan-950/40 p-3',
+        className: 'semi-guided-card mb-3 rounded-xl border border-cyan-400/70 bg-cyan-950/50 p-3',
         'aria-labelledby': 'semiconductor-quick-start-title'
       },
         h('div', { className: 'flex flex-wrap items-center gap-2' },
           h('div', { id: 'semiconductor-quick-start-title', className: 'text-sm font-black text-cyan-100' }, t('stem.semiconductor.guided_experiment', 'Guided experiment')),
-          h('span', { className: 'rounded-full bg-cyan-900/70 px-2 py-1 text-[11px] font-bold text-cyan-100' }, guidedSaved ? t('stem.semiconductor.complete', 'Complete') : t('stem.semiconductor.three_short_steps', '3 short steps'))
+          h('span', { className: 'rounded-full border border-cyan-400/50 bg-cyan-950 px-2 py-1 text-[11px] font-bold text-cyan-50' }, guidedSaved ? t('stem.semiconductor.complete', 'Complete') : guidedProgressStep + '/3 · ' + t('stem.semiconductor.three_short_steps', '3 short steps'))
         ),
         h('ol', { className: 'mt-3', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 8 } },
-          h('li', { className: guidedStepClass(guidedReady, !guidedReady) }, h('strong', { className: 'block ' + (guidedReady ? 'text-emerald-300' : 'text-cyan-200') }, guidedReady ? '✓ Baseline loaded' : '1. Set up'), quick.action),
-          h('li', { className: guidedStepClass(guidedChanged, guidedReady && !guidedChanged) }, h('strong', { className: 'block ' + (guidedChanged ? 'text-emerald-300' : 'text-cyan-200') }, guidedChanged ? '✓ Change observed' : '2. Change'), quick.change),
-          h('li', { id: 'semiconductor-guided-question', className: guidedStepClass(guidedSaved, guidedChanged && !guidedSaved) }, h('strong', { className: 'block ' + (guidedSaved ? 'text-emerald-300' : 'text-cyan-200') }, guidedSaved ? '✓ Explanation saved' : '3. Explain'), quick.notice)
+          h('li', { className: guidedStepClass(guidedReady, !guidedReady), 'data-state': guidedStepState(guidedReady, !guidedReady) }, h('strong', { className: 'block ' + (guidedReady ? 'text-emerald-300' : 'text-cyan-100') }, guidedReady ? '✓ Baseline loaded' : '1. Set up'), quick.action),
+          h('li', { className: guidedStepClass(guidedChanged, guidedReady && !guidedChanged), 'data-state': guidedStepState(guidedChanged, guidedReady && !guidedChanged) }, h('strong', { className: 'block ' + (guidedChanged ? 'text-emerald-300' : 'text-cyan-100') }, guidedChanged ? '✓ Change observed' : '2. Change'), quick.change),
+          h('li', { id: 'semiconductor-guided-question', className: guidedStepClass(guidedSaved, guidedChanged && !guidedSaved), 'data-state': guidedStepState(guidedSaved, guidedChanged && !guidedSaved) }, h('strong', { className: 'block ' + (guidedSaved ? 'text-emerald-300' : 'text-cyan-100') }, guidedSaved ? '✓ Explanation saved' : '3. Explain'), quick.notice)
         ),
         h('div', { className: 'mt-3 flex flex-wrap items-center gap-2' },
           h('button', {
             type: 'button', onClick: applyGuidedSetup,
-            className: 'min-h-10 rounded-lg bg-cyan-700 px-4 py-2 text-sm font-black text-white hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-300'
+            className: 'semi-action min-h-11 rounded-lg border border-cyan-200/60 bg-cyan-700 px-4 py-2 text-sm font-black text-white hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-300'
           }, guidedReady ? t('stem.semiconductor.reload_baseline', 'Reload baseline') : t('stem.semiconductor.load_guided_setup', 'Load guided setup')),
           guidedReady && h('span', { className: 'text-sm font-semibold ' + (guidedSaved ? 'text-emerald-300' : guidedChanged ? 'text-amber-200' : 'text-cyan-100'), role: 'status' }, guidedSaved
             ? t('stem.semiconductor.experiment_complete', 'Observation saved — experiment complete.')
@@ -4381,33 +4487,54 @@ window.StemLab = window.StemLab || {
           )
         )
       ) : null;
-      var commandDrawer = tab === 'explore' ? h('details', { className: 'mt-4 rounded-xl border border-slate-600 bg-slate-900/50' },
+      var commandDrawer = tab === 'explore' ? h('details', { className: 'semi-command-drawer mt-4 rounded-xl border border-slate-500 bg-slate-900/80' },
         h('summary', { className: 'cursor-pointer px-4 py-3 text-sm font-bold text-cyan-200 hover:text-white' }, t('stem.semiconductor.open_lab_map', 'Explore more chip-lab activities')),
         h('div', { className: 'px-3 pb-3' }, commandPanel)
       ) : null;
 
-      var notebookPreview = notebookCount > 0 ? h('details', { id: 'semiconductor-notebook-preview', className: 'mt-2 ml-auto w-full max-w-xl rounded-lg border border-slate-600 bg-slate-900/70' },
+      var notebookPreview = notebookCount > 0 ? h('details', { id: 'semiconductor-notebook-preview', className: 'semi-notebook-preview mt-2 ml-auto w-full max-w-xl rounded-lg border border-slate-500 bg-slate-900/90' },
         h('summary', { className: 'cursor-pointer px-3 py-2 text-xs font-bold text-cyan-200 hover:text-white' }, 'Recent notebook entries · ' + notebookCount + ' saved'),
         h('ol', { className: 'space-y-1 px-3 pb-3 text-xs text-slate-200' }, semiconductorSnapshots.slice(-3).reverse().map(function(entry, index) {
           return h('li', { key: entry.id || index, className: 'rounded-md border border-slate-700 bg-slate-950/60 px-2 py-1.5 leading-relaxed' }, String(entry.label || 'Saved Semiconductor Lab state'));
         }))
       ) : null;
 
-      return h('div', { className: 'flex flex-col h-full', role: 'application', 'aria-label': t('stem.semiconductor.semiconductor_lab', 'Semiconductor Lab') },
-        backBtn,
-        h('div', { className: 'flex items-center gap-2 mb-2' },
-          h('span', { className: 'text-2xl' }, '\uD83D\uDCA1'),
-          h('h2', { className: 'text-lg font-bold text-white' }, t('stem.semiconductor.semiconductor_lab_2', 'Semiconductor Lab')),
-          h('span', { className: 'text-[11px] text-slate-400 ml-1' }, 'v3.0'),
-          h('span', { id: 'semiconductor-progress-summary', className: 'ml-auto text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-200', 'aria-label': 'Progress: ' + progressText + '. Notebook: ' + notebookCount }, '\u2B50 ' + (getStemXP ? getStemXP() : 0) + ' XP · Notebook ' + notebookCount)
+      var labHeader = h('header', { className: 'semi-lab-header' },
+        h('span', { className: 'semi-brand-mark', 'aria-hidden': 'true' }, '\uD83D\uDCA1'),
+        h('div', { className: 'semi-header-copy' },
+          h('div', { className: 'semi-header-kicker' }, t('stem.semiconductor.interactive_chip_lab', 'Interactive chip lab')),
+          h('div', { className: 'flex flex-wrap items-baseline gap-2' },
+            h('h2', { className: 'm-0 text-xl font-black text-white' }, t('stem.semiconductor.semiconductor_lab_2', 'Semiconductor Lab')),
+            h('span', { className: 'text-[10px] font-bold text-slate-300' }, 'v3.0')
+          ),
+          h('p', { className: 'semi-header-subtitle' }, tab === 'explore'
+            ? getSubtoolLabel(subtool) + ' · Change a control and watch the model respond.'
+            : meta.title + ' · ' + progressText)
         ),
+        h('div', { className: 'semi-progress-card' },
+          h('div', { className: 'flex items-center justify-between gap-2' },
+            h('span', { className: 'semi-live-badge' },
+              h('span', { className: 'semi-live-dot', 'aria-hidden': 'true' }),
+              tab === 'explore' ? t('stem.semiconductor.simulation_live', 'Simulation live') : tab.charAt(0).toUpperCase() + tab.slice(1) + ' mode'
+            ),
+            h('span', { id: 'semiconductor-progress-summary', className: 'text-xs font-black text-cyan-50', 'aria-label': 'Progress: ' + progressText + ' Notebook: ' + notebookCount }, '\u2B50 ' + (getStemXP ? getStemXP() : 0) + ' XP · Notebook ' + notebookCount)
+          ),
+          tab === 'explore' && h('div', { className: 'semi-progress-track', role: 'progressbar', 'aria-label': 'Experiment progress', 'aria-valuemin': 0, 'aria-valuemax': 3, 'aria-valuenow': guidedProgressStep, 'aria-valuetext': guidedProgressStep + ' of 3 steps complete' },
+            h('span', { className: 'semi-progress-fill', style: { width: guidedProgressPercent + '%' } })
+          )
+        )
+      );
+
+      return h('div', { className: 'semiconductor-lab flex flex-col h-full', 'data-mode': tab, role: 'application', 'aria-label': t('stem.semiconductor.semiconductor_lab', 'Semiconductor Lab') },
+        backBtn,
+        labHeader,
         tabBar,
         h('div', { role: 'tabpanel', id: 'semiconductor-panel-' + tab,
           'aria-labelledby': 'semiconductor-tab-' + tab, tabIndex: 0 },
           tabHero,
           subtoolNav,
           quickStart,
-          h('div', { className: 'flex-1 pr-1' }, content),
+          h('div', { className: 'semi-workspace flex-1' }, content),
           commandDrawer),
         snapshotBtn,
         notebookPreview

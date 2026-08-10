@@ -176,7 +176,9 @@
   window.StemLab.registerTool('cyberDefense', {
     name: 'Cyber Defense Lab',
     icon: '\uD83D\uDEE1\uFE0F',
-    category: 'tech',
+    desc: 'Practice spotting phishing, making strong passwords, and solving ciphers through digital-citizenship challenges.',
+    category: 'technology',
+    aliases: ['cybersecurity', 'phishing', 'passwords', 'digital citizenship'],
     questHooks: [
       { id: 'phish_score_3', label: 'Identify 3 phishing emails correctly', icon: '\uD83C\uDFA3', check: function(d) { return (d.phishScore || 0) >= 3; }, progress: function(d) { return (d.phishScore || 0) + '/3'; } },
       { id: 'phish_score_5', label: 'Identify 5 phishing emails correctly', icon: '\uD83D\uDEE1\uFE0F', check: function(d) { return (d.phishScore || 0) >= 5; }, progress: function(d) { return (d.phishScore || 0) + '/5'; } },

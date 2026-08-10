@@ -15757,6 +15757,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     name: 'NutritionLab — Nutrition Science',
     icon: '🥗',
     desc: 'Adolescent-safe nutrition science: macronutrients, micronutrients, food labels, metabolism, digestion, common myths, food + mental health, eating-disorder awareness, Maine food reality, and registered-dietitian career pathways. Frame is physiology-first ("what your body uses food for"), not weight-loss. Sources cited inline: USDA FoodData Central, NIH ODS, Harvard T.H. Chan, AAP, NEDA.',
+    category: 'biology',
+    aliases: ['nutrition', 'food labels', 'macros', 'micronutrients'],
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React || window.React;

@@ -1410,7 +1410,7 @@ class AIProvider {
     async _geminiGenerateText(prompt, { json, search, temperature, maxTokens, signal }) {
         const buildUrl = (model) => {
             this._debugLog(`[AIProvider] ✉ Using model: ${model}`);
-            const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
+        const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
             return `${this.baseUrl}/models/${model}:generateContent${keyParam}`;
         };
 
@@ -1811,20 +1811,24 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         return Boolean(err.isConfigState || err.isRateLimited || /401|403|429|503|quota|RESOURCE_EXHAUSTED|Rate limited|rate limit/i.test(msg));
     }
 
-    async _trySdTurboImage(prompt, width, quality) {
+    async _trySdTurboImage(prompt, width, quality, signal = null) {
         const win = (typeof globalThis !== 'undefined' && globalThis.window)
             ? globalThis.window
             : ((typeof window !== 'undefined' && window.document) ? window : null);
         if (this.isCanvasEnv || !win) return null;
+        if (signal && signal.aborted) { const abortError = new Error('Image generation cancelled.'); abortError.name = 'AbortError'; throw abortError; }
         try {
             if (win._sdTurbo?.ready && typeof win._sdTurbo.generate === 'function') {
                 const localUrl = await win._sdTurbo.generate(prompt);
                 if (localUrl) {
                     this._debugLog('[AIProvider] ✅ Image generated via local SD-Turbo');
-                    return await this._optimizeImage(localUrl, width, quality);
+                    const optimized = await this._optimizeImage(localUrl, width, quality);
+                    if (signal && signal.aborted) { const abortError = new Error('Image generation cancelled.'); abortError.name = 'AbortError'; throw abortError; }
+                    return optimized;
                 }
             }
         } catch (err) {
+            if ((err && err.name === 'AbortError') || (signal && signal.aborted)) throw err;
             this._warnLog(`[AIProvider] Local SD-Turbo image generation failed: ${err?.message || err}`);
         }
         return null;
@@ -1849,10 +1853,10 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         return true;
     }
 
-    async _generateImageByBackend(prompt, width, quality) {
+    async _generateImageByBackend(prompt, width, quality, signal = null) {
         switch (this.backend) {
             case 'gemini':
-                return this._geminiGenerateImage(prompt, width, quality);
+                return this._geminiGenerateImage(prompt, width, quality, signal);
             case 'claude':
             // Claude doesn't support image generation — fall through to OpenAI-compatible
             case 'openai':
@@ -1862,19 +1866,20 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             case 'alloflow-local':
             case 'custom':
             default:
-                return this._openaiGenerateImage(prompt, width, quality);
+                return this._openaiGenerateImage(prompt, width, quality, signal);
         }
     }
 
-    async generateImage(prompt, { width = 300, quality = 0.7 } = {}) {
+    async generateImage(prompt, { width = 300, quality = 0.7, signal = null } = {}) {
         this._debugLog(`[AIProvider] generateImage: ${prompt?.substring(0, 50)}`);
+        if (signal && signal.aborted) { const abortError = new Error('Image generation cancelled.'); abortError.name = 'AbortError'; throw abortError; }
 
         // Check imageProvider override from AI Backend Settings
         const _imgOvr = this._imageProvider || null;
         if (_imgOvr === 'off') throw new Error('Image generation is disabled in AI Backend Settings');
 
         if (_imgOvr === 'sd-local') {
-            const local = await this._trySdTurboImage(prompt, width, quality);
+            const local = await this._trySdTurboImage(prompt, width, quality, signal);
             if (local) return local;
             this._kickoffSdTurboLoad();
             if (!this.apiKey && this.backend === 'gemini') {
@@ -1885,16 +1890,16 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         }
 
         const runPrimary = () => {
-            if (_imgOvr === 'imagen') return this._geminiGenerateImage(prompt, width, quality);
-            if (_imgOvr === 'flux') return this._openaiGenerateImage(prompt, width, quality);
-            return this._generateImageByBackend(prompt, width, quality);
+            if (_imgOvr === 'imagen') return this._geminiGenerateImage(prompt, width, quality, signal);
+            if (_imgOvr === 'flux') return this._openaiGenerateImage(prompt, width, quality, signal);
+            return this._generateImageByBackend(prompt, width, quality, signal);
         };
 
         try {
             return await runPrimary();
         } catch (err) {
             if (this._isSdTurboEligibleImageError(err)) {
-                const local = await this._trySdTurboImage(prompt, width, quality);
+                const local = await this._trySdTurboImage(prompt, width, quality, signal);
                 if (local) return local;
                 if (_imgOvr === 'sd-local') this._kickoffSdTurboLoad();
             }
@@ -1902,8 +1907,13 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         }
     }
 
-    async _geminiGenerateImage(prompt, width, quality) {
+    async _geminiGenerateImage(prompt, width, quality, signal = null) {
         const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
+        const throwIfAborted = () => {
+            if (!signal || !signal.aborted) return;
+            const abortError = new Error('Image generation cancelled.'); abortError.name = 'AbortError'; throw abortError;
+        };
+        throwIfAborted();
         const url = `${this.baseUrl}/models/${this.models.imagen}:predict${keyParam}`;
         const payload = {
             instances: [{ prompt }],
@@ -1911,10 +1921,12 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         };
 
         const executeRequest = async () => {
+            throwIfAborted();
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
+                ... (signal ? { signal } : {})
             });
 
             if (response.status === 401 || response.status === 429 || response.status === 503) {
@@ -1945,34 +1957,63 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             }
 
             const rawUrl = `data:image/png;base64,${base64}`;
-            return await this._optimizeImage(rawUrl, width, quality);
+            const optimized = await this._optimizeImage(rawUrl, width, quality);
+            throwIfAborted();
+            return optimized;
         };
 
+        const waitForImageRetry = (delayMs) => new Promise((resolve, reject) => {
+            let timer = null;
+            const cleanup = () => { if (signal) signal.removeEventListener('abort', onAbort); };
+            const onAbort = () => {
+                if (timer) clearTimeout(timer);
+                cleanup();
+                const abortError = new Error('Image generation aborted');
+                abortError.name = 'AbortError';
+                reject(abortError);
+            };
+            if (signal && signal.aborted) return onAbort();
+            if (signal) signal.addEventListener('abort', onAbort, { once: true });
+            timer = setTimeout(() => { cleanup(); resolve(); }, Math.max(0, delayMs));
+        });
         const executeWithRetry = async (attempt = 0, maxAttempts = 3) => {
             try {
                 return await executeRequest();
             } catch (err) {
+                if ((err && err.name === 'AbortError') || (signal && signal.aborted)) throw err;
                 if (err.message && (err.message.includes('Safety') || err.message.includes('Block') || err.message.includes('400'))) {
                     throw err;
                 }
                 if (attempt < maxAttempts - 1) {
-                    this._warnLog(`⏳ Image gen retry ${attempt + 1}/${maxAttempts}...`);
+                    const retryAfterMs = Number(err && err.retryAfterMs);
+                    const exponentialMs = Math.min(8000, 1000 * Math.pow(2, attempt));
+                    const jitterMs = Math.floor(Math.random() * 350);
+                    const delayMs = Number.isFinite(retryAfterMs) && retryAfterMs > 0 ? retryAfterMs : exponentialMs + jitterMs;
+                    this._warnLog(`Image gen retry ${attempt + 1}/${maxAttempts} in ${delayMs}ms...`);
+                    throwIfAborted();
+                    await waitForImageRetry(delayMs);
+                    throwIfAborted();
                     return executeWithRetry(attempt + 1, maxAttempts);
                 }
                 throw err;
             }
         };
-
         if (this._imagenRateLimited) {
-            const queued = this._imagenQueue.then(executeWithRetry, () => executeWithRetry());
+            const queued = this._imagenQueue.then(() => { throwIfAborted(); return executeWithRetry(); }, () => { throwIfAborted(); return executeWithRetry(); });
             this._imagenQueue = queued.catch(() => { });
             return queued;
         }
+        throwIfAborted();
         return executeWithRetry();
     }
 
-    async _openaiGenerateImage(prompt, width, quality) {
+    async _openaiGenerateImage(prompt, width, quality, signal = null) {
         // ── Try dedicated Flux image server first (port 7860) ──
+        const throwIfAborted = () => {
+            if (!signal || !signal.aborted) return;
+            const abortError = new Error('Image generation cancelled.'); abortError.name = 'AbortError'; throw abortError;
+        };
+        throwIfAborted();
         const fluxUrl = 'http://localhost:7860/v1/images/generations';
         try {
             const fluxResp = await fetch(fluxUrl, {
@@ -1985,7 +2026,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                     size: `${width}x${width}`,
                     response_format: 'b64_json',
                 }),
-                signal: AbortSignal.timeout((window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.aiImageMs) || 180000), // user-configurable; default 3 min
+                signal: signal || (typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout((window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.aiImageMs) || 180000) : undefined), // user-configurable; default 3 min
             });
             if (fluxResp.ok) {
                 const fluxData = await fluxResp.json();
@@ -1996,6 +2037,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 }
             }
         } catch (fluxErr) {
+            if ((fluxErr && fluxErr.name === 'AbortError') || (signal && signal.aborted)) throw fluxErr;
             this._debugLog(`[AIProvider] Flux server not available (${fluxErr.message}), trying fallback...`);
         }
 
@@ -2011,10 +2053,12 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             ? { model: this.models.image, prompt, stream: false }
             : { model: this.models.image, prompt, n: 1, size: `${width}x${width}`, response_format: 'b64_json' };
 
+        throwIfAborted();
         const response = await this._fetchWithRetry(url, {
             method: 'POST',
             headers,
             body: JSON.stringify(payload),
+            signal: signal || undefined,
         });
         const data = await response.json();
 
@@ -2027,7 +2071,9 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
 
         if (!base64) throw new Error('No image generated');
         const rawUrl = `data:image/png;base64,${base64}`;
-        return await this._optimizeImage(rawUrl, width, quality);
+        const optimized = await this._optimizeImage(rawUrl, width, quality);
+        throwIfAborted();
+        return optimized;
     }
 
     // ─── IMAGE EDITING ────────────────────────────────────────────────
@@ -2044,12 +2090,12 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * @param {string} [opts.referenceBase64] - Reference image for style matching
      * @returns {Promise<string>} Edited image as data:image URL
      */
-    async editImage(prompt, base64Image, { width = 800, quality = 0.9, referenceBase64 = null } = {}) {
+    async editImage(prompt, base64Image, { width = 800, quality = 0.9, referenceBase64 = null, signal = null } = {}) {
         this._debugLog(`[AIProvider] editImage: ${prompt?.substring(0, 50)}`);
 
         switch (this.backend) {
             case 'gemini':
-                return this._geminiEditImage(prompt, base64Image, width, quality, referenceBase64);
+                return this._geminiEditImage(prompt, base64Image, width, quality, referenceBase64, signal);
             case 'openai':
             case 'localai':
             case 'lmstudio':
@@ -2058,12 +2104,17 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             case 'alloflow-local':
             case 'custom':
             default:
-                return this._openaiEditImage(prompt, base64Image, width, quality, referenceBase64);
+                return this._openaiEditImage(prompt, base64Image, width, quality, referenceBase64, signal);
         }
     }
 
-    async _geminiEditImage(prompt, base64Image, width, quality, referenceBase64) {
+    async _geminiEditImage(prompt, base64Image, width, quality, referenceBase64, signal = null) {
         const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
+        const throwIfAborted = () => {
+            if (!signal || !signal.aborted) return;
+            const abortError = new Error('Image editing cancelled.'); abortError.name = 'AbortError'; throw abortError;
+        };
+        throwIfAborted();
         const url = `${this.baseUrl}/models/${this.models.image}:generateContent${keyParam}`;
 
         const parts = [
@@ -2081,24 +2132,34 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         };
 
         try {
+            throwIfAborted();
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
+                ...(signal ? { signal } : {})
             });
+            throwIfAborted();
             const data = await response.json();
             const imagePart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
             if (!imagePart) throw new Error('No image generated in response');
             const rawUrl = `data:image/png;base64,${imagePart.inlineData.data}`;
-            return await this._optimizeImage(rawUrl, width, quality);
+            const optimized = await this._optimizeImage(rawUrl, width, quality);
+            throwIfAborted();
+            return optimized;
         } catch (err) {
             this._warnLog('[AIProvider] Image Edit Error', err);
             throw err;
         }
     }
 
-    async _openaiEditImage(prompt, base64Image, width, quality, _referenceBase64) {
+    async _openaiEditImage(prompt, base64Image, width, quality, _referenceBase64, signal = null) {
         // ── Try dedicated Flux image server first (port 7860) ──
+        const throwIfAborted = () => {
+            if (!signal || !signal.aborted) return;
+            const abortError = new Error('Image editing cancelled.'); abortError.name = 'AbortError'; throw abortError;
+        };
+        throwIfAborted();
         const fluxEditUrl = 'http://localhost:7860/v1/images/edits';
         try {
             const fluxResp = await fetch(fluxEditUrl, {
@@ -2113,7 +2174,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                     response_format: 'b64_json',
                     strength: 0.75,
                 }),
-                signal: AbortSignal.timeout((window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.aiImageMs) || 180000),
+                signal: signal || (typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout((window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.aiImageMs) || 180000) : undefined),
             });
             if (fluxResp.ok) {
                 const fluxData = await fluxResp.json();
@@ -2124,6 +2185,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 }
             }
         } catch (fluxErr) {
+            if ((fluxErr && fluxErr.name === 'AbortError') || (signal && signal.aborted)) throw fluxErr;
             this._debugLog(`[AIProvider] Flux edit server not available (${fluxErr.message}), trying fallback...`);
         }
 
@@ -2142,16 +2204,20 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             response_format: 'b64_json',
         };
 
+        throwIfAborted();
         const response = await this._fetchWithRetry(url, {
             method: 'POST',
             headers,
             body: JSON.stringify(payload),
+            signal: signal || undefined,
         });
         const data = await response.json();
         const base64 = data.data?.[0]?.b64_json;
         if (!base64) throw new Error('No edited image generated');
         const rawUrl = `data:image/png;base64,${base64}`;
-        return await this._optimizeImage(rawUrl, width, quality);
+        const optimized = await this._optimizeImage(rawUrl, width, quality);
+        throwIfAborted();
+        return optimized;
     }
 
     // ─── VISION / IMAGE ANALYSIS ──────────────────────────────────────
@@ -2334,27 +2400,29 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * @param {string} [opts.language] - Language hint for TTS tiering
      * @returns {Promise<string|null>} Audio URL or null
      */
-    async textToSpeech(text, { voice = 'Puck', speed = 1, language = null, signal = null } = {}) {
+    async textToSpeech(text, { voice = 'Puck', speed = 1, language = null, locale = null, dialect = null, signal = null, force = false } = {}) {
+        const speechProfile = this._normalizeTtsSpeechProfile(language, locale, dialect);
+        const forceRefresh = force === true;
         if (!text) return null;
         const _ttsOvr = this._ttsProvider || null;
         if (_ttsOvr === 'off') return null;
 
         // Canvas mode: always use browser speechSynthesis
         if (this.isCanvasEnv) {
-            return this._browserSpeechSynthesis(text, speed, language);
+            return this._browserSpeechSynthesis(text, speed, speechProfile.locale || speechProfile.baseLanguage);
         }
 
         this._debugLog(`[AIProvider] textToSpeech: "${text?.substring(0, 30)}..." voice=${voice}`);
 
         // Check ttsProvider override from AI Backend Settings
-        if (_ttsOvr === 'browser') return this._browserSpeechSynthesis(text, speed, language);
-        if (_ttsOvr === 'gemini') return this._geminiTTS(text, voice, speed, language, signal);
-        if (_ttsOvr === 'local') return this._openaiTTS(text, voice, speed, language, signal);
+        if (_ttsOvr === 'browser') return this._browserSpeechSynthesis(text, speed, speechProfile.locale || speechProfile.baseLanguage);
+        if (_ttsOvr === 'gemini') return this._geminiTTS(text, voice, speed, speechProfile, signal, forceRefresh);
+        if (_ttsOvr === 'local') return this._openaiTTS(text, voice, speed, speechProfile, signal, forceRefresh);
 
         // Default: route by backend
         switch (this.backend) {
             case 'gemini':
-                return this._geminiTTS(text, voice, speed, language, signal);
+                return this._geminiTTS(text, voice, speed, speechProfile, signal, forceRefresh);
             case 'openai':
             case 'localai':
             case 'lmstudio':
@@ -2363,7 +2431,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             case 'alloflow-local':
             case 'custom':
             default:
-                return this._openaiTTS(text, voice, speed, language, signal);
+                return this._openaiTTS(text, voice, speed, speechProfile, signal, forceRefresh);
         }
     }
 
@@ -2374,9 +2442,57 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         error.useBrowserTts = true;
         throw error;
     }
+    _normalizeTtsSpeechProfile(languageValue, localeValue = null, dialectValue = null) {
+        const supplied = languageValue && typeof languageValue === 'object' ? languageValue : null;
+        const clean = (value, maxLength) => String(value == null ? '' : value)
+            .trim().replace(/\s+/g, ' ').slice(0, maxLength);
+        let baseLanguage = clean(supplied ? supplied.baseLanguage : languageValue, 80) || 'English';
+        let inferredDialect = '';
+        const parenthetical = baseLanguage.match(/^(.+?)\s*\(([^()]*)\)\s*$/);
+        if (parenthetical) {
+            baseLanguage = clean(parenthetical[1], 80) || 'English';
+            inferredDialect = clean(parenthetical[2], 80);
+        }
+        let locale = clean(localeValue || (supplied && supplied.locale), 40).replace(/_/g, '-');
+        if (locale) {
+            try {
+                if (typeof Intl !== 'undefined' && typeof Intl.getCanonicalLocales === 'function') {
+                    locale = Intl.getCanonicalLocales(locale)[0] || '';
+                }
+            } catch (_) {
+                locale = '';
+            }
+            if (locale && !/^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*$/.test(locale)) locale = '';
+            if (locale && !(typeof Intl !== 'undefined' && typeof Intl.getCanonicalLocales === 'function')) {
+                locale = locale.split('-').map((part, index) => {
+                    if (index === 0) return part.toLowerCase();
+                    if (/^[A-Za-z]{2}$/.test(part)) return part.toUpperCase();
+                    if (/^[A-Za-z]{4}$/.test(part)) return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+                    return part;
+                }).join('-');
+            }
+        }
+        const dialect = clean(dialectValue || (supplied && supplied.dialect) || inferredDialect, 80);
+        const cacheIdentity = (!locale && !dialect)
+            ? baseLanguage
+            : [baseLanguage.toLowerCase(), locale.toLowerCase(), dialect.toLowerCase()].join('\u241f');
+        return { baseLanguage, locale, dialect, cacheIdentity };
+    }
+
+    _cloudTtsPrompt(text, speechProfile) {
+        const profile = this._normalizeTtsSpeechProfile(speechProfile);
+        if (/^english$/i.test(profile.baseLanguage) && !profile.locale && !profile.dialect) return text;
+        const qualifiers = [];
+        if (profile.locale) qualifiers.push('locale ' + profile.locale);
+        if (profile.dialect) qualifiers.push('the ' + profile.dialect + ' dialect or regional variety');
+        return 'Pronounce the following ' + profile.baseLanguage + ' text'
+            + (qualifiers.length ? ' using ' + qualifiers.join(' and ') : '')
+            + ' with native ' + profile.baseLanguage + ' phonology: ' + text;
+    }
 
     _ttsCacheKey(text, voice, _speed, language) {
-        return JSON.stringify([String(text || ''), String(voice || ''), String(language || ''), 'natural-rate-v1']);
+        const profile = this._normalizeTtsSpeechProfile(language);
+        return JSON.stringify([String(text || ''), String(voice || ''), profile.cacheIdentity, 'natural-rate-v1']);
     }
 
     _cacheTtsUrl(cacheKey, audioUrl) {
@@ -2468,7 +2584,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         });
     }
 
-    async _geminiTTS(text, voice, speed, language = null, signal = null) {
+    async _geminiTTS(text, voice, speed, speechProfile, signal = null, forceRefresh = false) {
         // Rate limit check
         if (Date.now() < this._ttsRateLimitedUntil) {
             this._warnLog('[AIProvider TTS] Skipping — rate-limit cooldown active');
@@ -2476,8 +2592,8 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         }
 
         // Cache check
-        const cacheKey = this._ttsCacheKey(text, voice, speed, language);
-        if (this._ttsCache.has(cacheKey)) {
+        const cacheKey = this._ttsCacheKey(text, voice, speed, speechProfile);
+        if (!forceRefresh && this._ttsCache.has(cacheKey)) {
             this._debugLog('⚡ TTS cache HIT:', text?.substring(0, 30));
             const cachedUrl = this._ttsCache.get(cacheKey);
             this._ttsCache.delete(cacheKey); this._ttsCache.set(cacheKey, cachedUrl);
@@ -2486,11 +2602,11 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
 
         // Queue for serialization
         const task = this._ttsQueue.then(async () => {
-            const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
+        const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
             const url = `${this.baseUrl}/models/${this.models.tts}:generateContent${keyParam}`;
 
             const payload = {
-                contents: [{ parts: [{ text }] }],
+                contents: [{ parts: [{ text: this._cloudTtsPrompt(text, speechProfile) }] }],
                 generationConfig: {
                     responseModalities: ['AUDIO'],
                     speechConfig: {
@@ -2571,7 +2687,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         });
     }
 
-    async _openaiTTS(text, voice, speed, language = null, signal = null) {
+    async _openaiTTS(text, voice, speed, speechProfile, signal = null, forceRefresh = false) {
         // TTS tiering: Kokoro (high quality) → Edge TTS (wide language) → browser fallback
         const ttsEndpoints = [
             'http://localhost:8880/v1/audio/speech',  // Kokoro (high quality, 8 langs)
@@ -2580,8 +2696,8 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         ];
 
         // Cache check
-        const cacheKey = this._ttsCacheKey(text, voice, speed, language);
-        if (this._ttsCache.has(cacheKey)) {
+        const cacheKey = this._ttsCacheKey(text, voice, speed, speechProfile);
+        if (!forceRefresh && this._ttsCache.has(cacheKey)) {
             this._debugLog('⚡ TTS cache HIT:', text?.substring(0, 30));
             const cachedUrl = this._ttsCache.get(cacheKey);
             this._ttsCache.delete(cacheKey); this._ttsCache.set(cacheKey, cachedUrl);
@@ -2628,7 +2744,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
 
         // All TTS servers failed — use browser speech as final fallback
         this._warnLog('[AIProvider TTS] All TTS servers unavailable, using browser speech');
-        return this._browserSpeechSynthesis(text, speed, language);
+        return this._browserSpeechSynthesis(text, speed, speechProfile.locale || speechProfile.baseLanguage);
     }
 
     // ─── SAFETY ───────────────────────────────────────────────────────

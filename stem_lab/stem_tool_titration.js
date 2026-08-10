@@ -469,6 +469,7 @@ function bur3dSegment(THREE, parent, a, b, hex, thick, opacity) {
 // of the slider.
 function bur3dLabel(THREE, S, parent, text, pos, hex, size) {
   var cvs = document.createElement('canvas');
+  cvs.setAttribute('aria-hidden', 'true');
   cvs.width = 256; cvs.height = 96;
   var g = cvs.getContext('2d');
   if (!g) return null;
@@ -1057,7 +1058,7 @@ function titrAnimCanvasRef(cvEl) {
               c2.fillStyle = 'rgba(0,0,0,0.85)';
               c2.fillRect(8, H - 18, W - 16, 16);
               c2.font = 'bold 9px sans-serif'; c2.fillStyle = '#fde047'; c2.textAlign = 'center';
-              c2.fillText('pH = ' + pH.toFixed(1) + '  \u00B7  At equivalence point: moles acid = moles base, pH jumps from 4 \u2192 10', W / 2, H - 7);
+              c2.fillText('pH = ' + pH.toFixed(1) + '  \u00B7  At equivalence: balanced stoichiometric ratio; endpoint colour is only an indicator signal', W / 2, H - 7);
               scheduleTitrationFrame();
             }
             drawTt();
@@ -1199,35 +1200,35 @@ var chemHazards = {
   'HCl': { name: __alloT('stem.titration.hydrochloric_acid', 'Hydrochloric Acid'), ghs: ['\u2620\uFE0F GHS05 Corrosive', '\u26A0\uFE0F GHS07 Irritant'], signal: 'Danger', color: '#ef4444',
     hazards: ['H290: May be corrosive to metals', 'H314: Causes severe skin burns and eye damage', 'H335: May cause respiratory irritation'],
     firstAid: 'Skin: Remove clothing, wash 15+ min. Eyes: Rinse 15+ min, seek medical attention. Inhalation: Move to fresh air.',
-    disposal: 'Neutralize with sodium bicarbonate, dilute, pour down drain with excess water.' },
+    disposal: 'Follow the instructor\'s SDS and local waste plan. Do not pour laboratory chemicals down a drain or attempt neutralization unless trained personnel and the approved plan explicitly require it.' },
   'NaOH': { name: __alloT('stem.titration.sodium_hydroxide', 'Sodium Hydroxide'), ghs: ['\u2620\uFE0F GHS05 Corrosive'], signal: 'Danger', color: '#3b82f6',
     hazards: ['H290: May be corrosive to metals', 'H314: Causes severe skin burns and eye damage'],
     firstAid: 'Skin: Remove clothing, wash 15+ min. Eyes: Rinse 15+ min, remove contacts. Ingestion: Rinse mouth, do NOT induce vomiting.',
-    disposal: 'Neutralize with dilute acid, dilute, pour down drain with excess water.' },
+    disposal: 'Follow the instructor\'s SDS and local waste plan. Do not pour laboratory chemicals down a drain or attempt neutralization unless trained personnel and the approved plan explicitly require it.' },
   'CH\u2083COOH': { name: __alloT('stem.titration.acetic_acid', 'Acetic Acid'), ghs: ['\uD83D\uDD25 GHS02 Flammable', '\u26A0\uFE0F GHS07 Irritant'], signal: 'Warning', color: '#f59e0b',
     hazards: ['H226: Flammable liquid and vapor', 'H302: Harmful if swallowed', 'H312: Harmful in contact with skin', 'H332: Harmful if inhaled'],
     firstAid: 'Skin: Wash with soap and water. Eyes: Rinse 15+ min. Inhalation: Move to fresh air. Keep away from ignition sources.',
-    disposal: 'Dilute with water, neutralize, pour down drain.' },
+    disposal: 'Follow the instructor\'s SDS and local waste plan. Do not pour laboratory chemicals down a drain or attempt neutralization unless trained personnel and the approved plan explicitly require it.' },
   'NH\u2083': { name: __alloT('stem.titration.ammonia', 'Ammonia'), ghs: ['\u2620\uFE0F GHS05 Corrosive', '\u2623\uFE0F GHS06 Toxic', '\uD83C\uDF0D GHS09 Environment'], signal: 'Danger', color: '#a855f7',
     hazards: ['H221: Flammable gas', 'H314: Causes severe skin burns and eye damage', 'H331: Toxic if inhaled', 'H400: Very toxic to aquatic life'],
     firstAid: 'Inhalation: Move to fresh air IMMEDIATELY. Skin: Flush with water 15+ min. Eyes: Rinse 15+ min. Call Poison Control.',
-    disposal: 'Neutralize with dilute acid in fume hood. Never mix with bleach!' },
+    disposal: 'Follow the instructor\'s SDS and local waste plan. Keep ammonia waste separate from bleach and other incompatible chemicals; do not attempt neutralization or drain disposal.' },
   'H\u2083PO\u2084': { name: __alloT('stem.titration.phosphoric_acid', 'Phosphoric Acid'), ghs: ['\u2620\uFE0F GHS05 Corrosive'], signal: 'Danger', color: '#06b6d4',
     hazards: ['H290: May be corrosive to metals', 'H314: Causes severe skin burns and eye damage'],
     firstAid: 'Skin: Flush with water 15+ min. Eyes: Rinse 15+ min, remove contacts. Ingestion: Rinse mouth, do NOT induce vomiting.',
-    disposal: 'Neutralize with sodium bicarbonate, dilute, pour down drain with excess water.' },
+    disposal: 'Follow the instructor\'s SDS and local waste plan. Do not pour laboratory chemicals down a drain or attempt neutralization unless trained personnel and the approved plan explicitly require it.' },
   'KMnO\u2084': { name: __alloT('stem.titration.potassium_permanganate', 'Potassium Permanganate'), ghs: ['\uD83D\uDD25 GHS03 Oxidizer', '\u2620\uFE0F GHS05 Corrosive', '\u2623\uFE0F GHS06 Toxic', '\uD83C\uDF0D GHS09 Environment'], signal: 'Danger', color: '#c026d3',
     hazards: ['H272: May intensify fire; oxidizer', 'H302: Harmful if swallowed', 'H314: Causes severe skin burns', 'H410: Very toxic to aquatic life'],
     firstAid: 'Skin: Stains brown \u2014 wash with dilute H\u2082SO\u2083 then water. Eyes: Rinse 15+ min. NEVER use with flammable organics!',
-    disposal: 'Reduce with sodium bisulfite, then neutralize. Do NOT pour down drain \u2014 heavy metal waste.' },
+    disposal: 'Collect as oxidizer/heavy-metal waste under the instructor\'s SDS and local waste plan. Do not reduce, neutralize, or pour down a drain unless trained personnel and the approved plan explicitly require it.' },
   'FeSO\u2084': { name: __alloT('stem.titration.ferrous_sulfate', 'Ferrous Sulfate'), ghs: ['\u26A0\uFE0F GHS07 Irritant'], signal: 'Warning', color: '#65a30d',
     hazards: ['H302: Harmful if swallowed', 'H315: Causes skin irritation', 'H319: Causes serious eye irritation'],
     firstAid: 'Skin: Wash with soap and water. Eyes: Rinse 10+ min. Ingestion: Rinse mouth.',
-    disposal: 'Dissolve in water, precipitate as Fe(OH)\u2083 with NaOH, filter, dispose of solid as chemical waste.' },
+    disposal: 'Collect and label as chemical waste under the instructor\'s SDS and local waste plan. Do not precipitate, neutralize, or pour down a drain unless trained personnel and the approved plan explicitly require it.' },
   'Antacid': { name: __alloT('stem.titration.antacid_tablet_caco_mg_oh', 'Antacid Tablet (CaCO\u2083/Mg(OH)\u2082)'), ghs: ['\u26A0\uFE0F GHS07 Irritant'], signal: 'Warning', color: '#f472b6',
     hazards: ['H319: Causes eye irritation in powder form', 'Generally safe but excess may cause alkalosis'],
     firstAid: 'Eyes: Rinse with water. Low toxicity but handle dissolved solution with normal lab precautions.',
-    disposal: 'Neutralized solution is safe for drain disposal with excess water.' }
+    disposal: 'Follow the instructor\'s SDS and local waste plan. Even low-hazard solutions should not enter a drain unless the approved procedure explicitly allows it.' }
 };
 
 var presetHazardKeys = {
@@ -1268,7 +1269,7 @@ var safetyTips = {
 var incidentScenarios = [
   { id: 'acid_splash', title: __alloT('stem.titration.acid_splash_on_skin', 'Acid Splash on Skin!'), icon: '\uD83D\uDCA6', desc: __alloT('stem.titration.while_pouring_hcl_some_splashes_on_you', 'While pouring HCl, some splashes on your forearm.'), urgency: 'high',
     correct: 'rinse', options: [
-      { id: 'rinse', label: __alloT('stem.titration.remove_clothing_rinse_under_running_wa', 'Remove clothing, rinse under running water for 15+ minutes'), icon: '\uD83D\uDEB0', correct: true, feedback: __alloT('stem.titration.correct_immediate_and_prolonged_rinsin', 'Correct! Immediate and prolonged rinsing is critical. The 15-minute rule saves tissue damage.') },
+      { id: 'rinse', label: __alloT('stem.titration.remove_clothing_rinse_under_running_wa', 'Immediately rinse under running water for at least 15 minutes and alert the teacher'), icon: '\uD83D\uDEB0', correct: true, feedback: __alloT('stem.titration.correct_immediate_and_prolonged_rinsin', 'Correct! Immediate and prolonged rinsing for at least 15 minutes is critical. Alert the teacher, follow the local emergency plan, and do not try to neutralize a chemical on the body.') },
       { id: 'wipe', label: __alloT('stem.titration.wipe_it_off_with_a_paper_towel', 'Wipe it off with a paper towel'), icon: '\uD83E\uDDF4', correct: false, feedback: __alloT('stem.titration.wrong_wiping_can_spread_the_acid_and_p', 'WRONG! Wiping can spread the acid and push it into your skin. You need running water immediately.') },
       { id: 'neutralize', label: __alloT('stem.titration.apply_baking_soda_paste_directly_to_sk', 'Apply baking soda paste directly to skin'), icon: '\uD83E\uDDEA', correct: false, feedback: __alloT('stem.titration.not_recommended_the_neutralization_rea', 'Not recommended! The neutralization reaction generates heat (exothermic) which can cause additional burns. Water is always the first response.') },
       { id: 'ignore', label: __alloT('stem.titration.it_s_dilute_just_keep_working', 'It\'s dilute, just keep working'), icon: '\uD83E\uDD37', correct: false, feedback: __alloT('stem.titration.dangerous_even_dilute_acids_can_cause_', 'DANGEROUS! Even dilute acids can cause burns over time. Always treat chemical contact immediately.') }
@@ -1276,7 +1277,7 @@ var incidentScenarios = [
   },
   { id: 'eye_contact', title: __alloT('stem.titration.chemical_splash_in_eyes', 'Chemical Splash in Eyes!'), icon: '\uD83D\uDC41\uFE0F', desc: __alloT('stem.titration.naoh_solution_splashes_into_your_eyes_', 'NaOH solution splashes into your eyes while swirling the flask.'), urgency: 'critical',
     correct: 'eyewash', options: [
-      { id: 'eyewash', label: __alloT('stem.titration.go_to_eyewash_station_immediately_rins', 'Go to eyewash station immediately, rinse 15+ min, hold eyelids open'), icon: '\uD83D\uDEBF', correct: true, feedback: __alloT('stem.titration.correct_speed_is_everything_you_have_a', 'Correct! Speed is everything \u2014 you have about 10 seconds before serious damage starts. Hold eyelids open and tilt head to prevent cross-contamination to the other eye.') },
+      { id: 'eyewash', label: __alloT('stem.titration.go_to_eyewash_station_immediately_rins', 'Use the eyewash immediately, flush for at least 15 minutes, hold eyelids open, and alert the teacher'), icon: '\uD83D\uDEBF', correct: true, feedback: __alloT('stem.titration.correct_speed_is_everything_you_have_a', 'Correct! Speed is everything \u2014 you have about 10 seconds before serious damage starts. Hold eyelids open and tilt head to prevent cross-contamination to the other eye.') },
       { id: 'rub', label: __alloT('stem.titration.rub_your_eyes_and_blink_rapidly', 'Rub your eyes and blink rapidly'), icon: '\uD83D\uDE23', correct: false, feedback: __alloT('stem.titration.never_rub_this_spreads_the_chemical_ac', 'NEVER rub! This spreads the chemical across more of the eye surface and can scratch the cornea.') },
       { id: 'drops', label: __alloT('stem.titration.use_eye_drops_from_the_first_aid_kit', 'Use eye drops from the first aid kit'), icon: '\uD83D\uDC8A', correct: false, feedback: __alloT('stem.titration.eye_drops_are_insufficient_you_need_hi', 'Eye drops are insufficient! You need high-volume flushing for 15+ minutes. Eye drops cannot provide that.') },
       { id: 'wait', label: __alloT('stem.titration.finish_the_experiment_first_then_wash', 'Finish the experiment first, then wash'), icon: '\u23F0', correct: false, feedback: __alloT('stem.titration.extremely_dangerous_naoh_causes_alkali', 'EXTREMELY DANGEROUS! NaOH causes alkali burns that penetrate deeper over time. Every second counts. Chemical eye injuries are the #1 cause of lab blindness.') }
@@ -1284,23 +1285,23 @@ var incidentScenarios = [
   },
   { id: 'spill_bench', title: __alloT('stem.titration.large_acid_spill_on_bench', 'Large Acid Spill on Bench!'), icon: '\uD83E\uDDEA', desc: __alloT('stem.titration.you_knock_over_the_beaker_of_0_1m_hcl_', 'You knock over the beaker of 0.1M HCl, spilling ~200 mL across the bench.'), urgency: 'medium',
     correct: 'contain', options: [
-      { id: 'contain', label: __alloT('stem.titration.alert_others_contain_with_absorbent_ne', 'Alert others, contain with absorbent, neutralize with NaHCO\u2083, clean with water'), icon: '\u2705', correct: true, feedback: __alloT('stem.titration.perfect_procedure_1_alert_nearby_stude', 'Perfect procedure! (1) Alert nearby students, (2) contain the spread with absorbent pads, (3) sprinkle sodium bicarbonate to neutralize, (4) clean with water, (5) dispose of waste properly.') },
-      { id: 'water', label: __alloT('stem.titration.just_flood_it_with_lots_of_water', 'Just flood it with lots of water'), icon: '\uD83D\uDCA7', correct: false, feedback: __alloT('stem.titration.partially_right_but_incomplete_floodin', 'Partially right but incomplete. Flooding spreads the acid further and doesn\'t neutralize it. Always contain first, then neutralize, then rinse.') },
-      { id: 'leave', label: __alloT('stem.titration.tell_the_teacher_and_don_t_touch_it', 'Tell the teacher and don\'t touch it'), icon: '\uD83D\uDDE3\uFE0F', correct: false, feedback: __alloT('stem.titration.telling_the_teacher_is_good_but_at_0_1', 'Telling the teacher is good, but at 0.1M this is manageable. You should start containment immediately while someone alerts the instructor. Don\'t let it reach the edge of the bench.') },
+      { id: 'contain', label: __alloT('stem.titration.alert_others_contain_with_absorbent_ne', 'Alert the teacher, keep others away, and follow the approved spill-response plan'), icon: '\u2705', correct: true, feedback: __alloT('stem.titration.perfect_procedure_1_alert_nearby_stude', 'Correct first response: alert the teacher, isolate the area, consult the SDS/local plan, and let trained personnel choose any compatible spill kit or cleanup method. Students should not neutralize or clean an unknown spill.') },
+      { id: 'water', label: __alloT('stem.titration.just_flood_it_with_lots_of_water', 'Just flood it with lots of water'), icon: '\uD83D\uDCA7', correct: false, feedback: __alloT('stem.titration.partially_right_but_incomplete_floodin', 'Do not flood the spill. Alert the teacher, keep others away, and follow the approved spill-response plan.') },
+      { id: 'leave', label: __alloT('stem.titration.tell_the_teacher_and_don_t_touch_it', 'Ask whether the experiment can continue after the teacher assesses the spill'), icon: '\uD83D\uDDE3\uFE0F', correct: false, feedback: __alloT('stem.titration.telling_the_teacher_is_good_but_at_0_1', 'The teacher must assess the chemical, concentration, and amount before deciding whether the experiment can continue. Alert the teacher and keep people away.') },
       { id: 'paper', label: __alloT('stem.titration.soak_it_up_with_paper_towels', 'Soak it up with paper towels'), icon: '\uD83E\uDDF4', correct: false, feedback: __alloT('stem.titration.paper_towels_are_not_appropriate_for_a', 'Paper towels are not appropriate for acid spills! They don\'t neutralize the acid and you\'ll be handling acid-soaked material. Use proper spill kits.') }
     ]
   },
   { id: 'gas_release', title: __alloT('stem.titration.mysterious_fumes_rising', 'Mysterious Fumes Rising!'), icon: '\uD83C\uDF2B\uFE0F', desc: __alloT('stem.titration.while_working_with_ammonia_nh_you_noti', 'While working with ammonia (NH\u2083), you notice a strong smell and your eyes start watering.'), urgency: 'high',
-    correct: 'fume_hood', options: [
-      { id: 'fume_hood', label: __alloT('stem.titration.move_the_experiment_to_the_fume_hood_i', 'Move the experiment to the fume hood immediately, ventilate the area'), icon: '\uD83C\uDF2C\uFE0F', correct: true, feedback: __alloT('stem.titration.correct_volatile_chemicals_like_nh_mus', 'Correct! Volatile chemicals like NH\u2083 must be handled in a fume hood. If you smell it, you\'re breathing it. Open windows and move to fresh air if the fume hood is far away.') },
+    correct: 'evacuate', options: [
+      { id: 'evacuate', label: __alloT('stem.titration.move_the_experiment_to_the_fume_hood_i', 'Move away, warn others, alert the teacher, and follow evacuation instructions'), icon: '\uD83C\uDF2C\uFE0F', correct: true, feedback: __alloT('stem.titration.correct_volatile_chemicals_like_nh_mus', 'Correct first response: move away, warn others, alert the teacher, and follow evacuation instructions. Do not move an actively fuming reaction; the teacher or emergency responder decides whether to shut down, ventilate, or evacuate.') },
       { id: 'mask', label: __alloT('stem.titration.put_on_a_face_mask_and_continue', 'Put on a face mask and continue'), icon: '\uD83D\uDE37', correct: false, feedback: __alloT('stem.titration.a_regular_face_mask_does_not_protect_a', 'A regular face mask does NOT protect against chemical fumes! You need proper respiratory protection (not available in most teaching labs) or a fume hood.') },
-      { id: 'fan', label: __alloT('stem.titration.fan_the_fumes_away_with_your_hand', 'Fan the fumes away with your hand'), icon: '\uD83D\uDC4B', correct: false, feedback: __alloT('stem.titration.fanning_is_for_wafting_to_detect_odors', 'Fanning is for WAFTING to detect odors (gently directing air toward your nose). It does NOT remove hazardous fumes from the area. You need ventilation!') },
+      { id: 'fan', label: __alloT('stem.titration.fan_the_fumes_away_with_your_hand', 'Fan the fumes away with your hand'), icon: '\uD83D\uDC4B', correct: false, feedback: __alloT('stem.titration.fanning_is_for_wafting_to_detect_odors', 'Do not fan, sniff, or waft an irritating vapor. Move away, warn others, alert the teacher, and follow the local emergency plan.') },
       { id: 'continue', label: __alloT('stem.titration.it_s_just_a_little_smell_keep_going', 'It\'s just a little smell, keep going'), icon: '\uD83E\uDD37', correct: false, feedback: __alloT('stem.titration.dangerous_if_you_can_smell_nh_the_conc', 'DANGEROUS! If you can smell NH\u2083, the concentration may exceed safe limits (25 ppm). Prolonged exposure causes chemical burns to airways. NH\u2083 at >300 ppm can be fatal.') }
     ]
   },
   { id: 'mix_bleach', title: __alloT('stem.titration.someone_brought_bleach', 'Someone Brought Bleach!'), icon: '\u2623\uFE0F', desc: __alloT('stem.titration.a_classmate_suggests_cleaning_the_benc', 'A classmate suggests cleaning the bench with bleach while you still have ammonia solution open.'), urgency: 'critical',
     correct: 'stop', options: [
-      { id: 'stop', label: __alloT('stem.titration.stop_them_immediately_bleach_ammonia_t', 'STOP them immediately! Bleach + ammonia = toxic chloramine gas'), icon: '\uD83D\uDED1', correct: true, feedback: __alloT('stem.titration.life_saving_action_naocl_2nh_2nh_cl_ch', 'LIFE-SAVING action! NaOCl + 2NH\u2083 \u2192 2NH\u2082Cl (chloramine) \u2014 a toxic gas that causes severe respiratory damage. This is one of the most dangerous accidental mixings in a lab. Always neutralize and remove all chemicals before using any cleaning agents.') },
+      { id: 'stop', label: __alloT('stem.titration.stop_them_immediately_bleach_ammonia_t', 'STOP them immediately! Bleach + ammonia = toxic chloramine gas'), icon: '\uD83D\uDED1', correct: true, feedback: __alloT('stem.titration.life_saving_action_naocl_2nh_2nh_cl_ch', 'Correct: stop the mixing, move away to fresh air, warn others, and alert the teacher. Do not add chemicals or attempt neutralization; responders decide how to isolate and ventilate the area.') },
       { id: 'ok', label: __alloT('stem.titration.sure_bleach_is_a_disinfectant_it_shoul', 'Sure, bleach is a disinfectant, it should be fine'), icon: '\uD83D\uDC4D', correct: false, feedback: __alloT('stem.titration.extremely_dangerous_mixing_bleach_naoc', 'EXTREMELY DANGEROUS! Mixing bleach (NaOCl) with ammonia produces toxic chloramine gas. This has caused deaths in laboratories and homes. NEVER mix bleach with any other chemical.') },
       { id: 'dilute', label: __alloT('stem.titration.it_should_be_fine_if_the_ammonia_is_di', 'It should be fine if the ammonia is diluted'), icon: '\uD83E\uDDEA', correct: false, feedback: __alloT('stem.titration.wrong_even_dilute_ammonia_reacts_with_', 'WRONG! Even dilute ammonia reacts with bleach to produce toxic chloramine gas. The reaction occurs at ANY concentration. There is no safe dilution for mixing these chemicals.') },
       { id: 'outside', label: __alloT('stem.titration.just_open_a_window_and_it_will_be_fine', 'Just open a window and it will be fine'), icon: '\uD83C\uDF2C\uFE0F', correct: false, feedback: __alloT('stem.titration.ventilation_does_not_make_it_safe_to_g', 'Ventilation does NOT make it safe to generate toxic gas! Chloramine causes immediate respiratory distress. Prevention is the only acceptable approach.') }
@@ -1338,7 +1339,7 @@ var challengeQuestions = [
     feedback: __alloT('stem.titration.all_three_are_mandatory_goggles_protec', 'All three are mandatory: goggles protect eyes from splashes, gloves protect hands from corrosives, and the lab coat protects clothing and skin.') },
   { q: 'You spill acid on your skin. What is your FIRST action?', opts: ['Apply baking soda', 'Rinse with running water for 15+ min', 'Wipe with a dry cloth', 'Apply burn cream'], answer: __alloT('stem.titration.rinse_with_running_water_for_15_min', 'Rinse with running water for 15+ min'), xp: 15, category: 'safety',
     feedback: __alloT('stem.titration.water_first_always_the_15_minute_rinse', 'Water first, always! The 15-minute rinse is critical. Neutralizers can cause exothermic reactions on skin.') },
-  { q: 'What is the equivalence point?', opts: ['Where the indicator changes color', 'Where moles of acid = moles of base', 'Where pH = 7', 'Where you stop adding titrant'], answer: __alloT('stem.titration.where_moles_of_acid_moles_of_base', 'Where moles of acid = moles of base'), xp: 10, category: 'theory',
+  { q: 'What is the equivalence point?', opts: ['Where the indicator changes color', 'Where titrant and analyte have been mixed in the stoichiometric ratio from the balanced reaction', 'Where pH = 7', 'Where you stop adding titrant'], answer: __alloT('stem.titration.where_moles_of_acid_moles_of_base', 'Where titrant and analyte have been mixed in the stoichiometric ratio from the balanced reaction'), xp: 10, category: 'theory',
     feedback: __alloT('stem.titration.the_equivalence_point_is_the_stoichiom', 'The equivalence point is the stoichiometric point. The pH at equivalence depends on acid/base strength \u2014 it\'s only pH 7 for strong acid + strong base.') },
   { q: 'Why do we add acid TO water, never water to acid?', opts: ['It\'s just tradition', 'Water is denser than acid', 'The exothermic reaction can cause violent boiling and splashing', 'It doesn\'t matter with dilute solutions'], answer: __alloT('stem.titration.the_exothermic_reaction_can_cause_viol', 'The exothermic reaction can cause violent boiling and splashing'), xp: 15, category: 'safety',
     feedback: __alloT('stem.titration.when_water_hits_concentrated_acid_the_', 'When water hits concentrated acid, the heat released can boil the water instantly, causing a violent splash of hot acid. Adding acid to water spreads the heat through a larger water volume.') },
@@ -2802,7 +2803,7 @@ if (!safetyChecked) {
   );
 }
 
-// ── Keyboard shortcuts (WCAG 2.1.1): 1-5 switch tabs, E explain, Esc back ──
+// ── Keyboard shortcuts (WCAG 2.1.1): 1-6 switch tabs, E explain, Esc back ──
 var _TITR_TABS = ['titrate', 'challenge', 'incidents', 'equipment', 'molarity', 'buffers'];
 var _TITR_TAB_LABELS = { titrate: 'Titrate', challenge: 'Challenge', incidents: 'Safety Drills', equipment: 'Equipment', molarity: 'Dilution Calc', buffers: 'Buffers' };
 function onTitrKey(e) {
@@ -2839,7 +2840,7 @@ return React.createElement("div", {
   className: "space-y-4 max-w-5xl mx-auto",
   style: { animation:'safetyFadeUp 0.4s ease' },
   role: "region",
-  "aria-label": __alloT('stem.titration.titration_lab_keyboard_shortcuts_1_thr', "Titration Lab. Keyboard shortcuts: 1 through 5 switch tabs."),
+  "aria-label": __alloT('stem.titration.titration_lab_keyboard_shortcuts_1_thr', "Titration Lab. Keyboard shortcuts: 1 through 6 switch tabs."),
   tabIndex: 0,
   onKeyDown: onTitrKey
 },
@@ -3006,7 +3007,7 @@ return React.createElement("div", {
       { id: 'buffers', label: __alloT('stem.titration.buffers', '\uD83D\uDEE1\uFE0F Buffers'), color: '#0891b2' }
     ].map(function(tab) {
       var active = labTab === tab.id;
-      return React.createElement("button", { "aria-label": "Switch to " + tab.label + " tab",
+      return React.createElement("button", { type: "button", "aria-label": "Switch to " + tab.label + " tab",
         key: tab.id,
         id: 'titration-tab-' + tab.id,
         role: "tab",
@@ -3015,7 +3016,7 @@ return React.createElement("div", {
         tabIndex: active ? 0 : -1,
         onKeyDown: function(e) { onTitrTabKey(e, _TITR_TABS.indexOf(tab.id)); },
         onClick: function() { upd('labTab', tab.id); },
-        className: "px-3 py-1.5 rounded-full text-[11px] font-bold transition-all " +
+        className: "min-h-[44px] px-3 py-2 rounded-full text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 " +
           (active ? "shadow-lg scale-105" : "transition-colors text-slate-200 hover:text-white bg-slate-800/50 hover:bg-slate-700/60 border border-slate-700 active:scale-[0.97]"),
         style: active ? { background: tab.color, color: titrOnColor(tab.color), boxShadow: '0 0 12px ' + tab.color + '40' } : {}
       }, tab.label);
@@ -3670,6 +3671,10 @@ return React.createElement("div", {
           style: { textShadow: '0 0 4px rgba(15,23,42,0.9)' }
         }, '½ Vₑ → E=E°(Fe) (' + REDOX.E0_FE.toFixed(3) + ' V)')
 
+      ),
+
+      React.createElement("p", { id: "titration-curve-caption", className: "mt-2 text-xs text-slate-300 leading-relaxed" },
+        "Equivalence is the balanced stoichiometric ratio, not simply a colour change or a single pH value. The endpoint is the indicator signal used to estimate it."
       )
 
     )
@@ -3864,7 +3869,7 @@ return React.createElement("div", {
 
         React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed mb-1" },
 
-          React.createElement("span", { className: "font-bold text-cyan-400" }, __alloT('stem.titration.equivalence_point_2', "Equivalence Point")), __alloT('stem.titration.where_moles_of_acid_moles_of_base_the_', " \u2014 Where moles of acid = moles of base. The pH at this point depends on the acid/base strength.")
+          React.createElement("span", { className: "font-bold text-cyan-400" }, __alloT('stem.titration.equivalence_point_2', "Equivalence Point")), __alloT('stem.titration.where_moles_of_acid_moles_of_base_the_', " \u2014 Where titrant and analyte have been mixed in the stoichiometric ratio from the balanced reaction. The pH at this point depends on the acid/base strength.")
 
         ),
 
@@ -3895,7 +3900,7 @@ return React.createElement("div", {
         React.createElement("h5", { className: "text-xs font-bold text-red-400 mb-2" }, __alloT('stem.titration.lab_safety_best_practices', "\u26A0\uFE0F Lab Safety Best Practices")),
 
         React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed mb-1" },
-          React.createElement("span", { className: "font-bold text-red-400" }, __alloT('stem.titration.spill_response', "\uD83E\uDDEA Spill Response")), __alloT('stem.titration.acid_spill_neutralize_with_sodium_bica', " \u2014 Acid spill: neutralize with sodium bicarbonate, then rinse. Base spill: neutralize with dilute citric acid. Always alert others in the lab.")
+          React.createElement("span", { className: "font-bold text-red-400" }, __alloT('stem.titration.spill_response', "\uD83E\uDDEA Spill Response")), __alloT('stem.titration.acid_spill_neutralize_with_sodium_bica', " — Spill response: alert the teacher, keep others away, and follow the approved SDS/local spill plan. Students should not neutralize or clean unknown spills.")
         ),
         React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed mb-1" },
           React.createElement("span", { className: "font-bold text-amber-400" }, __alloT('stem.titration.never_mix', "\u274C Never Mix")), __alloT('stem.titration.never_mix_bleach_with_ammonia_toxic_ch', " \u2014 Never mix bleach with ammonia (toxic chloramine gas). Never add water to concentrated acid (exothermic splash risk \u2014 always add acid to water).")
@@ -3904,7 +3909,7 @@ return React.createElement("div", {
           React.createElement("span", { className: "font-bold text-cyan-400" }, __alloT('stem.titration.equipment_2', "\uD83E\uDDEA Equipment")), __alloT('stem.titration.rinse_the_burette_with_the_titrant_sol', " \u2014 Rinse the burette with the titrant solution before filling. Swirl the flask gently after each addition. Read the burette at the meniscus bottom.")
         ),
         React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" },
-          React.createElement("span", { className: "font-bold text-emerald-400" }, __alloT('stem.titration.waste_disposal', "\u267B\uFE0F Waste Disposal")), __alloT('stem.titration.neutralized_acid_base_solutions_ph_6_8', " \u2014 Neutralized acid/base solutions (pH 6\u20138) can go down the drain with excess water. Check your institution's chemical waste policy for concentrated solutions.")
+          React.createElement("span", { className: "font-bold text-emerald-400" }, __alloT('stem.titration.waste_disposal', "\u267B\uFE0F Waste Disposal")), __alloT('stem.titration.neutralized_acid_base_solutions_ph_6_8', " — Waste disposal: label and collect chemical waste according to the instructor\'s SDS/local waste plan. Never assume drain disposal is allowed.")
         )
       )
 
@@ -4070,6 +4075,7 @@ return React.createElement("div", {
       var crossY = my + (eyeY - my) * ((scaleX - mx) / (eyeX - mx));
       return React.createElement("svg", {
         viewBox: '0 0 ' + W + ' ' + H, className: "w-full", style: { maxHeight: '160px' },
+        'aria-label': 'Meniscus parallax side-view diagram',
         // Every clause is a key. Splicing a raw 'above'/'below' into an otherwise
         // translated sentence is the half-translated failure this repo guards against
         // elsewhere, and a screen reader reads the result aloud verbatim.

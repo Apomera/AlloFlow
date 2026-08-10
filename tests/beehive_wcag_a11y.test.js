@@ -26,6 +26,18 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     await act(async () => { root.render(React.createElement(Component)); await Promise.resolve(); });
   }
 
+  async function mountDroneFlight({ paused = true } = {}) {
+    await mount({ viewMode: 'drone', drone: { active: false, difficulty: 'easy' } });
+    const launch = host.querySelector('[data-mobile-rail=drone-difficulty] button');
+    expect(launch).toBeTruthy();
+    await act(async () => { launch.click(); await Promise.resolve(); await Promise.resolve(); });
+    if (paused) {
+      const pause = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes('Pause flight'));
+      expect(pause).toBeTruthy();
+      await act(async () => { pause.click(); await Promise.resolve(); });
+    }
+  }
+
   beforeEach(() => {
     resetStemLab();
     config = loadTool('stem_lab/stem_tool_beehive.js', 'beehive');
@@ -88,10 +100,11 @@ describe('Beehive WCAG 2.2 accessibility', () => {
   for (const testCase of [
     { name: 'Beekeeper', state: { viewMode: 'beekeeper', day: 8, motionPaused: true, badges: { first_day: { earned: true, day: 1 } } } },
     { name: 'Queen RTS', state: { viewMode: 'queen', queen: { active: true, paused: true } } },
-    { name: 'Drone Flight', state: { viewMode: 'drone', drone: { active: true, paused: true, difficulty: 'easy' } } },
+    { name: 'Drone Flight', state: { viewMode: 'drone', drone: { active: false, difficulty: 'easy' } }, liveDrone: true },
   ]) {
     it(testCase.name + ' has no serious or critical axe findings', async () => {
-      await mount(testCase.state);
+      if (testCase.liveDrone) await mountDroneFlight({ paused: true });
+      else await mount(testCase.state);
       const results = await axe.run(host, {
         runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] },
         rules: {
@@ -209,7 +222,7 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     const cases = [
       [{ viewMode: 'beekeeper', beeView: 'scene', day: 5, motionPaused: true }, 'beehive-canvas-wrap'],
       [{ viewMode: 'queen', queen: { active: true, paused: true } }, 'beehive-queen-playfield'],
-      [{ viewMode: 'drone', drone: { active: true, paused: true, difficulty: 'easy' } }, 'beehive-drone-playfield'],
+      [{ viewMode: 'drone', drone: { active: false, difficulty: 'easy' } }, 'beehive-drone-playfield'],
     ];
     for (const [state, playTarget] of cases) {
       await mount(state);
@@ -339,7 +352,7 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(eventPanel.scrollIntoView).toHaveBeenCalled();
     expect(document.activeElement).toBe(eventPanel);
 
-    await mount({ viewMode: 'drone', drone: { active: true, paused: true, difficulty: 'easy' } });
+    await mountDroneFlight({ paused: true });
     const resume = host.querySelector('[data-beehive-coach-action="resume-flight"] button');
     expect(resume.className).toContain('min-h-[44px]');
     expect(resume.getAttribute('aria-keyshortcuts')).toBe('P');
@@ -376,6 +389,7 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     await mount({ viewMode: 'beekeeper', beeView: 'scene', day: 5, motionPaused: true });
     const keeperCanvas = host.querySelector('[data-beehive-canvas="true"]');
     expect(keeperCanvas.hasAttribute('tabindex')).toBe(false);
+    expect(keeperCanvas.getAttribute('data-a11y-static')).toBe('true');
     expect(document.getElementById(keeperCanvas.getAttribute('aria-describedby'))).toBeTruthy();
     expect(document.getElementById('beehive-canvas-wrap').getAttribute('role')).toBe('tabpanel');
     expect(host.querySelectorAll('[data-beehive-scene-actions="true"] button')).toHaveLength(3);
@@ -397,10 +411,11 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     await mount({ viewMode: 'queen', queen: { active: true, paused: true, buildMode: 'guard' } });
     const queenCanvas = host.querySelector('[data-beehive-queen-canvas="true"]');
     expect(queenCanvas.hasAttribute('tabindex')).toBe(false);
+    expect(queenCanvas.getAttribute('data-a11y-static')).toBe('true');
     expect(document.getElementById(queenCanvas.getAttribute('aria-describedby'))).toBeTruthy();
     expect(host.textContent).toContain('Place without the canvas');
 
-    await mount({ viewMode: 'drone', drone: { active: true, paused: true, difficulty: 'easy' } });
+    await mountDroneFlight({ paused: true });
     const droneCanvas = host.querySelector('[data-beehive-drone-canvas="true"]');
     expect(droneCanvas.tabIndex).toBe(0);
     expect(document.getElementById(droneCanvas.getAttribute('aria-describedby'))).toBeTruthy();

@@ -82,6 +82,58 @@ const createTTS = deps => {
     const canonical = candidate => voices.find(voice => voice.toLowerCase() === String(candidate || '').toLowerCase());
     return canonical(requested) || canonical(selected) || canonical(DEFAULT_GEMINI_VOICE) || DEFAULT_GEMINI_VOICE;
   };
+  // Cloud voices need the full pronunciation profile, while local Piper
+  // routing needs only the base language. Keep those identities separate so
+  // French (France) and French (Canada) never share generated audio, without
+  // handing a human dialect label to languageToTTSCode.
+  const _normalizeTtsSpeechProfile = (languageValue, localeValue, dialectValue) => {
+    const supplied = languageValue && typeof languageValue === 'object' ? languageValue : null;
+    const clean = (value, maxLength) => String(value == null ? '' : value).trim().replace(/\s+/g, ' ').slice(0, maxLength);
+    let baseLanguage = clean(supplied ? supplied.baseLanguage : languageValue, 80) || 'English';
+    let inferredDialect = '';
+    const parenthetical = baseLanguage.match(/^(.+?)\s*\(([^()]*)\)\s*$/);
+    if (parenthetical) {
+      baseLanguage = clean(parenthetical[1], 80) || 'English';
+      inferredDialect = clean(parenthetical[2], 80);
+    }
+    let locale = clean(localeValue || supplied && supplied.locale, 40).replace(/_/g, '-');
+    if (locale) {
+      try {
+        if (typeof Intl !== 'undefined' && typeof Intl.getCanonicalLocales === 'function') {
+          locale = Intl.getCanonicalLocales(locale)[0] || '';
+        }
+      } catch (_) {
+        locale = '';
+      }
+      if (locale && !/^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*$/.test(locale)) locale = '';
+      if (locale && !(typeof Intl !== 'undefined' && typeof Intl.getCanonicalLocales === 'function')) {
+        locale = locale.split('-').map((part, index) => {
+          if (index === 0) return part.toLowerCase();
+          if (/^[A-Za-z]{2}$/.test(part)) return part.toUpperCase();
+          if (/^[A-Za-z]{4}$/.test(part)) return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+          return part;
+        }).join('-');
+      }
+    }
+    const dialect = clean(dialectValue || supplied && supplied.dialect || inferredDialect, 80);
+    const cacheIdentity = !locale && !dialect ? baseLanguage : [baseLanguage.toLocaleLowerCase(), locale.toLowerCase(), dialect.toLocaleLowerCase()].join('\u241f');
+    return {
+      baseLanguage,
+      locale,
+      dialect,
+      cacheIdentity
+    };
+  };
+  const _cloudTtsPrompt = (textValue, speechProfile) => {
+    const profile = _normalizeTtsSpeechProfile(speechProfile);
+    const isPlainEnglish = /^english$/i.test(profile.baseLanguage) && !profile.locale && !profile.dialect;
+    if (isPlainEnglish) return textValue;
+    const qualifiers = [];
+    if (profile.locale) qualifiers.push('locale ' + profile.locale);
+    if (profile.dialect) qualifiers.push('the ' + profile.dialect + ' dialect or regional variety');
+    const qualifierText = qualifiers.length ? ' using ' + qualifiers.join(' and ') : '';
+    return 'Pronounce the following ' + profile.baseLanguage + ' text' + qualifierText + ' with native ' + profile.baseLanguage + ' phonology: ' + textValue;
+  };
 
   // Effective cloud-TTS key. Two ways a "key" can be a lie (both field-hit
   // 2026-07-06 on desktop): the bundler's old 'desktop-user-provided'
@@ -100,6 +152,10 @@ const createTTS = deps => {
   // Gemini fetch proves the key works again, so clear the latch (and the
   // Canvas probe cooldown) the moment real bytes come back.
   const _noteGeminiSuccess = () => {
+    if (state.timeoutRetryAt) {
+      state.timeoutRetryAt = 0;
+      _ttsTrace('calltts:timeout-recovered', null);
+    }
     if (typeof window !== 'undefined' && window.__ttsGeminiAuthFailed) {
       window.__ttsGeminiAuthFailed = false;
       state.authRetryAt = 0;
@@ -243,6 +299,10 @@ const createTTS = deps => {
   // slow-but-real generations with room to spare.
   const TTS_FETCH_TIMEOUT_INTERACTIVE_MS = 12000;
   const TTS_FETCH_TIMEOUT_MS = 25000;
+  // One hard deadline is enough evidence that the cloud path is too slow for
+  // current playback. Prefer local/browser audio briefly instead of waiting
+  // through the same deadline two more times.
+  const TTS_TIMEOUT_COOLDOWN_MS = 60000;
   // In-flight joins older than this are presumed wedged and REPLACED —
   // background joiners must not inherit a zombie either.
   const CALLTTS_JOIN_MAX_AGE_MS = 20000;
@@ -293,8 +353,9 @@ const createTTS = deps => {
   const fetchTTSBytes = (text, voiceName, speed = 1, language = 'English', signal = null, requestPriority = 'normal') => {
     // Resolve against the LIVE catalog: TTS can initialize before VoiceConfig.
     const safeVoice = _resolveGeminiVoice(voiceName);
+    const speechProfile = _normalizeTtsSpeechProfile(language);
     if (safeVoice !== voiceName) console.warn(`[TTS] Voice "${voiceName}" is not a valid Gemini voice. Falling back to "${safeVoice}".`);
-    debugLog("[fetchTTSBytes] text:", text?.substring(0, 30), "lang:", language);
+    debugLog("[fetchTTSBytes] text:", text?.substring(0, 30), "lang:", speechProfile.cacheIdentity);
     // Foreground read-aloud must not wait behind speculative/bulk preloads.
     // Keep one serialized lane for interactive playback and one for normal
     // background work. This deliberately caps cloud concurrency at two while
@@ -307,7 +368,7 @@ const createTTS = deps => {
     _ttsTrace('fetch:enqueue', {
       slot: queueSlot,
       voice: safeVoice,
-      lang: language,
+      lang: speechProfile.cacheIdentity,
       chars: String(text || '').length
     });
     const queuedTask = state[queueSlot].then(async () => {
@@ -374,9 +435,7 @@ const createTTS = deps => {
           promptText = promptText.replace(/\n{2,}/g, '. ');
           promptText = promptText.replace(/\n/g, ', ');
           promptText = promptText.replace(/\s{2,}/g, ' ').trim();
-          if (language && typeof language === 'string' && language !== 'English') {
-            promptText = `Pronounce the following ${language} text with native ${language} phonology: ${promptText}`;
-          }
+          promptText = _cloudTtsPrompt(promptText, speechProfile);
           const payload = {
             contents: [{
               parts: [{
@@ -694,17 +753,68 @@ const createTTS = deps => {
       _ttsTrace('calltts:empty-text', null);
       return null;
     }
+    var _requestedVoice = String(voiceName || '');
     voiceName = _resolveRequestedVoice(voiceName);
     var maxRetries = typeof maxRetriesOrOpts === 'number' ? maxRetriesOrOpts : maxRetriesOrOpts && typeof maxRetriesOrOpts.maxRetries === 'number' ? maxRetriesOrOpts.maxRetries : 2;
     var _callOpts = maxRetriesOrOpts && typeof maxRetriesOrOpts === 'object' ? maxRetriesOrOpts : {};
+    // Force refresh is deliberately a strict, per-call boolean. It bypasses
+    // only this request's exact cache key and still uses the caller's normal
+    // retry ceiling, so regeneration cannot expand into an unbounded retry or
+    // broad cache-clear operation. Keep the previous URL until replacement
+    // synthesis succeeds; _cacheSet then revokes it atomically.
+    var _forceRefresh = _callOpts.force === true;
     maxRetries = Math.max(0, Math.min(2, Math.floor(Number(maxRetries) || 0)));
     // When the caller omits the language, resolve it from app state the
     // same way callTTSDirect does — defaulting to 'English' made Kokoro
     // speak Spanish glossary terms with English phonology (and cache it).
-    var _language = languageArg || _callOpts.language || getLeveledTextLanguage() || getCurrentUiLanguage() || 'English';
-    var _isEnglish = typeof _language === 'string' && /^english$/i.test(_language.trim());
+    var _rawLanguage = languageArg || _callOpts.language || getLeveledTextLanguage() || getCurrentUiLanguage() || 'English';
+    var _speechProfile = _normalizeTtsSpeechProfile(_rawLanguage, _callOpts.locale, _callOpts.dialect);
+    var _language = _speechProfile.baseLanguage;
+    var _isEnglish = /^english$/i.test(_language);
     var _signal = _callOpts.signal || null;
     var _isAbortError = e => e && (e.name === 'AbortError' || /aborted/i.test(e.message || ''));
+    var _resolvedProfileEmitted = false;
+    var _resolutionProfile = (provider, engine, model, resolvedVoice, effectiveRate, extra) => {
+      var profile = {
+        provenanceVersion: 1,
+        provider: provider,
+        engine: engine,
+        voice: _requestedVoice || voiceName,
+        language: _speechProfile.cacheIdentity,
+        synthesisRate: speed,
+        effectiveSynthesisRate: effectiveRate == null ? 1 : effectiveRate,
+        voiceResolverVersion: 2
+      };
+      if (model) profile.model = model;
+      if (resolvedVoice) profile.resolvedVoice = resolvedVoice;
+      return Object.assign(profile, extra || {});
+    };
+    var _emitResolvedProfile = (url, profile) => {
+      if (!url) return url;
+      if (!_resolvedProfileEmitted && typeof _callOpts.onResolvedProfile === 'function') {
+        _resolvedProfileEmitted = true;
+        try {
+          _callOpts.onResolvedProfile(profile || {});
+        } catch (_) {}
+      }
+      return url;
+    };
+    var _resolvedKokoroVoice = requested => {
+      try {
+        return window._kokoroTTS && typeof window._kokoroTTS.resolveVoice === 'function' ? window._kokoroTTS.resolveVoice(requested) : null;
+      } catch (_) {
+        return null;
+      }
+    };
+    var _resolvedPiperVoice = languageCode => {
+      try {
+        var key = String(languageCode || '').split('-')[0].toLowerCase();
+        var voice = window._piperTTS && window._piperTTS.voiceMap && window._piperTTS.voiceMap[key];
+        return voice && voice.voiceId ? String(voice.voiceId) : null;
+      } catch (_) {
+        return null;
+      }
+    };
     // Provider policy is authoritative before math plugins or synthesis load.
     var _earlyTtsConfig = getAiUserConfig();
     var _earlyTtsProvider = _earlyTtsConfig && _earlyTtsConfig.ttsProvider || 'auto';
@@ -719,10 +829,11 @@ const createTTS = deps => {
     _ttsTrace('calltts:start', {
       chars: String(text || '').length,
       voice: String(voiceName || ''),
-      lang: _language,
+      lang: _speechProfile.cacheIdentity,
       maxRetries: maxRetries,
       priority: _callOpts.priority || 'normal',
       reason: _callOpts.reason || null,
+      force: _forceRefresh,
       signal: !!_signal,
       canvas: !!_isCanvasEnv
     });
@@ -746,14 +857,16 @@ const createTTS = deps => {
       // Match the non-Canvas cache key exactly, including language. The
       // previous Canvas branch wrote a shorter key and never read it, so
       // a warmed sentence was synthesized again when playback asked.
-      const canvasCacheKey = JSON.stringify([String(text || ''), voiceName, _language || 'English', 'natural-rate-v1']);
-      if (!_isKokoroVoice && state.urlCache.has(canvasCacheKey)) {
+      const canvasCacheKey = JSON.stringify([String(text || ''), voiceName, _speechProfile.cacheIdentity, 'natural-rate-v1']);
+      if (!_isKokoroVoice && !_forceRefresh && state.urlCache.has(canvasCacheKey)) {
         debugLog('callTTS Canvas cache HIT:', text?.substring(0, 30));
         _ttsTrace('calltts:cache-hit', {
           chars: String(text || '').length,
           voice: voiceName
         });
-        return state.urlCache.get(canvasCacheKey);
+        return _emitResolvedProfile(state.urlCache.get(canvasCacheKey), _resolutionProfile('gemini', 'gemini-tts', GEMINI_MODELS?.tts, voiceName, 1, {
+          cacheHit: true
+        }));
       }
       if (_isKokoroVoice) {
         // Intentional fall-through to Kokoro/Piper block below.
@@ -768,6 +881,13 @@ const createTTS = deps => {
         _ttsTrace('calltts:canvas-skip-authfailed', {
           probeInMs: Math.max(0, (state.authRetryAt || 0) - Date.now())
         });
+      } else if (Date.now() < (state.timeoutRetryAt || 0)) {
+        const timeoutCooldownMs = Math.max(0, state.timeoutRetryAt - Date.now());
+        canvasLastErr = new Error('Gemini timeout cooldown; using local audio');
+        _ttsTrace('calltts:canvas-skip-timeout', {
+          untilMs: timeoutCooldownMs
+        });
+        console.warn('[Canvas TTS] Gemini timeout cooldown active; using local fallback');
       } else if (Date.now() >= state.rateLimitedUntil) {
         // Honor the caller's retry budget here just as the non-Canvas
         // path does below. Karaoke deliberately uses 0 retries for
@@ -786,7 +906,7 @@ const createTTS = deps => {
         }
         canvasLastErr = null;
         const fetchCanvasTTSBytes = async () => {
-          if (_signal) return fetchTTSBytes(text, voiceName, speed, _language, _signal, _callOpts.priority);
+          if (_signal) return fetchTTSBytes(text, voiceName, speed, _speechProfile, _signal, _callOpts.priority);
           // A waiting learner must never be glued to someone else's
           // possibly-wedged request (field trace 2026-07-20: a Canvas
           // fetch hung 60s before its 401 and every playback retry
@@ -798,7 +918,7 @@ const createTTS = deps => {
           const isInteractive = _callOpts.priority === 'interactive';
           let entry = callTTSInFlight.get(canvasCacheKey);
           const entryAge = entry ? Date.now() - entry.startedAt : 0;
-          if (!entry || isInteractive || entryAge > CALLTTS_JOIN_MAX_AGE_MS) {
+          if (!entry || isInteractive || _forceRefresh || entryAge > CALLTTS_JOIN_MAX_AGE_MS) {
             if (entry && entryAge > CALLTTS_JOIN_MAX_AGE_MS) {
               _ttsTrace('calltts:inflight-stale-replaced', {
                 chars: String(text || '').length,
@@ -806,7 +926,7 @@ const createTTS = deps => {
               });
             }
             entry = {
-              promise: fetchTTSBytes(text, voiceName, speed, _language, null, _callOpts.priority),
+              promise: fetchTTSBytes(text, voiceName, speed, _speechProfile, null, _callOpts.priority),
               startedAt: Date.now()
             };
             callTTSInFlight.set(canvasCacheKey, entry);
@@ -832,7 +952,12 @@ const createTTS = deps => {
             if (ttsResult) {
               // A joined caller may resume after the owner already
               // converted these bytes and populated the URL cache.
-              if (state.urlCache.has(canvasCacheKey)) return state.urlCache.get(canvasCacheKey);
+              if (!_forceRefresh && state.urlCache.has(canvasCacheKey)) {
+                return _emitResolvedProfile(state.urlCache.get(canvasCacheKey), _resolutionProfile('gemini', 'gemini-tts', GEMINI_MODELS?.tts, voiceName, 1, {
+                  cacheHit: true,
+                  joined: true
+                }));
+              }
               const {
                 bytes: pcmBytes
               } = ttsResult;
@@ -843,7 +968,9 @@ const createTTS = deps => {
               const url = URL.createObjectURL(blob);
               _cacheSet(canvasCacheKey, url);
               console.log('[Canvas TTS] ✅ Gemini TTS succeeded!');
-              return url;
+              return _emitResolvedProfile(url, _resolutionProfile('gemini', 'gemini-tts', GEMINI_MODELS?.tts, voiceName, 1, {
+                cacheHit: false
+              }));
             }
             throw new Error('fetchTTSBytes returned empty result');
           } catch (e) {
@@ -860,12 +987,21 @@ const createTTS = deps => {
             if (msg.includes('429') || msg.includes('Rate Limited')) {
               state.rateLimitedUntil = Date.now() + 60000;
               window.__ttsGeminiQuotaFailed = true;
-              console.error('[Canvas TTS] ❌ Rate limited, falling back to local:', msg);
+              console.warn('[Canvas TTS] Rate limited; using local fallback:', msg);
               break;
             }
             if (msg.includes('Missing API Key')) {
               window.__ttsGeminiAuthFailed = true;
-              console.error('[Canvas TTS] ❌ Missing API key, falling back to local:', msg);
+              console.warn('[Canvas TTS] Missing API key; using local fallback:', msg);
+              break;
+            }
+            const isDeadlineTimeout = msg.includes('timeout after');
+            if (isDeadlineTimeout) {
+              state.timeoutRetryAt = Date.now() + TTS_TIMEOUT_COOLDOWN_MS;
+              _ttsTrace('calltts:canvas-timeout-fallback', {
+                cooldownMs: TTS_TIMEOUT_COOLDOWN_MS
+              });
+              console.warn('[Canvas TTS] Gemini timed out; using local fallback:', msg);
               break;
             }
             const isTransient = msg.includes('401') || msg.includes('403') || msg.includes('503') || msg.includes('model refused') || msg.includes('Transient Error') || msg.includes('empty result');
@@ -875,7 +1011,7 @@ const createTTS = deps => {
               await waitForTtsDelay(backoffMs, _signal);
               continue;
             }
-            console.error('[Canvas TTS] ❌ Gemini TTS failed after retries, falling back to local:', msg);
+            console.warn('[Canvas TTS] Gemini unavailable after retries; using local fallback:', msg);
             if (msg.includes('401') || msg.includes('403') || msg.includes('API key')) {
               window.__ttsGeminiAuthFailed = true;
             }
@@ -938,7 +1074,9 @@ const createTTS = deps => {
                 _ttsTrace('calltts:kokoro-fallback-ok', {
                   voice: kokoroVoice
                 });
-                return url;
+                return _emitResolvedProfile(url, _resolutionProfile('local', 'kokoro-browser', null, _resolvedKokoroVoice(kokoroVoice), 1, {
+                  fallbackFrom: _isKokoroVoice ? null : 'gemini'
+                }));
               }
               _ttsTrace('calltts:kokoro-fallback-empty', {
                 voice: kokoroVoice
@@ -967,7 +1105,10 @@ const createTTS = deps => {
             });
             if (url) {
               _ttsTrace('calltts:piper-fallback-ok', null);
-              return url;
+              return _emitResolvedProfile(url, _resolutionProfile('local', 'piper-browser', null, _resolvedPiperVoice('en'), 1, {
+                languageCode: 'en',
+                fallbackFrom: 'gemini'
+              }));
             }
           }
         } catch (e) {
@@ -987,7 +1128,10 @@ const createTTS = deps => {
               _ttsTrace('calltts:piper-fallback-ok', {
                 lang: ttsLang
               });
-              return url;
+              return _emitResolvedProfile(url, _resolutionProfile('local', 'piper-browser', null, _resolvedPiperVoice(ttsLang), 1, {
+                languageCode: ttsLang,
+                fallbackFrom: 'gemini'
+              }));
             }
           }
         } catch (e) {
@@ -1070,7 +1214,7 @@ const createTTS = deps => {
           });
           if (kokoroUrl) {
             _routeNote('kokoro', _kokoroPreferred ? 'kokoro voice selected' : 'keyless reroute');
-            return kokoroUrl;
+            return _emitResolvedProfile(kokoroUrl, _resolutionProfile('local', 'kokoro-browser', null, _resolvedKokoroVoice(voiceName), 1));
           }
           _routeNote('kokoro-empty', 'engine returned no audio');
           _kokoroDeferredToGemini = true; // engine returned nothing
@@ -1122,7 +1266,9 @@ const createTTS = deps => {
           });
           if (piperUrl) {
             _routeNote('piper', 'local multilingual fallback: ' + piperLanguage);
-            return piperUrl;
+            return _emitResolvedProfile(piperUrl, _resolutionProfile('local', 'piper-browser', null, _resolvedPiperVoice(piperLanguage), 1, {
+              languageCode: piperLanguage
+            }));
           }
         }
       } catch (error) {
@@ -1142,10 +1288,13 @@ const createTTS = deps => {
           voice: voiceName,
           speed,
           language: _language,
-          signal: _signal
+          locale: _speechProfile.locale,
+          dialect: _speechProfile.dialect,
+          signal: _signal,
+          force: _forceRefresh
         });
         _routeNote('provider', 'ttsProvider=' + _ttsOvr);
-        return result;
+        return _emitResolvedProfile(result, _resolutionProfile(_ttsOvr === 'auto' && _isLocalAI ? 'local' : _ttsOvr, 'ai-provider-' + (_aiUserConfig && _aiUserConfig.backend || 'custom'), _ai && _ai.models && _ai.models.tts || _aiUserConfig && _aiUserConfig.models && _aiUserConfig.models.tts || null, voiceName, 1));
       } catch (e) {
         if (_isAbortError(e)) throw e;
         if (e?.useBrowserTts || e?.code === 'BROWSER_TTS_REQUIRED' || _ttsOvr === 'browser') {
@@ -1177,21 +1326,23 @@ const createTTS = deps => {
       return null;
     }
     voiceName = _resolveGeminiVoice(voiceName);
-    const cacheKey = JSON.stringify([String(text || ''), voiceName, _language || 'English', 'natural-rate-v1']);
-    if (state.urlCache.has(cacheKey)) {
+    const cacheKey = JSON.stringify([String(text || ''), voiceName, _speechProfile.cacheIdentity, 'natural-rate-v1']);
+    if (!_forceRefresh && state.urlCache.has(cacheKey)) {
       debugLog("⚡ callTTS cache HIT:", text?.substring(0, 30));
-      return state.urlCache.get(cacheKey);
+      return _emitResolvedProfile(state.urlCache.get(cacheKey), _resolutionProfile('gemini', 'gemini-tts', GEMINI_MODELS?.tts, voiceName, 1, {
+        cacheHit: true
+      }));
     }
     const fetchSharedTTSBytes = async () => {
-      if (_signal) return fetchTTSBytes(text, voiceName, speed, _language, _signal, _callOpts.priority);
+      if (_signal) return fetchTTSBytes(text, voiceName, speed, _speechProfile, _signal, _callOpts.priority);
       // Same zombie-protection as the Canvas branch: interactive callers
       // never join, background callers never join a stale entry.
       const isInteractive = _callOpts.priority === 'interactive';
       let entry = callTTSInFlight.get(cacheKey);
       const entryAge = entry ? Date.now() - entry.startedAt : 0;
-      if (!entry || isInteractive || entryAge > CALLTTS_JOIN_MAX_AGE_MS) {
+      if (!entry || isInteractive || _forceRefresh || entryAge > CALLTTS_JOIN_MAX_AGE_MS) {
         entry = {
-          promise: fetchTTSBytes(text, voiceName, speed, _language, null, _callOpts.priority),
+          promise: fetchTTSBytes(text, voiceName, speed, _speechProfile, null, _callOpts.priority),
           startedAt: Date.now()
         };
         callTTSInFlight.set(cacheKey, entry);
@@ -1212,7 +1363,12 @@ const createTTS = deps => {
           throw new Error("[TTS] fetchTTSBytes returned no audio data");
         }
         // The owner of a joined request may already have cached its URL.
-        if (state.urlCache.has(cacheKey)) return state.urlCache.get(cacheKey);
+        if (!_forceRefresh && state.urlCache.has(cacheKey)) {
+          return _emitResolvedProfile(state.urlCache.get(cacheKey), _resolutionProfile('gemini', 'gemini-tts', GEMINI_MODELS?.tts, voiceName, 1, {
+            cacheHit: true,
+            joined: true
+          }));
+        }
         const {
           bytes: pcmBytes
         } = ttsResult;
@@ -1222,7 +1378,9 @@ const createTTS = deps => {
         });
         const url = URL.createObjectURL(blob);
         _cacheSet(cacheKey, url);
-        return url;
+        return _emitResolvedProfile(url, _resolutionProfile('gemini', 'gemini-tts', GEMINI_MODELS?.tts, voiceName, 1, {
+          cacheHit: false
+        }));
       } catch (e) {
         lastError = e;
         if (_isAbortError(e)) {
@@ -1267,7 +1425,11 @@ const createTTS = deps => {
     voiceName = _resolveRequestedVoice(voiceName);
     // ─── Canvas: Gemini TTS first → Kokoro/Piper fallback (same cascade as callTTS) ─────
     if (_isCanvasEnv && _directTtsProvider !== 'local') {
-      if (Date.now() >= state.rateLimitedUntil) {
+      if (Date.now() < (state.timeoutRetryAt || 0)) {
+        _ttsTrace('callttsdirect:canvas-skip-timeout', {
+          untilMs: Math.max(0, state.timeoutRetryAt - Date.now())
+        });
+      } else if (Date.now() >= state.rateLimitedUntil) {
         // Match callTTS's Canvas resilience (field-caught 2026-07-06): the
         // Canvas proxy rotates auth tokens fast enough that a request can
         // transiently 401/503, and the generative TTS model occasionally
@@ -1297,6 +1459,15 @@ const createTTS = deps => {
             if (msg.includes('429') || msg.includes('Rate Limited')) {
               state.rateLimitedUntil = Date.now() + 60000;
               console.warn('[callTTSDirect] Gemini rate-limited — falling back to local:', msg);
+              break;
+            }
+            const isDeadlineTimeout = msg.includes('timeout after');
+            if (isDeadlineTimeout) {
+              state.timeoutRetryAt = Date.now() + TTS_TIMEOUT_COOLDOWN_MS;
+              _ttsTrace('callttsdirect:canvas-timeout-fallback', {
+                cooldownMs: TTS_TIMEOUT_COOLDOWN_MS
+              });
+              console.warn('[callTTSDirect] Gemini timed out; using local fallback:', msg);
               break;
             }
             const isTransient = msg.includes('401') || msg.includes('403') || msg.includes('503') || msg.includes('model refused') || msg.includes('Transient Error') || msg.includes('empty result');

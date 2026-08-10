@@ -391,7 +391,11 @@ describe('bhStepColony — realism calibration', () => {
     }
     expect(peak).toBeGreaterThanOrEqual(REAL.overwinterReserve);
     expect(peak).toBeLessThan(260);          // and not an implausible bonanza
-    expect(s.workers).toBeGreaterThan(15000);
+    // Pollen now limits laying when nurse protein demand exceeds supply, so the
+    // corrected autumn cluster contracts to about 14.1k rather than clearing
+    // the old pre-pollen 15k floor. It remains a viable five-figure winter
+    // cluster while the reserve and runaway-population guards stay unchanged.
+    expect(s.workers).toBeGreaterThan(12000);
     expect(s.workers).toBeLessThan(70000);   // real peak is 50,000-60,000
   });
 });

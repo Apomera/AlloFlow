@@ -31031,7 +31031,16 @@
     "run_lesson_blueprint_hint": "वर्तमान योजना के सभी संसाधन बनाता है",
     "cancelled": "रद्द करने का अनुरोध किया गया है। प्रदाता द्वारा समर्थन मिलने पर वर्तमान कार्य रुक जाएगा।",
     "cancel": "रद्द करें",
-    "retry": "फिर कोशिश करें"
+    "retry": "फिर कोशिश करें",
+    "open_stem_tool": "Open a specific STEM tool",
+    "open_stem_tool_ambiguous": "More than one tool matches that: ",
+    "open_stem_tool_done": "Opened ",
+    "open_stem_tool_hint": "Name any STEM Lab tool and go straight to it",
+    "open_stem_tool_miss": "No STEM tool matched ",
+    "open_stem_tool_miss_tail": ". STEM Lab opened so you can browse.",
+    "open_stem_tool_no_index": "STEM Lab opened. The tool catalog was not available, so browse the list.",
+    "open_stem_tool_none": "STEM Lab opened. Name a tool and I can go straight to it.",
+    "open_stem_tool_unsupported": "STEM Lab opened. This build cannot jump straight to a named tool."
   },
   "palette": {
     "aria": "AlloFlow कमांड पैलेट",

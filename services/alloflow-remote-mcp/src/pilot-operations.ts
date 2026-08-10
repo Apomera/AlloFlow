@@ -3,6 +3,7 @@ import { getContainer } from "@cloudflare/containers";
 import {
   beginCancel,
   beginDelete,
+  clearJobCheckpoint,
   clearDispatchPending,
   clearTerminalArtifacts,
   createDownloadGrant,
@@ -11,7 +12,10 @@ import {
   finalizeCancel,
   finalizeDelete,
   finalizeInputDeletion,
+  getInternalJob,
   getJobForOwner,
+  jobArtifactKeysForAttempt,
+  jobCheckpointPrefix,
   listCleanupJobs,
   listDispatchPendingJobs,
   listExpiredUploads,
@@ -392,16 +396,60 @@ async function stopExecution(
   return workflowStopped && containerStopped;
 }
 
+async function deleteCheckpointObjects(
+  bucket: R2Bucket,
+  job: Pick<JobRow, "id" | "institution_id">,
+): Promise<void> {
+  const prefix = jobCheckpointPrefix(job);
+  let cursor: string | undefined;
+  do {
+    const page = await bucket.list({
+      prefix,
+      limit: 1000,
+      ...(cursor ? { cursor } : {}),
+    });
+    if (page.objects.length > 0) {
+      await bucket.delete(page.objects.map((object) => object.key));
+    }
+    cursor = page.truncated ? page.cursor : undefined;
+  } while (cursor);
+}
+
 async function deleteArtifacts(env: PilotEnv, job: JobRow): Promise<void> {
+  const current = await getInternalJob(env, job.id);
+  if (current.attempt_id !== job.attempt_id) {
+    return;
+  }
   if (!env.DOCUMENTS) {
     throw new PilotError("pilot_not_configured", 503);
   }
-  const keys = [job.input_key, job.result_key, job.report_key].filter(
-    (key): key is string => Boolean(key),
+  const keys = new Set<string>(
+    [current.input_key, current.result_key, current.report_key].filter(
+      (key): key is string => Boolean(key),
+    ),
   );
-  if (keys.length > 0) {
-    await env.DOCUMENTS.delete(keys);
+  keys.add(
+    `tenant/${current.institution_id}/output/${current.id}/tagged.pdf`,
+  );
+  keys.add(
+    `tenant/${current.institution_id}/output/${current.id}/report.json`,
+  );
+  for (
+    let attemptNumber = 1;
+    attemptNumber <= (current.attempt_number ?? 0);
+    attemptNumber += 1
+  ) {
+    const attemptKeys = jobArtifactKeysForAttempt(
+      current,
+      attemptNumber,
+    );
+    keys.add(attemptKeys.resultKey);
+    keys.add(attemptKeys.reportKey);
   }
+  if (keys.size > 0) {
+    await env.DOCUMENTS.delete([...keys]);
+  }
+  await deleteCheckpointObjects(env.DOCUMENTS, current);
 }
 
 export async function cancelRemediation(
@@ -425,8 +473,8 @@ export async function cancelRemediation(
     return publicJob(await getJobForOwner(env, jobId, principal));
   }
   await deleteArtifacts(env, job);
-  await finalizeCancel(env, jobId);
-  await clearTerminalArtifacts(env, jobId);
+  await finalizeCancel(env, jobId, job.attempt_id);
+  await clearTerminalArtifacts(env, jobId, job.attempt_id);
   return publicJob(await getJobForOwner(env, jobId, principal));
 }
 
@@ -448,7 +496,7 @@ export async function deleteRemediation(
       return { jobId, deleted: false, status: "deleting" };
     }
     await deleteArtifacts(env, job);
-    await finalizeDelete(env, jobId);
+    await finalizeDelete(env, jobId, job.attempt_id);
   }
   return { jobId, deleted: true };
 }
@@ -480,27 +528,56 @@ export async function cleanupInstitutionPilot(
     }
     const outputExpired =
       !job.output_expires_at || job.output_expires_at <= nowSeconds();
-    if (
-      job.status === "completed" &&
-      job.input_key &&
-      !outputExpired
-    ) {
+    if (job.status === "completed" && !outputExpired) {
       if (!env.DOCUMENTS) {
         throw new PilotError("pilot_not_configured", 503);
       }
-      await env.DOCUMENTS.delete(job.input_key);
-      await finalizeInputDeletion(env, job.id);
+      const current = await getInternalJob(env, job.id);
+      if (
+        current.status !== "completed" ||
+        current.attempt_id !== job.attempt_id ||
+        current.input_key !== job.input_key ||
+        current.checkpoint_key !== job.checkpoint_key
+      ) {
+        jobsPendingStop += 1;
+        continue;
+      }
+      if (current.checkpoint_key && !current.attempt_id) {
+        jobsPendingStop += 1;
+        continue;
+      }
+      if (current.input_key) {
+        await env.DOCUMENTS.delete(current.input_key);
+      }
+      // Always sweep the bounded checkpoint prefix before removing the input.
+      // A runner can crash after its immutable R2 PUT but before the D1 pointer
+      // CAS, so checkpoint_key === null does not prove the prefix is empty.
+      await deleteCheckpointObjects(env.DOCUMENTS, current);
+      if (current.input_key) {
+        await finalizeInputDeletion(
+          env,
+          current.id,
+          current.attempt_id,
+        );
+      }
+      if (current.checkpoint_key && current.attempt_id) {
+        await clearJobCheckpoint(
+          env,
+          current.id,
+          current.attempt_id,
+        );
+      }
       jobsCleaned += 1;
       continue;
     }
     await deleteArtifacts(env, job);
     if (job.status === "cancelling") {
-      await finalizeCancel(env, job.id);
-      await clearTerminalArtifacts(env, job.id);
+      await finalizeCancel(env, job.id, job.attempt_id);
+      await clearTerminalArtifacts(env, job.id, job.attempt_id);
     } else if (job.status === "failed" || job.status === "cancelled") {
-      await clearTerminalArtifacts(env, job.id);
+      await clearTerminalArtifacts(env, job.id, job.attempt_id);
     } else {
-      await finalizeDelete(env, job.id);
+      await finalizeDelete(env, job.id, job.attempt_id);
     }
     jobsCleaned += 1;
   }
@@ -521,4 +598,3 @@ export async function cleanupInstitutionPilot(
     jobsRedispatched,
   };
 }
-

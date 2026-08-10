@@ -69,6 +69,16 @@ const smartTruncate = (str, max = 200) => {
 //    localStorage). Prevents render crashes from malformed paragraph shapes and closes
 //    the stored-XSS vector where imported image URLs are interpolated into export HTML. ──
 const MAX_DRAFT_PARAGRAPHS = 8; // mirrors the in-app maxParagraphs cap
+const STORY_ILLUSTRATION_DEFAULT_WIDTH = 360;
+const STORY_ILLUSTRATION_MIN_WIDTH = 240;
+const STORY_ILLUSTRATION_MAX_WIDTH = 720;
+const STORY_AUDIO_MAX_BYTES = 12 * 1024 * 1024;
+const STORY_AUDIO_MAX_CLIP_BYTES = 2 * 1024 * 1024;
+const clampStoryIllustrationWidth = (value) => {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return STORY_ILLUSTRATION_DEFAULT_WIDTH;
+  return Math.min(STORY_ILLUSTRATION_MAX_WIDTH, Math.max(STORY_ILLUSTRATION_MIN_WIDTH, Math.round(numeric / 10) * 10));
+};
 const COMIC_SHOT_OPTIONS = [
   { value: '', label: 'Shot' },
   { value: 'wide', label: 'Wide' },
@@ -815,7 +825,11 @@ const sanitizeIllustrations = (obj) => {
     const v = obj[k];
     if (!v || typeof v !== 'object') return;
     const url = safeImageUrl(v.imageUrl);
-    if (url && url.length <= 15000000) out[String(k).slice(0, 64)] = { imageUrl: url, prompt: typeof v.prompt === 'string' ? v.prompt.slice(0, 1200) : '' };
+    if (url && url.length <= 15000000) {
+      const clean = { imageUrl: url, prompt: typeof v.prompt === 'string' ? v.prompt.slice(0, 1200) : '' };
+      if (Number.isFinite(Number(v.displayWidth))) clean.displayWidth = clampStoryIllustrationWidth(v.displayWidth);
+      out[String(k).slice(0, 64)] = clean;
+    }
   });
   return out;
 };
@@ -841,6 +855,46 @@ const sanitizeAudioSegments = (obj) => {
     if (Object.keys(clean).length) out[String(k).slice(0, 64)] = clean;
   });
   return out;
+};
+
+const sanitizeStoryForgeAudioStore = (value) => {
+  if (!value || typeof value !== 'object' || Number(value.version) !== 4 || !value.entries || typeof value.entries !== 'object') return null;
+  const entries = {};
+  let totalBytes = 0;
+  Object.entries(value.entries).slice(0, MAX_DRAFT_PARAGRAPHS * 120).forEach(([key, raw]) => {
+    if (!raw || typeof raw !== 'object' || !raw.identity || typeof raw.identity !== 'object') return;
+    const identity = raw.identity;
+    const cleanIdentity = {
+      identityVersion: 4,
+      adapterId: typeof identity.adapterId === 'string' ? identity.adapterId.slice(0, 160) : '',
+      adapterVersion: Number(identity.adapterVersion) > 0 ? Math.floor(Number(identity.adapterVersion)) : 1,
+      scopeId: typeof identity.scopeId === 'string' ? identity.scopeId.slice(0, 240) : 'story',
+      segmentId: typeof identity.segmentId === 'string' ? identity.segmentId.slice(0, 240) : '',
+      spokenFingerprint: typeof identity.spokenFingerprint === 'string' ? identity.spokenFingerprint.slice(0, 240) : '',
+      spokenText: typeof identity.spokenText === 'string' ? identity.spokenText.slice(0, 500) : '',
+    };
+    const encoded = typeof raw.audio === 'string' ? raw.audio.replace(/^data:[^,]*,/i, '').replace(/\s+/g, '') : '';
+    const estimatedBytes = Math.max(0, Math.floor(encoded.length * 3 / 4));
+    if (!cleanIdentity.adapterId || !cleanIdentity.segmentId || !cleanIdentity.spokenText || !encoded || estimatedBytes > STORY_AUDIO_MAX_CLIP_BYTES || totalBytes + estimatedBytes > STORY_AUDIO_MAX_BYTES) return;
+    totalBytes += estimatedBytes;
+    const profile = raw.synthesisProfile && typeof raw.synthesisProfile === 'object' ? raw.synthesisProfile : {};
+    entries[String(key).slice(0, 600)] = {
+      identity: cleanIdentity,
+      audio: encoded,
+      mime: typeof raw.mime === 'string' && /^audio\//i.test(raw.mime) ? raw.mime.slice(0, 80) : 'audio/mpeg',
+      source: typeof raw.source === 'string' ? raw.source.slice(0, 80) : 'ai-generated',
+      synthesisProfile: {
+        voice: typeof profile.voice === 'string' ? profile.voice.slice(0, 160) : '',
+        language: typeof profile.language === 'string' ? profile.language.slice(0, 100) : '',
+        provider: typeof profile.provider === 'string' ? profile.provider.slice(0, 80) : '',
+        speed: Number(profile.speed) > 0 ? Number(profile.speed) : 1,
+        synthesisRate: Number(profile.synthesisRate) > 0 ? Number(profile.synthesisRate) : (Number(profile.speed) > 0 ? Number(profile.speed) : 1),
+        voiceResolverVersion: Number(profile.voiceResolverVersion) > 0 ? Math.floor(Number(profile.voiceResolverVersion)) : 2,
+      },
+      createdAt: typeof raw.createdAt === 'string' ? raw.createdAt.slice(0, 160) : '',
+    };
+  });
+  return Object.keys(entries).length ? { format: 'per-entry', version: 4, entries } : null;
 };
 
 const sanitizeContinuityReferences = (arr) => Array.isArray(arr)
@@ -1787,6 +1841,7 @@ const sanitizeStoryForgeProject = (value = {}) => {
     illustrations: sanitizeIllustrations(source.illustrations),
     coverArt: safeImageUrl(source.coverArt).slice(0, 15000000),
     audioSegments: sanitizeAudioSegments(source.audioSegments),
+    audioStore: sanitizeStoryForgeAudioStore(source.audioStore),
     comicFlowReport: source.layoutMode === 'comic' ? sanitizeComicFlowReport(source.comicFlowReport) : null,
   };
 };
@@ -1805,7 +1860,7 @@ const isStoryForgeProjectMeaningful = (value = {}) => Boolean(
   isStoryForgeDraftMeaningful(value) ||
   Object.keys(sanitizeIllustrations(value.illustrations)).length > 0 ||
   Boolean(safeImageUrl(value.coverArt)) ||
-  Object.keys(sanitizeAudioSegments(value.audioSegments)).length > 0
+  Object.keys(sanitizeAudioSegments(value.audioSegments)).length > 0 || Boolean(sanitizeStoryForgeAudioStore(value.audioStore))
 );
 const isStoryForgeDraftMeaningful = (value = {}) => {
   const draft = sanitizeStoryForgeDraft(value);
@@ -2423,13 +2478,20 @@ const StoryForge = React.memo(({
   });
 
   // ── Illustrate state ──
-  const createProjectSnapshot = () => sanitizeStoryForgeProject({
+  // The durable per-sentence store is kept beside the UI segment map. The map
+  // owns playback/recording state; the store owns portable AI audio bytes.
+  const storyAudioStorePayloadRef = useRef(null);
+  const createProjectSnapshot = () => {
+    const snapshot = sanitizeStoryForgeProject({
     ...createDraftSnapshot(),
     illustrations,
     coverArt,
     audioSegments,
     comicFlowReport,
   });
+    snapshot.audioStore = sanitizeStoryForgeAudioStore(storyAudioStorePayloadRef.current);
+    return snapshot;
+  };
 
   const createRevisionCheckpoint = (label = 'Production checkpoint') => ({
     id: `revision-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -2458,6 +2520,18 @@ const StoryForge = React.memo(({
   // ── Narrate state ──
   const [characters, setCharacters] = useState([]);
   const [audioSegments, setAudioSegments] = useState({});
+  const [audioStorePayload, setAudioStorePayload] = useState(null);
+  const storyAudioStoreRef = useRef(null);
+  const storyAudioServiceRef = useRef(null);
+  const storyAudioHydrationSignatureRef = useRef('');
+  const storyNarrationAbortRef = useRef(null);
+  const storyNarrationRunRef = useRef(0);
+  const setStoryAudioStorePayload = (value) => {
+    const clean = sanitizeStoryForgeAudioStore(value);
+    storyAudioStorePayloadRef.current = clean;
+    if (storyAudioStoreRef.current) storyAudioHydrationSignatureRef.current = JSON.stringify(clean || null);
+    setAudioStorePayload(clean);
+  };
   // Live mirror of audioSegments so the unmount cleanup (which must keep [] deps to run
   // only on unmount) can revoke the CURRENT blob URLs instead of the stale initial {}.
   const audioSegmentsRef = useRef(audioSegments);
@@ -2471,15 +2545,224 @@ const StoryForge = React.memo(({
   // ── Sentence splitter for karaoke narration ──
   const splitSentences = (text) => {
     if (!text) return [''];
-    // Split on sentence-ending punctuation followed by space or end of string
-    // Handles: "Dr. Smith said hello." correctly by not splitting on "Dr."
-    const raw = text.match(/[^.!?]*[.!?]+[\s]?|[^.!?]+$/g);
-    if (!raw) return [text.trim()];
+    try {
+      const storeModule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.KaraokeAudioStore;
+      if (storeModule && typeof storeModule.splitSentences === 'function') {
+        const shared = storeModule.splitSentences(String(text));
+        if (Array.isArray(shared) && shared.length) return shared.map(sentence => String(sentence).trim()).filter(Boolean);
+      }
+    } catch (_) {}
+    const raw = String(text).match(/[^.!?]*[.!?]+[\s]?|[^.!?]+$/g);
+    if (!raw) return [String(text).trim()];
     return raw.map(s => s.trim()).filter(s => s.length > 0);
   };
 
   // ── Narration voice ──
   const [narratorVoice, setNarratorVoice] = useState(selectedVoice || 'Puck');
+  const getStoryAudioLanguage = () => language === 'other' ? (customLanguage || 'English') : (LANG_OPTIONS.find(option => option.code === language)?.label || 'English');
+
+  // Story Forge uses the same resource-agnostic per-sentence service as
+  // leveled text. This gives every clip a stable identity, durable base64
+  // storage, voice/profile metadata, cancellation, and one-sentence rebuilds.
+  const getStoryAudioSegments = (sourceParagraphs = paragraphsRef.current) => {
+    const storeModule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.KaraokeAudioStore;
+    const splitter = storeModule && typeof storeModule.splitSentences === 'function'
+      ? storeModule.splitSentences
+      : splitSentences;
+    const languageLabel = getStoryAudioLanguage();
+    return (Array.isArray(sourceParagraphs) ? sourceParagraphs : []).flatMap((paragraph) => {
+      const text = String(paragraph?.text || '').trim();
+      if (!text) return [];
+      const sentences = splitter(text).filter((sentence) => String(sentence || '').trim());
+      return sentences.map((sentence, sentenceIndex) => ({
+        paragraphId: String(paragraph.id || ''),
+        sentenceIndex,
+        resourceId: 'storyforge-live',
+        resourceType: 'storyforge',
+        segmentId: `${String(paragraph.id || 'paragraph')}/sentence-${sentenceIndex}`,
+        scopeId: 'story',
+        text: String(sentence).trim(),
+        language: languageLabel,
+      }));
+    });
+  };
+  const encodeStoryAudio = async (audio) => {
+    const raw = typeof audio === 'string' ? audio : audio && (audio.url || audio.audioUrl || audio.objectUrl);
+    const embedded = typeof audio === 'object' && audio ? (audio.b64 || audio.base64 || audio.data) : null;
+    if (typeof embedded === 'string' && embedded.trim()) {
+      return { b64: embedded.replace(/^data:[^,]*,/i, '').replace(/\s+/g, ''), mime: audio.mime || audio.type || 'audio/mpeg' };
+    }
+    if (typeof raw === 'string' && /^data:[^,]*;base64,/i.test(raw)) {
+      const comma = raw.indexOf(',');
+      return { b64: raw.slice(comma + 1).replace(/\s+/g, ''), mime: (raw.slice(5, comma).split(';')[0] || 'audio/mpeg') };
+    }
+    if (!raw || typeof fetch !== 'function') throw new Error('Narration audio could not be encoded for storage.');
+    const response = await fetch(raw);
+    if (!response.ok) throw new Error(`Narration audio download failed (${response.status}).`);
+    const blob = await response.blob();
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ''));
+      reader.onerror = () => reject(reader.error || new Error('Narration audio encoding failed.'));
+      reader.readAsDataURL(blob);
+    });
+    if (raw.startsWith('blob:')) {
+      try { URL.revokeObjectURL(raw); } catch (_) {}
+    }
+    const comma = dataUrl.indexOf(',');
+    return { b64: comma >= 0 ? dataUrl.slice(comma + 1) : '', mime: blob.type || 'audio/mpeg' };
+  };
+  const storyAudioProfile = () => {
+    const speed = 0.9;
+    return {
+      voice: narratorVoice || selectedVoice || 'Puck',
+      language: getStoryAudioLanguage(),
+      speed,
+      synthesisRate: speed,
+      voiceResolverVersion: 2,
+    };
+  };
+  const ensureStoryAudioStore = () => {
+    if (typeof window === 'undefined') return null;
+    const storeModule = window.AlloModules && window.AlloModules.KaraokeAudioStore;
+    if (!storeModule || typeof storeModule.createStore !== 'function') return null;
+    if (!storyAudioStoreRef.current) storyAudioStoreRef.current = storeModule.createStore();
+    const signature = JSON.stringify(storyAudioStorePayloadRef.current || null);
+    if (signature !== storyAudioHydrationSignatureRef.current) {
+      try { storyAudioStoreRef.current.clear(); } catch (_) {}
+      if (storyAudioStorePayloadRef.current) {
+        try { storyAudioStoreRef.current.hydrate(storyAudioStorePayloadRef.current); } catch (_) {}
+      }
+      storyAudioHydrationSignatureRef.current = signature;
+    }
+    return storyAudioStoreRef.current;
+  };
+  const getStoryAudioService = () => {
+    if (storyAudioServiceRef.current) return storyAudioServiceRef.current;
+    if (typeof window === 'undefined') return null;
+    const factory = window.AlloModules && window.AlloModules.createReadAloudAudioService;
+    const store = ensureStoryAudioStore();
+    if (typeof factory !== 'function' || !store) return null;
+    const adapterId = 'alloflow.storyforge.read-aloud';
+    storyAudioServiceRef.current = factory({
+      getStoreModule: () => ensureStoryAudioStore(),
+      getResource: () => ({ id: 'storyforge-live', type: 'storyforge', paragraphs: paragraphsRef.current }),
+      getSynthesisProfile: () => storyAudioProfile(),
+      synthesize: async ({ text, profile, signal, reason, priority, maxRetries }) => {
+        if (!onCallTTS) throw new Error('Story narration TTS is unavailable.');
+        const activeProfile = { ...storyAudioProfile(), ...(profile || {}) };
+        const url = await onCallTTS(text, activeProfile.voice, activeProfile.speed, {
+          language: activeProfile.language,
+          signal,
+          reason: reason || 'storyforge-narration',
+          priority: priority || 'interactive',
+          maxRetries: Number.isFinite(maxRetries) ? maxRetries : 1,
+        }, activeProfile.language);
+        if (!url) throw new Error('Story narration returned no audio.');
+        return { url };
+      },
+      encode: encodeStoryAudio,
+      normalize: (value) => {
+        try {
+          const phaseK = window.AlloModules && window.AlloModules.PhaseKHelpers;
+          if (phaseK && typeof phaseK.toSpokenText === 'function') return phaseK.toSpokenText(value);
+        } catch (_) {}
+        return String(value || '').replace(/\s+/g, ' ').trim();
+      },
+      persist: ({ payload }) => {
+        setStoryAudioStorePayload(payload);
+        setIsDirty(true);
+      },
+      adapter: {
+        id: adapterId,
+        version: 1,
+        enumerate: () => getStoryAudioSegments(),
+        spokenText: (segment) => segment.text,
+        fields: (segment) => {
+          const spokenText = String(segment.text || '').trim();
+          const fingerprint = storeModule && typeof storeModule.keyFor === 'function'
+            ? storeModule.keyFor(spokenText)
+            : spokenText.toLowerCase().replace(/\s+/g, ' ').trim();
+          return {
+            segmentId: segment.segmentId,
+            paragraphId: segment.paragraphId,
+            sentenceIndex: segment.sentenceIndex,
+            scopeId: segment.scopeId,
+            storageKey: {
+              identityVersion: 4,
+              adapterId,
+              adapterVersion: 1,
+              scopeId: segment.scopeId,
+              segmentId: segment.segmentId,
+              spokenFingerprint: fingerprint,
+              spokenText,
+            },
+          };
+        },
+      },
+      resourceId: 'storyforge-live',
+      resourceType: 'storyforge',
+      lane: 'current',
+      persistencePolicy: 'embedded',
+    }).forResource({
+      resourceId: 'storyforge-live',
+      resourceType: 'storyforge',
+      lane: 'current',
+      persistencePolicy: 'embedded',
+      adapter: {
+        id: adapterId,
+        version: 1,
+        enumerate: () => getStoryAudioSegments(),
+        spokenText: (segment) => segment.text,
+        fields: (segment) => {
+          const spokenText = String(segment.text || '').trim();
+          const fingerprint = storeModule && typeof storeModule.keyFor === 'function' ? storeModule.keyFor(spokenText) : spokenText.toLowerCase().replace(/\s+/g, ' ').trim();
+          return {
+            segmentId: segment.segmentId,
+            paragraphId: segment.paragraphId,
+            sentenceIndex: segment.sentenceIndex,
+            scopeId: segment.scopeId,
+            storageKey: { identityVersion: 4, adapterId, adapterVersion: 1, scopeId: segment.scopeId, segmentId: segment.segmentId, spokenFingerprint: fingerprint, spokenText },
+          };
+        },
+      },
+    });
+    return storyAudioServiceRef.current;
+  };
+  const syncStoryAudioSegmentsFromStore = () => {
+    const service = getStoryAudioService();
+    if (!service) return false;
+    const segments = getStoryAudioSegments();
+    const byParagraph = {};
+    segments.forEach((segment) => {
+      const inspected = service.inspect(segment);
+      const url = inspected && (inspected.url || inspected.storedUrl);
+      if (!url) return;
+      const item = byParagraph[segment.paragraphId] || { sentences: [], sentenceAudios: [] };
+      item.sentences[segment.sentenceIndex] = segment.text;
+      item.sentenceAudios[segment.sentenceIndex] = url;
+      byParagraph[segment.paragraphId] = item;
+    });
+    const activeParagraphIds = new Set(segments.map((segment) => segment.paragraphId));
+    setAudioSegments((previous) => {
+      const next = { ...previous };
+      Object.keys(next).forEach((paragraphId) => {
+        if (activeParagraphIds.has(paragraphId) && !byParagraph[paragraphId] && next[paragraphId]?.sentenceAudios?.length) {
+          next[paragraphId] = { ...next[paragraphId], aiAudioUrl: null, sentenceAudios: [], sentences: [], aiLoading: false };
+        }
+      });
+      Object.entries(byParagraph).forEach(([paragraphId, item]) => {
+        const sentenceAudios = item.sentenceAudios.map((url) => url || null);
+        next[paragraphId] = { ...next[paragraphId], aiAudioUrl: sentenceAudios.find(Boolean) || null, sentenceAudios, sentences: item.sentences, aiLoading: false };
+      });
+      return next;
+    });
+    return Object.keys(byParagraph).length > 0;
+  };
+  useEffect(() => {
+    if (audioStorePayload) syncStoryAudioSegmentsFromStore();
+  }, [audioStorePayload, paragraphs]);
+
 
   // ── ORF Fluency Reading ──
   const [fluencyReadingId, setFluencyReadingId] = useState(null);
@@ -2776,10 +3059,15 @@ const StoryForge = React.memo(({
     const snapshot = createProjectSnapshot();
     let legacySaved = false;
     try {
-      localStorage.setItem(SAVE_KEY, JSON.stringify(createDraftSnapshot()));
+      localStorage.setItem(SAVE_KEY, JSON.stringify(snapshot));
       legacySaved = true;
     } catch (error) {
-      // The vault may still have room even when the legacy string store is full.
+      // Audio can exceed localStorage quota; keep the writing draft available
+      // while the asset-aware vault carries the complete snapshot.
+      try {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(createDraftSnapshot()));
+        legacySaved = true;
+      } catch (_) {}
     }
     const vaultSaved = await storyForgeVaultWrite(SAVE_KEY, snapshot, revisionHistoryRef.current);
     if (!vaultSaved && !legacySaved) {
@@ -2939,6 +3227,8 @@ const StoryForge = React.memo(({
         revoke(seg.aiAudioUrl);
         if (Array.isArray(seg.sentenceAudios)) seg.sentenceAudios.forEach(revoke);
       });
+      try { storyNarrationAbortRef.current?.abort(); } catch (_) {}
+      try { storyAudioStoreRef.current?.clear?.(); } catch (_) {}
     };
   }, []);
 
@@ -3364,7 +3654,7 @@ const StoryForge = React.memo(({
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     };
-  }, [isOpen, draftHydrationState, showRestorePrompt, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, phase, draftCount, language, customLanguage, storyShape, valenceByPara, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, illustrations, coverArt, audioSegments]);
+  }, [isOpen, draftHydrationState, showRestorePrompt, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, phase, draftCount, language, customLanguage, storyShape, valenceByPara, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, illustrations, coverArt, audioSegments, audioStorePayload]);
 
   const applySanitizedDraft = (value) => {
     const draft = sanitizeStoryForgeDraft(value);
@@ -3404,6 +3694,10 @@ const StoryForge = React.memo(({
     setIllustrations(project.illustrations);
     setCoverArt(project.coverArt || null);
     setAudioSegments(hydrateStoryForgeAudioSegments(project.audioSegments));
+    storyAudioServiceRef.current = null;
+    storyAudioStoreRef.current = null;
+    storyAudioHydrationSignatureRef.current = '';
+    setStoryAudioStorePayload(project.audioStore || null);
     setComicFlowReport(project.comicFlowReport || null);
     return draft;
   };
@@ -4671,7 +4965,7 @@ Return ONLY JSON:
     setIllustrations(prev => ({ ...prev, [paragraphId]: { ...prev[paragraphId], isLoading: true } }));
     try {
       const style = getStyleDesc();
-      let imageUrl = await onCallImagen(imgPrompt, 400, 0.8);
+      let imageUrl = await onCallImagen(imgPrompt, 768, 0.8);
 
       const consistencyReference = getComicConsistencyReference(idx);
       if (imageUrl && consistencyReference && onCallGeminiImageEdit) {
@@ -4679,7 +4973,7 @@ Return ONLY JSON:
           const rawBase64 = getImageBase64Payload(imageUrl) || String(imageUrl || '').split(',')[1] || '';
           const refined = await onCallGeminiImageEdit(
             `Refine this illustration to maintain consistent character appearance with the reference. ${style}. Remove any text or labels.`,
-            rawBase64, 400, 0.8, consistencyReference.base64
+            rawBase64, 768, 0.8, consistencyReference.base64
           );
           if (refined) imageUrl = refined;
         } catch (e) { /* consistency pass is best-effort */ }
@@ -4689,7 +4983,7 @@ Return ONLY JSON:
         characterPortraitRef.current = getImageBase64Payload(imageUrl) || String(imageUrl || '').split(',')[1] || '';
       }
 
-      setIllustrations(prev => ({ ...prev, [paragraphId]: { imageUrl, prompt: imgPrompt, isLoading: false } }));
+      setIllustrations(prev => ({ ...prev, [paragraphId]: { imageUrl, prompt: imgPrompt, displayWidth: clampStoryIllustrationWidth(prev[paragraphId]?.displayWidth), isLoading: false } }));
     } catch (err) {
       console.warn('Illustration failed:', err);
       setIllustrations(prev => ({ ...prev, [paragraphId]: { ...prev[paragraphId], isLoading: false, error: true } }));
@@ -4714,7 +5008,7 @@ Return ONLY JSON:
         );
         imgPrompt = finalizeImagePrompt(promptResult);
       }
-      let imageUrl = await onCallImagen(imgPrompt, 400, 0.8);
+      let imageUrl = await onCallImagen(imgPrompt, 768, 0.8);
 
       const consistencyReference = getComicConsistencyReference(idx);
       if (imageUrl && consistencyReference && onCallGeminiImageEdit) {
@@ -4722,7 +5016,7 @@ Return ONLY JSON:
           const rawBase64 = getImageBase64Payload(imageUrl) || String(imageUrl || '').split(',')[1] || '';
           const refined = await onCallGeminiImageEdit(
             `Refine this illustration to maintain consistent character appearance with the reference. ${style}. Remove any text or labels.`,
-            rawBase64, 400, 0.8, consistencyReference.base64
+            rawBase64, 768, 0.8, consistencyReference.base64
           );
           if (refined) imageUrl = refined;
         } catch (e) { /* consistency pass is best-effort */ }
@@ -4732,7 +5026,7 @@ Return ONLY JSON:
         characterPortraitRef.current = getImageBase64Payload(imageUrl) || String(imageUrl || '').split(',')[1] || '';
       }
 
-      setIllustrations(prev => ({ ...prev, [paragraphId]: { imageUrl, prompt: imgPrompt, isLoading: false } }));
+      setIllustrations(prev => ({ ...prev, [paragraphId]: { imageUrl, prompt: imgPrompt, displayWidth: clampStoryIllustrationWidth(prev[paragraphId]?.displayWidth), isLoading: false } }));
     } catch (err) {
       console.warn('Illustration failed:', err);
       setIllustrations(prev => ({ ...prev, [paragraphId]: { ...prev[paragraphId], isLoading: false, error: true } }));
@@ -4774,7 +5068,13 @@ Return ONLY JSON:
     });
   };
 
-  // ── Student-directed image refinement ──
+  const updateIllustrationDisplayWidth = (paragraphId, value) => {
+    const width = clampStoryIllustrationWidth(value);
+    setIllustrations(prev => ({ ...prev, [paragraphId]: { ...prev[paragraphId], displayWidth: width } }));
+    setIsDirty(true);
+  };
+
+  // Student-directed image refinement ──
   const refineIllustration = async (paragraphId, editPrompt) => {
     if (!onCallGeminiImageEdit) { if (addToast) addToast(t('toasts.image_editing_available'), 'error'); return; }
     const current = illustrations[paragraphId];
@@ -4786,10 +5086,10 @@ Return ONLY JSON:
       const style = getStyleDesc();
       const refined = await onCallGeminiImageEdit(
         `${editPrompt}. Maintain the ${style} art style. Do NOT add any text, words, or labels to the image.`,
-        rawBase64, 400, 0.8
+        rawBase64, 768, 0.8
       );
       if (refined) {
-        setIllustrations(prev => ({ ...prev, [paragraphId]: { ...prev[paragraphId], imageUrl: refined, prompt: editPrompt, isLoading: false } }));
+        setIllustrations(prev => ({ ...prev, [paragraphId]: { ...prev[paragraphId], imageUrl: refined, prompt: editPrompt, displayWidth: clampStoryIllustrationWidth(prev[paragraphId]?.displayWidth), isLoading: false } }));
         awardXP(3, 'Refined illustration');
       } else {
         setIllustrations(prev => ({ ...prev, [paragraphId]: { ...prev[paragraphId], isLoading: false } }));
@@ -4813,7 +5113,7 @@ Return ONLY JSON:
         `Create a book cover image prompt for a story titled "${title}". Story excerpt: "${storySnippet}". Art style: ${style}. The image should be a dramatic, eye-catching book cover scene that captures the story's essence. Do NOT include any text, title, or words in the image — just the visual scene. Max 80 words. Return ONLY the image prompt text.`
       );
       const imgPrompt = promptResult.trim() + ' STRICTLY NO TEXT, NO TITLE, NO WORDS IN THE IMAGE. Book cover composition.';
-      const imageUrl = await onCallImagen(imgPrompt, 400, 0.9);
+      const imageUrl = await onCallImagen(imgPrompt, 768, 0.9);
       if (imageUrl) setCoverArt(imageUrl);
     } catch (err) {
       console.warn('Cover art generation failed:', err);
@@ -4847,55 +5147,114 @@ Return ONLY JSON:
     setIsProcessing(false);
   };
 
-  const narrateParagraph = async (paragraphId, text) => {
-    if (!onCallTTS) return;
+  const [isNarrating, setIsNarrating] = useState(false);
+  const stopStoryNarration = () => {
+    storyNarrationRunRef.current += 1;
+    try { storyNarrationAbortRef.current?.abort(); } catch (_) {}
+    storyNarrationAbortRef.current = null;
+    setIsNarrating(false);
+    setIsProcessing(false);
+    sfAnnounce('Story narration stopped. Saved clips were kept.');
+  };
+  const narrateParagraph = async (paragraphId, text, options = {}) => {
+    if (!onCallTTS || !String(text || '').trim()) return false;
+    const runId = ++storyNarrationRunRef.current;
+    const signal = options.signal || null;
     setAudioSegments(prev => ({ ...prev, [paragraphId]: { ...prev[paragraphId], aiLoading: true } }));
     try {
-      const nVoice = narratorVoice || selectedVoice || 'Puck';
+      const service = getStoryAudioService();
+      if (service) {
+        const segments = getStoryAudioSegments(paragraphsRef.current.filter((paragraph) => paragraph.id === paragraphId));
+        for (const segment of segments) {
+          if (signal?.aborted || runId !== storyNarrationRunRef.current) throw Object.assign(new Error('Story narration stopped.'), { name: 'AbortError' });
+          await service.regenerate(segment, {
+            signal,
+            profile: storyAudioProfile(),
+            source: 'ai-generated',
+            reason: 'storyforge-narrate-paragraph',
+            priority: 'interactive',
+            maxRetries: 1,
+          });
+        }
+        syncStoryAudioSegmentsFromStore();
+        setIsDirty(true);
+        return true;
+      }
+
+      // Compatibility fallback while the shared modules are still loading.
       const sentences = splitSentences(text);
       const sentenceAudios = [];
-
-      // Generate TTS for each sentence individually
-      for (let i = 0; i < sentences.length; i++) {
-        const sentence = sentences[i];
-        if (sentence.trim().length === 0) { sentenceAudios.push(null); continue; }
+      for (const sentence of sentences) {
+        if (signal?.aborted || runId !== storyNarrationRunRef.current) throw Object.assign(new Error('Story narration stopped.'), { name: 'AbortError' });
         try {
-          const audioUrl = await onCallTTS(sentence, nVoice, 0.9);
-          sentenceAudios.push(audioUrl);
-        } catch (e) {
-          console.warn('Sentence TTS failed for:', sentence, e);
+          const audioUrl = await onCallTTS(sentence, narratorVoice || selectedVoice || 'Puck', 0.9, { signal, priority: 'interactive', maxRetries: 1 }, getStoryAudioLanguage());
+          sentenceAudios.push(audioUrl || null);
+        } catch (error) {
+          if (error?.name === 'AbortError' || signal?.aborted) throw error;
+          console.warn('Sentence TTS failed for:', sentence, error);
           sentenceAudios.push(null);
         }
       }
-
-      // Store sentence-level audio + first sentence as the legacy aiAudioUrl for backward compat
-      setAudioSegments(prev => ({
-        ...prev,
-        [paragraphId]: {
-          ...prev[paragraphId],
-          aiAudioUrl: sentenceAudios[0] || null,
-          sentenceAudios: sentenceAudios,
-          sentences: sentences,
-          aiLoading: false
-        }
-      }));
-    } catch (err) {
-      console.warn('Narration failed:', err);
+      setAudioSegments(prev => {
+        const next = { ...prev, [paragraphId]: { ...prev[paragraphId], aiAudioUrl: sentenceAudios.find(Boolean) || null, sentenceAudios, sentences, aiLoading: false } };
+        audioSegmentsRef.current = next;
+        return next;
+      });
+      setIsDirty(true);
+      return sentenceAudios.some(Boolean);
+    } catch (error) {
+      if (error?.name !== 'AbortError') console.warn('Narration failed:', error);
+      return false;
+    } finally {
       setAudioSegments(prev => ({ ...prev, [paragraphId]: { ...prev[paragraphId], aiLoading: false } }));
     }
   };
 
   const narrateAll = async () => {
+    if (isNarrating) return;
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    storyNarrationAbortRef.current = controller;
+    setIsNarrating(true);
     setIsProcessing(true);
-    const current = paragraphsRef.current;
-    for (const p of current) {
-      if (p.text.trim().length > 0 && !audioSegments[p.id]?.aiAudioUrl) {
-        await narrateParagraph(p.id, p.text);
+    try {
+      const service = getStoryAudioService();
+      if (service) {
+        const result = await service.prepareAll({
+          signal: controller?.signal,
+          profile: storyAudioProfile(),
+          source: 'ai-generated',
+          priority: 'interactive',
+          maxRetries: 1,
+          onProgress: (progress) => sfAnnounce(`Narrating sentence ${progress.completed || 0} of ${progress.total || 0}`),
+        });
+        syncStoryAudioSegmentsFromStore();
+        if (result?.cancelled) {
+          if (addToast) addToast('Narration stopped. Completed audio was saved.', 'info');
+        } else if (result?.failed) {
+          if (addToast) addToast(`${result.failed} sentence${result.failed === 1 ? '' : 's'} could not be narrated. Try again to regenerate only the missing clips.`, 'error');
+        } else if (addToast) {
+          addToast(t('toasts.narration_complete'), 'success');
+        }
+      } else {
+        const current = paragraphsRef.current;
+        for (const paragraph of current) {
+          if (controller?.signal.aborted) break;
+          const currentAudio = audioSegmentsRef.current[paragraph.id];
+          if (paragraph.text.trim().length > 0 && !currentAudio?.aiAudioUrl) await narrateParagraph(paragraph.id, paragraph.text, { signal: controller?.signal });
+        }
+        if (addToast) addToast(t('toasts.narration_complete'), 'success');
       }
+      awardXP(10, 'Narrated story');
+    } catch (error) {
+      if (error?.name !== 'AbortError') {
+        console.warn('Story narration run failed:', error);
+        if (addToast) addToast('Story narration could not finish. Try again; saved clips will be reused.', 'error');
+      }
+    } finally {
+      if (storyNarrationAbortRef.current === controller) storyNarrationAbortRef.current = null;
+      setIsNarrating(false);
+      setIsProcessing(false);
     }
-    setIsProcessing(false);
-    if (addToast) addToast(t('toasts.narration_complete'), 'success');
-    awardXP(10, 'Narrated story');
   };
 
   const startRecordingParagraph = async (paragraphId) => {
@@ -4919,7 +5278,25 @@ Return ONLY JSON:
     setRecordingParagraphId(null);
   };
 
-  // ── Playback (sentence-level with paragraph chaining) ──
+  const playStoryAudioSource = (src) => {
+    const audio = audioRef.current;
+    if (!audio || !src) return false;
+    if (audio._storySource === src && !audio.paused) return true;
+    audio.pause();
+    audio._storySource = src;
+    audio.src = src;
+    const pending = audio.play();
+    if (pending && typeof pending.catch === 'function') {
+      pending.catch((error) => {
+        if (audio._storySource !== src) return;
+        console.warn('Story Forge audio playback failed:', error);
+        handleAudioPlaybackError();
+      });
+    }
+    return true;
+  };
+
+  // Playback (sentence-level with paragraph chaining) ──
   useEffect(() => {
     if (playbackIdx < 0 || playbackIdx >= paragraphs.length) return;
     const pid = paragraphs[playbackIdx].id;
@@ -4930,8 +5307,7 @@ Return ONLY JSON:
       const safeIdx = Math.min(sentenceIdx, seg.sentenceAudios.length - 1);
       const src = seg.sentenceAudios[safeIdx];
       if (src && audioRef.current) {
-        audioRef.current.src = src;
-        audioRef.current.play().catch(() => {});
+        playStoryAudioSource(src);
         return;
       }
       // This sentence has no audio — skip to next
@@ -4948,8 +5324,7 @@ Return ONLY JSON:
     // Fallback: student recording or single paragraph audio
     const src = seg?.studentAudioUrl || seg?.aiAudioUrl;
     if (src && audioRef.current) {
-      audioRef.current.src = src;
-      audioRef.current.play().catch(() => {});
+      playStoryAudioSource(src);
     } else {
       // No audio for this paragraph — skip
       if (playbackIdx < paragraphs.length - 1) { setPlaybackIdx(playbackIdx + 1); setSentenceIdx(0); }
@@ -4975,6 +5350,14 @@ Return ONLY JSON:
   };
 
   // ═══════════════════════════════════════════════════════════
+  const handleAudioPlaybackError = () => {
+    if (playbackIdx < 0) return;
+    try { audioRef.current?.pause(); } catch (_) {}
+    setPlaybackIdx(-1);
+    setSentenceIdx(0);
+    sfAnnounce('Narration playback stopped because the audio clip could not be played.');
+  };
+
   // REVIEW PHASE FUNCTIONS
   // ═══════════════════════════════════════════════════════════
 
@@ -7146,7 +7529,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
     <div ref={modalRootRef} tabIndex={-1} className={`sf-modal-root theme-${hostTheme} fixed inset-0 z-[200] ${hostTheme === 'default' ? 'bg-slate-100/95' : 'bg-slate-900/95'} backdrop-blur-sm flex flex-col ${animClass}`} role="dialog" aria-modal="true" aria-label={t("a11y.story_forge_studio")}>
       <div className="allo-docsuite" style={{ display: 'contents' }}>
       {/* Hidden audio element for playback */}
-      <audio ref={audioRef} onEnded={handleAudioEnded} className="hidden" />
+      <audio ref={audioRef} onEnded={handleAudioEnded} onError={handleAudioPlaybackError} className="hidden" />
       {/* Screen reader playback announcements */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">
         {playbackIdx >= 0 && paragraphs[playbackIdx] ? (
@@ -8792,14 +9175,14 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                         </button>
                       )}
                     </div>
-                    <div className="w-48 shrink-0">
+                    <div className="w-full sm:w-auto shrink-0" style={{ width: '100%', maxWidth: clampStoryIllustrationWidth(illustrations[p.id]?.displayWidth) }}>
                       {illustrations[p.id]?.isLoading ? (
-                        <div className="w-48 h-36 bg-purple-50 rounded-xl flex items-center justify-center border-2 border-dashed border-purple-200">
+                        <div className="w-full h-36 bg-purple-50 rounded-xl flex items-center justify-center border-2 border-dashed border-purple-200">
                           <RefreshCw size={24} className="text-purple-700 animate-spin motion-reduce:animate-none" />
                         </div>
                       ) : illustrations[p.id]?.imageUrl ? (
                         <div className="relative group">
-                          <img src={illustrations[p.id].imageUrl} alt={`Illustration ${idx + 1}`} className="w-48 rounded-xl shadow-md border border-purple-100" />
+                          <img src={illustrations[p.id].imageUrl} alt={`Illustration ${idx + 1}`} className="w-full rounded-xl shadow-md border border-purple-100" />
                           <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                             {illustrations[p.id]?.previousImageUrl && (
                               <button type="button"
@@ -8848,9 +9231,13 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                               </div>
                             </div>
                           )}
-                        </div>
+                                                  <label className="mt-2 block rounded-lg border border-purple-100 bg-purple-50/70 px-2 py-1.5 text-[10px] font-bold text-purple-700">
+                            <span className="flex items-center justify-between"><span>Image size</span><span>{clampStoryIllustrationWidth(illustrations[p.id]?.displayWidth)}px</span></span>
+                            <input type="range" min={240} max={720} step={10} value={clampStoryIllustrationWidth(illustrations[p.id]?.displayWidth)} onChange={(e) => updateIllustrationDisplayWidth(p.id, e.target.value)} className="mt-1 w-full accent-purple-600" aria-label={"Image width for paragraph " + (idx + 1)} />
+                          </label>
+</div>
                       ) : illustrations[p.id]?.error ? (
-                        <div className="w-48 h-28 bg-red-50 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-red-200 gap-1">
+                        <div className="w-full h-28 bg-red-50 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-red-200 gap-1">
                           <span className="text-red-600 text-lg">{'\u26A0\uFE0F'}</span>
                           <span className="text-[11px] font-bold text-red-500">{t("ui_common.generation_failed")}</span>
                           <button type="button"
@@ -8866,7 +9253,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                           <button type="button"
                             onClick={() => illustrateParagraph(p.id, getIllustrationSourceText(p), idx)}
                             disabled={getIllustrationSourceText(p).trim().length < 20 || isProcessing}
-                            className="w-48 h-28 bg-purple-50 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-purple-200 hover:border-purple-400 hover:bg-purple-100 transition-colors disabled:opacity-40 cursor-pointer"
+                            className="w-full h-28 bg-purple-50 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-purple-200 hover:border-purple-400 hover:bg-purple-100 transition-colors disabled:opacity-40 cursor-pointer"
                           >
                             <ImageIcon size={24} className="text-purple-700 mb-1" />
                             <span className="text-xs font-bold text-purple-500">Auto-Generate</span>
@@ -8874,7 +9261,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                           <button type="button"
                             onClick={() => generateImagePrompt(p.id, getIllustrationSourceText(p), idx)}
                             disabled={getIllustrationSourceText(p).trim().length < 20 || isProcessing}
-                            className="w-48 py-1.5 bg-purple-100 rounded-lg text-[11px] font-bold text-purple-600 hover:bg-purple-200 transition-colors disabled:opacity-40 flex items-center justify-center gap-1"
+                            className="w-full py-1.5 bg-purple-100 rounded-lg text-[11px] font-bold text-purple-600 hover:bg-purple-200 transition-colors disabled:opacity-40 flex items-center justify-center gap-1"
                           >
                             <Eye size={10} /> Preview Prompt First
                           </button>
@@ -8916,8 +9303,13 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   <button type="button" onClick={narrateAll} disabled={isProcessing} className="px-4 py-2 bg-indigo-600 text-white rounded-full text-xs font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2">
                     <Volume2 size={14} /> {isProcessing ? 'Narrating...' : 'Narrate All'}
                   </button>
+                  {isNarrating && (
+                    <button type="button" onClick={stopStoryNarration} className="px-4 py-2 bg-amber-500 text-white rounded-full text-xs font-bold hover:bg-amber-600 transition-colors flex items-center gap-2">
+                      <X size={14} /> Stop narration
+                    </button>
+                  )}
                   <button type="button"
-                    onClick={() => { if (playbackIdx === -1) { setSentenceIdx(0); setPlaybackIdx(0); } else { setPlaybackIdx(-1); setSentenceIdx(0); } }}
+                    onClick={() => { if (playbackIdx === -1) { setSentenceIdx(0); setPlaybackIdx(0); } else { try { audioRef.current?.pause(); } catch (_) {} setPlaybackIdx(-1); setSentenceIdx(0); } }}
                     className="px-4 py-2 bg-green-600 text-white rounded-full text-xs font-bold hover:bg-green-700 transition-colors flex items-center gap-2"
                   >
                     <Play size={14} /> {playbackIdx >= 0 ? 'Stop' : 'Play All'}

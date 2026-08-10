@@ -326,7 +326,8 @@ describe('ANTI wiring pins', () => {
     // all continue through the same helper.
     // — the raw currentResourceId write survives ONLY inside the helper.
     const calls = anti.split('_alloFollowResourceLive(').length - 1;
-    expect(calls).toBe(6);
+    // AAC Board History restore is the seventh class-follow surface.
+    expect(calls).toBe(7);
     expect(anti.split('currentResourceId: item.id').length - 1).toBe(1);
     expect(anti).toContain('const _alloFollowResourceLive = (item, options = {}) => {');
     expect(anti).toContain('options.awaitDelivery === true');

@@ -668,7 +668,9 @@ const recordBlueprintResourceFailure = (details, warnLog) => {
         + ' step=' + String((Number.isFinite(d.index) ? d.index + 1 : '?'))
         + ' reason=' + reason
         + ' dispatcherLoaded=' + String(d.dispatcherLoaded == null ? 'unknown' : d.dispatcherLoaded)
-        + ' sourceTextChars=' + String(Number.isFinite(d.sourceTextChars) ? d.sourceTextChars : 0);
+        + ' sourceTextChars=' + String(Number.isFinite(d.sourceTextChars) ? d.sourceTextChars : 0)
+        + ' runId=' + String(d.runId || 'unknown')
+        + ' elapsedMs=' + String(Number.isFinite(d.elapsedMs) ? d.elapsedMs : 0);
     try {
         if (typeof warnLog === 'function') warnLog(message);
         else if (typeof console !== 'undefined' && console.warn) console.warn(message);
@@ -694,7 +696,7 @@ const recordBlueprintResourceFailure = (details, warnLog) => {
 const executeOneBlueprint = async (blueprint, ctx) => {
     // onStep is ADDITIVE and optional — onResource stays exactly as it was
     // because Throughline's Generate-Unit driver consumes it.
-    const { handleGenerate, historyOverride, dna, initialSourceText, onResource, onStep, signal, warnLog, settingsSnapshot } = ctx || {};
+    const { handleGenerate, historyOverride, dna, initialSourceText, onResource, onStep, signal, warnLog, settingsSnapshot, runId, runStartedAt } = ctx || {};
     const emitStep = (payload) => { if (typeof onStep === 'function') { try { onStep(payload); } catch (_) {} } };
     // Blueprint failures used to be INVISIBLE. A row was marked 'failed' purely
     // because handleGenerate returned falsy — no exception, no capture, no log.
@@ -780,6 +782,8 @@ const executeOneBlueprint = async (blueprint, ctx) => {
                 error: threw,
                 dispatcherLoaded: dispatcherLoaded,
                 sourceTextChars: currentSourceText ? currentSourceText.length : 0,
+                runId,
+                elapsedMs: Number.isFinite(runStartedAt) ? Math.max(0, Date.now() - runStartedAt) : 0,
             }, warnLog);
         }
         emitStep({ uiId: stepUiId, tool: type, index: i,
@@ -921,6 +925,7 @@ const handleExecuteBlueprint = async (deps) => {
         _runRows[key] = { uiId: key, tool: r && r.type, status: 'planned', index: i };
     });
     setIsExecutingBlueprint(true);
+    const _blueprintStartedAt = Date.now();
     const _blueprintRunId = 'blueprint-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
     setBlueprintExecutionResult({ runId: _blueprintRunId, status: 'running', startedAt: new Date().toISOString(), settingsSnapshot: _blueprintSettingsSnapshot, rows: _runRows, done: false });
     // The chat panel used to be force-closed here, which threw away the
@@ -966,6 +971,8 @@ const handleExecuteBlueprint = async (deps) => {
             historyOverride: [...history],
             dna: lessonDNA,                       // mutated in place — faithful to the original loop
             settingsSnapshot: _blueprintSettingsSnapshot,
+            runId: _blueprintRunId,
+            runStartedAt: _blueprintStartedAt,
             initialSourceText: currentSourceText,
             onStep: (step) => {
                 if (!step || !step.uiId) return;
@@ -1015,7 +1022,8 @@ const handleExecuteBlueprint = async (deps) => {
                     rows[k] = (r && (r.status === 'running' || r.status === 'planned'))
                         ? Object.assign({}, r, { status: 'interrupted' }) : r;
                 });
-                return Object.assign({}, prev, { rows: rows, done: true, stopped: true, status: 'stopped', finishedAt: new Date().toISOString() });
+                const stoppedRun = Object.assign({}, prev, { rows: rows, done: true, stopped: true });
+                return Object.assign(stoppedRun, { status: 'stopped', finishedAt: new Date().toISOString() });
             });
             // COUNT LANDED ITEMS, not total-minus-failed: rows the stop never
             // reached are in neither list, so `total - nulls.length` would

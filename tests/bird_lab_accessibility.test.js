@@ -29,9 +29,15 @@ describe('Bird Lab accessibility', () => {
       const named = svg.hasAttribute('aria-label') || svg.hasAttribute('aria-labelledby') || !!svg.querySelector('title');
       expect(hidden || named).toBe(true);
     }
-    const avatar = host.querySelector('button[aria-label^="Today"] svg');
-    expect(avatar?.getAttribute('aria-hidden')).toBe('true');
-    expect(avatar?.getAttribute('focusable')).toBe('false');
+    const spotlight = host.querySelector('button[aria-label^="Today"]');
+    expect(spotlight).toBeTruthy();
+    const avatar = spotlight.querySelector('svg');
+    // Daily spotlight entries without a local species key have no avatar.
+    // Any avatar that does render must remain decorative and unfocusable.
+    if (avatar) {
+      expect(avatar.getAttribute('aria-hidden')).toBe('true');
+      expect(avatar.getAttribute('focusable')).toBe('false');
+    }
   });
 
   it('uses responsive hero background rectangles instead of fixed 800px attributes', () => {

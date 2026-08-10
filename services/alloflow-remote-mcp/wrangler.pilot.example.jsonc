@@ -51,6 +51,7 @@
     "required": [
       "ACCESS_CLIENT_SECRET",
       "GEMINI_API_KEY",
+      "RELEASE_CANARY_SECRET",
       "RUNNER_AUTH_SECRET"
     ]
   },
@@ -74,6 +75,15 @@
       "bucket_name": "alloflow-institution-pilot-staging-documents"
     }
   ],
+  "analytics_engine_datasets": [
+    {
+      "binding": "PILOT_METRICS",
+      "dataset": "alloflow_institution_pilot_metrics"
+    }
+  ],
+  "version_metadata": {
+    "binding": "CF_VERSION_METADATA"
+  },
   "workflows": [
     {
       "binding": "REMEDIATION_WORKFLOW",
@@ -138,4 +148,3 @@
     }
   }
 }
-

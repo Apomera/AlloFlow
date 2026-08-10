@@ -36,7 +36,10 @@ const sanitizeRemediationHtml = new Function(
 const checkpointRuntimeStart = pipe.indexOf("const _ACTIVE_BATCH_FILES_KEY");
 const checkpointRuntimeEnd = pipe.indexOf('  const _AUDIT_SLICE_BYTES_KB', checkpointRuntimeStart);
 if (checkpointRuntimeStart < 0 || checkpointRuntimeEnd < 0) throw new Error('Batch checkpoint runtime markers missing');
-const makeCheckpointRuntime = (storageDB, idbKeyval, navigatorApi = {}, addToast = () => {}) => new Function(
+const checkpointTestNavigator = {
+  locks: { request: (_name, _options, fn) => Promise.resolve().then(fn) },
+};
+const makeCheckpointRuntime = (storageDB, idbKeyval, navigatorApi = checkpointTestNavigator, addToast = () => {}) => new Function(
   'storageDB', 'window', 'navigator', '_PIPELINE_PROMPT_VERSION', '_remediationRetentionMs',
   '_alloStripVerificationHtmlSnapshot', '_alloRehydrateVerificationHtmlBinding', 'warnLog', 'addToast',
   pipe.slice(checkpointRuntimeStart, checkpointRuntimeEnd)
@@ -330,12 +333,13 @@ describe('remediation deep-dive hardening', () => {
     values.set(statusKey, {
       schemaVersion: 4,
       batchId,
+      rootWriteId: 'root-write-a',
       writeId: 'status-write-a',
       statuses: [{ id: 'file-a', resultKey }],
     });
     values.set(resultKey, { serialized: '{}' });
 
-    await expect(runtime.clear(batchId)).resolves.toBe(false);
+    await expect(runtime.clear(batchId, 'root-write-a')).resolves.toBe(false);
     expect(operations).toEqual(['root:null']);
     expect(values.get(filesKey).batchId).toBe(batchId);
     expect(values.has(statusKey)).toBe(true);
@@ -343,7 +347,7 @@ describe('remediation deep-dive hardening', () => {
 
     failRootClear = false;
     operations.length = 0;
-    await expect(runtime.clear(batchId)).resolves.toBe(true);
+    await expect(runtime.clear(batchId, 'root-write-a')).resolves.toBe(true);
     expect(operations[0]).toBe('root:null');
     expect(operations.slice(1).every((op) => op.startsWith('del:'))).toBe(true);
     expect(values.get(filesKey)).toBeNull();
@@ -408,14 +412,15 @@ describe('remediation deep-dive hardening', () => {
       status: 'done',
       result,
     }];
-    await expect(runtime.saveFiles(files, { pdfTargetScore: 95 }, 100, batchId)).resolves.toBe(true);
+    const rootWriteId = await runtime.saveFiles(files, { pdfTargetScore: 95 }, 100, batchId);
+    expect(rootWriteId).toMatch(/^batch_/);
     expect(cleanupOutsideLock).toBe(false);
     expect(values.has(legacyResultKey)).toBe(false);
     expect(values.has(inactiveResultKey)).toBe(false);
     expect(values.has(inactiveStatusKey)).toBe(false);
     expect(values.has(legacyStatusKey)).toBe(false);
 
-    await expect(runtime.saveStatusNow(files, batchId)).resolves.toBe(true);
+    await expect(runtime.saveStatusNow(files, batchId, { rootWriteId })).resolves.toBe(true);
     const root = values.get(filesKey);
     const statusKey = runtime.statusKeyFor(batchId);
     const status = values.get(statusKey);
@@ -425,7 +430,9 @@ describe('remediation deep-dive hardening', () => {
     expect(status).toMatchObject({ schemaVersion: 4, batchId });
     expect(status.writeId).toMatch(/^batch_/);
     expect(values.has(goodResultKey)).toBe(true);
-    expect(lockModes).toEqual(['exclusive', 'shared']);
+    // Status commits now use the same exclusive root lock as replacement so a late stale write
+    // cannot overtake a newer boundary or race the active-root CAS check.
+    expect(lockModes).toEqual(['exclusive', 'exclusive']);
 
     const restored = await runtime.load();
     expect(restored.files[0]).toMatchObject({ status: 'done', result });
@@ -440,8 +447,8 @@ describe('remediation deep-dive hardening', () => {
     expect(crossFileRestore.files[0].status).toBe('pending');
     expect(crossFileRestore.files[0].result).toBeNull();
 
-    await expect(runtime.clear(batchId)).resolves.toBe(true);
-    expect(lockModes).toEqual(['exclusive', 'shared', 'exclusive']);
+    await expect(runtime.clear(batchId, rootWriteId)).resolves.toBe(true);
+    expect(lockModes).toEqual(['exclusive', 'exclusive', 'exclusive']);
     expect(values.get(filesKey)).toBeNull();
     expect(values.has(statusKey)).toBe(false);
   });
@@ -484,10 +491,11 @@ describe('remediation deep-dive hardening', () => {
       result: { afterScore: 95 },
     };
     oldResultKey = runtime.keyFor(oldId, file);
-    await expect(runtime.saveFiles([file], {}, 100, oldId)).resolves.toBe(true);
+    const rootWriteId = await runtime.saveFiles([file], {}, 100, oldId);
+    expect(rootWriteId).toMatch(/^batch_/);
     flipOnResultWrite = true;
 
-    await expect(runtime.saveStatusNow([file], oldId)).resolves.toBe(false);
+    await expect(runtime.saveStatusNow([file], oldId, { rootWriteId })).resolves.toBe(false);
     expect(values.get(filesKey).batchId).toBe(newId);
     expect(values.has(oldResultKey)).toBe(false);
     expect(values.has(runtime.statusKeyFor(oldId))).toBe(false);
@@ -522,17 +530,18 @@ describe('remediation deep-dive hardening', () => {
       result: { afterScore: 97 },
     };
     const resultKey = runtime.keyFor(batchId, file);
-    await expect(runtime.saveFiles([file], {}, 300, batchId)).resolves.toBe(true);
+    const rootWriteId = await runtime.saveFiles([file], {}, 300, batchId);
+    expect(rootWriteId).toMatch(/^batch_/);
     failStatusWrite = true;
 
-    await expect(runtime.saveStatusNow([file], batchId)).resolves.toBe(false);
+    await expect(runtime.saveStatusNow([file], batchId, { rootWriteId })).resolves.toBe(false);
     expect(values.has(statusKey)).toBe(false);
     expect(values.has(resultKey)).toBe(false);
     expect(file._checkpointResultKey).toBeNull();
     expect(file._checkpointResultBytes).toBe(0);
   });
 
-  it('falls back to an unlocked mutation when the lock manager rejects, without re-running a started callback', async () => {
+  it('fails checkpoint mutations closed when the lock manager rejects, without re-running a started callback', async () => {
     const values = new Map();
     const storageDB = {
       get: async (key) => values.get(key),
@@ -546,16 +555,16 @@ describe('remediation deep-dive hardening', () => {
     let bodyRuns = 0;
     const rejectingLocks = { locks: { request: () => Promise.reject(new Error('lock manager unavailable')) } };
     const runtime = makeCheckpointRuntime(storageDB, idbKeyval, rejectingLocks);
-    await expect(runtime.withRootLock(async () => { bodyRuns++; return 'ran'; })).resolves.toBe('ran');
-    expect(bodyRuns).toBe(1);
-    // End-to-end: save + clear still work when every lock request rejects —
-    // the old code left the FILES root alive after Discard (zombie resume banner).
+    await expect(runtime.withRootLock(async () => { bodyRuns++; return 'ran'; })).rejects.toThrow('lock manager unavailable');
+    expect(bodyRuns).toBe(0);
+    // End-to-end: no read-then-write fallback is allowed. Without a cross-tab CAS,
+    // checkpoint mutation is degraded rather than risking deletion of a newer writer.
     const file = { id: 'f1', fileName: 'a.pdf', fileSize: 4, base64: 'AA==', status: 'done', result: { afterScore: 90 } };
-    await expect(runtime.saveFiles([file], {}, 100, 'batch_lockless_tab')).resolves.toBe(true);
-    expect(values.get('pdf_active_batch_files_v1')).toBeTruthy();
-    await expect(runtime.saveStatusNow([file], 'batch_lockless_tab')).resolves.toBe(true);
-    await expect(runtime.clear('batch_lockless_tab')).resolves.toBe(true);
+    await expect(runtime.saveFiles([file], {}, 100, 'batch_lockless_tab')).resolves.toBe(false);
     expect(values.get('pdf_active_batch_files_v1')).toBeFalsy();
+    await expect(runtime.saveStatusNow([file], 'batch_lockless_tab', { rootWriteId: 'batch_never_committed' }))
+      .rejects.toThrow('lock manager unavailable');
+    await expect(runtime.clear('batch_lockless_tab', 'batch_never_committed')).resolves.toBe(false);
     expect(Array.from(values.keys()).filter(k => k.startsWith('pdf_active_batch_result_v3_')).length).toBe(0);
     // A callback that STARTED and then failed must propagate, not re-run (double-apply risk).
     let startedRuns = 0;
@@ -584,7 +593,7 @@ describe('remediation deep-dive hardening', () => {
       keys: async () => Array.from(values.keys()),
       del: async (key) => { values.delete(key); },
     };
-    const runtime = makeCheckpointRuntime(storageDB, idbKeyval, {}, (msg) => toasts.push(msg));
+    const runtime = makeCheckpointRuntime(storageDB, idbKeyval, checkpointTestNavigator, (msg) => toasts.push(msg));
     const file = { id: 'q1', fileName: 'q.pdf', fileSize: 4, base64: 'AA==', status: 'done', result: { afterScore: 92 } };
     // Root write quota failure → saveFiles reports false + discloses.
     failKeys = new Set(['pdf_active_batch_files_v1']);
@@ -592,10 +601,11 @@ describe('remediation deep-dive hardening', () => {
     expect(toasts.some(m => /could not be checkpointed for resume/i.test(m))).toBe(true);
     // Result write failure → file omitted honestly, status still lands.
     failKeys = new Set();
-    await expect(runtime.saveFiles([file], {}, 100, 'batch_quota_result')).resolves.toBe(true);
+    const rootWriteId = await runtime.saveFiles([file], {}, 100, 'batch_quota_result');
+    expect(rootWriteId).toMatch(/^batch_/);
     const resultKey = runtime.keyFor('batch_quota_result', file);
     failKeys = new Set([resultKey]);
-    await expect(runtime.saveStatusNow([file], 'batch_quota_result')).resolves.toBe(true);
+    await expect(runtime.saveStatusNow([file], 'batch_quota_result', { rootWriteId })).resolves.toBe(true);
     expect(file._checkpointResultOmitted).toBe(true);
     expect(file._checkpointResultKey).toBeFalsy();
     const statusRec = values.get(runtime.statusKeyFor('batch_quota_result'));
@@ -603,7 +613,7 @@ describe('remediation deep-dive hardening', () => {
     // Status write failure → reported false + newly stored results rolled back.
     const file2 = { id: 'q2', fileName: 'q2.pdf', fileSize: 4, base64: 'AA==', status: 'done', result: { afterScore: 88 } };
     failKeys = new Set([runtime.statusKeyFor('batch_quota_result')]);
-    await expect(runtime.saveStatusNow([file2], 'batch_quota_result')).resolves.toBe(false);
+    await expect(runtime.saveStatusNow([file2], 'batch_quota_result', { rootWriteId })).resolves.toBe(false);
     expect(values.has(runtime.keyFor('batch_quota_result', file2))).toBe(false);
   });
 
@@ -618,22 +628,23 @@ describe('remediation deep-dive hardening', () => {
       keys: async () => Array.from(values.keys()),
       del: async (key) => { values.delete(key); },
     };
-    const runtime = makeCheckpointRuntime(storageDB, idbKeyval, {}, (msg) => toasts.push(msg));
+    const runtime = makeCheckpointRuntime(storageDB, idbKeyval, checkpointTestNavigator, (msg) => toasts.push(msg));
     const file = { id: 't1', fileName: 't.pdf', fileSize: 4, base64: 'AA==', status: 'done', result: { afterScore: 91 } };
-    await expect(runtime.saveFiles([file], {}, 100, 'batch_original_tab')).resolves.toBe(true);
+    const rootWriteId = await runtime.saveFiles([file], {}, 100, 'batch_original_tab');
+    expect(rootWriteId).toMatch(/^batch_/);
     // Foreign root (another tab's batch) → takeover disclosed, once.
     values.set('pdf_active_batch_files_v1', {
       schemaVersion: 4, batchId: 'batch_usurper_tab', rootWriteId: 'other_root',
       files: [{ id: 'x' }], startedAt: 1, savedAt: Date.now(),
     });
-    await expect(runtime.saveStatusNow([file], 'batch_original_tab')).resolves.toBe(false);
-    await expect(runtime.saveStatusNow([file], 'batch_original_tab')).resolves.toBe(false);
+    await expect(runtime.saveStatusNow([file], 'batch_original_tab', { rootWriteId })).resolves.toBe('stale');
+    await expect(runtime.saveStatusNow([file], 'batch_original_tab', { rootWriteId })).resolves.toBe('stale');
     expect(toasts.filter(m => /Another tab started a newer batch/i.test(m)).length).toBe(1);
     // Cleared root (benign end-of-batch) → silent.
     const quietToasts = [];
-    const runtime2 = makeCheckpointRuntime(storageDB, idbKeyval, {}, (msg) => quietToasts.push(msg));
+    const runtime2 = makeCheckpointRuntime(storageDB, idbKeyval, checkpointTestNavigator, (msg) => quietToasts.push(msg));
     values.delete('pdf_active_batch_files_v1');
-    await expect(runtime2.saveStatusNow([file], 'batch_original_tab')).resolves.toBe(false);
+    await expect(runtime2.saveStatusNow([file], 'batch_original_tab', { rootWriteId })).resolves.toBe('stale');
     expect(quietToasts.length).toBe(0);
   });
 
@@ -648,7 +659,7 @@ describe('remediation deep-dive hardening', () => {
       keys: async () => Array.from(values.keys()),
       del: async (key) => { values.delete(key); },
     };
-    const runtime = makeCheckpointRuntime(storageDB, idbKeyval, {}, (msg) => toasts.push(msg));
+    const runtime = makeCheckpointRuntime(storageDB, idbKeyval, checkpointTestNavigator, (msg) => toasts.push(msg));
     values.set('pdf_active_batch_files_v1', {
       schemaVersion: 4, batchId: 'batch_prewave_saved', rootWriteId: 'r1',
       files: [{ id: 'f', fileName: 'f.pdf', fileSize: 4, base64: 'AA==' }],

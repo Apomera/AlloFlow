@@ -1378,7 +1378,7 @@ async function runAutoFixLoop(maxRounds, deps) {
         // once the storm passes (bounded, then it proceeds regardless, only ever slower). The ticking
         // status ALSO keeps the dead-man switch (a frozen-step detector) from false-firing meanwhile.
         try {
-          await waitForGeminiCalm({ maxWaitMs: 240000, shouldAbort: () => !_canContinue(), onTick: (w) => {
+          await waitForGeminiCalm({ maxWaitMs: 240000, shouldAbort: () => !_canContinue(), signal: _abortCtrl.signal, owner: _loopOwner, onTick: (w) => {
             if (!_canContinue()) return;
             const _ws = Math.max(1, Math.ceil((((w && w.cooldownRemainingMs) || 5000)) / 1000));
             _setStepIfOwned(t('pdf_audit.storm_wait_round', { round: round + 1, max: maxRounds, s: _ws }) || ('Canvas is rate-limiting — pausing before round ' + (round + 1) + '/' + maxRounds + ' so calls are not wasted (rechecking in ~' + _ws + 's; nothing is skipped, the run just takes longer)'));

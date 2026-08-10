@@ -78,39 +78,77 @@
     { name: 'Arctic North', lat: 64.15, lon: -21.94, density: 12, access: 88, coastal: true }
   ];
 
+  // Region packs are deliberately data, not executable code. Keeping this
+  // contract declarative lets a school or district supply a reviewed local pack
+  // without giving the pack permission to run scripts or inject tile URLs.
+  // Older project files only persist the pack id, so all of these fields are
+  // additive and the original ids/record fields remain stable.
+  var GIS_CORE_METRICS = [
+    { id: 'density', field: 'density', label: 'Population density', labelKey: 'metric.population_density', unit: 'people/mi\u00B2', unitKey: 'unit.people_per_square_mile', maximumFractionDigits: 1 },
+    { id: 'access', field: 'access', label: 'Broadband access index', labelKey: 'metric.broadband_access', unit: '/100', unitKey: 'unit.per_hundred', maximumFractionDigits: 1 }
+  ];
+
   var GIS_REGION_PACKS = [
     {
       id: 'maine',
+      revision: 1,
       label: 'Maine counties (16)',
+      labelKey: 'region.maine.label',
       scope: 'Maine',
       defaultZoom: 6,
+      view: { center: [45.15, -69.05], zoom: 6, bounds: [[42.9, -71.2], [47.5, -66.8]] },
+      defaultMetric: 'density',
+      metrics: GIS_CORE_METRICS,
+      modules: { missions: ['coast-connectivity', 'service-area', 'ecoregion-boundaries'], officialLayers: ['maine-ecoregions'], remoteScene: 'maine-forest-edge' },
+      standardsProfile: 'us-c3-ngss',
       description: 'Sixteen county reference points spanning coastal and inland Maine.',
       sourceNote: 'Illustrative classroom values; county reference points are not population or service-demand surfaces.',
       records: MAINE
     },
     {
       id: 'new-england',
+      revision: 1,
       label: 'New England (6-state sample)',
+      labelKey: 'region.new_england.label',
       scope: 'New England',
       defaultZoom: 5,
+      view: { center: [43.55, -71.35], zoom: 5, bounds: [[40.9, -73.8], [47.6, -66.7]] },
+      defaultMetric: 'density',
+      metrics: GIS_CORE_METRICS,
+      modules: { missions: [], officialLayers: [], remoteScene: null },
+      standardsProfile: 'generic',
       description: 'Eight illustrative reference points across all six New England states.',
       sourceNote: 'Illustrative classroom values; points support comparison across states but are not official state estimates.',
       records: NEW_ENGLAND
     },
     {
       id: 'united-states',
+      revision: 1,
       label: 'United States (macro-region sample)',
+      labelKey: 'region.united_states.label',
       scope: 'United States',
       defaultZoom: 4,
+      view: { center: [39.4, -98.2], zoom: 4 },
+      defaultMetric: 'density',
+      metrics: GIS_CORE_METRICS,
+      modules: { missions: [], officialLayers: [], remoteScene: null },
+      standardsProfile: 'generic',
       description: 'Eleven illustrative reference points for major U.S. macro-regions, including Alaska and Hawaii.',
       sourceNote: 'Illustrative classroom values; macro-region points are not national statistical estimates.',
       records: US_REGIONS
     },
     {
       id: 'global',
+      revision: 1,
       label: 'Global regions (classroom sample)',
+      labelKey: 'region.global.label',
       scope: 'Global',
       defaultZoom: 3,
+      view: { center: [15, 10], zoom: 2 },
+      defaultMetric: 'density',
+      metrics: GIS_CORE_METRICS,
+      modules: { missions: [], officialLayers: [], remoteScene: null },
+      standardsProfile: 'generic',
       description: 'Eleven illustrative reference points spanning major world regions and climate contexts.',
       sourceNote: 'Illustrative classroom values; global points are prompts for comparison, not a complete world dataset.',
       records: GLOBAL_REGIONS
@@ -120,6 +158,186 @@
   function getRegionPack(id) {
     return GIS_REGION_PACKS.filter(function (pack) { return pack.id === id; })[0] || GIS_REGION_PACKS[0];
   }
+
+  function regionMetrics(pack) {
+    return pack && Array.isArray(pack.metrics) && pack.metrics.length ? pack.metrics : GIS_CORE_METRICS;
+  }
+
+  function regionMetric(pack, id) {
+    var metrics = regionMetrics(pack);
+    return metrics.filter(function (item) { return item.id === id; })[0] || metrics[0];
+  }
+
+  // Online basemaps are described as data so deployments can audit the
+  // network domains, attribution, coverage, and privacy implications in one
+  // place. Region packs cannot inject providers or arbitrary URLs.
+  var GIS_BASEMAP_PROVIDERS = {
+    street: {
+      id: 'street', label: 'OpenStreetMap Standard',
+      url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors', maxZoom: 19,
+      domains: ['tile.openstreetmap.org'], requestOrigin: 'https://tile.openstreetmap.org', online: true,
+      policy: {
+        url: 'https://operations.osmfoundation.org/policies/tiles/', interactiveOnly: true,
+        allowsPrefetch: false, allowsOfflineCache: false, allowsSensitiveData: false, revealsViewport: true
+      }
+    },
+    satellite: {
+      id: 'satellite', label: 'Esri World Imagery',
+      url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      attribution: 'Tiles &copy; Esri and source contributors', maxZoom: 18,
+      domains: ['services.arcgisonline.com'], requestOrigin: 'https://services.arcgisonline.com', online: true,
+      creditsUrl: 'https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9',
+      policy: { providerCreditsRequired: true, revealsViewport: true }
+    },
+    none: {
+      id: 'none', label: 'Offline schematic', url: '', attribution: '',
+      maxZoom: 18, domains: [], online: false, policy: { revealsViewport: false, allowsNetworkRequests: false }
+    }
+  };
+  Object.keys(GIS_BASEMAP_PROVIDERS).forEach(function (id) {
+    var provider = GIS_BASEMAP_PROVIDERS[id];
+    if (Array.isArray(provider.domains)) Object.freeze(provider.domains);
+    if (provider.policy) Object.freeze(provider.policy);
+    Object.freeze(provider);
+  });
+  Object.freeze(GIS_BASEMAP_PROVIDERS);
+
+  function getGISBasemapProvider(id) {
+    return Object.prototype.hasOwnProperty.call(GIS_BASEMAP_PROVIDERS, id) ? GIS_BASEMAP_PROVIDERS[id] : null;
+  }
+
+  function createGISBasemapLayer(L, id, onTileError) {
+    var provider = getGISBasemapProvider(id);
+    if (!provider || !L || typeof L.tileLayer !== 'function' || !provider.url) return null;
+    var layer = L.tileLayer(provider.url, {
+      maxZoom: provider.maxZoom,
+      attribution: provider.attribution
+    });
+    if (layer) layer._gisHadTileError = false;
+    if (layer && typeof layer.on === 'function' && typeof onTileError === 'function') {
+      var errorReported = false;
+      var errorHandler = function (event) {
+        if (errorReported) return;
+        errorReported = true;
+        layer._gisHadTileError = true;
+        onTileError(event, layer);
+      };
+      layer._gisTileErrorHandler = errorHandler;
+      layer.on('tileerror', errorHandler);
+    }
+    return layer;
+  }
+
+  function detachGISBasemapLayer(layer) {
+    if (!layer) return;
+    if (layer._gisTileErrorHandler && typeof layer.off === 'function') {
+      layer.off('tileerror', layer._gisTileErrorHandler);
+    }
+    layer._gisTileErrorHandler = null;
+  }
+
+  var GIS_RTL_LANGUAGE = /^(ar|arc|ckb|dv|fa|he|ku-arab|nqo|ps|sd|ug|ur|yi)(-|$)/i;
+
+  function canonicalGISLocale(value) {
+    var candidate = String(value || '').trim().replace(/_/g, '-');
+    if (!candidate) return '';
+    try {
+      if (typeof Intl !== 'undefined' && typeof Intl.getCanonicalLocales === 'function') {
+        return Intl.getCanonicalLocales(candidate)[0] || '';
+      }
+      new Intl.NumberFormat(candidate);
+      return candidate;
+    } catch (error) {
+      return '';
+    }
+  }
+
+  function resolveGISLocale(input) {
+    var options = typeof input === 'string' ? { locale: input } : (input || {});
+    var friendlyName = String(options.language || options.uiLanguage || '').trim();
+    var candidate = options.locale || options.lang || '';
+    try {
+      if (!candidate && friendlyName && typeof window !== 'undefined' && window.AlloFlowLang && typeof window.AlloFlowLang.bcp47Full === 'function') {
+        candidate = window.AlloFlowLang.bcp47Full(friendlyName);
+      }
+      if (!candidate && typeof window !== 'undefined' && window.AlloFlowLang && typeof window.AlloFlowLang.bcp47Full === 'function' && window.__alloTextLanguage) {
+        candidate = window.AlloFlowLang.bcp47Full(window.__alloTextLanguage);
+      }
+    } catch (ignoreLanguageHelper) {}
+    if (!candidate && typeof document !== 'undefined' && document.documentElement) candidate = document.documentElement.lang;
+    if (!candidate && typeof navigator !== 'undefined') candidate = navigator.language;
+    var locale = canonicalGISLocale(candidate) || 'en-US';
+    var requestedDirection = String(options.dir || options.direction || '').toLowerCase();
+    var documentDirection = '';
+    try { documentDirection = document.documentElement && document.documentElement.dir || ''; } catch (ignoreDocumentDirection) {}
+    var dir = requestedDirection === 'rtl' || requestedDirection === 'ltr'
+      ? requestedDirection
+      : GIS_RTL_LANGUAGE.test(locale) ? 'rtl' : (documentDirection === 'rtl' ? 'rtl' : 'ltr');
+    return { locale: locale, lang: locale, language: friendlyName || locale, dir: dir };
+  }
+
+  function gisNumberOptions(value, defaults) {
+    if (typeof value === 'number') return { minimumFractionDigits: value, maximumFractionDigits: value };
+    return Object.assign({}, defaults || {}, value && typeof value === 'object' ? value : {});
+  }
+
+  function createGISFormatters(input) {
+    var localeInfo = resolveGISLocale(input);
+    function formatNumber(value, options) {
+      var number = Number(value);
+      if (!Number.isFinite(number)) return '\u2014';
+      var resolvedOptions = gisNumberOptions(options, { maximumFractionDigits: 2 });
+      try { return new Intl.NumberFormat(localeInfo.locale, resolvedOptions).format(number); }
+      catch (error) { return number.toFixed(resolvedOptions.maximumFractionDigits == null ? 2 : resolvedOptions.maximumFractionDigits); }
+    }
+    function formatPercent(value, digits) {
+      var number = Number(value);
+      if (!Number.isFinite(number)) return '\u2014';
+      var fractionDigits = Number.isFinite(Number(digits)) ? Math.max(0, Math.min(6, Number(digits))) : 1;
+      try { return new Intl.NumberFormat(localeInfo.locale, { style: 'percent', minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits }).format(number / 100); }
+      catch (error) { return number.toFixed(fractionDigits) + '%'; }
+    }
+    function formatDateTime(value, options) {
+      var date = value instanceof Date ? value : new Date(value);
+      if (!date || !Number.isFinite(date.getTime())) return '';
+      var resolvedOptions = options && typeof options === 'object' ? options : { dateStyle: 'medium', timeStyle: 'short' };
+      try { return new Intl.DateTimeFormat(localeInfo.locale, resolvedOptions).format(date); }
+      catch (error) { return date.toLocaleString(); }
+    }
+    function formatCoordinate(value, digits, axis) {
+      var number = Number(value);
+      if (!Number.isFinite(number)) return '\u2014';
+      var fractionDigits = Number.isFinite(Number(digits)) ? Math.max(0, Math.min(8, Number(digits))) : 4;
+      var suffix = '';
+      if (axis === 'lat') suffix = number < 0 ? ' S' : ' N';
+      if (axis === 'lon') suffix = number < 0 ? ' W' : ' E';
+      var shown = suffix ? Math.abs(number) : number;
+      return formatNumber(shown, { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits, useGrouping: false }) + '\u00B0' + suffix;
+    }
+    function formatDistance(kilometres, system, digits) {
+      var useImperial = system === 'imperial' || system === 'us';
+      var value = useImperial ? Number(kilometres) * 0.621371 : Number(kilometres);
+      return formatNumber(value, Number.isFinite(Number(digits)) ? Number(digits) : 2) + (useImperial ? ' mi' : ' km');
+    }
+    function formatArea(squareKilometres, system, digits) {
+      var useImperial = system === 'imperial' || system === 'us';
+      var value = useImperial ? Number(squareKilometres) * 0.386102 : Number(squareKilometres);
+      return formatNumber(value, Number.isFinite(Number(digits)) ? Number(digits) : 2) + (useImperial ? ' mi\u00B2' : ' km\u00B2');
+    }
+    return {
+      locale: localeInfo.locale, lang: localeInfo.lang, dir: localeInfo.dir,
+      number: formatNumber, percent: formatPercent, dateTime: formatDateTime, coordinate: formatCoordinate,
+      distance: formatDistance, area: formatArea
+    };
+  }
+
+  function reportLocaleAttributes(model, override) {
+    var options = override || (model && model.localeOptions) || (model && { locale: model.locale, lang: model.lang, dir: model.dir }) || {};
+    var info = resolveGISLocale(options);
+    return ' lang="' + escapeHTML(info.lang) + '" dir="' + (info.dir === 'rtl' ? 'rtl' : 'ltr') + '"';
+  }
+
   var EXAMPLE = [
     'name,latitude,longitude,value',
     'School garden,43.66,-70.26,82',
@@ -138,7 +356,380 @@
     ]
   }, null, 2);
 
-  function parseCSV(text) {
+  function countGISDelimiter(line, delimiter) {
+    var quoted = false, count = 0;
+    for (var i = 0; i < line.length; i += 1) {
+      if (line[i] === '"') {
+        if (quoted && line[i + 1] === '"') i += 1;
+        else quoted = !quoted;
+      } else if (!quoted && line[i] === delimiter) count += 1;
+    }
+    return count;
+  }
+
+  function detectGISDelimiter(text) {
+    var source = String(text || '').replace(/^\uFEFF/, '');
+    var header = source.split(/\r?\n/).filter(function (line) { return line.trim(); })[0] || '';
+    var candidates = [',', ';', '\t', '|'];
+    var best = ',', bestCount = -1;
+    candidates.forEach(function (candidate) {
+      var count = countGISDelimiter(header, candidate);
+      if (count > bestCount) { best = candidate; bestCount = count; }
+    });
+    return bestCount > 0 ? best : ',';
+  }
+
+  function parseGISDelimitedRows(text, options) {
+    options = options || {};
+    var source = String(text || '').replace(/^\uFEFF/, '');
+    var delimiter = options.delimiter && options.delimiter !== 'auto' ? String(options.delimiter) : detectGISDelimiter(source);
+    if (delimiter === '\\t') delimiter = '\t';
+    if ([',', ';', '\t', '|'].indexOf(delimiter) < 0) throw new Error('Choose a supported delimiter: comma, semicolon, tab, or pipe.');
+    var rows = [], row = [], field = '', quoted = false, i;
+    for (i = 0; i < source.length; i += 1) {
+      var character = source[i];
+      if (character === '"') {
+        if (quoted && source[i + 1] === '"') { field += '"'; i += 1; }
+        else quoted = !quoted;
+      } else if (character === delimiter && !quoted) {
+        row.push(field.trim()); field = '';
+      } else if ((character === '\n' || character === '\r') && !quoted) {
+        if (character === '\r' && source[i + 1] === '\n') i += 1;
+        row.push(field.trim()); field = '';
+        if (row.some(function (cell) { return cell !== ''; })) rows.push(row);
+        row = [];
+      } else field += character;
+    }
+    row.push(field.trim());
+    if (row.some(function (cell) { return cell !== ''; })) rows.push(row);
+    return { rows: rows, delimiter: delimiter };
+  }
+
+  function normalizeGISHeader(value) {
+    var result = String(value == null ? '' : value).trim();
+    try { result = result.normalize('NFKD'); } catch (ignoreNormalization) {}
+    return result.toLowerCase().replace(/[\u0300-\u036f]/g, '').replace(/[\s_\-./]+/g, '');
+  }
+
+  function normalizeGISDigits(value) {
+    return String(value == null ? '' : value)
+      .replace(/[\u0660-\u0669]/g, function (digit) { return String(digit.charCodeAt(0) - 0x0660); })
+      .replace(/[\u06F0-\u06F9]/g, function (digit) { return String(digit.charCodeAt(0) - 0x06F0); });
+  }
+
+  function detectGISDecimalSeparator(rows, delimiter, options) {
+    var explicit = options && (options.decimalSeparator || options.decimal);
+    if (explicit === ',' || explicit === '.') return explicit;
+    if (delimiter === ';') {
+      var samples = (rows || []).slice(1, 8).reduce(function (all, row) { return all.concat(row); }, []);
+      if (samples.some(function (cell) { return /^[+\-\u2212]?\d+,\d+$/.test(String(cell).trim()); })) return ',';
+    }
+    return '.';
+  }
+
+  function gisImportParseOptions(convention) {
+    if (convention === 'comma-dot') return { delimiter: ',', decimalSeparator: '.' };
+    if (convention === 'comma-comma') return { delimiter: ',', decimalSeparator: ',' };
+    if (convention === 'semicolon-comma') return { delimiter: ';', decimalSeparator: ',' };
+    if (convention === 'tab-dot') return { delimiter: '\t', decimalSeparator: '.' };
+    if (convention === 'tab-comma') return { delimiter: '\t', decimalSeparator: ',' };
+    if (convention === 'pipe-dot') return { delimiter: '|', decimalSeparator: '.' };
+    if (convention === 'pipe-comma') return { delimiter: '|', decimalSeparator: ',' };
+    return {};
+  }
+
+  function parseGISNumber(value, options) {
+    options = options || {};
+    var decimalSeparator = options.decimalSeparator || options.decimal || '.';
+    var text = normalizeGISDigits(value).trim()
+      .replace(/[\u00A0\u202F\s]/g, '')
+      .replace(/\u2212/g, '-')
+      .replace(/\u066B/g, '.')
+      .replace(/\u066C/g, '');
+    if (!text) return NaN;
+    if (decimalSeparator === ',') text = text.replace(/\./g, '').replace(',', '.');
+    else if (/^[+\-]?\d{1,3}(,\d{3})+(\.\d+)?$/.test(text)) text = text.replace(/,/g, '');
+    var number = Number(text);
+    return Number.isFinite(number) ? number : NaN;
+  }
+  function parseGISAngle(value, axis, options) {
+    options = options || {};
+    var source = normalizeGISDigits(value).trim()
+      .replace(/\u2212/g, '-')
+      .replace(/[\u00BA\u02DA]/g, '\u00B0')
+      .replace(/[\u2032\u2019]/g, "'")
+      .replace(/[\u2033\u201D]/g, '"');
+    if (!source) return NaN;
+    var hemisphereMatch = source.match(/[NSEW]/i);
+    var hemisphere = hemisphereMatch ? hemisphereMatch[0].toUpperCase() : '';
+    if (axis === 'lat' && (hemisphere === 'E' || hemisphere === 'W')) return NaN;
+    if (axis === 'lon' && (hemisphere === 'N' || hemisphere === 'S')) return NaN;
+    var tokenStrings = source.match(/[+\-]?\d+(?:[.,]\d+)?/g) || [];
+    var hasDMSMarkers = /[\u00B0'"]/.test(source) || !!hemisphere || tokenStrings.length > 1;
+    if (!hasDMSMarkers) return parseGISNumber(source, options);
+    if (!tokenStrings.length || tokenStrings.length > 3) return NaN;
+    var values = tokenStrings.map(function (token) { return parseGISNumber(token, options); });
+    if (values.some(function (number) { return !Number.isFinite(number); })) return NaN;
+    var degrees = values[0], minutes = Math.abs(values[1] || 0), seconds = Math.abs(values[2] || 0);
+    if (minutes >= 60 || seconds >= 60) return NaN;
+    var numericSign = degrees < 0 ? -1 : 1;
+    var hemisphereSign = hemisphere === 'S' || hemisphere === 'W' ? -1 : hemisphere ? 1 : numericSign;
+    if (hemisphere && degrees < 0 && hemisphereSign > 0) return NaN;
+    return hemisphereSign * (Math.abs(degrees) + minutes / 60 + seconds / 3600);
+  }
+
+  function normalizeGISCRS(value, options) {
+    options = options || {};
+    var compact = String(value || 'EPSG:4326').trim().toUpperCase().replace(/\s+/g, '');
+    if (compact === '4326' || compact === 'EPSG:4326' || compact === 'WGS84' || compact === 'WGS-84') {
+      return { id: 'EPSG:4326', kind: 'geographic' };
+    }
+    if (compact === '3857' || compact === 'EPSG:3857' || compact === 'WEBMERCATOR' || compact === 'WEB-MERCATOR') {
+      return { id: 'EPSG:3857', kind: 'web-mercator' };
+    }
+    var epsgUTM = /^EPSG:(326|327)(\d{2})$/.exec(compact);
+    var zone = Number(options.utmZone || options.zone);
+    var hemisphere = String(options.utmHemisphere || options.hemisphere || 'N').toUpperCase();
+    if (epsgUTM) {
+      zone = Number(epsgUTM[2]);
+      hemisphere = epsgUTM[1] === '327' ? 'S' : 'N';
+    } else if (compact !== 'UTM' && compact !== 'WGS84/UTM' && compact !== 'WGS84UTM') {
+      throw new Error('Unsupported coordinate reference system. Choose WGS84, Web Mercator, or WGS84 UTM.');
+    }
+    if (!Number.isInteger(zone) || zone < 1 || zone > 60) throw new Error('UTM zone must be a whole number from 1 to 60.');
+    if (hemisphere !== 'N' && hemisphere !== 'S') throw new Error('Choose the northern or southern UTM hemisphere.');
+    return { id: 'EPSG:' + (hemisphere === 'S' ? '327' : '326') + String(zone).padStart(2, '0'), kind: 'utm', zone: zone, hemisphere: hemisphere };
+  }
+
+  function inverseGISWebMercator(x, y) {
+    var extent = 20037508.342789244;
+    if (!Number.isFinite(x) || !Number.isFinite(y) || Math.abs(x) > extent * 1.001 || Math.abs(y) > extent * 1.001) {
+      throw new Error('Web Mercator coordinates must fall within the EPSG:3857 world extent.');
+    }
+    var longitude = x / extent * 180;
+    var latitude = (2 * Math.atan(Math.exp(y / 6378137)) - Math.PI / 2) * 180 / Math.PI;
+    return { lat: latitude, lon: normalizeLongitude(longitude) };
+  }
+
+  function inverseGISUTM(easting, northing, zone, hemisphere) {
+    if (!Number.isFinite(easting) || !Number.isFinite(northing) || easting < 100000 || easting > 1000000 || northing < 0 || northing > 10000000) {
+      throw new Error('UTM easting or northing is outside the supported WGS84 range.');
+    }
+    var a = 6378137;
+    var eccentricitySquared = 0.00669438;
+    var eccentricityPrimeSquared = eccentricitySquared / (1 - eccentricitySquared);
+    var k0 = 0.9996;
+    var x = easting - 500000;
+    var y = hemisphere === 'S' ? northing - 10000000 : northing;
+    var longitudeOrigin = (zone - 1) * 6 - 180 + 3;
+    var meridionalArc = y / k0;
+    var mu = meridionalArc / (a * (1 - eccentricitySquared / 4 - 3 * Math.pow(eccentricitySquared, 2) / 64 - 5 * Math.pow(eccentricitySquared, 3) / 256));
+    var e1 = (1 - Math.sqrt(1 - eccentricitySquared)) / (1 + Math.sqrt(1 - eccentricitySquared));
+    var phi1 = mu +
+      (3 * e1 / 2 - 27 * Math.pow(e1, 3) / 32) * Math.sin(2 * mu) +
+      (21 * Math.pow(e1, 2) / 16 - 55 * Math.pow(e1, 4) / 32) * Math.sin(4 * mu) +
+      (151 * Math.pow(e1, 3) / 96) * Math.sin(6 * mu) +
+      (1097 * Math.pow(e1, 4) / 512) * Math.sin(8 * mu);
+    var sinPhi1 = Math.sin(phi1), cosPhi1 = Math.cos(phi1), tanPhi1 = Math.tan(phi1);
+    var n1 = a / Math.sqrt(1 - eccentricitySquared * sinPhi1 * sinPhi1);
+    var r1 = a * (1 - eccentricitySquared) / Math.pow(1 - eccentricitySquared * sinPhi1 * sinPhi1, 1.5);
+    var t1 = tanPhi1 * tanPhi1;
+    var c1 = eccentricityPrimeSquared * cosPhi1 * cosPhi1;
+    var d = x / (n1 * k0);
+    var latitude = phi1 - (n1 * tanPhi1 / r1) *
+      (d * d / 2 - (5 + 3 * t1 + 10 * c1 - 4 * c1 * c1 - 9 * eccentricityPrimeSquared) * Math.pow(d, 4) / 24 +
+      (61 + 90 * t1 + 298 * c1 + 45 * t1 * t1 - 252 * eccentricityPrimeSquared - 3 * c1 * c1) * Math.pow(d, 6) / 720);
+    var longitude = (d - (1 + 2 * t1 + c1) * Math.pow(d, 3) / 6 +
+      (5 - 2 * c1 + 28 * t1 - 3 * c1 * c1 + 8 * eccentricityPrimeSquared + 24 * t1 * t1) * Math.pow(d, 5) / 120) / cosPhi1;
+    latitude = latitude * 180 / Math.PI;
+    longitude = longitudeOrigin + longitude * 180 / Math.PI;
+    if (!Number.isFinite(latitude) || latitude < -80.5 || latitude > 84.5 || !Number.isFinite(longitude)) {
+      throw new Error('The UTM coordinate does not resolve to a valid WGS84 location.');
+    }
+    return { lat: latitude, lon: normalizeLongitude(longitude) };
+  }
+
+  function transformGISCoordinatePair(first, second, options) {
+    options = options || {};
+    var crs = normalizeGISCRS(options.crs || 'EPSG:4326', options);
+    var axisOrder = String(options.axisOrder || (crs.kind === 'geographic' ? 'lat-lon' : 'x-y')).toLowerCase();
+    if (crs.kind === 'geographic') {
+      var latitudeRaw = axisOrder === 'lon-lat' ? second : first;
+      var longitudeRaw = axisOrder === 'lon-lat' ? first : second;
+      var latitude = parseGISAngle(latitudeRaw, 'lat', options);
+      var longitude = parseGISAngle(longitudeRaw, 'lon', options);
+      if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90 || !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+        throw new Error('WGS84 latitude must be -90 to 90 and longitude must be -180 to 180.');
+      }
+      return { lat: latitude, lon: longitude };
+    }
+    var xRaw = axisOrder === 'y-x' ? second : first;
+    var yRaw = axisOrder === 'y-x' ? first : second;
+    var x = parseGISNumber(xRaw, options), y = parseGISNumber(yRaw, options);
+    if (!Number.isFinite(x) || !Number.isFinite(y)) throw new Error('Projected coordinates must be numeric.');
+    if (crs.kind === 'web-mercator') return inverseGISWebMercator(x, y);
+    return inverseGISUTM(x, y, crs.zone, crs.hemisphere);
+  }
+
+  function suggestGISImportColumns(headers, options, allowFallback) {
+    options = options || {};
+    var columns = options.columns || {};
+    var crs = normalizeGISCRS(options.crs || 'EPSG:4326', options);
+    var nameIndex = findGISColumn(headers, ['name', 'label', 'place', 'location', 'nom', 'nombre', 'nome', 'ort', 'naam'], columns.name);
+    var valueIndex = findGISColumn(headers, ['value', 'amount', 'score', 'count', 'reading', 'measurement', 'valeur', 'valor', 'wert', 'waarde'], columns.value);
+    var axisOrder = String(options.axisOrder || (crs.kind === 'geographic' ? 'lat-lon' : 'x-y')).toLowerCase();
+    var coordinate1Index = findGISColumn(headers, [], columns.coordinate1);
+    var coordinate2Index = findGISColumn(headers, [], columns.coordinate2);
+    if (coordinate1Index < 0 || coordinate2Index < 0) {
+      if (crs.kind === 'geographic') {
+        var latitudeIndex = findGISColumn(headers, ['latitude', 'lat', 'latitud', 'breitengrad', '\u7EAC\u5EA6', '\u7DEF\u5EA6', '\u062E\u0637 \u0627\u0644\u0639\u0631\u0636', '\u0448\u0438\u0440\u043E\u0442\u0430'], columns.latitude == null ? columns.lat : columns.latitude);
+        var longitudeIndex = findGISColumn(headers, ['longitude', 'lon', 'lng', 'long', 'longitud', 'lengtegraad', 'l\u00E4ngengrad', '\u7ECF\u5EA6', '\u7D4C\u5EA6', '\u062E\u0637 \u0627\u0644\u0637\u0648\u0644', '\u0434\u043E\u043B\u0433\u043E\u0442\u0430'], columns.longitude == null ? columns.lon : columns.longitude);
+        coordinate1Index = axisOrder === 'lon-lat' ? longitudeIndex : latitudeIndex;
+        coordinate2Index = axisOrder === 'lon-lat' ? latitudeIndex : longitudeIndex;
+      } else {
+        var xIndex = findGISColumn(headers, ['x', 'easting', 'east', 'webmercatorx'], columns.x == null ? columns.easting : columns.x);
+        var yIndex = findGISColumn(headers, ['y', 'northing', 'north', 'webmercatory'], columns.y == null ? columns.northing : columns.y);
+        coordinate1Index = axisOrder === 'y-x' ? yIndex : xIndex;
+        coordinate2Index = axisOrder === 'y-x' ? xIndex : yIndex;
+      }
+    }
+    var usedFallback = false;
+    if (allowFallback) {
+      var used = {};
+      [nameIndex, valueIndex, coordinate1Index, coordinate2Index].forEach(function (index) { if (index >= 0) used[index] = true; });
+      if (nameIndex < 0 && headers.length) { nameIndex = 0; used[0] = true; usedFallback = true; }
+      if (valueIndex < 0) {
+        for (var valueCandidate = headers.length - 1; valueCandidate >= 0; valueCandidate -= 1) {
+          if (!used[valueCandidate]) { valueIndex = valueCandidate; used[valueCandidate] = true; usedFallback = true; break; }
+        }
+      }
+      if (coordinate1Index < 0) {
+        for (var firstCandidate = 0; firstCandidate < headers.length; firstCandidate += 1) {
+          if (!used[firstCandidate]) { coordinate1Index = firstCandidate; used[firstCandidate] = true; usedFallback = true; break; }
+        }
+      }
+      if (coordinate2Index < 0) {
+        for (var secondCandidate = 0; secondCandidate < headers.length; secondCandidate += 1) {
+          if (!used[secondCandidate]) { coordinate2Index = secondCandidate; used[secondCandidate] = true; usedFallback = true; break; }
+        }
+      }
+    }
+    return {
+      name: nameIndex, coordinate1: coordinate1Index, coordinate2: coordinate2Index, value: valueIndex,
+      axisOrder: axisOrder, crs: crs.id, usedFallback: usedFallback
+    };
+  }
+
+  function inspectGISCSV(text, options) {
+    options = options || {};
+    var table = parseGISDelimitedRows(text, options), rows = table.rows;
+    if (!rows.length) throw new Error('Add a CSV header row before previewing columns.');
+    var headers = rows[0].map(function (value) { return String(value || '').trim(); });
+    if (headers.length < 3) throw new Error('The CSV needs at least three columns for coordinates and a value.');
+    var decimalSeparator = detectGISDecimalSeparator(rows, table.delimiter, options);
+    var mapping = suggestGISImportColumns(headers, options, true);
+    return {
+      headers: headers,
+      sampleRows: rows.slice(1, 6),
+      totalRows: Math.max(0, rows.length - 1),
+      delimiter: table.delimiter,
+      decimalSeparator: decimalSeparator,
+      suggestedColumns: mapping,
+      crs: mapping.crs,
+      axisOrder: mapping.axisOrder
+    };
+  }
+
+  function findGISColumn(headers, aliases, explicit) {
+    if (Number.isInteger(explicit) && explicit >= 0 && explicit < headers.length) return explicit;
+    var normalized = headers.map(normalizeGISHeader);
+    if (typeof explicit === 'string' && explicit.trim()) {
+      var exact = headers.indexOf(explicit);
+      if (exact >= 0) return exact;
+      var normalizedExplicit = normalized.indexOf(normalizeGISHeader(explicit));
+      if (normalizedExplicit >= 0) return normalizedExplicit;
+    }
+    var result = -1;
+    aliases.some(function (alias) { result = normalized.indexOf(normalizeGISHeader(alias)); return result >= 0; });
+    return result;
+  }
+
+  function parseCSV(text, options) {
+    options = options || {};
+    var table = parseGISDelimitedRows(text, options), rows = table.rows;
+    if (rows.length < 2) throw new Error('Add a header and at least one data row. Check the selected delimiter.');
+    var headers = rows[0].map(function (value) { return String(value || '').trim(); });
+    var crs = normalizeGISCRS(options.crs || 'EPSG:4326', options);
+    var mapping = suggestGISImportColumns(headers, Object.assign({}, options, { crs: crs.id }), false);
+    if (mapping.coordinate1 < 0 || mapping.coordinate2 < 0 || mapping.value < 0) {
+      throw new Error('Choose the two coordinate columns and numeric value column in the import preview.');
+    }
+    var decimalSeparator = detectGISDecimalSeparator(rows, table.delimiter, options);
+    var transformOptions = Object.assign({}, options, {
+      crs: crs.id,
+      axisOrder: mapping.axisOrder,
+      decimalSeparator: decimalSeparator
+    });
+    var rejectedRows = [];
+    var parsed = rows.slice(1).map(function (cells, index) {
+      var first = cells[mapping.coordinate1] == null ? '' : cells[mapping.coordinate1];
+      var second = cells[mapping.coordinate2] == null ? '' : cells[mapping.coordinate2];
+      var raw = {
+        row: index + 2,
+        name: mapping.name >= 0 && cells[mapping.name] ? cells[mapping.name] : 'Location ' + (index + 1),
+        coordinate1: first,
+        coordinate2: second,
+        latitude: mapping.axisOrder === 'lon-lat' || mapping.axisOrder === 'x-y' ? second : first,
+        longitude: mapping.axisOrder === 'lon-lat' || mapping.axisOrder === 'x-y' ? first : second,
+        value: cells[mapping.value] == null ? '' : cells[mapping.value],
+        crs: crs.id
+      };
+      var coordinate = { lat: NaN, lon: NaN };
+      try {
+        coordinate = transformGISCoordinatePair(first, second, transformOptions);
+      } catch (coordinateError) {
+        raw.reason = coordinateError.message;
+      }
+      return {
+        raw: raw,
+        record: {
+          name: raw.name,
+          lat: coordinate.lat,
+          lon: coordinate.lon,
+          value: parseGISNumber(raw.value, { decimalSeparator: decimalSeparator }),
+          coastal: false
+        }
+      };
+    }).filter(function (item) {
+      var record = item.record, raw = item.raw;
+      var valid = String(raw.coordinate1).trim() !== '' && String(raw.coordinate2).trim() !== '' && String(raw.value).trim() !== '' &&
+        Number.isFinite(record.lat) && record.lat >= -90 && record.lat <= 90 &&
+        Number.isFinite(record.lon) && record.lon >= -180 && record.lon <= 180 && Number.isFinite(record.value);
+      if (!valid && rejectedRows.length < 50) {
+        if (!raw.reason) raw.reason = 'A coordinate or value is missing, invalid, or outside the selected CRS range.';
+        rejectedRows.push(raw);
+      }
+      return valid;
+    }).map(function (item) { return item.record; });
+    if (!parsed.length) throw new Error('No valid rows were found. Review the column mapping, coordinate reference system, axis order, and number convention.');
+    var limited = parsed.slice(0, 250);
+    limited.invalidRows = Math.max(0, rows.length - 1 - parsed.length);
+    limited.truncatedRows = Math.max(0, parsed.length - limited.length);
+    limited.invalidSamples = rejectedRows;
+    limited.delimiter = table.delimiter;
+    limited.decimalSeparator = decimalSeparator;
+    limited.headers = headers;
+    limited.crs = crs.id;
+    limited.axisOrder = mapping.axisOrder;
+    limited.columnMap = {
+      name: mapping.name, coordinate1: mapping.coordinate1, coordinate2: mapping.coordinate2, value: mapping.value,
+      latitude: mapping.axisOrder === 'lon-lat' || mapping.axisOrder === 'x-y' ? mapping.coordinate2 : mapping.coordinate1,
+      longitude: mapping.axisOrder === 'lon-lat' || mapping.axisOrder === 'x-y' ? mapping.coordinate1 : mapping.coordinate2
+    };
+    return limited;
+  }
+
+  function parseLegacyCSV(text) {
     var rows = [], row = [], field = '', quoted = false, i;
     text = String(text || '');
     for (i = 0; i < text.length; i += 1) {
@@ -209,18 +800,77 @@
     return String(value || fallback || 'gis-studio').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || fallback || 'gis-studio';
   }
 
+  function validWGS84Position(position) {
+    if (!Array.isArray(position) || position.length < 2) return false;
+    if (typeof position[0] !== 'number' || typeof position[1] !== 'number') return false;
+    if (!Number.isFinite(position[0]) || !Number.isFinite(position[1])) return false;
+    if (position[0] < -180 || position[0] > 180 || position[1] < -90 || position[1] > 90) return false;
+    return position.slice(2).every(function (coordinate) { return typeof coordinate === 'number' && Number.isFinite(coordinate); });
+  }
+
+  function sameWGS84Position(first, last) {
+    return Array.isArray(first) && Array.isArray(last) && first.length >= 2 && last.length >= 2 &&
+      first[0] === last[0] && first[1] === last[1];
+  }
+
+  function validateWGS84Geometry(geometry) {
+    if (!geometry || typeof geometry !== 'object') throw new Error('Every GeoJSON feature needs a supported WGS84 geometry.');
+    var coordinates = geometry.coordinates;
+    function requirePositions(values, minimum, label) {
+      if (!Array.isArray(values) || values.length < minimum || !values.every(validWGS84Position)) {
+        throw new Error(label + ' coordinates must be finite WGS84 longitude-latitude numbers in range.');
+      }
+    }
+    function requireRing(ring) {
+      requirePositions(ring, 4, 'Polygon ring');
+      if (!sameWGS84Position(ring[0], ring[ring.length - 1])) throw new Error('Polygon ring coordinates must close at the same WGS84 position.');
+    }
+    if (geometry.type === 'Point') {
+      if (!validWGS84Position(coordinates)) throw new Error('Point coordinates must be numeric WGS84 longitude-latitude values in range.');
+      return;
+    }
+    if (geometry.type === 'MultiPoint') { requirePositions(coordinates, 1, 'MultiPoint'); return; }
+    if (geometry.type === 'LineString') { requirePositions(coordinates, 2, 'LineString'); return; }
+    if (geometry.type === 'MultiLineString') {
+      if (!Array.isArray(coordinates) || !coordinates.length) throw new Error('MultiLineString coordinates are required.');
+      coordinates.forEach(function (line) { requirePositions(line, 2, 'MultiLineString'); });
+      return;
+    }
+    if (geometry.type === 'Polygon') {
+      if (!Array.isArray(coordinates) || !coordinates.length) throw new Error('Polygon coordinates are required.');
+      coordinates.forEach(requireRing);
+      return;
+    }
+    if (geometry.type === 'MultiPolygon') {
+      if (!Array.isArray(coordinates) || !coordinates.length) throw new Error('MultiPolygon coordinates are required.');
+      coordinates.forEach(function (polygon) {
+        if (!Array.isArray(polygon) || !polygon.length) throw new Error('Every MultiPolygon member needs a polygon ring.');
+        polygon.forEach(requireRing);
+      });
+      return;
+    }
+    throw new Error('Unsupported GeoJSON geometry type: ' + String(geometry.type || 'missing') + '.');
+  }
+
   function parseGeoJSON(text) {
     var data;
     try { data = JSON.parse(String(text || '')); }
     catch (error) { throw new Error('GeoJSON is not valid JSON. Check commas, quotes, and brackets.'); }
+    if (data && data.crs) {
+      throw new Error('Legacy or projected GeoJSON CRS declarations are not supported. Reproject the layer to RFC 7946 WGS84 longitude-latitude coordinates first.');
+    }
     if (data.type === 'Feature') data = { type: 'FeatureCollection', features: [data] };
     if (!data || data.type !== 'FeatureCollection' || !Array.isArray(data.features)) {
       throw new Error('Use a GeoJSON FeatureCollection or Feature.');
     }
     var allowed = ['Point', 'MultiPoint', 'LineString', 'MultiLineString', 'Polygon', 'MultiPolygon'];
-    data.features = data.features.filter(function (feature) {
-      return feature && feature.type === 'Feature' && feature.geometry && allowed.indexOf(feature.geometry.type) >= 0;
-    }).slice(0, 500);
+    data.features = data.features.slice(0, 500);
+    data.features.forEach(function (feature, index) {
+      if (!feature || feature.type !== 'Feature' || !feature.geometry || allowed.indexOf(feature.geometry.type) < 0) {
+        throw new Error('GeoJSON feature ' + (index + 1) + ' needs a supported geometry.');
+      }
+      validateWGS84Geometry(feature.geometry);
+    });
     if (!data.features.length) throw new Error('No supported GeoJSON features were found.');
     var numeric = {};
     data.features.forEach(function (feature) {
@@ -242,6 +892,177 @@
     return { data: data, numericKeys: numericKeys, nameKey: nameKey };
   }
 
+  function gisXMLLocalName(node) {
+    return String(node && (node.localName || node.nodeName) || '').split(':').pop().toLowerCase();
+  }
+
+  function gisXMLChildren(node, name) {
+    var wanted = String(name || '').toLowerCase(), result = [];
+    if (!node || !node.childNodes) return result;
+    Array.prototype.forEach.call(node.childNodes, function (child) {
+      if (child && child.nodeType === 1 && gisXMLLocalName(child) === wanted) result.push(child);
+    });
+    return result;
+  }
+
+  function gisXMLDescendants(node, name) {
+    var wanted = String(name || '').toLowerCase(), result = [];
+    if (!node || !node.getElementsByTagName) return result;
+    Array.prototype.forEach.call(node.getElementsByTagName('*'), function (child) {
+      if (gisXMLLocalName(child) === wanted) result.push(child);
+    });
+    return result;
+  }
+
+  function gisXMLText(node) {
+    return String(node && (node.textContent != null ? node.textContent : node.nodeValue) || '').trim();
+  }
+
+  function parseGISXMLDocument(text, label) {
+    var Parser = typeof window !== 'undefined' && window.DOMParser ? window.DOMParser : (typeof DOMParser !== 'undefined' ? DOMParser : null);
+    if (!Parser) throw new Error(label + ' import is unavailable in this browser.');
+    var documentNode = new Parser().parseFromString(String(text || ''), 'application/xml');
+    if (!documentNode || !documentNode.documentElement || gisXMLLocalName(documentNode.documentElement) === 'parsererror' || gisXMLDescendants(documentNode, 'parsererror').length) {
+      throw new Error(label + ' is not valid XML. Check the file encoding and structure.');
+    }
+    return documentNode;
+  }
+
+  function parseGISCoordinates(text, label) {
+    var values = String(text || '').trim().split(/\s+/).filter(Boolean).map(function (token) {
+      var parts = token.split(',').map(function (part) { return Number(String(part).trim()); });
+      if (parts.length < 2 || !Number.isFinite(parts[0]) || !Number.isFinite(parts[1])) throw new Error(label + ' contains a non-numeric coordinate.');
+      var position = [parts[0], parts[1]];
+      if (parts.length > 2 && Number.isFinite(parts[2])) position.push(parts[2]);
+      if (!validWGS84Position(position)) throw new Error(label + ' contains a coordinate outside WGS84 longitude-latitude bounds.');
+      return position;
+    });
+    if (!values.length) throw new Error(label + ' has no coordinates.');
+    return values;
+  }
+
+  function kmlProperties(placemark) {
+    var properties = {}, nameNode = gisXMLDescendants(placemark, 'name')[0];
+    if (nameNode) properties.name = gisXMLText(nameNode);
+    gisXMLDescendants(placemark, 'data').forEach(function (dataNode) {
+      var key = dataNode.getAttribute && dataNode.getAttribute('name');
+      var valueNode = gisXMLChildren(dataNode, 'value')[0];
+      if (key && valueNode) properties[key] = gisXMLText(valueNode);
+    });
+    gisXMLDescendants(placemark, 'simpledata').forEach(function (dataNode) {
+      var key = dataNode.getAttribute && dataNode.getAttribute('name');
+      if (key) properties[key] = gisXMLText(dataNode);
+    });
+    var numericKey = Object.keys(properties).filter(function (key) { return key !== 'name' && properties[key] !== '' && Number.isFinite(Number(properties[key])); })[0];
+    properties.value = numericKey ? Number(properties[numericKey]) : 1;
+    return properties;
+  }
+
+  function kmlGeometryFeatures(node, properties, output) {
+    var geometryName = gisXMLLocalName(node);
+    if (geometryName === 'multigeometry') {
+      Array.prototype.forEach.call(node.childNodes || [], function (child) {
+        if (child && child.nodeType === 1) kmlGeometryFeatures(child, properties, output);
+      });
+      return;
+    }
+    var coordinateNode = gisXMLDescendants(node, 'coordinates')[0];
+    if (geometryName === 'point' && coordinateNode) {
+      output.push({ type: 'Feature', properties: Object.assign({}, properties), geometry: { type: 'Point', coordinates: parseGISCoordinates(gisXMLText(coordinateNode), 'KML point')[0] } });
+      return;
+    }
+    if (geometryName === 'linestring' && coordinateNode) {
+      output.push({ type: 'Feature', properties: Object.assign({}, properties), geometry: { type: 'LineString', coordinates: parseGISCoordinates(gisXMLText(coordinateNode), 'KML line') } });
+      return;
+    }
+    if (geometryName === 'polygon') {
+      var outer = gisXMLDescendants(node, 'outerboundaryis')[0];
+      var outerCoordinates = outer && gisXMLDescendants(outer, 'coordinates')[0];
+      if (!outerCoordinates) throw new Error('KML polygon is missing an outer boundary.');
+      var rings = [parseGISCoordinates(gisXMLText(outerCoordinates), 'KML polygon')];
+      gisXMLDescendants(node, 'innerboundaryis').forEach(function (inner) {
+        var innerCoordinates = gisXMLDescendants(inner, 'coordinates')[0];
+        if (innerCoordinates) rings.push(parseGISCoordinates(gisXMLText(innerCoordinates), 'KML polygon hole'));
+      });
+      rings = rings.map(function (ring) {
+        if (!sameWGS84Position(ring[0], ring[ring.length - 1])) ring.push(ring[0].slice());
+        return ring;
+      });
+      output.push({ type: 'Feature', properties: Object.assign({}, properties), geometry: { type: 'Polygon', coordinates: rings } });
+    }
+  }
+
+  function parseKML(text) {
+    var documentNode = parseGISXMLDocument(text, 'KML'), root = documentNode.documentElement;
+    if (gisXMLLocalName(root) !== 'kml') throw new Error('KML import must have a <kml> root element.');
+    var features = [];
+    gisXMLDescendants(root, 'placemark').forEach(function (placemark) {
+      var properties = kmlProperties(placemark);
+      Array.prototype.forEach.call(placemark.childNodes || [], function (child) {
+        if (child && child.nodeType === 1 && ['point', 'linestring', 'polygon', 'multigeometry'].indexOf(gisXMLLocalName(child)) >= 0) kmlGeometryFeatures(child, properties, features);
+      });
+    });
+    if (!features.length) throw new Error('KML did not contain a supported Placemark geometry.');
+    return parseGeoJSON(JSON.stringify({ type: 'FeatureCollection', features: features }));
+  }
+
+  function gpxProperties(node) {
+    var properties = {}, nameNode = gisXMLChildren(node, 'name')[0], elevationNode = gisXMLChildren(node, 'ele')[0];
+    if (nameNode) properties.name = gisXMLText(nameNode);
+    if (elevationNode && Number.isFinite(Number(gisXMLText(elevationNode)))) properties.elevation = Number(gisXMLText(elevationNode));
+    properties.value = Number.isFinite(properties.elevation) ? properties.elevation : 1;
+    return properties;
+  }
+
+  function gpxPoint(node, label) {
+    var lat = Number(node.getAttribute && node.getAttribute('lat')), lon = Number(node.getAttribute && node.getAttribute('lon'));
+    if (!Number.isFinite(lat) || !Number.isFinite(lon) || !validWGS84Position([lon, lat])) throw new Error(label + ' contains an invalid WGS84 point.');
+    var position = [lon, lat], elevation = gisXMLChildren(node, 'ele')[0];
+    if (elevation && Number.isFinite(Number(gisXMLText(elevation)))) position.push(Number(gisXMLText(elevation)));
+    return position;
+  }
+
+  function parseGPX(text) {
+    var documentNode = parseGISXMLDocument(text, 'GPX'), root = documentNode.documentElement;
+    if (gisXMLLocalName(root) !== 'gpx') throw new Error('GPX import must have a <gpx> root element.');
+    var features = [];
+    gisXMLDescendants(root, 'wpt').forEach(function (point) {
+      features.push({ type: 'Feature', properties: gpxProperties(point), geometry: { type: 'Point', coordinates: gpxPoint(point, 'GPX waypoint') } });
+    });
+    gisXMLDescendants(root, 'rte').forEach(function (route) {
+      var points = gisXMLChildren(route, 'rtept').map(function (point) { return gpxPoint(point, 'GPX route'); });
+      if (points.length >= 2) features.push({ type: 'Feature', properties: gpxProperties(route), geometry: { type: 'LineString', coordinates: points } });
+    });
+    gisXMLDescendants(root, 'trkseg').forEach(function (segment) {
+      var points = gisXMLChildren(segment, 'trkpt').map(function (point) { return gpxPoint(point, 'GPX track'); });
+      if (points.length >= 2) features.push({ type: 'Feature', properties: gpxProperties(segment.parentNode && segment.parentNode.parentNode || segment), geometry: { type: 'LineString', coordinates: points } });
+    });
+    if (!features.length) throw new Error('GPX did not contain waypoints, routes, or tracks with usable coordinates.');
+    return parseGeoJSON(JSON.stringify({ type: 'FeatureCollection', features: features }));
+  }
+
+  function detectGISVectorFormat(name, text) {
+    var lower = String(name || '').toLowerCase(), trimmed = String(text || '').replace(/^\uFEFF/, '').trim();
+    if (/\.kml$/.test(lower)) return 'kml';
+    if (/\.gpx$/.test(lower)) return 'gpx';
+    if (/\.geojson$|\.json$/.test(lower)) return 'geojson';
+    if (/\.shp$|\.zip$/.test(lower)) return 'shapefile';
+    if (/\.gpkg$/.test(lower)) return 'geopackage';
+    if (/^\s*<\s*kml(?:\s|>)/i.test(trimmed)) return 'kml';
+    if (/^\s*<\s*gpx(?:\s|>)/i.test(trimmed)) return 'gpx';
+    if (/^\s*[\[{]/.test(trimmed)) return 'geojson';
+    return 'unknown';
+  }
+
+  function parseGISVectorText(text, format, name) {
+    var detected = format && format !== 'auto' ? String(format).toLowerCase() : detectGISVectorFormat(name, text);
+    if (detected === 'geojson') return Object.assign({}, parseGeoJSON(text), { sourceFormat: 'geojson' });
+    if (detected === 'kml') return Object.assign({}, parseKML(text), { sourceFormat: 'kml' });
+    if (detected === 'gpx') return Object.assign({}, parseGPX(text), { sourceFormat: 'gpx' });
+    if (detected === 'shapefile') throw new Error('Shapefile ZIP import needs a bundled binary parser. Export the layer as WGS84 GeoJSON, KML, or GPX for now.');
+    if (detected === 'geopackage') throw new Error('GeoPackage import needs a bundled SQLite parser. Export the layer as WGS84 GeoJSON for now.');
+    throw new Error('Choose a GeoJSON, KML, or GPX file, or paste one of those formats.');
+  }
 
   var EXAMPLE_JOIN_CSV = [
     'name,students,priority_score',
@@ -312,7 +1133,27 @@
 
   var CLASS_COLORS = ['#155e75', '#0891b2', '#65a30d', '#d97706', '#ea580c', '#be123c', '#881337'];
 
-  function parseTableCSV(text) {
+  function parseTableCSV(text, options) {
+    options = options || {};
+    var table = parseGISDelimitedRows(text, options), rows = table.rows;
+    if (rows.length < 2) throw new Error('The join CSV needs a header and at least one data row. Check the selected delimiter.');
+    var headers = rows[0].map(function (header) { return String(header || '').trim(); });
+    if (headers.some(function (header) { return !header; })) throw new Error('Every join CSV column needs a header.');
+    var decimalSeparator = detectGISDecimalSeparator(rows, table.delimiter, options);
+    var objects = rows.slice(1, 5001).map(function (cells) {
+      var object = {};
+      headers.forEach(function (header, index) { object[header] = cells[index] == null ? '' : cells[index]; });
+      return object;
+    });
+    var numericKeys = headers.filter(function (header) {
+      return objects.some(function (object) {
+        return object[header] !== '' && Number.isFinite(parseGISNumber(object[header], { decimalSeparator: decimalSeparator }));
+      });
+    });
+    return { headers: headers, rows: objects, numericKeys: numericKeys, delimiter: table.delimiter, decimalSeparator: decimalSeparator };
+  }
+
+  function parseLegacyTableCSV(text) {
     var rows = [], row = [], field = '', quoted = false, i;
     text = String(text || '');
     for (i = 0; i < text.length; i += 1) {
@@ -367,18 +1208,18 @@
     'Piscataquis,45.18,-69.23,2025,68,index points,Illustrative classroom series'
   ].join('\n');
 
-  function parseTimeCSV(text) {
-    var table = parseTableCSV(text);
+  function parseTimeCSV(text, options) {
+    var table = parseTableCSV(text, options);
     var headerLookup = {};
-    table.headers.forEach(function (header) { headerLookup[header.toLowerCase().replace(/\s+/g, '')] = header; });
+    table.headers.forEach(function (header) { headerLookup[normalizeGISHeader(header)] = header; });
     function field(names, required) {
       var match = names.map(function (name) { return headerLookup[name]; }).filter(Boolean)[0] || '';
       if (!match && required) throw new Error('Time-series CSV headers must include name, latitude, longitude, year, and value.');
       return match;
     }
-    var nameKey = field(['name', 'label', 'place', 'location'], true);
-    var latKey = field(['latitude', 'lat'], true);
-    var lonKey = field(['longitude', 'lon', 'lng', 'long'], true);
+    var nameKey = field(['name', 'label', 'place', 'location', 'nom', 'nombre', 'nome'], true);
+    var latKey = field(['latitude', 'lat', 'latitud', 'breitengrad'], true);
+    var lonKey = field(['longitude', 'lon', 'lng', 'long', 'longitud', 'lengtegraad'], true);
     var yearKey = field(['year', 'date', 'time'], true);
     var valueKey = field(['value', 'amount', 'score', 'count'], true);
     var unitKey = field(['unit', 'units'], false);
@@ -397,7 +1238,11 @@
       return {
         raw: raw,
         record: {
-          name: raw.name, lat: Number(raw.latitude), lon: Number(raw.longitude), year: Number(raw.year), value: Number(raw.value),
+          name: raw.name,
+          lat: parseGISNumber(raw.latitude, { decimalSeparator: table.decimalSeparator }),
+          lon: parseGISNumber(raw.longitude, { decimalSeparator: table.decimalSeparator }),
+          year: parseGISNumber(raw.year, { decimalSeparator: table.decimalSeparator }),
+          value: parseGISNumber(raw.value, { decimalSeparator: table.decimalSeparator }),
           unit: unitKey ? String(row[unitKey] || '').trim() : '',
           source: sourceKey ? String(row[sourceKey] || '').trim() : '',
           method: methodKey ? String(row[methodKey] || '').trim() : ''
@@ -428,6 +1273,7 @@
     return {
       rows: rows, years: years, duplicates: duplicates, invalidRows: invalidRows, truncatedRows: truncatedRows, invalidSamples: rejectedRows,
       units: rows.map(function (row) { return row.unit; }).filter(function (value, index, all) { return value && all.indexOf(value) === index; }),
+      delimiter: table.delimiter, decimalSeparator: table.decimalSeparator,
       sources: rows.map(function (row) { return row.source; }).filter(function (value, index, all) { return value && all.indexOf(value) === index; })
     };
   }
@@ -991,15 +1837,19 @@
       '</style></head><body><main><header><p>GIS STUDIO</p><h1>Teacher Review</h1><p>Reviewer: ' + escapeHTML(review.reviewer || 'Not named') + '. Status: ' + escapeHTML(review.status) + '.</p><p class="score">' + progress.points + ' / ' + progress.max + '</p><p>' + progress.rated + ' of ' + progress.total + ' rubric areas rated.</p></header><div class="actions"><button type="button" onclick="window.print()">Print or save as PDF</button></div><section><h2>Overall feedback</h2><p>' + escapeHTML(review.overall || 'No overall feedback recorded yet.') + '</p><p><strong>Next revision:</strong> ' + escapeHTML(review.nextRevision || 'No next revision recorded yet.') + '</p></section><section><h2>Accessible rubric table</h2><table><caption>Teacher review rubric</caption><thead><tr><th scope="col">Area</th><th scope="col">Rating</th><th scope="col">Prompt</th></tr></thead><tbody>' + rubricRows + '</tbody></table></section><section class="callout"><h2>Review meaning</h2><p>Ratings guide revision and conversation; they are not a grade substitute or a claim that the mapped data are correct. Recheck the source and limitations before making decisions.</p></section></main></body></html>';
   }
 
-  function normalizeJoinKey(value) {
-    return String(value == null ? '' : value).trim().toLowerCase()
-      .replace(/&/g, ' and ')
-      .replace(/[^a-z0-9]+/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
+  function normalizeJoinKey(value, options) {
+    var text = String(value == null ? '' : value).trim();
+    try { text = text.normalize('NFC'); } catch (ignoreNormalization) {}
+    var locale = options && options.locale ? canonicalGISLocale(options.locale) : '';
+    try { text = locale ? text.toLocaleLowerCase(locale) : text.toLowerCase(); }
+    catch (ignoreLocaleCase) { text = text.toLowerCase(); }
+    text = text.replace(/&/g, ' and ');
+    try { text = text.replace(new RegExp('[^\\p{L}\\p{N}]+', 'gu'), ' '); }
+    catch (ignoreUnicodeProperties) { text = text.replace(/[^a-z0-9\u00C0-\uFFFF]+/gi, ' '); }
+    return text.replace(/\s+/g, ' ').trim();
   }
 
-  function joinTableToGeoJSON(geoData, rows, geoKey, csvKey, valueKey) {
+  function joinTableToGeoJSON(geoData, rows, geoKey, csvKey, valueKey, options) {
     if (!geoData || !Array.isArray(geoData.features)) throw new Error('Load a GeoJSON layer before joining data.');
     if (!geoKey || !csvKey || !valueKey) throw new Error('Choose both match fields and a numeric value field.');
     var lookup = Object.create(null), duplicates = [];
@@ -1010,15 +1860,16 @@
       else lookup[key] = row;
     });
     var used = Object.create(null), unmatchedGeo = [], matched = 0;
-    var metric = 'joined_' + String(valueKey).replace(/[^a-z0-9_]+/gi, '_').replace(/^_+|_+$/g, '').toLowerCase();
+    var metric = 'joined_' + normalizeJoinKey(valueKey, options).replace(/\s+/g, '_');
     if (!metric || metric === 'joined_') metric = 'joined_value';
     var features = geoData.features.map(function (feature, index) {
       var properties = Object.assign({}, feature.properties || {});
       var rawGeoKey = properties[geoKey];
       var key = normalizeJoinKey(rawGeoKey);
       var row = key && lookup[key];
-      if (row && Number.isFinite(Number(row[valueKey]))) {
-        properties[metric] = Number(row[valueKey]);
+      var joinedValue = row ? parseGISNumber(row[valueKey], options) : NaN;
+      if (row && Number.isFinite(joinedValue)) {
+        properties[metric] = joinedValue;
         used[key] = true;
         matched += 1;
       } else {
@@ -1180,10 +2031,15 @@
   function pointInRing(point, ring) {
     var p = mapPoint(point), inside = false;
     if (!Array.isArray(ring) || ring.length < 3 || !Number.isFinite(p.lat) || !Number.isFinite(p.lon)) return false;
-    for (var i = 0, j = ring.length - 1; i < ring.length; j = i, i += 1) {
-      var a = mapPoint(ring[i]), b = mapPoint(ring[j]);
+    var mappedRing = ring.map(mapPoint);
+    var ringArc = minimalLongitudeArc(mappedRing.map(function (vertex) { return vertex.lon; }));
+    var queryLongitude = unwrapLongitudeForArc(p.lon, ringArc);
+    for (var i = 0, j = mappedRing.length - 1; i < mappedRing.length; j = i, i += 1) {
+      var a = mappedRing[i], b = mappedRing[j];
+      var aLongitude = unwrapLongitudeForArc(a.lon, ringArc);
+      var bLongitude = unwrapLongitudeForArc(b.lon, ringArc);
       var crosses = ((a.lat > p.lat) !== (b.lat > p.lat)) &&
-        (p.lon < (b.lon - a.lon) * (p.lat - a.lat) / ((b.lat - a.lat) || Number.EPSILON) + a.lon);
+        (queryLongitude < (bLongitude - aLongitude) * (p.lat - a.lat) / ((b.lat - a.lat) || Number.EPSILON) + aLongitude);
       if (crosses) inside = !inside;
     }
     return inside;
@@ -1261,6 +2117,147 @@
   // Equirectangular with a cos(lat) correction on longitude, so shapes are not
   // stretched at Maine latitudes. It is a schematic, not a navigation projection,
   // and the UI says so — the same honesty the printed evidence report already uses.
+  function normalizeLongitude(value) {
+    var longitude = Number(value);
+    if (!Number.isFinite(longitude)) return NaN;
+    var normalized = ((longitude + 180) % 360 + 360) % 360 - 180;
+    return Object.is(normalized, -0) ? 0 : normalized;
+  }
+
+  function minimalLongitudeArc(longitudes) {
+    var values = (longitudes || []).map(normalizeLongitude).filter(Number.isFinite);
+    if (!values.length) return { west: -180, east: 180, center: 0, span: 360, crossesAntimeridian: false, westUnwrapped: -180, eastUnwrapped: 180 };
+    var sorted = values.map(function (value) { return value < 0 ? value + 360 : value; }).sort(function (a, b) { return a - b; });
+    if (sorted.length === 1) {
+      var only = normalizeLongitude(sorted[0]);
+      return { west: only, east: only, center: only, span: 0, crossesAntimeridian: false, westUnwrapped: only, eastUnwrapped: only };
+    }
+    var largestGap = -1, gapIndex = 0;
+    sorted.forEach(function (value, index) {
+      var next = index === sorted.length - 1 ? sorted[0] + 360 : sorted[index + 1];
+      var gap = next - value;
+      if (gap > largestGap) { largestGap = gap; gapIndex = index; }
+    });
+    var start360 = sorted[(gapIndex + 1) % sorted.length];
+    var span = Math.max(0, 360 - largestGap);
+    var west = normalizeLongitude(start360);
+    var east = normalizeLongitude(start360 + span);
+    var center = normalizeLongitude(start360 + span / 2);
+    return {
+      west: west, east: east, center: center, span: span,
+      crossesAntimeridian: span > 0 && west > east,
+      westUnwrapped: west, eastUnwrapped: west + span
+    };
+  }
+
+  function unwrapLongitudeForArc(value, arc) {
+    var longitude = normalizeLongitude(value);
+    if (!Number.isFinite(longitude) || !arc) return longitude;
+    while (longitude < arc.westUnwrapped - 1e-9) longitude += 360;
+    while (longitude > arc.westUnwrapped + 360) longitude -= 360;
+    return longitude;
+  }
+
+  function dataViewport(points, options) {
+    options = options || {};
+    var valid = (points || []).map(function (point) {
+      if (Array.isArray(point)) return { lat: Number(point[0]), lon: Number(point[1]) };
+      point = point || {};
+      return {
+        lat: Number(point.lat == null ? point.latitude : point.lat),
+        lon: Number(point.lon == null ? (point.lng == null ? point.longitude : point.lng) : point.lon)
+      };
+    }).filter(function (point) {
+      return Number.isFinite(point.lat) && point.lat >= -90 && point.lat <= 90 && Number.isFinite(point.lon);
+    });
+    if (!valid.length) {
+      var fallbackCenter = Array.isArray(options.center) ? options.center : [0, 0];
+      return {
+        center: [Number(fallbackCenter[0]) || 0, normalizeLongitude(fallbackCenter[1]) || 0],
+        bounds: { south: Number(fallbackCenter[0]) || 0, west: normalizeLongitude(fallbackCenter[1]) || 0, north: Number(fallbackCenter[0]) || 0, east: normalizeLongitude(fallbackCenter[1]) || 0 },
+        crossesAntimeridian: false, longitudeSpan: 0, latitudeSpan: 0, zoom: Number(options.zoom) || 2
+      };
+    }
+    var latitudes = valid.map(function (point) { return point.lat; });
+    var arc = minimalLongitudeArc(valid.map(function (point) { return point.lon; }));
+    var south = Math.min.apply(Math, latitudes), north = Math.max.apply(Math, latitudes);
+    var latitudeSpan = north - south;
+    var midLatitude = (south + north) / 2;
+    var adjustedLongitudeSpan = arc.span * Math.max(0.15, Math.cos(midLatitude * Math.PI / 180));
+    var visibleSpan = Math.max(latitudeSpan, adjustedLongitudeSpan, 0.02);
+    var calculatedZoom = Math.max(1, Math.min(16, Math.floor(Math.log(360 / visibleSpan) / Math.LN2) - 1));
+    return {
+      center: [midLatitude, arc.center],
+      bounds: { south: south, west: arc.west, north: north, east: arc.east },
+      crossesAntimeridian: arc.crossesAntimeridian, longitudeSpan: arc.span, latitudeSpan: latitudeSpan,
+      zoom: Number.isFinite(Number(options.zoom)) ? Number(options.zoom) : calculatedZoom
+    };
+  }
+  function leafletCenterForViewport(viewport, arc) {
+    var center = viewport && Array.isArray(viewport.center) ? viewport.center.slice(0, 2) : [0, 0];
+    if (arc && arc.crossesAntimeridian) center[1] = arc.westUnwrapped + arc.span / 2;
+    return center;
+  }
+
+  function collectGISGeoJSONPoints(document) {
+    var points = [];
+    function coordinates(value) {
+      if (!Array.isArray(value)) return;
+      if (value.length >= 2 && Number.isFinite(Number(value[0])) && Number.isFinite(Number(value[1]))) {
+        points.push({ lon: Number(value[0]), lat: Number(value[1]) });
+        return;
+      }
+      value.forEach(coordinates);
+    }
+    function geometry(value) {
+      if (!value || typeof value !== 'object') return;
+      if (value.type === 'GeometryCollection') {
+        (value.geometries || []).forEach(geometry);
+        return;
+      }
+      coordinates(value.coordinates);
+    }
+    function geoObject(value) {
+      if (!value || typeof value !== 'object') return;
+      if (value.type === 'FeatureCollection') {
+        (value.features || []).forEach(geoObject);
+      } else if (value.type === 'Feature') {
+        geometry(value.geometry);
+      } else {
+        geometry(value);
+      }
+    }
+    geoObject(document);
+    return points;
+  }
+
+  function unwrapGISGeoJSONForArc(document, arc) {
+    if (!document || !arc || !arc.crossesAntimeridian) return document;
+    function coordinates(value) {
+      if (!Array.isArray(value)) return value;
+      if (value.length >= 2 && Number.isFinite(Number(value[0])) && Number.isFinite(Number(value[1]))) {
+        return [unwrapLongitudeForArc(value[0], arc), Number(value[1])].concat(value.slice(2));
+      }
+      return value.map(coordinates);
+    }
+    function geometry(value) {
+      if (!value || typeof value !== 'object') return value;
+      if (value.type === 'GeometryCollection') {
+        return Object.assign({}, value, { geometries: (value.geometries || []).map(geometry) });
+      }
+      return Object.assign({}, value, { coordinates: coordinates(value.coordinates) });
+    }
+    function geoObject(value) {
+      if (!value || typeof value !== 'object') return value;
+      if (value.type === 'FeatureCollection') {
+        return Object.assign({}, value, { features: (value.features || []).map(geoObject) });
+      }
+      if (value.type === 'Feature') return Object.assign({}, value, { geometry: geometry(value.geometry) });
+      return geometry(value);
+    }
+    return geoObject(document);
+  }
+
   function schematicProjection(lonLatPoints, width, height, padding) {
     var w = Number(width) || 640, hgt = Number(height) || 390;
     var pad = padding == null ? 26 : padding;
@@ -1270,8 +2267,9 @@
     if (!pts.length) return null;
     var minLat = Math.min.apply(Math, pts.map(function (p) { return p.lat; }));
     var maxLat = Math.max.apply(Math, pts.map(function (p) { return p.lat; }));
-    var minLon = Math.min.apply(Math, pts.map(function (p) { return p.lon; }));
-    var maxLon = Math.max.apply(Math, pts.map(function (p) { return p.lon; }));
+    var longitudeArc = minimalLongitudeArc(pts.map(function (p) { return p.lon; }));
+    var minLon = longitudeArc.westUnwrapped;
+    var maxLon = longitudeArc.eastUnwrapped;
     // A single point (or a perfectly straight row of them) has zero extent in at
     // least one axis; give it a small window so it lands mid-canvas instead of
     // dividing by zero.
@@ -1289,9 +2287,10 @@
     return {
       width: w, height: hgt,
       bounds: { minLat: minLat, maxLat: maxLat, minLon: minLon, maxLon: maxLon },
+      geographicExtent: { west: longitudeArc.west, east: longitudeArc.east, crossesAntimeridian: longitudeArc.crossesAntimeridian },
       project: function (lon, lat) {
         return {
-          x: offsetX + (Number(lon) - minLon) * lonScale * scale,
+          x: offsetX + (unwrapLongitudeForArc(lon, longitudeArc) - minLon) * lonScale * scale,
           y: offsetY + (maxLat - Number(lat)) * scale   // screen y grows downward
         };
       }
@@ -1687,10 +2686,13 @@
     if (points.length) {
       var lats = points.map(function (row) { return Number(row.lat); });
       var lons = points.map(function (row) { return Number(row.lon); });
+      var plotArc = minimalLongitudeArc(lons);
+      var unwrappedLons = lons.map(function (longitude) { return unwrapLongitudeForArc(longitude, plotArc); });
       var minLat = Math.min.apply(Math, lats), maxLat = Math.max.apply(Math, lats);
-      var minLon = Math.min.apply(Math, lons), maxLon = Math.max.apply(Math, lons);
+      var minLon = Math.min.apply(Math, unwrappedLons), maxLon = Math.max.apply(Math, unwrappedLons);
       var dots = points.map(function (row, index) {
-        var x = maxLon === minLon ? 50 : 5 + (Number(row.lon) - minLon) / (maxLon - minLon) * 90;
+        var plotLongitude = unwrapLongitudeForArc(Number(row.lon), plotArc);
+        var x = maxLon === minLon ? 50 : 5 + (plotLongitude - minLon) / (maxLon - minLon) * 90;
         var y = maxLat === minLat ? 50 : 95 - (Number(row.lat) - minLat) / (maxLat - minLat) * 90;
         return '<span class="plot-point" style="left:' + x.toFixed(2) + '%;top:' + y.toFixed(2) +
           '%" aria-hidden="true">' + (index + 1) + '</span>';
@@ -1793,6 +2795,32 @@
     }
     return result;
   }
+  function localizeGISReportDocument(html, model, override) {
+    var hasLocale = !!override || !!(model && (model.localeOptions || model.locale || model.lang || model.dir));
+    if (!hasLocale) return html;
+    return String(html || '').replace('<html lang="en">', '<html' + reportLocaleAttributes(model, override) + '>');
+  }
+
+  function localizedGISReportBuilder(builder) {
+    return function (model, localeOptions) {
+      var sourceModel = model || {};
+      var hasLocale = !!localeOptions || !!(sourceModel.localeOptions || sourceModel.locale || sourceModel.lang || sourceModel.dir);
+      var effectiveModel = sourceModel;
+      if (hasLocale && !sourceModel.generated) {
+        effectiveModel = Object.assign({}, sourceModel, { generated: createGISFormatters(localeOptions || sourceModel).dateTime(new Date()) });
+      }
+      return localizeGISReportDocument(builder(effectiveModel), effectiveModel, localeOptions);
+    };
+  }
+
+  buildRemoteSensingReport = localizedGISReportBuilder(buildRemoteSensingReport);
+  buildStoryMapReport = localizedGISReportBuilder(buildStoryMapReport);
+  buildDataQualityReport = localizedGISReportBuilder(buildDataQualityReport);
+  buildInvestigationPacketReport = localizedGISReportBuilder(buildInvestigationPacketReport);
+  buildTeacherReviewReport = localizedGISReportBuilder(buildTeacherReviewReport);
+  buildMapComposerReport = localizedGISReportBuilder(buildMapComposerReport);
+  buildEvidenceReport = localizedGISReportBuilder(buildEvidenceReport);
+
 
   window.StemLab.registerTool('gisStudio', {
     icon: '\uD83D\uDDFA\uFE0F',
@@ -1802,8 +2830,19 @@
     category: 'geo',
     aliases: ['GIS', 'mapping', 'spatial data', 'GIS project file', 'map composer', 'accessible map export', 'cartography coach', 'map annotations', 'remote sensing', 'satellite change detection', 'NDVI', 'NDWI', 'NDBI', 'multispectral imagery', 'autosave', 'data provenance', 'coordinate privacy', 'time series map', 'change over time', 'Maine inquiry', 'guided mission', 'spatial analysis', 'map comparison', 'evidence report', 'story map', 'evidence storyboard', 'quality review', 'uncertainty review', 'investigation packet', 'teacher handoff', 'inquiry planner', 'research question', 'teacher review', 'rubric feedback', 'buffer', 'choropleth', 'coordinates', 'map projections'],
     testing: {
-      parseCSV: parseCSV, rowsToCSV: rowsToCSV, safeFileStem: safeFileStem, parseGeoJSON: parseGeoJSON, parseTableCSV: parseTableCSV,
-      joinTableToGeoJSON: joinTableToGeoJSON, calculateBreaks: calculateBreaks, classColor: classColor,
+      resolveGISLocale: resolveGISLocale, createGISFormatters: createGISFormatters, reportLocaleAttributes: reportLocaleAttributes,
+      detectGISDelimiter: detectGISDelimiter, parseGISDelimitedRows: parseGISDelimitedRows, parseGISNumber: parseGISNumber,
+      parseGISAngle: parseGISAngle, normalizeGISCRS: normalizeGISCRS,
+      transformGISCoordinatePair: transformGISCoordinatePair, inverseGISWebMercator: inverseGISWebMercator, inverseGISUTM: inverseGISUTM,
+      suggestGISImportColumns: suggestGISImportColumns, inspectGISCSV: inspectGISCSV,
+      gisImportParseOptions: gisImportParseOptions,
+      parseCSV: parseCSV, rowsToCSV: rowsToCSV, safeFileStem: safeFileStem, parseGeoJSON: parseGeoJSON, parseKML: parseKML, parseGPX: parseGPX, detectGISVectorFormat: detectGISVectorFormat, parseGISVectorText: parseGISVectorText, parseTableCSV: parseTableCSV,
+      normalizeJoinKey: normalizeJoinKey, joinTableToGeoJSON: joinTableToGeoJSON, calculateBreaks: calculateBreaks, classColor: classColor,
+      minimalLongitudeArc: minimalLongitudeArc, dataViewport: dataViewport, normalizeLongitude: normalizeLongitude,
+      unwrapLongitudeForArc: unwrapLongitudeForArc, leafletCenterForViewport: leafletCenterForViewport,
+      collectGISGeoJSONPoints: collectGISGeoJSONPoints, unwrapGISGeoJSONForArc: unwrapGISGeoJSONForArc,
+      regionMetrics: regionMetrics, regionMetric: regionMetric,
+      basemapProviders: GIS_BASEMAP_PROVIDERS, getGISBasemapProvider: getGISBasemapProvider, createGISBasemapLayer: createGISBasemapLayer,
       haversineKm: haversineKm, pathLengthKm: pathLengthKm, polygonAreaSquareKm: polygonAreaSquareKm,
       pointInFeature: pointInFeature, selectPointsInFeature: selectPointsInFeature,
       selectWithinRadius: selectWithinRadius, nearestRecord: nearestRecord, featureMeasurements: featureMeasurements,
@@ -1849,6 +2888,110 @@
       var setToolData = ctx.setToolData || function () {};
       var announce = ctx.announceToSR || function () {};
       var callGemini = ctx.callGemini;
+      var t = typeof ctx.t === 'function' ? ctx.t : function (_key, fallback) { return fallback; };
+      var localeInfo = resolveGISLocale({
+        locale: ctx.locale || ctx.lang,
+        language: ctx.language || (typeof window !== 'undefined' ? window.__alloTextLanguage : ''),
+        dir: ctx.dir
+      });
+      var display = createGISFormatters(localeInfo);
+      var gisText = {
+        title: t('stem.gisstudio.title', 'GIS Studio'),
+        kicker: t('stem.gisstudio.kicker', 'SPATIAL DATA LABORATORY'),
+        tagline: t('stem.gisstudio.tagline', 'Layer it. Map it. Question the pattern.'),
+        sections: t('stem.gisstudio.sections', 'GIS Studio sections'),
+        addStory: t('stem.gisstudio.add_current_view', 'Add current view to story'),
+        project: t('stem.gisstudio.tab.project', 'Project'),
+        composer: t('stem.gisstudio.tab.composer', 'Map Composer'),
+        remote: t('stem.gisstudio.tab.remote', 'Remote Sensing'),
+        story: t('stem.gisstudio.tab.story', 'Story Map'),
+        quality: t('stem.gisstudio.tab.quality', 'Quality Review'),
+        planner: t('stem.gisstudio.tab.planner', 'Investigation Planner'),
+        review: t('stem.gisstudio.tab.review', 'Teacher Review'),
+        packet: t('stem.gisstudio.tab.packet', 'Investigation Packet'),
+        missions: t('stem.gisstudio.tab.missions', 'Guided missions'),
+        timeline: t('stem.gisstudio.tab.timeline', 'Change over time'),
+        map: t('stem.gisstudio.tab.map', 'Map + layers'),
+        compare: t('stem.gisstudio.tab.compare', 'Compare + export'),
+        importData: t('stem.gisstudio.tab.import', 'Import data'),
+        projection: t('stem.gisstudio.tab.projection', 'Projection lab'),
+        metricDensity: t('stem.gisstudio.metric.population_density', 'Population density'),
+        metricAccess: t('stem.gisstudio.metric.broadband_access', 'Broadband access index'),
+        importedValue: t('stem.gisstudio.metric.imported_value', 'Imported value'),
+        regionMaine: t('stem.gisstudio.region.maine', 'Maine counties (16)'),
+        regionNewEngland: t('stem.gisstudio.region.new_england', 'New England (6-state sample)'),
+        regionUnitedStates: t('stem.gisstudio.region.united_states', 'United States (macro-region sample)'),
+        regionGlobal: t('stem.gisstudio.region.global', 'Global regions (classroom sample)'),
+        csvConvention: t('stem.gisstudio.csv.convention', 'CSV number and separator convention'),
+        csvAuto: t('stem.gisstudio.csv.auto', 'Auto-detect'),
+        csvCommaDot: t('stem.gisstudio.csv.comma_dot', 'Comma separator + decimal point'),
+        csvCommaComma: t('stem.gisstudio.csv.comma_comma', 'Comma separator + decimal comma (quote numeric fields)'),
+        csvSemicolonComma: t('stem.gisstudio.csv.semicolon_comma', 'Semicolon separator + decimal comma'),
+        csvTabDot: t('stem.gisstudio.csv.tab_dot', 'Tab separator + decimal point'),
+        csvTabComma: t('stem.gisstudio.csv.tab_comma', 'Tab separator + decimal comma'),
+        csvPipeDot: t('stem.gisstudio.csv.pipe_dot', 'Pipe separator + decimal point'),
+        csvPipeComma: t('stem.gisstudio.csv.pipe_comma', 'Pipe separator + decimal comma'),
+        csvDetected: t('stem.gisstudio.csv.detected', 'Detected CSV format'),
+        csvTabLabel: t('stem.gisstudio.csv.tab_label', 'TAB'),
+        csvDecimalLabel: t('stem.gisstudio.csv.decimal_label', 'decimal'),
+        importPointKicker: t('stem.gisstudio.import.point_kicker', 'POINT DATA'),
+        importHeading: t('stem.gisstudio.import.heading', 'Map a coordinate CSV'),
+        importIntro: t('stem.gisstudio.import.intro', 'Preview columns, choose the coordinate system, and map up to 250 rows locally in your browser.'),
+        vectorIntro: t('stem.gisstudio.import.vector_intro', 'Load up to 500 points, lines, or polygons from GeoJSON, KML, or GPX. GIS Studio converts them to validated WGS84 GeoJSON and maps the first numeric property.'),
+        vectorChooseFile: t('stem.gisstudio.import.vector_choose_file', 'Choose GeoJSON, KML, or GPX'),
+        vectorPaste: t('stem.gisstudio.import.vector_paste', 'Or paste GeoJSON, KML, or GPX'),
+        importChooseFile: t('stem.gisstudio.import.choose_file', 'Choose a CSV file'),
+        importPaste: t('stem.gisstudio.import.paste', 'Or paste CSV data'),
+        importPreviewButton: t('stem.gisstudio.import.preview_button', 'Preview + map columns'),
+        importQuickMapButton: t('stem.gisstudio.import.quick_map_button', 'Map this CSV'),
+        importMapReviewedButton: t('stem.gisstudio.import.map_reviewed_button', 'Map reviewed data'),
+        importRestore: t('stem.gisstudio.import.restore', 'Restore CSV example'),
+        importCRSLabel: t('stem.gisstudio.import.crs_label', 'Coordinate reference system'),
+        importCRSWGS84: t('stem.gisstudio.import.crs_wgs84', 'WGS84 latitude / longitude (EPSG:4326)'),
+        importCRSWebMercator: t('stem.gisstudio.import.crs_web_mercator', 'Web Mercator X / Y (EPSG:3857)'),
+        importCRSUTM: t('stem.gisstudio.import.crs_utm', 'WGS84 UTM easting / northing'),
+        importAxisOrder: t('stem.gisstudio.import.axis_order', 'Coordinate order'),
+        importAxisLatLon: t('stem.gisstudio.import.axis_lat_lon', 'Latitude, then longitude'),
+        importAxisLonLat: t('stem.gisstudio.import.axis_lon_lat', 'Longitude, then latitude'),
+        importAxisXY: t('stem.gisstudio.import.axis_xy', 'Easting/X, then northing/Y'),
+        importAxisYX: t('stem.gisstudio.import.axis_yx', 'Northing/Y, then easting/X'),
+        importUTMZone: t('stem.gisstudio.import.utm_zone', 'UTM zone'),
+        importHemisphere: t('stem.gisstudio.import.hemisphere', 'Hemisphere'),
+        importNorth: t('stem.gisstudio.import.north', 'Northern'),
+        importSouth: t('stem.gisstudio.import.south', 'Southern'),
+        importMappingHeading: t('stem.gisstudio.import.mapping_heading', 'Review column mapping'),
+        importMappingHelp: t('stem.gisstudio.import.mapping_help', 'Confirm every suggested column before mapping. Source coordinates are converted to WGS84 without changing the pasted data.'),
+        importNameColumn: t('stem.gisstudio.import.name_column', 'Location name column'),
+        importCoordinateA: t('stem.gisstudio.import.coordinate_a', 'First coordinate column'),
+        importCoordinateB: t('stem.gisstudio.import.coordinate_b', 'Second coordinate column'),
+        importValueColumn: t('stem.gisstudio.import.value_column', 'Numeric value column'),
+        importChooseColumn: t('stem.gisstudio.import.choose_column', 'Choose a column'),
+        importPreviewCaption: t('stem.gisstudio.import.preview_caption', 'Source data preview'),
+        importFallbackWarning: t('stem.gisstudio.import.fallback_warning', 'Some columns were suggested by position rather than a recognized header. Review them carefully.'),
+        importLatitude: t('stem.gisstudio.import.latitude', 'latitude'),
+        importLongitude: t('stem.gisstudio.import.longitude', 'longitude'),
+        importEasting: t('stem.gisstudio.import.easting', 'easting / X'),
+        importNorthing: t('stem.gisstudio.import.northing', 'northing / Y'),
+        maineMissions: t('stem.gisstudio.missions.maine', 'Maine missions'),
+        noMissions: t('stem.gisstudio.missions.none', 'This region pack does not include guided missions.'),
+        switchMaine: t('stem.gisstudio.missions.switch_maine', 'Switch to the Maine sample missions'),
+        switchMaineNotice: t('stem.gisstudio.missions.switch_notice', 'The Maine sample curriculum is separate from your current region pack.'),
+        missionHeading: t('stem.gisstudio.missions.heading', 'Guided GIS missions')
+      };
+      function localizedMetricLabel(definition) {
+        if (!definition) return gisText.importedValue;
+        if (definition.id === 'density') return gisText.metricDensity;
+        if (definition.id === 'access') return gisText.metricAccess;
+        return definition.label || definition.id;
+      }
+      function localizedRegionLabel(pack) {
+        if (!pack) return '';
+        if (pack.id === 'maine') return gisText.regionMaine;
+        if (pack.id === 'new-england') return gisText.regionNewEngland;
+        if (pack.id === 'united-states') return gisText.regionUnitedStates;
+        if (pack.id === 'global') return gisText.regionGlobal;
+        return pack.label || pack.id;
+      }
 
       function Studio() {
         var initial = ctx.toolData || {};
@@ -1859,6 +3002,13 @@
         var importDiagnosticsState = React.useState({ invalidRows: 0, truncatedRows: 0, invalidSamples: [] }), importDiagnostics = importDiagnosticsState[0], setImportDiagnostics = importDiagnosticsState[1];
         var s4 = React.useState([]), importedRows = s4[0], setImportedRows = s4[1];
         var s5 = React.useState(EXAMPLE), csv = s5[0], setCSV = s5[1];
+        var importConventionState = React.useState('auto'), importConvention = importConventionState[0], setImportConvention = importConventionState[1];
+        var importPreviewState = React.useState(null), importPreview = importPreviewState[0], setImportPreview = importPreviewState[1];
+        var importColumnMapState = React.useState({ name: '', coordinate1: '', coordinate2: '', value: '' }), importColumnMap = importColumnMapState[0], setImportColumnMap = importColumnMapState[1];
+        var importCRSState = React.useState('EPSG:4326'), importCRS = importCRSState[0], setImportCRS = importCRSState[1];
+        var importAxisOrderState = React.useState('lat-lon'), importAxisOrder = importAxisOrderState[0], setImportAxisOrder = importAxisOrderState[1];
+        var importUTMZoneState = React.useState(19), importUTMZone = importUTMZoneState[0], setImportUTMZone = importUTMZoneState[1];
+        var importUTMHemisphereState = React.useState('N'), importUTMHemisphere = importUTMHemisphereState[0], setImportUTMHemisphere = importUTMHemisphereState[1];
         var s6 = React.useState(''), error = s6[0], setError = s6[1];
         var s7 = React.useState({ points: true, coast: true, grid: false, polygons: true }), layers = s7[0], setLayers = s7[1];
         var s8 = React.useState(''), aiText = s8[0], setAIText = s8[1];
@@ -1867,7 +3017,7 @@
         var s11 = React.useState(60), latitude = s11[0], setLatitude = s11[1];
         var s12 = React.useState('Loading the interactive map. The table is ready now.'), mapStatus = s12[0], setMapStatus = s12[1];
         var mapLoadingState = React.useState(true), mapLoading = mapLoadingState[0], setMapLoading = mapLoadingState[1];
-        var s13 = React.useState(initial.gisBasemap || 'street'), basemap = s13[0], setBasemap = s13[1];
+        var s13 = React.useState(getGISBasemapProvider(initial.gisBasemap || 'street') ? (initial.gisBasemap || 'street') : 'none'), basemap = s13[0], setBasemap = s13[1];
         var s14 = React.useState(EXAMPLE_GEOJSON), geoText = s14[0], setGeoText = s14[1];
         var s15 = React.useState(null), geoData = s15[0], setGeoData = s15[1];
         var s16 = React.useState([]), geoKeys = s16[0], setGeoKeys = s16[1];
@@ -1877,6 +3027,7 @@
         var s20 = React.useState(''), imageryNote = s20[0], setImageryNote = s20[1];
         var s21 = React.useState(false), officialBusy = s21[0], setOfficialBusy = s21[1];
         var s22 = React.useState(EXAMPLE_JOIN_CSV), joinText = s22[0], setJoinText = s22[1];
+        var joinConventionState = React.useState('auto'), joinConvention = joinConventionState[0], setJoinConvention = joinConventionState[1];
         var s23 = React.useState(null), joinTable = s23[0], setJoinTable = s23[1];
         var s24 = React.useState(''), joinCSVKey = s24[0], setJoinCSVKey = s24[1];
         var s25 = React.useState(''), joinGeoKey = s25[0], setJoinGeoKey = s25[1];
@@ -1898,8 +3049,10 @@
         var analysisCopyStatusState = React.useState(''), analysisCopyStatus = analysisCopyStatusState[0], setAnalysisCopyStatus = analysisCopyStatusState[1];
         var s39 = React.useState(initial.gisCompareLeft || 'point:density'), compareLeft = s39[0], setCompareLeft = s39[1];
         var s40 = React.useState(initial.gisCompareRight || 'point:access'), compareRight = s40[0], setCompareRight = s40[1];
-        var s41 = React.useState(initial.gisCompareLeftBasemap || 'street'), compareLeftBasemap = s41[0], setCompareLeftBasemap = s41[1];
-        var s42 = React.useState(initial.gisCompareRightBasemap || 'satellite'), compareRightBasemap = s42[0], setCompareRightBasemap = s42[1];
+        var initialCompareLeftBasemap = initial.gisCompareLeftBasemap || 'street';
+        var initialCompareRightBasemap = initial.gisCompareRightBasemap || 'satellite';
+        var s41 = React.useState(getGISBasemapProvider(initialCompareLeftBasemap) && initialCompareLeftBasemap !== 'none' ? initialCompareLeftBasemap : 'none'), compareLeftBasemap = s41[0], setCompareLeftBasemap = s41[1];
+        var s42 = React.useState(getGISBasemapProvider(initialCompareRightBasemap) && initialCompareRightBasemap !== 'none' ? initialCompareRightBasemap : 'none'), compareRightBasemap = s42[0], setCompareRightBasemap = s42[1];
         var s43 = React.useState('Loading synchronized comparison maps. The comparison tables are ready now.'), compareStatus = s43[0], setCompareStatus = s43[1];
         var compareMapReadyState = React.useState(false), compareMapReady = compareMapReadyState[0], setCompareMapReady = compareMapReadyState[1];
         var compareMapUnavailableState = React.useState(false), compareMapUnavailable = compareMapUnavailableState[0], setCompareMapUnavailable = compareMapUnavailableState[1];
@@ -1908,6 +3061,7 @@
         var s46 = React.useState(initial.gisMissionProgress || {}), missionProgress = s46[0], setMissionProgress = s46[1];
         var s47 = React.useState(initial.gisMissionResponses || {}), missionResponses = s47[0], setMissionResponses = s47[1];
         var s48 = React.useState(EXAMPLE_TIME_CSV), timeText = s48[0], setTimeText = s48[1];
+        var timeConventionState = React.useState('auto'), timeConvention = timeConventionState[0], setTimeConvention = timeConventionState[1];
         var s49 = React.useState(EXAMPLE_TIME_DATA), timeDataset = s49[0], setTimeDataset = s49[1];
         var s50 = React.useState(EXAMPLE_TIME_DATA.years[0]), timeBaseline = s50[0], setTimeBaseline = s50[1];
         var s51 = React.useState(EXAMPLE_TIME_DATA.years[EXAMPLE_TIME_DATA.years.length - 1]), timeFocusYear = s51[0], setTimeFocusYear = s51[1];
@@ -1957,15 +3111,62 @@
         var compareRightMapInstance = React.useRef(null);
         var timeLeftMapInstance = React.useRef(null);
         var timeRightMapInstance = React.useRef(null);
+        var mapTileLayer = React.useRef(null);
+        var mapTileBasemap = React.useRef('');
+        var compareLeftTileLayer = React.useRef(null);
+        var compareRightTileLayer = React.useRef(null);
+        var compareLeftTileBasemap = React.useRef('');
+        var compareRightTileBasemap = React.useRef('');
+        var timeLeftTileLayer = React.useRef(null);
+        var timeRightTileLayer = React.useRef(null);
+        var compareLeftMoveHandler = React.useRef(null);
+        var compareRightMoveHandler = React.useRef(null);
+        var timeLeftMoveHandler = React.useRef(null);
+        var timeRightMoveHandler = React.useRef(null);
+        var studioMounted = React.useRef(true);
+
+        function disposeLeafletMap(mapRef, tileRef, basemapRef) {
+          if (tileRef && tileRef.current) detachGISBasemapLayer(tileRef.current);
+          if (mapRef.current) {
+            try { mapRef.current.remove(); } catch (ignoreMapRemoval) {}
+          }
+          mapRef.current = null;
+          if (tileRef) tileRef.current = null;
+          if (basemapRef) basemapRef.current = '';
+        }
+
+        function clearMapOverlays(map, preservedTileLayer) {
+          map.eachLayer(function (layer) {
+            if (layer !== preservedTileLayer) map.removeLayer(layer);
+          });
+        }
+
+        React.useEffect(function () {
+          studioMounted.current = true;
+          return function () {
+            studioMounted.current = false;
+            disposeLeafletMap(mapInstance, mapTileLayer, mapTileBasemap);
+            disposeLeafletMap(compareLeftMapInstance, compareLeftTileLayer, compareLeftTileBasemap);
+            disposeLeafletMap(compareRightMapInstance, compareRightTileLayer, compareRightTileBasemap);
+            disposeLeafletMap(timeLeftMapInstance, timeLeftTileLayer);
+            disposeLeafletMap(timeRightMapInstance, timeRightTileLayer);
+          };
+        }, []);
 
         var imported = source === 'import';
         var activeRegionPack = getRegionPack(regionPackId);
-        var records = imported ? importedRows : activeRegionPack.records;
+        var metricDefinition = regionMetric(activeRegionPack, metric);
+        var records = imported ? importedRows : activeRegionPack.records.map(function (record) {
+          if (!metricDefinition || !metricDefinition.field || metricDefinition.field === metric) return record;
+          var compatibleRecord = Object.assign({}, record);
+          compatibleRecord[metric] = record[metricDefinition.field];
+          return compatibleRecord;
+        });
         var values = records.map(function (record) { return valueOf(record, metric, imported); });
         var min = values.length ? Math.min.apply(Math, values) : 0;
         var max = values.length ? Math.max.apply(Math, values) : 1;
-        var metricLabel = imported ? 'Imported value' : metric === 'density' ? 'Population density' : 'Broadband access index';
-        var unit = imported ? '' : metric === 'density' ? ' people/mi\u00B2' : '/100';
+        var metricLabel = imported ? gisText.importedValue : localizedMetricLabel(metricDefinition);
+        var unit = imported ? '' : (metricDefinition && metricDefinition.unit ? ' ' + metricDefinition.unit : '');
         var geoFeatures = geoData && Array.isArray(geoData.features) ? geoData.features : [];
         var geoValues = geoFeatures.map(function (feature) { return toFiniteNumber((feature.properties || {})[geoMetric]); }).filter(Number.isFinite);
         var geoMin = geoValues.length ? Math.min.apply(Math, geoValues) : 0;
@@ -1994,8 +3195,10 @@
         var selectedValues = selectedRecords.map(function (record) { return valueOf(record, metric, imported); }).filter(Number.isFinite);
         var selectedMean = selectedValues.length ? selectedValues.reduce(function (sum, value) { return sum + value; }, 0) / selectedValues.length : NaN;
         var comparisonChoices = imported
-          ? [{ value: 'point:value', label: 'Imported point value' }]
-          : [{ value: 'point:density', label: 'Population density' }, { value: 'point:access', label: 'Broadband access index' }];
+          ? [{ value: 'point:value', label: gisText.importedValue }]
+          : regionMetrics(activeRegionPack).map(function (definition) {
+            return { value: 'point:' + (definition.field || definition.id), label: localizedMetricLabel(definition) };
+          });
         geoKeys.forEach(function (key) { comparisonChoices.push({ value: 'geo:' + key, label: 'GeoJSON: ' + key }); });
         function validChoice(choice, fallbackIndex) {
           return comparisonChoices.some(function (option) { return option.value === choice; })
@@ -2005,7 +3208,9 @@
         var rightChoice = validChoice(compareRight, 1);
         var leftSeries = comparisonSeries(leftChoice);
         var rightSeries = comparisonSeries(rightChoice);
-        var activeMission = GIS_MISSIONS.filter(function (mission) { return mission.id === activeMissionId; })[0] || GIS_MISSIONS[0];
+        var activeMissionIds = activeRegionPack.modules && Array.isArray(activeRegionPack.modules.missions) ? activeRegionPack.modules.missions : [];
+        var availableMissions = GIS_MISSIONS.filter(function (mission) { return activeMissionIds.indexOf(mission.id) >= 0; });
+        var activeMission = availableMissions.filter(function (mission) { return mission.id === activeMissionId; })[0] || availableMissions[0] || GIS_MISSIONS[0];
         var activeMissionProgress = missionProgress[activeMission.id] || {};
         var activeMissionCompletion = missionCompletion(activeMission, activeMissionProgress);
         var timeYears = timeDataset.years || [];
@@ -2017,8 +3222,8 @@
         var temporalComplete = temporalResult.rows.filter(function (row) { return Number.isFinite(row.change); });
         var temporalSorted = temporalComplete.slice().sort(function (a, b) { return b.change - a.change; });
         var temporalSummary = temporalSorted.length
-          ? temporalSorted[0].name + ' has the largest increase (' + temporalSorted[0].change.toFixed(1) + '); ' +
-            temporalSorted[temporalSorted.length - 1].name + ' has the smallest change (' + temporalSorted[temporalSorted.length - 1].change.toFixed(1) +
+          ? temporalSorted[0].name + ' has the largest increase (' + display.number(temporalSorted[0].change, 1) + '); ' +
+            temporalSorted[temporalSorted.length - 1].name + ' has the smallest change (' + display.number(temporalSorted[temporalSorted.length - 1].change, 1) +
             '). These are descriptive changes and do not establish causes.'
           : 'No complete location pairs are available for the selected years.';
         var privacyAssessment = assessCoordinatePrivacy(importedRows, timeDataset.rows);
@@ -2041,7 +3246,7 @@
           source: provenance.source,
           provenance: provenance,
           classification: geoFeatures.length ? classification + ' choropleth plus point scale' : 'continuous five-step point scale',
-          generated: new Date().toLocaleString(),
+          generated: display.dateTime(new Date()),
           analysis: summary,
           basemap: basemap === 'none' ? 'No basemap — offline schematic' : basemap === 'satellite' ? 'Esri World Imagery' : 'OpenStreetMap'
         });
@@ -2061,11 +3266,11 @@
           : classifySpectralPixel(remoteSelectedCell.afterBands);
 
         function formatDistance(km) {
-          return analysisUnit === 'imperial' ? (km * 0.621371).toFixed(2) + ' mi' : km.toFixed(2) + ' km';
+          return display.distance(km, analysisUnit);
         }
 
         function formatArea(squareKm) {
-          return analysisUnit === 'imperial' ? (squareKm * 0.386102).toFixed(2) + ' mi\u00B2' : squareKm.toFixed(2) + ' km\u00B2';
+          return display.area(squareKm, analysisUnit);
         }
 
         function retryLeaflet() {
@@ -2256,26 +3461,28 @@
             try {
               var draft = projectSnapshot();
               window.localStorage.setItem(GIS_DRAFT_KEY, JSON.stringify(draft));
-              setAutosaveStatus('Autosaved locally at ' + new Date().toLocaleTimeString() + '.');
+              setAutosaveStatus('Autosaved locally at ' + display.dateTime(new Date(), { hour: 'numeric', minute: '2-digit', second: '2-digit' }) + '.');
             } catch (saveError) {
               setAutosaveStatus('Local autosave is unavailable or the project is too large. Download a project file instead.');
             }
           }, 900);
           return function () { window.clearTimeout(timer); };
-        }, [autosaveReady, tab, source, importedRows, metric, layers, basemap, geoData, geoMetric, classification, classCount, customBreaks, analysisMode, analysisPoints, bufferRadiusKm, analysisSelection, analysisSelectionSource, compareLeft, compareRight, compareLeftBasemap, compareRightBasemap, comparisonObservation, missionProgress, missionResponses, activeMissionId, timeDataset, timeBaseline, timeFocusYear, timeObservation, projectTitle, provenance, projection, latitude, composer, remoteSensing, storyMap, qualityReviewState, inquiryPlan, teacherReview]);
+        }, [autosaveReady, tab, source, regionPackId, importedRows, metric, layers, basemap, geoData, geoMetric, classification, classCount, customBreaks, analysisMode, analysisPoints, bufferRadiusKm, analysisSelection, analysisSelectionSource, compareLeft, compareRight, compareLeftBasemap, compareRightBasemap, comparisonObservation, missionProgress, missionResponses, activeMissionId, timeDataset, timeBaseline, timeFocusYear, timeObservation, projectTitle, provenance, projection, latitude, composer, remoteSensing, storyMap, qualityReviewState, inquiryPlan, teacherReview]);
 
         React.useLayoutEffect(function () {
-          if (tab !== 'map' || !mapNode.current) return undefined;
-          setMapLoading(basemap !== 'none');
-          // "No basemap" must make NO request — returning before getLeaflet() is what
-          // makes that true, since getLeaflet injects the unpkg <script>/<link> as a
-          // side effect the moment it is called. The schematic renders in place of
-          // this node, so there is nothing to tear down.
-          if (basemap === 'none') {
-            setMapStatus('Offline schematic map. Drawn on this device — no map tiles or map libraries were requested.');
-            setMapLoading(false);
+          if (tab !== 'map' || basemap === 'none' || leafletBlocked) {
+            if (mapInstance.current) disposeLeafletMap(mapInstance, mapTileLayer, mapTileBasemap);
+            if (tab === 'map' && basemap === 'none') {
+              setMapStatus('Offline schematic map. Drawn on this device — no map tiles or map libraries were requested.');
+              setMapLoading(false);
+            }
             return undefined;
           }
+          if (!mapNode.current) return undefined;
+          var reusableAtStart = mapInstance.current && mapInstance.current.getContainer &&
+            mapInstance.current.getContainer() === mapNode.current;
+          if (!reusableAtStart) setMapLoading(true);
+
           var active = true, map = null;
           getLeaflet().then(function (L) {
             if (!active || !L || !mapNode.current) {
@@ -2289,17 +3496,20 @@
             if (active) setLeafletBlocked(false);
             var canReuse = mapInstance.current && mapNode.current && mapInstance.current.getContainer &&
               mapInstance.current.getContainer() === mapNode.current;
+            if (!canReuse && mapInstance.current) disposeLeafletMap(mapInstance, mapTileLayer, mapTileBasemap);
             if (!canReuse) mapNode.current.innerHTML = '';
-            var center = records.length ? [
-              records.reduce(function (sum, record) { return sum + record.lat; }, 0) / records.length,
-              records.reduce(function (sum, record) { return sum + record.lon; }, 0) / records.length
-            ] : [45.15, -69.05];
+            var packView = activeRegionPack.view || {};
+            var viewportPoints = layers.points ? records.slice() : [];
+            if (layers.polygons && geoData) viewportPoints = viewportPoints.concat(collectGISGeoJSONPoints(geoData));
+            var viewport = dataViewport(viewportPoints, { center: packView.center || [45.15, -69.05], zoom: imported ? undefined : (packView.zoom || activeRegionPack.defaultZoom) });
+            var mapArc = minimalLongitudeArc(viewportPoints.map(function (row) { return row.lon; }));
+            var center = leafletCenterForViewport(viewport, mapArc);
             var storedView = mapViewState.current;
             map = canReuse ? mapInstance.current : L.map(mapNode.current, { keyboard: true, scrollWheelZoom: false }).setView(
               storedView ? storedView.center : center,
-              storedView ? storedView.zoom : (imported ? 5 : activeRegionPack.defaultZoom)
+              storedView ? storedView.zoom : viewport.zoom
             );
-            if (canReuse && !storedView) map.setView(center, imported ? 5 : activeRegionPack.defaultZoom);
+            if (canReuse && !storedView) map.setView(center, viewport.zoom);
             mapInstance.current = map;
             if (!canReuse) {
             map.on('moveend', function () {
@@ -2308,20 +3518,33 @@
             });
             }
             if (canReuse) {
-              map.eachLayer(function (layer) { map.removeLayer(layer); });
+              clearMapOverlays(map, mapTileLayer.current);
               map.off('click');
             }
-            var tileUrl = basemap === 'satellite'
-              ? 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-              : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-            var tileLayer = L.tileLayer(tileUrl, {
-              maxZoom: 18,
-              attribution: basemap === 'satellite' ? 'Tiles \u00A9 Esri and contributors' : '\u00A9 OpenStreetMap contributors'
-            });
-            tileLayer.on('tileerror', function () {
-              if (active) { setLeafletBlocked(true); setMapLoading(false); setMapStatus('Online basemap tiles are unavailable. The offline schematic is shown instead; try the basemap again when connectivity returns.'); }
-            });
-            tileLayer.addTo(map);
+            var tileLayer = mapTileLayer.current;
+            var tileMatches = tileLayer && mapTileBasemap.current === basemap &&
+              (!map.hasLayer || map.hasLayer(tileLayer));
+            if (!tileMatches) {
+              if (tileLayer) {
+                detachGISBasemapLayer(tileLayer);
+                try { map.removeLayer(tileLayer); } catch (ignoreOldTileLayer) {}
+              }
+              tileLayer = createGISBasemapLayer(L, basemap, function (_event, ownedLayer) {
+                if (studioMounted.current && mapTileLayer.current === ownedLayer) {
+                  setMapLoading(false);
+                  setMapStatus('Some online basemap tiles could not load. Mapped data remain interactive; choose the offline schematic if the tile service is blocked.');
+                }
+              });
+              if (!tileLayer) {
+                setBasemap('none'); persist('gisBasemap', 'none');
+                setMapLoading(false);
+                setMapStatus('The saved basemap provider is not available, so the offline schematic is shown.');
+                return;
+              }
+              mapTileLayer.current = tileLayer;
+              mapTileBasemap.current = basemap;
+              tileLayer.addTo(map);
+            }
             if (layers.coast && !imported && activeRegionPack.id === 'maine') {
               L.polyline([[43.08, -70.74], [43.54, -70.18], [43.91, -69.82], [44.05, -69.10], [44.39, -68.20], [44.68, -67.21], [45.19, -67.28]], {
                 color: '#22d3ee', weight: 4, opacity: 0.75, dashArray: '8 7'
@@ -2338,7 +3561,7 @@
             }
             var polygonLayer = null;
             if (layers.polygons && geoData && geoMetric) {
-              polygonLayer = L.geoJSON(geoData, {
+              polygonLayer = L.geoJSON(unwrapGISGeoJSONForArc(geoData, mapArc), {
                 style: function (feature) {
                   var geoValue = toFiniteNumber((feature.properties || {})[geoMetric]);
                   return { color: '#e2e8f0', weight: 1.5, fillColor: classColor(geoValue, geoBreaks), fillOpacity: 0.68 };
@@ -2363,47 +3586,48 @@
                   });
                 }
               }).addTo(map);
+            }
+            if (!storedView && typeof map.fitBounds === 'function' && (viewport.latitudeSpan > 0 || viewport.longitudeSpan > 0)) {
               try {
-                var bounds = polygonLayer.getBounds();
-                if (!storedView && bounds && bounds.isValid()) map.fitBounds(bounds, { padding: [18, 18], maxZoom: 10 });
+                map.fitBounds([[viewport.bounds.south, mapArc.westUnwrapped], [viewport.bounds.north, mapArc.eastUnwrapped]], { padding: [18, 18], maxZoom: 10 });
               } catch (ignoreBounds) {}
             }
             if (layers.points) records.forEach(function (record, recordIndex) {
               var value = valueOf(record, metric, imported);
               var p = max === min ? 0.5 : (value - min) / (max - min);
               var isSelected = !!selectedLookup[recordIndex];
-              L.circleMarker([record.lat, record.lon], {
+              L.circleMarker([record.lat, unwrapLongitudeForArc(record.lon, mapArc)], {
                 radius: 7 + p * 11 + (isSelected ? 3 : 0),
                 color: isSelected ? '#facc15' : '#fff', weight: isSelected ? 4 : 2,
                 fillColor: color(value, min, max), fillOpacity: isSelected ? 1 : 0.86
               }).bindTooltip(escapeHTML(record.name) + ': ' + escapeHTML(value + unit) + (isSelected ? ' (selected)' : '')).addTo(map);
             });
             if (analysisMode === 'distance' && analysisPoints.length) {
-              if (analysisPoints.length > 1) L.polyline(analysisPoints.map(function (point) { return [point.lat, point.lon]; }), { color: '#facc15', weight: 4 }).addTo(map);
+              if (analysisPoints.length > 1) L.polyline(analysisPoints.map(function (point) { return [point.lat, unwrapLongitudeForArc(point.lon, mapArc)]; }), { color: '#facc15', weight: 4 }).addTo(map);
               analysisPoints.forEach(function (point, index) {
-                L.circleMarker([point.lat, point.lon], { radius: 5, color: '#111827', weight: 2, fillColor: '#facc15', fillOpacity: 1 })
+                L.circleMarker([point.lat, unwrapLongitudeForArc(point.lon, mapArc)], { radius: 5, color: '#111827', weight: 2, fillColor: '#facc15', fillOpacity: 1 })
                   .bindTooltip('Measurement vertex ' + (index + 1)).addTo(map);
               });
             }
             if (analysisMode === 'buffer' && analysisPoints.length) {
-              L.circle([analysisPoints[0].lat, analysisPoints[0].lon], {
+              L.circle([analysisPoints[0].lat, unwrapLongitudeForArc(analysisPoints[0].lon, mapArc)], {
                 radius: Math.max(0, Number(bufferRadiusKm) || 0) * 1000,
                 color: '#facc15', weight: 3, fillColor: '#facc15', fillOpacity: 0.13
               }).bindTooltip(formatDistance(Number(bufferRadiusKm) || 0) + ' radius').addTo(map);
             }
             if (analysisMode === 'nearest' && analysisPoints.length && selectedRecords[0]) {
-              L.polyline([[analysisPoints[0].lat, analysisPoints[0].lon], [selectedRecords[0].lat, selectedRecords[0].lon]], {
+              L.polyline([[analysisPoints[0].lat, unwrapLongitudeForArc(analysisPoints[0].lon, mapArc)], [selectedRecords[0].lat, unwrapLongitudeForArc(selectedRecords[0].lon, mapArc)]], {
                 color: '#facc15', weight: 4, dashArray: '7 6'
               }).addTo(map);
             }
             map.on('click', function (event) {
-              var point = { lat: event.latlng.lat, lon: event.latlng.lng };
+              var point = { lat: event.latlng.lat, lon: normalizeLongitude(event.latlng.lng) };
               pushAnalysisHistory();
               if (analysisMode === 'distance') {
                 setAnalysisPoints(function (previous) { return previous.concat([point]).slice(-20); });
                 setAnalysisSelection([]); setAnalysisSelectionSource('none');
                 persist('gisSpatialAnalysis', true);
-                announce('Measurement vertex added at ' + point.lat.toFixed(4) + ', ' + point.lon.toFixed(4) + '.');
+                announce('Measurement vertex added at ' + display.coordinate(point.lat, 4, 'lat') + ', ' + display.coordinate(point.lon, 4, 'lon') + '.');
               } else if (analysisMode === 'buffer') {
                 var buffered = selectWithinRadius(records, point, bufferRadiusKm);
                 setAnalysisPoints([point]); setAnalysisSelection([]); setAnalysisSelectionSource('buffer');
@@ -2420,21 +3644,38 @@
             });
             var instruction = analysisMode === 'distance' ? 'Click map vertices to measure a path.' :
               analysisMode === 'buffer' ? 'Click the map to place the buffer center.' : 'Click the map to find the nearest point.';
-            setMapStatus('Interactive base map ready. ' + records.length + ' records mapped. ' + instruction);
+            if (!mapTileLayer.current._gisHadTileError) {
+              setMapStatus('Interactive base map ready. ' + records.length + ' records mapped. ' + instruction);
+            }
             setMapLoading(false);
           });
           return function () {
             active = false;
-            if (map && (!mapNode.current || tab !== 'map')) {
-              try { map.remove(); } catch (ignore) {}
-              mapInstance.current = null;
-            }
           };
-        }, [tab, source, regionPackId, importedRows, metric, layers.points, layers.coast, layers.grid, layers.polygons, basemap, geoData, geoMetric, classification, classCount, customBreaks, analysisMode, analysisPoints, bufferRadiusKm, analysisSelection, analysisSelectionSource, analysisUnit, leafletRetry]);
+        }, [tab, source, regionPackId, importedRows, metric, layers.points, layers.coast, layers.grid, layers.polygons, basemap, geoData, geoMetric, classification, classCount, customBreaks, analysisMode, analysisPoints, bufferRadiusKm, analysisSelection, analysisSelectionSource, analysisUnit, leafletBlocked, leafletRetry]);
 
         React.useLayoutEffect(function () {
-          if (tab !== 'compare' || !compareLeftNode.current || !compareRightNode.current) return undefined;
-          setCompareMapReady(false);
+          if (tab !== 'compare') {
+            if (compareLeftMapInstance.current) disposeLeafletMap(compareLeftMapInstance, compareLeftTileLayer, compareLeftTileBasemap);
+            if (compareRightMapInstance.current) disposeLeafletMap(compareRightMapInstance, compareRightTileLayer, compareRightTileBasemap);
+            return undefined;
+          }
+          var comparisonLeftProvider = getGISBasemapProvider(compareLeftBasemap);
+          var comparisonRightProvider = getGISBasemapProvider(compareRightBasemap);
+          if (!comparisonLeftProvider || !comparisonLeftProvider.url || !comparisonRightProvider || !comparisonRightProvider.url) {
+            if (compareLeftMapInstance.current) disposeLeafletMap(compareLeftMapInstance, compareLeftTileLayer, compareLeftTileBasemap);
+            if (compareRightMapInstance.current) disposeLeafletMap(compareRightMapInstance, compareRightTileLayer, compareRightTileBasemap);
+            setCompareMapReady(false);
+            setCompareMapUnavailable(true);
+            setCompareStatus('One or more saved basemap providers are unavailable. Comparison tables remain ready; choose an available provider.');
+            return undefined;
+          }
+          if (!compareLeftNode.current || !compareRightNode.current) return undefined;
+          var leftReusableAtStart = compareLeftMapInstance.current && compareLeftMapInstance.current.getContainer &&
+            compareLeftMapInstance.current.getContainer() === compareLeftNode.current;
+          var rightReusableAtStart = compareRightMapInstance.current && compareRightMapInstance.current.getContainer &&
+            compareRightMapInstance.current.getContainer() === compareRightNode.current;
+          if (!leftReusableAtStart || !rightReusableAtStart) setCompareMapReady(false);
           setCompareMapUnavailable(false);
           var active = true, leftMap = null, rightMap = null;
           getLeaflet().then(function (L) {
@@ -2445,17 +3686,20 @@
               }
               return;
             }
-            var center = records.length ? [
-              records.reduce(function (sum, record) { return sum + record.lat; }, 0) / records.length,
-              records.reduce(function (sum, record) { return sum + record.lon; }, 0) / records.length
-            ] : [45.15, -69.05];
+            var comparisonPoints = leftSeries.kind === 'point' || rightSeries.kind === 'point' ? records.slice() : [];
+            if ((leftSeries.kind === 'geo' || rightSeries.kind === 'geo') && geoData) comparisonPoints = comparisonPoints.concat(collectGISGeoJSONPoints(geoData));
+            var comparisonViewport = dataViewport(comparisonPoints, { center: (activeRegionPack.view && activeRegionPack.view.center) || [45.15, -69.05], zoom: imported ? undefined : ((activeRegionPack.view && activeRegionPack.view.zoom) || activeRegionPack.defaultZoom) });
+            var comparisonArc = minimalLongitudeArc(comparisonPoints.map(function (row) { return row.lon; }));
+            var center = leafletCenterForViewport(comparisonViewport, comparisonArc);
             var stored = compareViewState.current;
             var initialCenter = stored ? stored.center : center;
-            var initialZoom = stored ? stored.zoom : (imported ? 5 : activeRegionPack.defaultZoom);
+            var initialZoom = stored ? stored.zoom : comparisonViewport.zoom;
             var leftCanReuse = compareLeftMapInstance.current && compareLeftNode.current && compareLeftMapInstance.current.getContainer &&
               compareLeftMapInstance.current.getContainer() === compareLeftNode.current;
             var rightCanReuse = compareRightMapInstance.current && compareRightNode.current && compareRightMapInstance.current.getContainer &&
               compareRightMapInstance.current.getContainer() === compareRightNode.current;
+            if (!leftCanReuse && compareLeftMapInstance.current) disposeLeafletMap(compareLeftMapInstance, compareLeftTileLayer, compareLeftTileBasemap);
+            if (!rightCanReuse && compareRightMapInstance.current) disposeLeafletMap(compareRightMapInstance, compareRightTileLayer, compareRightTileBasemap);
             if (!leftCanReuse) compareLeftNode.current.innerHTML = '';
             if (!rightCanReuse) compareRightNode.current.innerHTML = '';
             leftMap = leftCanReuse ? compareLeftMapInstance.current : L.map(compareLeftNode.current, { keyboard: true, scrollWheelZoom: false }).setView(initialCenter, initialZoom);
@@ -2463,27 +3707,31 @@
             if (leftCanReuse && !stored) leftMap.setView(initialCenter, initialZoom);
             if (rightCanReuse && !stored) rightMap.setView(initialCenter, initialZoom);
             if (leftCanReuse) {
-              leftMap.eachLayer(function (layer) { leftMap.removeLayer(layer); });
-              leftMap.off();
+              clearMapOverlays(leftMap, compareLeftTileLayer.current);
+              if (compareLeftMoveHandler.current) leftMap.off('moveend', compareLeftMoveHandler.current);
             }
             if (rightCanReuse) {
-              rightMap.eachLayer(function (layer) { rightMap.removeLayer(layer); });
-              rightMap.off();
+              clearMapOverlays(rightMap, compareRightTileLayer.current);
+              if (compareRightMoveHandler.current) rightMap.off('moveend', compareRightMoveHandler.current);
             }
             compareLeftMapInstance.current = leftMap;
             compareRightMapInstance.current = rightMap;
-            function addBasemap(map, name) {
-              var tileUrl = name === 'satellite'
-                ? 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-                : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-              var layer = L.tileLayer(tileUrl, {
-                maxZoom: 18,
-                attribution: name === 'satellite' ? 'Tiles © Esri and contributors' : '© OpenStreetMap contributors'
+            function ensureBasemap(map, name, tileRef, basemapRef) {
+              var layer = tileRef.current;
+              var matches = layer && basemapRef.current === name && (!map.hasLayer || map.hasLayer(layer));
+              if (matches) return layer;
+              if (layer) {
+                detachGISBasemapLayer(layer);
+                try { map.removeLayer(layer); } catch (ignoreOldComparisonTiles) {}
+              }
+              layer = createGISBasemapLayer(L, name, function (_event, ownedLayer) {
+                if (studioMounted.current && tileRef.current === ownedLayer) setCompareStatus('Some comparison basemap tiles could not load. The mapped layers and accessible comparison tables remain available.');
               });
-              layer.on('tileerror', function () {
-                if (active) { setCompareMapUnavailable(true); setCompareStatus('Comparison basemap tiles are unavailable. Try again or use the accessible comparison tables.'); }
-              });
+              if (!layer) return null;
+              tileRef.current = layer;
+              basemapRef.current = name;
               layer.addTo(map);
+              return layer;
             }
             function addSeries(map, choice) {
               var series = comparisonSeries(choice);
@@ -2494,14 +3742,14 @@
                 series.rows.forEach(function (row, index) {
                   var value = Number(row.value), p = high === low ? 0.5 : (value - low) / (high - low);
                   var selected = !!selectedLookup[index];
-                  L.circleMarker([row.lat, row.lon], {
+                  L.circleMarker([row.lat, unwrapLongitudeForArc(row.lon, comparisonArc)], {
                     radius: 7 + p * 10 + (selected ? 2 : 0), color: selected ? '#facc15' : '#fff',
                     weight: selected ? 4 : 2, fillColor: color(value, low, high), fillOpacity: 0.9
                   }).bindTooltip(escapeHTML(row.name) + ': ' + escapeHTML(row.value) + (selected ? ' (selected)' : '')).addTo(map);
                 });
               } else if (geoData) {
                 var breaks = calculateBreaks(numeric, classification, classCount, customBreaks);
-                L.geoJSON(geoData, {
+                L.geoJSON(unwrapGISGeoJSONForArc(geoData, comparisonArc), {
                   style: function (feature) {
                     return { color: '#fff', weight: 1.4, fillColor: classColor((feature.properties || {})[series.key], breaks), fillOpacity: 0.72 };
                   },
@@ -2516,8 +3764,14 @@
                 }).addTo(map);
               }
             }
-            addBasemap(leftMap, compareLeftBasemap);
-            addBasemap(rightMap, compareRightBasemap);
+            var leftComparisonBasemap = ensureBasemap(leftMap, compareLeftBasemap, compareLeftTileLayer, compareLeftTileBasemap);
+            var rightComparisonBasemap = ensureBasemap(rightMap, compareRightBasemap, compareRightTileLayer, compareRightTileBasemap);
+            if (!leftComparisonBasemap || !rightComparisonBasemap) {
+              setCompareMapUnavailable(true);
+              setCompareMapReady(false);
+              setCompareStatus('One or more saved basemap providers are unavailable. Comparison tables remain ready; choose an available provider.');
+              return;
+            }
             addSeries(leftMap, leftChoice);
             addSeries(rightMap, rightChoice);
             var syncing = false;
@@ -2529,21 +3783,17 @@
               targetMap.setView(currentCenter, zoom, { animate: false });
               syncing = false;
             }
-            leftMap.on('moveend', function () { synchronize(leftMap, rightMap); });
-            rightMap.on('moveend', function () { synchronize(rightMap, leftMap); });
+            compareLeftMoveHandler.current = function () { synchronize(leftMap, rightMap); };
+            compareRightMoveHandler.current = function () { synchronize(rightMap, leftMap); };
+            leftMap.on('moveend', compareLeftMoveHandler.current);
+            rightMap.on('moveend', compareRightMoveHandler.current);
             setCompareMapReady(true);
-            setCompareStatus('Comparison maps ready and synchronized. Pan or zoom either map to move both.');
+            if (!compareLeftTileLayer.current._gisHadTileError && !compareRightTileLayer.current._gisHadTileError) {
+              setCompareStatus('Comparison maps ready and synchronized. Pan or zoom either map to move both.');
+            }
           });
           return function () {
             active = false;
-            if (leftMap && (!compareLeftNode.current || tab !== 'compare')) {
-              try { leftMap.remove(); } catch (ignoreLeft) {}
-              compareLeftMapInstance.current = null;
-            }
-            if (rightMap && (!compareRightNode.current || tab !== 'compare')) {
-              try { rightMap.remove(); } catch (ignoreRight) {}
-              compareRightMapInstance.current = null;
-            }
           };
         }, [tab, source, regionPackId, importedRows, geoData, geoNameKey, leftChoice, rightChoice, compareLeftBasemap, compareRightBasemap, classification, classCount, customBreaks, analysisSelection, analysisSelectionSource, bufferRadiusKm, analysisPoints, leafletRetry]);
 
@@ -2564,8 +3814,17 @@
         }, [timePlaying, timeYears.join('|')]);
 
         React.useLayoutEffect(function () {
-          if (tab !== 'timeline' || !timeLeftNode.current || !timeRightNode.current) return undefined;
-          setTimeMapReady(false);
+          if (tab !== 'timeline') {
+            if (timeLeftMapInstance.current) disposeLeafletMap(timeLeftMapInstance, timeLeftTileLayer);
+            if (timeRightMapInstance.current) disposeLeafletMap(timeRightMapInstance, timeRightTileLayer);
+            return undefined;
+          }
+          if (!timeLeftNode.current || !timeRightNode.current) return undefined;
+          var leftReusableAtStart = timeLeftMapInstance.current && timeLeftMapInstance.current.getContainer &&
+            timeLeftMapInstance.current.getContainer() === timeLeftNode.current;
+          var rightReusableAtStart = timeRightMapInstance.current && timeRightMapInstance.current.getContainer &&
+            timeRightMapInstance.current.getContainer() === timeRightNode.current;
+          if (!leftReusableAtStart || !rightReusableAtStart) setTimeMapReady(false);
           setTimeMapUnavailable(false);
           var active = true, leftMap = null, rightMap = null;
           getLeaflet().then(function (L) {
@@ -2580,33 +3839,41 @@
               timeLeftMapInstance.current.getContainer() === timeLeftNode.current;
             var rightCanReuse = timeRightMapInstance.current && timeRightNode.current && timeRightMapInstance.current.getContainer &&
               timeRightMapInstance.current.getContainer() === timeRightNode.current;
+            if (!leftCanReuse && timeLeftMapInstance.current) disposeLeafletMap(timeLeftMapInstance, timeLeftTileLayer);
+            if (!rightCanReuse && timeRightMapInstance.current) disposeLeafletMap(timeRightMapInstance, timeRightTileLayer);
             if (!leftCanReuse) timeLeftNode.current.innerHTML = '';
             if (!rightCanReuse) timeRightNode.current.innerHTML = '';
             var all = baselineSnapshot.concat(focusSnapshot);
-            var center = all.length ? [
-              all.reduce(function (sum, row) { return sum + row.lat; }, 0) / all.length,
-              all.reduce(function (sum, row) { return sum + row.lon; }, 0) / all.length
-            ] : [45.15, -69.05];
+            var timelineViewport = dataViewport(all, { center: [45.15, -69.05] });
+            var timelineArc = minimalLongitudeArc(all.map(function (row) { return row.lon; }));
+            var center = leafletCenterForViewport(timelineViewport, timelineArc);
             var stored = timeViewState.current;
-            leftMap = leftCanReuse ? timeLeftMapInstance.current : L.map(timeLeftNode.current, { keyboard: true, scrollWheelZoom: false }).setView(stored ? stored.center : center, stored ? stored.zoom : 6);
-            rightMap = rightCanReuse ? timeRightMapInstance.current : L.map(timeRightNode.current, { keyboard: true, scrollWheelZoom: false }).setView(stored ? stored.center : center, stored ? stored.zoom : 6);
+            leftMap = leftCanReuse ? timeLeftMapInstance.current : L.map(timeLeftNode.current, { keyboard: true, scrollWheelZoom: false }).setView(stored ? stored.center : center, stored ? stored.zoom : timelineViewport.zoom);
+            rightMap = rightCanReuse ? timeRightMapInstance.current : L.map(timeRightNode.current, { keyboard: true, scrollWheelZoom: false }).setView(stored ? stored.center : center, stored ? stored.zoom : timelineViewport.zoom);
             if (leftCanReuse) {
-              leftMap.eachLayer(function (layer) { leftMap.removeLayer(layer); });
-              leftMap.off();
+              clearMapOverlays(leftMap, timeLeftTileLayer.current);
+              if (timeLeftMoveHandler.current) leftMap.off('moveend', timeLeftMoveHandler.current);
             }
             if (rightCanReuse) {
-              rightMap.eachLayer(function (layer) { rightMap.removeLayer(layer); });
-              rightMap.off();
+              clearMapOverlays(rightMap, timeRightTileLayer.current);
+              if (timeRightMoveHandler.current) rightMap.off('moveend', timeRightMoveHandler.current);
             }
             timeLeftMapInstance.current = leftMap;
             timeRightMapInstance.current = rightMap;
-            function addBasemap(map) {
-              L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OpenStreetMap contributors' }).addTo(map);
-              var timelineLayer = null;
-              map.eachLayer(function (candidate) { if (candidate && candidate._url) timelineLayer = candidate; });
-              if (timelineLayer) timelineLayer.on('tileerror', function () {
-                if (active) { setTimeMapUnavailable(true); setTimeStatus('Timeline basemap tiles are unavailable. Try again or use the synchronized change table.'); }
+            function ensureBasemap(map, tileRef) {
+              var layer = tileRef.current;
+              if (layer && (!map.hasLayer || map.hasLayer(layer))) return layer;
+              if (layer) {
+                detachGISBasemapLayer(layer);
+                try { map.removeLayer(layer); } catch (ignoreOldTimelineTiles) {}
+              }
+              layer = createGISBasemapLayer(L, 'street', function (_event, ownedLayer) {
+                if (studioMounted.current && tileRef.current === ownedLayer) setTimeStatus('Some timeline basemap tiles could not load. The mapped values and synchronized change table remain available.');
               });
+              if (!layer) return null;
+              tileRef.current = layer;
+              layer.addTo(map);
+              return layer;
             }
             var allValues = all.map(function (row) { return row.value; }).filter(Number.isFinite);
             var low = allValues.length ? Math.min.apply(Math, allValues) : 0;
@@ -2617,14 +3884,20 @@
               snapshot.forEach(function (row) {
                 var p = high === low ? 0.5 : (row.value - low) / (high - low);
                 var changed = changeLookup[row.name.toLowerCase()];
-                var detail = isFocus && changed && Number.isFinite(changed.change) ? ' (change ' + (changed.change >= 0 ? '+' : '') + changed.change.toFixed(1) + ')' : '';
-                L.circleMarker([row.lat, row.lon], {
+                var detail = isFocus && changed && Number.isFinite(changed.change) ? ' (change ' + (changed.change >= 0 ? '+' : '') + display.number(changed.change, 1) + ')' : '';
+                L.circleMarker([row.lat, unwrapLongitudeForArc(row.lon, timelineArc)], {
                   radius: 8 + p * 12, color: '#fff', weight: 2,
                   fillColor: color(row.value, low, high), fillOpacity: 0.9
                 }).bindTooltip(escapeHTML(row.name) + ': ' + escapeHTML(row.value + (row.unit ? ' ' + row.unit : '') + detail)).addTo(map);
               });
             }
-            addBasemap(leftMap); addBasemap(rightMap);
+            var leftTimelineBasemap = ensureBasemap(leftMap, timeLeftTileLayer);
+            var rightTimelineBasemap = ensureBasemap(rightMap, timeRightTileLayer);
+            if (!leftTimelineBasemap || !rightTimelineBasemap) {
+              setTimeMapUnavailable(true);
+              setTimeStatus('Timeline basemaps are unavailable. The synchronized change table remains ready.');
+              return;
+            }
             addSnapshot(leftMap, baselineSnapshot, false);
             addSnapshot(rightMap, focusSnapshot, true);
             var syncing = false;
@@ -2636,25 +3909,20 @@
               targetMap.setView(currentCenter, zoom, { animate: false });
               syncing = false;
             }
-            leftMap.on('moveend', function () { sync(leftMap, rightMap); });
-            rightMap.on('moveend', function () { sync(rightMap, leftMap); });
+            timeLeftMoveHandler.current = function () { sync(leftMap, rightMap); };
+            timeRightMoveHandler.current = function () { sync(rightMap, leftMap); };
+            leftMap.on('moveend', timeLeftMoveHandler.current);
+            rightMap.on('moveend', timeRightMoveHandler.current);
             setTimeMapReady(true);
-            setTimeStatus('Before-and-after maps ready and synchronized. Baseline ' + effectiveBaseline + '; focus year ' + effectiveFocusYear + '.');
+            if (!timeLeftTileLayer.current._gisHadTileError && !timeRightTileLayer.current._gisHadTileError) {
+              setTimeStatus('Before-and-after maps ready and synchronized. Baseline ' + effectiveBaseline + '; focus year ' + effectiveFocusYear + '.');
+            }
           });
           return function () {
             active = false;
-            if (leftMap && (!timeLeftNode.current || tab !== 'timeline')) {
-              try { leftMap.remove(); } catch (ignoreLeft) {}
-              timeLeftMapInstance.current = null;
-            }
-            if (rightMap && (!timeRightNode.current || tab !== 'timeline')) {
-              try { rightMap.remove(); } catch (ignoreRight) {}
-              timeRightMapInstance.current = null;
-            }
           };
         }, [tab, effectiveBaseline, effectiveFocusYear, timeDataset, leafletRetry]);
 
-        function go(next) {
         React.useEffect(function () {
           var maps = [mapInstance.current, compareLeftMapInstance.current, compareRightMapInstance.current, timeLeftMapInstance.current, timeRightMapInstance.current].filter(Boolean);
           if (!maps.length) return undefined;
@@ -2670,6 +3938,8 @@
             window.removeEventListener('resize', resizeMaps);
           };
         }, [tab, mapLoading, compareMapReady, timeMapReady]);
+
+        function go(next) {
           setTab(next); persist('gisTab', next);
           if (next === 'projection') persist('gisProjectionCompared', true);
           if (next === 'compare') persist('gisCompared', true);
@@ -2677,13 +3947,95 @@
           announce(next + ' workspace');
         }
 
-        function doImport() {
+        function csvConventionControl(value, onChange) {
+          return h('label', { style: { display: 'grid', gap: 5, fontSize: 12, fontWeight: 700 } }, gisText.csvConvention,
+            h('select', { value: value, onChange: function (event) { onChange(event.target.value); }, style: control },
+              h('option', { value: 'auto' }, gisText.csvAuto),
+              h('option', { value: 'comma-dot' }, gisText.csvCommaDot),
+              h('option', { value: 'comma-comma' }, gisText.csvCommaComma),
+              h('option', { value: 'semicolon-comma' }, gisText.csvSemicolonComma),
+              h('option', { value: 'tab-dot' }, gisText.csvTabDot),
+              h('option', { value: 'tab-comma' }, gisText.csvTabComma),
+              h('option', { value: 'pipe-dot' }, gisText.csvPipeDot),
+              h('option', { value: 'pipe-comma' }, gisText.csvPipeComma)));
+        }
+
+        function csvFormatSummary(diagnostics) {
+          if (!diagnostics || !diagnostics.delimiter || !diagnostics.decimalSeparator) return '';
+          var delimiter = diagnostics.delimiter === '\t' ? gisText.csvTabLabel : '"' + diagnostics.delimiter + '"';
+          return gisText.csvDetected + ': ' + delimiter + ' \u00B7 ' + gisText.csvDecimalLabel + ' "' + diagnostics.decimalSeparator + '"';
+        }
+
+        function clearPointImportPreview() {
+          setImportPreview(null);
+          setImportColumnMap({ name: '', coordinate1: '', coordinate2: '', value: '' });
+        }
+
+        function pointImportOptions(useReviewedMapping) {
+          var options = Object.assign({}, gisImportParseOptions(importConvention), {
+            crs: importCRS,
+            axisOrder: importAxisOrder,
+            utmZone: Number(importUTMZone),
+            utmHemisphere: importUTMHemisphere
+          });
+          if (useReviewedMapping) {
+            if (!importPreview) throw new Error('Preview the CSV and review its column mapping first.');
+            var coordinate1 = Number(importColumnMap.coordinate1);
+            var coordinate2 = Number(importColumnMap.coordinate2);
+            var value = Number(importColumnMap.value);
+            if (!Number.isInteger(coordinate1) || !Number.isInteger(coordinate2) || !Number.isInteger(value)) {
+              throw new Error('Choose both coordinate columns and the numeric value column.');
+            }
+            options.columns = {
+              name: importColumnMap.name === '' ? -1 : Number(importColumnMap.name),
+              coordinate1: coordinate1,
+              coordinate2: coordinate2,
+              value: value
+            };
+          }
+          return options;
+        }
+
+        function previewPointImport() {
           try {
-            var rows = parseCSV(csv);
-            setImportDiagnostics({ invalidRows: Number(rows.invalidRows) || 0, truncatedRows: Number(rows.truncatedRows) || 0, invalidSamples: Array.isArray(rows.invalidSamples) ? rows.invalidSamples : [] });
+            var preview = inspectGISCSV(csv, pointImportOptions(false));
+            var suggested = preview.suggestedColumns;
+            setImportPreview(preview);
+            setImportColumnMap({
+              name: suggested.name >= 0 ? String(suggested.name) : '',
+              coordinate1: suggested.coordinate1 >= 0 ? String(suggested.coordinate1) : '',
+              coordinate2: suggested.coordinate2 >= 0 ? String(suggested.coordinate2) : '',
+              value: suggested.value >= 0 ? String(suggested.value) : ''
+            });
+            setImportAxisOrder(preview.axisOrder);
+            setError('');
+            announce(preview.totalRows + ' CSV rows previewed. Review the coordinate system and column mapping.');
+          } catch (problem) {
+            clearPointImportPreview();
+            setError(problem.message);
+            announce('CSV preview error. ' + problem.message);
+          }
+        }
+
+        function doImport(useReviewedMapping) {
+          try {
+            var rows = parseCSV(csv, pointImportOptions(!!useReviewedMapping));
+            setImportDiagnostics({
+              invalidRows: Number(rows.invalidRows) || 0,
+              truncatedRows: Number(rows.truncatedRows) || 0,
+              invalidSamples: Array.isArray(rows.invalidSamples) ? rows.invalidSamples : [],
+              delimiter: rows.delimiter,
+              decimalSeparator: rows.decimalSeparator,
+              crs: rows.crs,
+              axisOrder: rows.axisOrder,
+              columnMap: rows.columnMap
+            });
+            mapViewState.current = null;
+            compareViewState.current = null;
+            timeViewState.current = null;
             setImportedRows(rows); setSource('import'); setError(''); setTab('map');
             persist('gisImported', true);
-            announce(rows.length + ' CSV locations mapped.');
+            announce(rows.length + ' CSV locations converted to WGS84 and mapped.');
           } catch (problem) { setError(problem.message); announce('CSV error. ' + problem.message); }
         }
 
@@ -2692,7 +4044,12 @@
           if (!file) return;
           if (file.size > 1024 * 1024) { setError('Choose a CSV smaller than 1 MB.'); return; }
           var reader = new FileReader();
-          reader.onload = function () { setCSV(String(reader.result || '')); setImportDiagnostics({ invalidRows: 0, truncatedRows: 0, invalidSamples: [] }); setError(''); };
+          reader.onload = function () {
+            setCSV(String(reader.result || ''));
+            setImportDiagnostics({ invalidRows: 0, truncatedRows: 0, invalidSamples: [] });
+            clearPointImportPreview();
+            setError('');
+          };
           reader.onerror = function () { setError('That file could not be read. Try pasting the CSV.'); };
           reader.readAsText(file);
         }
@@ -2718,12 +4075,20 @@
             var samples = Array.isArray(importDiagnostics.invalidSamples) ? importDiagnostics.invalidSamples : [];
             var reportRows = [
               ['GIS Studio CSV import review'],
+              ['Selected source CRS', importDiagnostics.crs || 'EPSG:4326'],
+              ['Selected axis order', importDiagnostics.axisOrder || 'lat-lon'],
               ['Invalid rows rejected', importDiagnostics.invalidRows],
               ['Valid rows not loaded by the 250-row limit', importDiagnostics.truncatedRows],
               [],
-              ['Source row', 'Name', 'Latitude', 'Longitude', 'Value', 'Reason']
+              ['Source row', 'Name', 'Source coordinate A', 'Source coordinate B', 'Value', 'Reason']
             ].concat(samples.map(function (row) {
-              return [row.row, row.name, row.latitude, row.longitude, row.value, 'Coordinate or value is missing or outside the allowed range'];
+              return [
+                row.row, row.name,
+                row.coordinate1 == null ? row.latitude : row.coordinate1,
+                row.coordinate2 == null ? row.longitude : row.coordinate2,
+                row.value,
+                row.reason || 'A coordinate or value is missing or outside the selected CRS range.'
+              ];
             }));
             if (samples.length < importDiagnostics.invalidRows) reportRows.push([], ['Note', 'Only the first 50 rejected rows are included.']);
             triggerDownload(rowsToCSV(reportRows), safeFileStem(projectTitle, 'gis-import') + '-import-review.csv', 'text/csv;charset=utf-8');
@@ -2745,26 +4110,27 @@
           setLayers(function (previous) { return Object.assign({}, previous, { polygons: true }); });
           setTab('map');
           persist('gisGeoJSONImported', true);
-          announce(parsed.data.features.length + ' GeoJSON features mapped from ' + sourceLabel + '.');
+          var formatLabel = parsed.sourceFormat === 'kml' ? 'KML' : parsed.sourceFormat === 'gpx' ? 'GPX' : 'GeoJSON';
+          announce(parsed.data.features.length + ' ' + formatLabel + ' features mapped from ' + sourceLabel + '.');
         }
 
         function doGeoImport() {
-          try { applyGeoJSON(parseGeoJSON(geoText), 'pasted data'); }
-          catch (problem) { setGeoError(problem.message); announce('GeoJSON error. ' + problem.message); }
+          try { applyGeoJSON(parseGISVectorText(geoText, 'auto', 'pasted-data'), 'pasted data'); }
+          catch (problem) { setGeoError(problem.message); announce('Spatial layer error. ' + problem.message); }
         }
 
         function readGeoFile(event) {
           var file = event.target.files && event.target.files[0];
           if (!file) return;
-          if (file.size > 3 * 1024 * 1024) { setGeoError('Choose a GeoJSON file smaller than 3 MB.'); return; }
+          if (file.size > 3 * 1024 * 1024) { setGeoError('Choose a GeoJSON, KML, or GPX file smaller than 3 MB.'); return; }
           var reader = new FileReader();
           reader.onload = function () {
             var text = String(reader.result || '');
             setGeoText(text);
-            try { applyGeoJSON(parseGeoJSON(text), file.name); }
-            catch (problem) { setGeoError(problem.message); announce('GeoJSON error. ' + problem.message); }
+            try { applyGeoJSON(parseGISVectorText(text, 'auto', file.name), file.name); }
+            catch (problem) { setGeoError(problem.message); announce('Spatial layer error. ' + problem.message); }
           };
-          reader.onerror = function () { setGeoError('That GeoJSON file could not be read.'); };
+          reader.onerror = function () { setGeoError('That spatial layer file could not be read.'); };
           reader.readAsText(file);
         }
 
@@ -2803,7 +4169,7 @@
 
         function readJoinColumns() {
           try {
-            var table = parseTableCSV(joinText);
+            var table = parseTableCSV(joinText, gisImportParseOptions(joinConvention));
             var geoLookup = {};
             geoPropertyKeys.forEach(function (key) { geoLookup[key.toLowerCase()] = key; });
             var matchingHeader = table.headers.filter(function (header) { return geoLookup[header.toLowerCase()]; })[0];
@@ -2821,7 +4187,7 @@
 
         function previewJoinData() {
           try {
-            var preview = joinTableToGeoJSON(geoData, joinTable ? joinTable.rows : [], joinGeoKey, joinCSVKey, joinValueKey);
+            var preview = joinTableToGeoJSON(geoData, joinTable ? joinTable.rows : [], joinGeoKey, joinCSVKey, joinValueKey, { decimalSeparator: joinTable && joinTable.decimalSeparator });
             setJoinPreview(preview);
             setJoinError('');
             announce(preview.matched + ' boundaries matched. ' + preview.unmatchedCSV.length + ' CSV rows and ' + preview.unmatchedGeo.length + ' boundaries unmatched.');
@@ -2843,7 +4209,14 @@
 
         function changeRegionPack(nextId) {
           var next = getRegionPack(nextId);
+          var nextMetrics = regionMetrics(next);
+          var nextMetric = nextMetrics.some(function (definition) { return definition.id === metric; })
+            ? metric : (next.defaultMetric || nextMetrics[0].id);
           setRegionPackId(next.id);
+          if (nextMetric !== metric) {
+            setMetric(nextMetric);
+            persist('gisMetric', nextMetric);
+          }
           setSource('sample');
           mapViewState.current = null;
           compareViewState.current = null;
@@ -2856,7 +4229,7 @@
           setProjectError('');
           persist('gisRegionPack', next.id);
           persist('gisSpatialAnalysis', false);
-          announce(next.label + ' loaded. ' + next.description + ' ' + next.sourceNote);
+          announce(localizedRegionLabel(next) + ' loaded. ' + next.description + ' ' + next.sourceNote);
         }
         function clearAnalysis() {
           if (hasAnalysisState()) pushAnalysisHistory();
@@ -2960,8 +4333,8 @@
                   var classification = value === max ? 'Highest' : value === min ? 'Lowest' : 'Middle range';
                   return h('tr', { key: record.name },
                     h('th', { scope: 'row', style: { textAlign: 'left', padding: 8, color: '#fff', borderBottom: '1px solid #1e4154' } }, record.name),
-                    h('td', { style: { padding: 8, borderBottom: '1px solid #1e4154' } }, record.lat.toFixed(3)),
-                    h('td', { style: { padding: 8, borderBottom: '1px solid #1e4154' } }, record.lon.toFixed(3)),
+                    h('td', { style: { padding: 8, borderBottom: '1px solid #1e4154' } }, display.number(record.lat, { minimumFractionDigits: 3, maximumFractionDigits: 3, useGrouping: false })),
+                    h('td', { style: { padding: 8, borderBottom: '1px solid #1e4154' } }, display.number(record.lon, { minimumFractionDigits: 3, maximumFractionDigits: 3, useGrouping: false })),
                     h('td', { style: { padding: 8, borderBottom: '1px solid #1e4154', fontWeight: 800 } }, value + unit),
                     h('td', { style: { padding: 8, borderBottom: '1px solid #1e4154' } }, classification),
                     h('td', { style: { padding: 8, borderBottom: '1px solid #1e4154', color: selectedLookup[records.indexOf(record)] ? '#fde047' : '#a7c7d8', fontWeight: selectedLookup[records.indexOf(record)] ? 800 : 400 } }, selectedLookup[records.indexOf(record)] ? 'Selected' : 'Not selected'));
@@ -3043,8 +4416,8 @@
           kids.push(h('text', { key: 'north', x: SW - 14, y: 20, textAnchor: 'end', fill: '#cbd5e1', fontSize: 12, fontWeight: 800 }, 'N ↑'));
           kids.push(h('text', { key: 'schem', x: 8, y: 16, fill: '#7dd3fc', fontSize: 10, fontWeight: 700 }, 'Schematic — not a projected navigation map'));
           var summary = options.altText || (pointRows.length + ' points and ' + polyRings.length + ' boundaries drawn from latitude ' +
-            proj.bounds.minLat.toFixed(2) + ' to ' + proj.bounds.maxLat.toFixed(2) + ' and longitude ' +
-            proj.bounds.minLon.toFixed(2) + ' to ' + proj.bounds.maxLon.toFixed(2) +
+            display.coordinate(proj.bounds.minLat, 2, 'lat') + ' to ' + display.coordinate(proj.bounds.maxLat, 2, 'lat') + ' and longitude ' +
+            display.coordinate(proj.bounds.minLon, 2, 'lon') + ' to ' + display.coordinate(proj.bounds.maxLon, 2, 'lon') +
             '. Schematic view drawn on this device with no map-tile requests. Exact values are in the data table below.');
           return h('svg', {
             viewBox: '0 0 ' + SW + ' ' + SH, width: '100%', role: 'img', 'aria-label': summary,
@@ -3125,7 +4498,7 @@
               (selectedGeometryType === 'LineString' || selectedGeometryType === 'MultiLineString') && h('strong', { style: { color: '#86efac' } }, 'Line length: ' + formatDistance(measuredFeature.lengthKm))),
             selectedRecords.length > 0 && h('div', { style: { marginTop: 10, display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 8 } },
               h('div', { style: { padding: 9, borderRadius: 8, background: '#123143' } }, h('strong', { style: { display: 'block', color: '#fde047', fontSize: 18 } }, selectedRecords.length), h('span', { style: { fontSize: 10 } }, 'selected points')),
-              h('div', { style: { padding: 9, borderRadius: 8, background: '#123143' } }, h('strong', { style: { display: 'block', color: '#67e8f9', fontSize: 18 } }, Number.isFinite(selectedMean) ? selectedMean.toFixed(1) : '—'), h('span', { style: { fontSize: 10 } }, 'selected mean, ' + metricLabel)),
+              h('div', { style: { padding: 9, borderRadius: 8, background: '#123143' } }, h('strong', { style: { display: 'block', color: '#67e8f9', fontSize: 18 } }, Number.isFinite(selectedMean) ? display.number(selectedMean, 1) : '\u2014'), h('span', { style: { fontSize: 10 } }, 'selected mean, ' + metricLabel)),
               h('div', { style: { padding: 9, borderRadius: 8, background: '#123143' } }, h('strong', { style: { display: 'block', color: '#f0fdfa', fontSize: 12 } }, selectedRecords.slice(0, 4).map(function (record) { return record.name; }).join(', ') + (selectedRecords.length > 4 ? ' +' + (selectedRecords.length - 4) : '')), h('span', { style: { fontSize: 10 } }, 'selected locations'))),
             h('p', { style: { margin: '10px 0 0', color: '#fcd34d', fontSize: 10, lineHeight: 1.45 } }, 'Analysis describes spatial relationships in the loaded data; it does not establish cause and effect. The table below marks every selected row.'));
         }
@@ -3149,12 +4522,12 @@
                 h('p', { style: { margin: '0 0 13px', color: '#a7c7d8', fontSize: 11, lineHeight: 1.5 } }, 'A GIS combines geometry, attributes, and layers.'),
                 h('fieldset', { style: { border: 0, padding: 0, margin: '0 0 13px' } },
                   h('legend', { style: { color: '#67e8f9', fontWeight: 800, fontSize: 11, marginBottom: 7 } }, 'DATA SOURCE'),
-                  h('label', { style: { display: 'block', fontSize: 12, marginBottom: 6 } }, h('input', { type: 'radio', name: 'gis-source', checked: !imported, onChange: function () { setSource('sample'); } }), ' Sample / region pack'),
-                  h('label', { style: { display: 'block', fontSize: 12, color: importedRows.length ? '#dbeafe' : '#68849a' } }, h('input', { type: 'radio', name: 'gis-source', checked: imported, disabled: !importedRows.length, onChange: function () { setSource('import'); } }), ' My CSV')),
+                  h('label', { style: { display: 'block', fontSize: 12, marginBottom: 6 } }, h('input', { type: 'radio', name: 'gis-source', checked: !imported, onChange: function () { mapViewState.current = null; compareViewState.current = null; setSource('sample'); } }), ' Sample / region pack'),
+                  h('label', { style: { display: 'block', fontSize: 12, color: importedRows.length ? '#dbeafe' : '#68849a' } }, h('input', { type: 'radio', name: 'gis-source', checked: imported, disabled: !importedRows.length, onChange: function () { mapViewState.current = null; compareViewState.current = null; setSource('import'); } }), ' My CSV')),
                 !imported && h('label', { style: { display: 'grid', gap: 5, fontSize: 12, marginBottom: 13 } },
                   h('span', { style: { fontWeight: 700 } }, 'Sample region pack'),
                   h('select', { value: activeRegionPack.id, onChange: function (event) { changeRegionPack(event.target.value); }, style: control, 'aria-describedby': 'gis-region-pack-note' },
-                    GIS_REGION_PACKS.map(function (pack) { return h('option', { key: pack.id, value: pack.id }, pack.label); })),
+                    GIS_REGION_PACKS.map(function (pack) { return h('option', { key: pack.id, value: pack.id }, localizedRegionLabel(pack)); })),
                   h('span', { id: 'gis-region-pack-note', style: { color: '#9fb6c5', fontSize: 10, lineHeight: 1.45 } }, activeRegionPack.description + ' ' + activeRegionPack.sourceNote)),
                 h('label', { style: { display: 'grid', gap: 5, fontSize: 12, marginBottom: 13 } },
                   h('span', { style: { fontWeight: 700 } }, 'Basemap'),
@@ -3169,8 +4542,7 @@
                 !imported && h('label', { style: { display: 'grid', gap: 5, fontSize: 12, marginBottom: 13 } },
                   h('span', { style: { fontWeight: 700 } }, 'Thematic attribute'),
                   h('select', { value: metric, onChange: function (event) { setMetric(event.target.value); persist('gisMetric', event.target.value); }, style: control },
-                    h('option', { value: 'density' }, 'Population density'),
-                    h('option', { value: 'access' }, 'Broadband access (demo)'))),
+                    regionMetrics(activeRegionPack).map(function (definition) { return h('option', { key: definition.id, value: definition.id }, localizedMetricLabel(definition)); }))),
                 geoKeys.length > 0 && h('label', { style: { display: 'grid', gap: 5, fontSize: 12, marginBottom: 10 } },
                   h('span', { style: { fontWeight: 700 } }, 'Choropleth attribute'),
                   h('select', { value: geoMetric, onChange: function (event) { setGeoMetric(event.target.value); }, style: control },
@@ -3203,14 +4575,14 @@
                   h('strong', null, 'Online basemap unavailable. '), 'The offline schematic is active. ',
                   h('button', { type: 'button', onClick: retryLeaflet, style: Object.assign({}, control, { margin: '7px 6px 0 0', cursor: 'pointer' }) }, 'Try online basemap again'),
                   h('button', { type: 'button', onClick: function () { setBasemap('none'); persist('gisBasemap', 'none'); }, style: Object.assign({}, control, { marginTop: 7, cursor: 'pointer' }) }, 'Keep offline')),
-                imported && basemap !== 'none' && h('p', { role: 'status', style: { margin: '7px 2px 0', color: '#fde68a', fontSize: 10, lineHeight: 1.45 } }, 'Online basemap privacy: the tile service can infer the area being viewed. Choose ?No basemap ? offline schematic? before sharing sensitive classroom locations.'),
+                imported && basemap !== 'none' && h('p', { role: 'status', style: { margin: '7px 2px 0', color: '#fde68a', fontSize: 10, lineHeight: 1.45 } }, 'Online basemap privacy: the tile service can infer the area being viewed. Choose "No basemap - offline schematic" before working with sensitive classroom locations.'),
                 imported && (privacyAssessment.highPrecision > 0 || privacyAssessment.identifierWarnings > 0) && h('aside', { role: 'alert', style: { marginTop: 8, padding: 10, borderLeft: '4px solid #f59e0b', borderRadius: 8, background: '#2b2617', color: '#fde68a', fontSize: 11, lineHeight: 1.45 } },
                   h('strong', null, 'Privacy check before sharing. '), privacyAssessment.highPrecision + ' point row' + (privacyAssessment.highPrecision === 1 ? '' : 's') + ' use highly precise coordinates and ' + privacyAssessment.identifierWarnings + ' have identifier-like labels. Review the Project privacy controls and round or aggregate sensitive points.'),
                 imported && (importDiagnostics.invalidRows > 0 || importDiagnostics.truncatedRows > 0) && h('p', { role: 'status', style: { margin: '7px 2px 0', padding: 9, borderLeft: '4px solid #f59e0b', borderRadius: 6, background: '#2b2617', color: '#fde68a', fontSize: 11 } }, 'Import review: ' + importDiagnostics.invalidRows + ' row' + (importDiagnostics.invalidRows === 1 ? '' : 's') + ' skipped because coordinates or values were invalid.' + (importDiagnostics.truncatedRows > 0 ? ' ' + importDiagnostics.truncatedRows + ' additional valid row' + (importDiagnostics.truncatedRows === 1 ? '' : 's') + ' were not loaded; the 250-row limit applies.' : '')),
                 geoValues.length > 0 ? h('div', { role: 'list', 'aria-label': classification + ' choropleth legend for ' + geoMetric, style: { display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', color: '#b7d2df', fontSize: 10 } },
                   legendBounds.slice(0, -1).map(function (lower, index) {
                     var upper = legendBounds[index + 1];
-                    var label = Number(lower).toFixed(1) + ' to ' + Number(upper).toFixed(1);
+                    var label = display.number(lower, 1) + ' to ' + display.number(upper, 1);
                     return h('span', { key: index, role: 'listitem', style: { display: 'inline-flex', alignItems: 'center', gap: 4 } },
                       h('span', { 'aria-hidden': 'true', style: { width: 18, height: 10, display: 'inline-block', background: paletteForClasses(legendBounds.length - 1)[Math.min(index, legendBounds.length - 2)], borderRadius: 2, border: '1px solid rgba(255,255,255,.35)' } }),
                       label);
@@ -3246,30 +4618,137 @@
                   }))))));
         }
 
+        function importCoordinateRole(first) {
+          if (importCRS === 'EPSG:4326') {
+            if (importAxisOrder === 'lon-lat') return first ? gisText.importLongitude : gisText.importLatitude;
+            return first ? gisText.importLatitude : gisText.importLongitude;
+          }
+          if (importAxisOrder === 'y-x') return first ? gisText.importNorthing : gisText.importEasting;
+          return first ? gisText.importEasting : gisText.importNorthing;
+        }
+
+        function importColumnControl(label, key, required) {
+          if (!importPreview) return null;
+          return h('label', { style: { display: 'grid', gap: 5, fontSize: 12, fontWeight: 700 } },
+            label + (required ? ' *' : ''),
+            h('select', {
+              value: importColumnMap[key],
+              onChange: function (event) {
+                var next = Object.assign({}, importColumnMap);
+                next[key] = event.target.value;
+                setImportColumnMap(next);
+                setError('');
+              },
+              style: control,
+              required: !!required
+            },
+              h('option', { value: '' }, gisText.importChooseColumn),
+              importPreview.headers.map(function (header, index) {
+                return h('option', { key: key + '-' + index, value: String(index) }, header || ('Column ' + (index + 1)));
+              })));
+        }
+
+        function importPreviewPanel() {
+          if (!importPreview) return null;
+          return h('div', { style: { marginTop: 14, padding: 14, borderRadius: 12, background: '#071827', border: '1px solid #3f6b82', display: 'grid', gap: 12 } },
+            h('div', null,
+              h('h3', { style: { margin: '0 0 5px', color: '#f0fdfa', fontSize: 15 } }, gisText.importMappingHeading),
+              h('p', { style: { margin: 0, color: '#b7d2df', fontSize: 12, lineHeight: 1.5 } }, gisText.importMappingHelp),
+              h('p', { role: 'status', style: { margin: '7px 0 0', color: '#67e8f9', fontSize: 11 } },
+                display.number(importPreview.totalRows, { maximumFractionDigits: 0 }) + ' source rows \u00B7 ' +
+                importPreview.crs + ' \u00B7 ' + csvFormatSummary(importPreview))),
+            importPreview.suggestedColumns.usedFallback && h('p', { role: 'status', style: { margin: 0, padding: 9, borderLeft: '4px solid #f59e0b', borderRadius: 6, background: '#2b2617', color: '#fde68a', fontSize: 11 } }, gisText.importFallbackWarning),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 10 } },
+              importColumnControl(gisText.importNameColumn, 'name', false),
+              importColumnControl(gisText.importCoordinateA + ' (' + importCoordinateRole(true) + ')', 'coordinate1', true),
+              importColumnControl(gisText.importCoordinateB + ' (' + importCoordinateRole(false) + ')', 'coordinate2', true),
+              importColumnControl(gisText.importValueColumn, 'value', true)),
+            h('div', { style: { overflowX: 'auto', maxHeight: 260, overflowY: 'auto' } },
+              h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11 } },
+                h('caption', { style: { textAlign: 'left', color: '#a7c7d8', paddingBottom: 7 } }, gisText.importPreviewCaption),
+                h('thead', null, h('tr', null, importPreview.headers.map(function (header, index) {
+                  return h('th', { key: 'preview-header-' + index, scope: 'col', style: { textAlign: 'left', padding: 7, color: '#67e8f9', borderBottom: '1px solid #3f6b82', position: 'sticky', top: 0, background: '#071827' } }, header || ('Column ' + (index + 1)));
+                }))),
+                h('tbody', null, importPreview.sampleRows.map(function (row, rowIndex) {
+                  return h('tr', { key: 'preview-row-' + rowIndex }, importPreview.headers.map(function (_header, columnIndex) {
+                    return h('td', { key: 'preview-cell-' + rowIndex + '-' + columnIndex, style: { padding: 7, color: '#e6fffb', borderBottom: '1px solid #1e4154', whiteSpace: 'nowrap' } }, row[columnIndex] == null ? '' : String(row[columnIndex]));
+                  }));
+                })))),
+            h('button', { type: 'button', onClick: function () { doImport(true); }, style: Object.assign({}, primary, { justifySelf: 'start' }) }, gisText.importMapReviewedButton));
+        }
         function importView() {
           return h('div', { style: { maxWidth: 980, margin: '0 auto', display: 'grid', gap: 14 } },
             h('section', { 'aria-labelledby': 'gis-import-heading', style: Object.assign({}, panel, { padding: 18 }) },
-              h('p', { style: { margin: 0, color: '#67e8f9', fontSize: 11, fontWeight: 800 } }, 'POINT DATA'),
-              h('h2', { id: 'gis-import-heading', style: { color: '#f0fdfa', margin: '5px 0 8px' } }, 'Map a coordinate CSV'),
-              h('p', { style: { color: '#b7d2df', lineHeight: 1.6, fontSize: 13 } }, 'Use name, latitude, longitude, and value headers. Up to 250 rows stay in your browser and are not uploaded.'),
-              h('label', { style: { display: 'grid', gap: 6, margin: '14px 0', fontSize: 12, fontWeight: 700 } }, 'Choose a CSV file',
+              h('p', { style: { margin: 0, color: '#67e8f9', fontSize: 11, fontWeight: 800 } }, gisText.importPointKicker),
+              h('h2', { id: 'gis-import-heading', style: { color: '#f0fdfa', margin: '5px 0 8px' } }, gisText.importHeading),
+              h('p', { style: { color: '#b7d2df', lineHeight: 1.6, fontSize: 13 } }, gisText.importIntro),
+              h('label', { style: { display: 'grid', gap: 6, margin: '14px 0', fontSize: 12, fontWeight: 700 } }, gisText.importChooseFile,
                 h('input', { type: 'file', accept: '.csv,text/csv', onChange: readFile })),
-              h('label', { style: { display: 'grid', gap: 6, fontSize: 12, fontWeight: 700 } }, 'Or paste CSV data',
-                h('textarea', { value: csv, onChange: function (event) { setCSV(event.target.value); setImportDiagnostics({ invalidRows: 0, truncatedRows: 0, invalidSamples: [] }); setError(''); }, rows: 7, spellCheck: false, style: { width: '100%', boxSizing: 'border-box', padding: 12, borderRadius: 10, border: '1px solid #3f6b82', background: '#071827', color: '#e6fffb', fontFamily: 'monospace', lineHeight: 1.5 } })),
+              h('div', { style: { margin: '0 0 12px' } },
+                csvConventionControl(importConvention, function (next) {
+                  setImportConvention(next);
+                  setImportDiagnostics({ invalidRows: 0, truncatedRows: 0, invalidSamples: [] });
+                  clearPointImportPreview();
+                  setError('');
+                })),
+              h('label', { style: { display: 'grid', gap: 6, fontSize: 12, fontWeight: 700 } }, gisText.importPaste,
+                h('textarea', { value: csv, onChange: function (event) {
+                  setCSV(event.target.value);
+                  setImportDiagnostics({ invalidRows: 0, truncatedRows: 0, invalidSamples: [] });
+                  clearPointImportPreview();
+                  setError('');
+                }, rows: 7, spellCheck: false, style: { width: '100%', boxSizing: 'border-box', padding: 12, borderRadius: 10, border: '1px solid #3f6b82', background: '#071827', color: '#e6fffb', fontFamily: 'monospace', lineHeight: 1.5 } })),
+              h('fieldset', { style: { margin: '14px 0 0', padding: 12, border: '1px solid #3f6b82', borderRadius: 10 } },
+                h('legend', { style: { color: '#67e8f9', fontWeight: 800, padding: '0 5px' } }, gisText.importCRSLabel),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 10 } },
+                  h('label', { style: { display: 'grid', gap: 5, fontSize: 12, fontWeight: 700 } }, gisText.importCRSLabel,
+                    h('select', { value: importCRS, onChange: function (event) {
+                      var nextCRS = event.target.value;
+                      setImportCRS(nextCRS);
+                      setImportAxisOrder(nextCRS === 'EPSG:4326' ? 'lat-lon' : 'x-y');
+                      clearPointImportPreview();
+                      setError('');
+                    }, style: control },
+                      h('option', { value: 'EPSG:4326' }, gisText.importCRSWGS84),
+                      h('option', { value: 'EPSG:3857' }, gisText.importCRSWebMercator),
+                      h('option', { value: 'UTM' }, gisText.importCRSUTM))),
+                  h('label', { style: { display: 'grid', gap: 5, fontSize: 12, fontWeight: 700 } }, gisText.importAxisOrder,
+                    h('select', { value: importAxisOrder, onChange: function (event) { setImportAxisOrder(event.target.value); clearPointImportPreview(); setError(''); }, style: control },
+                      importCRS === 'EPSG:4326'
+                        ? [h('option', { key: 'lat-lon', value: 'lat-lon' }, gisText.importAxisLatLon), h('option', { key: 'lon-lat', value: 'lon-lat' }, gisText.importAxisLonLat)]
+                        : [h('option', { key: 'x-y', value: 'x-y' }, gisText.importAxisXY), h('option', { key: 'y-x', value: 'y-x' }, gisText.importAxisYX)])),
+                  importCRS === 'UTM' && h('label', { style: { display: 'grid', gap: 5, fontSize: 12, fontWeight: 700 } }, gisText.importUTMZone,
+                    h('input', { type: 'number', min: 1, max: 60, step: 1, value: importUTMZone, onChange: function (event) { setImportUTMZone(event.target.value); clearPointImportPreview(); setError(''); }, style: control })),
+                  importCRS === 'UTM' && h('label', { style: { display: 'grid', gap: 5, fontSize: 12, fontWeight: 700 } }, gisText.importHemisphere,
+                    h('select', { value: importUTMHemisphere, onChange: function (event) { setImportUTMHemisphere(event.target.value); clearPointImportPreview(); setError(''); }, style: control },
+                      h('option', { value: 'N' }, gisText.importNorth),
+                      h('option', { value: 'S' }, gisText.importSouth))))),
+              csvFormatSummary(importDiagnostics) && h('p', { role: 'status', style: { margin: '8px 0 0', color: '#a7c7d8', fontSize: 11 } }, csvFormatSummary(importDiagnostics) + (importDiagnostics.crs ? ' \u00B7 ' + importDiagnostics.crs + ' \u2192 WGS84' : '')),
               error && h('p', { role: 'alert', style: { background: '#7f1d1d', color: '#fecaca', padding: 9, borderRadius: 8 } }, error),
               h('div', { style: { display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' } },
-                h('button', { type: 'button', onClick: doImport, style: primary }, 'Map this CSV'),
+                h('button', { type: 'button', onClick: previewPointImport, style: primary }, gisText.importPreviewButton),
+                h('button', { type: 'button', onClick: function () { doImport(false); }, style: Object.assign({}, control, { cursor: 'pointer' }) }, gisText.importQuickMapButton),
                 h('button', { type: 'button', onClick: downloadImportReport, disabled: !importDiagnostics.invalidRows && !importDiagnostics.truncatedRows, style: Object.assign({}, control, { cursor: importDiagnostics.invalidRows || importDiagnostics.truncatedRows ? 'pointer' : 'not-allowed', opacity: importDiagnostics.invalidRows || importDiagnostics.truncatedRows ? 1 : 0.55 }) }, 'Download import review'),
-                h('button', { type: 'button', onClick: function () { setCSV(EXAMPLE); setImportDiagnostics({ invalidRows: 0, truncatedRows: 0, invalidSamples: [] }); setError(''); }, style: Object.assign({}, control, { cursor: 'pointer' }) }, 'Restore CSV example'))),
+                h('button', { type: 'button', onClick: function () {
+                  setCSV(EXAMPLE);
+                  setImportCRS('EPSG:4326');
+                  setImportAxisOrder('lat-lon');
+                  setImportUTMZone(19);
+                  setImportUTMHemisphere('N');
+                  setImportDiagnostics({ invalidRows: 0, truncatedRows: 0, invalidSamples: [] });
+                  clearPointImportPreview();
+                  setError('');
+                }, style: Object.assign({}, control, { cursor: 'pointer' }) }, gisText.importRestore)),
+              importPreviewPanel()),
             h('section', { 'aria-labelledby': 'gis-geojson-heading', style: Object.assign({}, panel, { padding: 18 }) },
               h('p', { style: { margin: 0, color: '#67e8f9', fontSize: 11, fontWeight: 800 } }, 'POLYGONS + FEATURES'),
               h('h2', { id: 'gis-geojson-heading', style: { color: '#f0fdfa', margin: '5px 0 8px' } }, 'Import a GeoJSON choropleth'),
-              h('p', { style: { color: '#b7d2df', lineHeight: 1.6, fontSize: 13 } }, 'Load up to 500 points, lines, or polygons. GIS Studio detects numeric properties and maps the first one; change the attribute from the map workspace.'),
+              h('p', { style: { color: '#b7d2df', lineHeight: 1.6, fontSize: 13 } }, gisText.vectorIntro),
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', margin: '12px 0' } },
-                h('label', { style: Object.assign({}, control, { cursor: 'pointer', fontWeight: 700 }) }, 'Choose GeoJSON',
-                  h('input', { type: 'file', accept: '.geojson,.json,application/geo+json,application/json', onChange: readGeoFile, style: { display: 'block', marginTop: 7 } })),
+                h('label', { style: Object.assign({}, control, { cursor: 'pointer', fontWeight: 700 }) }, gisText.vectorChooseFile,
+                  h('input', { type: 'file', accept: '.geojson,.json,.kml,.gpx,application/geo+json,application/json,application/vnd.google-earth.kml+xml,application/gpx+xml', onChange: readGeoFile, style: { display: 'block', marginTop: 7 } })),
                 h('button', { type: 'button', onClick: loadOfficialEcoregions, disabled: officialBusy, style: Object.assign({}, primary, { background: '#155e75' }) }, officialBusy ? 'Loading Maine layer\u2026' : 'Load official Maine ecoregions')),
-              h('label', { style: { display: 'grid', gap: 6, fontSize: 12, fontWeight: 700 } }, 'Or paste GeoJSON',
+              h('label', { style: { display: 'grid', gap: 6, fontSize: 12, fontWeight: 700 } }, gisText.vectorPaste,
                 h('textarea', { value: geoText, onChange: function (event) { setGeoText(event.target.value); setGeoError(''); }, rows: 10, spellCheck: false, style: { width: '100%', boxSizing: 'border-box', padding: 12, borderRadius: 10, border: '1px solid #3f6b82', background: '#071827', color: '#e6fffb', fontFamily: 'monospace', lineHeight: 1.45 } })),
               geoError && h('p', { role: 'alert', style: { background: '#7f1d1d', color: '#fecaca', padding: 9, borderRadius: 8 } }, geoError),
               h('div', { style: { display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' } },
@@ -3286,8 +4765,11 @@
               !geoData && h('p', { role: 'status', style: { padding: 10, borderRadius: 8, background: '#172d3c', color: '#bae6fd', fontSize: 12 } }, 'Build or load a GeoJSON layer above before preparing a join.'),
               h('label', { style: { display: 'grid', gap: 6, margin: '12px 0', fontSize: 12, fontWeight: 700 } }, 'Choose attribute CSV',
                 h('input', { type: 'file', accept: '.csv,text/csv', onChange: readJoinFile, disabled: !geoData })),
+              h('div', { style: { margin: '0 0 12px' } },
+                csvConventionControl(joinConvention, function (next) { setJoinConvention(next); setJoinTable(null); setJoinPreview(null); setJoinError(''); })),
               h('label', { style: { display: 'grid', gap: 6, fontSize: 12, fontWeight: 700 } }, 'Or paste attribute CSV',
                 h('textarea', { value: joinText, disabled: !geoData, onChange: function (event) { setJoinText(event.target.value); setJoinTable(null); setJoinPreview(null); setJoinError(''); }, rows: 7, spellCheck: false, style: { width: '100%', boxSizing: 'border-box', padding: 12, borderRadius: 10, border: '1px solid #3f6b82', background: '#071827', color: '#e6fffb', fontFamily: 'monospace', lineHeight: 1.45, opacity: geoData ? 1 : 0.55 } })),
+              joinTable && csvFormatSummary(joinTable) && h('p', { role: 'status', style: { margin: '8px 0 0', color: '#a7c7d8', fontSize: 11 } }, csvFormatSummary(joinTable)),
               h('div', { style: { display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' } },
                 h('button', { type: 'button', onClick: readJoinColumns, disabled: !geoData, style: Object.assign({}, primary, { opacity: geoData ? 1 : 0.55 }) }, '1. Read CSV columns'),
                 h('button', { type: 'button', onClick: function () { setJoinText(EXAMPLE_JOIN_CSV); setJoinTable(null); setJoinPreview(null); setJoinError(''); }, disabled: !geoData, style: Object.assign({}, control, { cursor: geoData ? 'pointer' : 'not-allowed' }) }, 'Restore join example')),
@@ -3363,10 +4845,15 @@
           setProvenance(normalizeProvenance(project.provenance));
           setImportedRows(restoredPoints);
           setSource(settings.source === 'import' && restoredPoints.length ? 'import' : 'sample');
-          setRegionPackId(getRegionPack(settings.regionPack || 'maine').id);
-          setMetric(settings.metric === 'access' ? 'access' : 'density');
+          var restoredPack = getRegionPack(settings.regionPack || 'maine');
+          var restoredMetrics = regionMetrics(restoredPack);
+          var restoredMetric = restoredMetrics.some(function (definition) { return definition.id === settings.metric; })
+            ? settings.metric : (restoredPack.defaultMetric || restoredMetrics[0].id);
+          setRegionPackId(restoredPack.id);
+          setMetric(restoredMetric);
           setLayers(Object.assign({ points: true, coast: true, grid: false, polygons: true }, settings.layers || {}));
-          setBasemap(settings.basemap === 'satellite' ? 'satellite' : 'street');
+          var restoredBasemap = settings.basemap || 'street';
+          setBasemap(getGISBasemapProvider(restoredBasemap) ? restoredBasemap : 'none');
           setGeoData(data.geoData || null);
           var restoredGeoKeys = Array.isArray(data.geoKeys) ? data.geoKeys.map(String).slice(0, 100) : [];
           setGeoKeys(restoredGeoKeys);
@@ -3386,10 +4873,12 @@
           setAnalysisSelectionSource(String(settings.analysisSelectionSource || 'none'));
           setCompareLeft(String(settings.compareLeft || 'point:density'));
           setCompareRight(String(settings.compareRight || 'point:access'));
-          setCompareLeftBasemap(settings.compareLeftBasemap === 'satellite' ? 'satellite' : 'street');
-          setCompareRightBasemap(settings.compareRightBasemap === 'street' ? 'street' : 'satellite');
+          var restoredLeftBasemap = String(settings.compareLeftBasemap || 'street');
+          var restoredRightBasemap = String(settings.compareRightBasemap || 'satellite');
+          setCompareLeftBasemap(getGISBasemapProvider(restoredLeftBasemap) && restoredLeftBasemap !== 'none' ? restoredLeftBasemap : 'none');
+          setCompareRightBasemap(getGISBasemapProvider(restoredRightBasemap) && restoredRightBasemap !== 'none' ? restoredRightBasemap : 'none');
           setProjection(['mercator', 'equirectangular', 'equalarea'].indexOf(settings.projection) >= 0 ? settings.projection : 'mercator');
-          setLatitude(Math.max(0, Math.min(80, Number(settings.latitude) || 60)));
+          setLatitude(Number.isFinite(Number(settings.latitude)) ? Math.max(-80, Math.min(80, Number(settings.latitude))) : 60);
           var savedTimeRows = data.timeDataset && Array.isArray(data.timeDataset.rows) ? data.timeDataset.rows.slice(0, 3000) : [];
           var restoredTime = EXAMPLE_TIME_DATA;
           if (savedTimeRows.length) {
@@ -3529,9 +5018,9 @@
 
         function loadTimeSeries() {
           try {
-            var parsed = parseTimeCSV(timeText);
+            var parsed = parseTimeCSV(timeText, gisImportParseOptions(timeConvention));
             setTimeDataset(parsed);
-            setTimeImportDiagnostics({ invalidRows: Number(parsed.invalidRows) || 0, truncatedRows: Number(parsed.truncatedRows) || 0, invalidSamples: Array.isArray(parsed.invalidSamples) ? parsed.invalidSamples : [] });
+            setTimeImportDiagnostics({ invalidRows: Number(parsed.invalidRows) || 0, truncatedRows: Number(parsed.truncatedRows) || 0, invalidSamples: Array.isArray(parsed.invalidSamples) ? parsed.invalidSamples : [], delimiter: parsed.delimiter, decimalSeparator: parsed.decimalSeparator });
             setTimeBaseline(parsed.years[0]);
             setTimeFocusYear(parsed.years[parsed.years.length - 1]);
             setTimePlaying(false);
@@ -3607,7 +5096,7 @@
         function timeEvidenceModel() {
           return {
             title: 'GIS Studio Change-Over-Time Evidence Report',
-            generated: new Date().toLocaleString(),
+            generated: display.dateTime(new Date()),
             observation: timeObservation || 'Add a claim comparing the baseline and focus years.',
             analysis: temporalSummary + (temporalResult.warnings.length ? ' Data warnings: ' + temporalResult.warnings.join(' ') : ''),
             sources: (timeDataset.sources.length ? timeDataset.sources.join('; ') : 'Learner-imported time-series data') +
@@ -3625,7 +5114,7 @@
         }
 
         function downloadTimeEvidence() {
-          var html = buildEvidenceReport(timeEvidenceModel());
+          var html = buildEvidenceReport(timeEvidenceModel(), localeInfo);
           var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
           var url = URL.createObjectURL(blob);
           var link = document.createElement('a');
@@ -3660,11 +5149,10 @@
         }
 
         function prepareMission(mission) {
+          if (!mission || availableMissions.indexOf(mission) < 0) { announce(gisText.noMissions); return; }
           setSource('sample');
           mapViewState.current = null;
           compareViewState.current = null;
-          setRegionPackId('maine');
-          persist('gisRegionPack', 'maine');
           setAnalysisPoints([]);
           setAnalysisSelection([]);
           setAnalysisSelectionSource('none');
@@ -3714,7 +5202,7 @@
         }
 
         function downloadMissionEvidence(mission) {
-          var html = buildEvidenceReport(missionEvidenceModel(mission));
+          var html = buildEvidenceReport(missionEvidenceModel(mission), localeInfo);
           var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
           var url = URL.createObjectURL(blob);
           var link = document.createElement('a');
@@ -3808,15 +5296,23 @@
 
 
         function makeEvidenceModel() {
+          function evidenceBasemapLabel(id) {
+            var provider = getGISBasemapProvider(id);
+            return provider && provider.url ? provider.label : 'Unavailable saved provider';
+          }
+          var leftBasemapLabel = evidenceBasemapLabel(compareLeftBasemap);
+          var rightBasemapLabel = evidenceBasemapLabel(compareRightBasemap);
+          var basemapLabels = [leftBasemapLabel, rightBasemapLabel].filter(function (label, index, all) { return all.indexOf(label) === index; });
+          var basemapSummary = 'Basemaps: ' + basemapLabels.join(' and ') + '.';
           return {
             title: 'GIS Studio Geographic Evidence Report',
-            generated: new Date().toLocaleString(),
+            generated: display.dateTime(new Date()),
             observation: comparisonObservation || 'Compare the mapped patterns, then add a claim supported by at least two pieces of evidence.',
             analysis: summary + (selectedRecords.length ? ' Spatial analysis selected ' + selectedRecords.length + ' mapped points.' : ''),
-            sources: imported ? 'Point data were imported locally by the learner. Basemaps: OpenStreetMap and Esri World Imagery.' :
-              activeRegionPack.description + ' ' + activeRegionPack.sourceNote + ' Basemaps: OpenStreetMap and Esri World Imagery.',
-            left: Object.assign({}, leftSeries, { label: comparisonLabel(leftChoice), basemap: compareLeftBasemap === 'satellite' ? 'Esri World Imagery' : 'OpenStreetMap' }),
-            right: Object.assign({}, rightSeries, { label: comparisonLabel(rightChoice), basemap: compareRightBasemap === 'satellite' ? 'Esri World Imagery' : 'OpenStreetMap' }),
+            sources: imported ? 'Point data were imported locally by the learner. ' + basemapSummary :
+              activeRegionPack.description + ' ' + activeRegionPack.sourceNote + ' ' + basemapSummary,
+            left: Object.assign({}, leftSeries, { label: comparisonLabel(leftChoice), basemap: leftBasemapLabel }),
+            right: Object.assign({}, rightSeries, { label: comparisonLabel(rightChoice), basemap: rightBasemapLabel }),
             spatialAnalysis: spatialAnalysisEvidence(),
             selected: selectedRecords.map(function (record) {
               return { name: record.name, lat: record.lat, lon: record.lon, value: valueOf(record, metric, imported) };
@@ -3825,7 +5321,7 @@
         }
 
         function downloadEvidenceReport() {
-          var html = buildEvidenceReport(makeEvidenceModel());
+          var html = buildEvidenceReport(makeEvidenceModel(), localeInfo);
           var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
           var url = URL.createObjectURL(blob);
           var link = document.createElement('a');
@@ -3847,7 +5343,7 @@
           }
           reportWindow.opener = null;
           reportWindow.document.open();
-          reportWindow.document.write(buildEvidenceReport(makeEvidenceModel()));
+          reportWindow.document.write(buildEvidenceReport(makeEvidenceModel(), localeInfo));
           reportWindow.document.close();
           reportWindow.focus();
           window.setTimeout(function () { reportWindow.print(); }, 250);
@@ -3896,7 +5392,7 @@
         }
 
         function downloadRemoteSensingReport() {
-          var html = buildRemoteSensingReport({ scene: remoteScene, state: remoteSensing });
+          var html = buildRemoteSensingReport({ scene: remoteScene, state: remoteSensing }, localeInfo);
           var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
           var url = URL.createObjectURL(blob);
           var link = document.createElement('a');
@@ -3918,7 +5414,7 @@
           }
           reportWindow.opener = null;
           reportWindow.document.open();
-          reportWindow.document.write(buildRemoteSensingReport({ scene: remoteScene, state: remoteSensing }));
+          reportWindow.document.write(buildRemoteSensingReport({ scene: remoteScene, state: remoteSensing }, localeInfo));
           reportWindow.document.close();
           reportWindow.focus();
           window.setTimeout(function () { reportWindow.print(); }, 250);
@@ -3976,7 +5472,7 @@
         }
 
         function downloadComposerPackage() {
-          var html = buildMapComposerReport(composerModel);
+          var html = buildMapComposerReport(composerModel, localeInfo);
           var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
           var url = URL.createObjectURL(blob);
           var link = document.createElement('a');
@@ -4000,7 +5496,7 @@
           }
           reportWindow.opener = null;
           reportWindow.document.open();
-          reportWindow.document.write(buildMapComposerReport(composerModel));
+          reportWindow.document.write(buildMapComposerReport(composerModel, localeInfo));
           reportWindow.document.close();
           reportWindow.focus();
           window.setTimeout(function () { reportWindow.print(); }, 250);
@@ -4031,7 +5527,7 @@
           if (tab === 'timeline') return 'Timeline — ' + effectiveBaseline + ' to ' + effectiveFocusYear;
           if (tab === 'map') return 'Map — ' + metricLabel;
           if (tab === 'projection') return 'Projection Lab — ' + projection;
-          if (tab === 'missions') return 'Maine mission — ' + activeMission.title;
+          if (tab === 'missions') return availableMissions.length ? (activeRegionPack.id === 'maine' ? gisText.maineMissions : gisText.missions) + ' - ' + activeMission.title : gisText.noMissions;
           return 'GIS Studio — ' + tab;
         }
 
@@ -4041,7 +5537,7 @@
             tab === 'composer' ? (composer.claim || composer.altText || summary) :
             tab === 'compare' ? (comparisonObservation || 'Compare the two synchronized map layers and describe the strongest visible difference.') :
             tab === 'timeline' ? (timeObservation || temporalSummary) : summary;
-          var evidence = tab === 'remote' ? (remoteSummary.changed + ' changed pixels; ' + remoteSummary.changedAreaHa.toFixed(2) + ' hectares mapped; mean ' + remoteSensing.analysisIndex.toUpperCase() + ' change ' + (remoteSummary.meanChange == null ? 'masked' : remoteSummary.meanChange.toFixed(3)) + '.') :
+          var evidence = tab === 'remote' ? (remoteSummary.changed + ' changed pixels; ' + display.number(remoteSummary.changedAreaHa, 2) + ' hectares mapped; mean ' + remoteSensing.analysisIndex.toUpperCase() + ' change ' + (remoteSummary.meanChange == null ? 'masked' : display.number(remoteSummary.meanChange, 3)) + '.') :
             tab === 'timeline' ? temporalSummary :
             tab === 'compare' ? (leftSeries.rows.length + ' left records and ' + rightSeries.rows.length + ' right records are synchronized for comparison.') :
             (selectedRecords.length ? selectedRecords.length + ' records are selected for spatial evidence.' : records.length + ' mapped records support this frame.');
@@ -4095,7 +5591,7 @@
         }
 
         function downloadStoryMapReport() {
-          var html = buildStoryMapReport({ story: storyMap, rows: composerRows, generated: new Date().toLocaleString() });
+          var html = buildStoryMapReport({ story: storyMap, rows: composerRows, generated: display.dateTime(new Date()) }, localeInfo);
           var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
           var url = URL.createObjectURL(blob), link = document.createElement('a');
           link.href = url; link.download = (String(storyMap.title || 'gis-story-map').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'gis-story-map') + '.html';
@@ -4106,7 +5602,7 @@
         function printStoryMapReport() {
           var reportWindow = window.open('', '_blank');
           if (!reportWindow) { setStoryStatus('The print window was blocked. Download the story-map report instead.'); return; }
-          reportWindow.opener = null; reportWindow.document.open(); reportWindow.document.write(buildStoryMapReport({ story: storyMap, rows: composerRows, generated: new Date().toLocaleString() })); reportWindow.document.close(); reportWindow.focus();
+          reportWindow.opener = null; reportWindow.document.open(); reportWindow.document.write(buildStoryMapReport({ story: storyMap, rows: composerRows, generated: display.dateTime(new Date()) }, localeInfo)); reportWindow.document.close(); reportWindow.focus();
           window.setTimeout(function () { reportWindow.print(); }, 250); persist('gisStoryMapExported', true); announce('Print-ready story map opened.');
         }
 
@@ -4117,7 +5613,7 @@
         }
 
         function downloadDataQualityReport() {
-          var html = buildDataQualityReport({ review: qualityReview, reviewState: qualityReviewState });
+          var html = buildDataQualityReport({ review: qualityReview, reviewState: qualityReviewState }, localeInfo);
           var blob = new Blob([html], { type: 'text/html;charset=utf-8' }), url = URL.createObjectURL(blob), link = document.createElement('a');
           link.href = url; link.download = 'gis-studio-data-quality-review.html'; document.body.appendChild(link); link.click(); document.body.removeChild(link); window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
           persist('gisQualityReviewed', true); setQualityStatus('Data quality review downloaded.'); announce('Data quality review downloaded.');
@@ -4126,15 +5622,15 @@
         function printDataQualityReport() {
           var reportWindow = window.open('', '_blank');
           if (!reportWindow) { setQualityStatus('The print window was blocked. Download the quality review instead.'); return; }
-          reportWindow.opener = null; reportWindow.document.open(); reportWindow.document.write(buildDataQualityReport({ review: qualityReview, reviewState: qualityReviewState })); reportWindow.document.close(); reportWindow.focus(); window.setTimeout(function () { reportWindow.print(); }, 250); persist('gisQualityReviewed', true); announce('Print-ready data quality review opened.');
+          reportWindow.opener = null; reportWindow.document.open(); reportWindow.document.write(buildDataQualityReport({ review: qualityReview, reviewState: qualityReviewState }, localeInfo)); reportWindow.document.close(); reportWindow.focus(); window.setTimeout(function () { reportWindow.print(); }, 250); persist('gisQualityReviewed', true); announce('Print-ready data quality review opened.');
         }
 
         function investigationPacketModel() {
-          return { title: projectTitle, claim: inquiryPlan.claim || composer.claim || comparisonObservation || timeObservation || (storyMap.slides[0] && storyMap.slides[0].narrative) || '', storyMap: storyMap, inquiryPlan: inquiryPlan, teacherReview: teacherReview, qualityReview: qualityReview, reviewState: qualityReviewState, provenance: provenance, rows: composerRows, generated: new Date().toLocaleString() };
+          return { title: projectTitle, claim: inquiryPlan.claim || composer.claim || comparisonObservation || timeObservation || (storyMap.slides[0] && storyMap.slides[0].narrative) || '', storyMap: storyMap, inquiryPlan: inquiryPlan, teacherReview: teacherReview, qualityReview: qualityReview, reviewState: qualityReviewState, provenance: provenance, rows: composerRows, generated: display.dateTime(new Date()) };
         }
 
         function downloadInvestigationPacket() {
-          var html = buildInvestigationPacketReport(investigationPacketModel());
+          var html = buildInvestigationPacketReport(investigationPacketModel(), localeInfo);
           var blob = new Blob([html], { type: 'text/html;charset=utf-8' }), url = URL.createObjectURL(blob), link = document.createElement('a');
           link.href = url; link.download = (String(projectTitle || 'gis-investigation').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'gis-investigation') + '-packet.html'; document.body.appendChild(link); link.click(); document.body.removeChild(link); window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
           persist('gisInvestigationPacketStarted', true); persist('gisInvestigationPacketExported', true); setPacketStatus('Investigation Packet downloaded.'); announce('Investigation Packet downloaded.');
@@ -4143,7 +5639,7 @@
         function printInvestigationPacket() {
           var reportWindow = window.open('', '_blank');
           if (!reportWindow) { setPacketStatus('The print window was blocked. Download the packet instead.'); return; }
-          reportWindow.opener = null; reportWindow.document.open(); reportWindow.document.write(buildInvestigationPacketReport(investigationPacketModel())); reportWindow.document.close(); reportWindow.focus(); window.setTimeout(function () { reportWindow.print(); }, 250); persist('gisInvestigationPacketStarted', true); persist('gisInvestigationPacketExported', true); announce('Print-ready Investigation Packet opened.');
+          reportWindow.opener = null; reportWindow.document.open(); reportWindow.document.write(buildInvestigationPacketReport(investigationPacketModel(), localeInfo)); reportWindow.document.close(); reportWindow.focus(); window.setTimeout(function () { reportWindow.print(); }, 250); persist('gisInvestigationPacketStarted', true); persist('gisInvestigationPacketExported', true); announce('Print-ready Investigation Packet opened.');
         }
 
         function updateInquiryPlanField(field, value) {
@@ -4180,7 +5676,7 @@
         }
 
         function downloadTeacherReview() {
-          var html = buildTeacherReviewReport({ review: teacherReview });
+          var html = buildTeacherReviewReport({ review: teacherReview }, localeInfo);
           var blob = new Blob([html], { type: 'text/html;charset=utf-8' }), url = URL.createObjectURL(blob), link = document.createElement('a');
           link.href = url; link.download = 'gis-studio-teacher-review.html'; document.body.appendChild(link); link.click(); document.body.removeChild(link); window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000); persist('gisTeacherReviewStarted', true); setTeacherReviewStatus('Teacher review downloaded.'); announce('Teacher review downloaded.');
         }
@@ -4188,7 +5684,7 @@
         function printTeacherReview() {
           var reportWindow = window.open('', '_blank');
           if (!reportWindow) { setTeacherReviewStatus('The print window was blocked. Download the teacher review instead.'); return; }
-          reportWindow.opener = null; reportWindow.document.open(); reportWindow.document.write(buildTeacherReviewReport({ review: teacherReview })); reportWindow.document.close(); reportWindow.focus(); window.setTimeout(function () { reportWindow.print(); }, 250); persist('gisTeacherReviewStarted', true); announce('Print-ready teacher review opened.');
+          reportWindow.opener = null; reportWindow.document.open(); reportWindow.document.write(buildTeacherReviewReport({ review: teacherReview }, localeInfo)); reportWindow.document.close(); reportWindow.focus(); window.setTimeout(function () { reportWindow.print(); }, 250); persist('gisTeacherReviewStarted', true); announce('Print-ready teacher review opened.');
         }
 
         function comparisonTable(series, side) {
@@ -4196,7 +5692,7 @@
           return h('section', { 'aria-labelledby': 'gis-compare-' + side + '-table-heading', style: Object.assign({}, panel, { overflow: 'hidden' }) },
             h('h2', { id: 'gis-compare-' + side + '-table-heading', style: { margin: '0 0 4px', color: '#f0fdfa', fontSize: 15 } }, side === 'left' ? 'Left-map table twin' : 'Right-map table twin'),
             h('p', { style: { margin: '0 0 9px', color: '#a7c7d8', fontSize: 11 } },
-              series.label + ': ' + stats.count + ' records' + (stats.mean == null ? '.' : ', range ' + stats.min + ' to ' + stats.max + ', mean ' + stats.mean.toFixed(1) + '.')),
+              series.label + ': ' + stats.count + ' records' + (stats.mean == null ? '.' : ', range ' + display.number(stats.min) + ' to ' + display.number(stats.max) + ', mean ' + display.number(stats.mean, 1) + '.')),
             h('div', { style: { overflowX: 'auto', maxHeight: 320, overflowY: 'auto' } },
               h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11 } },
                 h('caption', { style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' } }, side + ' map values for ' + series.label),
@@ -4207,8 +5703,8 @@
                   return h('tr', { key: index },
                     h('th', { scope: 'row', style: { textAlign: 'left', padding: 7, color: '#fff', borderBottom: '1px solid #1e4154' } }, row.name),
                     h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154' } }, row.geometry),
-                    h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154' } }, Number.isFinite(Number(row.lat)) ? Number(row.lat).toFixed(3) : '—'),
-                    h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154' } }, Number.isFinite(Number(row.lon)) ? Number(row.lon).toFixed(3) : '—'),
+                    h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154' } }, display.number(row.lat, { minimumFractionDigits: 3, maximumFractionDigits: 3, useGrouping: false })),
+                    h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154' } }, display.number(row.lon, { minimumFractionDigits: 3, maximumFractionDigits: 3, useGrouping: false })),
                     h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154', fontWeight: 800 } }, row.value == null ? 'No data' : String(row.value)));
                 })))));
         }
@@ -4223,6 +5719,7 @@
                   comparisonChoices.map(function (option) { return h('option', { key: option.value, value: option.value }, option.label); }))),
               h('label', { style: { display: 'grid', gap: 5, fontSize: 12 } }, 'Basemap',
                 h('select', { value: base, onChange: function (event) { setBase(event.target.value); persist(side === 'Left' ? 'gisCompareLeftBasemap' : 'gisCompareRightBasemap', event.target.value); persist('gisCompared', true); }, style: control },
+                  base === 'none' && h('option', { value: 'none' }, 'Unavailable saved provider'),
                   h('option', { value: 'street' }, 'Street map'),
                   h('option', { value: 'satellite' }, 'Satellite imagery'))));
           }
@@ -4287,7 +5784,7 @@
             }));
           }
           function indexNumber(value) {
-            return value == null || !Number.isFinite(Number(value)) ? 'Masked' : Number(value).toFixed(3);
+            return value == null || !Number.isFinite(Number(value)) ? 'Masked' : display.number(value, 3);
           }
           var legendItems = remoteSensing.viewMode === 'trueColor'
             ? [['Forest', '#28543d'], ['Water', '#245c83'], ['Wetland', '#587347'], ['Developed', '#8b817b'], ['Bare soil', '#a57955']]
@@ -4349,7 +5846,7 @@
                   remoteScene.cells.map(function (cell) {
                     var beforeValue = remoteIndexValue(cell, 'before', remoteSensing.analysisIndex, true);
                     var afterValue = remoteIndexValue(cell, 'after', remoteSensing.analysisIndex, true);
-                    var change = beforeValue == null || afterValue == null ? 'masked by cloud' : 'change ' + (afterValue - beforeValue).toFixed(3);
+                    var change = beforeValue == null || afterValue == null ? 'masked by cloud' : 'change ' + display.number(afterValue - beforeValue, 3);
                     var selected = cell.id === remoteSensing.selectedPixel;
                     return h('button', {
                       key: cell.id,
@@ -4370,13 +5867,13 @@
               h('p', { role: 'status', style: { margin: '10px 0 0', color: '#cfe8f3', fontSize: 11, lineHeight: 1.5 } },
                 'Selected pixel ' + remoteSelectedCell.id + '. Before: ' + remoteSelectedCell.beforeClass + '; after: ' + remoteSelectedCell.afterClass +
                 '. ' + indexKey + ' before ' + indexNumber(remoteBeforeIndex) + ', after ' + indexNumber(remoteAfterIndex) +
-                (validChange == null ? '.' : ', change ' + validChange.toFixed(3) + '.'))),
+                (validChange == null ? '.' : ', change ' + display.number(validChange, 3) + '.'))),
             h('section', { 'aria-labelledby': 'gis-remote-summary-heading', style: panel },
               h('h2', { id: 'gis-remote-summary-heading', style: { margin: '0 0 9px', color: '#f0fdfa', fontSize: 16 } }, 'Change measurement'),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(135px,1fr))', gap: 8 } },
                 [
                   [remoteSummary.changed, 'changed pixels'],
-                  [remoteSummary.changedAreaHa.toFixed(2) + ' ha', 'mapped change area'],
+                  [display.number(remoteSummary.changedAreaHa, 2) + ' ha', 'mapped change area'],
                   [remoteSummary.forestLoss, 'forest-loss pixels'],
                   [remoteSummary.developedGain, 'developed-gain pixels'],
                   [indexNumber(remoteSummary.meanChange), 'mean ' + indexKey + ' change'],
@@ -4408,8 +5905,8 @@
                     ].map(function (band) {
                       return h('tr', { key: band[1] },
                         h('th', { scope: 'row', style: { textAlign: 'left', padding: 6, borderBottom: '1px solid #1e4154' } }, band[0]),
-                        h('td', { style: { padding: 6, borderBottom: '1px solid #1e4154' } }, selectedBefore[band[1]].toFixed(3)),
-                        h('td', { style: { padding: 6, borderBottom: '1px solid #1e4154' } }, remoteSelectedCell.quality === 'cloud' && remoteSensing.cloudMask ? 'Masked' : selectedAfter[band[1]].toFixed(3)),
+                        h('td', { style: { padding: 6, borderBottom: '1px solid #1e4154' } }, display.number(selectedBefore[band[1]], 3)),
+                        h('td', { style: { padding: 6, borderBottom: '1px solid #1e4154' } }, remoteSelectedCell.quality === 'cloud' && remoteSensing.cloudMask ? 'Masked' : display.number(selectedAfter[band[1]], 3)),
                         h('td', { style: { padding: 6, borderBottom: '1px solid #1e4154', color: '#a7c7d8' } }, band[2]));
                     })))),
                 h('div', { style: { marginTop: 10, display: 'grid', gap: 7, fontSize: 11 } },
@@ -4533,7 +6030,7 @@
               composer.annotations.length > 0 && h('ul', { style: { margin: '12px 0 0', padding: 0, listStyle: 'none', display: 'grid', gap: 6 } },
                 composer.annotations.map(function (annotation, index) {
                   return h('li', { key: annotation.id, style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', padding: 8, borderRadius: 8, background: '#071827', fontSize: 11 } },
-                    h('span', null, h('strong', { style: { color: '#fde047' } }, 'A' + (index + 1) + ' '), annotation.label + ' (' + annotation.lat.toFixed(4) + ', ' + annotation.lon.toFixed(4) + ')'),
+                    h('span', null, h('strong', { style: { color: '#fde047' } }, 'A' + (index + 1) + ' '), annotation.label + ' (' + display.coordinate(annotation.lat, 4, 'lat') + ', ' + display.coordinate(annotation.lon, 4, 'lon') + ')'),
                     h('button', { type: 'button', onClick: function () { removeComposerAnnotation(index); }, 'aria-label': 'Remove annotation A' + (index + 1), style: Object.assign({}, control, { cursor: 'pointer', padding: '5px 8px' }) }, 'Remove'));
                 }))),
             h('section', { 'aria-labelledby': 'gis-cartography-coach-heading', style: panel },
@@ -4806,8 +6303,11 @@
                 h('p', null, 'Required headers: name, latitude, longitude, year, value. Optional: unit, source, method. Up to 3,000 valid rows stay in this browser session.'),
                 h('label', { style: { display: 'grid', gap: 5, margin: '9px 0', fontWeight: 700 } }, 'Choose CSV file',
                   h('input', { type: 'file', accept: '.csv,text/csv', onChange: readTimeFile })),
+                h('div', { style: { margin: '0 0 9px' } },
+                  csvConventionControl(timeConvention, function (next) { setTimeConvention(next); setTimeImportDiagnostics({ invalidRows: 0, truncatedRows: 0, invalidSamples: [] }); setTimeError(''); })),
                 h('label', { style: { display: 'grid', gap: 5, fontWeight: 700 } }, 'Or paste time-series CSV',
                   h('textarea', { value: timeText, onChange: function (event) { setTimeText(event.target.value); setTimeImportDiagnostics({ invalidRows: 0, truncatedRows: 0, invalidSamples: [] }); setTimeError(''); }, rows: 8, spellCheck: false, style: { width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 8, border: '1px solid #3f6b82', background: '#071827', color: '#fff', fontFamily: 'monospace' } })),
+                csvFormatSummary(timeImportDiagnostics) && h('p', { role: 'status', style: { margin: '7px 0 0', color: '#a7c7d8', fontSize: 11 } }, csvFormatSummary(timeImportDiagnostics)),
                 h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 9 } },
                   h('button', { type: 'button', onClick: loadTimeSeries, style: primary }, 'Load time series'),
                   h('button', { type: 'button', onClick: downloadTimeImportReport, disabled: !timeImportDiagnostics.invalidRows && !timeImportDiagnostics.truncatedRows, style: Object.assign({}, control, { cursor: timeImportDiagnostics.invalidRows || timeImportDiagnostics.truncatedRows ? 'pointer' : 'not-allowed', opacity: timeImportDiagnostics.invalidRows || timeImportDiagnostics.truncatedRows ? 1 : 0.55 }) }, 'Download time-series import review'),
@@ -4861,8 +6361,8 @@
                       h('th', { scope: 'row', style: { textAlign: 'left', padding: 7, color: '#fff', borderBottom: '1px solid #1e4154' } }, row.name),
                       h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154' } }, row.startValue == null ? 'Missing' : row.startValue),
                       h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154' } }, row.endValue == null ? 'Missing' : row.endValue),
-                      h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154', fontWeight: 800 } }, row.change == null ? 'Not calculated' : (row.change >= 0 ? '+' : '') + row.change.toFixed(1)),
-                      h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154' } }, row.percent == null ? 'Not calculated' : (row.percent >= 0 ? '+' : '') + row.percent.toFixed(1) + '%'),
+                      h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154', fontWeight: 800 } }, row.change == null ? 'Not calculated' : (row.change >= 0 ? '+' : '') + display.number(row.change, 1)),
+                      h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154' } }, row.percent == null ? 'Not calculated' : (row.percent >= 0 ? '+' : '') + display.percent(row.percent, 1)),
                       h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154' } }, row.trend));
                   }))))),
             h('aside', { style: { padding: 12, borderLeft: '4px solid #f59e0b', background: '#2b2617', color: '#fde68a', borderRadius: 8, fontSize: 11, lineHeight: 1.5 } },
@@ -4870,13 +6370,20 @@
         }
 
         function missionView() {
+          if (!availableMissions.length) {
+            return h('section', { 'aria-labelledby': 'gis-missions-heading', style: panel },
+              h('h2', { id: 'gis-missions-heading', style: { margin: '0 0 8px', color: '#f0fdfa', fontSize: 20 } }, gisText.missionHeading),
+              h('p', { role: 'status', style: { margin: '0 0 8px', color: '#dbeafe', fontSize: 13, lineHeight: 1.55 } }, gisText.noMissions),
+              h('p', { style: { margin: '0 0 12px', color: '#a7c7d8', fontSize: 11, lineHeight: 1.5 } }, gisText.switchMaineNotice),
+              h('button', { type: 'button', onClick: function () { setActiveMissionId(GIS_MISSIONS[0].id); persist('gisActiveMission', GIS_MISSIONS[0].id); changeRegionPack('maine'); }, style: primary }, gisText.switchMaine));
+          }
           return h('div', { style: { display: 'grid', gap: 14 } },
             h('section', { 'aria-labelledby': 'gis-missions-heading', style: panel },
-              h('p', { style: { margin: 0, color: '#fde68a', fontSize: 10, fontWeight: 900, letterSpacing: '.09em' } }, 'MAINE INQUIRY SERIES'),
-              h('h2', { id: 'gis-missions-heading', style: { margin: '4px 0 6px', color: '#f0fdfa', fontSize: 20 } }, 'Guided GIS missions'),
+              h('p', { style: { margin: 0, color: '#fde68a', fontSize: 10, fontWeight: 900, letterSpacing: '.09em' } }, (activeRegionPack.id === 'maine' ? 'MAINE' : String(activeRegionPack.scope || activeRegionPack.label || 'REGION').toUpperCase()) + ' INQUIRY SERIES'),
+              h('h2', { id: 'gis-missions-heading', style: { margin: '4px 0 6px', color: '#f0fdfa', fontSize: 20 } }, gisText.missionHeading),
               h('p', { style: { margin: 0, color: '#b7d2df', fontSize: 12, lineHeight: 1.55 } }, 'Choose a question, prepare the right GIS workspace, gather evidence from the map or its table twin, and document what the data can and cannot support.'),
-              h('div', { role: 'tablist', 'aria-label': 'Maine GIS missions', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(210px,1fr))', gap: 9, marginTop: 13 } },
-                GIS_MISSIONS.map(function (mission) {
+              h('div', { role: 'tablist', 'aria-label': activeRegionPack.id === 'maine' ? gisText.maineMissions : gisText.missions, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(210px,1fr))', gap: 9, marginTop: 13 } },
+                availableMissions.map(function (mission) {
                   var active = mission.id === activeMission.id;
                   var completion = missionCompletion(mission, missionProgress[mission.id] || {});
                   return h('button', {
@@ -4945,12 +6452,12 @@
                     h('option', { value: 'mercator' }, 'Mercator'),
                     h('option', { value: 'equirectangular' }, 'Equirectangular'),
                     h('option', { value: 'equalarea' }, 'Equal-area'))),
-                h('label', { style: { display: 'grid', gap: 7, fontSize: 12, fontWeight: 700 } }, 'Latitude: ' + latitude + '\u00B0 N',
-                  h('input', { type: 'range', min: 0, max: 80, step: 5, value: latitude, onChange: function (event) { setLatitude(Number(event.target.value)); }, 'aria-describedby': 'gis-factor' })),
+                h('label', { style: { display: 'grid', gap: 7, fontSize: 12, fontWeight: 700 } }, 'Latitude: ' + display.coordinate(latitude, 0, 'lat'),
+                  h('input', { type: 'range', min: -80, max: 80, step: 5, value: latitude, onChange: function (event) { setLatitude(Number(event.target.value)); }, 'aria-describedby': 'gis-factor' })),
                 h('div', { id: 'gis-factor', role: 'status', style: { marginTop: 14, padding: 11, borderRadius: 9, background: '#071827', color: '#cffafe' } },
-                  h('strong', { style: { display: 'block', color: '#67e8f9', fontSize: 18 } }, factor.toFixed(2) + '\u00D7 visual area'),
+                  h('strong', { style: { display: 'block', color: '#67e8f9', fontSize: 18 } }, display.number(factor, 2) + '\u00D7 visual area'),
                   projection === 'mercator' ? 'Preserves local angles; enlarges high latitudes.' : projection === 'equirectangular' ? 'Maps coordinates directly; stretches east-west distance.' : 'Preserves relative area; changes shape and angle.')),
-              h('svg', { viewBox: '0 0 560 300', role: 'img', 'aria-label': projection + ' distortion diagram at ' + latitude + ' degrees. Area factor ' + factor.toFixed(2), style: { width: '100%', minHeight: 280, background: '#071827', borderRadius: 12 } },
+              h('svg', { viewBox: '0 0 560 300', role: 'img', 'aria-label': projection + ' distortion diagram at ' + display.coordinate(latitude, 0, 'lat') + '. Area factor ' + display.number(factor, 2), style: { width: '100%', minHeight: 280, background: '#071827', borderRadius: 12 } },
                 [0, 1, 2, 3, 4, 5, 6].map(function (n) { return h('line', { key: 'v' + n, x1: 40 + n * 80, x2: 40 + n * 80, y1: 30, y2: 260, stroke: '#294457' }); }),
                 [0, 1, 2, 3, 4].map(function (n) { return h('line', { key: 'h' + n, x1: 40, x2: 520, y1: 30 + n * 57.5, y2: 30 + n * 57.5, stroke: '#294457' }); }),
                 h('ellipse', { cx: 280, cy: 145, rx: Math.min(86, 20 * (projection === 'equalarea' ? 1 / Math.sqrt(scale) : scale)), ry: Math.min(86, 20 * (projection === 'equalarea' ? Math.sqrt(scale) : scale)), fill: 'rgba(34,211,238,.25)', stroke: '#67e8f9', strokeWidth: 4 }),
@@ -4960,15 +6467,15 @@
               'Mercator for local direction, equirectangular for simple coordinate grids, and equal-area for choropleth comparisons.'));
         }
 
-        var tabs = [['project', 'Project'], ['composer', 'Map Composer'], ['remote', 'Remote Sensing'], ['story', 'Story Map'], ['quality', 'Quality Review'], ['planner', 'Investigation Planner'], ['review', 'Teacher Review'], ['packet', 'Investigation Packet'], ['missions', 'Maine missions'], ['timeline', 'Change over time'], ['map', 'Map + layers'], ['compare', 'Compare + export'], ['import', 'Import data'], ['projection', 'Projection lab']];
-        return h('div', { 'data-gis-studio': 'true', style: { minHeight: '100%', background: 'linear-gradient(155deg,#06131f,#0b2531 52%,#102332)', color: '#e2e8f0', padding: 16, boxSizing: 'border-box', fontFamily: 'Inter,system-ui,sans-serif' } },
+        var tabs = [['project', gisText.project], ['composer', gisText.composer], ['remote', gisText.remote], ['story', gisText.story], ['quality', gisText.quality], ['planner', gisText.planner], ['review', gisText.review], ['packet', gisText.packet], ['missions', activeRegionPack.id === 'maine' ? gisText.maineMissions : gisText.missions], ['timeline', gisText.timeline], ['map', gisText.map], ['compare', gisText.compare], ['import', gisText.importData], ['projection', gisText.projection]];
+        return h('div', { 'data-gis-studio': 'true', lang: localeInfo.lang, dir: localeInfo.dir, style: { minHeight: '100%', background: 'linear-gradient(155deg,#06131f,#0b2531 52%,#102332)', color: '#e2e8f0', padding: 16, boxSizing: 'border-box', fontFamily: 'Inter,system-ui,sans-serif' } },
           h('header', { style: { maxWidth: 1180, margin: '0 auto 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12, flexWrap: 'wrap' } },
             h('div', null,
-              h('p', { style: { margin: 0, color: '#5eead4', fontSize: 11, fontWeight: 900, letterSpacing: '.11em' } }, 'SPATIAL DATA LABORATORY'),
-              h('h1', { style: { margin: '4px 0 3px', color: '#f0fdfa', fontSize: 26 } }, 'GIS Studio'),
-              h('p', { style: { margin: 0, color: '#a7c7d8', fontSize: 12 } }, 'Layer it. Map it. Question the pattern.'),
-              h('button', { type: 'button', onClick: addCurrentViewToStory, style: Object.assign({}, control, { cursor: 'pointer', marginTop: 9 }) }, 'Add current view to story')),
-            h('nav', { 'aria-label': 'GIS Studio sections', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+              h('p', { style: { margin: 0, color: '#5eead4', fontSize: 11, fontWeight: 900, letterSpacing: '.11em' } }, gisText.kicker),
+              h('h1', { style: { margin: '4px 0 3px', color: '#f0fdfa', fontSize: 26 } }, gisText.title),
+              h('p', { style: { margin: 0, color: '#a7c7d8', fontSize: 12 } }, gisText.tagline),
+              h('button', { type: 'button', onClick: addCurrentViewToStory, style: Object.assign({}, control, { cursor: 'pointer', marginTop: 9 }) }, gisText.addStory)),
+            h('nav', { 'aria-label': gisText.sections, style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
               tabs.map(function (item) {
                 var active = tab === item[0];
                 return h('button', { key: item[0], type: 'button', onClick: function () { go(item[0]); }, 'aria-current': active ? 'page' : undefined, style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (active ? '#5eead4' : '#36586b'), background: active ? '#0f766e' : '#102536', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, item[1]);
@@ -4978,7 +6485,10 @@
             'Learning data: density values are rounded approximations; the access index, practice polygons, coastal guide, and remote-sensing raster are illustrative. Basemaps \u00A9 OpenStreetMap, Esri, and contributors. Official ecoregions \u00A9 Maine Natural Areas Program. Verify claims with authoritative data before making decisions.'));
       }
 
-      return h(Studio);
+      // StemPluginBridge is already a stable React component. Invoke Studio as
+      // its render implementation so host data updates preserve GIS hook state
+      // instead of creating a new nested component type on every persistence call.
+      return Studio();
     }
   });
 })();

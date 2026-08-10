@@ -179,6 +179,157 @@ describe('session resource asset sync', () => {
     expect(hydrated[0].data.mimeType).toBeUndefined();
   });
 
+  it('round-trips a privacy-minimized AAC board with only portable prepared media', async () => {
+    const safeImage = 'data:image/png;base64,' + 'A'.repeat(96);
+    const safeSvg = 'data:image/svg+xml;base64,' + Buffer.from('<svg><path/></svg>').toString('base64');
+    const maliciousSvg = 'data:image/svg+xml;base64,' + Buffer.from('<svg><script>alert(1)</script></svg>').toString('base64');
+    const preparedAudio = 'data:audio/webm;base64,' + 'B'.repeat(128);
+    const customAudio = 'data:audio/webm;base64,' + 'C'.repeat(128);
+    const resources = [{
+      id: 'aac-portable',
+      type: 'aac-board',
+      title: 'Class communication board',
+      privateStudentId: 'student-42',
+      data: {
+        format: 'alloflow.aac-board',
+        version: 1,
+        exportedAt: '2026-08-09T12:00:00.000Z',
+        board: {
+          id: 'board-1', title: 'Class communication board', locale: 'en-US', direction: 'ltr',
+          profileId: 'private-profile',
+        },
+        pages: [
+          {
+            id: 'page-1', title: 'Core words', cols: 2, unknownPageField: 'remove me',
+            cells: [
+              {
+                id: 'prepared-cell', index: 0, row: 0, col: 0,
+                displayLabel: 'Hello', vocalLabel: 'Hello', originalLabel: 'Hello',
+                description: 'A greeting', category: 'social', image: safeImage,
+                rawRecording: customAudio, analytics: { selected: 19 },
+                audio: {
+                  kind: 'prepared', mime: 'audio/webm', data: preparedAudio,
+                  profileId: 'private-audio-profile', unknownAudioField: 'remove me',
+                  profile: {
+                    voice: 'Teacher voice', language: 'en-US', provider: 'local',
+                    engine: 'browser', model: 'prepared-v1', synthesisRate: 1.1,
+                    voiceResolverVersion: '1', studentId: 'student-42', token: 'secret',
+                  },
+                },
+                unknownCellField: 'remove me',
+              },
+              {
+                id: 'custom-cell', index: 1, row: 0, col: 1,
+                displayLabel: 'Help', vocalLabel: 'Help me', originalLabel: 'Help',
+                description: 'Request help', category: 'needs',
+                image: maliciousSvg,
+                audio: {
+                  kind: 'custom', mime: 'audio/webm', data: customAudio,
+                  profile: { voice: 'Student voice', studentId: 'student-42' },
+                },
+              },
+            ],
+          },
+          {
+            id: 'page-2', title: 'Unsafe media', cols: 1,
+            cells: [{
+              id: 'unsafe-audio-cell', index: 0, row: 0, col: 0,
+              displayLabel: 'Wait', vocalLabel: 'Please wait', originalLabel: 'Wait',
+              description: '', category: 'social', image: safeSvg,
+              audio: {
+                kind: 'prepared', mime: 'audio/svg+xml',
+                data: 'data:audio/svg+xml;base64,PHN2Zz48L3N2Zz4=',
+              },
+            }],
+          },
+        ],
+        metadata: {
+          privacy: { customAudioIncluded: true, preparedAudioIncluded: true, studentId: 'student-42' },
+          omittedNonportableImages: 0, omittedCustomAudio: 0, omittedPreparedAudio: 0,
+          warnings: ['Portable export'], analytics: { usage: 22 },
+        },
+        logs: [{ studentId: 'student-42', selected: 'Hello' }],
+        unknownRootField: 'remove me',
+      },
+    }];
+
+    const manifest = await window.uploadSessionAssets('app-test', resources, 'AACRT');
+    const hydrated = await window.hydrateSessionAssets('app-test', manifest);
+    const restored = hydrated[0];
+
+    expect(restored.id).toBe('aac-portable');
+    expect(restored.type).toBe('aac-board');
+    expect(restored.title).toBe('Class communication board');
+    expect(restored.data.pages).toHaveLength(2);
+    expect(restored.data.pages[0].cells[0].image).toBe(safeImage);
+    expect(restored.data.pages[0].cells[0].audio).toEqual({
+      kind: 'prepared', mime: 'audio/webm', data: preparedAudio,
+      profile: {
+        voice: 'Teacher voice', language: 'en-US', provider: 'local',
+        engine: 'browser', model: 'prepared-v1', synthesisRate: 1.1,
+        voiceResolverVersion: '1',
+      },
+    });
+    expect(restored.data.pages[0].cells[1].image).toBeNull();
+    expect(restored.data.pages[0].cells[1].audio).toBeUndefined();
+    expect(restored.data.pages[1].cells[0].image).toBe(safeSvg);
+    expect(restored.data.pages[1].cells[0].audio).toBeUndefined();
+    expect(restored.data.metadata.privacy).toEqual({
+      customAudioIncluded: false,
+      preparedAudioIncluded: true,
+    });
+
+    const restoredJson = JSON.stringify(restored);
+    expect(restoredJson).not.toContain(customAudio);
+    expect(restoredJson).not.toContain(maliciousSvg);
+    expect(restoredJson).not.toContain('data:audio/svg+xml');
+    expect(restoredJson).not.toContain('student-42');
+    expect(restoredJson).not.toContain('private-profile');
+    expect(restoredJson).not.toContain('secret');
+    expect(restoredJson).not.toContain('remove me');
+    expect(restoredJson).not.toContain('analytics');
+    expect(restoredJson).not.toContain('logs');
+    expect(restoredJson).not.toContain('rawRecording');
+  });
+
+  it('strips prepared AAC audio unless the portable package explicitly opts in', async () => {
+    const preparedAudio = 'data:audio/webm;base64,' + 'P'.repeat(128);
+    const resources = [{
+      id: 'aac-no-audio-consent',
+      type: 'aac-board',
+      title: 'No audio consent',
+      data: {
+        format: 'alloflow.aac-board',
+        version: 1,
+        exportedAt: '2026-08-09T12:00:00.000Z',
+        board: { id: 'board-no-consent', title: 'No audio consent', locale: 'en-US', direction: 'ltr' },
+        pages: [{
+          id: 'page-1',
+          title: 'Core',
+          cols: 1,
+          cells: [{
+            id: 'cell-1', index: 0, row: 0, col: 0,
+            displayLabel: 'Hello', vocalLabel: 'Hello', originalLabel: 'Hello',
+            description: '', category: 'social', image: null,
+            audio: { kind: 'prepared', mime: 'audio/webm', data: preparedAudio },
+          }],
+        }],
+        metadata: {
+          privacy: { customAudioIncluded: false, preparedAudioIncluded: false },
+          omittedNonportableImages: 0, omittedCustomAudio: 0, omittedPreparedAudio: 0, warnings: [],
+        },
+      },
+    }];
+
+    const manifest = await window.uploadSessionAssets('app-test', resources, 'AACNOAUDIO');
+    const hydrated = await window.hydrateSessionAssets('app-test', manifest);
+
+    expect(hydrated[0].data.pages[0].cells[0].audio).toBeUndefined();
+    expect(hydrated[0].data.metadata.privacy.preparedAudioIncluded).toBe(false);
+    expect(hydrated[0].data.metadata.omittedPreparedAudio).toBe(1);
+    expect(JSON.stringify([...store.values()])).not.toContain(preparedAudio);
+  });
+
   it('externalizes word-sounds pack media (jsonref) and hydrates it back intact', async () => {
     const ttsAssets = {};
     for (let i = 0; i < 40; i++) ttsAssets[`word${i}`] = { mime: 'audio/webm', base64: 'Q'.repeat(2000) };

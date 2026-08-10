@@ -102,17 +102,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
       '.fireecology-route-label{min-width:0;font-size:11px;font-weight:800;line-height:1.25;}',
       '.fireecology-active-band{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:12px;border:1px solid var(--active-accent);border-left-width:4px;border-radius:12px;padding:12px 14px;background:linear-gradient(135deg,var(--active-soft),transparent);margin-top:12px;}',
       '.fireecology-active-band-icon{font-size:28px;}',
-      '.fireecology-active-band h3{margin:0;color:var(--active-accent);font-size:15px;}',
+      '.fireecology-active-band h3{margin:0;color:var(--fe-text);font-size:15px;}',
       '.fireecology-active-band p{margin:3px 0 0;color:var(--fe-text);font-size:11px;line-height:1.5;}',
       '.fireecology-context{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:14px;}',
       '.fireecology-context details{border:1px solid var(--fe-border);border-radius:12px;background:var(--fe-surface);}',
       '.fireecology-context summary{cursor:pointer;padding:11px 13px;color:var(--fe-text);font-size:12px;font-weight:800;}',
       '.fireecology-context details>div{padding:0 13px 13px;color:var(--fe-muted);font-size:12px;line-height:1.55;}',
       '.fireecology-tab-panel{min-width:0;}',
+      '.fireecology-disclosure{color:var(--fe-text);}',
+      '.fireecology-disclosure :where(h1,h2,h3,h4,p,div,span,strong){color:var(--fe-text)!important;}',
+      '.fireecology-disclosure button{background:var(--allo-stem-button-bg,var(--fe-panel))!important;color:var(--allo-stem-button-text,var(--fe-text))!important;}',
+      '.fireecology-sim-visual-shell{margin-bottom:16px;scroll-margin-top:16px;}',
+      '.fireecology-sim-visual-shell:focus-visible{outline:3px solid #fb923c;outline-offset:4px;border-radius:12px;}',
+      '.fireecology-sim-visual-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px;}',
+      '.fireecology-sim-visual-head h3{margin:0;color:var(--fe-text);font-size:14px;}',
+      '.fireecology-sim-toolbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}',
+      '.fireecology-sim-toolbar button{border:1px solid var(--allo-stem-button-border,var(--fe-border));border-radius:8px;padding:6px 10px;background:var(--allo-stem-button-bg,var(--fe-panel));color:var(--allo-stem-button-text,var(--fe-text));cursor:pointer;font-size:11px;font-weight:800;}',
+      '.fireecology-sim-toolbar button[aria-pressed="true"]{border-color:#9a3412;background:var(--allo-stem-button-bg,var(--fe-panel));color:var(--allo-stem-button-text,var(--fe-text));box-shadow:inset 0 -3px 0 #ea580c;}',
+      '.fireecology-sim-toolbar button:disabled{cursor:not-allowed;opacity:.58;}',
+      '.fireecology-sim-action{flex:1;min-width:140px;min-height:48px;padding:10px 14px;border:1px solid var(--allo-stem-button-border,var(--fe-border));border-left:5px solid var(--fe-action-accent);border-radius:8px;background:var(--allo-stem-button-bg,var(--fe-panel));color:var(--allo-stem-button-text,var(--fe-text));cursor:pointer;font-size:14px;font-weight:700;text-align:left;}',
+      '.fireecology-sim-action[data-scenario="cultural"]{--fe-action-accent:#15803d;}',
+      '.fireecology-sim-action[data-scenario="prescribed"]{--fe-action-accent:#a16207;}',
+      '.fireecology-sim-action[data-scenario="suppression"]{--fe-action-accent:#b91c1c;}',
+      '.fireecology-sim-action:focus-visible,.fireecology-compare-toggle:focus-visible{outline:3px solid #38bdf8;outline-offset:3px;}',
+      '.fireecology-compare-toggle{display:block;width:100%;margin-bottom:12px;padding:10px 14px;border:2px solid #6d28d9;border-radius:8px;background:var(--allo-stem-button-bg,var(--fe-panel));color:var(--allo-stem-button-text,var(--fe-text));cursor:pointer;font-size:13px;font-weight:700;text-align:left;}',
+      '.fireecology-compare-toggle[aria-pressed="true"]{box-shadow:inset 4px 0 0 #7c3aed;background:var(--allo-stem-panel,var(--fe-panel));}',
+      '.fireecology-sim-viewer{position:relative;width:100%;height:360px;overflow:hidden;border:1px solid var(--fe-border);border-radius:12px;background:var(--fe-surface);}',
+      '.fireecology-sim-viewer canvas{display:block;width:100%!important;height:100%!important;}',
+      '.fireecology-sim-phase{position:absolute;left:10px;bottom:10px;z-index:2;max-width:calc(100% - 20px);border:1px solid rgba(255,255,255,.26);border-radius:8px;padding:6px 9px;background:rgba(15,23,42,.88);color:#f8fafc;font-size:11px;font-weight:800;pointer-events:none;}',
+      '.fireecology-sim-treatment{display:inline-flex;gap:4px;align-items:center;margin:0 0 8px;border:1px solid var(--fe-border);border-radius:999px;padding:5px 9px;background:var(--fe-panel);color:var(--fe-text);font-size:11px;}',
+      '.fireecology-sim-phase-copy{margin:8px 0 0;color:var(--fe-text);font-size:12px;font-weight:800;line-height:1.45;}',
+      '.fireecology-sim-timeline{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:10px 0 0;padding:0;list-style:none;}',
+      '.fireecology-sim-timeline-item{display:flex;align-items:center;gap:6px;min-width:0;padding:6px 8px;border-top:3px solid var(--fe-border);color:var(--fe-muted);font-size:11px;line-height:1.25;}',
+      '.fireecology-sim-timeline-item[data-current="true"]{border-top-color:#ea580c;color:var(--fe-text);font-weight:800;}',
+      '.fireecology-sim-timeline-marker{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;min-width:20px;border:1px solid currentColor;border-radius:50%;font-size:10px;font-weight:800;}',
+      '.fireecology-sim-legend{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0 0;color:var(--fe-text);font-size:11px;}',
+      '.fireecology-sim-legend-item{display:inline-flex;align-items:center;gap:5px;}',
+      '.fireecology-sim-swatch{display:inline-block;width:12px;height:12px;border:1px solid var(--fe-border);}',
+      '.fireecology-sim-change{margin-top:9px;border-left:3px solid #ea580c;padding:8px 10px;background:var(--fe-panel);color:var(--fe-text);font-size:12px;line-height:1.5;}',
+      '.fireecology-sim-note{margin:8px 0 0;color:var(--fe-muted);font-size:11px;line-height:1.45;}',
       '.fireecology-fact,.fireecology-badges{min-width:0;}',
       '@media (max-width:860px){.fireecology-route-groups{grid-template-columns:1fr;}.fireecology-route-group:last-child .fireecology-route-list{grid-template-columns:repeat(2,minmax(0,1fr));}.fireecology-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}}',
       '@media (max-width:620px){.fireecology-context{grid-template-columns:1fr;}}',
-      '@media (max-width:560px){.fireecology-tool-shell{padding:0 2px;}.fireecology-command{padding:14px;border-radius:14px;}.fireecology-command-top{gap:8px;}.fireecology-command-icon{display:none;}.fireecology-back{width:40px;height:40px;min-width:40px;}.fireecology-command-copy{font-size:12px;}.fireecology-route-board{padding:10px;}.fireecology-route-heading{align-items:flex-start;}.fireecology-route-step{display:none;}.fireecology-route-list,.fireecology-route-group:last-child .fireecology-route-list{grid-template-columns:1fr;}.fireecology-route-tab{min-height:44px;}.fireecology-active-band{align-items:flex-start;}.fireecology-metrics{gap:6px;}.fireecology-metric{padding:8px 9px;}.fireecology-metric-value{font-size:13px;}}',
+      '@media (max-width:560px){.fireecology-tool-shell{padding:0 2px;}.fireecology-command{padding:14px;border-radius:14px;}.fireecology-command-top{gap:8px;}.fireecology-command-icon{display:none;}.fireecology-back{width:40px;height:40px;min-width:40px;}.fireecology-command-copy{font-size:12px;}.fireecology-route-board{padding:10px;}.fireecology-route-heading{align-items:flex-start;}.fireecology-route-step{display:none;}.fireecology-route-list,.fireecology-route-group:last-child .fireecology-route-list{grid-template-columns:1fr;}.fireecology-route-tab{min-height:44px;}.fireecology-active-band{align-items:flex-start;}.fireecology-metrics{gap:6px;}.fireecology-metric{padding:8px 9px;}.fireecology-metric-value{font-size:13px;}.fireecology-sim-viewer{height:270px;}.fireecology-sim-toolbar{width:100%;}.fireecology-sim-toolbar button{flex:1;min-width:92px;}}',
       '@media (prefers-reduced-motion:reduce){.fireecology-route-tab{transition:none!important;}.fireecology-route-tab:hover{transform:none;}}',
       '.theme-contrast .fireecology-command,.theme-contrast .fireecology-route-board,.theme-contrast .fireecology-route-group{box-shadow:none;}',
       '.theme-contrast .fireecology-route-tab[aria-selected="true"]{outline:2px solid currentColor;outline-offset:2px;}'
@@ -251,9 +283,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
   // ── Ambient soundscapes — continuous background audio tied to ecosystem state ──
   var _fireAmbient = null;
-  function startFireAmbient(isBurning, biodiversity) {
+  var _fireAmbientTimer = null;
+  var _fireAmbientSession = null;
+  function startFireAmbient(isBurning, biodiversity, sessionId) {
     stopFireAmbient();
     var ac = getAudioCtx(); if (!ac) return;
+    _fireAmbientSession = sessionId || null;
     try {
       if (isBurning) {
         // Fire crackling ambience — filtered noise with LFO
@@ -297,8 +332,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         }, 3000 + Math.random() * 4000);
       }
     } catch(e) {}
+    if (_fireAmbient) {
+      var ambientSession = _fireAmbientSession;
+      _fireAmbientTimer = setTimeout(function() {
+        if (_fireAmbient && _fireAmbientSession === ambientSession) stopFireAmbient(ambientSession);
+      }, isBurning ? 7000 : 9000);
+    }
   }
-  function stopFireAmbient() {
+  function stopFireAmbient(sessionId) {
+    if (sessionId && _fireAmbientSession && sessionId !== _fireAmbientSession) return;
+    if (_fireAmbientTimer) {
+      clearTimeout(_fireAmbientTimer);
+      _fireAmbientTimer = null;
+    }
     if (_fireAmbient) {
       try {
         var ac = getAudioCtx();
@@ -309,9 +355,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
       } catch(e) {}
       _fireAmbient = null;
     }
+    _fireAmbientSession = null;
   }
 
-  // ── Badge definitions (23 total) ──
+  // One transient playback clock drives both the 2D and 3D renderers. It is
+  // deliberately not persisted in tool data: reopening a saved lab shows the
+  // recorded outcome instead of replaying an old fire. Session ownership keeps
+  // an unmounted tool from completing into a later mount.
+  var _fireVisualSessionCounter = 0;
+  var _fireVisualPlayback = {
+    token: 0, sessionId: null, startedAt: 0, elapsedBeforePause: 0, paused: false,
+    duration: 4400, timer: null, onComplete: null
+  };
+  function fireVisualDuration(kind) {
+    return kind === 'wildfire' ? 4800 : (kind === 'suppression' ? 3200 : 4400);
+  }
+  function clearFireVisualTimer() {
+    if (_fireVisualPlayback.timer) clearTimeout(_fireVisualPlayback.timer);
+    _fireVisualPlayback.timer = null;
+  }
+  function scheduleFireVisualFinish(sessionId, token, delay) {
+    clearFireVisualTimer();
+    _fireVisualPlayback.timer = setTimeout(function() {
+      finishFireVisualPlayback(sessionId, token);
+    }, Math.max(0, delay));
+  }
+  function finishFireVisualPlayback(sessionId, token) {
+    if (!fireVisualPlaybackIsActive(token, sessionId)) return;
+    var done = _fireVisualPlayback.onComplete;
+    clearFireVisualTimer();
+    _fireVisualPlayback.token = 0;
+    _fireVisualPlayback.sessionId = null;
+    _fireVisualPlayback.paused = false;
+    _fireVisualPlayback.onComplete = null;
+    stopFireAmbient(sessionId);
+    if (done) { try { done(); } catch (e) {} }
+  }
+  function beginFireVisualPlayback(token, kind, onComplete, sessionId) {
+    cancelFireVisualPlayback();
+    _fireVisualPlayback.token = token;
+    _fireVisualPlayback.sessionId = sessionId;
+    _fireVisualPlayback.startedAt = Date.now();
+    _fireVisualPlayback.elapsedBeforePause = 0;
+    _fireVisualPlayback.paused = false;
+    _fireVisualPlayback.duration = fireVisualDuration(kind);
+    _fireVisualPlayback.onComplete = onComplete || null;
+    scheduleFireVisualFinish(sessionId, token, _fireVisualPlayback.duration);
+  }
+  function cancelFireVisualPlayback(sessionId) {
+    if (sessionId && _fireVisualPlayback.sessionId && sessionId !== _fireVisualPlayback.sessionId) return;
+    clearFireVisualTimer();
+    _fireVisualPlayback.token = 0;
+    _fireVisualPlayback.sessionId = null;
+    _fireVisualPlayback.paused = false;
+    _fireVisualPlayback.onComplete = null;
+  }
+  function fireVisualPlaybackIsActive(token, sessionId) {
+    return !!token && !!sessionId && token === _fireVisualPlayback.token && sessionId === _fireVisualPlayback.sessionId;
+  }
+  function fireVisualPlaybackProgress(token, sessionId) {
+    if (!fireVisualPlaybackIsActive(token, sessionId)) return 1;
+    var elapsed = _fireVisualPlayback.elapsedBeforePause;
+    if (!_fireVisualPlayback.paused) elapsed += Math.max(0, Date.now() - _fireVisualPlayback.startedAt);
+    return Math.max(0, Math.min(1, elapsed / Math.max(1, _fireVisualPlayback.duration)));
+  }
+  function pauseFireVisualPlayback(shouldPause, sessionId) {
+    if (!_fireVisualPlayback.token || sessionId !== _fireVisualPlayback.sessionId || shouldPause === _fireVisualPlayback.paused) return;
+    if (shouldPause) {
+      _fireVisualPlayback.elapsedBeforePause += Math.max(0, Date.now() - _fireVisualPlayback.startedAt);
+      _fireVisualPlayback.paused = true;
+      clearFireVisualTimer();
+      return;
+    }
+    _fireVisualPlayback.paused = false;
+    _fireVisualPlayback.startedAt = Date.now();
+    var remaining = Math.max(0, _fireVisualPlayback.duration - _fireVisualPlayback.elapsedBeforePause);
+    scheduleFireVisualFinish(sessionId, _fireVisualPlayback.token, remaining);
+  }  // ── Badge definitions (23 total) ──
   var BADGES = [
     { id: 'firstBurn', icon: '\uD83D\uDD25', label: 'First Cultural Burn', desc: 'Complete your first prescribed burn' },
     { id: 'firekeeper', icon: '\uD83E\uDEF6', label: 'Firekeeper', desc: 'Successfully manage 5 cultural burns' },
@@ -784,6 +904,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
   // ═══════════════════════════════════════════
 
   var SIM_DEFAULTS = {
+    seed: 'fire-ecology-classroom-v1',
     year: 0,
     fuelLoad: 15,           // tons/acre (natural with Indigenous burning: 5-15; suppressed: 30-80)
     canopyCover: 60,        // percent
@@ -796,11 +917,338 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
     totalBurns: 0,
     wildfires: 0,
     strategy: 'indigenous', // 'indigenous' | 'suppress' | 'prescribe'
+    visualSequence: 0,
+    visualEvent: null,
     eventLog: [],
     decade: []              // array of decade snapshots for the graph
   };
 
+  // Keep classroom event branches reproducible without coupling them to the intentionally-randomized audio/particle effects used by the visuals.
+  function fireSimHash(value) {
+    var hash = 2166136261;
+    value = String(value || '');
+    for (var i = 0; i < value.length; i++) {
+      hash ^= value.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return hash >>> 0;
+  }
+
+  function fireSimRoll(state, purpose) {
+    var source = state || SIM_DEFAULTS;
+    var key = [source.seed || SIM_DEFAULTS.seed, purpose || 'event', source.year || 0, source.visualSequence || 0].join(':');
+    return fireSimHash(key) / 4294967296;
+  }
+
   // ═══════════════════════════════════════════
+  function fireSimVisualSnapshot(source) {
+    source = source || SIM_DEFAULTS;
+    return {
+      fuelLoad: Math.round(Number(source.fuelLoad) || 0),
+      canopyCover: Math.round(Number(source.canopyCover) || 0),
+      understoryDensity: Math.round(Number(source.understoryDensity) || 0),
+      biodiversity: Math.round(Number(source.biodiversity) || 0),
+      soilHealth: Math.round(Number(source.soilHealth) || 0),
+      waterYield: Math.round(Number(source.waterYield) || 0)
+    };
+  }
+
+  function fireSimVisualLabel(kind) {
+    if (kind === 'culturalBurn') return 'Cultural burn';
+    if (kind === 'prescribedBurn') return 'Prescribed burn';
+    if (kind === 'wildfire') return 'Catastrophic wildfire';
+    if (kind === 'suppression') return 'Fire suppression';
+    return 'Forest condition';
+  }
+
+  function makeFireSimVisualEvent(kind, before, after, year, sequence) {
+    return {
+      id: 'fire-visual-' + year + '-' + sequence,
+      kind: kind,
+      label: fireSimVisualLabel(kind),
+      intensity: kind === 'wildfire' ? 'illustrated-crown-fire' : (kind === 'prescribedBurn' ? 'illustrated-broader-surface-fire' : (kind === 'culturalBurn' ? 'illustrated-patchier-surface-fire' : 'none')),
+      year: year,
+      sequence: sequence,
+      before: fireSimVisualSnapshot(before),
+      after: fireSimVisualSnapshot(after)
+    };
+  }
+
+  function describeFireSimVisual(event, current) {
+    if (!event) {
+      var now = fireSimVisualSnapshot(current);
+      return 'Current forest: fuel ' + now.fuelLoad + ' tons per acre, canopy ' + now.canopyCover + ' percent, understory ' + now.understoryDensity + ' percent, and biodiversity ' + now.biodiversity + ' out of 100.';
+    }
+    function change(label, from, to, unit) {
+      if (from === to) return label + ' stayed at ' + to + unit;
+      return label + (to < from ? ' fell from ' : ' rose from ') + from + ' to ' + to + unit;
+    }
+    var b = event.before, a = event.after;
+    return 'Year ' + event.year + '. ' + event.label + ' outcome: ' +
+      change('fuel', b.fuelLoad, a.fuelLoad, ' tons per acre') + '; ' +
+      change('understory', b.understoryDensity, a.understoryDensity, ' percent') + '; ' +
+      change('canopy', b.canopyCover, a.canopyCover, ' percent') + '; and ' +
+      change('biodiversity', b.biodiversity, a.biodiversity, ' out of 100') + '.';
+  }
+
+  // Optional procedural 3D layer. Simulation state remains authoritative;
+  // this scene only illustrates its structured before/after event.
+  var fireEcologyHas3DViewer = !!(window.StemLab && typeof window.StemLab.makeOrbitViewer === 'function');
+  var fireEcology3DViewer = fireEcologyHas3DViewer ? window.StemLab.makeOrbitViewer({
+    attr: 'data-fireecology-3d',
+    clearColor: 0x101b16,
+    fov: 42,
+    rot: { y: -34, x: 28 },
+    fitPad: 0.8,
+    fitSlack: 1.08,
+    failMessage: 'The 3D landscape could not start. The 2D forest view and all simulation results remain available.',
+    lights: function(THREE, scene) {
+      scene.add(new THREE.HemisphereLight(0xdbeafe, 0x2b2118, 0.95));
+      var sun = new THREE.DirectionalLight(0xfff1cf, 1.05);
+      sun.position.set(-5, 9, 6);
+      scene.add(sun);
+      var fill = new THREE.DirectionalLight(0x93c5fd, 0.32);
+      fill.position.set(7, 4, -6);
+      scene.add(fill);
+    },
+    build: function(THREE, S, model) {
+      var event = model.visualEvent || null;
+      var before = event ? event.before : model.current;
+      var after = event ? event.after : model.current;
+      var kind = event ? event.kind : 'none';
+      var dummy = new THREE.Object3D();
+      var TREE_MAX = 36, SHRUB_MAX = 54, FUEL_MAX = 70, FLAME_MAX = 32, SMOKE_MAX = 36;
+      var smokeData = new Float32Array(SMOKE_MAX * 3);
+
+      function unit(v) { return Math.max(0, Math.min(1, v)); }
+      function mix(a, b, t) { return a + (b - a) * t; }
+      function smooth(v) { v = unit(v); return v * v * (3 - 2 * v); }
+      function groundY() { return -0.08; }
+      function add(mesh) { S.model.add(mesh); return mesh; }
+      function batch(geometry, material, count) {
+        var mesh = new THREE.InstancedMesh(geometry, material, count);
+        if (THREE.DynamicDrawUsage) mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+        mesh.frustumCulled = false;
+        return add(mesh);
+      }
+      function place(mesh, i, x, y, z, sx, sy, sz, ry) {
+        dummy.position.set(x, y, z);
+        dummy.rotation.set(0, ry || 0, 0);
+        dummy.scale.set(Math.max(0.0001, sx), Math.max(0.0001, sy), Math.max(0.0001, sz));
+        dummy.updateMatrix();
+        mesh.setMatrixAt(i, dummy.matrix);
+      }
+      function hide(mesh, from, total) {
+        for (var i = from; i < total; i++) place(mesh, i, 0, -20, 0, 0.0001, 0.0001, 0.0001, 0);
+        mesh.instanceMatrix.needsUpdate = true;
+      }
+      function treePos(i) {
+        return {
+          x: -7.35 + (((i * 37) % 101) / 100) * 14.7,
+          z: -4.05 + (((i * 61 + 17) % 101) / 100) * 8.1,
+          h: 1.45 + ((i * 17) % 11) * 0.075,
+          turn: ((i * 29) % 31) * 0.11
+        };
+      }
+      function shrubPos(i) {
+        return {
+          x: -7.45 + (((i * 43 + 11) % 103) / 102) * 14.9,
+          z: -4.15 + (((i * 67 + 7) % 103) / 102) * 8.3,
+          turn: ((i * 19) % 29) * 0.13
+        };
+      }
+      function fuelPos(i) {
+        return {
+          x: -7.55 + (((i * 31 + 5) % 107) / 106) * 15.1,
+          z: -4.2 + (((i * 73 + 13) % 107) / 106) * 8.4,
+          turn: ((i * 23) % 37) * 0.15
+        };
+      }
+
+      var terrainGeo = new THREE.PlaneGeometry(16, 10, 20, 12);
+      var positions = terrainGeo.attributes.position;
+      for (var p = 0; p < positions.count; p++) positions.setZ(p, groundY(positions.getX(p), -positions.getY(p)));
+      terrainGeo.rotateX(-Math.PI / 2);
+      terrainGeo.computeVertexNormals();
+      var terrain = add(new THREE.Mesh(terrainGeo,
+        new THREE.MeshStandardMaterial({ color: 0x506b37, roughness: 0.98, flatShading: true })));
+
+
+      var trunks = batch(new THREE.CylinderGeometry(0.11, 0.16, 1, 6),
+        new THREE.MeshStandardMaterial({ color: 0x65452d, roughness: 1 }), TREE_MAX);
+      var crowns = batch(new THREE.ConeGeometry(0.62, 1.65, 7),
+        new THREE.MeshStandardMaterial({ color: 0x2f6f3e, roughness: 0.92, flatShading: true }), TREE_MAX);
+      var shrubs = batch(new THREE.ConeGeometry(0.25, 0.38, 5),
+        new THREE.MeshStandardMaterial({ color: 0x4d7c3d, roughness: 1, flatShading: true }), SHRUB_MAX);
+      var litter = batch(new THREE.BoxGeometry(0.42, 0.035, 0.12),
+        new THREE.MeshStandardMaterial({ color: 0x8a5b2c, roughness: 1 }), FUEL_MAX);
+      var ash = batch(new THREE.BoxGeometry(0.48, 0.025, 0.38),
+        new THREE.MeshStandardMaterial({ color: 0x292524, roughness: 1 }), 48);
+      var refugia = batch(new THREE.CylinderGeometry(0.72, 0.72, 0.055, 14),
+        new THREE.MeshStandardMaterial({ color: 0x3f7d3c, roughness: 1 }), 3);
+      var flames = batch(new THREE.ConeGeometry(0.17, 0.72, 7),
+        new THREE.MeshBasicMaterial({ color: 0xf97316, transparent: true, opacity: 0.94, depthWrite: false }), FLAME_MAX);
+      var cores = batch(new THREE.ConeGeometry(0.09, 0.48, 7),
+        new THREE.MeshBasicMaterial({ color: 0xfde047, transparent: true, opacity: 0.96, depthWrite: false }), FLAME_MAX);
+      var crownFire = batch(new THREE.ConeGeometry(0.24, 1.25, 7),
+        new THREE.MeshBasicMaterial({ color: 0xef4444, transparent: true, opacity: 0.88, depthWrite: false }), 18);
+      var smokeGeo = new THREE.BufferGeometry();
+      smokeGeo.setAttribute('position', new THREE.BufferAttribute(smokeData, 3));
+      var smoke = add(new THREE.Points(smokeGeo,
+        new THREE.PointsMaterial({ color: 0xcbd5e1, size: 0.30, transparent: true, opacity: 0, depthWrite: false })));
+
+      var host = S.renderer.domElement.parentNode;
+      var phaseNode = host.querySelector('.fireecology-sim-phase');
+      if (!phaseNode) {
+        phaseNode = document.createElement('div');
+        phaseNode.className = 'fireecology-sim-phase';
+        phaseNode.setAttribute('aria-hidden', 'true');
+        host.appendChild(phaseNode);
+      }
+      S.target.set(0, 1.05, 0);
+      S.fitPts = [
+        new THREE.Vector3(-8, 0, -5), new THREE.Vector3(8, 0, -5),
+        new THREE.Vector3(-8, 0, 5), new THREE.Vector3(8, 0, 5),
+        new THREE.Vector3(0, 4.4, 0)
+      ];
+
+      var lastProgress = -1;
+
+
+      function valuesAt(progress) {
+        var t = kind === 'suppression' ? smooth(progress) : smooth((progress - 0.70) / 0.30);
+        var values = {};
+        ['fuelLoad', 'canopyCover', 'understoryDensity', 'biodiversity', 'soilHealth', 'waterYield'].forEach(function(key) {
+          values[key] = mix(Number(before[key]) || 0, Number(after[key]) || 0, t);
+        });
+        return values;
+      }
+      function phaseText(progress) {
+        if (!event) return 'Current forest condition';
+        if (kind === 'suppression') return progress < 0.82 ? 'Fuel and understory accumulation in this model' : 'Ten-year model outcome';
+        if (progress < 0.11) return 'Before treatment';
+        if (progress < 0.66) {
+          if (kind === 'wildfire') return 'Uncontrolled crown-fire example in this classroom scenario';
+          if (kind === 'culturalBurn') return 'Cultural burn — patchy surface-fire example in this classroom scenario';
+          return 'Prescribed burn — broader surface-fire example in this classroom scenario';
+        }
+        if (progress < 0.78) return 'Illustrated smolder and cooling';
+        return 'Ten-year model outcome';
+      }
+      function playbackProgress(data) {
+        if (!event) return 1;
+        if (data.frame === 'before') return 0;
+        if (data.frame === 'during') return 0.42;
+        if (data.frame === 'outcome') return 1;
+        return fireVisualPlaybackProgress(data.playbackToken, data.playbackSession);
+      }
+
+      function draw(progress, now) {
+        var values = valuesAt(progress);
+        var isBurn = kind === 'culturalBurn' || kind === 'prescribedBurn' || kind === 'wildfire';
+        var active = isBurn && progress >= 0.11 && progress < 0.68;
+        var front = unit((progress - 0.11) / 0.57);
+        var severity = kind === 'wildfire' ? 2.15 : (kind === 'prescribedBurn' ? 0.82 : 0.58);
+        var treeCount = Math.max(2, Math.round(unit(values.canopyCover / 100) * TREE_MAX));
+        var shrubCount = Math.max(2, Math.round(unit(values.understoryDensity / 100) * SHRUB_MAX));
+        var fuelCount = Math.max(2, Math.round(unit(values.fuelLoad / 100) * FUEL_MAX));
+        var bio = unit(values.biodiversity / 100);
+
+        terrain.material.color.setHex(bio > 0.70 ? 0x506b37 : (bio > 0.40 ? 0x6b6337 : 0x65503a));
+        crowns.material.color.setHex(kind === 'wildfire' && active ? 0x6b3a24 : (bio > 0.68 ? 0x2f6f3e : 0x667033));
+        shrubs.material.color.setHex(bio > 0.58 ? 0x4d7c3d : 0x77723b);
+
+        for (var ti = 0; ti < treeCount; ti++) {
+          var tp = treePos(ti), ty = groundY(tp.x, tp.z);
+          place(trunks, ti, tp.x, ty + tp.h * 0.5, tp.z, 1, tp.h, 1, tp.turn);
+          place(crowns, ti, tp.x, ty + tp.h + 0.72, tp.z, 0.82 + bio * 0.28, 0.90 + bio * 0.22, 0.82 + bio * 0.28, tp.turn);
+        }
+        hide(trunks, treeCount, TREE_MAX); hide(crowns, treeCount, TREE_MAX);
+
+        for (var si = 0; si < shrubCount; si++) {
+          var sp = shrubPos(si);
+          place(shrubs, si, sp.x, groundY(sp.x, sp.z) + 0.18, sp.z, 0.8, 0.75 + bio * 0.45, 0.8, sp.turn);
+        }
+        hide(shrubs, shrubCount, SHRUB_MAX);
+
+        for (var fi = 0; fi < fuelCount; fi++) {
+          var fp = fuelPos(fi);
+          place(litter, fi, fp.x, groundY(fp.x, fp.z) + 0.025, fp.z, 1, 1, 1, fp.turn);
+        }
+        hide(litter, fuelCount, FUEL_MAX);
+
+        var coverage = kind === 'culturalBurn' ? 0.62 : (kind === 'prescribedBurn' ? 0.82 : (kind === 'wildfire' ? 1 : 0));
+        var ashCount = Math.round(48 * coverage * (isBurn ? (progress < 0.11 ? 0 : (active ? front : 1)) : 0));
+        for (var ai = 0; ai < ashCount; ai++) {
+          var ap = fuelPos((ai * 5) % FUEL_MAX);
+          place(ash, ai, ap.x, groundY(ap.x, ap.z) + 0.038, ap.z, 1, 1, 1, ap.turn);
+        }
+        hide(ash, ashCount, 48);
+
+        var refugeCount = progress >= 0.11 ? (kind === 'culturalBurn' ? 3 : (kind === 'prescribedBurn' ? 2 : 0)) : 0;
+        var refugeSpots = [{ x: -4.8, z: 1.8 }, { x: 0.5, z: -1.7 }, { x: 5.1, z: 2.3 }];
+        for (var ri = 0; ri < refugeCount; ri++) {
+          var rp = refugeSpots[ri];
+          place(refugia, ri, rp.x, groundY(rp.x, rp.z) + 0.035, rp.z, 1, 1, 1, 0);
+        }
+        hide(refugia, refugeCount, 3);
+
+        var flameCount = active ? (kind === 'wildfire' ? 32 : (kind === 'prescribedBurn' ? 25 : 20)) : 0;
+        var frontZ = -4 + front * 8;
+        for (var fl = 0; fl < flameCount; fl++) {
+          var gap = kind === 'culturalBurn' && fl % 4 === 0;
+          var x = -7.45 + (fl / Math.max(1, flameCount - 1)) * 14.9;
+          var z = frontZ + ((fl % 3) - 1) * 0.18;
+          var flicker = 0.86 + Math.sin(now * 0.012 + fl * 1.73) * 0.18;
+          var height = gap ? 0.0001 : severity * flicker;
+          place(flames, fl, x, groundY(x, z) + height * 0.36, z, 0.8, height, 0.8, 0);
+          place(cores, fl, x, groundY(x, z) + height * 0.24, z + 0.02, 0.75, height * 0.76, 0.75, 0);
+        }
+        hide(flames, flameCount, FLAME_MAX); hide(cores, flameCount, FLAME_MAX);
+
+        var crownCount = active && kind === 'wildfire' ? Math.min(18, treeCount) : 0;
+        for (var ci = 0; ci < crownCount; ci++) {
+          var ct = treePos((ci * 2) % treeCount);
+          place(crownFire, ci, ct.x, groundY(ct.x, ct.z) + ct.h + 1.2, ct.z, 1, 1.15 + Math.sin(now * 0.01 + ci) * 0.22, 1, ct.turn);
+        }
+        hide(crownFire, crownCount, 18);
+
+        for (var sm = 0; sm < SMOKE_MAX; sm++) {
+          var visible = active && (kind !== 'culturalBurn' || sm % 4 !== 0);
+          smokeData[sm * 3] = visible ? -7 + (sm % 12) * 1.27 + Math.sin(now * 0.001 + sm) * 0.12 : 0;
+          smokeData[sm * 3 + 1] = visible ? 0.65 + Math.floor(sm / 12) * 0.58 + Math.sin(now * 0.0015 + sm * 0.4) * 0.16 : -20;
+          smokeData[sm * 3 + 2] = visible ? frontZ + Math.floor(sm / 12) * 0.12 : 0;
+        }
+        smoke.geometry.attributes.position.needsUpdate = true;
+        smoke.material.color.setHex(kind === 'wildfire' ? 0x57534e : 0xcbd5e1);
+        smoke.material.opacity = active ? (kind === 'wildfire' ? 0.62 : 0.34) : 0;
+        smoke.material.size = kind === 'wildfire' ? 0.48 : 0.30;
+        phaseNode.textContent = phaseText(progress);
+      }
+
+      S.tick = function(now) {
+        var data = S.data || model;
+        var progress = playbackProgress(data);
+        if (Math.abs(progress - lastProgress) < 0.0005 && (data.static || data.paused)) return;
+        draw(progress, now || 0);
+        lastProgress = progress;
+      };
+      draw(playbackProgress(model), 0);
+    },
+    debug: function(S) {
+      return {
+        visualKind: S.data && S.data.visualEvent ? S.data.visualEvent.kind : 'none',
+        visualFrame: S.data ? S.data.frame : null
+      };
+    }
+  }) : {
+    attach: function() {},
+    push: function() {},
+    onStatusChange: function() {},
+    status: function() { return 'unavailable'; },
+    debug: function() { return { state: 'unavailable' }; },
+    dispose: function() {}
+  };
   // QUIZ QUESTIONS
   // ═══════════════════════════════════════════
 
@@ -1513,6 +1961,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
       aiReadHistory: [],
       // UI state
       deepDiveZone: null,
+      deepDiveReturnId: null,
       firstTipDismissed: false,
       // Deterministic-replay state
       seed: newMosaicSeed()
@@ -1540,6 +1989,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
+      var fireSessionRef = React.useRef(null);
+      if (!fireSessionRef.current) fireSessionRef.current = 'fireecology-session-' + (++_fireVisualSessionCounter);
+      var fireSessionId = fireSessionRef.current;
+      var fireMountedRef = React.useRef(true);
+      React.useEffect(function() {
+        fireMountedRef.current = true;
+        return function() {
+          fireMountedRef.current = false;
+          cancelFireVisualPlayback(fireSessionId);
+          stopFireAmbient(fireSessionId);
+        };
+      }, [fireSessionId]);
       var h = React.createElement;
       var labToolData = ctx.toolData;
       var setLabToolData = ctx.setToolData;
@@ -2013,27 +2474,316 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
         function renderSimulatorTab() {
           var s = sim;
+          var visualEvent = s.visualEvent || null;
+          var simViewMode = d.simViewMode === '3d' && fireEcologyHas3DViewer ? '3d' : '2d';
+          var sim3dStatus = d.sim3dStatus || fireEcology3DViewer.status();
+          var sim3dRotY = typeof d.sim3dRotY === 'number' ? d.sim3dRotY : -34;
+          var sim3dRotX = typeof d.sim3dRotX === 'number' ? d.sim3dRotX : 28;
+          var sim3dZoom = typeof d.sim3dZoom === 'number' ? d.sim3dZoom : 1;
+          var reducedMotion = typeof window !== 'undefined' && window.matchMedia &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          var playbackToken = d.simVisualReplay || 0;
+          var simPlaybackPaused = d.simVisualPaused === true;
+          var simVisualFrame = d.simVisualFrame || 'outcome';
+          if (simVisualFrame === 'animate' && !fireVisualPlaybackIsActive(playbackToken, fireSessionId)) simVisualFrame = 'outcome';
+          var playbackActive = simVisualFrame === 'animate' && fireVisualPlaybackIsActive(playbackToken, fireSessionId);
+          var visualSummary = describeFireSimVisual(visualEvent, s);
 
-          // Canvas data attributes for live visualization
-          function renderCanvas() {
-            var burning = s.eventLog && s.eventLog.length > 0 && s.eventLog[s.eventLog.length - 1].event && s.eventLog[s.eventLog.length - 1].event.indexOf('CATASTROPHIC') >= 0;
-            return h('div', { style: { marginBottom: 16 } },
-              h('canvas', { role: 'img', 'aria-label': t('stem.fireecology.fireecology_visualization', 'Fireecology visualization'),
-                ref: forestCanvasRef,
-                'data-fuel': s.fuelLoad,
-                'data-canopy': s.canopyCover,
-                'data-bio': s.biodiversity,
-                'data-understory': s.understoryDensity,
-                'data-burning': burning ? '1' : '0',
-                style: { width: '100%', height: 200, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', display: 'block' },
-                'aria-label': t('stem.fireecology.forest_visualization_showing_current_f', 'Forest visualization showing current fuel load, canopy cover, and biodiversity')
-              })
+          fireEcology3DViewer.onStatusChange(function(nextStatus) {
+            setLabToolData(function(prev) {
+              var prevFire = prev.fireEcology || {};
+              var nextMode = nextStatus === 'failed' ? '2d' : prevFire.simViewMode;
+              if (prevFire.sim3dStatus === nextStatus && nextMode === prevFire.simViewMode) return prev;
+              return Object.assign({}, prev, {
+                fireEcology: Object.assign({}, prevFire, {
+                  sim3dStatus: nextStatus,
+                  simViewMode: nextMode || '2d',
+                  sim3dFallback: nextStatus === 'failed' ? true : prevFire.sim3dFallback
+                })
+              });
+            });
+          });
+
+          fireEcology3DViewer.push({
+            sig: [
+              visualEvent ? visualEvent.id : 'baseline',
+              playbackToken,
+              fireSessionId,
+              Math.round(s.fuelLoad),
+              Math.round(s.canopyCover),
+              Math.round(s.understoryDensity),
+              Math.round(s.biodiversity)
+            ].join(':'),
+            current: fireSimVisualSnapshot(s),
+            visualEvent: visualEvent,
+            playbackToken: playbackToken,
+            playbackSession: fireSessionId,
+            frame: simVisualFrame,
+            paused: simPlaybackPaused,
+            reducedMotion: reducedMotion,
+            static: simVisualFrame !== 'animate' || simPlaybackPaused || reducedMotion,
+            rotY: sim3dRotY,
+            rotX: sim3dRotX,
+            zoom: sim3dZoom
+          });
+
+          function wakeLandscapeVisual() {
+            var wake = function() { restartForestCanvas(); };
+            if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') window.requestAnimationFrame(wake);
+            else setTimeout(wake, 0);
+          }
+          function setViewMode(mode) {
+            if (mode === '3d' && !fireEcologyHas3DViewer) return;
+            updMulti({
+              simViewMode: mode,
+              sim3dFallback: false,
+              sim3dStatus: mode === '3d' ? fireEcology3DViewer.status() : sim3dStatus
+            });
+            wakeLandscapeVisual();
+          }
+          function adjust3D(key, amount, minimum, maximum) {
+            var current = key === 'sim3dRotY' ? sim3dRotY : (key === 'sim3dRotX' ? sim3dRotX : sim3dZoom);
+            var patch = {};
+            patch[key] = clamp(current + amount, minimum, maximum);
+            updMulti(patch);
+          }
+          function revealLandscape() {
+            if (typeof document === 'undefined') return;
+            var reveal = function() {
+              var target = document.getElementById('fireecology-sim-visual-shell');
+              if (!target) return;
+              try { target.focus({ preventScroll: true }); } catch (e) { try { target.focus(); } catch (ignore) {} }
+              if (typeof target.scrollIntoView === 'function') {
+                target.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
+              }
+              restartForestCanvas();
+            };
+            if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') window.requestAnimationFrame(reveal);
+            else setTimeout(reveal, 0);
+          }
+          function focusReplayControl() {
+            if (typeof document === 'undefined') return;
+            var focusReplay = function() {
+              var replay = document.getElementById('fireecology-sim-replay');
+              if (replay) { try { replay.focus(); } catch (e) {} }
+            };
+            if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') window.requestAnimationFrame(focusReplay);
+            else setTimeout(focusReplay, 0);
+          }          function startVisualPlayback(eventToPlay, token) {
+            cancelFireVisualPlayback(fireSessionId);
+            if (reducedMotion || !eventToPlay) return;
+            beginFireVisualPlayback(token, eventToPlay.kind, function() {
+              if (!fireMountedRef.current) return;
+              var active = typeof document !== 'undefined' ? document.activeElement : null;
+              var returnFocus = !!(active && active.closest && active.closest('[data-fire-playback-controls]'));
+              updMulti({ simVisualFrame: 'outcome', simVisualPaused: false });
+              wakeLandscapeVisual();
+              if (returnFocus) focusReplayControl();
+              if (typeof announceToSR === 'function') announceToSR(describeFireSimVisual(eventToPlay, eventToPlay.after));
+            }, fireSessionId);
+          }
+          function replayVisual() {
+            if (!visualEvent || playbackActive) return;
+            var token = playbackToken + 1;
+            var frame = reducedMotion ? 'during' : 'animate';
+            startVisualPlayback(visualEvent, token);
+            updMulti({ simVisualReplay: token, simVisualFrame: frame, simVisualPaused: false });
+            if (!reducedMotion) startFireAmbient(visualEvent.kind !== 'suppression', visualEvent.after.biodiversity, fireSessionId);
+            wakeLandscapeVisual();
+            if (typeof announceToSR === 'function') announceToSR('Replaying ' + visualEvent.label + ' visualization. Simulation results are unchanged.');
+          }
+          function skipVisual() {
+            cancelFireVisualPlayback(fireSessionId);
+            stopFireAmbient(fireSessionId);
+            updMulti({ simVisualFrame: 'outcome', simVisualPaused: false });
+            wakeLandscapeVisual();
+            focusReplayControl();
+            if (typeof announceToSR === 'function') announceToSR(visualSummary);
+          }
+          function toggleVisualPause() {
+            if (!playbackActive) return;
+            var shouldPause = !simPlaybackPaused;
+            pauseFireVisualPlayback(shouldPause, fireSessionId);
+            upd('simVisualPaused', shouldPause);
+            if (shouldPause) stopFireAmbient(fireSessionId);
+            else {
+              if (visualEvent) startFireAmbient(visualEvent.kind !== 'suppression', visualEvent.after.biodiversity, fireSessionId);
+              wakeLandscapeVisual();
+            }
+          }
+          function showStaticPhase(frame) {
+            cancelFireVisualPlayback(fireSessionId);
+            stopFireAmbient(fireSessionId);
+            updMulti({ simVisualFrame: frame, simVisualPaused: false });
+            wakeLandscapeVisual();
+            if (typeof announceToSR === 'function' && visualEvent) {
+              var selected = frame === 'before' ? 'Before treatment.' :
+                (frame === 'during' ? visualEvent.label + ' treatment example.' : 'Ten-year model outcome.');
+              announceToSR(selected);
+            }
+          }
+          function visualPhaseText() {
+            if (!visualEvent) return 'Current forest condition.';
+            if (simVisualFrame === 'before') return 'Before treatment in this model.';
+            if (simVisualFrame === 'during' || playbackActive) {
+              if (visualEvent.kind === 'culturalBurn') return 'Cultural burn — illustrated patchier surface fire in this classroom scenario.';
+              if (visualEvent.kind === 'prescribedBurn') return 'Prescribed burn — illustrated broader surface fire in this classroom scenario.';
+              if (visualEvent.kind === 'wildfire') return 'Wildfire — illustrated crown-fire behavior in this classroom scenario.';
+              return 'Fire suppression — fuel and understory accumulation in this model.';
+            }
+            return 'Ten-year model outcome.';
+          }
+
+          function legendItem(color, label, shape) {
+            return h('span', { className: 'fireecology-sim-legend-item' },
+              h('span', {
+                className: 'fireecology-sim-swatch',
+                'aria-hidden': 'true',
+                style: { background: color, borderRadius: shape === 'circle' ? '50%' : (shape === 'line' ? 2 : 0), height: shape === 'line' ? 5 : 12 }
+              }),
+              label
             );
           }
 
+          function renderCanvas() {
+            var burnKind = visualEvent ? visualEvent.kind : 'none';
+            var isBurn = burnKind === 'culturalBurn' || burnKind === 'prescribedBurn' || burnKind === 'wildfire';
+            var describedBy = 'fireecology-sim-phase-description fireecology-sim-outcome-description fireecology-sim-legend fireecology-sim-safety-description';
+            var treatmentName = visualEvent ? visualEvent.label : t('stem.fireecology.current_forest', 'Current forest');
+            if (visualEvent && visualEvent.subject) treatmentName += ' — ' + visualEvent.subject;
+
+            return h('section', {
+              id: 'fireecology-sim-visual-shell',
+              className: 'fireecology-sim-visual-shell',
+              'aria-labelledby': 'fireecology-landscape-view-title',
+              'aria-describedby': 'fireecology-sim-safety-description',
+              tabIndex: -1,
+              'data-visual-kind': burnKind
+            },
+              h('div', { className: 'fireecology-sim-visual-head' },
+                h('h3', { id: 'fireecology-landscape-view-title' }, t('stem.fireecology.living_landscape_view', 'Living landscape view')),
+                h('div', { className: 'fireecology-sim-toolbar', role: 'group', 'aria-label': t('stem.fireecology.landscape_view', 'Landscape view') },
+                  h('button', {
+                    type: 'button', 'aria-pressed': simViewMode === '2d',
+                    onClick: function() { setViewMode('2d'); }
+                  }, t('stem.fireecology.cross_section_2d', '2D cross-section')),
+                  h('button', {
+                    type: 'button', 'aria-pressed': simViewMode === '3d',
+                    disabled: !fireEcologyHas3DViewer,
+                    onClick: function() { setViewMode('3d'); }
+                  }, t('stem.fireecology.landscape_3d', '3D landscape'))
+                )
+              ),
+              h('div', { className: 'fireecology-sim-treatment' },
+                h('strong', null, t('stem.fireecology.visualizing', 'Visualizing: ')), treatmentName
+              ),
+
+              d.sim3dFallback ? h('div', {
+                role: 'status',
+                style: { marginBottom: 8, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12 }
+              }, t('stem.fireecology.three_d_fallback', '3D was unavailable, so the accessible 2D view is active. All simulation results are preserved.')) : null,
+
+              simViewMode === '3d'
+                ? h('figure', { style: { margin: 0 } },
+                    h('div', {
+                      ref: fireEcology3DViewer.attach,
+                      className: 'fireecology-sim-viewer',
+                      role: 'img', 'aria-label': t('stem.fireecology.fireecology_visualization', 'Forest treatment visualization') + '. ' + visualPhaseText(),
+                      'aria-describedby': describedBy,
+                      'data-visual-kind': burnKind
+                    }),
+                    sim3dStatus === 'loading' ? h('div', { role: 'status', className: 'fireecology-sim-note' }, t('stem.fireecology.loading_local_3d', 'Loading the local 3D landscape...')) : null,
+                    h('figcaption', { className: 'fireecology-sim-note' }, t('stem.fireecology.flame_encoding', 'Lower, patchier flames illustrate a surface-fire treatment; flames entering tree crowns appear only in the wildfire example.'))
+                  )
+                : h('canvas', {
+                    ref: forestCanvasRef,
+                    role: 'img',
+                    'aria-label': t('stem.fireecology.forest_visualization_showing_current_f', 'Forest treatment visualization') + '. ' + visualPhaseText(),
+                    'aria-describedby': describedBy,
+                    'data-fuel': s.fuelLoad,
+                    'data-canopy': s.canopyCover,
+                    'data-bio': s.biodiversity,
+                    'data-understory': s.understoryDensity,
+                    'data-before-fuel': visualEvent ? visualEvent.before.fuelLoad : s.fuelLoad,
+                    'data-before-canopy': visualEvent ? visualEvent.before.canopyCover : s.canopyCover,
+                    'data-before-bio': visualEvent ? visualEvent.before.biodiversity : s.biodiversity,
+                    'data-before-understory': visualEvent ? visualEvent.before.understoryDensity : s.understoryDensity,
+                    'data-burning': isBurn ? '1' : '0',
+                    'data-burn-kind': burnKind,
+                    'data-playback-token': playbackToken,
+                    'data-playback-session': fireSessionId,
+                    'data-visual-frame': simVisualFrame,
+                    'data-visual-paused': simPlaybackPaused ? '1' : '0',
+                    'data-reduced-motion': reducedMotion ? '1' : '0',
+                    style: { width: '100%', height: 280, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', display: 'block' }
+                  }),
+
+              h('p', {
+                id: 'fireecology-sim-phase-description',
+                className: 'fireecology-sim-phase-copy',
+                role: 'status',
+                'aria-live': 'polite',
+                'aria-atomic': 'true'
+              }, visualPhaseText()),
+
+              h('ol', { className: 'fireecology-sim-timeline', 'aria-label': t('stem.fireecology.visualization_phases', 'Visualization phases') },
+                [
+                  { frame: 'before', label: t('stem.fireecology.phase_before', 'Before treatment') },
+                  { frame: 'during', label: t('stem.fireecology.phase_during', 'During treatment') },
+                  { frame: 'outcome', label: t('stem.fireecology.phase_outcome', 'Outcome') }
+                ].map(function(step, index) {
+                  var currentFrame = simVisualFrame === 'animate' ? 'during' : simVisualFrame;
+                  var current = currentFrame === step.frame;
+                  return h('li', { key: step.frame, className: 'fireecology-sim-timeline-item', 'data-current': current ? 'true' : 'false', 'aria-current': current ? 'step' : undefined },
+                    h('span', { className: 'fireecology-sim-timeline-marker', 'aria-hidden': 'true' }, String(index + 1)),
+                    h('span', null, step.label)
+                  );
+                })
+              ),
+
+              visualEvent ? h('div', { className: 'fireecology-sim-toolbar', role: 'group', 'data-fire-playback-controls': 'true', 'aria-label': t('stem.fireecology.burn_visualization_playback', 'Burn visualization playback'), style: { marginTop: 8 } },
+                reducedMotion ? [
+                  h('button', { key: 'before', type: 'button', 'aria-pressed': simVisualFrame === 'before', onClick: function() { showStaticPhase('before'); } }, t('stem.fireecology.before_treatment', 'Before treatment')),
+                  h('button', { key: 'during', type: 'button', 'aria-pressed': simVisualFrame === 'during', onClick: function() { showStaticPhase('during'); } }, t('stem.fireecology.during_treatment', 'During treatment')),
+                  h('button', { key: 'outcome', type: 'button', 'aria-pressed': simVisualFrame === 'outcome', onClick: function() { showStaticPhase('outcome'); } }, t('stem.fireecology.outcome', 'Outcome'))
+                ] : [
+                  playbackActive ? h('button', { key: 'pause', type: 'button', 'aria-pressed': simPlaybackPaused, onClick: toggleVisualPause }, simPlaybackPaused ? t('stem.fireecology.resume', 'Resume') : t('stem.fireecology.pause', 'Pause')) : null,
+                  h('button', { id: 'fireecology-sim-replay', key: 'replay', type: 'button', disabled: playbackActive, onClick: replayVisual }, t('stem.fireecology.replay_last_change', 'Replay last change')),
+                  playbackActive ? h('button', { key: 'skip', type: 'button', onClick: skipVisual }, t('stem.fireecology.skip_to_outcome', 'Skip to outcome')) : null
+                ]
+              ) : null,
+
+              simViewMode === '3d' ? h('div', { className: 'fireecology-sim-toolbar', role: 'group', 'aria-label': t('stem.fireecology.three_d_camera_controls', '3D camera controls'), style: { marginTop: 8 } },
+                h('button', { type: 'button', onClick: function() { adjust3D('sim3dRotY', -12, -180, 180); } }, t('stem.fireecology.rotate_left', 'Rotate left')),
+                h('button', { type: 'button', onClick: function() { adjust3D('sim3dRotY', 12, -180, 180); } }, t('stem.fireecology.rotate_right', 'Rotate right')),
+                h('button', { type: 'button', onClick: function() { adjust3D('sim3dRotX', 8, 12, 78); } }, t('stem.fireecology.tilt_up', 'Tilt up')),
+                h('button', { type: 'button', onClick: function() { adjust3D('sim3dRotX', -8, 12, 78); } }, t('stem.fireecology.tilt_down', 'Tilt down')),
+                h('button', { type: 'button', onClick: function() { adjust3D('sim3dZoom', 0.12, 0.68, 1.7); } }, t('stem.fireecology.zoom_in', 'Zoom in')),
+                h('button', { type: 'button', onClick: function() { adjust3D('sim3dZoom', -0.12, 0.68, 1.7); } }, t('stem.fireecology.zoom_out', 'Zoom out')),
+                h('button', { type: 'button', onClick: function() { updMulti({ sim3dRotY: -34, sim3dRotX: 28, sim3dZoom: 1 }); } }, t('stem.fireecology.reset_view', 'Reset view'))
+              ) : null,
+
+              h('div', { id: 'fireecology-sim-legend', className: 'fireecology-sim-legend', 'aria-label': t('stem.fireecology.landscape_legend', 'Landscape legend') },
+                legendItem('#f97316', t('stem.fireecology.surface_fire', 'Surface fire'), 'triangle'),
+                legendItem('#94a3b8', t('stem.fireecology.smoke', 'Smoke'), 'circle'),
+                legendItem('#8a5b2c', t('stem.fireecology.ground_fuel', 'Ground fuel'), 'line'),
+                legendItem('#3f7d3c', t('stem.fireecology.unburned_refuge', 'Unburned refuge'), 'square')
+              ),
+              h('div', { id: 'fireecology-sim-outcome-description', className: 'fireecology-sim-change' },
+                h('strong', null, t('stem.fireecology.what_changed', 'What changed: ')),
+                visualSummary
+              ),
+              h('p', { id: 'fireecology-sim-safety-description', className: 'fireecology-sim-note' },
+                t('stem.fireecology.simulation_safety_note_v2', 'Illustrative, time-compressed classroom visualization—not a fire-behavior forecast, burn plan, or authorization to use fire. Wind, slope, direction, ignition pattern, and containment are not modeled. Cultural burning is place-based, practitioner-led knowledge that includes relationships, governance, timing, and responsibilities beyond flame behavior; this scene does not reproduce a real cultural practice.')
+              )
+            );
+          }
           function advanceDecade(action) {
             var newSim = Object.assign({}, s);
             var event = '';
+            var visualBefore = fireSimVisualSnapshot(s);
+            var visualKind = action === 'culturalBurn' ? 'culturalBurn' :
+              (action === 'prescribe' ? 'prescribedBurn' : 'suppression');
 
             if (action === 'culturalBurn') {
               // Cultural burn: low-intensity, reduces fuel, boosts biodiversity
@@ -2045,9 +2795,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               newSim.carbonStored = clamp(s.carbonStored - 2, 0, 200);
               newSim.yearsSinceLastBurn = 0;
               newSim.totalBurns = s.totalBurns + 1;
-              event = '\uD83D\uDD25 Cultural burn performed. Fuel reduced, understory opened, biodiversity thriving.';
+              newSim.strategy = 'indigenous';
+              event = '\uD83D\uDD25 Cultural burn modeled. Fuel reduced, understory opened, and biodiversity increased in this classroom scenario.';
               playSound('ignite');
-              startFireAmbient(true, newSim.biodiversity);
+              startFireAmbient(true, newSim.biodiversity, fireSessionId);
               awardStemXP('fire_sim_burn', 10, 'Cultural burn');
               if (newSim.totalBurns === 1) checkBadge('firstBurn');
               if (newSim.totalBurns >= 5) checkBadge('firekeeper');
@@ -2060,11 +2811,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               newSim.waterYield = clamp(s.waterYield - 6, 0, 100);
               newSim.carbonStored = clamp(s.carbonStored + 5, 0, 200);
               newSim.yearsSinceLastBurn = s.yearsSinceLastBurn + 10;
+              newSim.strategy = 'suppress';
               event = '\u26D4 Fire suppressed. Fuel accumulating, understory thickening, biodiversity declining.';
-              startFireAmbient(false, newSim.biodiversity);
+              startFireAmbient(false, newSim.biodiversity, fireSessionId);
 
               // Wildfire risk check
-              if (newSim.fuelLoad > 55 && Math.random() < (newSim.fuelLoad - 40) / 80) {
+              if (newSim.fuelLoad > 55 && fireSimRoll(s, 'suppression-wildfire') < (newSim.fuelLoad - 40) / 80) {
                 // Catastrophic wildfire!
                 var severity = newSim.fuelLoad / 100;
                 newSim.canopyCover = clamp(s.canopyCover - Math.round(severity * 60), 0, 100);
@@ -2075,13 +2827,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 newSim.carbonStored = clamp(newSim.carbonStored - 30, 0, 200);
                 newSim.wildfires = s.wildfires + 1;
                 newSim.yearsSinceLastBurn = 0;
+                visualKind = 'wildfire';
                 event = '\uD83D\uDCA5 CATASTROPHIC WILDFIRE! Decades of fuel accumulation erupted into an uncontrollable crown fire. Canopy, soil, and biodiversity devastated.';
                 playSound('wildfire');
-                startFireAmbient(true, newSim.biodiversity);
+                startFireAmbient(true, newSim.biodiversity, fireSessionId);
                 checkBadge('suppressionLesson');
               }
             } else if (action === 'prescribe') {
-              // Modern prescribed burn (less effective than cultural burning but still beneficial)
+              // Prescribed treatment in this simplified scenario.
               newSim.fuelLoad = clamp(s.fuelLoad - 5, 3, 100);
               newSim.understoryDensity = clamp(s.understoryDensity - 10, 5, 100);
               newSim.biodiversity = clamp(s.biodiversity + 4, 0, 100);
@@ -2090,13 +2843,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               newSim.carbonStored = clamp(s.carbonStored - 1, 0, 200);
               newSim.yearsSinceLastBurn = 0;
               newSim.totalBurns = s.totalBurns + 1;
-              event = '\uD83D\uDCCB Prescribed burn completed. Moderate fuel reduction. (Cultural burning with Indigenous knowledge is more effective.)';
+              newSim.strategy = 'prescribe';
+              event = '\uD83D\uDCCB Prescribed burn completed. Surface fuels and understory were reduced in this simplified scenario.';
               playSound('ignite');
+              startFireAmbient(true, newSim.biodiversity, fireSessionId);
             }
 
             // Natural recovery
             newSim.canopyCover = clamp(newSim.canopyCover + (newSim.canopyCover < 40 ? 8 : 2), 0, 95);
             newSim.year = s.year + 10;
+            newSim.visualSequence = (s.visualSequence || 0) + 1;
+            newSim.visualEvent = makeFireSimVisualEvent(
+              visualKind, visualBefore, newSim, newSim.year, newSim.visualSequence
+            );
 
             // Decade snapshot
             var snapshots = (s.decade || []).concat([{
@@ -2113,10 +2872,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             // Event log
             newSim.eventLog = (s.eventLog || []).concat([{ year: newSim.year, event: event }]);
 
-            updMulti({ sim: newSim });
+            var nextPlaybackToken = playbackToken + 1;
+            var nextVisualFrame = reducedMotion ? 'during' : 'animate';
+            startVisualPlayback(newSim.visualEvent, nextPlaybackToken);
+            updMulti({
+              sim: newSim,
+              simVisualReplay: nextPlaybackToken,
+              simVisualFrame: nextVisualFrame,
+              simVisualPaused: false,
+              simRun: true
+            });
+            revealLandscape();
 
             // WCAG 4.1.3: Announce event to screen readers
-            if (typeof announceToSR === 'function') announceToSR('Year ' + newSim.year + '. ' + event.replace(/[\uD83D\uDD25\uD83D\uDCA5\u26D4\uD83C\uDF3F\uD83C\uDF0D]/g, ''));
+            if (typeof announceToSR === 'function') announceToSR('Year ' + newSim.year + '. ' + newSim.visualEvent.label + (reducedMotion ? ' selected. A static during-treatment view is shown.' : ' visualization started.'));
 
             if (newSim.year >= 50) checkBadge('successionWatcher');
 
@@ -2132,13 +2901,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           return h('div', null,
             h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #f97316' } },
               h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.5 } },
-                t('stem.fireecology.manage_a_forest_over_decades_choose_yo', 'Manage a forest over decades. Choose your strategy each decade: '),
-                h('strong', { style: { color: '#4ade80' } }, t('stem.fireecology.cultural_burn', 'Cultural Burn')),
-                t('stem.fireecology.indigenous_method', ' (Indigenous method), '),
-                h('strong', { style: { color: '#f59e0b' } }, t('stem.fireecology.prescribed_burn', 'Prescribed Burn')),
-                t('stem.fireecology.western_forestry_or', ' (Western forestry), or '),
-                h('strong', { style: { color: '#ef4444' } }, t('stem.fireecology.suppress', 'Suppress')),
-                t('stem.fireecology.fight_all_fire_watch_what_happens_over', ' (fight all fire). Watch what happens over time.')
+                t('stem.fireecology.sim_strategy_intro_v2', 'Explore three simplified classroom scenarios over modeled decades: '),
+                h('strong', { style: { color: '#4ade80' } }, t('stem.fireecology.cultural_stewardship_scenario', 'Cultural stewardship')),
+                t('stem.fireecology.scenario_separator_one', ', '),
+                h('strong', { style: { color: '#f59e0b' } }, t('stem.fireecology.prescribed_fire_scenario', 'Prescribed fire')),
+                t('stem.fireecology.scenario_separator_two', ', or '),
+                h('strong', { style: { color: '#ef4444' } }, t('stem.fireecology.total_suppression_scenario', 'total fire suppression')),
+                t('stem.fireecology.sim_strategy_context_v2', '. These are not Indigenous-versus-Western categories: prescribed fire can be Indigenous-led or collaborative, while cultural burning is a broader place-based practice that this numerical model cannot reproduce.')
               )
             ),
 
@@ -2152,23 +2921,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               }
             },
               h('strong', { style: { color: '#fb923c' } }, 'Goal: '),
-              t('stem.fireecology.keep_biodiversity_above_70_and_fuel_lo', 'keep biodiversity above 70 and fuel load below 30 across 50+ years without triggering a catastrophic wildfire. Cultural burn every decade or two; suppression looks safe at first but stockpiles fuel until one bad year erases everything.')
+              t('stem.fireecology.sim_goal_v2', 'keep biodiversity above 70 and fuel load below 30 across 50+ modeled years without triggering a catastrophic wildfire. Return intervals in this activity are scenario-specific learning choices—not recommendations. Real stewardship decisions depend on place, governance, season, objectives, weather, and practitioner knowledge.')
+            ),
+
+            h('p', { className: 'fireecology-sim-note', 'data-simulation-seed': s.seed || SIM_DEFAULTS.seed },
+              'Replay seed: ' + (s.seed || SIM_DEFAULTS.seed) + ' - Repeat the same choices to reproduce the same classroom event path.'
             ),
 
             // Canvas visualization
             renderCanvas(),
 
             // Comparison mode toggle
-            h('button', { 'aria-label': t('stem.fireecology.year', 'Year'),
-              onClick: function() { updMulti({ comparisonMode: !comparisonMode }); },
-              style: { background: comparisonMode ? '#7c3aed' : '#1e293b', border: '1px solid ' + (comparisonMode ? '#7c3aed' : '#334155'), borderRadius: 8, padding: '8px 16px', color: comparisonMode ? '#fff' : '#94a3b8', cursor: 'pointer', fontSize: 13, marginBottom: 12 }
+            h('button', { 'aria-label': 'Toggle cultural-burn and suppression comparison',
+              className: 'fireecology-compare-toggle',
+              'aria-pressed': comparisonMode,
+              onClick: function() { updMulti({ comparisonMode: !comparisonMode }); }
             }, comparisonMode ? '\u2716 Exit Comparison Mode' : '\u2194\uFE0F Compare: Cultural Burn vs. Suppression'),
 
             // Stats dashboard
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 } },
               h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, padding: 12 } },
                 h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, marginBottom: 4 } }, t('stem.fireecology.year_2', '\uD83D\uDCC5 Year')),
-                h('div', { style: { color: '#fff', fontSize: 24, fontWeight: 700 } }, s.year)
+                h('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 24, fontWeight: 700 } }, s.year)
               ),
               h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, padding: 12 } },
                 h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, marginBottom: 4 } }, t('stem.fireecology.wildfire_risk', '\u26A0\uFE0F Wildfire Risk')),
@@ -2189,22 +2963,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             // Action buttons
             h('div', { style: { display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' } },
               h('button', { 'aria-label': t('stem.fireecology.cultural_burn_10_yrs', 'Cultural Burn (+10 yrs)'),
-                onClick: function() { advanceDecade('culturalBurn'); },
-                style: { flex: 1, minWidth: 140, padding: '12px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#15803d', color: '#fff', fontWeight: 700, fontSize: 14 }
+                className: 'fireecology-sim-action', 'data-scenario': 'cultural',
+                disabled: playbackActive,
+                onClick: function() { advanceDecade('culturalBurn'); }
               }, t('stem.fireecology.cultural_burn_10_yrs_2', '\uD83D\uDD25 Cultural Burn (+10 yrs)')),
               h('button', { 'aria-label': t('stem.fireecology.prescribed_burn_10_yrs', 'Prescribed Burn (+10 yrs)'),
-                onClick: function() { advanceDecade('prescribe'); },
-                style: { flex: 1, minWidth: 140, padding: '12px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#f59e0b', color: '#000', fontWeight: 700, fontSize: 14 }
+                className: 'fireecology-sim-action', 'data-scenario': 'prescribed',
+                disabled: playbackActive,
+                onClick: function() { advanceDecade('prescribe'); }
               }, t('stem.fireecology.prescribed_burn_10_yrs_2', '\uD83D\uDCCB Prescribed Burn (+10 yrs)')),
               h('button', { 'aria-label': t('stem.fireecology.suppress_fire_10_yrs', 'Suppress Fire (+10 yrs)'),
-                onClick: function() { advanceDecade('suppress'); },
-                style: { flex: 1, minWidth: 140, padding: '12px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#dc2626', color: '#fff', fontWeight: 700, fontSize: 14 }
+                className: 'fireecology-sim-action', 'data-scenario': 'suppression',
+                disabled: playbackActive,
+                onClick: function() { advanceDecade('suppress'); }
               }, t('stem.fireecology.suppress_fire_10_yrs_2', '\u26D4 Suppress Fire (+10 yrs)'))
             ),
 
             // Reset
             h('button', { 'aria-label': t('stem.fireecology.reset_forest', 'Reset Forest'),
-              onClick: function() { updMulti({ sim: Object.assign({}, SIM_DEFAULTS), simB: Object.assign({}, SIM_DEFAULTS) }); if (addToast) addToast('Forest reset to starting conditions.', 'info'); },
+              onClick: function() {
+                cancelFireVisualPlayback(fireSessionId);
+                stopFireAmbient(fireSessionId);
+                updMulti({
+                  sim: Object.assign({}, SIM_DEFAULTS),
+                  simB: Object.assign({}, SIM_DEFAULTS),
+                  simVisualReplay: 0,
+                  simVisualFrame: 'outcome',
+                  simVisualPaused: false
+                });
+                wakeLandscapeVisual();
+                if (addToast) addToast('Forest reset to starting conditions.', 'info');
+              },
               style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 8, padding: '8px 16px', color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', fontSize: 13, marginBottom: 16 }
             }, t('stem.fireecology.reset_forest_2', '\uD83D\uDD04 Reset Forest')),
 
@@ -2212,7 +3001,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             comparisonMode ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16, border: '2px solid #7c3aed' } },
               h('div', { style: { fontWeight: 700, color: '#7c3aed', marginBottom: 12, fontSize: 15 } }, t('stem.fireecology.side_by_side_cultural_burn_vs_suppress', '\u2194\uFE0F Side-by-Side: Cultural Burn vs. Suppression')),
               h('p', { style: { margin: '0 0 12px 0', fontSize: 13, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.click_to_advance_both_forests_10_years', 'Click to advance both forests 10 years \u2014 one managed with cultural burning, one with total fire suppression.')),
-              h('button', { onClick: function() {
+              h('button', { disabled: playbackActive, onClick: function() {
                   // Advance Forest A (cultural burn)
                   var newA = Object.assign({}, sim);
                   newA.fuelLoad = clamp(sim.fuelLoad - 8, 3, 100);
@@ -2224,6 +3013,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   newA.canopyCover = clamp(newA.canopyCover + 2, 0, 95);
                   newA.year = sim.year + 10;
                   newA.totalBurns = sim.totalBurns + 1;
+                  newA.strategy = 'indigenous';
+                  newA.visualSequence = (sim.visualSequence || 0) + 1;
+                  newA.visualEvent = makeFireSimVisualEvent('culturalBurn', sim, newA, newA.year, newA.visualSequence);
+                  newA.visualEvent.subject = 'Forest A in the comparison';
                   newA.decade = (sim.decade || []).concat([{ year: newA.year, fuel: newA.fuelLoad, biodiversity: newA.biodiversity, canopy: newA.canopyCover }]);
 
                   // Advance Forest B (suppression)
@@ -2239,7 +3032,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   newB.canopyCover = clamp(newB.canopyCover + 2, 0, 95);
 
                   // Wildfire check for Forest B
-                  if (newB.fuelLoad > 55 && Math.random() < (newB.fuelLoad - 40) / 80) {
+                  if (newB.fuelLoad > 55 && fireSimRoll(simB, 'comparison-wildfire') < (newB.fuelLoad - 40) / 80) {
                     var sev = newB.fuelLoad / 100;
                     newB.canopyCover = clamp(newB.canopyCover - Math.round(sev * 60), 0, 100);
                     newB.fuelLoad = clamp(newB.fuelLoad - 30, 0, 100);
@@ -2253,8 +3046,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   }
                   newB.decade = (simB.decade || []).concat([{ year: newB.year, fuel: newB.fuelLoad, biodiversity: newB.biodiversity, canopy: newB.canopyCover }]);
 
-                  updMulti({ sim: newA, simB: newB });
+                  var comparePlaybackToken = playbackToken + 1;
+                  var compareVisualFrame = reducedMotion ? 'during' : 'animate';
+                  startVisualPlayback(newA.visualEvent, comparePlaybackToken);
+                  updMulti({
+                    sim: newA,
+                    simB: newB,
+                    simVisualReplay: comparePlaybackToken,
+                    simVisualFrame: compareVisualFrame,
+                    simVisualPaused: false,
+                    simRun: true
+                  });
+                  revealLandscape();
                   playSound('ignite');
+                  startFireAmbient(true, newA.biodiversity, fireSessionId);
                   checkBadge('mosaicMaster');
                   if (newA.year >= 50) checkBadge('comparisonChamp');
                 },
@@ -2613,9 +3418,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 var isSelected = quizAnswer === ci;
                 var isCorrect = ci === currentQ.answer;
                 var answered = quizAnswer >= 0;
-                var bg = !answered ? '#1e293b' :
-                         (isCorrect ? '#052e16' : (isSelected ? '#450a0a' : '#1e293b'));
-                var border = !answered ? '#334155' :
+                var bg = !answered ? 'var(--allo-stem-panel, #1e293b)' :
+                         (isCorrect ? 'rgba(22,163,74,0.14)' : (isSelected ? 'rgba(220,38,38,0.14)' : 'var(--allo-stem-panel, #1e293b)'));
+                var border = !answered ? 'var(--allo-stem-border, #334155)' :
                              (isCorrect ? '#22c55e' : (isSelected ? '#ef4444' : '#334155'));
 
                 return h('button', { 'aria-label': 'Answer ' + String.fromCharCode(65 + ci) + ': ' + choice,
@@ -2740,17 +3545,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
             // Fire-dependent species gallery
             h('div', null,
-              h('div', { style: { fontWeight: 700, color: '#f97316', marginBottom: 10, fontSize: 15 } }, t('stem.fireecology.fire_dependent_species_gallery', '\uD83C\uDF3A Fire-Dependent Species Gallery')),
+              h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 10, fontSize: 15 } }, t('stem.fireecology.fire_dependent_species_gallery', '\uD83C\uDF3A Fire-Dependent Species Gallery')),
               SMOKE_ECOLOGY.fireSeeds.map(function(seed, si) {
                 var expanded = selectedSeed === si;
-                return h('div', { key: si, style: { background: expanded ? '#1e293b' : '#0f172a', borderRadius: 10, padding: expanded ? 16 : 12, marginBottom: 8, border: '1px solid var(--allo-stem-border, #334155)44', cursor: 'pointer', transition: 'all 0.2s' },
+                return h('div', { key: si, style: { background: expanded ? 'var(--allo-stem-panel, #1e293b)' : 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: expanded ? 16 : 12, marginBottom: 8, border: '1px solid var(--allo-stem-border, #334155)44', cursor: 'pointer', transition: 'all 0.2s' },
                   onClick: function() { upd('selectedSeed', expanded ? null : si); if (!expanded) { awardStemXP('fire_seed_' + si, 5, seed.species); checkBadge('seedSprouter'); } }
                 },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
                     h('span', { style: { fontSize: 22 } }, seed.icon),
                     h('div', { style: { flex: 1 } },
                       h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14 } }, seed.species),
-                      h('div', { style: { fontSize: 12, color: '#f97316' } }, seed.type)
+                      h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, seed.type)
                     ),
                     h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, expanded ? '\u25B2' : '\u25BC')
                   ),
@@ -2890,7 +3695,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 return h('button', { key: cs.id,
                   onClick: function() { upd('selectedCase', cs.id); },
                   style: {
-                    background: viewed ? cs.color + '18' : '#0f172a',
+                    background: viewed ? cs.color + '18' : 'var(--allo-stem-canvas, #0f172a)',
                     border: '1px solid ' + cs.color + '44',
                     borderRadius: 12, padding: 16, cursor: 'pointer', textAlign: 'left',
                     transition: 'all 0.2s'
@@ -2899,13 +3704,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                     h('span', { style: { fontSize: 28 } }, cs.icon),
                     h('div', null,
-                      h('div', { style: { fontWeight: 700, color: cs.color, fontSize: 15 } }, cs.name),
+                      h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 15 } }, cs.name),
                       h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, cs.location + ' \u2022 ' + cs.year)
                     )
                   ),
-                  h('div', { style: { fontSize: 13, color: '#ef4444', marginBottom: 4 } }, '\uD83D\uDD25 ' + cs.stats.acresBurned + (cs.stats.deaths ? ' \u2022 ' + cs.stats.deaths + ' deaths' : '')),
+                  h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4 } }, '\uD83D\uDD25 ' + cs.stats.acresBurned + (cs.stats.deaths ? ' \u2022 ' + cs.stats.deaths + ' deaths' : '')),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, cs.description.substring(0, 120) + '...'),
-                  viewed ? h('div', { style: { fontSize: 11, color: '#4ade80', marginTop: 6 } }, t('stem.fireecology.studied_2', '\u2713 Studied')) : null
+                  viewed ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', marginTop: 6 } }, t('stem.fireecology.studied_2', '\u2713 Studied')) : null
                 );
               })
             )
@@ -3032,10 +3837,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         // ══════════════════════════════════════
 
         var _lastForestCanvas = null;
+        function restartForestCanvas() {
+          var canvasEl = _lastForestCanvas;
+          if (!canvasEl || !canvasEl.isConnected || !canvasEl._fireDraw || typeof requestAnimationFrame !== 'function') return;
+          if (canvasEl._fireAnim) cancelAnimationFrame(canvasEl._fireAnim);
+          canvasEl._fireAnim = requestAnimationFrame(canvasEl._fireDraw);
+        }
         function forestCanvasRef(canvasEl) {
           if (!canvasEl) {
-            if (_lastForestCanvas && _lastForestCanvas._fireAnim) {
-              cancelAnimationFrame(_lastForestCanvas._fireAnim);
+            if (_lastForestCanvas) {
+              if (_lastForestCanvas._fireAnim) cancelAnimationFrame(_lastForestCanvas._fireAnim);
+              _lastForestCanvas._fireAnim = 0;
+              _lastForestCanvas._fireDraw = null;
               _lastForestCanvas._fireInit = false;
             }
             _lastForestCanvas = null;
@@ -3048,6 +3861,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           var cW = canvasEl.width = canvasEl.offsetWidth * 2;
           var cH = canvasEl.height = canvasEl.offsetHeight * 2;
           var cx = canvasEl.getContext('2d');
+          if (!cx) { canvasEl._fireInit = false; return; }
           var dpr = 2;
           var tick = 0;
 
@@ -3068,8 +3882,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           }
 
           function draw() {
-            if (!canvasEl.isConnected) { if (canvasEl._fireAnim) cancelAnimationFrame(canvasEl._fireAnim); return; }
-            canvasEl._fireAnim = requestAnimationFrame(draw);
+            canvasEl._fireAnim = 0;
+            if (!canvasEl.isConnected) return;
+            var reduceMotion = canvasEl.getAttribute('data-reduced-motion') === '1';
             tick++;
             cx.clearRect(0, 0, cW, cH);
 
@@ -3077,7 +3892,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             var canopy = getAttr('canopy', 60);
             var bio = getAttr('bio', 85);
             var understory = getAttr('understory', 20);
-            var burning = canvasEl.getAttribute('data-burning') === '1';
+            var burnKind = canvasEl.getAttribute('data-burn-kind') || 'none';
+            var playbackToken = getAttr('playback-token', 0);
+            var playbackSession = canvasEl.getAttribute('data-playback-session') || '';
+            var visualFrame = canvasEl.getAttribute('data-visual-frame') || 'outcome';
+            var playbackPaused = canvasEl.getAttribute('data-visual-paused') === '1';
+            var isBurnEvent = burnKind === 'culturalBurn' || burnKind === 'prescribedBurn' || burnKind === 'wildfire';
+            var burnProgress = visualFrame === 'before' ? 0 :
+              (visualFrame === 'during' ? 0.42 :
+                (visualFrame === 'outcome' ? 1 : fireVisualPlaybackProgress(playbackToken, playbackSession)));
+            var burning = isBurnEvent && burnProgress >= 0.10 && burnProgress < 0.70;
+            var severeBurn = burning && burnKind === 'wildfire';
+            var controlledBurn = burning && !severeBurn;
+            var outcomeRaw = burnKind === 'suppression' ? burnProgress : Math.max(0, Math.min(1, (burnProgress - 0.70) / 0.30));
+            var outcomeMix = outcomeRaw * outcomeRaw * (3 - 2 * outcomeRaw);
+            fuel = getAttr('before-fuel', fuel) + (fuel - getAttr('before-fuel', fuel)) * outcomeMix;
+            canopy = getAttr('before-canopy', canopy) + (canopy - getAttr('before-canopy', canopy)) * outcomeMix;
+            bio = getAttr('before-bio', bio) + (bio - getAttr('before-bio', bio)) * outcomeMix;
+            understory = getAttr('before-understory', understory) + (understory - getAttr('before-understory', understory)) * outcomeMix;
 
             var w = cW / dpr;
             var ht = cH / dpr;
@@ -3086,7 +3918,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
             // Sky gradient (changes with conditions)
             var skyGrad = cx.createLinearGradient(0, 0, 0, ht);
-            if (burning) {
+            if (severeBurn) {
               skyGrad.addColorStop(0, '#7f1d1d');
               skyGrad.addColorStop(0.5, '#dc2626');
               skyGrad.addColorStop(1, '#451a03');
@@ -3124,6 +3956,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               }
             }
 
+            // A darkened trail remains behind the moving treatment front.
+            if (isBurnEvent && burnProgress > 0.08) {
+              var ashCoverage = burnKind === 'culturalBurn' ? 0.62 : (burnKind === 'prescribedBurn' ? 0.82 : 1);
+              var ashWidth = w * Math.min(1, burnProgress / 0.70) * ashCoverage;
+              cx.fillStyle = burnKind === 'wildfire' ? 'rgba(28,25,23,0.82)' : 'rgba(41,37,36,0.62)';
+              cx.fillRect(0, groundY - 3, ashWidth, 8);
+              if (burnKind === 'culturalBurn') {
+                cx.fillStyle = 'rgba(63,125,60,0.85)';
+                for (var refuge = 0; refuge < 3; refuge++) {
+                  cx.fillRect(ashWidth * (0.2 + refuge * 0.27), groundY - 4, 12, 9);
+                }
+              }
+            }
+
+            // Treatment front: a high-contrast moving marker makes the spatial change legible
+            // without relying on flame color alone. Refugia are outlined for the cultural-burn example.
+            if (isBurnEvent && burnProgress > 0.08 && burnProgress < 0.82) {
+              var frontX = severeBurn ? w * 0.5 : w * Math.min(1, Math.max(0, (burnProgress - 0.08) / 0.74));
+              cx.save();
+              cx.strokeStyle = controlledBurn ? 'rgba(255,237,160,0.95)' : 'rgba(255,245,220,0.95)';
+              cx.lineWidth = 2;
+              cx.setLineDash([7, 5]);
+              cx.beginPath();
+              cx.moveTo(frontX, groundY - 18);
+              cx.lineTo(frontX, groundY + 4);
+              cx.stroke();
+              cx.setLineDash([]);
+              if (burnKind === 'culturalBurn') {
+                for (var refugeRing = 0; refugeRing < 3; refugeRing++) {
+                  var refugeX = w * (0.2 + refugeRing * 0.27);
+                  cx.strokeStyle = 'rgba(134,239,172,0.95)';
+                  cx.lineWidth = 1.5;
+                  cx.beginPath();
+                  cx.arc(refugeX, groundY - 6, 10, 0, Math.PI * 2);
+                  cx.stroke();
+                }
+              }
+              cx.restore();
+            }
+
             // Trees (number based on canopy)
             var treeCount = Math.floor(canopy / 7) + 2;
             for (var ti = 0; ti < treeCount; ti++) {
@@ -3138,13 +4010,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               // Canopy
               var crownR = 10 + (canopy / 100) * 18 + Math.sin(ti * 2.3) * 5;
               var crownY = groundY - treeH - crownR * 0.3;
-              cx.fillStyle = burning ? 'rgba(220,38,38,0.7)' : (bio > 60 ? '#166534' : bio > 30 ? '#a16207' : '#78716c');
+              cx.fillStyle = severeBurn ? 'rgba(220,38,38,0.7)' : (bio > 60 ? '#166534' : bio > 30 ? '#a16207' : '#78716c');
               cx.beginPath();
               cx.arc(tx, crownY, crownR, 0, Math.PI * 2);
               cx.fill();
 
               // Darker crown center
-              cx.fillStyle = burning ? 'rgba(234,88,12,0.5)' : 'rgba(0,0,0,0.15)';
+              cx.fillStyle = severeBurn ? 'rgba(234,88,12,0.5)' : 'rgba(0,0,0,0.15)';
               cx.beginPath();
               cx.arc(tx - 2, crownY + 2, crownR * 0.6, 0, Math.PI * 2);
               cx.fill();
@@ -3168,19 +4040,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               // Fire light (glow + flame tongues) blends additively so the blaze reads hotter
               cx.save(); cx.globalCompositeOperation = 'lighter';
               // Base fire glow at ground level
-              var fireGlow = cx.createRadialGradient(w * 0.5, groundY, 0, w * 0.5, groundY, w * 0.6);
+              var surfaceProgress = Math.max(0, Math.min(1, (burnProgress - 0.10) / 0.60));
+              var glowX = controlledBurn ? w * surfaceProgress : w * 0.5;
+              var fireGlow = cx.createRadialGradient(glowX, groundY, 0, glowX, groundY, controlledBurn ? w * 0.24 : w * 0.6);
               fireGlow.addColorStop(0, 'rgba(251,146,60,' + (0.22 + Math.sin(tick * 0.05) * 0.06).toFixed(3) + ')');
               fireGlow.addColorStop(0.5, 'rgba(239,68,68,0.12)');
               fireGlow.addColorStop(1, 'rgba(0,0,0,0)');
               cx.fillStyle = fireGlow;
               cx.fillRect(0, 0, w, ht);
 
-              // Layered flame tongues rising from ground
-              for (var ei = 0; ei < 35; ei++) {
-                var ex = (ei * 31 + tick * 0.7) % w;
-                var flameH = 12 + Math.random() * 25 + Math.sin(tick * 0.15 + ei * 1.7) * 8;
+              // Layered flame tongues: low and patchy for controlled fire,
+              // tall and landscape-wide only for a crown fire.
+              var flameTotal = severeBurn ? 35 : (burnKind === 'prescribedBurn' ? 24 : 18);
+              for (var ei = 0; ei < flameTotal; ei++) {
+                if (burnKind === 'culturalBurn' && ei % 4 === 0) continue;
+                var ex = severeBurn ? (ei * 31 + tick * 0.7) % w : glowX - 28 + (ei % 10) * 6;
+                var flameH = severeBurn
+                  ? 12 + Math.random() * 25 + Math.sin(tick * 0.15 + ei * 1.7) * 8
+                  : 5 + Math.random() * (burnKind === 'prescribedBurn' ? 10 : 7) + Math.sin(tick * 0.15 + ei * 1.7) * 3;
                 var ey = groundY - flameH;
-                var er = 2 + Math.random() * 5;
+                var er = severeBurn ? 2 + Math.random() * 5 : 1.5 + Math.random() * 2.5;
 
                 // Outer flame (yellow-orange)
                 cx.fillStyle = 'rgba(251,191,36,' + (0.25 + Math.random() * 0.3) + ')';
@@ -3201,11 +4080,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               cx.restore();
 
               // Smoke columns — rising, expanding, fading
-              for (var si = 0; si < 20; si++) {
-                var sx = (si * 53 + tick * 0.2) % w;
-                var sy = groundY - 45 - si * 6 - Math.sin(tick * 0.015 + si) * 12;
-                var sr = 6 + si * 3.5;
-                var smokeAlpha = Math.max(0, 0.18 - si * 0.007);
+              var smokeTotal = severeBurn ? 20 : 9;
+              for (var si = 0; si < smokeTotal; si++) {
+                var sx = severeBurn ? (si * 53 + tick * 0.2) % w : glowX - 20 + (si % 6) * 8;
+                var sy = groundY - (severeBurn ? 45 : 24) - si * (severeBurn ? 6 : 4) - Math.sin(tick * 0.015 + si) * 8;
+                var sr = (severeBurn ? 6 : 3) + si * (severeBurn ? 3.5 : 1.5);
+                var smokeAlpha = Math.max(0, (severeBurn ? 0.18 : 0.11) - si * 0.007);
                 cx.fillStyle = 'rgba(80,80,80,' + smokeAlpha + ')';
                 cx.beginPath();
                 cx.arc(sx + Math.sin(tick * 0.01 + si * 0.5) * 4, sy, sr, 0, Math.PI * 2);
@@ -3213,7 +4093,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               }
 
               // Flying sparks — bright orange dots rising fast
-              for (var ski = 0; ski < 12; ski++) {
+              for (var ski = 0; ski < (severeBurn ? 12 : 5); ski++) {
                 var spx = (ski * 73 + tick * 1.5) % w;
                 var spy = groundY - 20 - ((tick * 0.8 + ski * 30) % 80);
                 if (spy > 0) {
@@ -3225,7 +4105,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               // Heat shimmer distortion (wavy horizontal lines above fire)
               cx.strokeStyle = 'rgba(255,200,100,0.04)';
               cx.lineWidth = 1;
-              for (var hi = 0; hi < 6; hi++) {
+              for (var hi = 0; hi < (severeBurn ? 6 : 3); hi++) {
                 var hy = groundY - 50 - hi * 12;
                 cx.beginPath();
                 for (var hx = 0; hx < w; hx += 4) {
@@ -3238,7 +4118,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             }
 
             // Sun or moon (non-burning: golden sun; burning: red sun through smoke)
-            if (!burning) {
+            if (!severeBurn) {
               var sunX = w * 0.82, sunY = 22;
               var sunGrad = cx.createRadialGradient(sunX, sunY, 0, sunX, sunY, 15);
               sunGrad.addColorStop(0, 'rgba(255,251,235,0.95)');
@@ -3291,18 +4171,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             });
 
             // Info overlay
-            cx.fillStyle = 'rgba(0,0,0,0.5)';
-            cx.fillRect(4, 4, 140, 56);
+            var phaseLabel = burnKind === 'suppression'
+              ? (burnProgress >= 1 ? 'Ten-year model outcome' : 'Fuel accumulation in this model')
+              : (!isBurnEvent ? 'Current forest' :
+                (burning ? (severeBurn ? 'Wildfire — crown-fire example' :
+                  (burnKind === 'culturalBurn' ? 'Cultural burn — patchy surface-fire example' : 'Prescribed burn — broader surface-fire example')) :
+                  (burnProgress >= 1 ? 'Ten-year model outcome' : 'Before treatment')));
+            cx.fillStyle = 'rgba(0,0,0,0.62)';
+            cx.fillRect(4, 4, 184, 70);
             cx.font = '10px sans-serif';
-            cx.fillStyle = '#94a3b8';
+            cx.fillStyle = '#e2e8f0';
             cx.fillText('Fuel: ' + Math.round(fuel) + ' t/acre', 10, 16);
             cx.fillText('Canopy: ' + Math.round(canopy) + '%', 10, 28);
             cx.fillText('Biodiversity: ' + Math.round(bio) + '/100', 10, 40);
             cx.fillText('Understory: ' + Math.round(understory) + '%', 10, 52);
+            cx.fillStyle = '#fdba74';
+            cx.fillText('Phase: ' + phaseLabel, 10, 66);
 
             cx.restore();
+
+            var shouldContinue = !reduceMotion && visualFrame === 'animate' && !playbackPaused &&
+              fireVisualPlaybackIsActive(playbackToken, playbackSession) && burnProgress < 1;
+            if (shouldContinue) canvasEl._fireAnim = requestAnimationFrame(draw);
           }
 
+          canvasEl._fireDraw = draw;
           draw();
         }
 
@@ -3411,16 +4304,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   var statusIcon = pastDue ? '🔥' : (nearWindow ? '🎯' : (fuelHot ? '⚠️' : ''));
                   return h('g', {
                     key: z.id,
-                    onClick: function() { openDeepDive(z.id); },
+                    id: 'fireecology-deep-dive-trigger-map-' + z.id,
+                    onClick: function() { openDeepDive(z.id, 'fireecology-deep-dive-trigger-map-' + z.id); },
                     style: { cursor: 'pointer' },
                     role: 'button',
                     'aria-label': 'Open cultural deep-dive for ' + def.name,
+                    'aria-controls': 'fireecology-deep-dive-panel-' + def.id,
+                    'aria-expanded': m.deepDiveZone === z.id,
                     tabIndex: 0,
-                    onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDeepDive(z.id); } }
+                    onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDeepDive(z.id, 'fireecology-deep-dive-trigger-map-' + z.id); } }
                   },
                     h('rect', { x: rect.x, y: rect.y, width: rect.w, height: rect.h, fill: def.color, opacity: intensity, rx: 6 }),
                     h('rect', { x: rect.x, y: rect.y, width: rect.w, height: rect.h, fill: 'none', stroke: strokeColor, strokeWidth: strokeWidth, rx: 6 }),
-                    h('text', { x: rect.labelX, y: rect.y + 16, fontSize: 11, fontWeight: 700, fill: '#fff', style: { pointerEvents: 'none' } }, def.name),
+                    h('text', { x: rect.labelX, y: rect.y + 16, fontSize: 11, fontWeight: 700, fill: '#fff', stroke: 'rgba(2,6,23,0.9)', strokeWidth: 3, paintOrder: 'stroke', style: { pointerEvents: 'none' } }, def.name),
                     h('text', { x: rect.iconX, y: rect.iconY, fontSize: 30, textAnchor: 'middle', style: { pointerEvents: 'none' } }, def.icon),
                     // health bar at bottom of tile
                     h('rect', { x: rect.x + 8, y: rect.y + rect.h - 10, width: (rect.w - 16), height: 4, fill: 'rgba(255,255,255,0.08)', rx: 2 }),
@@ -3586,27 +4482,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             if (m.aiReadLoading) {
               return h('div', {
                 role: 'status', 'aria-live': 'polite',
-                style: { padding: '12px 14px', borderRadius: 12, marginBottom: 12, background: 'rgba(56,189,248,0.10)', borderTop: '1px solid rgba(56,189,248,0.4)', borderRight: '1px solid rgba(56,189,248,0.4)', borderBottom: '1px solid rgba(56,189,248,0.4)', borderLeft: '3px solid #38bdf8', color: '#bae6fd', fontSize: 13 }
+                style: { padding: '12px 14px', borderRadius: 12, marginBottom: 12, background: 'rgba(56,189,248,0.10)', borderTop: '1px solid rgba(56,189,248,0.4)', borderRight: '1px solid rgba(56,189,248,0.4)', borderBottom: '1px solid rgba(56,189,248,0.4)', borderLeft: '3px solid #38bdf8', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13 }
               }, t('stem.fireecology.ai_fire_ecologist_is_reading_your_land', '⏳ AI fire ecologist is reading your land...'));
             }
             if (!m.aiReadResponse) return null;
             return h('div', {
               role: 'region', 'aria-label': t('stem.fireecology.ai_land_reading', 'AI Land Reading'),
-              style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(15,23,42,0.4) 100%)', borderTop: '1px solid rgba(56,189,248,0.5)', borderRight: '1px solid rgba(56,189,248,0.5)', borderBottom: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' }
+              style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, var(--allo-stem-canvas, #0f172a) 100%)', borderTop: '1px solid rgba(56,189,248,0.5)', borderRight: '1px solid rgba(56,189,248,0.5)', borderBottom: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' }
             },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                 h('span', { style: { fontSize: 20 } }, '🔍'),
-                h('strong', { style: { color: '#38bdf8', fontSize: 14 } }, t('stem.fireecology.ai_land_reading_2', 'AI Land Reading')),
+                h('strong', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14 } }, t('stem.fireecology.ai_land_reading_2', 'AI Land Reading')),
                 h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 6 } },
                   h('button', {
                     onClick: readLand,
                     'aria-label': t('stem.fireecology.read_again', 'Read again'),
-                    style: { background: 'transparent', border: '1px solid #38bdf8', color: '#38bdf8', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 }
+                    style: { background: 'var(--allo-stem-button-bg, var(--allo-stem-panel, #1e293b))', border: '1px solid #38bdf8', color: 'var(--allo-stem-button-text, var(--allo-stem-text, #e2e8f0))', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 }
                   }, t('stem.fireecology.re_read', '↻ Re-read')),
                   h('button', {
                     onClick: dismissAIRead,
                     'aria-label': t('stem.fireecology.dismiss_reading', 'Dismiss reading'),
-                    style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 }
+                    style: { background: 'var(--allo-stem-button-bg, var(--allo-stem-panel, #1e293b))', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-button-text, var(--allo-stem-text, #e2e8f0))', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 }
                   }, '✕')
                 )
               ),
@@ -3662,9 +4558,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
           function renderGlossaryPanel() {
             return h('div', {
-              role: 'region', 'aria-labelledby': 'fireecology-glossary-title', tabIndex: 0,
+              role: 'region', 'aria-labelledby': 'fireecology-glossary-title', tabIndex: 0, className: 'fireecology-disclosure',
               style: {
-                background: 'linear-gradient(135deg, rgba(168,85,247,0.10) 0%, rgba(15,23,42,0.85) 60%)',
+                background: 'linear-gradient(135deg, rgba(168,85,247,0.10) 0%, var(--allo-stem-canvas, #0f172a) 60%)',
                 borderTop: '1px solid rgba(168,85,247,0.5)', borderRight: '1px solid rgba(168,85,247,0.5)', borderBottom: '1px solid rgba(168,85,247,0.5)', borderLeft: '4px solid #a855f7',
                 borderRadius: 14, padding: 18, marginBottom: 16
               }
@@ -3679,8 +4575,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   onClick: closeGlossary,
                   'aria-label': t('stem.fireecology.close_glossary', 'Close glossary'),
                   style: {
-                    background: 'rgba(15,23,42,0.6)', border: '1px solid var(--allo-stem-border, #334155)',
-                    color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer',
+                    background: 'var(--allo-stem-button-bg, var(--allo-stem-panel, #1e293b))', border: '1px solid var(--allo-stem-border, #334155)',
+                    color: 'var(--allo-stem-button-text, var(--allo-stem-text, #e2e8f0))', cursor: 'pointer',
                     borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13
                   }
                 }, t('stem.fireecology.close', '✕ Close'))
@@ -3692,7 +4588,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 } },
                 WABANAKI_GLOSSARY.map(function(grp, gi) {
-                  return h('div', { key: gi, style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12, border: '1px solid rgba(168,85,247,0.18)' } },
+                  return h('div', { key: gi, style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 10, padding: 12, border: '1px solid rgba(168,85,247,0.35)' } },
                     h('div', { style: { fontSize: 12, fontWeight: 700, color: '#c4b5fd', letterSpacing: 0.3, marginBottom: 8 } }, grp.group),
                     grp.items.map(function(it, ii) {
                       return h('div', { key: ii, style: { marginBottom: 8, fontSize: 13, lineHeight: 1.5, color: 'var(--allo-stem-text, #e2e8f0)' } },
@@ -3710,14 +4606,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           }
 
           // Open / close per-zone cultural deep-dive
-          function openDeepDive(zoneId) {
-            setMosaic({ deepDiveZone: zoneId });
+          function scheduleMosaicFocus(targetId, reveal) {
+            if (!targetId || typeof document === 'undefined') return;
+            var focusTarget = function() {
+              var target = document.getElementById(targetId);
+              if (!target) return;
+              try { target.focus({ preventScroll: true }); } catch (e) { target.focus(); }
+              if (reveal && typeof target.scrollIntoView === 'function') {
+                var reduceMotion = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+              }
+            };
+            if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') window.requestAnimationFrame(focusTarget);
+            else setTimeout(focusTarget, 0);
+          }
+
+          function openDeepDive(zoneId, returnId) {
+            setMosaic({ deepDiveZone: zoneId, deepDiveReturnId: returnId || null });
+            scheduleMosaicFocus('fireecology-deep-dive-panel-' + zoneId, true);
             if (announceToSR) {
               var def = getZoneDef(zoneId);
               if (def) announceToSR('Cultural deep-dive opened: ' + def.name + '. Press escape or click close to return.');
             }
           }
-          function closeDeepDive() { setMosaic({ deepDiveZone: null }); }
+          function closeDeepDive() {
+            var returnId = m.deepDiveReturnId;
+            setMosaic({ deepDiveZone: null, deepDiveReturnId: null });
+            scheduleMosaicFocus(returnId, false);
+          }
 
           function renderDeepDivePanel(zoneId) {
             var def = getZoneDef(zoneId);
@@ -3727,8 +4643,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               role: 'region',
               'aria-labelledby': 'fireecology-deep-dive-title-' + def.id,
               tabIndex: 0,
+              id: 'fireecology-deep-dive-panel-' + def.id,
+              className: 'fireecology-disclosure',
+              onKeyDown: function(e) {
+                if (e.key === 'Escape') {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  closeDeepDive();
+                }
+              },
               style: {
-                background: 'linear-gradient(135deg, ' + def.color + '20 0%, rgba(15,23,42,0.85) 60%)',
+                background: 'linear-gradient(135deg, ' + def.color + '20 0%, var(--allo-stem-canvas, #0f172a) 60%)',
                 border: '1px solid ' + def.color + '88',
                 borderLeft: '4px solid ' + def.color,
                 borderRadius: 14,
@@ -3748,8 +4673,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   onClick: closeDeepDive,
                   'aria-label': t('stem.fireecology.close_deep_dive', 'Close deep-dive'),
                   style: {
-                    background: 'rgba(15,23,42,0.6)', border: '1px solid var(--allo-stem-border, #334155)',
-                    color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer',
+                    background: 'var(--allo-stem-button-bg, var(--allo-stem-panel, #1e293b))', border: '1px solid var(--allo-stem-border, #334155)',
+                    color: 'var(--allo-stem-button-text, var(--allo-stem-text, #e2e8f0))', cursor: 'pointer',
                     borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13
                   }
                 }, t('stem.fireecology.close_2', '✕ Close'))
@@ -3757,15 +4682,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
               // Sections grid
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 } },
-                h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 10, padding: 12, borderLeft: '3px solid #15803d' } },
                   h('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, t('stem.fireecology.ecological_knowledge', '🌿 Ecological knowledge')),
                   h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.knowledge)
                 ),
-                h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 10, padding: 12, borderLeft: '3px solid #a16207' } },
                   h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, t('stem.fireecology.traditional_use_and_preparation', '🧺 Traditional use and preparation')),
                   h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.preparation)
                 ),
-                h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 10, padding: 12, borderLeft: '3px solid #0369a1' } },
                   h('div', { style: { fontSize: 11, fontWeight: 700, color: '#38bdf8', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, t('stem.fireecology.modern_context', '🌍 Modern context')),
                   h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
                 )
@@ -3774,7 +4699,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               // Teaching pull-quote
               h('div', {
                 style: {
-                  background: 'rgba(168,85,247,0.10)',
+                  background: 'var(--allo-stem-panel, #1e293b)',
                   borderTop: '1px solid rgba(168,85,247,0.4)', borderRight: '1px solid rgba(168,85,247,0.4)', borderBottom: '1px solid rgba(168,85,247,0.4)', borderLeft: '3px solid #a855f7',
                   borderRadius: 10, padding: 14, marginTop: 12
                 }
@@ -4062,21 +4987,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                       h('span', { style: { fontSize: 22 } }, z.icon),
-                      h('strong', { style: { color: z.color } }, z.name)
+                      h('strong', { style: { color: 'var(--allo-stem-text, #e2e8f0)' } }, z.name)
                     ),
-                    z.deepDive ? h('div', { style: { color: z.color, fontSize: 11, fontStyle: 'italic', marginBottom: 4 } }, z.deepDive.bilingual) : null,
+                    z.deepDive ? h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontStyle: 'italic', marginBottom: 4 } }, z.deepDive.bilingual) : null,
                     h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginBottom: 4 } },
                       'Fire return: ' + (z.fireReturn >= 50 ? 'almost never' : 'every ' + z.fireReturn + ' years')
                     ),
                     h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.5, marginBottom: 4 } }, __alloT('stem.fireecology.' + (z.id) + '_desc', z.desc)),
                     h('div', { style: { color: '#fbbf24', fontSize: 11.5, marginBottom: 8 } }, '✨ ' + z.culturalUse),
                     z.deepDive ? h('button', {
-                      onClick: function() { openDeepDive(z.id); },
+                      id: 'fireecology-deep-dive-trigger-setup-' + z.id,
+                      onClick: function() { openDeepDive(z.id, 'fireecology-deep-dive-trigger-setup-' + z.id); },
                       'aria-label': 'Learn more about ' + z.name,
+                      'aria-controls': 'fireecology-deep-dive-panel-' + z.id,
+                      'aria-expanded': m.deepDiveZone === z.id,
                       style: {
                         width: '100%', padding: '6px 10px', borderRadius: 8,
-                        border: '1px solid ' + z.color + '88', background: z.color + '22',
-                        color: z.color, cursor: 'pointer', fontWeight: 700, fontSize: 11.5
+                        border: '1px solid ' + z.color + '88', background: 'var(--allo-stem-button-bg, var(--allo-stem-panel, #1e293b))',
+                        color: 'var(--allo-stem-button-text, var(--allo-stem-text, #e2e8f0))', cursor: 'pointer', fontWeight: 700, fontSize: 11.5
                       }
                     }, t('stem.fireecology.cultural_deep_dive_2', '📚 Cultural deep-dive →')) : null
                   );
@@ -4213,7 +5141,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 }
               },
                 h('div', { style: { fontSize: 40, marginBottom: 6 } }, o.icon),
-                h('h3', { style: { margin: 0, color: o.color, fontSize: 22 } }, o.label),
+                h('h3', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 22 } }, o.label),
                 h('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } }, o.desc)
               ),
               renderTerritoryMap(m.zones, { title: t('stem.fireecology.final_state_of_your_mosaic', 'Final state of your mosaic') }),
@@ -4235,9 +5163,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
               // What would have happened if you did nothing?
               h('div', {
+                className: 'fireecology-disclosure',
                 style: {
                   padding: 12, borderRadius: 12, marginBottom: 14,
-                  background: 'linear-gradient(135deg, rgba(15,23,42,1) 0%, rgba(127,29,29,0.18) 100%)',
+                  background: 'linear-gradient(135deg, var(--allo-stem-panel, #1e293b) 0%, rgba(127,29,29,0.18) 100%)',
                   border: '1px solid rgba(248,113,113,0.4)'
                 }
               },
@@ -4282,7 +5211,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 m.zones.map(function(z) {
                   var def = getZoneDef(z.id);
                   return h('div', { key: z.id, style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + def.color, fontSize: 12 } },
-                    h('div', { style: { fontWeight: 700, color: def.color, marginBottom: 4 } }, def.icon + ' ' + def.name),
+                    h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4 } }, def.icon + ' ' + def.name),
                     h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Health: ' + Math.round(z.health) + ' • Yield: ' + Math.round(z.yield) + ' • Last burn: ' + z.lastBurn + 'y')
                   );
                 })
@@ -4541,16 +5470,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                     h('span', { style: { fontSize: 22 } }, def.icon),
                     h('div', { style: { flex: 1 } },
-                      h('div', { style: { fontWeight: 700, color: def.color, fontSize: 14 } }, def.name),
+                      h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14 } }, def.name),
                       h('div', { style: { fontSize: 11, color: statusColor, fontWeight: 700 } }, statusText + ' • last burn ' + z.lastBurn + 'y')
                     ),
                     def.deepDive ? h('button', {
-                      onClick: function() { openDeepDive(z.id); },
+                      id: 'fireecology-deep-dive-trigger-year-' + z.id,
+                      onClick: function() { openDeepDive(z.id, 'fireecology-deep-dive-trigger-year-' + z.id); },
                       'aria-label': 'Cultural deep-dive for ' + def.name,
+                      'aria-controls': 'fireecology-deep-dive-panel-' + def.id,
+                      'aria-expanded': m.deepDiveZone === z.id,
                       title: t('stem.fireecology.cultural_deep_dive_3', 'Cultural deep-dive'),
                       style: {
-                        background: 'transparent', border: '1px solid ' + def.color + '66',
-                        color: def.color, cursor: 'pointer', borderRadius: 6,
+                        background: 'var(--allo-stem-button-bg, var(--allo-stem-panel, #1e293b))', border: '1px solid ' + def.color + '66',
+                        color: 'var(--allo-stem-button-text, var(--allo-stem-text, #e2e8f0))', cursor: 'pointer', borderRadius: 6,
                         padding: '2px 8px', fontSize: 11, fontWeight: 700
                       }
                     }, '📚') : null
@@ -4579,8 +5511,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                         style: {
                           padding: '4px 8px', fontSize: 11, fontWeight: 700,
                           borderRadius: 6, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer',
-                          background: disabled ? '#1e293b' : (t.season === 'cold' ? '#1d4ed8' : (t.season === 'warm' ? '#a16207' : '#15803d')),
-                          color: disabled ? '#475569' : '#fff', opacity: disabled ? 0.5 : 1
+                          background: disabled ? 'var(--allo-stem-button-bg, var(--allo-stem-panel, #1e293b))' : (t.season === 'cold' ? '#1d4ed8' : (t.season === 'warm' ? '#a16207' : '#15803d')),
+                          color: disabled ? 'var(--allo-stem-button-text, var(--allo-stem-text, #e2e8f0))' : '#fff', opacity: disabled ? 0.72 : 1
                         }
                       }, t.icon + ' ' + t.name + ' (' + t.hours + 'h)' + seasonTag);
                     })
@@ -4616,8 +5548,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             ),
 
             // Interactive beaver-dam diagram
-            h('div', { style: { background: '#0c1929', borderRadius: 12, padding: 16, marginBottom: 16, textAlign: 'center', border: '1px solid #1e3a5f' } },
-              h('div', { style: { fontWeight: 700, color: '#38bdf8', marginBottom: 12, fontSize: 15 } }, t('stem.fireecology.how_beaver_dams_create_fire_refugia', '\uD83C\uDF0A How Beaver Dams Create Fire Refugia')),
+            h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16, textAlign: 'center', border: '1px solid var(--allo-stem-border, #1e3a5f)' } },
+              h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 12, fontSize: 15 } }, t('stem.fireecology.how_beaver_dams_create_fire_refugia', '\uD83C\uDF0A How Beaver Dams Create Fire Refugia')),
               h('div', { style: { display: 'flex', justifyContent: 'center', gap: 4, marginBottom: 12 } },
                 // Visual cross-section
                 [
@@ -4632,7 +5564,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 ].map(function(zone, zi) {
                   return h('div', { key: zi, style: { width: zone.w, padding: '8px 2px', background: zone.bg, borderRadius: zi === 0 ? '8px 0 0 8px' : zi === 7 ? '0 8px 8px 0' : 0, textAlign: 'center' } },
                     h('div', { style: { fontSize: 18, marginBottom: 2 } }, zone.emoji),
-                    h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', whiteSpace: 'pre-line', lineHeight: 1.2 } }, zone.label)
+                    h('div', { style: { fontSize: 11, color: '#e2e8f0', whiteSpace: 'pre-line', lineHeight: 1.2 } }, zone.label)
                   );
                 })
               ),
@@ -5179,15 +6111,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             ) : null,
 
             // Current event
-            gameEvent ? h('div', { style: { background: gameEvent.urgent ? '#451a03' : '#0f172a', borderRadius: 10, padding: 12, marginBottom: 12, border: '1px solid ' + (gameEvent.urgent ? '#f97316' : '#334155') } },
+            gameEvent ? h('div', { style: { background: gameEvent.urgent ? 'rgba(249,115,22,0.12)' : 'var(--allo-stem-panel, #1e293b)', borderRadius: 10, padding: 12, marginBottom: 12, border: '1px solid ' + (gameEvent.urgent ? '#f97316' : 'var(--allo-stem-border, #334155)') } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                 h('span', { style: { fontSize: 20 } }, gameEvent.icon),
                 h('div', null,
-                  h('div', { style: { fontWeight: 700, color: gameEvent.urgent ? '#fb923c' : '#e2e8f0', fontSize: 13 } }, gameEvent.name),
+                  h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13 } }, gameEvent.name),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, gameEvent.desc)
                 )
               ),
-              gameEvent.teachingMoment ? h('div', { style: { marginTop: 6, padding: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6, fontSize: 12, color: '#fbbf24' } }, '\uD83D\uDCA1 ' + gameEvent.teachingMoment) : null
+              gameEvent.teachingMoment ? h('div', { style: { marginTop: 6, padding: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)' } }, '\uD83D\uDCA1 ' + gameEvent.teachingMoment) : null
             ) : null,
 
             // Species tracker

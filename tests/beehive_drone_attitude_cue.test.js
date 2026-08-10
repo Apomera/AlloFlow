@@ -1,20 +1,26 @@
 import fs from 'node:fs';
-import { beforeEach, describe, expect, it } from 'vitest';
-import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { loadTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { mountStartedDrone } from './helpers/beehive_drone_runtime_harness.js';
 
 const source = fs.readFileSync('stem_lab/stem_tool_beehive.js', 'utf8');
 
+let config;
+let runtime;
+
 beforeEach(() => {
   resetStemLab();
-  loadTool('stem_lab/stem_tool_beehive.js', 'beehive');
+  config = loadTool('stem_lab/stem_tool_beehive.js', 'beehive');
+});
+
+afterEach(() => {
+  runtime?.cleanup();
 });
 
 describe('Beehive Drone flight attitude cue', () => {
-  it('renders pitch and bank values alongside the visual horizon model', () => {
-    const html = renderTool('beehive', { beehive: {
-      viewMode: 'drone',
-      drone: { active: true, paused: true, difficulty: 'easy' }
-    } });
+  it('renders pitch and bank values alongside the visual horizon model', async () => {
+    runtime = await mountStartedDrone(config, { paused: true });
+    const html = runtime.host.innerHTML;
 
     expect(html).toContain('data-flight-attitude-cue="true"');
     expect(html).toContain('Flight attitude');

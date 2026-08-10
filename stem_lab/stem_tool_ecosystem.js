@@ -785,10 +785,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
       // ── Default state ──
       var prey0 = d.prey0 !== undefined ? d.prey0 : 80;
-      var pred0 = d.pred0 !== undefined ? d.pred0 : 30;
+      var pred0 = d.pred0 !== undefined ? d.pred0 : 12;
       var preyBirth = d.preyBirth !== undefined ? d.preyBirth : 0.1;
-      var preyDeath = d.preyDeath !== undefined ? d.preyDeath : 0.01;
-      var predBirth = d.predBirth !== undefined ? d.predBirth : 0.01;
+      var preyDeath = d.preyDeath !== undefined ? d.preyDeath : 0.005;
+      var predBirth = d.predBirth !== undefined ? d.predBirth : 0.005;
       var predDeath = d.predDeath !== undefined ? d.predDeath : 0.1;
       var data = d.data || [];
       var steps = d.steps || 0;
@@ -832,6 +832,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       var eventsTriggered = d.eventsTriggered || {};
       var eventHistory = d.eventHistory || [];
       var lastObservation = d.lastObservation || 'Ecosystem running -- observe the predator-prey cycle.';
+      var livePhaseLabel = d.livePhaseLabel || 'Waiting for live phase data.';
+      var livePhaseExplain = d.livePhaseExplain || 'Run the live canvas for a few seconds to see which population phase is emerging.';
+      var runPrediction = d.runPrediction || '';
+      var experimentReflection = d.experimentReflection || '';
+      var predictionFeedback = d.predictionFeedback || '';
+      var baselineRun = d.baselineRun || null;
+      var experimentLog = Array.isArray(d.experimentLog) ? d.experimentLog : [];
+      var runName = d.runName || '';
+      var poeStage = d.poeStage || 'predict';
+      var branchRuns = Array.isArray(d.branchRuns) ? d.branchRuns : [];
+      var compareRunId = d.compareRunId || '';
+      var replayStep = d.replayStep !== undefined ? d.replayStep : (data.length > 0 ? data.length - 1 : 0);
+      var displayProfile = d.displayProfile || 'advanced';
+      var analysisView = d.analysisView || 'population';
+      var uncertaintyTrials = d.uncertaintyTrials !== undefined ? d.uncertaintyTrials : 30;
+      var uncertaintyVariation = d.uncertaintyVariation !== undefined ? d.uncertaintyVariation : 0.25;
+      var uncertaintySeed = d.uncertaintySeed !== undefined ? d.uncertaintySeed : 42;
+      var uncertaintyResult = d.uncertaintyResult || null;
+      var interventionType = d.interventionType || 'drought';
+      var interventionStep = d.interventionStep !== undefined ? d.interventionStep : 50;
+      var interventionIntensity = d.interventionIntensity !== undefined ? d.interventionIntensity : 0.3;
+      var interventionResult = d.interventionResult || null;
+      var cerClaim = d.cerClaim || '';
+      var cerReasoning = d.cerReasoning || '';
+      var cerEvidence = Array.isArray(d.cerEvidence) ? d.cerEvidence : [];
+      var trajectory3dOpen = d.trajectory3dOpen || false;
+      var trajectoryAzimuth = d.trajectoryAzimuth !== undefined ? d.trajectoryAzimuth : -35;
+      var trajectoryElevation = d.trajectoryElevation !== undefined ? d.trajectoryElevation : 24;
+      var teacherMode = d.teacherMode || false;
+      var teacherPrompt = d.teacherPrompt || '';
+      var DISPLAY_PROFILES = [
+        { id: 'beginner', label: 'Beginner', hint: 'Focus on counts, cause and effect, and one comparison graph.' },
+        { id: 'advanced', label: 'Advanced', hint: 'Show equations, parameter deltas, and all analytical views.' },
+        { id: 'projection', label: 'Projection', hint: 'Increase emphasis for whole-class viewing and discussion.' }
+      ];
+      var INTERVENTION_TYPES = [
+        { id: 'drought', label: 'Drought', description: 'Persistently lowers carrying capacity after the selected step.' },
+        { id: 'restoration', label: 'Habitat restoration', description: 'Persistently raises carrying capacity after the selected step.' },
+        { id: 'prey_disease', label: 'Prey disease pulse', description: 'Removes the selected fraction of prey once at the selected step.' },
+        { id: 'predator_removal', label: 'Predator removal pulse', description: 'Removes the selected fraction of predators once at the selected step.' }
+      ];
+      var RUN_PREDICTIONS = [
+        { id: 'crash', label: 'Prey crash' },
+        { id: 'cycle', label: 'Persistent cycle' },
+        { id: 'stable', label: 'Mostly stable' }
+      ];
+      var POE_STAGES = [
+        { id: 'predict', label: 'Predict' },
+        { id: 'observe', label: 'Observe' },
+        { id: 'explain', label: 'Explain' }
+      ];
 
       // ── NEW state: speed demon badge tracking ──
       var speedAt3xStart = d.speedAt3xStart || 0;
@@ -987,20 +1038,483 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
 
       // ── Lotka-Volterra simulation (with carrying capacity logistic term) ──
+      var classifyRun = function(runData) {
+        if (!runData || runData.length < 2) return { key: 'stable', label: 'Not enough data yet', detail: 'Run the model before classifying the outcome.', minPrey: 0, maxPrey: 0, minPred: 0, maxPred: 0 };
+        var minPrey = Infinity, maxPrey = 0, minPred = Infinity, maxPred = 0;
+        for (var cri = 0; cri < runData.length; cri++) {
+          minPrey = Math.min(minPrey, Number(runData[cri].prey) || 0);
+          maxPrey = Math.max(maxPrey, Number(runData[cri].prey) || 0);
+          minPred = Math.min(minPred, Number(runData[cri].pred) || 0);
+          maxPred = Math.max(maxPred, Number(runData[cri].pred) || 0);
+        }
+        var spread = maxPrey - minPrey;
+        var key = minPrey <= 0 ? 'crash' : (spread >= Math.max(12, prey0 * 0.3) ? 'cycle' : 'stable');
+        var labels = { crash: 'Prey crash', cycle: 'Persistent cycle', stable: 'Mostly stable' };
+        var details = {
+          crash: 'Prey reached zero, so predators lose their food source and decline afterward.',
+          cycle: 'Both populations persisted while prey moved through a visible boom-and-bust range.',
+          stable: 'Prey stayed in a narrower band; compare the coefficients and carrying capacity that produced it.'
+        };
+        return { key: key, label: labels[key], detail: details[key], minPrey: Math.round(minPrey), maxPrey: Math.round(maxPrey), minPred: Math.round(minPred), maxPred: Math.round(maxPred) };
+      };
+      var liveTelemetryFor = function(history) {
+        if (!Array.isArray(history) || history.length === 0) {
+          return {
+            prey: 0, pred: 0, veg: 50, ratio: '\u2014',
+            preyTrend: 'waiting', predTrend: 'waiting',
+            narrative: 'Waiting for live samples. Start or resume the canvas to collect population data.'
+          };
+        }
+        var last = history[history.length - 1] || {};
+        var prior = history[Math.max(0, history.length - 3)] || last;
+        var prey = Number(last.prey) || 0;
+        var pred = Number(last.pred) || 0;
+        var veg = last.vegHealth !== undefined ? Math.round((Number(last.vegHealth) || 0) * 100) : 50;
+        var preyDelta = prey - (Number(prior.prey) || 0);
+        var predDelta = pred - (Number(prior.pred) || 0);
+        var trendFor = function(delta) {
+          if (history.length < 2) return 'waiting';
+          if (delta >= 2) return 'rising';
+          if (delta <= -2) return 'falling';
+          return 'steady';
+        };
+        var preyTrend = trendFor(preyDelta);
+        var predTrend = trendFor(predDelta);
+        var ratio = pred > 0 ? (prey / pred).toFixed(1) + ':1' : 'no predators';
+        var narrative = 'Prey are ' + preyTrend + ' and predators are ' + predTrend + '.';
+        if (prey === 0) narrative = 'Prey are at zero; predators will lose their food source and may starve.';
+        else if (pred === 0) narrative = 'No predators are present; prey can grow until carrying capacity and food limits slow them.';
+        else if (preyTrend === 'falling' && predTrend === 'rising') narrative = 'Predators are rising while prey fall: predation pressure is increasing.';
+        else if (preyTrend === 'rising' && predTrend === 'falling') narrative = 'Prey are recovering while predators fall: reduced predation pressure may allow rebound.';
+        return {
+          prey: prey, pred: pred, veg: veg, ratio: ratio,
+          preyTrend: preyTrend, predTrend: predTrend,
+          narrative: narrative
+        };
+      };
+      var liveTelemetry = liveTelemetryFor(livePopHistory);
+      var phaseVisualFor = function(label) {
+        var text = String(label || '').toLowerCase();
+        if (text.indexOf('extinct') >= 0 || text.indexOf('crash') >= 0) {
+          return { accent: '#b91c1c', border: '#fca5a5', soft: 'rgba(254,226,226,0.86)', icon: '\u26A0\uFE0F', tag: 'High risk' };
+        }
+        if (text.indexOf('starvation') >= 0 || text.indexOf('dangerously') >= 0) {
+          return { accent: '#b45309', border: '#fcd34d', soft: 'rgba(254,243,199,0.9)', icon: '\u26A0\uFE0F', tag: 'Food pressure' };
+        }
+        if (text.indexOf('recovery') >= 0 || text.indexOf('recover') >= 0) {
+          return { accent: '#047857', border: '#6ee7b7', soft: 'rgba(209,250,229,0.88)', icon: '\u2191', tag: 'Recovery' };
+        }
+        if (text.indexOf('waiting') >= 0 || !text) {
+          return { accent: '#4338ca', border: '#a5b4fc', soft: 'rgba(238,242,255,0.9)', icon: '\u25CC', tag: 'Collecting data' };
+        }
+        return { accent: '#0f766e', border: '#5eead4', soft: 'rgba(204,251,241,0.88)', icon: '\u21C4', tag: 'Cycle watch' };
+      };
+      var livePhaseVisual = phaseVisualFor(livePhaseLabel);
+      var livePreyPercent = Math.min(100, Math.max(0, Math.round((liveTelemetry.prey / Math.max(1, carryingCapacity)) * 100)));
+      var livePredPercent = Math.min(100, Math.max(0, Math.round((liveTelemetry.pred / Math.max(1, prey0)) * 100)));
+      var predictionFeedbackFor = function(summary) {
+        if (!runPrediction) return '';
+        var matched = summary.key === runPrediction;
+        return (matched ? 'Prediction matched. ' : 'Prediction differed. ') + 'Observed outcome: ' + summary.label + '. ' + summary.detail;
+      };
+      var setBaselineRun = function() {
+        if (!data || data.length < 2) { if (addToast) addToast('Run the graph before setting a baseline.', 'warn'); return; }
+        upd('baselineRun', { savedAt: Date.now(), data: data.slice(), summary: classifyRun(data), prey0: prey0, pred0: pred0, carryingCapacity: carryingCapacity });
+        if (addToast) addToast('Baseline run saved. Change one variable and run again to compare.', 'success');
+      };
+      var clearBaselineRun = function() { upd('baselineRun', null); };
+      var saveExperimentEvidence = function() {
+        if (!data || data.length < 2) { if (addToast) addToast('Run the graph before saving evidence.', 'warn'); return; }
+        var entry = { id: Date.now(), savedAt: Date.now(), prediction: runPrediction, reflection: String(experimentReflection || '').trim().slice(0, 3200), summary: classifyRun(data), prey0: prey0, pred0: pred0, carryingCapacity: carryingCapacity };
+        var nextLog = experimentLog.concat([entry]).slice(-8);
+        updMulti({ experimentLog: nextLog, experimentReflection: '' });
+        if (addToast) addToast('Experiment evidence saved.', 'success');
+      };
+      var getModelParameters = function() {
+        return {
+          prey0: prey0, pred0: pred0,
+          preyBirth: preyBirth, preyDeath: preyDeath,
+          predBirth: predBirth, predDeath: predDeath,
+          carryingCapacity: carryingCapacity
+        };
+      };
+      var replayKeyFor = function(params) {
+        return ['eco-logistic-v2',
+          'prey0=' + params.prey0, 'pred0=' + params.pred0,
+          'r=' + params.preyBirth, 'a=' + params.preyDeath,
+          'b=' + params.predBirth, 'd=' + params.predDeath,
+          'K=' + params.carryingCapacity, 'dt=0.1', 'steps=100'
+        ].join('|');
+      };
+      var saveBranchRun = function() {
+        if (!data || data.length < 2) { if (addToast) addToast('Run the graph before saving a named branch.', 'warn'); return; }
+        var params = getModelParameters();
+        var label = String(runName || '').trim() || 'Run ' + (branchRuns.length + 1);
+        var record = {
+          id: Date.now(),
+          label: label.slice(0, 80),
+          savedAt: Date.now(),
+          parameters: params,
+          replayKey: replayKeyFor(params),
+          data: data.slice(),
+          summary: classifyRun(data),
+          prediction: runPrediction,
+          reflection: String(experimentReflection || '').trim().slice(0, 3200)
+        };
+        updMulti({ branchRuns: branchRuns.concat([record]).slice(-6), runName: '' });
+        if (addToast) addToast('Named branch saved. Its replay key preserves the model settings.', 'success');
+      };
+      var loadBranchRun = function(record) {
+        if (!record || !record.parameters) return;
+        var loadedData = Array.isArray(record.data) ? record.data.slice() : [];
+        updMulti(Object.assign({}, record.parameters, {
+          data: loadedData,
+          steps: loadedData.length,
+          runName: record.label || '',
+          runPrediction: record.prediction || '',
+          experimentReflection: record.reflection || '',
+          predictionFeedback: 'Loaded ' + (record.label || 'saved run') + '. Replay key: ' + (record.replayKey || replayKeyFor(record.parameters)),
+          poeStage: loadedData.length > 1 ? 'observe' : 'predict',
+          replayStep: Math.max(0, loadedData.length - 1),
+          uncertaintyResult: null,
+          interventionResult: null,
+          analysisView: 'population'
+        }));
+        if (announceToSR) announceToSR('Loaded saved run ' + (record.label || 'saved run') + '.');
+      };
+      var comparedRun = null;
+      if (branchRuns.length > 0) {
+        var targetCompareId = compareRunId || String(branchRuns[branchRuns.length - 1].id);
+        for (var bri = 0; bri < branchRuns.length; bri++) {
+          if (String(branchRuns[bri].id) === String(targetCompareId)) {
+            comparedRun = branchRuns[bri];
+            break;
+          }
+        }
+        if (!comparedRun) comparedRun = branchRuns[branchRuns.length - 1];
+      }
+      var replayMax = Math.max(0, data.length - 1);
+      var replayCursor = Math.min(replayMax, Math.max(0, parseInt(replayStep, 10) || 0));
+      var replayPointFor = function(runData) {
+        if (!Array.isArray(runData) || runData.length === 0) return { index: 0, point: { prey: 0, pred: 0, step: 0 } };
+        var ratio = replayMax > 0 ? replayCursor / replayMax : 0;
+        var index = Math.min(runData.length - 1, Math.max(0, Math.round(ratio * (runData.length - 1))));
+        return { index: index, point: runData[index] || { prey: 0, pred: 0, step: index } };
+      };
+      var analyzeKeyMoments = function(runData) {
+        if (!Array.isArray(runData) || runData.length < 2) return { moments: [], lag: 0, lagLabel: 'Run the model to identify key moments.' };
+        var preyPeakIndex = 0, predatorPeakIndex = 0, preyLowIndex = 0;
+        for (var kmi = 1; kmi < runData.length; kmi++) {
+          if ((Number(runData[kmi].prey) || 0) > (Number(runData[preyPeakIndex].prey) || 0)) preyPeakIndex = kmi;
+          if ((Number(runData[kmi].pred) || 0) > (Number(runData[predatorPeakIndex].pred) || 0)) predatorPeakIndex = kmi;
+          if ((Number(runData[kmi].prey) || 0) < (Number(runData[preyLowIndex].prey) || 0)) preyLowIndex = kmi;
+        }
+        var preyPeakStep = Number(runData[preyPeakIndex].step);
+        var predatorPeakStep = Number(runData[predatorPeakIndex].step);
+        if (!isFinite(preyPeakStep)) preyPeakStep = preyPeakIndex;
+        if (!isFinite(predatorPeakStep)) predatorPeakStep = predatorPeakIndex;
+        var lag = predatorPeakStep - preyPeakStep;
+        var lagUnit = Math.abs(lag) === 1 ? ' modeled step' : ' modeled steps';
+        var lagLabel = lag > 0
+          ? 'Predator abundance peaks ' + lag + lagUnit + ' after the prey peak.'
+          : lag < 0
+            ? 'Predator abundance peaks ' + Math.abs(lag) + lagUnit + ' before the prey peak in this run.'
+            : 'Prey and predator abundance peak at the same modeled step in this run.';
+        var grouped = {};
+        var addMoment = function(index, label, explanation) {
+          index = Math.max(0, Math.min(runData.length - 1, index));
+          var key = String(index);
+          if (!grouped[key]) grouped[key] = { id: 'moment-' + key, index: index, labels: [], explanations: [] };
+          if (grouped[key].labels.indexOf(label) < 0) grouped[key].labels.push(label);
+          if (grouped[key].explanations.indexOf(explanation) < 0) grouped[key].explanations.push(explanation);
+        };
+        addMoment(0, 'Start', 'This is the initial condition before the modeled populations respond.');
+        addMoment(preyPeakIndex, 'Prey peak', 'Prey reach their highest modeled abundance here.');
+        addMoment(predatorPeakIndex, 'Predator peak', 'Predators reach their highest modeled abundance here. ' + lagLabel);
+        addMoment(preyLowIndex, 'Prey low', 'Prey reach their lowest modeled abundance here. Compare predator pressure before and after this point.');
+        addMoment(runData.length - 1, 'End', 'This is the final modeled state, not a claim that the ecosystem has reached equilibrium.');
+        var moments = Object.keys(grouped).map(function(key) {
+          var item = grouped[key];
+          var point = runData[item.index] || { step: item.index, prey: 0, pred: 0 };
+          return {
+            id: item.id,
+            index: item.index,
+            step: point.step !== undefined ? point.step : item.index,
+            prey: Math.round(Number(point.prey) || 0),
+            pred: Math.round(Number(point.pred) || 0),
+            label: item.labels.join(' + '),
+            explanation: item.explanations.join(' ')
+          };
+        }).sort(function(a, b) { return a.index - b.index; });
+        return { moments: moments, lag: lag, lagLabel: lagLabel, preyPeakIndex: preyPeakIndex, predatorPeakIndex: predatorPeakIndex, preyLowIndex: preyLowIndex };
+      };
+      var keyMomentAnalysis = analyzeKeyMoments(data);
+      var comparisonParameterRows = function(record) {
+        if (!record || !record.parameters) return [];
+        var current = getModelParameters();
+        var saved = record.parameters;
+        return [
+          { key: 'prey0', label: 'Initial prey', current: current.prey0, saved: saved.prey0 },
+          { key: 'pred0', label: 'Initial predators', current: current.pred0, saved: saved.pred0 },
+          { key: 'preyBirth', label: 'Prey growth (r)', current: current.preyBirth, saved: saved.preyBirth },
+          { key: 'preyDeath', label: 'Predation (a)', current: current.preyDeath, saved: saved.preyDeath },
+          { key: 'predBirth', label: 'Conversion (b)', current: current.predBirth, saved: saved.predBirth },
+          { key: 'predDeath', label: 'Predator death (d)', current: current.predDeath, saved: saved.predDeath },
+          { key: 'carryingCapacity', label: 'Carrying capacity (K)', current: current.carryingCapacity, saved: saved.carryingCapacity }
+        ];
+      };
+      var formatComparisonValue = function(key, value) {
+        var number = Number(value);
+        if (!isFinite(number)) return '\u2014';
+        return key === 'preyBirth' || key === 'preyDeath' || key === 'predBirth' || key === 'predDeath'
+          ? number.toFixed(3)
+          : Math.round(number).toString();
+      };
+      var activeDisplayProfile = DISPLAY_PROFILES[1];
+      for (var dpi = 0; dpi < DISPLAY_PROFILES.length; dpi++) {
+        if (DISPLAY_PROFILES[dpi].id === displayProfile) activeDisplayProfile = DISPLAY_PROFILES[dpi];
+      }
+      var analysisViews = [
+        { id: 'population', label: 'Population', hint: 'Read population values over modeled time.' },
+        { id: 'moments', label: 'Key moments', hint: 'Jump to peaks, lows, and response lag.' },
+        { id: 'cer', label: 'CER', hint: 'Build a claim from synchronized evidence, then explain why it supports the claim.' },
+        { id: 'intervention', label: 'Interventions', hint: 'Schedule one event and compare it with a fresh baseline.' }
+      ];
+      if (comparedRun) analysisViews.push({ id: 'compare', label: 'Compare', hint: 'Inspect the current run beside a saved branch.' });
+      if (displayProfile !== 'beginner') {
+        analysisViews.push({ id: 'uncertainty', label: 'Uncertainty', hint: 'Repeat the model with seeded environmental variation.' });
+        analysisViews.push({ id: 'phase', label: 'Phase portrait', hint: 'Trace predator abundance against prey abundance.' });
+        analysisViews.push({ id: 'trajectory', label: '3D', hint: 'Combine prey, predators, and time in one trajectory.' });
+      }
+      var effectiveAnalysisView = analysisViews[0].id;
+      for (var avi = 0; avi < analysisViews.length; avi++) {
+        if (analysisViews[avi].id === analysisView) effectiveAnalysisView = analysisView;
+      }
+      var activeAnalysisView = analysisViews[0];
+      for (var aai = 0; aai < analysisViews.length; aai++) {
+        if (analysisViews[aai].id === effectiveAnalysisView) activeAnalysisView = analysisViews[aai];
+      }
+      var onAnalysisTabKeyDown = function(e, index) {
+        var nextIndex = -1;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % analysisViews.length;
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + analysisViews.length - 1) % analysisViews.length;
+        else if (e.key === 'Home') nextIndex = 0;
+        else if (e.key === 'End') nextIndex = analysisViews.length - 1;
+        if (nextIndex < 0) return;
+        e.preventDefault();
+        var nextView = analysisViews[nextIndex];
+        upd('analysisView', nextView.id);
+        var tabs = e.currentTarget && e.currentTarget.parentNode ? e.currentTarget.parentNode.querySelectorAll('[role="tab"]') : [];
+        if (tabs[nextIndex]) tabs[nextIndex].focus();
+      };
+      var cerClaimReady = !!String(cerClaim || '').trim();
+      var cerEvidenceReady = cerEvidence.length > 0;
+      var cerReasoningReady = !!String(cerReasoning || '').trim();
+      var cerComplete = cerClaimReady && cerEvidenceReady && cerReasoningReady;
+      var addCEREvidence = function(kind) {
+        if (!data || data.length < 2) {
+          if (addToast) addToast('Run the population model before collecting evidence.', 'warn');
+          return;
+        }
+        var source = '';
+        var evidenceText = '';
+        if (kind === 'current') {
+          var currentSample = replayPointFor(data);
+          source = 'Current run, step ' + currentSample.point.step;
+          evidenceText = 'At step ' + currentSample.point.step + ', the current run had ' + Math.round(Number(currentSample.point.prey) || 0) + ' prey and ' + Math.round(Number(currentSample.point.pred) || 0) + ' predators; its overall outcome was ' + classifyRun(data).label + '.';
+        } else if (kind === 'comparison' && comparedRun && Array.isArray(comparedRun.data) && comparedRun.data.length > 1) {
+          var currentReplay = replayPointFor(data);
+          var comparedReplay = replayPointFor(comparedRun.data);
+          var preyDelta = Math.round((Number(currentReplay.point.prey) || 0) - (Number(comparedReplay.point.prey) || 0));
+          var predatorDelta = Math.round((Number(currentReplay.point.pred) || 0) - (Number(comparedReplay.point.pred) || 0));
+          source = 'Saved-run comparison, shared step ' + currentReplay.point.step;
+          evidenceText = 'Compared with ' + comparedRun.label + ' at the shared replay moment, the current run differed by ' + (preyDelta >= 0 ? '+' : '') + preyDelta + ' prey and ' + (predatorDelta >= 0 ? '+' : '') + predatorDelta + ' predators. Outcomes were ' + classifyRun(data).label + ' versus ' + (comparedRun.summary || classifyRun(comparedRun.data)).label + '.';
+        } else if (kind === 'uncertainty' && uncertaintyResult && Array.isArray(uncertaintyResult.series) && uncertaintyResult.series.length > 0) {
+          var uncertaintyIndex = Math.min(uncertaintyResult.series.length - 1, Math.max(0, Math.round((replayMax > 0 ? replayCursor / replayMax : 0) * (uncertaintyResult.series.length - 1))));
+          var uncertaintyPoint = uncertaintyResult.series[uncertaintyIndex];
+          source = 'Repeated trials, step ' + uncertaintyPoint.step + ', seed ' + uncertaintyResult.seed;
+          evidenceText = 'Across ' + uncertaintyResult.trials + ' repeated trials at step ' + uncertaintyPoint.step + ', prey had a median of ' + Math.round(uncertaintyPoint.preyMedian) + ' with a middle 80% range of ' + Math.round(uncertaintyPoint.preyP10) + '\u2013' + Math.round(uncertaintyPoint.preyP90) + '; predators had a median of ' + Math.round(uncertaintyPoint.predMedian) + ' with a range of ' + Math.round(uncertaintyPoint.predP10) + '\u2013' + Math.round(uncertaintyPoint.predP90) + '.';
+        } else if (kind === 'intervention' && interventionResult && Array.isArray(interventionResult.baselineData) && Array.isArray(interventionResult.scenarioData) && interventionResult.scenarioData.length > 0) {
+          var resultLength = interventionResult.scenarioData.length;
+          var scenarioIndex = Math.min(resultLength - 1, Math.max(0, Math.round((replayMax > 0 ? replayCursor / replayMax : 0) * (resultLength - 1))));
+          var baselinePoint = interventionResult.baselineData[scenarioIndex];
+          var scenarioPoint = interventionResult.scenarioData[scenarioIndex];
+          var interventionPreyDelta = Math.round((Number(scenarioPoint.prey) || 0) - (Number(baselinePoint.prey) || 0));
+          var interventionPredatorDelta = Math.round((Number(scenarioPoint.pred) || 0) - (Number(baselinePoint.pred) || 0));
+          source = interventionResult.label + ' scenario, step ' + scenarioPoint.step;
+          evidenceText = 'After the ' + interventionResult.label.toLowerCase() + ' event at step ' + interventionResult.step + ', the scenario at step ' + scenarioPoint.step + ' differed from its matched baseline by ' + (interventionPreyDelta >= 0 ? '+' : '') + interventionPreyDelta + ' prey and ' + (interventionPredatorDelta >= 0 ? '+' : '') + interventionPredatorDelta + ' predators.';
+        }
+        if (!evidenceText) {
+          if (addToast) addToast('Generate that analysis before collecting its evidence.', 'warn');
+          return;
+        }
+        for (var cei = 0; cei < cerEvidence.length; cei++) {
+          if (cerEvidence[cei] && cerEvidence[cei].text === evidenceText) {
+            if (addToast) addToast('That evidence snapshot is already in your CER.', 'info');
+            return;
+          }
+        }
+        var evidenceEntry = {
+          id: Date.now() + '-' + kind + '-' + cerEvidence.length,
+          kind: kind,
+          source: source,
+          text: evidenceText,
+          replayStep: replayCursor,
+          replayKey: replayKeyFor(getModelParameters()),
+          capturedAt: Date.now()
+        };
+        upd('cerEvidence', cerEvidence.concat([evidenceEntry]).slice(-8));
+        if (announceToSR) announceToSR(source + ' added as CER evidence.');
+      };
+      var removeCEREvidence = function(id) {
+        upd('cerEvidence', cerEvidence.filter(function(entry) { return entry && entry.id !== id; }));
+        if (announceToSR) announceToSR('CER evidence removed.');
+      };
+      var applyCERToNotebook = function() {
+        if (!cerComplete) {
+          if (addToast) addToast('Complete the claim, evidence, and reasoning first.', 'warn');
+          return;
+        }
+        var evidenceLines = cerEvidence.map(function(entry, index) { return (index + 1) + '. ' + entry.text; });
+        var formattedCER = 'Claim: ' + String(cerClaim).trim() + '\nEvidence:\n' + evidenceLines.join('\n') + '\nReasoning: ' + String(cerReasoning).trim();
+        updMulti({ experimentReflection: formattedCER.slice(0, 3200), poeStage: 'explain' });
+        if (addToast) addToast('CER transferred to the experiment notebook.', 'success');
+        if (announceToSR) announceToSR('Complete claim, evidence, and reasoning transferred to the experiment notebook.');
+      };
+      var markExplanationComplete = function() {
+        if (!data || data.length < 2) { if (addToast) addToast('Run the graph before completing an explanation.', 'warn'); return; }
+        if (!String(experimentReflection || '').trim()) { if (addToast) addToast('Write one evidence-based observation first.', 'warn'); return; }
+        upd('poeStage', 'explain');
+        if (announceToSR) announceToSR('Predict, observe, explain workflow complete.');
+      };
+      var downloadFile = function(filename, content, mime) {
+        try {
+          var blob = new Blob([content], { type: mime });
+          var url = window.URL.createObjectURL(blob);
+          var link = document.createElement('a');
+          link.href = url;
+          link.download = filename;
+          link.style.display = 'none';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setTimeout(function() { try { window.URL.revokeObjectURL(url); } catch (e) {} }, 0);
+          return true;
+        } catch (e) {
+          if (addToast) addToast('This browser could not create the export.', 'warn');
+          return false;
+        }
+      };
+      var csvCell = function(value) {
+        return '"' + String(value === undefined || value === null ? '' : value).replace(/"/g, '""') + '"';
+      };
+      var exportTeacherCSV = function() {
+        if (!data || data.length < 2) { if (addToast) addToast('Run the graph before exporting data.', 'warn'); return; }
+        var rows = ['step,prey,predator'];
+        for (var ri = 0; ri < data.length; ri++) {
+          rows.push([csvCell(data[ri].step === undefined ? ri : data[ri].step), csvCell(data[ri].prey || 0), csvCell(data[ri].pred || 0)].join(','));
+        }
+        downloadFile('ecosystem-' + Date.now() + '.csv', rows.join('\n') + '\n', 'text/csv;charset=utf-8');
+        if (addToast) addToast('Teacher CSV downloaded.', 'success');
+      };
+      var buildTeacherReport = function() {
+        var params = getModelParameters();
+        return {
+          schema: 'ecosystem-teacher-report-v1',
+          createdAt: new Date().toISOString(),
+          prompt: String(teacherPrompt || '').trim(),
+          workflow: {
+            stage: poeStage,
+            prediction: runPrediction || '',
+            reflection: String(experimentReflection || '').trim()
+          },
+          model: Object.assign({}, params, { timeStep: 0.1, modeledSteps: 100 }),
+          reproducibilityKey: replayKeyFor(params),
+          currentRun: data ? data.slice() : [],
+          currentSummary: data && data.length > 1 ? classifyRun(data) : null,
+          baselineRun: baselineRun ? {
+            parameters: baselineRun.parameters || {
+              prey0: baselineRun.prey0, pred0: baselineRun.pred0, carryingCapacity: baselineRun.carryingCapacity
+            },
+            summary: baselineRun.summary || null,
+            data: Array.isArray(baselineRun.data) ? baselineRun.data.slice() : []
+          } : null,
+          namedBranches: branchRuns,
+          uncertaintyExperiment: uncertaintyResult ? {
+            trials: uncertaintyResult.trials,
+            seed: uncertaintyResult.seed,
+            variation: uncertaintyResult.variation,
+            parameters: uncertaintyResult.parameters,
+            summary: uncertaintyResult.summary
+          } : null,
+          interventionExperiment: interventionResult ? {
+            type: interventionResult.type,
+            label: interventionResult.label,
+            step: interventionResult.step,
+            intensity: interventionResult.intensity,
+            description: interventionResult.description,
+            parameters: interventionResult.parameters,
+            baselineSummary: interventionResult.baselineSummary,
+            scenarioSummary: interventionResult.scenarioSummary
+          } : null,
+          claimEvidenceReasoning: {
+            claim: String(cerClaim || '').trim(),
+            evidence: cerEvidence.slice(),
+            reasoning: String(cerReasoning || '').trim(),
+            complete: cerComplete
+          },
+          evidenceLog: experimentLog
+        };
+      };
+      var exportTeacherReport = function() {
+        var report = buildTeacherReport();
+        downloadFile('ecosystem-teacher-report-' + Date.now() + '.json', JSON.stringify(report, null, 2), 'application/json;charset=utf-8');
+        if (addToast) addToast('Teacher report downloaded.', 'success');
+      };
+      var escapeHtml = function(value) {
+        return String(value === undefined || value === null ? '' : value)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      };
+      var printTeacherReport = function() {
+        if (!data || data.length < 2) { if (addToast) addToast('Run the graph before printing a report.', 'warn'); return; }
+        var report = buildTeacherReport();
+        var summary = report.currentSummary;
+        var popup = window.open('', '_blank', 'noopener,noreferrer');
+        if (!popup) { if (addToast) addToast('Allow pop-ups to print the teacher report.', 'warn'); return; }
+        popup.document.write('<!doctype html><html><head><title>Ecosystem teacher report</title><style>body{font-family:system-ui,sans-serif;max-width:760px;margin:32px auto;padding:0 20px;color:#172033}h1{color:#0f766e}h2{margin-top:24px;border-bottom:1px solid #cbd5e1;padding-bottom:5px}li{margin:5px 0}.key{font:12px monospace;background:#f1f5f9;padding:8px;word-break:break-all}</style></head><body>' +
+          '<h1>Ecosystem experiment report</h1>' +
+          '<p><strong>Question:</strong> ' + escapeHtml(report.prompt || 'No guiding question entered.') + '</p>' +
+          '<h2>Outcome</h2><p>' + escapeHtml(summary ? summary.label + '. ' + summary.detail : 'No completed analytical run yet.') + '</p>' +
+          '<p><strong>Prediction:</strong> ' + escapeHtml(report.workflow.prediction || 'Not recorded') + '</p>' +
+          '<p><strong>Reflection:</strong> ' + escapeHtml(report.workflow.reflection || 'Not recorded') + '</p>' +
+          '<h2>Reproduce this run</h2><div class="key">' + escapeHtml(report.reproducibilityKey) + '</div>' +
+          '<h2>Model settings</h2><pre>' + escapeHtml(JSON.stringify(report.model, null, 2)) + '</pre>' +
+          '</body></html>');
+        popup.document.close();
+        popup.focus();
+        setTimeout(function() { try { popup.print(); } catch (e) {} }, 150);
+      };
       var simulate = function() {
         var prey = prey0, pred = pred0;
         var K = carryingCapacity;
-        var simData = [{ step: 0, prey: prey, pred: pred }];
+        // A fractional timestep prevents one update from applying a full
+        // population-generation's worth of predation and reproduction. Keep
+        // continuous values internally; round only the values shown to the
+        // learner so small updates are not erased by integer rounding.
+        var SIM_TIME_STEP = 0.1;
+        var simData = [{ step: 0, prey: Math.round(prey), pred: Math.round(pred) }];
         for (var i = 1; i <= 100; i++) {
           var logisticFactor = 1 - prey / K;
-          var newPrey = Math.max(0, prey + preyBirth * prey * logisticFactor - preyDeath * prey * pred);
-          var newPred = Math.max(0, pred + predBirth * prey * pred - predDeath * pred);
-          prey = Math.min(500, Math.round(newPrey));
-          pred = Math.min(500, Math.round(newPred));
-          simData.push({ step: i, prey: prey, pred: pred });
+          var newPrey = prey + SIM_TIME_STEP * (preyBirth * prey * logisticFactor - preyDeath * prey * pred);
+          var newPred = pred + SIM_TIME_STEP * (predBirth * prey * pred - predDeath * pred);
+          prey = Math.min(500, Math.max(0, newPrey));
+          pred = Math.min(500, Math.max(0, newPred));
+          simData.push({ step: i, prey: Math.round(prey), pred: Math.round(pred) });
         }
         playSound('simulate');
-        updMulti({ data: simData, steps: simData.length });
+        var runSummary = classifyRun(simData);
+        updMulti({ data: simData, steps: simData.length, predictionFeedback: predictionFeedbackFor(runSummary), poeStage: 'observe', replayStep: simData.length - 1 });
         if (announceToSR) announceToSR('Simulation complete. ' + simData.length + ' steps generated.');
         setTimeout(function() {
           checkBadges({ simRun: true, data: simData });
@@ -1008,8 +1522,182 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       };
 
       // ── SVG graph helpers ──
+      var makeSeededRandom = function(seed) {
+        var state = (Number(seed) >>> 0) || 1;
+        return function() {
+          state = (Math.imul(1664525, state) + 1013904223) >>> 0;
+          return state / 4294967296;
+        };
+      };
+      var quantileSorted = function(values, probability) {
+        if (!values.length) return 0;
+        var position = (values.length - 1) * probability;
+        var lower = Math.floor(position);
+        var upper = Math.ceil(position);
+        if (lower === upper) return values[lower];
+        return values[lower] + (values[upper] - values[lower]) * (position - lower);
+      };
+      var runUncertaintyTrials = function() {
+        if (!data || data.length < 2) {
+          if (addToast) addToast('Run the population model before repeated trials.', 'warn');
+          return;
+        }
+        var trialCount = Math.max(10, Math.min(100, parseInt(uncertaintyTrials, 10) || 30));
+        var variation = Math.max(0, Math.min(0.5, Number(uncertaintyVariation) || 0));
+        var seed = parseInt(uncertaintySeed, 10);
+        if (!isFinite(seed)) seed = 42;
+        var random = makeSeededRandom(seed);
+        var buckets = [];
+        for (var bi = 0; bi <= 100; bi++) buckets.push({ prey: [], pred: [] });
+        var preyExtinctionCount = 0, predatorExtinctionCount = 0;
+        for (var trial = 0; trial < trialCount; trial++) {
+          var prey = Number(prey0), pred = Number(pred0), environment = 0;
+          var preyDroppedBelowOne = prey < 1, predatorDroppedBelowOne = pred < 1;
+          buckets[0].prey.push(prey);
+          buckets[0].pred.push(pred);
+          for (var stepIndex = 1; stepIndex <= 100; stepIndex++) {
+            environment = 0.78 * environment + 0.22 * (random() * 2 - 1);
+            var preyGrowthRate = Math.max(0, preyBirth * (1 + variation * environment));
+            var effectiveCapacity = Math.max(1, carryingCapacity * (1 + 0.35 * variation * environment));
+            var predatorMortality = Math.max(0, predDeath * (1 - 0.25 * variation * environment));
+            var predationRate = Math.max(0, preyDeath * (1 + 0.2 * variation * (random() * 2 - 1)));
+            var conversionRate = Math.max(0, predBirth * (1 + 0.15 * variation * environment));
+            var logisticFactor = 1 - prey / effectiveCapacity;
+            var nextPrey = prey + 0.1 * (preyGrowthRate * prey * logisticFactor - predationRate * prey * pred);
+            var nextPred = pred + 0.1 * (conversionRate * prey * pred - predatorMortality * pred);
+            prey = Math.min(500, Math.max(0, nextPrey));
+            pred = Math.min(500, Math.max(0, nextPred));
+            if (prey < 1) preyDroppedBelowOne = true;
+            if (pred < 1) predatorDroppedBelowOne = true;
+            buckets[stepIndex].prey.push(prey);
+            buckets[stepIndex].pred.push(pred);
+          }
+          if (preyDroppedBelowOne) preyExtinctionCount++;
+          if (predatorDroppedBelowOne) predatorExtinctionCount++;
+        }
+        var series = buckets.map(function(bucket, index) {
+          bucket.prey.sort(function(a, b) { return a - b; });
+          bucket.pred.sort(function(a, b) { return a - b; });
+          return {
+            step: index,
+            preyP10: Number(quantileSorted(bucket.prey, 0.1).toFixed(2)),
+            preyMedian: Number(quantileSorted(bucket.prey, 0.5).toFixed(2)),
+            preyP90: Number(quantileSorted(bucket.prey, 0.9).toFixed(2)),
+            predP10: Number(quantileSorted(bucket.pred, 0.1).toFixed(2)),
+            predMedian: Number(quantileSorted(bucket.pred, 0.5).toFixed(2)),
+            predP90: Number(quantileSorted(bucket.pred, 0.9).toFixed(2))
+          };
+        });
+        var result = {
+          schema: 'ecosystem-uncertainty-v1',
+          trials: trialCount,
+          seed: seed,
+          variation: variation,
+          parameters: getModelParameters(),
+          series: series,
+          summary: {
+            preyExtinctionPercent: Number((100 * preyExtinctionCount / trialCount).toFixed(1)),
+            predatorExtinctionPercent: Number((100 * predatorExtinctionCount / trialCount).toFixed(1))
+          }
+        };
+        updMulti({ uncertaintyTrials: trialCount, uncertaintyVariation: variation, uncertaintySeed: seed, uncertaintyResult: result, analysisView: 'uncertainty' });
+        if (announceToSR) announceToSR('Repeated trials complete. ' + trialCount + ' runs generated with seed ' + seed + '.');
+      };
+      var activeInterventionDefinition = INTERVENTION_TYPES[0];
+      for (var iti = 0; iti < INTERVENTION_TYPES.length; iti++) {
+        if (INTERVENTION_TYPES[iti].id === interventionType) activeInterventionDefinition = INTERVENTION_TYPES[iti];
+      }
+      var simulateInterventionModel = function(eventConfig) {
+        var scenarioPrey = Number(prey0), scenarioPred = Number(pred0);
+        var scenarioData = [{ step: 0, prey: Math.round(scenarioPrey), pred: Math.round(scenarioPred) }];
+        for (var scenarioStep = 1; scenarioStep <= 100; scenarioStep++) {
+          var scenarioCapacity = Number(carryingCapacity);
+          if (eventConfig && scenarioStep >= eventConfig.step) {
+            if (eventConfig.type === 'drought') scenarioCapacity *= (1 - eventConfig.intensity);
+            if (eventConfig.type === 'restoration') scenarioCapacity *= (1 + eventConfig.intensity);
+          }
+          if (eventConfig && scenarioStep === eventConfig.step) {
+            if (eventConfig.type === 'prey_disease') scenarioPrey *= (1 - eventConfig.intensity);
+            if (eventConfig.type === 'predator_removal') scenarioPred *= (1 - eventConfig.intensity);
+          }
+          scenarioCapacity = Math.max(1, scenarioCapacity);
+          var scenarioLogistic = 1 - scenarioPrey / scenarioCapacity;
+          var scenarioNextPrey = scenarioPrey + 0.1 * (preyBirth * scenarioPrey * scenarioLogistic - preyDeath * scenarioPrey * scenarioPred);
+          var scenarioNextPred = scenarioPred + 0.1 * (predBirth * scenarioPrey * scenarioPred - predDeath * scenarioPred);
+          scenarioPrey = Math.min(500, Math.max(0, scenarioNextPrey));
+          scenarioPred = Math.min(500, Math.max(0, scenarioNextPred));
+          scenarioData.push({ step: scenarioStep, prey: Math.round(scenarioPrey), pred: Math.round(scenarioPred) });
+        }
+        return scenarioData;
+      };
+      var runInterventionScenario = function() {
+        if (!data || data.length < 2) {
+          if (addToast) addToast('Run the population model before testing an intervention.', 'warn');
+          return;
+        }
+        var eventStep = Math.max(5, Math.min(95, parseInt(interventionStep, 10) || 50));
+        var intensity = Math.max(0.1, Math.min(0.7, Number(interventionIntensity) || 0.3));
+        var definition = INTERVENTION_TYPES[0];
+        for (var eventIndex = 0; eventIndex < INTERVENTION_TYPES.length; eventIndex++) {
+          if (INTERVENTION_TYPES[eventIndex].id === interventionType) definition = INTERVENTION_TYPES[eventIndex];
+        }
+        var baselineData = simulateInterventionModel(null);
+        var scenarioData = simulateInterventionModel({ type: definition.id, step: eventStep, intensity: intensity });
+        var result = {
+          schema: 'ecosystem-intervention-v1',
+          type: definition.id,
+          label: definition.label,
+          description: definition.description,
+          step: eventStep,
+          intensity: intensity,
+          parameters: getModelParameters(),
+          baselineData: baselineData,
+          scenarioData: scenarioData,
+          baselineSummary: classifyRun(baselineData),
+          scenarioSummary: classifyRun(scenarioData)
+        };
+        updMulti({ interventionStep: eventStep, interventionIntensity: intensity, interventionResult: result, analysisView: 'intervention', replayStep: eventStep });
+        if (announceToSR) announceToSR(definition.label + ' scenario complete at step ' + eventStep + ' with ' + Math.round(intensity * 100) + ' percent intensity.');
+      };
       var W = 420, H = 180, pad = 35;
 
+      var buildReplaySVG = function(runData, label) {
+        if (!Array.isArray(runData) || runData.length < 2) return null;
+        var rw = 360, rh = 150, rp = 28;
+        var maxPopulation = 10;
+        for (var rmi = 0; rmi < runData.length; rmi++) {
+          maxPopulation = Math.max(maxPopulation, Number(runData[rmi].prey) || 0, Number(runData[rmi].pred) || 0);
+        }
+        maxPopulation *= 1.08;
+        var rsx = function(index) { return rp + (index / (runData.length - 1)) * (rw - 2 * rp); };
+        var rsy = function(value) { return rh - rp - ((Number(value) || 0) / maxPopulation) * (rh - 2 * rp); };
+        var preyPoints = '';
+        var predatorPoints = '';
+        for (var rpi = 0; rpi < runData.length; rpi++) {
+          preyPoints += (rpi ? ' ' : '') + rsx(rpi).toFixed(1) + ',' + rsy(runData[rpi].prey).toFixed(1);
+          predatorPoints += (rpi ? ' ' : '') + rsx(rpi).toFixed(1) + ',' + rsy(runData[rpi].pred).toFixed(1);
+        }
+        var replay = replayPointFor(runData);
+        var cursorX = rsx(replay.index);
+        return h('figure', { className: 'min-w-0 space-y-1' },
+          h('figcaption', { className: 'text-[11px] font-bold text-slate-700 dark:text-slate-200' }, label),
+          h('svg', { viewBox: '0 0 ' + rw + ' ' + rh, className: 'w-full', role: 'img', 'aria-label': label + ' population trajectory at shared replay step ' + replayCursor },
+            h('rect', { x: rp, y: rp, width: rw - 2 * rp, height: rh - 2 * rp, fill: 'none', stroke: '#94a3b8', strokeWidth: 1 }),
+            h('line', { x1: rp, y1: rh - rp, x2: rw - rp, y2: rh - rp, stroke: '#64748b', strokeWidth: 1 }),
+            h('line', { x1: cursorX, y1: rp, x2: cursorX, y2: rh - rp, stroke: '#7c3aed', strokeWidth: 1.5 }),
+            h('polyline', { points: preyPoints, fill: 'none', stroke: '#16a34a', strokeWidth: 2.5 }),
+            h('polyline', { points: predatorPoints, fill: 'none', stroke: '#dc2626', strokeWidth: 2.5, strokeDasharray: '6,4' }),
+            h('circle', { cx: cursorX, cy: rsy(replay.point.prey), r: 4, fill: '#16a34a', stroke: '#fff', strokeWidth: 1 }),
+            h('rect', { x: cursorX - 4, y: rsy(replay.point.pred) - 4, width: 8, height: 8, fill: '#dc2626', stroke: '#fff', strokeWidth: 1 }),
+            h('text', { x: rp, y: 18, fill: '#16a34a', fontSize: 10, fontWeight: 'bold' }, 'Prey solid'),
+            h('text', { x: rw - rp, y: 18, textAnchor: 'end', fill: '#dc2626', fontSize: 10, fontWeight: 'bold' }, 'Predator dashed'),
+            h('text', { x: rw / 2, y: rh - 5, textAnchor: 'middle', fill: '#64748b', fontSize: 9 }, 'Modeled time')
+          ),
+          h('div', { className: 'text-[11px] text-slate-600 dark:text-slate-300' },
+            'Step ' + replay.index + ': prey ' + Math.round(Number(replay.point.prey) || 0) + ', predators ' + Math.round(Number(replay.point.pred) || 0)
+          )
+        );
+      };
       var buildPopSVG = function() {
         if (!data || data.length < 2) return null;
         var maxPrey = 1, maxPred = 1;
@@ -1060,8 +1748,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
         // Carrying capacity dashed line
         var carryY = sy(carryingCapacity);
+        var popCursorIndex = Math.min(data.length - 1, Math.max(0, replayCursor));
+        var popCursorPoint = data[popCursorIndex] || data[0];
+        var popCursorX = sx(popCursorIndex);
+        var momentFlags = keyMomentAnalysis.moments.map(function(moment) {
+          var flagX = sx(moment.index);
+          return h('polygon', { key: 'moment-flag-' + moment.index, points: flagX + ',' + (pad + 1) + ' ' + (flagX + 4) + ',' + (pad + 8) + ' ' + (flagX - 4) + ',' + (pad + 8), fill: '#7c3aed', opacity: replayCursor === moment.index ? 1 : 0.55 });
+        });
 
-        return h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full', style: { maxHeight: 200 }, role: 'img', 'aria-label': __alloT('stem.ecosystem.aria_pop_traj_pre', 'Predator and prey population trajectories over ') + (data.length - 1) + __alloT('stem.ecosystem.aria_modeled_time_steps', ' modeled time steps.') },
+        return h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full', style: { maxHeight: 200 }, role: 'img', 'aria-label': __alloT('stem.ecosystem.aria_pop_traj_pre', 'Predator and prey population trajectories over ') + (data.length - 1) + __alloT('stem.ecosystem.aria_modeled_time_steps', ' modeled time steps.') + ' The replay marker is at step ' + popCursorIndex + '.' },
           h('defs', null,
             h('linearGradient', { id: 'eco-prey-grad', x1: '0', y1: '0', x2: '0', y2: '1' },
               h('stop', { offset: '0%', stopColor: '#22c55e', stopOpacity: 0.4 }),
@@ -1075,6 +1770,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           // Grid
           gridLines,
           xLabels,
+          momentFlags,
           // Axes
           h('line', { x1: pad, y1: pad, x2: pad, y2: H - pad, stroke: '#475569', strokeWidth: 1 }),
           h('line', { x1: pad, y1: H - pad, x2: W - pad, y2: H - pad, stroke: '#475569', strokeWidth: 1 }),
@@ -1090,6 +1786,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           // Lines
           h('polyline', { points: preyPts, fill: 'none', stroke: '#22c55e', strokeWidth: 2 }),
           h('polyline', { points: predPts, fill: 'none', stroke: '#ef4444', strokeWidth: 2 }),
+          h('line', { x1: popCursorX, y1: pad, x2: popCursorX, y2: H - pad, stroke: '#7c3aed', strokeWidth: 1.5, strokeDasharray: '3,3' }),
+          h('circle', { cx: popCursorX, cy: sy(popCursorPoint.prey), r: 4.5, fill: '#22c55e', stroke: '#fff', strokeWidth: 1.5 }),
+          h('rect', { x: popCursorX - 4.5, y: sy(popCursorPoint.pred) - 4.5, width: 9, height: 9, fill: '#ef4444', stroke: '#fff', strokeWidth: 1.5 }),
           // End dots
           h('circle', { cx: sx(data.length - 1), cy: sy(lastData.prey), r: 4, fill: '#22c55e' }),
           h('circle', { cx: sx(data.length - 1), cy: sy(lastData.pred), r: 4, fill: '#ef4444' }),
@@ -1103,6 +1802,112 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       };
 
       // ── Phase portrait SVG ──
+      var buildInterventionSVG = function() {
+        if (!interventionResult || !Array.isArray(interventionResult.baselineData) || !Array.isArray(interventionResult.scenarioData)) return null;
+        var baseline = interventionResult.baselineData;
+        var scenario = interventionResult.scenarioData;
+        if (baseline.length < 2 || scenario.length < 2) return null;
+        var iw = 420, ih = 230, ip = 40;
+        var interventionMaxY = 1;
+        for (var imi = 0; imi < baseline.length; imi++) {
+          interventionMaxY = Math.max(interventionMaxY, Number(baseline[imi].prey) || 0, Number(baseline[imi].pred) || 0, Number(scenario[imi].prey) || 0, Number(scenario[imi].pred) || 0);
+        }
+        interventionMaxY *= 1.1;
+        var isx = function(index) { return ip + (index / (baseline.length - 1)) * (iw - 2 * ip); };
+        var isy = function(value) { return ih - ip - ((Number(value) || 0) / interventionMaxY) * (ih - 2 * ip); };
+        var basePreyPoints = '', basePredPoints = '', scenarioPreyPoints = '', scenarioPredPoints = '';
+        for (var ipi = 0; ipi < baseline.length; ipi++) {
+          var pointX = isx(ipi).toFixed(1);
+          basePreyPoints += (ipi ? ' ' : '') + pointX + ',' + isy(baseline[ipi].prey).toFixed(1);
+          basePredPoints += (ipi ? ' ' : '') + pointX + ',' + isy(baseline[ipi].pred).toFixed(1);
+          scenarioPreyPoints += (ipi ? ' ' : '') + pointX + ',' + isy(scenario[ipi].prey).toFixed(1);
+          scenarioPredPoints += (ipi ? ' ' : '') + pointX + ',' + isy(scenario[ipi].pred).toFixed(1);
+        }
+        var interventionGrid = [];
+        for (var igi = 0; igi <= 4; igi++) {
+          var gridY = ip + igi * ((ih - 2 * ip) / 4);
+          var gridValue = Math.round(interventionMaxY - igi * interventionMaxY / 4);
+          interventionGrid.push(h('line', { key: 'intervention-grid-' + igi, x1: ip, y1: gridY, x2: iw - ip, y2: gridY, stroke: '#94a3b8', strokeWidth: 0.6, opacity: 0.55 }));
+          interventionGrid.push(h('text', { key: 'intervention-grid-label-' + igi, x: ip - 5, y: gridY + 4, textAnchor: 'end', fill: '#64748b', fontSize: 9 }, gridValue));
+        }
+        var eventX = isx(Math.min(baseline.length - 1, interventionResult.step));
+        var interventionCursorIndex = Math.min(scenario.length - 1, Math.max(0, Math.round((replayMax > 0 ? replayCursor / replayMax : 0) * (scenario.length - 1))));
+        var cursorX = isx(interventionCursorIndex);
+        var cursorScenario = scenario[interventionCursorIndex];
+        return h('svg', { viewBox: '0 0 ' + iw + ' ' + ih, className: 'w-full', style: { maxHeight: 290 }, role: 'img', 'aria-labelledby': 'eco-intervention-svg-title eco-intervention-svg-desc' },
+          h('title', { id: 'eco-intervention-svg-title' }, 'Baseline and intervention population trajectories'),
+          h('desc', { id: 'eco-intervention-svg-desc' }, interventionResult.label + ' occurs at step ' + interventionResult.step + '. Faint lines show the fresh baseline and emphasized lines show the event scenario. Replay step ' + interventionCursorIndex + ' is selected.'),
+          interventionGrid,
+          h('rect', { x: ip, y: ip, width: iw - 2 * ip, height: ih - 2 * ip, fill: 'none', stroke: '#64748b', strokeWidth: 1 }),
+          h('polyline', { points: basePreyPoints, fill: 'none', stroke: '#16a34a', strokeWidth: 1.5, strokeDasharray: '2,4', opacity: 0.42 }),
+          h('polyline', { points: basePredPoints, fill: 'none', stroke: '#dc2626', strokeWidth: 1.5, strokeDasharray: '2,4', opacity: 0.42 }),
+          h('line', { x1: eventX, y1: ip, x2: eventX, y2: ih - ip, stroke: '#d97706', strokeWidth: 2 }),
+          h('text', { x: eventX + 4, y: ip + 11, fill: '#b45309', fontSize: 10, fontWeight: 'bold' }, 'Event ' + interventionResult.step),
+          h('polyline', { points: scenarioPreyPoints, fill: 'none', stroke: '#16a34a', strokeWidth: 2.8 }),
+          h('polyline', { points: scenarioPredPoints, fill: 'none', stroke: '#dc2626', strokeWidth: 2.8, strokeDasharray: '7,4' }),
+          h('line', { x1: cursorX, y1: ip, x2: cursorX, y2: ih - ip, stroke: '#7c3aed', strokeWidth: 1.5, strokeDasharray: '3,3' }),
+          h('circle', { cx: cursorX, cy: isy(cursorScenario.prey), r: 4.5, fill: '#16a34a', stroke: '#fff', strokeWidth: 1.5 }),
+          h('rect', { x: cursorX - 4.5, y: isy(cursorScenario.pred) - 4.5, width: 9, height: 9, fill: '#dc2626', stroke: '#fff', strokeWidth: 1.5 }),
+          h('text', { x: iw / 2, y: ih - 6, textAnchor: 'middle', fill: '#64748b', fontSize: 10 }, 'Modeled time step'),
+          h('text', { x: 10, y: ih / 2, textAnchor: 'middle', fill: '#64748b', fontSize: 10, transform: 'rotate(-90, 10, ' + (ih / 2) + ')' }, 'Population')
+        );
+      };
+      var buildUncertaintySVG = function() {
+        if (!uncertaintyResult || !Array.isArray(uncertaintyResult.series) || uncertaintyResult.series.length < 2) return null;
+        var series = uncertaintyResult.series;
+        var uw = 420, uh = 220, up = 38;
+        var maxUncertaintyY = 1;
+        for (var umi = 0; umi < series.length; umi++) {
+          maxUncertaintyY = Math.max(maxUncertaintyY, Number(series[umi].preyP90) || 0, Number(series[umi].predP90) || 0);
+        }
+        maxUncertaintyY *= 1.1;
+        var usx = function(index) { return up + (index / (series.length - 1)) * (uw - 2 * up); };
+        var usy = function(value) { return uh - up - ((Number(value) || 0) / maxUncertaintyY) * (uh - 2 * up); };
+        var preyLowPoints = [], preyHighPoints = [], predLowPoints = [], predHighPoints = [];
+        var preyMedianPoints = '', predMedianPoints = '';
+        for (var ui = 0; ui < series.length; ui++) {
+          var ux = usx(ui).toFixed(1);
+          preyLowPoints.push(ux + ',' + usy(series[ui].preyP10).toFixed(1));
+          preyHighPoints.push(ux + ',' + usy(series[ui].preyP90).toFixed(1));
+          predLowPoints.push(ux + ',' + usy(series[ui].predP10).toFixed(1));
+          predHighPoints.push(ux + ',' + usy(series[ui].predP90).toFixed(1));
+          preyMedianPoints += (ui ? ' ' : '') + ux + ',' + usy(series[ui].preyMedian).toFixed(1);
+          predMedianPoints += (ui ? ' ' : '') + ux + ',' + usy(series[ui].predMedian).toFixed(1);
+        }
+        var preyBandPoints = preyLowPoints.concat(preyHighPoints.slice().reverse()).join(' ');
+        var predBandPoints = predLowPoints.concat(predHighPoints.slice().reverse()).join(' ');
+        var uncertaintyGrid = [];
+        for (var ugi = 0; ugi <= 4; ugi++) {
+          var ugy = up + ugi * ((uh - 2 * up) / 4);
+          var ugValue = Math.round(maxUncertaintyY - ugi * maxUncertaintyY / 4);
+          uncertaintyGrid.push(h('line', { key: 'ug-line-' + ugi, x1: up, y1: ugy, x2: uw - up, y2: ugy, stroke: '#94a3b8', strokeWidth: 0.6, opacity: 0.55 }));
+          uncertaintyGrid.push(h('text', { key: 'ug-label-' + ugi, x: up - 5, y: ugy + 4, textAnchor: 'end', fill: '#64748b', fontSize: 9 }, ugValue));
+        }
+        var uncertaintyXLabels = [];
+        for (var uxi = 0; uxi <= 4; uxi++) {
+          var seriesIndex = Math.round(uxi * (series.length - 1) / 4);
+          uncertaintyXLabels.push(h('text', { key: 'ux-label-' + uxi, x: usx(seriesIndex), y: uh - up + 16, textAnchor: 'middle', fill: '#64748b', fontSize: 9 }, series[seriesIndex].step));
+        }
+        var uncertaintyCursorIndex = Math.min(series.length - 1, Math.max(0, Math.round((replayMax > 0 ? replayCursor / replayMax : 0) * (series.length - 1))));
+        var uncertaintyCursor = series[uncertaintyCursorIndex];
+        var uncertaintyCursorX = usx(uncertaintyCursorIndex);
+        return h('svg', { viewBox: '0 0 ' + uw + ' ' + uh, className: 'w-full', style: { maxHeight: 280 }, role: 'img', 'aria-labelledby': 'eco-uncertainty-svg-title eco-uncertainty-svg-desc' },
+          h('title', { id: 'eco-uncertainty-svg-title' }, 'Repeated-trial population ranges'),
+          h('desc', { id: 'eco-uncertainty-svg-desc' }, 'Median prey and predator trajectories with shaded 10th to 90th percentile ranges across ' + uncertaintyResult.trials + ' seeded trials. Replay step ' + uncertaintyCursorIndex + ' is selected.'),
+          uncertaintyGrid,
+          uncertaintyXLabels,
+          h('rect', { x: up, y: up, width: uw - 2 * up, height: uh - 2 * up, fill: 'none', stroke: '#64748b', strokeWidth: 1 }),
+          h('polygon', { points: preyBandPoints, fill: '#22c55e', opacity: 0.18 }),
+          h('polygon', { points: predBandPoints, fill: '#ef4444', opacity: 0.16 }),
+          h('polyline', { points: preyMedianPoints, fill: 'none', stroke: '#16a34a', strokeWidth: 2.5 }),
+          h('polyline', { points: predMedianPoints, fill: 'none', stroke: '#dc2626', strokeWidth: 2.5, strokeDasharray: '6,4' }),
+          h('line', { x1: uncertaintyCursorX, y1: up, x2: uncertaintyCursorX, y2: uh - up, stroke: '#7c3aed', strokeWidth: 1.5, strokeDasharray: '3,3' }),
+          h('circle', { cx: uncertaintyCursorX, cy: usy(uncertaintyCursor.preyMedian), r: 4.5, fill: '#16a34a', stroke: '#fff', strokeWidth: 1.5 }),
+          h('rect', { x: uncertaintyCursorX - 4.5, y: usy(uncertaintyCursor.predMedian) - 4.5, width: 9, height: 9, fill: '#dc2626', stroke: '#fff', strokeWidth: 1.5 }),
+          h('text', { x: uw / 2, y: uh - 5, textAnchor: 'middle', fill: '#64748b', fontSize: 10 }, 'Modeled time step'),
+          h('text', { x: 10, y: uh / 2, textAnchor: 'middle', fill: '#64748b', fontSize: 10, transform: 'rotate(-90, 10, ' + (uh / 2) + ')' }, 'Population')
+        );
+      };
       var buildPhaseSVG = function() {
         if (!data || data.length < 2) return null;
         var maxPrey = 1, maxPred = 1;
@@ -1169,6 +1974,77 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       };
 
       // ── Environment graph (from livePopHistory) ──
+      var buildTrajectory3DSVG = function() {
+        if (!data || data.length < 2) return null;
+        var tw = 420, th = 260, centerX = 210, centerY = 176, scale3d = 118;
+        var yaw = Math.max(-70, Math.min(70, Number(trajectoryAzimuth) || 0)) * Math.PI / 180;
+        var pitch = Math.max(10, Math.min(50, Number(trajectoryElevation) || 24)) * Math.PI / 180;
+        var cosYaw = Math.cos(yaw), sinYaw = Math.sin(yaw);
+        var cosPitch = Math.cos(pitch), sinPitch = Math.sin(pitch);
+        var maxPrey3d = 1, maxPred3d = 1;
+        for (var tmi = 0; tmi < data.length; tmi++) {
+          maxPrey3d = Math.max(maxPrey3d, Number(data[tmi].prey) || 0);
+          maxPred3d = Math.max(maxPred3d, Number(data[tmi].pred) || 0);
+        }
+        var project3d = function(x, y, z) {
+          var rotatedX = x * cosYaw - z * sinYaw;
+          var rotatedZ = x * sinYaw + z * cosYaw;
+          return { x: centerX + scale3d * rotatedX, y: centerY - scale3d * (y * cosPitch - rotatedZ * sinPitch) };
+        };
+        var point3dFor = function(index) {
+          var sample = data[index] || data[0];
+          return {
+            x: (Math.max(0, Number(sample.prey) || 0) / maxPrey3d) - 0.5,
+            y: Math.max(0, Number(sample.pred) || 0) / maxPred3d,
+            z: (index / (data.length - 1)) - 0.5
+          };
+        };
+        var projectedData = [];
+        var trajectoryPoints = '';
+        for (var tpi = 0; tpi < data.length; tpi++) {
+          var worldPoint = point3dFor(tpi);
+          var screenPoint = project3d(worldPoint.x, worldPoint.y, worldPoint.z);
+          projectedData.push({ world: worldPoint, screen: screenPoint });
+          trajectoryPoints += (tpi ? ' ' : '') + screenPoint.x.toFixed(1) + ',' + screenPoint.y.toFixed(1);
+        }
+        var grid3d = [];
+        for (var tgi = 0; tgi <= 4; tgi++) {
+          var gridOffset = -0.5 + tgi / 4;
+          var gridA = project3d(-0.5, 0, gridOffset);
+          var gridB = project3d(0.5, 0, gridOffset);
+          var gridC = project3d(gridOffset, 0, -0.5);
+          var gridD = project3d(gridOffset, 0, 0.5);
+          grid3d.push(h('line', { key: 'floor-x-' + tgi, x1: gridA.x, y1: gridA.y, x2: gridB.x, y2: gridB.y, stroke: '#94a3b8', strokeWidth: 0.65, opacity: 0.55 }));
+          grid3d.push(h('line', { key: 'floor-z-' + tgi, x1: gridC.x, y1: gridC.y, x2: gridD.x, y2: gridD.y, stroke: '#94a3b8', strokeWidth: 0.65, opacity: 0.55 }));
+        }
+        var axisOrigin = project3d(-0.5, 0, -0.5);
+        var preyAxisEnd = project3d(0.5, 0, -0.5);
+        var predatorAxisEnd = project3d(-0.5, 1, -0.5);
+        var timeAxisEnd = project3d(-0.5, 0, 0.5);
+        var trajectoryIndex = Math.min(data.length - 1, Math.max(0, replayCursor));
+        var trajectoryCursor = projectedData[trajectoryIndex];
+        var cursorBase = project3d(trajectoryCursor.world.x, 0, trajectoryCursor.world.z);
+        var start3d = projectedData[0].screen;
+        var end3d = projectedData[projectedData.length - 1].screen;
+        var diamond = [trajectoryCursor.screen.x + ',' + (trajectoryCursor.screen.y - 6), (trajectoryCursor.screen.x + 6) + ',' + trajectoryCursor.screen.y, trajectoryCursor.screen.x + ',' + (trajectoryCursor.screen.y + 6), (trajectoryCursor.screen.x - 6) + ',' + trajectoryCursor.screen.y].join(' ');
+        return h('svg', { viewBox: '0 0 ' + tw + ' ' + th, className: 'w-full', style: { maxHeight: 330 }, role: 'img', 'aria-labelledby': 'eco-trajectory-3d-title eco-trajectory-3d-desc' },
+          h('title', { id: 'eco-trajectory-3d-title' }, 'Three-dimensional predator-prey trajectory'),
+          h('desc', { id: 'eco-trajectory-3d-desc' }, 'Prey population is shown on the horizontal axis, predator population by height, and modeled time by depth. The diamond marks replay step ' + trajectoryIndex + ' of ' + (data.length - 1) + '.'),
+          grid3d,
+          h('line', { x1: axisOrigin.x, y1: axisOrigin.y, x2: preyAxisEnd.x, y2: preyAxisEnd.y, stroke: '#16a34a', strokeWidth: 2 }),
+          h('line', { x1: axisOrigin.x, y1: axisOrigin.y, x2: predatorAxisEnd.x, y2: predatorAxisEnd.y, stroke: '#dc2626', strokeWidth: 2 }),
+          h('line', { x1: axisOrigin.x, y1: axisOrigin.y, x2: timeAxisEnd.x, y2: timeAxisEnd.y, stroke: '#2563eb', strokeWidth: 2, strokeDasharray: '5,3' }),
+          h('text', { x: preyAxisEnd.x + 6, y: preyAxisEnd.y + 4, fill: '#16a34a', fontSize: 11, fontWeight: 'bold' }, 'Prey'),
+          h('text', { x: predatorAxisEnd.x, y: predatorAxisEnd.y - 8, textAnchor: 'middle', fill: '#dc2626', fontSize: 11, fontWeight: 'bold' }, 'Predators'),
+          h('text', { x: timeAxisEnd.x, y: timeAxisEnd.y + 14, textAnchor: 'middle', fill: '#2563eb', fontSize: 11, fontWeight: 'bold' }, 'Modeled time'),
+          h('polyline', { points: trajectoryPoints, fill: 'none', stroke: '#7c3aed', strokeWidth: 3, strokeLinejoin: 'round', strokeLinecap: 'round' }),
+          h('line', { x1: trajectoryCursor.screen.x, y1: trajectoryCursor.screen.y, x2: cursorBase.x, y2: cursorBase.y, stroke: '#7c3aed', strokeWidth: 1, strokeDasharray: '3,3', opacity: 0.8 }),
+          h('circle', { cx: start3d.x, cy: start3d.y, r: 5, fill: '#16a34a', stroke: '#fff', strokeWidth: 1.5 }),
+          h('rect', { x: end3d.x - 5, y: end3d.y - 5, width: 10, height: 10, rx: 1, fill: '#dc2626', stroke: '#fff', strokeWidth: 1.5 }),
+          h('polygon', { points: diamond, fill: '#7c3aed', stroke: '#fff', strokeWidth: 1.5 }),
+          h('text', { x: trajectoryCursor.screen.x + 9, y: trajectoryCursor.screen.y - 9, fill: '#7c3aed', fontSize: 10, fontWeight: 'bold' }, 'Step ' + trajectoryIndex)
+        );
+      };
       var buildEnvSVG = function() {
         var hist = livePopHistory;
         if (!hist || hist.length < 2) return h('p', { className: 'text-xs text-slate-600 text-center py-4' }, __alloT('stem.ecosystem.run_sim_env_data', 'Run the canvas simulation to see environment data.'));
@@ -1386,21 +2262,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         var groundBottom = ch - 20;
 
         // ── Entities ──
+        // Match the live canvas capacity to the largest values exposed by the
+        // controls: K reaches 200, prey start reaches 150, and predators reach
+        // 80. Previously the canvas silently truncated those controls to
+        // 80 prey and 35 predators, so the chart and animation diverged.
+        var PREY_POOL_SIZE = 200;
+        var PRED_POOL_SIZE = 80;
         var preyEntities = [];
-        for (var pi = 0; pi < 80; pi++) {
+        for (var pi = 0; pi < PREY_POOL_SIZE; pi++) {
           preyEntities.push({
             x: Math.random() * cw, y: groundY + Math.random() * (groundBottom - groundY),
             vx: (Math.random() - 0.5) * 1.2, vy: (Math.random() - 0.5) * 0.8,
-            alive: pi < prey0, hop: Math.random() * Math.PI * 2, facing: Math.random() > 0.5 ? 1 : -1
+            alive: pi < Math.max(0, Math.min(PREY_POOL_SIZE, Math.round(prey0))), hop: Math.random() * Math.PI * 2, facing: Math.random() > 0.5 ? 1 : -1
           });
         }
 
         var predEntities = [];
-        for (var fi = 0; fi < 35; fi++) {
+        for (var fi = 0; fi < PRED_POOL_SIZE; fi++) {
           predEntities.push({
             x: Math.random() * cw, y: groundY + Math.random() * (groundBottom - groundY),
             vx: (Math.random() - 0.5) * 0.8, vy: (Math.random() - 0.5) * 0.5,
-            alive: fi < pred0, facing: Math.random() > 0.5 ? 1 : -1, hunting: false,
+            alive: fi < Math.max(0, Math.min(PRED_POOL_SIZE, Math.round(pred0))), facing: Math.random() > 0.5 ? 1 : -1, hunting: false,
             // Lotka-Volterra realism: predators that don't catch prey eventually
             // starve. hunger ticks up per frame, resets to 0 on a kill. When it
             // crosses STARVE_THRESHOLD the predator dies. huntCooldown gates
@@ -1411,7 +2293,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             hunger: 0, huntCooldown: 0
           });
         }
-
+        var livePreyTarget = Math.max(0, Math.min(preyEntities.length, Math.round(prey0)));
+        var livePredTarget = Math.max(0, Math.min(predEntities.length, Math.round(pred0)));
+        var seedLivePrey = function(entity) {
+          entity.alive = true;
+          entity.x = Math.random() * cw;
+          entity.y = groundY + Math.random() * (groundBottom - groundY);
+          entity.vx = (Math.random() - 0.5) * 1.2;
+          entity.vy = (Math.random() - 0.5) * 0.8;
+          entity.hop = Math.random() * Math.PI * 2;
+          entity.facing = Math.random() > 0.5 ? 1 : -1;
+        };
+        var seedLivePredator = function(entity) {
+          entity.alive = true;
+          entity.x = Math.random() * cw;
+          entity.y = groundY + Math.random() * (groundBottom - groundY);
+          entity.vx = (Math.random() - 0.5) * 0.8;
+          entity.vy = (Math.random() - 0.5) * 0.5;
+          entity.facing = Math.random() > 0.5 ? 1 : -1;
+          entity.hunting = false;
+          entity.hunger = 0;
+          entity.huntCooldown = 0;
+        };
+        var syncLivePopulationTargets = function() {
+          var requestedPrey = parseInt(canvas.dataset.prey0 || '', 10);
+          var requestedPred = parseInt(canvas.dataset.pred0 || '', 10);
+          var targetPrey = Math.max(0, Math.min(preyEntities.length, isFinite(requestedPrey) ? requestedPrey : Math.round(prey0)));
+          var targetPred = Math.max(0, Math.min(predEntities.length, isFinite(requestedPred) ? requestedPred : Math.round(pred0)));
+          if (targetPrey === livePreyTarget && targetPred === livePredTarget) return;
+          var currentPrey = 0, currentPred = 0;
+          for (var spi = 0; spi < preyEntities.length; spi++) if (preyEntities[spi].alive) currentPrey++;
+          for (var sfi = 0; sfi < predEntities.length; sfi++) if (predEntities[sfi].alive) currentPred++;
+          if (targetPrey > currentPrey) {
+            for (var api = 0; api < preyEntities.length && currentPrey < targetPrey; api++) {
+              if (!preyEntities[api].alive) { seedLivePrey(preyEntities[api]); currentPrey++; }
+            }
+          } else if (targetPrey < currentPrey) {
+            for (var rpi = preyEntities.length - 1; rpi >= 0 && currentPrey > targetPrey; rpi--) {
+              if (preyEntities[rpi].alive) { preyEntities[rpi].alive = false; currentPrey--; }
+            }
+          }
+          if (targetPred > currentPred) {
+            for (var afi = 0; afi < predEntities.length && currentPred < targetPred; afi++) {
+              if (!predEntities[afi].alive) { seedLivePredator(predEntities[afi]); currentPred++; }
+            }
+          } else if (targetPred < currentPred) {
+            for (var rfi = predEntities.length - 1; rfi >= 0 && currentPred > targetPred; rfi--) {
+              if (predEntities[rfi].alive) { predEntities[rfi].alive = false; currentPred--; }
+            }
+          }
+          livePreyTarget = targetPrey;
+          livePredTarget = targetPred;
+        };
         // Vegetation
         var vegetation = [];
         for (var vi = 0; vi < 30; vi++) {
@@ -1472,6 +2405,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
           // ── Read carrying capacity ──
           var carryK = parseInt(canvas.dataset.carryK || '100', 10);
+
+          // Starting-population sliders and presets update the existing canvas
+          // without rebuilding its animation loop. Apply those target changes
+          // once so the chart and live population begin from the same state.
+          syncLivePopulationTargets();
 
           // ── Read sandbox tool ──
           var sandboxToolVal = canvas.dataset.sandboxTool || '';
@@ -1581,7 +2519,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           }
 
           // ── Run simulation ticks (speed multiplier) ──
-          var ticksThisFrame = paused ? 0 : speed;
+          var quickAction = canvas.dataset.sandboxQuickAction || '';
+          if (quickAction === 'reset') {
+            canvas.dataset.sandboxQuickAction = '';
+            for (var qpi = 0; qpi < preyEntities.length; qpi++) preyEntities[qpi].alive = false;
+            for (var qfi = 0; qfi < predEntities.length; qfi++) predEntities[qfi].alive = false;
+            for (var qsi = 0; qsi < livePreyTarget && qsi < preyEntities.length; qsi++) seedLivePrey(preyEntities[qsi]);
+            for (var qdi = 0; qdi < livePredTarget && qdi < predEntities.length; qdi++) seedLivePredator(predEntities[qdi]);
+            vegetation = [];
+            for (var qvi = 0; qvi < 30; qvi++) {
+              vegetation.push({
+                x: Math.random() * cw,
+                y: 100 + Math.random() * (ch - 140),
+                type: Math.random() > 0.5 ? 'tree' : 'grass',
+                size: 8 + Math.random() * 12,
+                health: 1.0
+              });
+            }
+            popHistory = [];
+            canvas.dataset.placeCount = '0';
+            canvas.dataset.phaseLabel = '';
+            canvas.dataset.observation = '';
+            updMulti({ livePopHistory: [], sandboxPlaceCount: 0, livePhaseLabel: 'Reset complete.', livePhaseExplain: 'The sandbox returned to its current population targets and a fresh vegetation field.' });
+            if (announceToSR) announceToSR('Sandbox reset complete.');
+            playSound('pause');
+          }          var ticksThisFrame = paused ? 0 : speed;
 
           for (var speedIter = 0; speedIter < ticksThisFrame; speedIter++) {
             tick++;
@@ -1738,8 +2700,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             // and close the gap faster (CHASE_SPEED_DAY/NIGHT). This honors
             // the "foxes hunt more effectively in the dark" toast that
             // previously had no code behind it.
-            var STARVE_THRESHOLD = 720;  // ~12 seconds at 60fps without a kill
-            var HUNT_COOLDOWN = 90;       // ~1.5 seconds before another kill
+            var STARVE_THRESHOLD = 1200;  // ~10 seconds at default speed (2x)
+            var HUNT_COOLDOWN = 120;      // ~1 second at default speed (2x)
             // Drought-time hunt boost: weakened prey are easier to detect
             // and easier to chase. Real ecology — drought makes prey
             // dehydrated/slower, predators get a one-time advantage
@@ -1849,9 +2811,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   // with no births). When a well-fed predator catches
                   // prey AND there's a free pool slot AND a small random
                   // roll succeeds, respawn a dead predator near the
-                  // parent. Birth rate kept low (10%) so the cycle has
+                  // parent. Birth rate kept low (5%) so the cycle has
                   // long enough phases for students to see boom/bust.
-                  if (wasWellFed && Math.random() < 0.10) {
+                  if (wasWellFed && Math.random() < 0.05) {
                     var predSpawnIdx = -1;
                     for (var ps = 0; ps < predEntities.length; ps++) {
                       if (!predEntities[ps].alive) { predSpawnIdx = ps; break; }
@@ -2661,6 +3623,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             }
           }
 
+          if (phaseLabel && canvas.dataset.phaseLabel !== phaseLabel) {
+            canvas.dataset.phaseLabel = phaseLabel;
+            try { updMulti({ livePhaseLabel: phaseLabel, livePhaseExplain: phaseExplain }); } catch (e) { /* ignore announcement failures */ }
+          }
+
           // ── Live mini-chart (top-right) ──
           // Shows the last ~10 seconds of prey + predator counts as
           // overlaid sparklines. Same data as the analytical chart\'s
@@ -2977,16 +3944,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       // ── Preset configurations ──
       var applyPreset = function(name) {
         var presets = {
-          balanced:    { prey0: 80,  pred0: 30, preyBirth: 0.10, preyDeath: 0.01, predBirth: 0.01, predDeath: 0.10 },
+          balanced:    { prey0: 80,  pred0: 12, preyBirth: 0.10, preyDeath: 0.005, predBirth: 0.005, predDeath: 0.10 },
           extinction:  { prey0: 20,  pred0: 50, preyBirth: 0.05, preyDeath: 0.02, predBirth: 0.02, predDeath: 0.05 },
-          boom:        { prey0: 120, pred0: 10, preyBirth: 0.20, preyDeath: 0.005, predBirth: 0.005, predDeath: 0.15 },
-          equilibrium: { prey0: 60,  pred0: 25, preyBirth: 0.08, preyDeath: 0.008, predBirth: 0.008, predDeath: 0.08 }
+          boom:        { prey0: 120, pred0: 6, preyBirth: 0.20, preyDeath: 0.003, predBirth: 0.003, predDeath: 0.15 },
+          equilibrium: { prey0: 40,  pred0: 12, preyBirth: 0.08, preyDeath: 0.004, predBirth: 0.004, predDeath: 0.08 }
         };
         var p = presets[name];
         if (!p) return;
         var newPresetsUsed = Object.assign({}, presetsUsed);
         newPresetsUsed[name] = true;
-        updMulti(Object.assign({}, p, { presetsUsed: newPresetsUsed, data: [], steps: 0 }));
+        updMulti(Object.assign({}, p, { presetsUsed: newPresetsUsed, data: [], steps: 0, replayStep: 0, uncertaintyResult: null, interventionResult: null, analysisView: 'population' }));
         if (announceToSR) announceToSR('Preset ' + name + ' applied.');
         setTimeout(function() {
           checkBadges({ presetsUsed: newPresetsUsed });
@@ -3125,6 +4092,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       // ═══════════════════════════════════════════
       // RENDER
       // ═══════════════════════════════════════════
+      var sandboxKeyboardAction = function(action) {
+        var canvasEl = document.querySelector('canvas[data-eco-canvas]');
+        if (!canvasEl) { if (addToast) addToast('Open the sandbox canvas first.', 'warn'); return; }
+        if (action === 'reset') {
+          canvasEl.dataset.sandboxQuickAction = 'reset';
+          if (announceToSR) announceToSR('Sandbox reset queued.');
+          return;
+        }
+        var actions = {
+          rabbit: { x: 0.25, y: 0.68, label: 'Rabbit' },
+          fox: { x: 0.75, y: 0.68, label: 'Fox' },
+          tree: { x: 0.50, y: 0.58, label: 'Tree' }
+        };
+        var selected = actions[action];
+        if (!selected) return;
+        upd('sandboxTool', action);
+        canvasEl.dataset.sandboxTool = action;
+        canvasEl._pendingClick = true;
+        canvasEl._pendingClickX = (canvasEl.clientWidth || 420) * selected.x;
+        canvasEl._pendingClickY = (canvasEl.clientHeight || 320) * selected.y;
+        if (announceToSR) announceToSR(selected.label + ' placement queued on the ' + (action === 'rabbit' ? 'left' : action === 'fox' ? 'right' : 'center') + '.');
+      };
       var presetNames = ['balanced', 'extinction', 'boom', 'equilibrium'];
       var presetLabels = ['\u2696\uFE0F ' + __alloT('stem.ecosystem.preset_balanced', 'Balanced'), '\uD83D\uDCA0 ' + __alloT('stem.ecosystem.preset_extinction', 'Extinction'), '\uD83D\uDCA5 ' + __alloT('stem.ecosystem.preset_boom', 'Boom'), '\uD83D\uDD04 ' + __alloT('stem.ecosystem.preset_equilibrium', 'Equilibrium')];
 
@@ -3208,7 +4197,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         }
       };
 
-      return h('div', { className: 'space-y-3 pb-4', 'data-ecosystem-tool': 'true' },
+      return h('div', { className: 'space-y-3 pb-4', 'data-ecosystem-tool': 'true', 'data-ecosystem-profile': displayProfile },
+        h('style', null,
+          '[data-ecosystem-profile="beginner"] [data-eco-advanced="true"]{display:none!important;}' +
+          '[data-ecosystem-profile="projection"] [data-eco-projection-panel="true"]{padding:16px!important;}' +
+          '[data-ecosystem-profile="projection"] [data-eco-projection-text="true"]{font-size:14px!important;line-height:1.55!important;}'
+        ),
 
         // ── Header ──
         h('div', { className: 'flex items-center gap-2 mb-2' },
@@ -3231,6 +4225,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
 
         // ── Biome Selector ──
+        h('section', { className: 'rounded-xl border border-slate-300 dark:border-slate-700 bg-white/80 dark:bg-slate-900/70 p-3 space-y-2', 'aria-labelledby': 'eco-display-profile-title' },
+          h('div', { className: 'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1' },
+            h('strong', { id: 'eco-display-profile-title', className: 'text-xs text-slate-800 dark:text-slate-100' }, 'Display profile'),
+            h('span', { className: 'text-[11px] text-slate-600 dark:text-slate-300' }, activeDisplayProfile.hint)
+          ),
+          h('div', { role: 'group', 'aria-label': 'Display profile', className: 'grid grid-cols-3 gap-1' },
+            DISPLAY_PROFILES.map(function(profile) {
+              var selected = displayProfile === profile.id;
+              return h('button', { key: profile.id, type: 'button', 'aria-pressed': selected, onClick: function() { upd('displayProfile', profile.id); }, className: 'min-h-9 rounded-lg border px-2 py-1.5 text-[11px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ' + (selected ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:border-emerald-500') }, profile.label);
+            })
+          )
+        ),
         h('section', { 'data-ecosystem-field-brief': 'true',
           style: {
             padding: '14px', borderRadius: 12,
@@ -3381,12 +4387,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               ref: canvasRef,
               role: 'img',
               'aria-label': __alloT('stem.ecosystem.aria_eco_sim_prefix', 'Ecosystem simulation. ') + biome + __alloT('stem.ecosystem.aria_biome_initial_prey', ' biome. Initial prey: ') + prey0 + __alloT('stem.ecosystem.aria_initial_predators', ', initial predators: ') + pred0 + '. ' + (simPaused ? __alloT('stem.ecosystem.paused_dot', 'Paused.') : __alloT('stem.ecosystem.running_dot', 'Running.')),
+              'aria-describedby': 'eco-live-phase-status eco-live-telemetry',
               tabIndex: 0,
               'data-eco-canvas': 'true',
               'data-biome': biome,
               'data-paused': simPaused ? '1' : '0',
               'data-speed': simSpeed.toString(),
               'data-carry-k': carryingCapacity.toString(),
+              'data-prey0': prey0.toString(),
+              'data-pred0': pred0.toString(),
               'data-sandbox-tool': '',
               style: { width: '100%', height: '100%', display: 'block' }
             }),
@@ -3400,7 +4409,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
           // ── NEW: Canvas control bar: pause/resume + speed slider ──
           h('div', { className: 'flex items-center gap-3 bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2' },
-            h('button', { className: 'px-3 py-1 text-xs font-bold rounded-lg transition-all ' +
+            h('button', { 'aria-pressed': simPaused, 'aria-label': simPaused ? __alloT('stem.ecosystem.resume_simulation', 'Resume simulation') : __alloT('stem.ecosystem.pause_simulation', 'Pause simulation'), className: 'px-3 py-1 text-xs font-bold rounded-lg transition-all ' +
                 (simPaused
                   ? 'transition-colors bg-emerald-700 text-white hover:bg-emerald-800 active:scale-[0.97]'
                   : 'transition-colors bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-[0.97]'),
@@ -3419,6 +4428,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               h('input', {
                 type: 'range', min: 1, max: 6, step: 1, value: simSpeed,
                 'aria-label': __alloT('stem.ecosystem.aria_sim_speed', 'Simulation speed'),
+                'aria-valuetext': speedLabel(simSpeed) + ' ' + __alloT('stem.ecosystem.simulation_speed_suffix', 'simulation speed'),
                 className: 'flex-1 h-1.5 accent-emerald-500',
                 onChange: function(e) {
                   var newSpeed = parseInt(e.target.value, 10);
@@ -3497,7 +4507,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             }),
             h('span', { className: 'text-emerald-700 dark:text-emerald-300' }, lastObservation)
           ),
+          h('div', { id: 'eco-live-phase-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'rounded-lg border-2 px-3 py-2 text-[11px] text-slate-700 dark:text-slate-200', style: { background: livePhaseVisual.soft, borderColor: livePhaseVisual.border } },
+            h('strong', { style: { color: livePhaseVisual.accent }, className: 'font-bold' }, livePhaseVisual.icon + ' ' + livePhaseLabel + ' '),
+            h('span', null, livePhaseExplain)
+          ),
 
+
+          h('div', { id: 'eco-live-telemetry', role: 'region', 'aria-labelledby': 'eco-live-telemetry-title', className: 'rounded-lg border border-sky-300 bg-sky-50/70 dark:bg-sky-900/20 dark:border-sky-700 px-3 py-2 space-y-1' },
+            h('strong', { id: 'eco-live-telemetry-title', className: 'text-[11px] text-sky-800 dark:text-sky-200' }, 'Live population telemetry'),
+            h('div', { className: 'flex items-center gap-2 rounded-md px-2 py-1', style: { background: livePhaseVisual.soft, color: livePhaseVisual.accent } },
+              h('span', { className: 'text-base', 'aria-hidden': 'true' }, livePhaseVisual.icon),
+              h('span', { className: 'text-[11px] font-bold' }, livePhaseVisual.tag),
+              h('span', { className: 'ml-auto text-[10px] font-semibold' }, livePhaseLabel)
+            ),            h('div', { className: 'grid grid-cols-3 gap-1 text-center' },
+              h('div', { className: 'rounded bg-white/70 dark:bg-slate-900/60 p-1' }, h('div', { className: 'text-[10px] text-slate-600 dark:text-slate-300' }, 'Prey'), h('div', { className: 'font-bold text-green-700 dark:text-green-300' }, liveTelemetry.prey)),
+              h('div', { className: 'rounded bg-white/70 dark:bg-slate-900/60 p-1' }, h('div', { className: 'text-[10px] text-slate-600 dark:text-slate-300' }, 'Predators'), h('div', { className: 'font-bold text-red-700 dark:text-red-300' }, liveTelemetry.pred)),
+              h('div', { className: 'rounded bg-white/70 dark:bg-slate-900/60 p-1' }, h('div', { className: 'text-[10px] text-slate-600 dark:text-slate-300' }, 'Prey:predator'), h('div', { className: 'font-bold text-purple-700 dark:text-purple-300' }, liveTelemetry.ratio))
+            ),
+            h('div', { className: 'space-y-1.5' },
+              h('div', { className: 'flex items-center justify-between text-[10px] text-slate-600 dark:text-slate-300' },
+                h('span', null, 'Prey relative to K'),
+                h('strong', null, livePreyPercent + '%')
+              ),
+              h('div', { role: 'progressbar', 'aria-label': 'Prey relative to carrying capacity', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': livePreyPercent, className: 'h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden' },
+                h('div', { className: 'h-full rounded-full transition-all duration-500', style: { width: livePreyPercent + '%', background: '#16a34a' } })
+              ),
+              h('div', { className: 'flex items-center justify-between text-[10px] text-slate-600 dark:text-slate-300' },
+                h('span', null, 'Predator level'),
+                h('strong', null, livePredPercent + '%')
+              ),
+              h('div', { role: 'progressbar', 'aria-label': 'Predator level relative to initial prey scale', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': livePredPercent, className: 'h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden' },
+                h('div', { className: 'h-full rounded-full transition-all duration-500', style: { width: livePredPercent + '%', background: '#dc2626' } })
+              ),
+              h('div', { className: 'flex gap-1 flex-wrap' },
+                h('span', { className: 'rounded-full px-2 py-0.5 text-[10px] font-semibold bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200' }, '\u2191\u2193 Prey ' + liveTelemetry.preyTrend),
+                h('span', { className: 'rounded-full px-2 py-0.5 text-[10px] font-semibold bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200' }, '\u2191\u2193 Predators ' + liveTelemetry.predTrend)
+              )
+            ),            h('p', { role: 'status', 'aria-live': 'polite', className: 'text-[11px] text-slate-700 dark:text-slate-200' }, liveTelemetry.narrative),
+            h('p', { className: 'text-[10px] text-slate-600 dark:text-slate-300' }, 'Trend: prey ' + liveTelemetry.preyTrend + '; predators ' + liveTelemetry.predTrend + '. Vegetation ' + liveTelemetry.veg + '%.')
+          ),
           // ── NEW: Carrying Capacity slider ──
           h('div', { className: 'space-y-1' },
             h('label', { className: 'text-[11px] font-semibold text-slate-600 dark:text-slate-300 flex justify-between' },
@@ -3511,7 +4559,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               onChange: function(e) {
                 var newK = parseInt(e.target.value, 10);
                 var newChanges = carryCapChanges + 1;
-                updMulti({ carryingCapacity: newK, carryCapChanges: newChanges });
+                updMulti({ carryingCapacity: newK, carryCapChanges: newChanges, uncertaintyResult: null, interventionResult: null });
                 var canvasEl = document.querySelector('canvas[data-eco-canvas]');
                 if (canvasEl) canvasEl.dataset.carryK = newK.toString();
                 setTimeout(function() {
@@ -3523,21 +4571,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
           // ── Live Population Graph Panel ──
           h('div', { className: 'bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-400 dark:border-slate-700 overflow-hidden' },
-            h('button', { className: 'transition-colors w-full flex items-center justify-between px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-[0.97]',
+            h('button', { 'aria-expanded': ecoGraphOpen, 'aria-controls': 'eco-live-graph-panel', className: 'transition-colors w-full flex items-center justify-between px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-[0.97]',
               onClick: function() { upd('ecoGraphOpen', !ecoGraphOpen); }
             },
               h('span', null, '\uD83D\uDCCA ' + __alloT('stem.ecosystem.live_pop_graph', 'Live Population Graph')),
               h('span', { className: 'text-xs', style: { transform: ecoGraphOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' } }, '\u25BC')
             ),
-            ecoGraphOpen && h('div', { className: 'px-3 pb-3 space-y-2' },
+            ecoGraphOpen && h('div', { id: 'eco-live-graph-panel', className: 'px-3 pb-3 space-y-2' },
               // View tabs
               h('div', { className: 'flex gap-1' },
-                h('button', { 'aria-label': __alloT('stem.ecosystem.populations', 'Populations'),
+                h('button', { 'aria-label': __alloT('stem.ecosystem.populations', 'Populations'), 'aria-pressed': ecoGraphView === 'population',
                   className: 'flex-1 px-2 py-1 text-[11px] font-semibold rounded ' +
                     (ecoGraphView === 'population' ? 'bg-emerald-700 text-white' : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300'),
                   onClick: function() { switchGraphView('population'); }
                 }, __alloT('stem.ecosystem.populations', 'Populations')),
-                h('button', { 'aria-label': __alloT('stem.ecosystem.environment', 'Environment'),
+                h('button', { 'aria-label': __alloT('stem.ecosystem.environment', 'Environment'), 'aria-pressed': ecoGraphView === 'environment',
                   className: 'flex-1 px-2 py-1 text-[11px] font-semibold rounded ' +
                     (ecoGraphView === 'environment' ? 'bg-amber-700 text-white' : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300'),
                   onClick: function() { switchGraphView('environment'); }
@@ -3719,7 +4767,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 type: 'range', min: 5, max: 150, step: 5, value: prey0,
                 'aria-label': __alloT('stem.ecosystem.aria_prey_start_pop', 'Prey start population'),
                 className: 'w-full h-1.5 accent-emerald-500',
-                onChange: function(e) { upd('prey0', parseInt(e.target.value, 10)); }
+                onChange: function(e) { updMulti({ prey0: parseInt(e.target.value, 10), uncertaintyResult: null, interventionResult: null }); }
               })
             ),
             // Predators
@@ -3732,7 +4780,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 type: 'range', min: 2, max: 80, step: 2, value: pred0,
                 'aria-label': __alloT('stem.ecosystem.aria_pred_start_pop', 'Predator start population'),
                 className: 'w-full h-1.5 accent-red-500',
-                onChange: function(e) { upd('pred0', parseInt(e.target.value, 10)); }
+                onChange: function(e) { updMulti({ pred0: parseInt(e.target.value, 10), uncertaintyResult: null, interventionResult: null }); }
               })
             ),
             // Prey Birth Rate
@@ -3744,7 +4792,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               h('input', {
                 type: 'range', 'aria-label': __alloT('stem.ecosystem.aria_prey_growth_r', 'prey intrinsic growth rate r'), min: 0.01, max: 0.3, step: 0.005, value: preyBirth,
                 className: 'w-full h-1.5 accent-green-500',
-                onChange: function(e) { upd('preyBirth', parseFloat(e.target.value)); }
+                onChange: function(e) { updMulti({ preyBirth: parseFloat(e.target.value), uncertaintyResult: null, interventionResult: null }); }
               })
             ),
             // Pred Death Rate
@@ -3756,7 +4804,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               h('input', {
                 type: 'range', 'aria-label': __alloT('stem.ecosystem.aria_pred_mortality_d', 'predator mortality coefficient d'), min: 0.01, max: 0.3, step: 0.005, value: predDeath,
                 className: 'w-full h-1.5 accent-red-500',
-                onChange: function(e) { upd('predDeath', parseFloat(e.target.value)); }
+                onChange: function(e) { updMulti({ predDeath: parseFloat(e.target.value), uncertaintyResult: null, interventionResult: null }); }
               })
             ),
             // Prey Death Rate (interaction)
@@ -3768,7 +4816,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               h('input', {
                 type: 'range', 'aria-label': __alloT('stem.ecosystem.aria_predation_coeff_a', 'predation coefficient a'), min: 0.001, max: 0.05, step: 0.001, value: preyDeath,
                 className: 'w-full h-1.5 accent-orange-500',
-                onChange: function(e) { upd('preyDeath', parseFloat(e.target.value)); }
+                onChange: function(e) { updMulti({ preyDeath: parseFloat(e.target.value), uncertaintyResult: null, interventionResult: null }); }
               })
             ),
             // Pred Birth Rate (interaction)
@@ -3780,14 +4828,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               h('input', {
                 type: 'range', 'aria-label': __alloT('stem.ecosystem.aria_pred_conversion_b', 'predator conversion coefficient b'), min: 0.001, max: 0.05, step: 0.001, value: predBirth,
                 className: 'w-full h-1.5 accent-blue-500',
-                onChange: function(e) { upd('predBirth', parseFloat(e.target.value)); }
+                onChange: function(e) { updMulti({ predBirth: parseFloat(e.target.value), uncertaintyResult: null, interventionResult: null }); }
               })
             )
           ),
 
-          h('div', { className: 'rounded-lg border border-cyan-300 bg-cyan-50 p-3 text-[11px] text-slate-700 leading-relaxed' },
+          h('div', { className: 'rounded-lg border border-cyan-300 bg-cyan-50 p-3 text-[11px] text-slate-700 leading-relaxed', 'data-eco-advanced': 'true' },
             h('div', { className: 'font-mono font-bold text-cyan-900' }, 'ΔN = rN(1 − N/K) − aNP    ΔP = bNP − dP'),
-            h('div', { className: 'mt-1' }, __alloT('stem.ecosystem.teaching_model_note', 'Teaching model: one-step Euler updates with rounded counts. It omits age structure, space, seasons, stochasticity, handling time, disease, and changing K; parameter values are illustrative rather than fitted to rabbits and foxes.'))
+            h('div', { className: 'mt-1' }, __alloT('stem.ecosystem.teaching_model_note', 'Teaching model: Euler updates use a 0.1 time step; populations stay continuous internally and are rounded for display. It omits age structure, space, seasons, stochasticity, handling time, disease, and changing K; parameter values are illustrative rather than fitted to rabbits and foxes.'))
           ),
 
           // ── Run Graph Simulation button ──
@@ -3798,14 +4846,167 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           }, '\u25B6 ' + __alloT('stem.ecosystem.run_graph_sim', 'Run Graph Simulation')),
 
           // ── Lotka-Volterra graph (post-simulation) ──
-          data && data.length > 1 && h('div', { className: 'bg-white dark:bg-slate-900 rounded-xl border border-slate-400 dark:border-slate-700 p-3 space-y-2' },
+          h('section', { className: 'rounded-xl border border-cyan-300 bg-cyan-50/70 dark:bg-cyan-900/20 dark:border-cyan-700 p-3 space-y-2', 'aria-labelledby': 'eco-notebook-title' },
+            h('h3', { id: 'eco-notebook-title', className: 'text-sm font-bold text-cyan-800 dark:text-cyan-200' }, '\uD83E\uDDEA ' + __alloT('stem.ecosystem.notebook_title', 'Prediction & evidence notebook')),
+            h('p', { className: 'text-[11px] text-slate-700 dark:text-slate-200' }, __alloT('stem.ecosystem.notebook_intro', 'Predict first, run the model, then explain what the evidence shows. Change one factor at a time when you compare runs.')),
+            h('div', { className: 'grid grid-cols-3 gap-1', role: 'list', 'aria-label': 'Predict, observe, explain workflow' },
+              POE_STAGES.map(function(stage) {
+                var active = poeStage === stage.id;
+                var reached = stage.id === 'predict' || (stage.id === 'observe' && (poeStage === 'observe' || poeStage === 'explain')) || (stage.id === 'explain' && poeStage === 'explain');
+                return h('div', { key: stage.id, role: 'listitem', 'aria-current': active ? 'step' : undefined, className: 'rounded px-2 py-1 text-center text-[11px] font-bold ' + (active ? 'bg-cyan-700 text-white' : reached ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-200' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400') }, (reached ? '\u2713 ' : '') + stage.label);
+              })
+            ),
+            h('div', { role: 'status', 'aria-live': 'polite', className: 'text-[11px] text-slate-600 dark:text-slate-300' },
+              poeStage === 'predict' ? 'Choose a predicted outcome before running the model.' : poeStage === 'observe' ? 'Observe the curves, then record evidence in your own words.' : 'Explanation complete: your reflection connects the outcome to evidence.'
+            ),
+            h('div', { role: 'group', 'aria-labelledby': 'eco-prediction-label', className: 'space-y-1' },
+              h('span', { id: 'eco-prediction-label', className: 'block text-[11px] font-bold text-slate-700 dark:text-slate-200' }, __alloT('stem.ecosystem.prediction_label', 'My prediction for the prey outcome')),
+              h('div', { className: 'flex gap-1 flex-wrap' }, RUN_PREDICTIONS.map(function(option) {
+                return h('button', { key: option.id, type: 'button', 'aria-pressed': runPrediction === option.id, className: 'px-2 py-1 rounded border text-[11px] font-semibold transition-colors ' + (runPrediction === option.id ? 'bg-cyan-700 text-white border-cyan-700' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-600'), onClick: function() { updMulti({ runPrediction: option.id, poeStage: 'predict', predictionFeedback: '' }); } }, option.label);
+              }))
+            ),
+            h('label', { htmlFor: 'eco-run-name', className: 'block text-[11px] font-bold text-slate-700 dark:text-slate-200' }, 'Optional run name for branching'),
+            h('input', { id: 'eco-run-name', value: runName, onChange: function(e) { upd('runName', e.target.value); }, maxLength: 80, placeholder: 'Example: fewer predators', className: 'w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-[11px] text-slate-800 dark:text-slate-100' }),
+            h('label', { htmlFor: 'eco-run-reflection', className: 'block text-[11px] font-bold text-slate-700 dark:text-slate-200' }, __alloT('stem.ecosystem.reflection_label', 'Reasoning or observation')),
+            h('textarea', { id: 'eco-run-reflection', value: experimentReflection, onChange: function(e) { upd('experimentReflection', e.target.value); }, rows: 2, maxLength: 3200, placeholder: __alloT('stem.ecosystem.reflection_placeholder', 'What changed? What evidence supports your explanation?'), className: 'w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-[11px] text-slate-800 dark:text-slate-100' }),
+            predictionFeedback && h('div', { role: 'status', 'aria-live': 'polite', className: 'rounded border border-cyan-300 bg-white/80 dark:bg-slate-900/70 p-2 text-[11px] text-slate-700 dark:text-slate-200' }, predictionFeedback),
+            h('div', { className: 'flex gap-2 flex-wrap' },
+              h('button', { type: 'button', disabled: !data || data.length < 2, onClick: setBaselineRun, className: 'px-2 py-1 rounded border border-cyan-600 text-cyan-800 dark:text-cyan-200 text-[11px] font-semibold disabled:opacity-50' }, __alloT('stem.ecosystem.set_baseline', 'Set current run as baseline')),
+              h('button', { type: 'button', disabled: !data || data.length < 2, onClick: saveExperimentEvidence, className: 'px-2 py-1 rounded bg-cyan-700 text-white text-[11px] font-semibold disabled:opacity-50' }, __alloT('stem.ecosystem.save_evidence', 'Save evidence')),
+              h('button', { type: 'button', disabled: !data || data.length < 2 || !String(experimentReflection || '').trim(), onClick: markExplanationComplete, className: 'px-2 py-1 rounded border border-indigo-600 text-indigo-800 dark:text-indigo-200 text-[11px] font-semibold disabled:opacity-50' }, 'Complete explanation'),
+              h('button', { type: 'button', disabled: !data || data.length < 2, onClick: saveBranchRun, className: 'px-2 py-1 rounded border border-violet-600 text-violet-800 dark:text-violet-200 text-[11px] font-semibold disabled:opacity-50' }, 'Save named branch'),
+              baselineRun && h('button', { type: 'button', onClick: clearBaselineRun, className: 'px-2 py-1 rounded border border-slate-400 text-slate-700 dark:text-slate-200 text-[11px] font-semibold' }, __alloT('stem.ecosystem.clear_baseline', 'Clear baseline'))
+            ),
+            baselineRun && data && data.length > 1 && (function() {
+              var base = baselineRun.summary || classifyRun(baselineRun.data || []);
+              var current = classifyRun(data);
+              return h('div', { role: 'status', 'aria-live': 'polite', className: 'rounded border border-indigo-300 bg-indigo-50/80 dark:bg-indigo-900/20 p-2 text-[11px] text-slate-700 dark:text-slate-200' },
+                h('strong', null, __alloT('stem.ecosystem.comparison_label', 'Run comparison: ')),
+                'Baseline ' + base.label + ' (prey min ' + base.minPrey + ', peak ' + base.maxPrey + ') -> Current ' + current.label + ' (prey min ' + current.minPrey + ', peak ' + current.maxPrey + ').'
+              );
+            })(),
+            experimentLog.length > 0 && h('details', { className: 'text-[11px]' },
+              h('summary', { className: 'cursor-pointer font-semibold text-cyan-800 dark:text-cyan-200' }, __alloT('stem.ecosystem.evidence_history', 'Saved evidence history (') + experimentLog.length + ')'),
+              h('ol', { className: 'list-decimal pl-5 mt-1 space-y-1 text-slate-700 dark:text-slate-200' }, experimentLog.slice(-3).reverse().map(function(entry) {
+                return h('li', { key: entry.id }, entry.summary.label + (entry.reflection ? ': ' + entry.reflection : ''));
+              }))
+            ),
+            branchRuns.length > 0 && h('details', { className: 'text-[11px]' },
+              h('summary', { className: 'cursor-pointer font-semibold text-violet-800 dark:text-violet-200' }, 'Named branches (' + branchRuns.length + ')'),
+              h('ol', { className: 'list-decimal pl-5 mt-1 space-y-1 text-slate-700 dark:text-slate-200' }, branchRuns.slice().reverse().map(function(record) {
+                return h('li', { key: record.id, className: 'flex items-center gap-2' },
+                  h('span', { className: 'flex-1' }, record.label + ' — ' + (record.summary ? record.summary.label : 'saved run')),
+                  h('button', { type: 'button', onClick: function() { loadBranchRun(record); }, className: 'px-2 py-0.5 rounded border border-violet-500 text-violet-800 dark:text-violet-200 font-semibold' }, 'Load')
+                );
+              }))
+            ),
+            h('div', { className: 'rounded-lg border border-violet-300 bg-violet-50/70 dark:bg-violet-900/20 dark:border-violet-700 p-2 space-y-2', 'data-eco-advanced': 'true' },
+              h('div', { className: 'flex items-center justify-between gap-2' },
+                h('strong', { className: 'text-[11px] text-violet-900 dark:text-violet-200' }, 'Teacher / report mode'),
+                h('button', { type: 'button', 'aria-pressed': teacherMode, 'aria-controls': 'eco-teacher-tools', onClick: function() { upd('teacherMode', !teacherMode); }, className: 'px-2 py-1 rounded border border-violet-600 text-violet-800 dark:text-violet-200 text-[11px] font-semibold' }, teacherMode ? 'Hide tools' : 'Show tools')
+              ),
+              teacherMode && h('div', { id: 'eco-teacher-tools', className: 'space-y-2' },
+                h('label', { htmlFor: 'eco-teacher-prompt', className: 'block text-[11px] font-bold text-slate-700 dark:text-slate-200' }, 'Guiding question or class prompt'),
+                h('textarea', { id: 'eco-teacher-prompt', value: teacherPrompt, onChange: function(e) { upd('teacherPrompt', e.target.value); }, rows: 2, maxLength: 400, placeholder: 'Example: How does reducing predator pressure change the prey trajectory?', className: 'w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-2 text-[11px] text-slate-800 dark:text-slate-100' }),
+                h('p', { className: 'text-[11px] text-slate-700 dark:text-slate-200' }, data && data.length > 1 ? 'Report ready: ' + classifyRun(data).label : 'Run the model to populate the report.'),
+                h('p', { className: 'text-[10px] font-mono break-all text-violet-800 dark:text-violet-200' }, 'Replay key: ' + replayKeyFor(getModelParameters())),
+                h('div', { className: 'flex gap-2 flex-wrap' },
+                  h('button', { type: 'button', onClick: exportTeacherReport, className: 'px-2 py-1 rounded bg-violet-700 text-white text-[11px] font-semibold' }, 'Export teacher report'),
+                  h('button', { type: 'button', disabled: !data || data.length < 2, onClick: exportTeacherCSV, className: 'px-2 py-1 rounded border border-violet-600 text-violet-800 dark:text-violet-200 text-[11px] font-semibold disabled:opacity-50' }, 'Export run CSV'),
+                  h('button', { type: 'button', disabled: !data || data.length < 2, onClick: printTeacherReport, className: 'px-2 py-1 rounded border border-violet-600 text-violet-800 dark:text-violet-200 text-[11px] font-semibold disabled:opacity-50' }, 'Print report')
+                )
+              )
+            )
+          ),
+          data && data.length > 1 && h('section', { className: 'rounded-xl border border-slate-300 dark:border-slate-700 bg-white/80 dark:bg-slate-900/70 p-3 space-y-2', 'aria-labelledby': 'eco-analysis-workspace-title' },
+            h('div', { className: 'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1' },
+              h('h2', { id: 'eco-analysis-workspace-title', className: 'text-sm font-bold text-slate-900 dark:text-slate-100' }, 'Analysis workspace'),
+              h('span', { className: 'text-[11px] text-slate-600 dark:text-slate-300', 'data-eco-projection-text': 'true' }, activeAnalysisView.hint)
+            ),
+            h('div', { role: 'tablist', 'aria-label': 'Ecosystem analysis views', className: 'flex flex-wrap gap-1' },
+              analysisViews.map(function(view, index) {
+                var selected = effectiveAnalysisView === view.id;
+                return h('button', { key: view.id, id: 'eco-analysis-tab-' + view.id, type: 'button', role: 'tab', 'aria-selected': selected, 'aria-controls': 'eco-analysis-panel-' + view.id, onClick: function() { upd('analysisView', view.id); }, onKeyDown: function(e) { onAnalysisTabKeyDown(e, index); }, className: 'min-h-9 rounded-lg border px-3 py-1.5 text-[11px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ' + (selected ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:border-emerald-500') }, view.label);
+              })
+            ),
+            analysisViews.filter(function(view) { return view.id !== effectiveAnalysisView; }).map(function(view) {
+              return h('div', { key: 'inactive-panel-' + view.id, id: 'eco-analysis-panel-' + view.id, role: 'tabpanel', hidden: true, 'aria-labelledby': 'eco-analysis-tab-' + view.id });
+            })
+          ),
+
+          effectiveAnalysisView === 'compare' && data && data.length > 1 && comparedRun && comparedRun.data && comparedRun.data.length > 1 && h('section', { id: 'eco-analysis-panel-compare', role: 'tabpanel', className: 'rounded-xl border border-violet-300 dark:border-violet-700 bg-violet-50/70 dark:bg-violet-950/20 p-3 space-y-3', 'aria-labelledby': 'eco-analysis-tab-compare', 'data-eco-projection-panel': 'true' },
+            h('div', { className: 'flex flex-col md:flex-row md:items-end md:justify-between gap-2' },
+              h('div', { className: 'min-w-0' },
+                h('h3', { id: 'eco-comparison-title', className: 'text-sm font-bold text-violet-900 dark:text-violet-100' }, 'Run comparison workspace'),
+                h('p', { className: 'text-[11px] text-slate-700 dark:text-slate-200', 'data-eco-projection-text': 'true' }, 'Compare the same relative moment in the current run and a saved branch. Prey use a solid line and circle; predators use a dashed line and square.')
+              ),
+              h('div', { className: 'w-full md:w-64' },
+                h('label', { htmlFor: 'eco-compare-run', className: 'block text-[11px] font-bold text-slate-700 dark:text-slate-200' }, 'Saved run'),
+                h('select', { id: 'eco-compare-run', value: String(comparedRun.id), onChange: function(e) { upd('compareRunId', e.target.value); }, className: 'w-full rounded border border-violet-300 dark:border-violet-700 bg-white dark:bg-slate-900 p-2 text-[11px] text-slate-800 dark:text-slate-100' },
+                  branchRuns.map(function(record) { return h('option', { key: record.id, value: String(record.id) }, record.label); })
+                )
+              )
+            ),
+            h('div', { className: 'rounded-lg border border-violet-200 dark:border-violet-800 bg-white/80 dark:bg-slate-900/70 p-2 space-y-2' },
+              h('div', { className: 'flex items-center justify-between gap-2' },
+                h('label', { htmlFor: 'eco-replay-step', className: 'text-[11px] font-bold text-slate-700 dark:text-slate-200' }, 'Shared replay timeline'),
+                h('strong', { className: 'text-[11px] text-violet-800 dark:text-violet-200' }, 'Step ' + replayCursor + ' of ' + replayMax)
+              ),
+              h('input', { id: 'eco-replay-step', type: 'range', min: 0, max: replayMax, step: 1, value: replayCursor, 'aria-valuetext': 'Modeled step ' + replayCursor + ' of ' + replayMax, onChange: function(e) { upd('replayStep', parseInt(e.target.value, 10)); }, className: 'w-full h-2 accent-violet-600' }),
+              h('div', { className: 'grid grid-cols-4 gap-1' },
+                h('button', { type: 'button', disabled: replayCursor <= 0, onClick: function() { upd('replayStep', 0); }, className: 'rounded border border-violet-300 dark:border-violet-700 px-2 py-1 text-[11px] font-semibold disabled:opacity-40' }, 'Start'),
+                h('button', { type: 'button', disabled: replayCursor <= 0, onClick: function() { upd('replayStep', Math.max(0, replayCursor - 1)); }, className: 'rounded border border-violet-300 dark:border-violet-700 px-2 py-1 text-[11px] font-semibold disabled:opacity-40' }, 'Previous'),
+                h('button', { type: 'button', disabled: replayCursor >= replayMax, onClick: function() { upd('replayStep', Math.min(replayMax, replayCursor + 1)); }, className: 'rounded border border-violet-300 dark:border-violet-700 px-2 py-1 text-[11px] font-semibold disabled:opacity-40' }, 'Next'),
+                h('button', { type: 'button', disabled: replayCursor >= replayMax, onClick: function() { upd('replayStep', replayMax); }, className: 'rounded border border-violet-300 dark:border-violet-700 px-2 py-1 text-[11px] font-semibold disabled:opacity-40' }, 'End')
+              )
+            ),
+            h('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-3' },
+              buildReplaySVG(data, 'Current run'),
+              buildReplaySVG(comparedRun.data, comparedRun.label)
+            ),
+            (function() {
+              var currentReplay = replayPointFor(data);
+              var savedReplay = replayPointFor(comparedRun.data);
+              var currentOutcome = classifyRun(data);
+              var savedOutcome = comparedRun.summary || classifyRun(comparedRun.data);
+              return h('div', { role: 'status', 'aria-live': 'polite', className: 'rounded-lg border border-violet-200 dark:border-violet-800 bg-white/80 dark:bg-slate-900/70 p-2 text-[11px] text-slate-700 dark:text-slate-200', 'data-eco-projection-text': 'true' },
+                'At the shared moment, current prey ' + Math.round(Number(currentReplay.point.prey) || 0) + ' and predators ' + Math.round(Number(currentReplay.point.pred) || 0) + '; ' + comparedRun.label + ' prey ' + Math.round(Number(savedReplay.point.prey) || 0) + ' and predators ' + Math.round(Number(savedReplay.point.pred) || 0) + '. Outcomes: current ' + currentOutcome.label + '; saved ' + savedOutcome.label + '.'
+              );
+            })(),
+            displayProfile !== 'beginner' && h('div', { className: 'overflow-x-auto', 'data-eco-advanced': 'true' },
+              h('table', { className: 'w-full min-w-[520px] text-[11px] border-collapse' },
+                h('caption', { className: 'sr-only' }, 'Current and saved run parameter comparison'),
+                h('thead', null,
+                  h('tr', { className: 'text-left text-slate-700 dark:text-slate-200' },
+                    h('th', { scope: 'col', className: 'p-1.5 border-b border-violet-200 dark:border-violet-800' }, 'Parameter'),
+                    h('th', { scope: 'col', className: 'p-1.5 border-b border-violet-200 dark:border-violet-800' }, 'Current'),
+                    h('th', { scope: 'col', className: 'p-1.5 border-b border-violet-200 dark:border-violet-800' }, 'Saved'),
+                    h('th', { scope: 'col', className: 'p-1.5 border-b border-violet-200 dark:border-violet-800' }, 'Delta')
+                  )
+                ),
+                h('tbody', null, comparisonParameterRows(comparedRun).map(function(row) {
+                  var delta = (Number(row.current) || 0) - (Number(row.saved) || 0);
+                  var deltaText = (delta > 0 ? '+' : '') + formatComparisonValue(row.key, delta);
+                  return h('tr', { key: row.key, className: 'odd:bg-violet-100/50 dark:odd:bg-violet-950/30' },
+                    h('th', { scope: 'row', className: 'p-1.5 text-left font-semibold text-slate-700 dark:text-slate-200' }, row.label),
+                    h('td', { className: 'p-1.5' }, formatComparisonValue(row.key, row.current)),
+                    h('td', { className: 'p-1.5' }, formatComparisonValue(row.key, row.saved)),
+                    h('td', { className: 'p-1.5 font-mono' }, deltaText)
+                  );
+                }))
+              )
+            )
+          ),
+
+          effectiveAnalysisView === 'population' && data && data.length > 1 && h('section', { id: 'eco-analysis-panel-population', role: 'tabpanel', className: 'bg-white dark:bg-slate-900 rounded-xl border border-slate-400 dark:border-slate-700 p-3 space-y-2', 'aria-labelledby': 'eco-analysis-tab-population' },
             h('p', { className: 'text-xs font-bold text-slate-700 dark:text-slate-200' }, '\uD83D\uDCC8 ' + __alloT('stem.ecosystem.logistic_pp_approx', 'Logistic Predator-Prey Approximation')),
             buildPopSVG(),
             // Legend
             h('div', { className: 'flex gap-4 justify-center text-[11px]' },
               h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-green-500' }), __alloT('stem.ecosystem.prey', 'Prey') + ' (\uD83D\uDC07)'),
               h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-red-500' }), __alloT('stem.ecosystem.predators', 'Predators') + ' (\uD83E\uDD8A)'),
-              h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-3 h-0.5 bg-amber-500', style: { borderBottom: '1px dashed #f59e0b' } }), 'K')
+              h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-3 h-0.5 bg-amber-500', style: { borderBottom: '1px dashed #f59e0b' } }), 'K'),
+              h('span', { className: 'flex items-center gap-1 text-violet-700 dark:text-violet-300' }, '\u25C6 Replay')
             ),
             // Stats
             h('div', { className: 'grid grid-cols-4 gap-1 text-center' },
@@ -3829,7 +5030,203 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           ),
 
           // ── Phase Portrait (post-simulation) ──
-          data && data.length > 1 && h('div', { className: 'bg-white dark:bg-slate-900 rounded-xl border border-slate-400 dark:border-slate-700 p-3 space-y-2' },
+          effectiveAnalysisView === 'moments' && data && data.length > 1 && h('section', { id: 'eco-analysis-panel-moments', role: 'tabpanel', className: 'rounded-xl border border-amber-300 dark:border-amber-700 bg-amber-50/70 dark:bg-amber-950/20 p-3 space-y-3', 'aria-labelledby': 'eco-analysis-tab-moments', 'data-eco-projection-panel': 'true' },
+            h('div', { className: 'space-y-1' },
+              h('h3', { id: 'eco-key-moments-title', className: 'text-sm font-bold text-amber-900 dark:text-amber-100' }, 'Key moments in this run'),
+              h('p', { className: 'text-[11px] text-slate-700 dark:text-slate-200', 'data-eco-projection-text': 'true' }, keyMomentAnalysis.lagLabel)
+            ),
+            h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2', role: 'list', 'aria-label': 'Jump to a key modeled moment' },
+              keyMomentAnalysis.moments.map(function(moment) {
+                var selectedMoment = replayCursor === moment.index;
+                return h('button', { key: moment.id, type: 'button', role: 'listitem', 'aria-pressed': selectedMoment, 'aria-label': 'Jump to ' + moment.label + ' at modeled step ' + moment.step, onClick: function() { upd('replayStep', moment.index); if (announceToSR) announceToSR(moment.label + ', step ' + moment.step + '. Prey ' + moment.prey + ', predators ' + moment.pred + '.'); }, className: 'min-h-[68px] rounded-lg border p-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (selectedMoment ? 'border-amber-700 bg-amber-700 text-white' : 'border-amber-300 dark:border-amber-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:border-amber-600') },
+                  h('span', { className: 'block text-[11px] font-bold' }, moment.label),
+                  h('span', { className: 'block text-[10px] opacity-85' }, 'Step ' + moment.step),
+                  h('span', { className: 'block text-[10px] opacity-85' }, 'Prey ' + moment.prey + ' | Pred ' + moment.pred)
+                );
+              })
+            ),
+            (function() {
+              var exactMoment = null;
+              for (var emi = 0; emi < keyMomentAnalysis.moments.length; emi++) {
+                if (keyMomentAnalysis.moments[emi].index === replayCursor) exactMoment = keyMomentAnalysis.moments[emi];
+              }
+              var replaySample = data[replayCursor] || data[0];
+              return h('div', { role: 'status', 'aria-live': 'polite', className: 'rounded-lg border border-amber-200 dark:border-amber-800 bg-white/80 dark:bg-slate-900/70 p-2 text-[11px] text-slate-700 dark:text-slate-200', 'data-eco-projection-text': 'true' },
+                exactMoment
+                  ? h('span', null, h('strong', null, exactMoment.label + ': '), exactMoment.explanation)
+                  : 'Step ' + replayCursor + ': prey ' + Math.round(Number(replaySample.prey) || 0) + ', predators ' + Math.round(Number(replaySample.pred) || 0) + '. Choose a key moment to inspect a turning point.'
+              );
+            })(),
+            h('p', { className: 'text-[11px] font-semibold text-amber-900 dark:text-amber-100' }, 'Evidence prompt: What changes between the prey peak and predator peak, and how does the measured lag support your explanation?')
+          ),
+          effectiveAnalysisView === 'cer' && data && data.length > 1 && h('section', { id: 'eco-analysis-panel-cer', role: 'tabpanel', className: 'rounded-xl border border-sky-300 dark:border-sky-700 bg-sky-50/60 dark:bg-sky-950/20 p-3 space-y-4', 'aria-labelledby': 'eco-analysis-tab-cer', 'data-eco-projection-panel': 'true' },
+            h('div', { className: 'space-y-1' },
+              h('h3', { className: 'text-sm font-bold text-sky-900 dark:text-sky-100' }, 'Claim\u2013Evidence\u2013Reasoning'),
+              h('p', { className: 'text-[11px] text-slate-700 dark:text-slate-200', 'data-eco-projection-text': 'true' }, 'Make a testable claim, collect synchronized evidence from the model, then explain why that evidence supports the claim.')
+            ),
+            h('ol', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2', 'aria-label': 'CER progress' },
+              [
+                { label: 'Claim', ready: cerClaimReady },
+                { label: 'Evidence', ready: cerEvidenceReady },
+                { label: 'Reasoning', ready: cerReasoningReady }
+              ].map(function(item, index) {
+                return h('li', { key: item.label, className: 'rounded-lg border p-2 text-[11px] ' + (item.ready ? 'border-emerald-400 bg-emerald-50 dark:border-emerald-700 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-100' : 'border-slate-300 dark:border-slate-600 bg-white/80 dark:bg-slate-900/70 text-slate-700 dark:text-slate-200') },
+                  h('span', { className: 'font-bold' }, (item.ready ? '\u2713 ' : (index + 1) + '. ') + item.label),
+                  h('span', { className: 'block mt-0.5' }, item.ready ? 'Ready' : 'Needs work')
+                );
+              })
+            ),
+            h('label', { htmlFor: 'eco-cer-claim', className: 'block space-y-1' },
+              h('span', { className: 'block text-[11px] font-bold text-sky-900 dark:text-sky-100' }, 'Claim'),
+              h('span', { className: 'block text-[11px] text-slate-600 dark:text-slate-300' }, 'State what you think the model shows. Make it specific enough to test against a run.'),
+              h('textarea', { id: 'eco-cer-claim', value: cerClaim, onChange: function(e) { upd('cerClaim', e.target.value); }, rows: 2, maxLength: 600, placeholder: 'Example: Predator abundance responds after prey abundance changes.', className: 'w-full rounded-lg border border-sky-300 dark:border-sky-700 bg-white dark:bg-slate-900 p-2 text-[11px] text-slate-800 dark:text-slate-100' })
+            ),
+            h('fieldset', { className: 'space-y-2' },
+              h('legend', { className: 'text-[11px] font-bold text-sky-900 dark:text-sky-100' }, 'Evidence snapshots'),
+              h('p', { className: 'text-[11px] text-slate-600 dark:text-slate-300' }, 'Move the shared replay cursor to a meaningful moment, then capture one or more sources. Up to eight snapshots are kept.'),
+              h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
+                h('button', { type: 'button', onClick: function() { addCEREvidence('current'); }, className: 'min-h-10 rounded-lg border border-sky-400 dark:border-sky-700 bg-white dark:bg-slate-900 px-3 py-2 text-left text-[11px] font-semibold text-sky-900 dark:text-sky-100' }, 'Add current-step evidence'),
+                h('button', { type: 'button', disabled: !comparedRun, onClick: function() { addCEREvidence('comparison'); }, className: 'min-h-10 rounded-lg border border-violet-400 dark:border-violet-700 bg-white dark:bg-slate-900 px-3 py-2 text-left text-[11px] font-semibold text-violet-900 dark:text-violet-100 disabled:opacity-45' }, comparedRun ? 'Add saved-run comparison' : 'Save a branch to compare'),
+                h('button', { type: 'button', disabled: !uncertaintyResult, onClick: function() { addCEREvidence('uncertainty'); }, className: 'min-h-10 rounded-lg border border-teal-400 dark:border-teal-700 bg-white dark:bg-slate-900 px-3 py-2 text-left text-[11px] font-semibold text-teal-900 dark:text-teal-100 disabled:opacity-45' }, uncertaintyResult ? 'Add repeated-trial evidence' : 'Run uncertainty trials first'),
+                h('button', { type: 'button', disabled: !interventionResult, onClick: function() { addCEREvidence('intervention'); }, className: 'min-h-10 rounded-lg border border-orange-400 dark:border-orange-700 bg-white dark:bg-slate-900 px-3 py-2 text-left text-[11px] font-semibold text-orange-900 dark:text-orange-100 disabled:opacity-45' }, interventionResult ? 'Add intervention evidence' : 'Run an intervention first')
+              ),
+              cerEvidence.length > 0
+                ? h('ol', { className: 'space-y-2', 'aria-label': 'Collected CER evidence' },
+                    cerEvidence.map(function(entry, index) {
+                      return h('li', { key: entry.id, className: 'rounded-lg border border-sky-200 dark:border-sky-800 bg-white/80 dark:bg-slate-900/70 p-2' },
+                        h('div', { className: 'flex items-start justify-between gap-3' },
+                          h('div', { className: 'min-w-0' },
+                            h('p', { className: 'text-[11px] font-bold text-sky-900 dark:text-sky-100' }, (index + 1) + '. ' + entry.source),
+                            h('p', { className: 'mt-1 text-[11px] text-slate-700 dark:text-slate-200' }, entry.text),
+                            h('p', { className: 'mt-1 text-[10px] font-mono break-all text-slate-500 dark:text-slate-400' }, 'Replay key: ' + entry.replayKey)
+                          ),
+                          h('button', { type: 'button', onClick: function() { removeCEREvidence(entry.id); }, 'aria-label': 'Remove evidence ' + (index + 1), className: 'shrink-0 rounded border border-slate-300 dark:border-slate-600 px-2 py-1 text-[10px] font-semibold text-slate-700 dark:text-slate-200' }, 'Remove')
+                        )
+                      );
+                    })
+                  )
+                : h('p', { className: 'rounded-lg border border-dashed border-sky-400 p-3 text-center text-[11px] text-slate-600 dark:text-slate-300' }, 'No evidence collected yet. Start with the current replay step.')
+            ),
+            h('label', { htmlFor: 'eco-cer-reasoning', className: 'block space-y-1' },
+              h('span', { className: 'block text-[11px] font-bold text-sky-900 dark:text-sky-100' }, 'Reasoning'),
+              h('span', { className: 'block text-[11px] text-slate-600 dark:text-slate-300' }, 'Connect the evidence to an ecological mechanism, such as resource limits, predation, reproduction, or response lag.'),
+              h('textarea', { id: 'eco-cer-reasoning', value: cerReasoning, onChange: function(e) { upd('cerReasoning', e.target.value); }, rows: 3, maxLength: 1000, placeholder: 'Explain how and why the evidence supports your claim.', className: 'w-full rounded-lg border border-sky-300 dark:border-sky-700 bg-white dark:bg-slate-900 p-2 text-[11px] text-slate-800 dark:text-slate-100' })
+            ),
+            h('div', { className: 'flex flex-col sm:flex-row sm:items-center gap-2' },
+              h('button', { type: 'button', disabled: !cerComplete, onClick: applyCERToNotebook, className: 'min-h-10 rounded-lg bg-sky-700 px-3 py-2 text-[11px] font-bold text-white hover:bg-sky-800 disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500', 'aria-describedby': 'eco-cer-status' }, 'Use CER in notebook'),
+              h('p', { id: 'eco-cer-status', role: 'status', 'aria-live': 'polite', className: 'text-[11px] text-slate-700 dark:text-slate-200' },
+                cerComplete
+                  ? 'CER complete. It is ready to transfer to the Explain stage.'
+                  : 'Complete ' + [cerClaimReady ? '' : 'claim', cerEvidenceReady ? '' : 'evidence', cerReasoningReady ? '' : 'reasoning'].filter(Boolean).join(', ') + '.'
+              )
+            )
+          ),
+
+          effectiveAnalysisView === 'intervention' && data && data.length > 1 && h('section', { id: 'eco-analysis-panel-intervention', role: 'tabpanel', className: 'rounded-xl border border-orange-300 dark:border-orange-700 bg-orange-50/60 dark:bg-orange-950/20 p-3 space-y-3', 'aria-labelledby': 'eco-analysis-tab-intervention', 'data-eco-projection-panel': 'true' },
+            h('div', { className: 'space-y-1' },
+              h('h3', { className: 'text-sm font-bold text-orange-900 dark:text-orange-100' }, 'Controlled intervention timeline'),
+              h('p', { className: 'text-[11px] text-slate-700 dark:text-slate-200', 'data-eco-projection-text': 'true' }, 'Schedule one simplified event, then compare a fresh no-event baseline with the event scenario using the same model parameters.')
+            ),
+            h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end' },
+              h('label', { htmlFor: 'eco-intervention-type', className: 'block text-[11px] font-bold text-slate-700 dark:text-slate-200' },
+                h('span', { className: 'block mb-1' }, 'Event'),
+                h('select', { id: 'eco-intervention-type', value: interventionType, onChange: function(e) { updMulti({ interventionType: e.target.value, interventionResult: null }); }, className: 'w-full rounded border border-orange-300 dark:border-orange-700 bg-white dark:bg-slate-900 p-2 text-[11px]' },
+                  INTERVENTION_TYPES.map(function(eventType) { return h('option', { key: eventType.id, value: eventType.id }, eventType.label); })
+                )
+              ),
+              h('label', { htmlFor: 'eco-intervention-step', className: 'block text-[11px] font-bold text-slate-700 dark:text-slate-200' },
+                h('span', { className: 'flex justify-between gap-2 mb-1' }, h('span', null, 'Event step'), h('span', { className: 'font-mono text-orange-800 dark:text-orange-200' }, interventionStep)),
+                h('input', { id: 'eco-intervention-step', type: 'range', min: 5, max: 95, step: 5, value: interventionStep, onChange: function(e) { updMulti({ interventionStep: parseInt(e.target.value, 10), interventionResult: null }); }, className: 'w-full h-2 accent-orange-600' })
+              ),
+              h('label', { htmlFor: 'eco-intervention-intensity', className: 'block text-[11px] font-bold text-slate-700 dark:text-slate-200' },
+                h('span', { className: 'flex justify-between gap-2 mb-1' }, h('span', null, 'Intensity'), h('span', { className: 'font-mono text-orange-800 dark:text-orange-200' }, Math.round(interventionIntensity * 100) + '%')),
+                h('input', { id: 'eco-intervention-intensity', type: 'range', min: 0.1, max: 0.7, step: 0.1, value: interventionIntensity, onChange: function(e) { updMulti({ interventionIntensity: parseFloat(e.target.value), interventionResult: null }); }, className: 'w-full h-2 accent-orange-600' })
+              ),
+              h('button', { type: 'button', onClick: runInterventionScenario, className: 'min-h-10 rounded-lg bg-orange-700 px-3 py-2 text-[11px] font-bold text-white hover:bg-orange-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500' }, 'Run event scenario')
+            ),
+            h('p', { className: 'text-[11px] text-slate-700 dark:text-slate-200' }, h('strong', null, activeInterventionDefinition.label + ': '), activeInterventionDefinition.description),
+            interventionResult
+              ? h('div', { className: 'space-y-3' },
+                  h('label', { htmlFor: 'eco-intervention-replay', className: 'block text-[11px] font-bold text-slate-700 dark:text-slate-200' },
+                    h('span', { className: 'flex justify-between gap-2 mb-1' }, h('span', null, 'Scenario replay'), h('span', { className: 'font-mono text-orange-800 dark:text-orange-200' }, replayCursor + ' / ' + replayMax)),
+                    h('input', { id: 'eco-intervention-replay', type: 'range', min: 0, max: replayMax, step: 1, value: replayCursor, 'aria-valuetext': 'Modeled step ' + replayCursor + ' of ' + replayMax, onChange: function(e) { upd('replayStep', parseInt(e.target.value, 10)); }, className: 'w-full h-2 accent-orange-600' })
+                  ),
+                  buildInterventionSVG(),
+                  h('div', { className: 'flex flex-wrap justify-center gap-x-4 gap-y-1 text-[11px] text-slate-700 dark:text-slate-200' },
+                    h('span', null, 'Faint dotted: fresh baseline'),
+                    h('span', null, 'Green solid: scenario prey'),
+                    h('span', null, 'Red dashed: scenario predators'),
+                    h('span', null, 'Orange line: event')
+                  ),
+                  (function() {
+                    var resultLength = interventionResult.scenarioData.length;
+                    var scenarioIndex = Math.min(resultLength - 1, Math.max(0, Math.round((replayMax > 0 ? replayCursor / replayMax : 0) * (resultLength - 1))));
+                    var baselinePoint = interventionResult.baselineData[scenarioIndex];
+                    var scenarioPoint = interventionResult.scenarioData[scenarioIndex];
+                    var preyDifference = Math.round((Number(scenarioPoint.prey) || 0) - (Number(baselinePoint.prey) || 0));
+                    var predatorDifference = Math.round((Number(scenarioPoint.pred) || 0) - (Number(baselinePoint.pred) || 0));
+                    return h('div', { role: 'status', 'aria-live': 'polite', className: 'rounded-lg border border-orange-200 dark:border-orange-800 bg-white/80 dark:bg-slate-900/70 p-2 text-[11px] text-slate-700 dark:text-slate-200', 'data-eco-projection-text': 'true' },
+                      'Step ' + scenarioPoint.step + ': event scenario differs from baseline by ' + (preyDifference >= 0 ? '+' : '') + preyDifference + ' prey and ' + (predatorDifference >= 0 ? '+' : '') + predatorDifference + ' predators. Outcome shifts from ' + interventionResult.baselineSummary.label + ' to ' + interventionResult.scenarioSummary.label + '.'
+                    );
+                  })(),
+                  h('p', { className: 'text-[11px] font-semibold text-orange-900 dark:text-orange-100' }, 'Evidence prompt: Compare the trajectories immediately before and after the event. Which population responds first, and what evidence supports that claim?'),
+                  h('p', { className: 'text-[11px] text-slate-600 dark:text-slate-300' }, 'This isolates one simplified event. The response is a consequence of this teaching model, not a field forecast or management recommendation.')
+                )
+              : h('p', { className: 'rounded-lg border border-dashed border-orange-400 p-3 text-center text-[11px] text-slate-600 dark:text-slate-300' }, 'Choose an event, timing, and intensity, then run the scenario to create a matched baseline comparison.')
+          ),
+          effectiveAnalysisView === 'uncertainty' && data && data.length > 1 && h('section', { id: 'eco-analysis-panel-uncertainty', role: 'tabpanel', className: 'rounded-xl border border-teal-300 dark:border-teal-700 bg-teal-50/60 dark:bg-teal-950/20 p-3 space-y-3', 'aria-labelledby': 'eco-analysis-tab-uncertainty', 'data-eco-advanced': 'true', 'data-eco-projection-panel': 'true' },
+            h('div', { className: 'space-y-1' },
+              h('h3', { className: 'text-sm font-bold text-teal-900 dark:text-teal-100' }, 'Repeated-trial uncertainty'),
+              h('p', { className: 'text-[11px] text-slate-700 dark:text-slate-200', 'data-eco-projection-text': 'true' }, 'Repeat the same model with seeded, persistent environmental variation. Shaded bands show the middle 80% of simulated outcomes.')
+            ),
+            h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end' },
+              h('label', { htmlFor: 'eco-uncertainty-trials', className: 'block text-[11px] font-bold text-slate-700 dark:text-slate-200' },
+                h('span', { className: 'block mb-1' }, 'Number of trials'),
+                h('select', { id: 'eco-uncertainty-trials', value: String(uncertaintyTrials), onChange: function(e) { updMulti({ uncertaintyTrials: parseInt(e.target.value, 10), uncertaintyResult: null }); }, className: 'w-full rounded border border-teal-300 dark:border-teal-700 bg-white dark:bg-slate-900 p-2 text-[11px]' },
+                  [10, 30, 50, 100].map(function(count) { return h('option', { key: count, value: String(count) }, count + ' trials'); })
+                )
+              ),
+              h('label', { htmlFor: 'eco-uncertainty-variation', className: 'block text-[11px] font-bold text-slate-700 dark:text-slate-200' },
+                h('span', { className: 'flex justify-between gap-2 mb-1' }, h('span', null, 'Environmental variability'), h('span', { className: 'font-mono text-teal-800 dark:text-teal-200' }, Math.round(uncertaintyVariation * 100) + '%')),
+                h('input', { id: 'eco-uncertainty-variation', type: 'range', min: 0, max: 0.5, step: 0.05, value: uncertaintyVariation, onChange: function(e) { updMulti({ uncertaintyVariation: parseFloat(e.target.value), uncertaintyResult: null }); }, className: 'w-full h-2 accent-teal-600' })
+              ),
+              h('label', { htmlFor: 'eco-uncertainty-seed', className: 'block text-[11px] font-bold text-slate-700 dark:text-slate-200' },
+                h('span', { className: 'block mb-1' }, 'Reproducible seed'),
+                h('input', { id: 'eco-uncertainty-seed', type: 'number', min: 0, max: 4294967295, step: 1, value: uncertaintySeed, onChange: function(e) { updMulti({ uncertaintySeed: parseInt(e.target.value, 10) || 0, uncertaintyResult: null }); }, className: 'w-full rounded border border-teal-300 dark:border-teal-700 bg-white dark:bg-slate-900 p-2 text-[11px]' })
+              ),
+              h('button', { type: 'button', onClick: runUncertaintyTrials, className: 'min-h-10 rounded-lg bg-teal-700 px-3 py-2 text-[11px] font-bold text-white hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500' }, 'Run repeated trials')
+            ),
+            uncertaintyResult
+              ? h('div', { className: 'space-y-3' },
+                  buildUncertaintySVG(),
+                  h('div', { className: 'flex flex-wrap justify-center gap-x-4 gap-y-1 text-[11px] text-slate-700 dark:text-slate-200' },
+                    h('span', null, 'Prey: solid median + green band'),
+                    h('span', null, 'Predators: dashed median + red band'),
+                    h('span', null, '\u25C6 Shared replay step')
+                  ),
+                  h('div', { className: 'grid grid-cols-2 gap-2 text-center' },
+                    h('div', { className: 'rounded-lg border border-teal-200 dark:border-teal-800 bg-white/80 dark:bg-slate-900/70 p-2' },
+                      h('div', { className: 'text-[11px] text-slate-600 dark:text-slate-300' }, 'Trials with prey below 1'),
+                      h('div', { className: 'text-lg font-bold text-green-700 dark:text-green-300' }, uncertaintyResult.summary.preyExtinctionPercent + '%')
+                    ),
+                    h('div', { className: 'rounded-lg border border-teal-200 dark:border-teal-800 bg-white/80 dark:bg-slate-900/70 p-2' },
+                      h('div', { className: 'text-[11px] text-slate-600 dark:text-slate-300' }, 'Trials with predators below 1'),
+                      h('div', { className: 'text-lg font-bold text-red-700 dark:text-red-300' }, uncertaintyResult.summary.predatorExtinctionPercent + '%')
+                    )
+                  ),
+                  (function() {
+                    var uncertaintySeries = uncertaintyResult.series;
+                    var uncertaintyIndex = Math.min(uncertaintySeries.length - 1, Math.max(0, Math.round((replayMax > 0 ? replayCursor / replayMax : 0) * (uncertaintySeries.length - 1))));
+                    var uncertaintyPoint = uncertaintySeries[uncertaintyIndex];
+                    return h('div', { role: 'status', 'aria-live': 'polite', className: 'rounded-lg border border-teal-200 dark:border-teal-800 bg-white/80 dark:bg-slate-900/70 p-2 text-[11px] text-slate-700 dark:text-slate-200', 'data-eco-projection-text': 'true' },
+                      'Step ' + uncertaintyPoint.step + ': prey median ' + Math.round(uncertaintyPoint.preyMedian) + ' (middle 80% ' + Math.round(uncertaintyPoint.preyP10) + '\u2013' + Math.round(uncertaintyPoint.preyP90) + '); predator median ' + Math.round(uncertaintyPoint.predMedian) + ' (middle 80% ' + Math.round(uncertaintyPoint.predP10) + '\u2013' + Math.round(uncertaintyPoint.predP90) + ').'
+                    );
+                  })(),
+                  h('p', { className: 'text-[11px] text-slate-600 dark:text-slate-300' }, 'These are scenario ranges from this teaching model, not confidence intervals, fitted forecasts, or field-data estimates. Seed ' + uncertaintyResult.seed + ' reproduces the same trials.')
+                )
+              : h('p', { className: 'rounded-lg border border-dashed border-teal-400 p-3 text-center text-[11px] text-slate-600 dark:text-slate-300' }, 'Choose settings and run repeated trials to reveal the range of possible model outcomes.')
+          ),
+          effectiveAnalysisView === 'phase' && data && data.length > 1 && h('section', { id: 'eco-analysis-panel-phase', role: 'tabpanel', className: 'bg-white dark:bg-slate-900 rounded-xl border border-slate-400 dark:border-slate-700 p-3 space-y-2', 'aria-labelledby': 'eco-analysis-tab-phase', 'data-eco-advanced': 'true' },
             h('p', { className: 'text-xs font-bold text-slate-700 dark:text-slate-200' }, '\uD83D\uDD04 ' + __alloT('stem.ecosystem.phase_portrait', 'Phase Portrait')),
             buildPhaseSVG(),
             h('div', { className: 'flex gap-3 justify-center text-[11px]' },
@@ -3840,6 +5237,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
 
           // ── Ecology Challenges ──
+          effectiveAnalysisView === 'trajectory' && data && data.length > 1 && h('section', { id: 'eco-analysis-panel-trajectory', role: 'tabpanel', className: 'rounded-xl border border-indigo-300 dark:border-indigo-700 bg-indigo-50/60 dark:bg-indigo-950/20 p-3 space-y-3', 'aria-labelledby': 'eco-analysis-tab-trajectory', 'data-eco-advanced': 'true', 'data-eco-projection-panel': 'true' },
+            h('div', { className: 'flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2' },
+              h('div', { className: 'min-w-0' },
+                h('h3', { id: 'eco-trajectory-heading', className: 'text-sm font-bold text-indigo-900 dark:text-indigo-100' }, '3D population trajectory'),
+                h('p', { className: 'text-[11px] text-slate-700 dark:text-slate-200', 'data-eco-projection-text': 'true' }, 'Use the 2D graph for exact values. Open 3D to see how prey, predators, and time combine into one evolving path.')
+              ),
+              h('button', { type: 'button', 'aria-expanded': trajectory3dOpen, 'aria-controls': 'eco-trajectory-3d-tools', onClick: function() { upd('trajectory3dOpen', !trajectory3dOpen); }, className: 'shrink-0 rounded-lg border border-indigo-600 px-3 py-1.5 text-[11px] font-bold text-indigo-800 dark:text-indigo-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500' }, trajectory3dOpen ? 'Hide 3D view' : 'Show 3D view')
+            ),
+            trajectory3dOpen && h('div', { id: 'eco-trajectory-3d-tools', className: 'space-y-3' },
+              h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
+                h('label', { className: 'block text-[11px] font-bold text-slate-700 dark:text-slate-200' },
+                  h('span', { className: 'flex justify-between gap-2' }, h('span', null, 'Rotate view'), h('span', { className: 'font-mono text-indigo-700 dark:text-indigo-300' }, Math.round(trajectoryAzimuth) + '\u00B0')),
+                  h('input', { type: 'range', min: -70, max: 70, step: 5, value: trajectoryAzimuth, 'aria-label': 'Rotate 3D trajectory view', onChange: function(e) { upd('trajectoryAzimuth', parseFloat(e.target.value)); }, className: 'w-full h-2 accent-indigo-600' })
+                ),
+                h('label', { className: 'block text-[11px] font-bold text-slate-700 dark:text-slate-200' },
+                  h('span', { className: 'flex justify-between gap-2' }, h('span', null, 'View elevation'), h('span', { className: 'font-mono text-indigo-700 dark:text-indigo-300' }, Math.round(trajectoryElevation) + '\u00B0')),
+                  h('input', { type: 'range', min: 10, max: 50, step: 2, value: trajectoryElevation, 'aria-label': 'Change 3D trajectory elevation', onChange: function(e) { upd('trajectoryElevation', parseFloat(e.target.value)); }, className: 'w-full h-2 accent-indigo-600' })
+                ),
+                h('label', { className: 'block text-[11px] font-bold text-slate-700 dark:text-slate-200' },
+                  h('span', { className: 'flex justify-between gap-2' }, h('span', null, 'Trajectory time'), h('span', { className: 'font-mono text-indigo-700 dark:text-indigo-300' }, replayCursor + ' / ' + replayMax)),
+                  h('input', { type: 'range', min: 0, max: replayMax, step: 1, value: replayCursor, 'aria-label': 'Move through the 3D trajectory over modeled time', 'aria-valuetext': 'Modeled step ' + replayCursor + ' of ' + replayMax, onChange: function(e) { upd('replayStep', parseInt(e.target.value, 10)); }, className: 'w-full h-2 accent-indigo-600' })
+                )
+              ),
+              h('div', { className: 'flex justify-end' },
+                h('button', { type: 'button', onClick: function() { updMulti({ trajectoryAzimuth: -35, trajectoryElevation: 24 }); }, className: 'rounded border border-slate-400 dark:border-slate-600 px-2 py-1 text-[11px] font-semibold text-slate-700 dark:text-slate-200' }, 'Reset view')
+              ),
+              h('figure', { className: 'min-w-0' },
+                buildTrajectory3DSVG(),
+                h('figcaption', { className: 'flex flex-wrap justify-center gap-x-4 gap-y-1 text-[11px] text-slate-700 dark:text-slate-200' },
+                  h('span', null, '\u25CF Start'),
+                  h('span', null, '\u25A0 End'),
+                  h('span', null, '\u25C6 Replay position')
+                )
+              ),
+              (function() {
+                var selected3d = data[Math.min(data.length - 1, replayCursor)] || data[0];
+                return h('div', { role: 'status', 'aria-live': 'polite', className: 'rounded-lg border border-indigo-200 dark:border-indigo-800 bg-white/80 dark:bg-slate-900/70 p-2 text-[11px] text-slate-700 dark:text-slate-200', 'data-eco-projection-text': 'true' },
+                  'Step ' + replayCursor + ': prey ' + Math.round(Number(selected3d.prey) || 0) + ', predators ' + Math.round(Number(selected3d.pred) || 0) + '. Predator abundance is height; modeled time extends into depth.'
+                );
+              })()
+            )
+          ),
           h('div', {
             className: 'mb-3 rounded-xl p-4 border bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200 shadow-sm',
             style: { boxShadow: '0 2px 8px rgba(109,40,217,0.06)' }
@@ -3940,11 +5379,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               ref: canvasRef,
               role: 'img',
               'aria-label': __alloT('stem.ecosystem.aria_sandbox_prefix', 'Ecosystem sandbox. Click to place prey (left) or predators (right). ') + (simPaused ? __alloT('stem.ecosystem.paused_dot', 'Paused.') : __alloT('stem.ecosystem.running_dot', 'Running.')),
+              'aria-describedby': 'eco-live-phase-status eco-sandbox-telemetry',
               tabIndex: 0,
               'data-eco-canvas': 'true',
               'data-paused': simPaused ? '1' : '0',
               'data-speed': simSpeed.toString(),
               'data-carry-k': carryingCapacity.toString(),
+              'data-prey0': prey0.toString(),
+              'data-pred0': pred0.toString(),
               'data-sandbox-tool': sandboxTool,
               'data-place-count': sandboxPlaceCount.toString(),
               style: { width: '100%', height: '100%', display: 'block', cursor: sandboxTool === 'erase' ? 'crosshair' : sandboxTool === 'move' ? 'grab' : 'pointer' }
@@ -3977,6 +5419,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           ),
 
           // ── Placement count display ──
+          h('div', { role: 'group', 'aria-labelledby': 'eco-keyboard-actions-title', className: 'rounded-lg border border-blue-300 bg-blue-50/70 dark:bg-blue-900/20 dark:border-blue-700 p-2 space-y-1' },
+            h('strong', { id: 'eco-keyboard-actions-title', className: 'text-[11px] text-blue-800 dark:text-blue-200' }, 'Keyboard-friendly sandbox actions'),
+            h('p', { className: 'text-[10px] text-slate-600 dark:text-slate-300' }, 'These buttons place entities in consistent zones without requiring canvas clicking.'),
+            h('div', { className: 'flex gap-1 flex-wrap' },
+              h('button', { type: 'button', onClick: function() { sandboxKeyboardAction('rabbit'); }, className: 'flex-1 min-w-[92px] px-2 py-1 rounded border border-green-600 text-green-800 dark:text-green-200 text-[11px] font-semibold' }, 'Add rabbit left'),
+              h('button', { type: 'button', onClick: function() { sandboxKeyboardAction('fox'); }, className: 'flex-1 min-w-[92px] px-2 py-1 rounded border border-red-600 text-red-800 dark:text-red-200 text-[11px] font-semibold' }, 'Add fox right'),
+              h('button', { type: 'button', onClick: function() { sandboxKeyboardAction('tree'); }, className: 'flex-1 min-w-[92px] px-2 py-1 rounded border border-emerald-600 text-emerald-800 dark:text-emerald-200 text-[11px] font-semibold' }, 'Add tree center'),
+              h('button', { type: 'button', onClick: function() { sandboxKeyboardAction('reset'); }, className: 'flex-1 min-w-[92px] px-2 py-1 rounded border border-slate-500 text-slate-700 dark:text-slate-200 text-[11px] font-semibold' }, 'Reset sandbox')
+            )
+          ),
           h('div', { className: 'flex items-center justify-between bg-teal-50 dark:bg-teal-900/20 rounded-lg px-3 py-2' },
             h('span', { className: 'text-xs font-semibold text-teal-700 dark:text-teal-300' }, __alloT('stem.ecosystem.entities_placed', 'Entities Placed:')),
             h('span', { className: 'text-sm font-bold text-teal-700 dark:text-teal-300' }, sandboxPlaceCount),
@@ -3988,7 +5440,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
           // ── Pause/Speed controls (shared) ──
           h('div', { className: 'flex items-center gap-3 bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2' },
-            h('button', { className: 'px-3 py-1 text-xs font-bold rounded-lg transition-all ' +
+            h('button', { 'aria-pressed': simPaused, 'aria-label': simPaused ? __alloT('stem.ecosystem.resume_simulation', 'Resume simulation') : __alloT('stem.ecosystem.pause_simulation', 'Pause simulation'), className: 'px-3 py-1 text-xs font-bold rounded-lg transition-all ' +
                 (simPaused
                   ? 'transition-colors bg-teal-700 text-white hover:bg-teal-800 active:scale-[0.97]'
                   : 'transition-colors bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-[0.97]'),
@@ -4005,6 +5457,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               h('input', {
                 type: 'range', min: 1, max: 6, step: 1, value: simSpeed,
                 'aria-label': __alloT('stem.ecosystem.aria_sandbox_speed', 'Sandbox simulation speed'),
+                'aria-valuetext': speedLabel(simSpeed) + ' ' + __alloT('stem.ecosystem.simulation_speed_suffix', 'simulation speed'),
                 className: 'flex-1 h-1.5 accent-teal-500',
                 onChange: function(e) {
                   var newSpeed = parseInt(e.target.value, 10);
@@ -4044,7 +5497,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               onChange: function(e) {
                 var newK = parseInt(e.target.value, 10);
                 var newChanges = carryCapChanges + 1;
-                updMulti({ carryingCapacity: newK, carryCapChanges: newChanges });
+                updMulti({ carryingCapacity: newK, carryCapChanges: newChanges, uncertaintyResult: null, interventionResult: null });
                 var canvasEl = document.querySelector('canvas[data-eco-canvas]');
                 if (canvasEl) canvasEl.dataset.carryK = newK.toString();
               }
@@ -4076,6 +5529,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           ),
 
           // ── Instructions text ──
+          h('div', { id: 'eco-sandbox-telemetry', role: 'region', 'aria-labelledby': 'eco-sandbox-telemetry-title', className: 'rounded-lg border border-sky-300 bg-sky-50/70 dark:bg-sky-900/20 dark:border-sky-700 px-3 py-2 space-y-1' },
+            h('strong', { id: 'eco-sandbox-telemetry-title', className: 'text-[11px] text-sky-800 dark:text-sky-200' }, 'What the counts suggest'),
+            h('p', { role: 'status', 'aria-live': 'polite', className: 'text-[11px] text-slate-700 dark:text-slate-200' }, liveTelemetry.narrative),
+            h('p', { className: 'text-[10px] text-slate-600 dark:text-slate-300' }, 'Prey ' + liveTelemetry.preyTrend + '; predators ' + liveTelemetry.predTrend + '; vegetation ' + liveTelemetry.veg + '%.')
+          ),
           h('div', { className: 'bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-xs text-slate-600 dark:text-slate-300 space-y-1' },
             h('p', { className: 'font-bold text-slate-700 dark:text-slate-200' }, '\uD83D\uDCA1 ' + __alloT('stem.ecosystem.sandbox_instructions', 'Sandbox Instructions')),
             h('p', null, __alloT('stem.ecosystem.select_tool_intro', 'Select a tool above, then click on the canvas to interact:')),
@@ -4108,7 +5566,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             }
           },
             h('span', { className: 'text-teal-700 dark:text-teal-300' }, lastObservation)
-          )
+          ),
+
+          h('div', { id: 'eco-live-phase-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'rounded-lg border-2 px-3 py-2 text-[11px] text-slate-700 dark:text-slate-200', style: { background: livePhaseVisual.soft, borderColor: livePhaseVisual.border } },
+            h('strong', { style: { color: livePhaseVisual.accent }, className: 'font-bold' }, livePhaseVisual.icon + ' ' + livePhaseLabel + ' '),
+            h('span', null, livePhaseExplain)
+          ),
         ),
 
         // ═══ CONSERVATION MANAGER TAB ═══
@@ -4141,7 +5604,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             if (!tech) return;
             if (conserve.hoursLeft < tech.hours) { if (addToast) addToast('Not enough field-season hours left.', 'warn'); return; }
 
-            // Eligibility checks
+          // Eligibility checks
             if (tech.appliesTo !== 'any' && tech.appliesTo !== 'all') {
               var ok = false;
               for (var ai = 0; ai < tech.appliesTo.length; ai++) if (tech.appliesTo[ai] === speciesId) ok = true;

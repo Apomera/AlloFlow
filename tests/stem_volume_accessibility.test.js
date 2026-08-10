@@ -25,19 +25,24 @@ describe('Volume Lab accessibility', () => {
     expect(text).toContain("'aria-label': 'Explain how each dimension contributes to total volume'");
   });
 
-  it('keeps the dimension sliders inside the enlarged fullscreen model workspace', () => {
+  it('fills native and CSS fullscreen with the model above a compact slider tray', () => {
     const text = source();
     const workspaceIndex = text.indexOf("id: 'volume-3d-workspace'");
     const controlsIndex = text.indexOf('renderDimensionSliders()', workspaceIndex);
     const viewportIndex = text.indexOf("id: 'volume-3d-viewport'", workspaceIndex);
     expect(workspaceIndex).toBeGreaterThan(-1);
-    expect(controlsIndex).toBeGreaterThan(workspaceIndex);
-    expect(viewportIndex).toBeGreaterThan(controlsIndex);
+    expect(viewportIndex).toBeGreaterThan(workspaceIndex);
+    expect(controlsIndex).toBeGreaterThan(viewportIndex);
     expect(text).toContain("document.getElementById('volume-3d-workspace')");
     expect(text).toContain('Toggle fullscreen for the rectangular prism and dimension sliders');
     expect(text).toContain("minHeight: 'clamp(400px, 52vh, 560px)'");
     expect(text).toContain('#volume-3d-workspace:fullscreen [data-volume-dimension-controls="true"]');
-    expect(text).toContain('flex:1 1 auto;min-height:min(58vh,640px)!important');
+    expect(text).toContain('#volume-3d-workspace[data-allo-fullscreen-active="true"]');
+    expect(text).toContain('order:1;flex:1 1 0;height:auto!important;min-height:0!important');
+    expect(text).toContain('order:2;flex:0 0 auto;max-height:min(32vh,180px)');
+    expect(text).toContain('grid-template-columns:repeat(3,minmax(0,1fr))!important');
+    expect(text).toContain('@media(max-width:640px)');
+    expect(text).toContain('grid-template-columns:1fr!important');
   });
 
   it('respects reduced motion for transient indicators', () => {

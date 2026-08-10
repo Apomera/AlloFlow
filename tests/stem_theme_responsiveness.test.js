@@ -8,8 +8,29 @@ describe('STEM theme contract', () => {
   it('uses the host isDark/isContrast contract instead of the retired darkMode name', () => {
     const offenders = readdirSync('stem_lab')
       .filter((name) => /^stem_tool_.*.js$/.test(name))
-      .filter((name) => /\bctx\.darkMode\b/.test(read('stem_lab/' + name)));
+      .filter((name) => { const source = read('stem_lab/' + name); return source.includes('ctx.darkMode') || source.includes('const isDark = !!(props && props.darkMode)'); });
     expect(offenders).toEqual([]);
+  }, 30000);
+
+  it("keeps native tool theme branches on the canonical contract and covers audited contrast tokens", () => {
+    const molecule = read("stem_lab/stem_tool_molecule.js");
+    expect(molecule).toContain("const isDark = !!ctx.isDark || !!ctx.isContrast;");
+    expect(molecule).not.toContain("props.darkMode");
+    expect(read("stem_lab/stem_tool_galaxy.js")).toContain("background: galaxyScienceOverlay ? '#334155'");
+    expect(read("stem_lab/stem_tool_heatlab.js")).toContain("pillTextColor(accent)");
+    const lifeSkills = read("stem_lab/stem_tool_lifeskills.js");
+    expect(lifeSkills).toContain("lab.id === 'safety' ? '#b91c1c'");
+    expect(lifeSkills).toContain("lab.id === 'kitchen' ? '#c2410c'");
+  });
+
+  it("keeps Molecule and Rock Cycle card surfaces on remappable utility tokens", () => {
+    const molecule = read("stem_lab/stem_tool_molecule.js");
+    const rocks = read("stem_lab/stem_tool_rocks.js");
+    ["bg-white/80", "bg-white/60", "bg-cyan-50/70", "bg-sky-50/70", "bg-orange-100/50"].forEach((token) => {
+      expect(molecule + rocks).not.toContain(token);
+    });
+    expect(molecule).toContain("bg-cyan-50");
+    expect(rocks).toContain("bg-sky-50");
   });
 
   it('keeps the host theme context explicit', () => {
@@ -17,6 +38,36 @@ describe('STEM theme contract', () => {
     expect(host).toContain('isDark: isDark');
     expect(host).toContain('isContrast: isContrast');
     expect(host).toContain('theme: _stemTheme');
+  });
+
+  it('resolves the theme before registering theme-dependent effects', () => {
+    const host = read('stem_lab/stem_lab_module.js');
+    const themeResolve = host.indexOf('var _stemTheme =');
+    const darkEffect = host.indexOf("var id = 'stem-theme-overrides'");
+    const lightEffect = host.indexOf("var id = 'stem-contrast-fix'");
+    expect(themeResolve).toBeGreaterThanOrEqual(0);
+    expect(themeResolve).toBeLessThan(darkEffect);
+    expect(themeResolve).toBeLessThan(lightEffect);
+    expect(host.match(/}, \[isDark, isContrast\]\);/g)).toHaveLength(2);
+  });
+
+  it('remaps the stone card palette in dark and contrast themes', () => {
+    const host = read('stem_lab/stem_lab_module.js');
+    const effectStart = host.indexOf("var id = 'stem-theme-overrides'");
+    const darkStart = host.indexOf('if (isDark) {', effectStart);
+    const contrastStart = host.indexOf('} else if (isContrast) {', darkStart);
+    const effectEnd = host.indexOf('document.head.appendChild(s);', contrastStart);
+    const darkBlock = host.slice(darkStart, contrastStart);
+    const contrastBlock = host.slice(contrastStart, effectEnd);
+    ['.bg-stone-50', '.text-stone-800', '.text-stone-600', '.border-stone-200'].forEach((token) => {
+      expect(darkBlock).toContain(token);
+      expect(contrastBlock).toContain(token);
+    });
+    const opacitySelectors = ['[class~="bg-white/80"]', '[class~="bg-cyan-50/70"]', '[class~="bg-indigo-50/70"]'];
+    opacitySelectors.forEach((selector) => {
+      expect(darkBlock).toContain(selector);
+      expect(contrastBlock).toContain(selector);
+    });
   });
 });
 

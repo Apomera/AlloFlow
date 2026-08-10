@@ -9,6 +9,7 @@ var CheckCircle2 = _lazyIcon('CheckCircle2');
 var ChevronDown = _lazyIcon('ChevronDown');
 var ChevronUp = _lazyIcon('ChevronUp');
 var GripVertical = _lazyIcon('GripVertical');
+var Download = _lazyIcon('Download');
 var Lock = _lazyIcon('Lock');
 var Pencil = _lazyIcon('Pencil');
 var Plus = _lazyIcon('Plus');
@@ -155,7 +156,7 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
     );
 };
 
-const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun, onRebuildStep, onPreviewStep, onSaveTemplate, onUpdate, onConfirm, onCancel }) => {
+const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun, onRebuildStep, onDownloadDiagnostics, onPreviewStep, onSaveTemplate, onUpdate, onConfirm, onCancel }) => {
   const { t } = useContext(LanguageContext);
   const [items, setItems] = useState([]);
   const [draggedItemIndex, setDraggedItemIndex] = useState(null);
@@ -338,6 +339,19 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
             iterates its own snapshot), but it makes the board LIE — a removed
             row's status vanishes while its resource still generates, and added
             rows render as never-run under a "running" banner. */}
+        <div className="flex items-center gap-1.5">
+        {run && typeof onDownloadDiagnostics === 'function' && (
+            <button
+                type="button"
+                data-testid="bp-download-diagnostics"
+                onClick={onDownloadDiagnostics}
+                className="p-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                title="Download a sanitized Blueprint diagnostic report"
+                aria-label="Download Blueprint diagnostic report"
+            >
+                <Download size={14} aria-hidden="true" />
+            </button>
+        )}
         <button
             type="button"
             data-help-key="blueprint_edit_toggle_btn"
@@ -350,7 +364,13 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
             {isEditing ? <CheckCircle2 size={14}/> : <Pencil size={14}/>}
             {isEditing ? t('blueprint.done_editing') : t('blueprint.edit_plan')}
         </button>
+        </div>
       </div>
+      {run?.persistenceWarning && (
+          <div role="status" className="mb-3 rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-950">
+              <span className="font-bold">Saved-run warning:</span> {run.persistenceWarning}
+          </div>
+      )}
       <GoldenThreadPanel config={config} isEditing={isEditing} onUpdate={onUpdate} />
       {/* ── Aggregate run progress + Stop ──
           The only progress signal used to be scattered per-row badges, and in a

@@ -21,6 +21,17 @@
   'use strict';
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
+  var NK_REVIEWED = '2026-08';
+  var NK_SOURCES = {
+    nudat: { label: 'NNDC NuDat 3', url: 'https://www.nndc.bnl.gov/nudat3/' },
+    nist: { label: 'NIST XCOM', url: 'https://physics.nist.gov/PhysRefData/Xcom/html/xcom1.html' },
+    unscear: { label: 'UNSCEAR Fukushima 2020/21', url: 'https://www.unscear.org/unscear/en/publications/2020_2021_2.html' },
+    nrc: { label: 'NRC radiological-emergency guidance', url: 'https://www.nrc.gov/about-nrc/emerg-preparedness/in-radiological-emerg' },
+    iter: { label: 'ITER 2024 baseline', url: 'https://www.iter.org/node/20687/new-baseline-prioritize-robust-start-exploitation' },
+    nif: { label: 'LLNL NIF 2022 result', url: 'https://annual.llnl.gov/fy-2022/national-ignition-facility-2022' },
+    nuscale: { label: 'NuScale project termination', url: 'https://www.nuscalepower.com/press-releases/2023/utah-associated-municipal-power-systems-and-nuscale-power-agree-to-terminate-the-carbon-free-power-project' }
+  };
+
   // ── Isotopes. Half-lives from the NNDC / IAEA chart of nuclides. ──
   var ISOTOPES = [
     { id: 'tc99m', name: 'Technetium-99m', hl: 6.01 / 24 / 365.25, unit: 'hours', hlText: '6.0 hours', decay: 'Gamma', use: 'The workhorse of medical imaging — about 40 million scans a year. Its short half-life is the point: it images you, then it is gone.' },
@@ -30,7 +41,7 @@
     { id: 'h3',    name: 'Tritium',        hl: 12.32,              unit: 'years', hlText: '12.3 years', decay: 'Beta (very weak)', use: 'Glow-in-the-dark exit signs and watch dials. Its beta is so weak it cannot get through skin — the hazard is only if it is taken in.' },
     { id: 'cs137', name: 'Caesium-137',    hl: 30.05,              unit: 'years', hlText: '30.1 years', decay: 'Beta + gamma', use: 'The contaminant that defines the Chernobyl and Fukushima exclusion zones. Chemically like potassium, so it spreads through soil and food chains.' },
     { id: 'c14',   name: 'Carbon-14',      hl: 5730,               unit: 'years', hlText: '5,730 years', decay: 'Beta', use: 'Radiocarbon dating. Useful back to roughly 50,000 years, after which too little is left to measure.' },
-    { id: 'pu239', name: 'Plutonium-239',  hl: 24110,              unit: 'years', hlText: '24,110 years', decay: 'Alpha', use: 'Reactor by-product and weapons material. Alpha emitter, so it is harmless outside the body and serious inside it.' },
+    { id: 'pu239', name: 'Plutonium-239',  hl: 24110,              unit: 'years', hlText: '24,110 years', decay: 'Alpha', use: 'Reactor by-product and weapons material. Its alpha radiation has very little penetrating power through intact skin, but plutonium is serious if inhaled, swallowed, or carried into a wound.' },
     { id: 'u235',  name: 'Uranium-235',    hl: 7.04e8,             unit: 'years', hlText: '704 million years', decay: 'Alpha', use: 'The fissile isotope, only 0.72% of natural uranium. Reactors enrich it to 3–5%; weapons need above 90%.' },
     { id: 'k40',   name: 'Potassium-40',   hl: 1.25e9,             unit: 'years', hlText: '1.25 billion years', decay: 'Beta + electron capture', use: 'In every banana, and in you — about 4,000 decays a second inside your own body, for your whole life.' },
     { id: 'u238',  name: 'Uranium-238',    hl: 4.468e9,            unit: 'years', hlText: '4.47 billion years', decay: 'Alpha', use: 'Dates rocks and meteorites. This is how we know the Earth is 4.54 billion years old.' }
@@ -41,7 +52,7 @@
   var RAD_TYPES = [
     { id: 'alpha', name: 'Alpha', symbol: 'α', what: 'A helium nucleus: 2 protons, 2 neutrons. Heavy and doubly charged.',
       stops: 'A sheet of paper, or the dead outer layer of your skin.', range: 'A few cm of air',
-      danger: 'Harmless outside the body. Serious inside it — all that ionising power is dumped into a tiny volume of living tissue. This is exactly why radon matters: you breathe it in.',
+      danger: 'Usually a low external hazard to intact skin, but not harmless: alpha can damage the eye or tissue exposed by a wound. It is especially serious when inhaled, swallowed, or otherwise taken into the body, because all that ionising power is dumped into a tiny volume of living tissue. This is exactly why radon matters: you breathe it in.',
       colour: '#f87171', ionising: 5, penetration: 1 },
     { id: 'beta', name: 'Beta', symbol: 'β', what: 'A fast electron (or positron) thrown out as a neutron turns into a proton.',
       stops: 'A few millimetres of aluminium or plastic.', range: 'A few metres of air',
@@ -104,7 +115,7 @@
     { sym: 'Po-214', hl: '164 microseconds',kind: 'alpha', note: 'Blink and it is gone. Half-lives in this chain span 24 orders of magnitude, from microseconds to billions of years.' },
     { sym: 'Pb-210', hl: '22.3 y',          kind: 'beta',  note: 'A long pause. Used to date lake sediments and glacier ice over the last century or so.' },
     { sym: 'Bi-210', hl: '5.01 days',       kind: 'beta',  note: 'Bismuth again, briefly.' },
-    { sym: 'Po-210', hl: '138.4 days',      kind: 'alpha', note: 'Polonium-210. Intensely radioactive, and notorious as a poison precisely because an alpha emitter is harmless outside the body and lethal inside it.' },
+    { sym: 'Po-210', hl: '138.4 days',      kind: 'alpha', note: 'Polonium-210. Intensely radioactive, and notorious as a poison because intact skin blocks most alpha radiation while internal contamination can deliver a severe dose to a tiny volume of tissue.' },
     { sym: 'Pb-206', hl: 'stable',          kind: 'stable',note: 'Lead-206. The chain stops here. Measuring the ratio of lead-206 to uranium-238 in a rock is how the age of the Earth was established: 4.54 billion years.' }
   ];
 
@@ -254,7 +265,7 @@
     { id: 'fusion', name: 'Fusion', status: 'research', share: 'No power on any grid',
       how: 'Force light nuclei together instead of splitting heavy ones. Deuterium-tritium is the easiest reaction and still needs about 100 million °C.',
       safety: 'Cannot melt down — stop the fuel supply and it stops instantly. Waste is short-lived compared with fission.',
-      catch: 'In December 2022 the National Ignition Facility got 3.15 MJ out for 2.05 MJ delivered to the target — a real first. But the lasers drew roughly 300 MJ from the wall, so the plant was far from break-even. ITER now targets first plasma in 2034. Useful electricity remains decades away, and anyone promising otherwise is selling something.' }
+      catch: 'In December 2022 the National Ignition Facility got 3.15 MJ out for 2.05 MJ delivered to the target — a real first. But the lasers drew roughly 300 MJ from the wall, so the plant was far from break-even. ITER\'s 2024 baseline targets Start of Research Operation in 2034, full magnetic energy in 2036, and deuterium-tritium operation in 2039. Useful electricity remains decades away.' }
   ];
 
   // ── What to do with the waste. Volumes from IAEA and the US DOE. ──
@@ -386,7 +397,7 @@
     { id: 'ra226', name: 'Radium-226', tp: 1600 * 365.25, tb: 45 * 365.25, where: 'Bone, like strontium', colour: '#c084fc',
       note: 'What happened to the radium dial painters. They pointed their brushes with their lips, swallowed microgram quantities, and a bone-seeking alpha emitter with a decades-long biological half-life did the rest. The physical half-life of 1,600 years was never the relevant number; the biological one was.' },
     { id: 'pu239', name: 'Plutonium-239', tp: 24110 * 365.25, tb: 50 * 365.25, where: 'Bone surface and liver', colour: '#ef4444',
-      note: 'The case where biology does not rescue you. An alpha emitter that lodges in bone and stays for fifty years is, for a human lifetime, permanent — so the intake limits are correspondingly tiny. Note what this does NOT mean: plutonium outside the body is stopped by skin, and the entire hazard is the getting-in.' }
+      note: 'The case where biology does not rescue you. An alpha emitter that lodges in bone and stays for fifty years is, for a human lifetime, permanent — so the intake limits are correspondingly tiny. Intact skin blocks most alpha radiation, but contamination can still reach the eye or an open wound; inhaling or swallowing plutonium is the dominant hazard.' }
   ];
 
   // ── Time, distance, shielding. Sections 5 and 12 cover two of the three
@@ -894,7 +905,12 @@
       // Beer-Lambert for gamma. Alpha and beta are range-limited, not exponential,
       // so modelling them with the same equation would be quietly wrong.
       var gammaThrough = Math.exp(-shield.mu * thick) * 100;
-      var alphaStopped = thick > 0.01;
+      // Alpha is range-limited, but its range depends enormously on the medium:
+      // a few centimetres in air versus only micrometres in liquids and solids.
+      // Treating 0.1 cm of air like 0.1 cm of lead contradicted the range card
+      // immediately below and taught the wrong lesson about surface contamination.
+      var alphaRangeCm = shieldId === 'air' ? 4 : 0.01;
+      var alphaStopped = thick >= alphaRangeCm;
       var betaStopped = (shieldId === 'air' ? thick > 300 : thick > 0.3);
       var neutronThrough = shieldId === 'water' || shieldId === 'concrete'
         ? Math.exp(-0.1 * thick) * 100
@@ -1537,9 +1553,24 @@
       // changes: the scenario verdict and the quantised rod position for the 3D.
       var rxRef = React.useRef(null);
       var rxCanvasRef = React.useRef(null);
+      var rxTelemetryRef = React.useRef(null);
       var rxAnim = React.useRef(0);
-      var stRx = React.useState({ running: false, verdict: null, rodStep: 50, hotStep: 0 });
+      var rxWakeRef = React.useRef(function () {});
+      var stRx = React.useState({
+        running: false, verdict: null, rodStep: 50, hotStep: 0,
+        pumps: true, scrammed: false
+      });
       var rxUi = stRx[0], setRxUi = stRx[1];
+      var rxUiRef = React.useRef(rxUi);
+      rxUiRef.current = rxUi;
+
+      function rxPatchUi(patch) {
+        setRxUi(function (prev) {
+          var next = Object.assign({}, prev, patch);
+          rxUiRef.current = next;
+          return next;
+        });
+      }
 
       var rxMode = d.rxMode || 'modern';
       var rxScenario = d.rxScenario || 'steady';
@@ -1576,6 +1607,23 @@
         var rhoXe = -0.03 * (s.xe - 1);
         if (s.scrammed) rhoRods = -0.09;
         return { total: rhoRods + rhoT + rhoVoid + rhoXe, rods: rhoRods, temp: rhoT, voidR: rhoVoid, xe: rhoXe, voidFrac: voidFrac };
+      }
+
+      function rxWriteTelemetry(s, r, running) {
+        var root = rxTelemetryRef.current;
+        if (!root) return;
+        function put(id, value) {
+          var node = root.querySelector('#' + id);
+          if (node && node.textContent !== value) node.textContent = value;
+        }
+        var rhoPcm = r.total * 1e5;
+        put('rx-live-power', nkFmt(s.power, s.power < 10 ? 1 : 0) + '%');
+        put('rx-live-temperature', nkFmt(s.t, 0) + ' °C');
+        put('rx-live-reactivity', (rhoPcm >= 0 ? '+' : '') + nkFmt(rhoPcm, 0) + ' pcm');
+        put('rx-live-xenon', nkFmt(s.xe, 2) + '×');
+        put('rx-live-state', s.verdict
+          ? (s.verdict.ok ? 'Scenario complete' : 'Run ended')
+          : (s.scrammed ? 'Scrammed — decay heat only' : (running ? 'Running' : 'Paused')));
       }
 
       function rxStep(s, dt, mode, scen) {
@@ -1659,14 +1707,36 @@
           W = el.width = Math.round((el.offsetWidth || 560) * dpr);
           H = el.height = Math.round((el.offsetHeight || 210) * dpr);
           lastSig = '';
+          if (rxWakeRef.current) rxWakeRef.current();
         }
-        size();
         var c = el.getContext('2d');
         var last = 0;
         var hist = [];
+        var frameQueued = false;
+        var pageVisible = !document.hidden;
+        var inView = true;
+
+        function park() {
+          if (frameQueued) cancelAnimationFrame(rxAnim.current);
+          frameQueued = false;
+          rxAnim.current = 0;
+        }
+        function queue() {
+          if (frameQueued || !pageVisible || !inView || !el.isConnected) return;
+          frameQueued = true;
+          rxAnim.current = requestAnimationFrame(draw);
+        }
+        function wake() {
+          lastSig = '';
+          queue();
+        }
+        rxWakeRef.current = wake;
+        size();
 
         function draw(ts) {
-          if (!el.isConnected) { cancelAnimationFrame(rxAnim.current); return; }
+          frameQueued = false;
+          rxAnim.current = 0;
+          if (!el.isConnected || !pageVisible || !inView) return;
           try {
             var s = rxRef.current;
             var dt = last ? Math.min(0.25, (ts - last) / 1000) : 0.016;
@@ -1681,7 +1751,10 @@
               var sig = [el.dataset.mode, el.dataset.scenario, W, H, s.scrammed ? 1 : 0, s.pumps ? 1 : 0,
                 Math.round(s.rods * 10), Math.round(s.power * 10), Math.round(s.t), Math.round(s.xe * 100),
                 s.verdict ? 1 : 0].join('|');
-              if (sig === lastSig) { rxAnim.current = requestAnimationFrame(draw); return; }
+              // Nothing changed: park completely. Controls, resize, visibility
+              // and the dataset effect all call wake(), so no 60 Hz idle poll
+              // is needed to make the next interaction immediate.
+              if (sig === lastSig) return;
               lastSig = sig;
             } else {
               lastSig = '';
@@ -1769,19 +1842,45 @@
             // sync only what the React controls actually need
             var rodStep = Math.round(s.rods / 5) * 5;
             var hotStep = s.t > 900 ? 2 : (s.t > 450 ? 1 : 0);
-            if (ts - s.lastSync > 400) {
+            if (!advancing || !s.lastSync || ts - s.lastSync > 400) {
               s.lastSync = ts;
-              if (rodStep !== rxUi.rodStep || hotStep !== rxUi.hotStep || (!!s.verdict) !== (!!rxUi.verdict)) {
-                setRxUi({ running: el.dataset.running === 'on', verdict: s.verdict, rodStep: rodStep, hotStep: hotStep });
+              var runningNow = el.dataset.running === 'on' && !s.verdict;
+              rxWriteTelemetry(s, r, runningNow);
+              var ui = rxUiRef.current;
+              if (rodStep !== ui.rodStep || hotStep !== ui.hotStep || (!!s.verdict) !== (!!ui.verdict) ||
+                  s.pumps !== ui.pumps || s.scrammed !== ui.scrammed || runningNow !== ui.running) {
+                var nextUi = Object.assign({}, ui, {
+                  running: runningNow, verdict: s.verdict, rodStep: rodStep, hotStep: hotStep,
+                  pumps: s.pumps, scrammed: s.scrammed
+                });
+                rxUiRef.current = nextUi;
+                setRxUi(nextUi);
               }
             }
           } catch (err) { console.error('Reactor sim error:', err); }
-          rxAnim.current = requestAnimationFrame(draw);
+          if (el.dataset.running === 'on' && !rxRef.current.verdict) queue();
         }
-        rxAnim.current = requestAnimationFrame(draw);
         var ro = typeof ResizeObserver === 'function' ? new ResizeObserver(size) : null;
         if (ro) ro.observe(el);
-        return function () { cancelAnimationFrame(rxAnim.current); if (ro) ro.disconnect(); };
+        var io = typeof IntersectionObserver === 'function' ? new IntersectionObserver(function (entries) {
+          if (!entries.length) return;
+          inView = !!entries[0].isIntersecting;
+          if (inView) wake(); else park();
+        }, { rootMargin: '200px' }) : null;
+        if (io) io.observe(el);
+        function onVisibility() {
+          pageVisible = !document.hidden;
+          if (pageVisible) wake(); else park();
+        }
+        document.addEventListener('visibilitychange', onVisibility);
+        queue();
+        return function () {
+          park();
+          rxWakeRef.current = function () {};
+          if (ro) ro.disconnect();
+          if (io) io.disconnect();
+          document.removeEventListener('visibilitychange', onVisibility);
+        };
       }, []);
 
       React.useEffect(function () {
@@ -1790,6 +1889,7 @@
         el.dataset.mode = rxMode;
         el.dataset.scenario = rxScenario;
         el.dataset.running = rxUi.running ? 'on' : 'off';
+        rxWakeRef.current();
       }, [rxMode, rxScenario, rxUi.running]);
 
       React.useEffect(function () {
@@ -1819,12 +1919,23 @@
       function rxSet(patch) {
         var s = rxRef.current;
         Object.keys(patch).forEach(function (k) { s[k] = patch[k]; });
+        rxWakeRef.current();
       }
       function rxRestart() {
         rxRef.current = rxFresh();
-        setRxUi({ running: false, verdict: null, rodStep: 50, hotStep: 0 });
+        rxPatchUi({
+          running: false, verdict: null, rodStep: 50, hotStep: 0,
+          pumps: true, scrammed: false
+        });
+        rxWakeRef.current();
         if (typeof announceToSR === 'function') announceToSR('Reactor reset to 50% rods, full power, pumps running.');
       }
+      var rxRead = rxRef.current;
+      var rxReadR = rxReactivity(rxRead, rxModeObj);
+      var rxReadRhoPcm = rxReadR.total * 1e5;
+      var rxReadState = rxUi.verdict
+        ? (rxUi.verdict.ok ? 'Scenario complete' : 'Run ended')
+        : (rxUi.scrammed ? 'Scrammed — decay heat only' : (rxUi.running ? 'Running' : 'Paused'));
 
       // ── binding energy ──
       var beRef = React.useRef(null);
@@ -1910,6 +2021,11 @@
       // Same card, plus the anchor the topic index jumps to. scroll-margin keeps
       // the heading clear of the sticky index bar instead of hiding under it.
       var sec = function (id, accent) {
+        // Route mode is progressive disclosure, not only a navigation reorder:
+        // keep unrelated sections out of the DOM so a learner following one
+        // question sees a short, coherent path. The all-topics/search/category
+        // modes continue to render every matching section.
+        if (typeof nkPath !== 'undefined' && nkPath && nkPath.steps.indexOf(id) === -1) return null;
         var children = Array.prototype.slice.call(arguments, 2);
         // A route was only walkable from the index: read a step, scroll back up,
         // open the drawer, find the next one. Sections on the active route now
@@ -1986,6 +2102,28 @@
       };
       var para = function (txt, colour) {
         return h('span', { className: 'block text-[11px] leading-relaxed mt-1', style: { color: ink(colour) || (isDark ? '#e2e8f0' : '#334155') } }, txt);
+      };
+      var sourceNote = function (keys) {
+        var items = keys.map(function (key) { return NK_SOURCES[key]; }).filter(Boolean);
+        return h('p', { className: 'text-[10px] mt-2 leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
+          'Sources · reviewed ' + NK_REVIEWED + ': ',
+          items.map(function (src, i) {
+            return h(React.Fragment, { key: src.url }, i ? ' · ' : '',
+              h('a', { href: src.url, target: '_blank', rel: 'noopener noreferrer', className: 'underline font-bold' }, src.label));
+          }));
+      };
+      var safetyNotice = function (kind) {
+        var detail = kind === 'ki'
+          ? 'Take potassium iodide only when public-health officials tell you to; it does not protect against most radiation hazards.'
+          : (kind === 'medical'
+            ? 'Follow the nuclear-medicine team\'s written discharge instructions. Never use this calculator to set a real contact time or handle a sealed source.'
+            : (kind === 'emergency'
+              ? 'In an actual release, follow state and local officials. Whether to shelter, evacuate, or take KI depends on measurements and conditions this model cannot know.'
+              : 'This personal-dose estimate is educational, not a medical assessment. Ask a qualified clinician, health physicist, or local radon program about a real exposure.'));
+        return h('aside', { role: 'note', 'aria-label': 'Educational safety notice', className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(248,113,113,0.6)', background: isDark ? 'rgba(69,10,10,0.35)' : 'rgba(254,242,242,0.95)' } },
+          h('p', { className: 'text-[11px] font-black', style: { color: ink('#ef4444') } }, 'Educational model — not emergency or medical instructions'),
+          h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#fecaca' : '#7f1d1d' } }, detail),
+          h('a', { href: NK_SOURCES.nrc.url, target: '_blank', rel: 'noopener noreferrer', className: 'inline-block mt-1 text-[11px] font-bold underline', style: { color: ink('#ef4444') } }, 'Official NRC emergency guidance ↗'));
       };
 
       // ── topic index ──
@@ -2320,7 +2458,8 @@
         ) : null
       );
 
-      return h('div', { 'data-nuclear-lab': 'true', className: 'max-w-5xl mx-auto animate-in fade-in duration-200' },
+      return h('div', { 'data-nuclear-lab': 'true', className: 'nk-readable max-w-5xl mx-auto animate-in fade-in duration-200' },
+        h('style', null, '@media (max-width:640px){.nk-readable .text-\\[11px\\]{font-size:.875rem!important;line-height:1.35rem!important}.nk-readable .text-\\[10px\\]{font-size:.75rem!important;line-height:1.1rem!important}.nk-readable canvas{min-height:220px}}'),
 
         h('div', { className: 'relative overflow-hidden rounded-xl border mb-1 px-3 py-2.5', style: { background: 'linear-gradient(115deg, #1a0f2e 0%, #2e1065 46%, #0b1a2e 100%)', borderColor: 'rgba(167,139,250,0.4)' } },
           h('div', { className: 'flex flex-wrap items-center gap-3' },
@@ -2355,6 +2494,8 @@
           ),
           h('div', { className: 'rounded-lg overflow-hidden border mb-2', style: { borderColor: 'rgba(167,139,250,0.35)', height: '180px' } },
             h('canvas', { ref: decayRef, role: 'img',
+              'data-a11y-static': 'true',
+              'aria-describedby': 'nk-decay-description',
               'aria-label': 'Decay curve. After ' + nkFmt(halves, 1) + ' half-lives, ' + nkFmt(remaining * 100, 1) + ' percent of the ' + iso.name + ' remains. The curve halves at every step and never quite reaches zero.',
               style: { width: '100%', height: '100%', display: 'block' } })),
           slider('nk-halves', 'Half-lives', 0, 10, 0.25, halves,
@@ -2364,7 +2505,7 @@
             stat('Time passed', nkYears(elapsedYears), ink('#c4b5fd')),
             stat('Half-life', iso.hlText, ink('#fbbf24'))
           ),
-          h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+          h('p', { id: 'nk-decay-description', className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             h('b', null, iso.name + ' (' + iso.decay + '): '), iso.use),
           h('p', { className: 'text-[11px] mt-1.5 font-bold', style: { color: ink('#a78bfa') } },
             halves >= 7
@@ -2418,9 +2559,11 @@
             'Most heavy nuclei do not reach stability in one step. Uranium-238 takes fourteen, alternating alpha and beta, and finishes as lead. One member of that chain is a gas, and that changes everything.'),
           h('div', { className: 'rounded-lg overflow-hidden border mb-2', style: { borderColor: 'rgba(192,132,252,0.35)', height: '230px' } },
             h('canvas', { ref: chainRef, role: 'img',
+              'data-a11y-static': 'true',
+              'aria-describedby': 'nk-chain-description',
               'aria-label': 'The uranium-238 chain plotted on the chart of nuclides, neutrons across and protons up. It starts at uranium-238 with 92 protons and 146 neutrons, top right, and walks down-left to lead-206 with 82 protons and 124 neutrons, bottom left. Each of the eight alpha steps moves two protons down and two neutrons left; each of the six beta steps moves one proton up and one neutron left, which is the zigzag. Radon-222, the only gas, sits in the middle at 86 protons and 136 neutrons.',
               style: { width: '100%', height: '100%', display: 'block' } })),
-          h('p', { className: 'text-[11px] mb-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+          h('p', { id: 'nk-chain-description', className: 'text-[11px] mb-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             'Every alpha step takes the same diagonal down-left; every beta step kicks back up-left at a shallower one. That sawtooth is not decoration — it is why the chain crosses the same elements more than once, and why uranium appears twice in the list below. Tap a row to light up its nucleus here.'),
           h('div', { role: 'list', className: 'space-y-1 max-h-72 overflow-y-auto pr-1' },
             U238_CHAIN.map(function (step, i) {
@@ -2534,9 +2677,11 @@
             var through, verdict;
             if (radId === 'alpha') {
               through = alphaStopped ? 0 : 100;
-              verdict = alphaStopped
-                ? 'Completely stopped. Alpha particles cannot get through ' + nkFmt(thick, 1) + ' cm of anything — a sheet of paper would do. The danger is never external.'
-                : 'Getting through, but only because the shield is thinner than a sheet of paper.';
+              verdict = shieldId === 'air'
+                ? (alphaStopped
+                  ? 'Stopped after travelling through several centimetres of air. The exact range depends on alpha energy and air density.'
+                  : 'Still travelling through the air. Typical alpha particles need a few centimetres of air, not a fraction of a centimetre, before they stop.')
+                : 'Stopped by the solid material. Intact skin also blocks most alpha radiation, but the eye and an open wound do not have the same dead protective layer; inhaled or swallowed contamination is the main hazard.';
             } else if (radId === 'beta') {
               through = betaStopped ? 0 : 100;
               verdict = betaStopped
@@ -2608,9 +2753,11 @@
             'Binding energy per nucleon is how tightly each particle is held. The curve climbs steeply from hydrogen, peaks, then falls slowly — and HIGHER on this curve means more tightly bound. Move toward the peak from either side and the nuclei end up more tightly bound than they started, so the leftover energy comes out. Light nuclei get there by joining; heavy ones get there by splitting. One curve, two industries.'),
           h('div', { className: 'rounded-lg overflow-hidden border mb-2', style: { borderColor: 'rgba(56,189,248,0.35)', height: '190px' } },
             h('canvas', { ref: beRef, role: 'img',
+              'data-a11y-static': 'true',
+              'aria-describedby': 'nk-binding-description',
               'aria-label': 'Binding energy per nucleon against mass number. It climbs steeply from hydrogen at zero, through helium-4 at 7.07, peaks at nickel-62 at 8.795 MeV, then falls slowly to uranium-238 at 7.57. Light nuclei release energy by fusing up the left slope; heavy nuclei release it by splitting down the right slope.',
               style: { width: '100%', height: '100%', display: 'block' } })),
-          h('p', { className: 'text-[10px] mb-2', style: { color: isDark ? '#94a3b8' : '#475569' } },
+          h('p', { id: 'nk-binding-description', className: 'text-[10px] mb-2', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'Mass number across, MeV per nucleon up. The marked peak is where nothing can release energy by changing at all.'),
 
           h('div', { className: 'flex flex-wrap gap-1 mb-2' },
@@ -2650,7 +2797,7 @@
         sec('weighting', '#e879f9',
           heading(ink('#e879f9'), '🎚️ 8. Gray and sievert: the same joule, weighted twice'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
-            'Everything below this point is quoted in millisieverts, and a sievert is not a physical measurement. It is a physical measurement multiplied by two judgements about biology. Both multiplications are worth seeing, because the tool\'s claim that alpha is harmless outside you and serious inside you is a statement about exactly this arithmetic.'),
+            'Everything below this point is quoted in millisieverts, and a sievert is not a physical measurement. It is a physical measurement multiplied by two judgements about biology. Both multiplications are worth seeing, because alpha has little penetrating power through intact skin but is far more damaging when contamination reaches living tissue.'),
 
           slider('nk-absorbed', 'Energy absorbed', 0.1, 20, 0.1, absorbedMGy,
             function (e) { upd({ absorbedMGy: parseFloat(e.target.value) }); }, nkFmt(absorbedMGy, 1) + ' mGy'),
@@ -2735,12 +2882,14 @@
             'Where it goes: ' + bio.where + '.'),
           h('div', { className: 'rounded-lg overflow-hidden border mt-2', style: { borderColor: bio.colour + '59', height: '175px' } },
             h('canvas', { ref: bioRef, role: 'img',
+              'data-a11y-static': 'true',
+              'aria-describedby': 'nk-bio-description',
               'aria-label': 'How much ' + bio.name + ' is left in the body over time. Radioactive decay alone would leave ' +
                 nkFmt(Math.pow(0.5, bioSpanDays / bio.tp) * 100, 1) + ' percent after ' + nkYears(bioSpanDays / 365.25) +
                 ', but with excretion as well only ' + nkFmt(Math.pow(0.5, bioSpanDays / bioEff) * 100, 1) +
                 ' percent remains. The effective half-life is ' + nkYears(bioEff / 365.25) + '.',
               style: { width: '100%', height: '100%', display: 'block' } })),
-          h('p', { className: 'text-[10px] mt-1', style: { color: isDark ? '#94a3b8' : '#475569' } },
+          h('p', { id: 'nk-bio-description', className: 'text-[10px] mt-1', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'Grey: decay alone. Colour: what is actually left, once the body is also getting rid of it.'),
           h('p', { className: 'text-[11px] mt-2 font-bold', style: { color: ink(bio.colour) } },
             bioDriver === 'biology'
@@ -2753,7 +2902,8 @@
           h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(56,189,248,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(240,249,255,0.9)' } },
             h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#0284c7') } }, 'What potassium iodide tablets do, and what they do not'),
             h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
-              'KI is one of the most misunderstood things in this entire subject. It is not an anti-radiation pill. It works on exactly one nuclide by exactly one mechanism: it saturates the thyroid with ordinary iodine so there is no room left to take up iodine-131. That is the whole of it. It does nothing about caesium, nothing about external gamma, nothing about any other part of a release — and taken without radioiodine present it is simply a drug with side effects, which is why authorities distribute it in advance and then tell people when to take it rather than leaving it to judgement.')
+              'KI is one of the most misunderstood things in this entire subject. It is not an anti-radiation pill. It works on exactly one nuclide by exactly one mechanism: it saturates the thyroid with ordinary iodine so there is no room left to take up iodine-131. That is the whole of it. It does nothing about caesium, nothing about external gamma, nothing about any other part of a release — and taken without radioiodine present it is simply a drug with side effects, which is why authorities distribute it in advance and then tell people when to take it rather than leaving it to judgement.'),
+            safetyNotice('ki')
           ),
           h('p', { className: 'text-[10px] mt-2 leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'Biological half-lives from the ICRP 30 and ICRP 137 biokinetic models, rounded. Unlike physical half-lives, which are constants of nature, these vary substantially with age, diet, chemical form and the individual — caesium clears roughly twice as fast in a small child as in an adult. Treat them as the right order of magnitude, not as measurements of you.')
@@ -2763,15 +2913,16 @@
           heading(ink('#22d3ee'), '🧮 10. Estimate your own annual dose'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Everyone is exposed, all the time, mostly from the ground and from radon. Put your own numbers in and see where yours comes from.'),
+          safetyNotice('dose'),
           slider('ds-alt', 'Home altitude', 0, 3000, 50, dsAlt,
-            function (e) { upd({ dsAlt: parseFloat(e.target.value) }); }, nkFmt(dsAlt, 0) + ' m'),
+            function (e) { upd({ dsAlt: parseFloat(e.target.value), doseEstimated: true }); }, nkFmt(dsAlt, 0) + ' m'),
           slider('ds-fly', 'Flying per year', 0, 200, 2, dsFlights,
-            function (e) { upd({ dsFlights: parseFloat(e.target.value) }); }, nkFmt(dsFlights, 0) + ' hours'),
+            function (e) { upd({ dsFlights: parseFloat(e.target.value), doseEstimated: true }); }, nkFmt(dsFlights, 0) + ' hours'),
           h('p', { className: 'text-[11px] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Radon at home'),
           h('div', { className: 'flex flex-wrap gap-1' },
             RADON_LEVELS.map(function (r) {
               return pill(dsRadon === r.id, '#f87171', r.name, function () {
-                upd({ dsRadon: r.id });
+                upd({ dsRadon: r.id, doseEstimated: true });
                 if (typeof beep === 'function') beep();
               }, 'Set home radon to ' + r.name + ', ' + r.v + ' millisieverts a year');
             })
@@ -2784,7 +2935,7 @@
                 h('span', { className: 'text-[11px] flex-1', style: { color: isDark ? '#e2e8f0' : '#334155' } }, sc.name),
                 h('span', { className: 'text-[11px] font-mono w-16 text-right', style: { color: isDark ? '#94a3b8' : '#475569' } }, sc.v + ' mSv'),
                 h('button', { type: 'button', 'aria-label': 'One fewer ' + sc.name,
-                  onClick: function () { var nx = Object.assign({}, dsScans); nx[sc.id] = Math.max(0, n - 1); upd({ dsScans: nx }); },
+                  onClick: function () { var nx = Object.assign({}, dsScans); nx[sc.id] = Math.max(0, n - 1); upd({ dsScans: nx, doseEstimated: true }); },
                   className: 'min-h-11 w-11 rounded-lg text-[11px] font-black',
                   style: { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') } }, '−'),
                 h('span', { className: 'text-[11px] font-black w-6 text-center', style: { color: ink('#22d3ee') } }, n),
@@ -2851,7 +3002,7 @@
           h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(251,191,36,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(255,251,235,0.9)' } },
             h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#f59e0b') } }, 'Where the science is genuinely unsettled'),
             h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
-              'Above about 100 mSv, excess cancer risk is measurable in survivor studies. Below it, nobody has been able to measure an effect, because ordinary cancer is far too common to see a small addition against it. Regulators assume risk stays proportional all the way down to zero — the linear no-threshold model — because it is cautious and simple to administer. Whether it is TRUE at low doses is disputed among radiation biologists, and honest sources say so. Be wary of any claim that treats it as settled in either direction.')
+              'At and above about 100 mSv, excess cancer risk is measurable in survivor studies. Below that, epidemiological studies have limited statistical power because ordinary cancer is common and the possible addition is small. Regulators use the linear no-threshold model as a cautious protection assumption. Evidence at low dose remains uncertain rather than proving either zero risk or a measured effect; be wary of claims that treat either conclusion as settled.')
           )
         ),
 
@@ -2954,12 +3105,14 @@
 
           h('div', { className: 'rounded-lg overflow-hidden border mt-2', style: { borderColor: 'rgba(45,212,191,0.35)', height: '170px' } },
             h('canvas', { ref: countRef, role: 'img',
+              'data-a11y-static': 'true',
+              'aria-describedby': 'nk-count-description',
               'aria-label': 'Net count rate against distance for ' + cdSrc.name + '. The curve follows the inverse square law: at ' +
                 nkFmt(cdDist, 0) + ' centimetres the true rate is ' + cdTrueNet.toFixed(3) + ' counts per second, and doubling the distance to ' +
                 nkFmt(cdDist * 2, 0) + ' centimetres quarters it to ' + cdNetRateAt(cdDist * 2).toFixed(3) + '.' +
                 (cdLast ? ' Your last measurement sits at ' + cdNet.toFixed(3) + ', off the curve by counting noise alone.' : ''),
               style: { width: '100%', height: '100%', display: 'block' } })),
-          h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+          h('p', { id: 'nk-count-description', className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             'The curve is the inverse square law, and it is not a property of radiation — it is a property of spheres. The same gammas spread over a surface four times larger when you step twice as far back. Doubling your distance does more than most shielding, costs nothing, and is why the first rule of a radiation area is stand further away.'),
           cdDist < 6 ? h('p', { className: 'text-[11px] mt-1 font-bold', style: { color: ink('#fb923c') } },
             '⚠️ Below about 6 cm the model is stretched. The tube window is no longer small compared with the distance, so the neat 1/d² stops holding and a real measurement would read lower than the curve promises.') : null,
@@ -2976,6 +3129,7 @@
         // ── the third lever ──
         sec('protect', '#38bdf8',
           heading(ink('#38bdf8'), '⏱️ 13. Time, distance, shielding — all three levers'),
+          safetyNotice('medical'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Section 5 covered what stops radiation and section 12 covered distance. There is a third lever, it is free, and it is the one a radiation worker reaches for first: leave sooner. Every dose in this tool is a rate multiplied by a time, and you can pull on any of the three.'),
 
@@ -3007,6 +3161,8 @@
 
           h('div', { className: 'rounded-lg overflow-hidden border mt-2', style: { borderColor: 'rgba(56,189,248,0.35)', height: '175px' } },
             h('canvas', { ref: protectRef, role: 'img',
+              'data-a11y-static': 'true',
+              'aria-describedby': 'nk-protect-summary',
               'aria-label': 'Dose rate against distance for ' + ptSrc.nuclide + ' at ' + ptSrc.gbq +
                 ' gigabecquerels. Unshielded it is ' + nkFmt(ptRateAt(1, 0), 3) + ' millisieverts per hour at 1 metre and ' +
                 nkFmt(ptRateAt(5, 0), 4) + ' at 5 metres. At your chosen ' + nkFmt(ptDist, 1) + ' metres behind ' +
@@ -3014,7 +3170,7 @@
                 ' millisieverts per hour.',
               style: { width: '100%', height: '100%', display: 'block' } })),
 
-          h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2' },
+          h('div', { id: 'nk-protect-summary', className: 'grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2' },
             stat('Dose rate here', nkFmt(ptRate, ptRate < 1 ? 4 : 2) + ' mSv/h', ink(ptSrc.colour)),
             stat('Shield cuts it to', ptThick > 0 ? nkFmt(ptAtten * 100, ptAtten < 0.01 ? 3 : 1) + '%' : 'no shield', ink('#94a3b8')),
             stat('An hour here costs', nkFmt(ptRate, ptRate < 1 ? 4 : 2) + ' mSv', ink('#fbbf24'))
@@ -3098,6 +3254,7 @@
         // ── the decision the last section leaves you with ──
         sec('shelter', '#a3e635',
           heading(ink('#84cc16'), '🏠 15. Shelter or evacuate? Work the numbers'),
+          safetyNotice('emergency'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Around 2,200 people died because of the Fukushima evacuation and one from radiation. That is a fact, not an argument — and the wrong lesson to draw from it is that evacuating is a mistake. The right lesson is that it is a CHOICE with a cost on both sides, and which side is cheaper depends on numbers you can work out.'),
           h('p', { className: 'text-[11px] mb-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
@@ -3126,6 +3283,8 @@
 
           h('div', { className: 'rounded-lg overflow-hidden border mb-2', style: { borderColor: 'rgba(163,230,53,0.35)', height: '180px' } },
             h('canvas', { ref: shelterRef, role: 'img',
+              'data-a11y-static': 'true',
+              'aria-describedby': 'nk-shelter-summary',
               'aria-label': 'Dose against how long it takes to get clear. Sheltering in a ' + shPlace.name.toLowerCase() +
                 ' through a ' + nkFmt(shPlume, 0) + ' hour release gives a flat ' + nkFmt(shShelterDose, 1) +
                 ' millisieverts. Evacuating gives ' + nkFmt(shEvacDose, 1) + ' millisieverts after ' + nkFmt(shEvac, 1) +
@@ -3133,7 +3292,7 @@
                 ' hours: get clear faster than that and leaving costs less dose, slower and it costs more.',
               style: { width: '100%', height: '100%', display: 'block' } })),
 
-          h('div', { className: 'grid grid-cols-2 gap-2' },
+          h('div', { id: 'nk-shelter-summary', className: 'grid grid-cols-2 gap-2' },
             stat('Shelter here', nkFmt(shShelterDose, shShelterDose < 10 ? 1 : 0) + ' mSv', ink(shPlace.colour)),
             stat('Evacuate now', nkFmt(shEvacDose, shEvacDose < 10 ? 1 : 0) + ' mSv', ink('#f87171'))
           ),
@@ -3148,8 +3307,9 @@
                 ? 'You said it would take ' + nkFmt(shEvac, 1) + ' hours to get clear, which is longer than that, so the drive costs more dose than the walls save. This is the case people find counter-intuitive, and it is the ordinary one when a release is short and the roads are full.'
                 : 'You said ' + nkFmt(shEvac, 1) + ' hours, which beats it, so leaving wins on dose. That is the ordinary case when a release goes on for days — no building shields you for a week.')),
             h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
-              'Push the release out to several days and watch the answer flip: sheltering is a way of waiting out a plume, not a way of living somewhere contaminated. Real guidance says exactly this — shelter first, evacuate once the plume has passed and you can travel in clean air.')
+              'Push the release out to several days and watch the answer flip: sheltering is a way of waiting out a plume, not a way of living somewhere contaminated. This classroom comparison cannot issue real guidance: officials may order sheltering or evacuation as measurements and travel conditions change.')
           ),
+          sourceNote(['nrc']),
 
           h('p', { className: 'text-[11px] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Where does that land against the published thresholds?'),
           h('div', { role: 'list', className: 'space-y-1' },
@@ -3184,34 +3344,40 @@
             REACTORS.map(function (r) {
               var on = d.reactorPick === r.id;
               var badge = ink(r.status === 'operating' ? '#34d399' : (r.status === 'emerging' ? '#fbbf24' : (r.status === 'legacy' ? '#94a3b8' : '#f472b6')));
-              return h('button', {
-                key: r.id, type: 'button', 'aria-pressed': on ? 'true' : 'false',
-                'aria-label': (on ? 'Hide' : 'Read about') + ' ' + r.name + ', status ' + r.status,
-                onClick: function () {
-                  upd({ reactorPick: on ? null : r.id });
-                  if (!on) pushOnce('reactorsSeen', r.id);
-                  if (typeof beep === 'function') beep();
-                },
-                className: 'w-full text-left rounded-lg px-2.5 py-2 border transition-colors',
+              var bodyId = 'nk-reactor-' + r.id + '-body';
+              return h('div', {
+                key: r.id, className: 'rounded-lg border transition-colors',
                 style: on ? { background: '#38bdf81f', borderColor: '#38bdf8' }
                   : { background: isDark ? 'rgba(148,163,184,0.07)' : 'rgba(255,255,255,0.9)', borderColor: isDark ? 'rgba(148,163,184,0.22)' : 'rgba(100,116,139,0.2)' }
               },
-                h('span', { className: 'flex items-center gap-2 flex-wrap' },
-                  h('span', { className: 'text-[11px] font-bold flex-1', style: { color: isDark ? '#fff' : '#1e293b' } }, r.name),
-                  h('span', { className: 'text-[10px] font-black px-1.5 py-0.5 rounded-full', style: { color: badge, border: '1px solid ' + badge + '70' } }, r.status),
-                  h('span', { className: 'text-[11px] font-bold', style: { color: ink('#38bdf8') } }, on ? '▾' : '›')),
-                h('span', { className: 'block text-[11px] mt-0.5', style: { color: isDark ? '#cbd5e1' : '#475569' } }, r.share),
-                on ? h('span', { className: 'block mt-1.5' },
+                h('button', {
+                  type: 'button', 'aria-expanded': on ? 'true' : 'false',
+                  'aria-controls': on ? bodyId : undefined,
+                  'aria-label': (on ? 'Hide details for ' : 'Show details for ') + r.name + ', status ' + r.status,
+                  onClick: function () {
+                    upd({ reactorPick: on ? null : r.id });
+                    if (!on) pushOnce('reactorsSeen', r.id);
+                    if (typeof beep === 'function') beep();
+                  },
+                  className: 'w-full text-left rounded-lg px-2.5 py-2'
+                },
+                  h('span', { className: 'flex items-center gap-2 flex-wrap' },
+                    h('span', { className: 'text-[11px] font-bold flex-1', style: { color: isDark ? '#fff' : '#1e293b' } }, r.name),
+                    h('span', { className: 'text-[10px] font-black px-1.5 py-0.5 rounded-full', style: { color: badge, border: '1px solid ' + badge + '70' } }, r.status),
+                    h('span', { className: 'text-[11px] font-bold', 'aria-hidden': 'true', style: { color: ink('#38bdf8') } }, on ? '▾' : '›')),
+                  h('span', { className: 'block text-[11px] mt-0.5', style: { color: isDark ? '#cbd5e1' : '#475569' } }, r.share)),
+                on ? h('div', { id: bodyId, className: 'px-2.5 pb-2 -mt-0.5' },
                   para(r.how),
-                  h('span', { className: 'block text-[11px] leading-relaxed mt-1.5', style: { color: isDark ? '#86efac' : '#15803d' } }, h('b', null, 'Safety: '), r.safety),
-                  h('span', { className: 'block text-[11px] leading-relaxed mt-1.5', style: { color: isDark ? '#fbbf24' : '#b45309' } }, h('b', null, 'The catch: '), r.catch)
+                  h('p', { className: 'text-[11px] leading-relaxed mt-1.5', style: { color: isDark ? '#86efac' : '#15803d' } }, h('b', null, 'Safety: '), r.safety),
+                  h('p', { className: 'text-[11px] leading-relaxed mt-1.5', style: { color: isDark ? '#fbbf24' : '#b45309' } }, h('b', null, 'The catch: '), r.catch)
                 ) : null);
             })
           ),
           h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(251,191,36,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(255,251,235,0.9)' } },
             h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#f59e0b') } }, 'On small modular reactors specifically'),
             h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
-              'The engineering case is real: a small core can be cooled by convection and gravity alone, so a station blackout stops being the scenario that keeps operators awake. Factory production should also beat pouring concrete on site, where Western projects have overrun badly. But as of now almost none are operating commercially — China\'s HTR-PM since 2023, and a Russian floating plant. NuScale had the first US design approval and its flagship project was cancelled in 2023 when projected power costs rose from about $58 to $89 per MWh. Factory economics need order volume that does not yet exist, and several designs need HALEU fuel with a supply chain still being built. The right posture is interested, not convinced.')
+              'The engineering case is real: a small core can be cooled by convection and gravity alone, so a station blackout stops being the scenario that keeps operators awake. Factory production should also beat pouring concrete on site, where Western projects have overrun badly. But as of now almost none are operating commercially — China\'s HTR-PM since 2023, and a Russian floating plant. NuScale had the first US design approval and its flagship project was cancelled in 2023 when projected power costs rose from about $58 to $89 per MWh. Factory economics need order volume that does not yet exist, and several designs need HALEU fuel with a supply chain still being built. The right posture is interested, not convinced.'),
+            sourceNote(['nuscale', 'iter', 'nif'])
           )
         ),
 
@@ -3293,9 +3459,32 @@
               ) : null),
             h('div', { className: 'rounded-xl overflow-hidden border', style: { borderColor: 'rgba(52,211,153,0.4)', height: '260px' } },
               h('canvas', { ref: rxCanvasRef, role: 'img',
+                'data-a11y-static': 'true',
+                'aria-describedby': 'rx-live-readings',
                 'aria-label': 'Reactor control panel showing a power trace, fuel temperature, net reactivity in pcm and xenon level. Use the controls below; every reading is also given as text under the panel.',
+                'aria-describedby': 'rx-live-readings',
                 style: { width: '100%', height: '100%', display: 'block' } }))
           ),
+
+          h('dl', {
+            id: 'rx-live-readings', ref: rxTelemetryRef,
+            'aria-label': 'Live reactor readings', 'aria-live': 'off',
+            className: 'mt-2 grid grid-cols-2 sm:grid-cols-5 gap-2'
+          }, [
+            ['rx-live-power', 'Power', nkFmt(rxRead.power, rxRead.power < 10 ? 1 : 0) + '%'],
+            ['rx-live-temperature', 'Fuel temperature', nkFmt(rxRead.t, 0) + ' °C'],
+            ['rx-live-reactivity', 'Net reactivity', (rxReadRhoPcm >= 0 ? '+' : '') + nkFmt(rxReadRhoPcm, 0) + ' pcm'],
+            ['rx-live-xenon', 'Xenon level', nkFmt(rxRead.xe, 2) + '×'],
+            ['rx-live-state', 'Simulation state', rxReadState]
+          ].map(function (metric) {
+            return h('div', {
+              key: metric[0], className: 'rounded-lg p-2 text-center',
+              style: { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(167,139,250,0.09)', border: '1px solid rgba(52,211,153,0.35)' }
+            },
+              h('dt', { className: 'text-[10px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, metric[1]),
+              h('dd', { className: 'text-sm font-black', style: { color: isDark ? '#6ee7b7' : '#047857' } },
+                h('output', { id: metric[0] }, metric[2])));
+          })),
 
           // controls
           h('div', { className: 'mt-2 flex flex-wrap gap-1' },
@@ -3325,13 +3514,14 @@
           h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
             h('button', { type: 'button', 'aria-pressed': rxUi.running ? 'true' : 'false',
               'aria-label': rxUi.running ? 'Pause the simulation' : 'Start the simulation',
-              onClick: function () { setRxUi(Object.assign({}, rxUi, { running: !rxUi.running })); if (typeof beep === 'function') beep(); },
+              onClick: function () { rxPatchUi({ running: !rxUi.running }); if (typeof beep === 'function') beep(); },
               className: 'min-h-11 px-4 py-2 rounded-lg text-[11px] font-black',
               style: rxUi.running ? { background: '#f59e0b', color: '#0b1020', border: '1px solid #f59e0b' } : { background: '#065f46', color: '#fff', border: '1px solid #065f46' }
             }, rxUi.running ? '⏸ Pause' : '▶ Run'),
             h('button', { type: 'button', 'aria-label': 'Scram: drop every control rod immediately',
               onClick: function () {
                 rxSet({ scrammed: true, sinceScram: 0, rods: 100, holdOk: 0 });
+                rxPatchUi({ scrammed: true, rodStep: 100 });
                 if (typeof beep === 'function') beep();
                 if (typeof announceToSR === 'function') announceToSR('Scrammed. Fission stopped. Decay heat continues.');
               },
@@ -3341,14 +3531,19 @@
               onClick: function () { rxRestart(); if (typeof beep === 'function') beep(); },
               className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold',
               style: { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') } }, '↺ Reset'),
-            h('button', { type: 'button', 'aria-pressed': rxRef.current.pumps ? 'true' : 'false',
-              'aria-label': rxRef.current.pumps ? 'Stop the coolant pumps' : 'Restore the coolant pumps',
-              onClick: function () { rxSet({ pumps: !rxRef.current.pumps }); if (typeof beep === 'function') beep(); },
+            h('button', { type: 'button', 'aria-pressed': rxUi.pumps ? 'true' : 'false',
+              'aria-label': rxUi.pumps ? 'Stop the coolant pumps' : 'Restore the coolant pumps',
+              onClick: function () {
+                var pumps = !rxRef.current.pumps;
+                rxSet({ pumps: pumps });
+                rxPatchUi({ pumps: pumps });
+                if (typeof beep === 'function') beep();
+              },
               className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold',
-              style: rxRef.current.pumps
+              style: rxUi.pumps
                 ? { background: 'rgba(96,165,250,0.18)', color: isDark ? '#bfdbfe' : '#1d4ed8', border: '1px solid #60a5fa' }
                 : { background: 'rgba(248,113,113,0.18)', color: isDark ? '#fecaca' : '#b91c1c', border: '1px solid #f87171' }
-            }, rxRef.current.pumps ? '💧 Pumps on' : '💧 Pumps OFF')
+            }, rxUi.pumps ? '💧 Pumps on' : '💧 Pumps OFF')
           ),
 
           h('div', { className: 'flex items-center gap-2 mt-2' },
@@ -3356,7 +3551,11 @@
             h('input', { id: 'rx-rods', type: 'range', min: 0, max: 100, step: 1,
               value: rxUi.rodStep,
               'aria-valuetext': rxUi.rodStep + ' percent inserted',
-              onChange: function (e) { rxSet({ rods: parseFloat(e.target.value), scrammed: false }); setRxUi(Object.assign({}, rxUi, { rodStep: Math.round(parseFloat(e.target.value) / 5) * 5 })); },
+              onChange: function (e) {
+                var value = parseFloat(e.target.value);
+                rxSet({ rods: value, scrammed: false });
+                rxPatchUi({ rodStep: Math.round(value / 5) * 5, scrammed: false });
+              },
               className: 'flex-1 h-6 accent-emerald-500' }),
             h('span', { className: 'text-[11px] font-bold w-24 text-right', style: { color: isDark ? '#6ee7b7' : '#047857' } }, rxUi.rodStep + '% in')
           ),
@@ -3423,8 +3622,10 @@
           )
         ),
 
-        h('p', { className: 'text-[10px] mt-3 text-center leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
-          'Half-lives from the NNDC chart of nuclides. Attenuation coefficients from NIST XCOM at 1 MeV. Doses from UNSCEAR, ICRP 103 and NCRP 160. Accident figures from UNSCEAR 2008 and 2020/21. Deaths per TWh from Markandya & Wilkinson (2007) and Sovacool et al. (2016) via Our World in Data. Lifecycle CO₂ from IPCC AR5 Annex III. Where a figure is disputed, the tool gives the range rather than choosing.')
+        h('footer', { className: 'mt-3 rounded-lg border p-3 text-center', style: { borderColor: isDark ? 'rgba(148,163,184,.25)' : 'rgba(100,116,139,.22)' } },
+          h('p', { className: 'text-[10px] leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
+            'Reviewed ' + NK_REVIEWED + '. Half-lives use NNDC NuDat 3; attenuation uses NIST XCOM at 1 MeV; dose and accident context uses UNSCEAR, ICRP 103 and NCRP 160. Where a figure is disputed, the tool gives the range rather than choosing.'),
+          sourceNote(['nudat', 'nist', 'unscear', 'nrc', 'iter', 'nif', 'nuscale']))
       );
     }
   });

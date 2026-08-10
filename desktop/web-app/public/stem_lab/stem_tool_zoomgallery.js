@@ -63,7 +63,8 @@
     label: 'Zoom Gallery',
     desc: 'Zoom deep into real, openly-licensed images — Smithsonian Open Access artifacts (CC0) and famous NASA photographs (public domain) — in OpenSeadragon, the viewer museums use. Magnify to the pixel: the Pillars of Creation, an Apollo bootprint, the Apollo 11 capsule, a coral fan. A Notice → Wonder coach sits beside the viewer.',
     color: 'sky',
-    category: 'general',
+    category: 'creative',
+    aliases: ['deep zoom', 'OpenSeadragon', 'NASA images', 'Smithsonian'],
     questHooks: [
       { id: 'zoom_open', label: 'Open an image and zoom in', icon: '🔍',
         check: function (d) { return !!(d && d.opened); } },

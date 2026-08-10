@@ -5,11 +5,12 @@
 #   1. Stage your source changes:    git add <files-you-want-committed>
 #   2. Run the deploy:                ./deploy.sh "Your commit message"
 #
-# What it does (10 steps in one shot):
+# What it does (10 steps plus a pre-deploy desktop artifact gate):
 #   1.  Commits staged changes (skips if nothing staged — useful for re-deploys)
 #   2.  Pushes source commit to origin (GitHub)
 #   3.  Runs `node build.js --mode=prod --force` (rewrites CDN hash refs)
 #   4.  Runs `npm run build` in desktop/web-app/
+#   4.5 Builds the desktop flavor separately, then atomically stages + verifies it
 #   5.  Runs `firebase deploy --only hosting`
 #   6.  Auto-commits the post-deploy hash refs (the mirror files)
 #   7.  Pushes the post-deploy commit to origin
@@ -58,8 +59,9 @@ WORKFLOW:
   2. Run the script with your commit message:
        ./deploy.sh "Extract FooView into CDN module"
 
-The script handles: source commit, push, build, deploy, post-deploy
-commit (with hash refs), push, and mirror to the Codeberg backup.
+The script handles: source commit, push, hosted + desktop build staging,
+deploy, post-deploy commit (with hash refs), push, and mirror to the
+Codeberg backup.
 
 If nothing is staged, the script skips the source commit and just
 runs build + deploy + post-deploy. Useful when re-running a deploy
@@ -240,6 +242,17 @@ echo ""
 echo "=== Step 4: npm run build (desktop/web-app) ==="
 (cd desktop/web-app && npm run build)
 echo "  ✓ npm build complete."
+
+# ── Step 4.5: Stage + verify the desktop app artifact ──────────────
+# Build the desktop flavor with its canonical keyless/local environment into an
+# isolated BUILD_PATH. This intentionally does not reuse or overwrite the hosted
+# build that Firebase consumes. The desktop builder stages atomically and refuses
+# to replace the last known-good app-build unless remediation-module parity, the
+# hashed asset manifest, and service-worker precache all validate.
+echo ""
+echo "=== Step 4.5: Build + verify desktop/app-build ==="
+(cd desktop && npm run web:build:isolated && npm run verify:web-build)
+echo "  ✓ desktop/app-build is current and internally consistent."
 
 # ── Step 5: Firebase deploy ────────────────────────────────────────
 # The public repo deliberately ships with YOUR_PROJECT_ID so a normal deploy

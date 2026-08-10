@@ -70,7 +70,7 @@ describe('BirdLab field progression and scene engagement', () => {
     expect(html).toContain('Choose scene lens');
     expect(html).toContain('Wide sweep');
     expect(html).toContain('Left sweep');
-    expect(html).toContain('birds in view');
+    expect(html).toContain('bird species in view');
     expect(html).toContain('Pause scene motion');
     expect(html).toContain('Previous scene lens');
     expect(html).toContain('Next scene lens');
@@ -139,7 +139,8 @@ describe('BirdLab field progression and scene engagement', () => {
     expect(source).toContain('function switchRecordFilter(nextFilter)');
     expect(source).toContain("upd('blRecordFilter', nextFilter)");
     expect(source).toContain('var RECORD_FILTERS = [');
-    expect(source).toContain('var visibleRecordBirds = habitat.birds.filter');
+    expect(source).toContain('var habitatSpecies = habitatSpeciesBirds(habitat);');
+    expect(source).toContain('var visibleRecordBirds = habitatSpecies.filter');
     expect(source).toContain('visibleRecordBirds.map(function(b, i)');
     expect(source).toContain("key: 'kbd-' + b.species");
     expect(source).toContain('No records in ');
@@ -196,7 +197,7 @@ describe('BirdLab field progression and scene engagement', () => {
     expect(source).toContain('function toggleSceneMotion()');
     expect(source).toContain('sceneViewBox');
     expect(source).toContain('function renderSceneBirds(layer, keyPrefix)');
-    expect(source).toContain('birdlab-static');
+    expect(source).toContain("var motionClass = 'birdlab-motion-subject birdlab-' + motionName");
     expect(source).toContain('data-birdlab-scene-controls');
     expect(source).toContain('function stepSceneLens(delta)');
     expect(source).toContain('sceneLensContainsBird');
@@ -221,7 +222,10 @@ describe('BirdLab field progression and scene engagement', () => {
     expect(source).toContain('function shouldAdvanceSceneSweep()');
     expect(source).toContain('Finish a zone to move to the next lens.');
     expect(source).toContain("if (sceneSweep && shouldAdvanceSceneSweep())");
-    expect(source).toContain("setSceneLens(sceneSweep ? 'left' : 'wide')");
+    expect(source).not.toContain("sceneSweep ? 'left'");
+    expect(source).toContain("var firstSweepLens = nextSceneSweepLensId('right')");
+    expect(source).toContain("var roundStartLens = sceneSweep ? nextSceneSweepLensId('right') : 'wide'");
+    expect(source).toContain("upd('blSceneLens', roundStartLens)");
     expect(source).toContain('fieldSession_state');
     expect(source).toContain('fieldSessionHistory_state');
     expect(source).toContain("birdLab.session.v1");

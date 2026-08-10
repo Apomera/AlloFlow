@@ -107,6 +107,11 @@ export function setupSymbolStudio() {
   ensureMainContent();
 
   window.AlloModules = window.AlloModules || {};
+  if (!window.AlloModules.KaraokeAudioStore) {
+    const audioStoreSrc = readFileSync(resolve(process.cwd(), 'karaoke_audio_store_module.js'), 'utf8');
+    // eslint-disable-next-line no-new-func
+    new Function(audioStoreSrc)();
+  }
   const src = readFileSync(resolve(process.cwd(), 'symbol_studio_module.js'), 'utf8');
   // eslint-disable-next-line no-new-func
   new Function(src)();

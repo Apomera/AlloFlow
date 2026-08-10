@@ -982,9 +982,10 @@
   window.StemLab.registerTool('codingPlayground', {
     icon: '🔬',
     label: 'codingPlayground',
-    desc: '',
+    desc: 'Learn sequencing, loops, and conditionals by programming a turtle with visual blocks or text code.',
     color: 'slate',
     category: 'creative',
+    aliases: ['coding', 'block coding', 'turtle', 'loops'],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;

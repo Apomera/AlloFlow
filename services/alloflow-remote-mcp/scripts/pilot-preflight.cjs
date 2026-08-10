@@ -7,6 +7,7 @@ const ACCEPTANCE_VERSION = "institution-pilot-synthetic-v2";
 const REQUIRED_SECRETS = [
   "ACCESS_CLIENT_SECRET",
   "GEMINI_API_KEY",
+  "RELEASE_CANARY_SECRET",
   "RUNNER_AUTH_SECRET",
 ];
 const KNOWN_NON_PILOT_KV_IDS = new Set([
@@ -169,6 +170,11 @@ function validatePilotConfig(config, raw, options = {}) {
   const r2 = Array.isArray(config.r2_buckets)
     ? config.r2_buckets.find((entry) => entry.binding === "DOCUMENTS")
     : undefined;
+  const metrics = Array.isArray(config.analytics_engine_datasets)
+    ? config.analytics_engine_datasets.find(
+        (entry) => entry.binding === "PILOT_METRICS",
+      )
+    : undefined;
   const workflow = Array.isArray(config.workflows)
     ? config.workflows.find(
         (entry) => entry.binding === "REMEDIATION_WORKFLOW",
@@ -315,6 +321,15 @@ function validatePilotConfig(config, raw, options = {}) {
     !String(r2.bucket_name || "").includes("documents")
   ) {
     errors.push("DOCUMENTS must be a dedicated staging R2 bucket");
+  }
+  if (
+    !metrics ||
+    metrics.dataset !== "alloflow_institution_pilot_metrics"
+  ) {
+    errors.push("PILOT_METRICS must use the dedicated pilot dataset");
+  }
+  if (config.version_metadata?.binding !== "CF_VERSION_METADATA") {
+    errors.push("CF_VERSION_METADATA must expose the deployed release ID");
   }
   if (
     !workflow ||

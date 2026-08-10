@@ -177,6 +177,23 @@ jobs:
       - name: Smoke — major surfaces open without a fatal error
         run: npx playwright test tests/e2e/11-render-smoke.spec.ts
 
+  stem-plugin-recovery:
+    name: STEM plugin failure recovery (BLOCKING)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm install --no-audit --no-fund
+      - name: Install Playwright chromium
+        run: npx playwright install chromium
+      - name: Heat and Nuclear demand-load recovery
+        run: npx playwright test tests/e2e/35-stem-plugin-recovery.spec.ts --workers=1
+      - name: Heat and Nuclear recovery in the local app
+        run: npx playwright test --config=tests/e2e/stem-local.playwright.config.ts tests/e2e/36-stem-local-app.spec.ts --workers=1
+
   tag-tree:
     name: Tagged-PDF goldens (BLOCKING)
     # PROMOTED TO BLOCKING 2026-06-10 (strategic-audit item: "eight goldens,

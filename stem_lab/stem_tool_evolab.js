@@ -108,6 +108,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
     name: 'EvoLab — Evolution',
     icon: '🧬',
     desc: 'Evolution and natural selection — three interactive simulators (Selection Sandbox, Galápagos Beak Lab, Phylogenetic Tree Builder) plus four quick labs covering Hardy-Weinberg, genetic drift, common ancestry, and the most common evolution misconceptions. Real-world relevance: includes Maine wildlife examples (snowshoe hare coat color, Maine finches, moose tick mortality).',
+    category: 'biology',
+    aliases: ['evolution', 'natural selection', 'Darwin', 'Hardy-Weinberg'],
     render: function(ctx) {
       var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React || window.React;

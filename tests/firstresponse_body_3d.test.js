@@ -61,7 +61,7 @@ describe('body 3D — wiring', () => {
   });
 
   it('renders every tab without throwing', () => {
-    for (const tab of ['gate', 'place', 'depth', 'recovery']) {
+    for (const tab of ['gate', 'place', 'depth', 'coach', 'aed', 'recovery', 'call']) {
       expect(body({ b3dTab: tab }), 'threw on tab ' + tab).toContain('Body position in 3D');
     }
   });
@@ -176,6 +176,147 @@ describe('body 3D — depth and recoil', () => {
   });
 });
 
+
+describe('body 3D — 30:2 timing and breath coach', () => {
+  function extractTimingAnalyzer() {
+    const start = SRC.indexOf('function analyzeCprTiming');
+    expect(start).toBeGreaterThan(-1);
+    const open = SRC.indexOf('{', start);
+    let depth = 0;
+    let end = -1;
+    for (let i = open; i < SRC.length; i++) {
+      if (SRC[i] === '{') depth++;
+      else if (SRC[i] === '}') {
+        depth--;
+        if (depth === 0) { end = i; break; }
+      }
+    }
+    const fnSource = SRC.slice(start, end + 1);
+    // eslint-disable-next-line no-new-func
+    return new Function('CPR_COACH_SPEC', 'return (' + fnSource + ')')({ minBpm: 100, maxBpm: 120 });
+  }
+
+  it('renders the complete non-WebGL practice floor', () => {
+    const html = body({ b3dTab: 'coach', b3dAge: 'adult' });
+    expect(html).toContain('30:2 compression + breath coach');
+    expect(html).toContain('Start 30:2 practice');
+    expect(html).toMatch(/timing and sequence only/i);
+    expect(html).toMatch(/never depth, force, airway seal or real chest rise/i);
+  });
+  it('renders the full arrest scenario path and its training boundary', () => {
+    const html = body({ b3dTab: 'coach', b3dCoachMode: 'scenario' });
+    expect(html).toContain('Full cardiac-arrest sequence coach');
+    expect(html).toContain('Full arrest run');
+    expect(html).toContain('Start full arrest scenario');
+    expect(SRC).toContain("next.phase = coachMode === 'scenario' ? 'assessment' : 'compressions'");
+    expect(SRC).toContain("session.phase = 'call'");
+    expect(SRC).toContain("session.phase = 'aed'");
+    expect(SRC).toContain('recordScenarioCompressionDown');
+    expect(SRC).toContain('recordScenarioCompressionUp');
+    expect(SRC).toContain('holdDurations');
+    expect(SRC).toContain('scenarioSteps');
+    expect(SRC).toContain('Apply AED and follow prompts');
+    expect(SRC).toContain('Press and release compression');
+  });
+
+  it('pins the 30:2 sequence and target range', () => {
+    expect(SRC).toContain('compressionsPerCycle: 30');
+    expect(SRC).toContain('breathsPerCycle: 2');
+    expect(SRC).toContain('minBpm: 100');
+    expect(SRC).toContain('maxBpm: 120');
+    expect(SRC).toContain("session.phase = 'breaths'");
+    expect(SRC).toContain("session.phase = 'resume'");
+    expect(SRC).toContain('session.pauseDurations.push');
+  });
+
+  it('scores a steady 110 bpm rhythm as fully in range', () => {
+    const analyze = extractTimingAnalyzer();
+    const result = analyze(Array(12).fill(60000 / 110));
+    expect(result.medianBpm).toBe(110);
+    expect(result.inRangePct).toBe(100);
+    expect(result.consistencyPct).toBe(100);
+  });
+
+  it('exposes erratic timing even when the median looks acceptable', () => {
+    const analyze = extractTimingAnalyzer();
+    const result = analyze([400, 690, 545, 410, 680, 545]);
+    expect(result.medianBpm).toBeGreaterThanOrEqual(100);
+    expect(result.medianBpm).toBeLessThanOrEqual(120);
+    expect(result.inRangePct).toBeLessThan(100);
+    expect(result.consistencyPct).toBeLessThan(90);
+  });
+
+  it('keeps accepted very-fast taps and long pauses in the score', () => {
+    const analyze = extractTimingAnalyzer();
+    for (const intervals of [[545, 200, 545], [545, 3000, 545]]) {
+      const result = analyze(intervals);
+      expect(result.sampleCount).toBe(3);
+      expect(result.medianBpm).toBe(110);
+      expect(result.inRangePct).toBe(67);
+      expect(result.consistencyPct).toBeLessThan(100);
+    }
+  });
+
+  it('keeps live taps in memory and persists only the summary', () => {
+    expect(SRC).toContain('var frCoachRef = useRef(null)');
+    expect(SRC).toContain("upd('b3dCoachBest', session.summary)");
+    expect(SRC).not.toContain("upd('b3dCoachTaps'");
+  });
+
+  it('links all seven tabs to one roving-focus tabpanel', () => {
+    expect(SRC).toContain("var BODY_TAB_IDS = ['gate', 'place', 'depth', 'coach', 'aed', 'recovery', 'call']");
+    expect(SRC).toContain("id: 'firstresponse-body-tab-' + id");
+    expect(SRC).toContain("'aria-controls': 'firstresponse-body-panel-' + id");
+    expect(SRC).toContain("id: 'firstresponse-body-panel-' + tab");
+  });
+
+  it('animates through the shared viewer without scene rebuilds', () => {
+    expect(HOST).toContain('contentFrame: contentFrame');
+    expect(HOST).toContain('S.contentFrame(Date.now(), props.sceneProps || {}, S.reduced)');
+    expect(SRC).toContain("sceneKey: tab + ':' + sceneAge");
+    expect(SRC).toContain("if (!reduced && mode === 'coach')");
+  });
+  it('locks each breath through chest rise and fall and resets interrupted sessions', () => {
+    expect(SRC).toContain('breathLockMs: 1500');
+    expect(SRC).toContain("session.phase = 'breathRecovery'");
+    expect(SRC).toContain('CPR_COACH_SPEC.breathLockMs + 50');
+    expect(SRC).toContain("document.addEventListener('visibilitychange'");
+    expect(SRC).toContain('compressionSegmentEpoch');
+  });
+
+  it('renders pediatric ratios, fallback framing, and age-specific depths', () => {
+    const infantCoach = body({ b3dTab: 'coach', b3dAge: 'infant' });
+    expect(infantCoach).toMatch(/single-rescuer 30:2 practice/i);
+    expect(infantCoach).toContain('15:2');
+    expect(infantCoach).toContain('Compression-only fallback');
+    const infantDepth = body({ b3dTab: 'depth', b3dAge: 'infant', b3dMech: 'right' });
+    expect(infantDepth).toMatch(/1\.5 inches \(4 cm\)/i);
+    expect(infantDepth).not.toMatch(/2\.4 inches/i);
+    const childDepth = body({ b3dTab: 'depth', b3dAge: 'child', b3dMech: 'right' });
+    expect(childDepth).toMatch(/About 2 inches \(5 cm\)/i);
+    expect(childDepth).not.toMatch(/2\.4 inches/i);
+  });
+
+  it('uses age-specific announcements and separate fallback recognition', () => {
+    expect(SRC).toContain("var zoneWhy = z.verdict === 'correct' ? ageInfo.where + ' ' + ageInfo.hands : z.why");
+    expect(SRC).toContain("note('Model shown', modelTechnique)");
+    expect(SRC).toContain("awardBadge('cpr_compression_fallback'");
+    expect(SRC).toContain("if (session.mode === 'trained') awardBadge('cpr_30x2_flow'");
+  });
+
+  it('pins the 2025 choking order and pediatric drowning response', () => {
+    expect(SRC).toContain('Give 5 back blows, then 5 abdominal thrusts');
+    expect(SRC).toContain('Repeat 5 back blows + 5 chest thrusts');
+    expect(SRC).not.toContain('current AHA guidance is abdominal thrusts first');
+    expect(SRC).not.toContain('you have a minute or so');
+    expect(SRC).toContain('start conventional CPR with breaths now');
+    expect(SRC).toContain('Pregnant or large person: 5 back blows + 5 chest thrusts');
+    expect(SRC).not.toContain('Start hands-only CPR if trained');
+    expect(SRC).toContain('If they are not breathing normally, start CPR or rescue breathing');
+    expect(SRC).toContain('Recovery position only if breathing normally');
+  });
+
+});
 describe('body 3D — recovery position', () => {
   it('checks breathing before anything else', () => {
     expect(RECOVERY[0].id).toBe('check');
@@ -242,11 +383,13 @@ describe('body 3D — age variants', () => {
     }
   });
 
-  it('changes the hands, not just the numbers', () => {
+  it('changes the hands, not just the numbers, using the 2025 infant technique', () => {
     expect(byId('adult').hands).toMatch(/two hands/i);
     expect(byId('child').hands).toMatch(/one hand/i);
-    expect(byId('infant').hands).toMatch(/two fingers/i);
-    expect(byId('infant').hands).toMatch(/two-thumbs|thumbs/i);
+    expect(byId('infant').hands).toMatch(/heel of one hand/i);
+    expect(byId('infant').hands).toMatch(/two-thumb/i);
+    expect(byId('infant').hands).toMatch(/two-finger.*no longer recommended/i);
+    expect(byId('infant').hands).not.toMatch(/^Two fingers/i);
   });
 
   it('says breaths matter more for children and infants', () => {
@@ -444,13 +587,16 @@ describe('body 3D — run the call (integrated scenarios)', () => {
     expect(byId('infant').age).toBe('infant');
     // ...and the 3D figure follows the scenario, not the age selector
     expect(SRC).toContain("if (tab === 'call')");
-    expect(SRC).toContain('sceneProps: { tab: tab, age: sceneAge }');
+    expect(SRC).toContain('age: sceneAge,');
+    expect(SRC).toContain("coach: tab === 'coach'");
+    expect(SRC).toContain("sceneKey: tab + ':' + sceneAge");
   });
 
   it('shows target patches only on the tabs that ask about them', () => {
     // Compression zones were bleeding onto the gate, recovery and scenario
     // tabs as coloured squares on the body that nothing was asking about.
-    expect(SRC).toContain("if (mode !== 'place' && mode !== 'aed')");
+    expect(SRC).toContain("if (mode === 'aed')");
+    expect(SRC).toContain("else if (mode === 'place')");
   });
 
   it('renders the scenario picker and every scenario', () => {

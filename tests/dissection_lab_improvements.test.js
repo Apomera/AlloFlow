@@ -1,7 +1,10 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import axe from 'axe-core';
-import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { React, ReactDOMClient, loadTool, makeCtx, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+
+const { act } = React;
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 const DISSECTION_PATHS = [
   'stem_lab/stem_tool_dissection.js',
@@ -208,7 +211,8 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain('duration: replayMotionReduced ? 900 : 1400, replay: true, replayPath: path');
       expect(source).toContain('Replay advances along the real teaching path, with eased travel and no looping.');
       expect(source).toContain("var replayStage = contactPulseProgress < 0.28 ? '1 APPROACH'");
-      expect(source).toContain("queueProcedureInstrumentReplay('probe', { point: variedOrganPoint(keyboardSelected) })");
+      expect(source).toContain("var keyboardProbeResult = performProcedureAction('probe', { organ: keyboardSelected })");
+      expect(source).toContain("if (keyboardProbeResult && keyboardProbeResult.ok) queueProcedureInstrumentReplay('probe'");
       expect(source).toContain('Equivalent keyboard and button actions include an instrument approach, contact, and release replay');
       expect(source).toContain("'; equivalent action replay: ' + (instrumentVisuals ? 'on' : 'off')");
       expect(source).toContain('function cuttingTrajectorySafety(point, vector, canvasEl)');
@@ -337,7 +341,7 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain("'ON PATH'");
       expect(source).toContain("'EDGE'");
       expect(source).toContain("'DRIFT'");
-      expect(source).toContain("resistanceStatus.textContent = (activeInstrument === 'scissors'");
+      expect(source).toContain("resistanceStatus.textContent = ((canvas._toolGestureContext && canvas._toolGestureContext.tool) === 'scissors'");
       expect(source).toContain("'TRAY SURFACE'");
       expect(source).toContain('no tissue response');
       expect(source).toContain("activeDepthLabel + ' / PROTECT '");
@@ -544,11 +548,12 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain('function closestVisibleOrganAt(x, y, radius, canvasEl)');
       expect(source).toContain('canvasEl && canvasEl._hotspotLabelBoxes || []');
       expect(source).toContain('Adaptive hotspot labels share collision-aware columns and remain clickable.');
-      expect(source).toContain("var denseHotspotView = d.labelMode !== 'hidden' && organs.length >= 8 && zoom < 1.22");
+      expect(source).toContain("var canvasLabelsVisible = d.labelMode !== 'hidden' && !d.quizMode;");
+      expect(source).toContain('var denseHotspotView = canvasLabelsVisible && organs.length >= 8 && zoom < 1.22;');
       expect(source).toContain('function resolveAdaptiveLabelColumn(items, minY, maxY)');
       expect(source).toContain('canvas._hotspotLabelBoxes = adaptiveHotspotLayout.map');
       expect(source).toContain('Reticle marks make selected state readable without color alone.');
-      expect(source).toContain("'Adaptive labels \\u00B7 ' + compactHotspotCount + ' compact \\u00B7 hover to expand'");
+      expect(source).toContain("canvasCoarsePointer ? 'select to expand' : 'hover to expand'");
       expect(source).toContain('var hit = closestVisibleOrganAt(mx, my, clickHitRadius, canvas);');
       expect(source).toContain('var hit = closestVisibleOrganAt(mx, my, hoverHitRadius, canvas);');
       expect(source).not.toContain('var lx = px + 12, ly = py - 8;');      expect(source).toContain('focusMode: focusMode');
@@ -631,6 +636,65 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
     }
   });
 
+  it('keeps every guided interaction answerable, guarded, and honest about its result', () => {
+    for (const filePath of DISSECTION_PATHS) {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain("var tone = restricted ? 'restricted'");
+      expect(source).toContain("safeToAct: tone === 'ready'");
+      expect(source).toContain("var fieldReady = isHydrationTool || next.action === 'inspect'");
+      expect(source).toContain('function canBeginDirectInstrument(toolId)');
+      expect(source).toContain('if (readiness.safeToAct) return true;');
+      expect(source).toContain('if (!canBeginDirectInstrument(activeInstrument)) return false;');
+      for (const tool of ['forceps', 'pin', 'probe', 'dropper', 'wick']) {
+        expect(source).toContain("if (!canBeginDirectInstrument('" + tool + "')) return false;");
+      }
+
+      expect(source).toContain('var actionResult = performProcedureAction(next.action, actionPayload)');
+      expect(source).toContain('if (!actionResult || !actionResult.ok) return false;');
+      expect(source).toContain('return { ok: true, organ: target, point: variedOrganPoint(target) };');
+      expect(source).toContain('if (probeResult && probeResult.ok) queueProcedureInstrumentReplay');
+      expect(source).toContain('if (dropperResult && dropperResult.ok) queueProcedureInstrumentReplay');
+      expect(source).toContain('if (wickResult && wickResult.ok) queueProcedureInstrumentReplay');
+
+      expect(source).toContain('orientationRecheckRequired: true');
+      expect(source).toContain('var orientationRecorded = !!procedureState.inspected && !procedureState.orientationRecheckRequired');
+      expect(source).toContain('orientationObservedAt: Date.now()');
+      expect(source).toContain("Align the specimen to the recommended ' + procedureProtocol.recommendedView + ' view before recording orientation.");
+
+      expect(source).toContain('var visibleQuizPool = quizPool.filter');
+      expect(source).toContain('var practicalTargetIds = Array.isArray(d.practicalTargetIds)');
+      expect(source).toContain('var activeQuizPool = d.practicalMode');
+      expect(source).toContain('var orderedQuizPool = dissStableOrder(activeQuizPool, quizSalt);');
+      expect(source).toContain('var hotspotQuizAvailable = !!quizQ && visibleQuizPool.some');
+      expect(source).toContain("var effectiveQuizAnswerMode = d.quizAnswerMode === 'hotspot' && hotspotQuizAvailable ? 'hotspot' : 'choices';");
+      expect(source).toContain("var guidedOrgans = organs.filter(function (org) { return structureExposureState(org, currentProcedure) === 'visible'; });");
+      expect(source).toContain('function keyboardPreview(organ)');
+      expect(source).toMatch(/function keyboardPreview\(organ\) \{[\s\S]{0,320}target\._keyboardPreviewOrganId = organ\.id;/);
+      expect(source).toContain('var keyboardCommitId = target._keyboardPreviewOrganId;');
+      expect(source).toContain('Use an Arrow key, Home, or End to preview a structure before pressing Enter.');
+      expect(source).toContain('onBlur: function (e) { e.currentTarget._keyboardFocus = false; e.currentTarget._keyboardPreviewOrganId = null; }');
+      expect(source).not.toContain('var keyboardCommitId = d.quizMode ? d.hoveredOrgan : d.selectedOrgan;');
+      expect(source).toContain("upd('selectedOrgan', organ.id)");
+      expect(source).not.toContain('function keyboardChoose(organ)');
+      expect(source).toContain("This assessment uses the answer choices. Press Tab to choose an answer");
+
+      expect(source).toContain("procedureScenario === 'restricted-tray' && (activeInstrument === 'dropper' || activeInstrument === 'wick')");
+      expect(source).toContain('var availableTools = PROCEDURE_INSTRUMENTS.filter');
+      expect(source).toContain('disabled: restrictedTool');
+      expect(source).toContain('toolbarStudyOpen: false');
+      expect(source).toContain('var prefersReducedLayerMotion = reducedMotionEnabled;');
+      expect(source).toContain('"data-dissection-next-action": true');
+      expect(source).toContain('"data-next-action": nextActionModel.action');
+
+      expect(source).not.toContain("icon: '??'");
+      expect(source).not.toContain("'Next best action ? '");
+      expect(source).not.toContain("' ? unavailable'");
+      expect(source).not.toContain("'Technique in progress?'");
+      expect(source).not.toContain("'Prepare ' + nextToolDefinition.label + ' for '");
+    }
+  });
+
   it('supports specimen-aware direct forceps lifting with equivalent accessible feedback', () => {
     for (const filePath of DISSECTION_PATHS) {
       const source = readFileSync(filePath, 'utf8');
@@ -648,9 +712,9 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain('ctx.ellipse(baseX, baseY, directAssessment.safeMax * W');
       expect(source).toContain("assessment.key === 'controlled' ? 'grabbing'");
       expect(source).toContain('if (canvas._forcepsDrag && canvas._forcepsDrag.active) { appendForcepsDrag(e); return; }');
-      expect(source).toContain("if (!d.quizMode && !d.annotateMode && !d.rulerMode && activeInstrument === 'forceps') { beginForcepsDrag(e); return; }");
+      expect(source).toContain("techniquePointerActive && activeInstrument === 'forceps') { beginForcepsDrag(e); return; }");
       expect(source).toContain('if (finishForcepsDrag(e, false)) return;');
-      expect(source).toContain('if (finishForcepsDrag(e, true)) return;');
+      expect(source).toContain('|| finishForcepsDrag(cancelEvent, true)');
       expect(source).toContain('if (canvas._dissMotionReduced && canvas._drawDissectionNow) canvas._drawDissectionNow();');
       expect(source).toContain("activeInstrument === 'scissors' || activeInstrument === 'forceps') ? 'none' : 'pan-y'");
       expect(source).toContain('forcepsDragMetrics: forcepsDragMetrics');
@@ -711,9 +775,9 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain('alignment: Math.round(Math.max(0, alignment) * 100)');
       expect(source).toContain('ctx.ellipse(tipX, tipY, directPinAssessment.safeTravel * W');
       expect(source).toContain('if (canvas._pinDrag && canvas._pinDrag.active) { appendPinDrag(e); return; }');
-      expect(source).toContain("if (!d.quizMode && !d.annotateMode && !d.rulerMode && activeInstrument === 'pin') { beginPinDrag(e); return; }");
+      expect(source).toContain("techniquePointerActive && activeInstrument === 'pin') { beginPinDrag(e); return; }");
       expect(source).toContain('if (finishPinDrag(e, false)) return;');
-      expect(source).toContain('if (finishPinDrag(e, true)) return;');
+      expect(source).toContain('var canceled = silentCancel ? canvasHasActiveDirectGesture(canvas) : (finishPinDrag(cancelEvent, true)');
       expect(source).toContain('pinDragMetrics: pinDragMetrics');
       expect(source).toContain("report += 'Direct pin placement: '");
       expect(source).toContain('Recorded direct pin placement evidence');
@@ -770,9 +834,9 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain('resistanceValue: resistanceValue');
       expect(source).toContain('deformation: deformation');
       expect(source).toContain('if (canvas._probeDrag && canvas._probeDrag.active) { appendProbeDrag(e); return; }');
-      expect(source).toContain("activeInstrument === 'probe' && beginProbeDrag(e)");
+      expect(source).toMatch(/techniquePointerActive && activeInstrument === 'probe'\)[\s\S]{0,120}beginProbeDrag\(e\)/);
       expect(source).toContain('if (finishProbeDrag(e, false)) return;');
-      expect(source).toContain('if (finishProbeDrag(e, true)) return;');
+      expect(source).toContain('|| finishProbeDrag(cancelEvent, true)');
       expect(source).toContain('probeDragMetrics: probeDragMetrics');
       expect(source).toContain("report += 'Direct probe palpation: '");
       expect(source).toContain('Recorded direct probe palpation evidence');
@@ -832,9 +896,9 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain('flowAlignment: flowAlignment');
       expect(source).toContain('poolingRisk: poolingRisk');
       expect(source).toContain('if (canvas._dropperDrag && canvas._dropperDrag.active) { appendDropperDrag(e); return; }');
-      expect(source).toContain("activeInstrument === 'dropper' && beginDropperDrag(e)");
+      expect(source).toContain("techniquePointerActive && activeInstrument === 'dropper') { beginDropperDrag(e); return; }");
       expect(source).toContain('if (finishDropperDrag(e, false)) return;');
-      expect(source).toContain('if (finishDropperDrag(e, true)) return;');
+      expect(source).toContain('|| finishDropperDrag(cancelEvent, true)');
       expect(source).toContain('dropperDragMetrics: dropperDragMetrics');
       expect(source).toContain('interactionMetrics: patch.forcepsDragMetrics');
       expect(source).toContain("report += 'Direct dropper hydration: '");
@@ -897,9 +961,9 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain('edgeAlignment: edgeAlignment');
       expect(source).toContain('recoveryPercent: recoveryPercent');
       expect(source).toContain('if (canvas._wickDrag && canvas._wickDrag.active) { appendWickDrag(e); return; }');
-      expect(source).toContain("activeInstrument === 'wick' && beginWickDrag(e)");
+      expect(source).toContain("techniquePointerActive && activeInstrument === 'wick') { beginWickDrag(e); return; }");
       expect(source).toContain('if (finishWickDrag(e, false)) return;');
-      expect(source).toContain('if (finishWickDrag(e, true)) return;');
+      expect(source).toContain('|| finishWickDrag(cancelEvent, true)');
       expect(source).toContain('wickDragMetrics: wickDragMetrics');
       expect(source).toContain("report += 'Direct wick recovery: '");
       expect(source).toContain('Recorded direct wick recovery evidence');
@@ -1045,7 +1109,8 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(eyeRenderer).not.toContain('Fovea centralis');
       expect(eyeRenderer).not.toContain('Macula lutea region');
       expect(source).toContain('function traceSheepHeartBody()');
-      expect(source).toContain('var heartPhase = dissMotionReduced ? 0');
+      expect(source).toContain('var heartMotionActive = livingFunctionEnabled && !dissMotionReduced;');
+      expect(source).toContain('var heartScale = heartMotionActive ? 1 + livingWave * 0.018 : 1;');
       expect(source).toContain('Atrial auricles break the silhouette at the base');
       expect(source).toContain('Directional myocardial fibers follow the ventricular spiral');
       expect(source).toContain("if (activeLayer === 'organs' || activeLayer === 'chambers' || activeLayer === 'interior')");
@@ -1113,7 +1178,7 @@ describe('dissection improved UI render', () => {
   beforeEach(() => {
     resetStemLab();
     loadTool('stem_lab/stem_tool_dissection.js', 'dissection');
-  });
+  }, 60000);
 
   it('renders the evidence workflow and comparative-model notice', () => {
     const html = renderTool('dissection', {
@@ -1135,6 +1200,327 @@ describe('dissection improved UI render', () => {
     expect(html).toContain('Practice assessment');
   });
 
+  it('projects assessment location clues into the displayed anatomical view', () => {
+    const renderLocationView = (anatomicalView) => renderTool('dissection', {
+      dissection: {
+        specimen: 'frog',
+        activeLayer: 'skin',
+        anatomicalView,
+        _dissLoadedSpec: 'frog',
+        quizMode: true,
+        quizAnswerMode: 'choices',
+        quizIdx: 1,
+        quizSeed: 7,
+        variationSeed: 1,
+      },
+    });
+
+    const dorsalHtml = renderLocationView('dorsal');
+    const ventralHtml = renderLocationView('ventral');
+    const lateralHtml = renderLocationView('lateral');
+
+    expect(dorsalHtml).toContain('upper-right region of this view');
+    expect(ventralHtml).toContain('upper-left region of this view');
+    expect(ventralHtml).not.toContain('upper-right region of this view');
+    expect(lateralHtml).toContain('upper-central region of this view');
+  });
+
+  it('renders one explicit next action as investigation state advances', () => {
+    const explored = {
+      'frog|dorsal_skin': true,
+      'frog|ventral_skin': true,
+      'frog|tympanum': true,
+      'frog|nictitating': true,
+    };
+    const notes = {
+      'frog|dorsal_skin': 'Pigmented moist surface.',
+      'frog|ventral_skin': 'Lighter vascular surface.',
+      'frog|tympanum': 'External sound membrane.',
+      'frog|nictitating': 'Transparent protective eyelid.',
+    };
+    const confidence = {
+      'frog|dorsal_skin': 2,
+      'frog|ventral_skin': 2,
+      'frog|tympanum': 2,
+      'frog|nictitating': 2,
+    };
+    const cases = [
+      {
+        action: 'canvas',
+        title: 'Find and inspect Dorsal Skin',
+        state: {},
+      },
+      {
+        action: 'evidence',
+        title: 'Finish the note for Dorsal Skin',
+        state: { exploredOrgans: explored },
+      },
+      {
+        action: 'next-layer',
+        title: 'Continue to the Muscle layer',
+        state: { exploredOrgans: explored, organNotes: notes, organConfidence: confidence },
+      },
+    ];
+
+    for (const testCase of cases) {
+      const html = renderTool('dissection', {
+        dissection: Object.assign({
+          specimen: 'frog',
+          activeLayer: 'skin',
+          anatomicalView: 'dorsal',
+          _dissLoadedSpec: 'frog',
+          revealedLayers: { skin: true },
+        }, testCase.state),
+      });
+
+      expect(html).toContain('data-dissection-next-action="true"');
+      expect(html).toContain('data-next-action="' + testCase.action + '"');
+      expect(html).toContain(testCase.title);
+      expect(html).toContain('aria-current="step"');
+      expect(html).toContain('Next best action \u00B7');
+    }
+  });
+
+  it('requires learner evidence before offering to peel a completed layer', () => {
+    const html = renderTool('dissection', {
+      dissection: {
+        specimen: 'frog',
+        activeLayer: 'skin',
+        anatomicalView: 'ventral',
+        _dissLoadedSpec: 'frog',
+        activeInstrument: 'probe',
+        exploredOrgans: {
+          'frog|dorsal_skin': true,
+          'frog|ventral_skin': true,
+          'frog|tympanum': true,
+          'frog|nictitating': true,
+        },
+        organNotes: {
+          'frog|ventral_skin': 'Thin vascular surface.',
+          'frog|tympanum': 'External sound membrane.',
+          'frog|nictitating': 'Protective transparent eyelid.',
+        },
+        organConfidence: {
+          'frog|ventral_skin': 2,
+          'frog|tympanum': 2,
+          'frog|nictitating': 2,
+        },
+        procedureByLayer: {
+          skin: {
+            inspected: true,
+            incisionStarted: true,
+            incisionExtended: true,
+            retracted: true,
+            pins: [{ x: 0.3, y: 0.5 }, { x: 0.7, y: 0.5 }],
+            probed: true,
+            probedOrganId: 'ventral_skin',
+          },
+        },
+      },
+    });
+
+    const page = new DOMParser().parseFromString(html, 'text/html');
+    const nextAction = page.querySelector('[data-dissection-next-action]');
+    expect(nextAction.getAttribute('data-next-action')).toBe('evidence');
+    expect(nextAction.textContent).toContain('Finish the note for Dorsal Skin');
+    expect(page.querySelector('[data-next-action="peel-layer"]')).toBeNull();
+  });
+
+  it('offers an explicit chooser when Study tools has no active activity', () => {
+    const html = renderTool('dissection', {
+      dissection: {
+        specimen: 'frog',
+        activeLayer: 'skin',
+        anatomicalView: 'dorsal',
+        _dissLoadedSpec: 'frog',
+        toolbarStudyOpen: true,
+      },
+    });
+
+    const page = new DOMParser().parseFromString(html, 'text/html');
+    const nextAction = page.querySelector('[data-dissection-next-action]');
+    expect(nextAction.getAttribute('data-next-action')).toBe('study-tools');
+    expect(nextAction.textContent).toContain('Choose a study activity');
+    expect(nextAction.querySelector('.diss-next-action__primary').textContent).toContain('Choose a study activity');
+
+    const studyPanel = page.querySelector('#diss-study-tools');
+    expect(studyPanel).not.toBeNull();
+    expect(studyPanel.querySelector('[aria-label="Flashcard"]').getAttribute('aria-pressed')).toBe('false');
+    expect(studyPanel.querySelector('[aria-label="Compare"]').getAttribute('aria-pressed')).toBe('false');
+    expect(studyPanel.querySelector('[aria-label="Toggle practical exam mode"]').getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('freezes the practical target pool and locks directory and view changes', () => {
+    const html = renderTool('dissection', {
+      dissection: {
+        specimen: 'frog',
+        activeLayer: 'skin',
+        anatomicalView: 'dorsal',
+        _dissLoadedSpec: 'frog',
+        practicalMode: true,
+        practicalTimer: 90,
+        practicalTargetIds: ['dorsal_skin', 'tympanum'],
+        quizMode: true,
+        quizAnswerMode: 'choices',
+        quizIdx: 0,
+        quizSeed: 42,
+        toolbarViewOpen: true,
+      },
+    });
+
+    const page = new DOMParser().parseFromString(html, 'text/html');
+    expect(page.querySelector('[data-dissection-root]').getAttribute('data-assessment-mode')).toBe('true');
+    expect(page.querySelector('[data-dissection-directory]')).toBeNull();
+
+    const viewControl = page.querySelector('[aria-label="Anatomical view locked during timed practical"]');
+    expect(viewControl).toBeNull();
+    const fullscreenViewControl = page.querySelector('[aria-label="Fullscreen anatomical view locked during timed practical"]');
+    expect(fullscreenViewControl).not.toBeNull();
+    expect(fullscreenViewControl.disabled).toBe(true);
+    expect(readFileSync(DISSECTION_PATHS[0], 'utf8')).toContain('The anatomical view is locked during the timed practical so every question stays answerable.');
+
+    const practicalAnswers = Array.from(page.querySelectorAll('#diss-quiz-panel button[aria-label]'))
+      .map((button) => button.getAttribute('aria-label'))
+      .filter((label) => ['Dorsal Skin', 'Tympanic Membrane', 'Ventral Skin', 'Nictitating Membrane'].includes(label))
+      .sort();
+    expect(practicalAnswers).toEqual(['Dorsal Skin', 'Tympanic Membrane']);
+  });
+
+  it('keeps field diagnostics and technique controls progressively disclosed', () => {
+    const baseState = {
+      specimen: 'frog',
+      activeLayer: 'skin',
+      anatomicalView: 'ventral',
+      _dissLoadedSpec: 'frog',
+      procedureByLayer: { skin: { inspected: true } },
+    };
+    const closedHtml = renderTool('dissection', { dissection: baseState });
+    const openHtml = renderTool('dissection', {
+      dissection: Object.assign({}, baseState, { techniquePanelOpen: true }),
+    });
+
+    const closedPage = new DOMParser().parseFromString(closedHtml, 'text/html');
+    const fieldMonitor = closedPage.querySelector('details.diss-field-monitor');
+    const closedProcedure = closedPage.querySelector('details#diss-procedure-panel');
+    expect(fieldMonitor.hasAttribute('open')).toBe(false);
+    expect(fieldMonitor.querySelector('summary').textContent).toContain('Field monitor');
+    expect(fieldMonitor.querySelector('.diss-field-monitor__body')).not.toBeNull();
+    expect(closedProcedure.hasAttribute('open')).toBe(false);
+    expect(closedProcedure.querySelector('summary').textContent).toContain('Technique controls');
+
+    const openPage = new DOMParser().parseFromString(openHtml, 'text/html');
+    expect(openPage.querySelector('details#diss-procedure-panel').hasAttribute('open')).toBe(true);
+    expect(openPage.querySelector('details.diss-field-monitor').hasAttribute('open')).toBe(false);
+  });
+
+  it('previews a hidden directory structure without awarding exploration progress', async () => {
+    const canvasContext = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const config = window.StemLab._registry.dissection;
+    let latestToolData;
+    let root;
+    let host;
+
+    function Component() {
+      const [toolData, setToolData] = React.useState({
+        dissection: {
+          specimen: 'frog',
+          activeLayer: 'skin',
+          anatomicalView: 'dorsal',
+          _dissLoadedSpec: 'frog',
+          exploredOrgans: {},
+        },
+      });
+      latestToolData = toolData;
+      return config.render(makeCtx({ toolData, setToolData }));
+    }
+
+    try {
+      host = document.createElement('div');
+      document.body.appendChild(host);
+      root = ReactDOMClient.createRoot(host);
+      await act(async () => {
+        root.render(React.createElement(Component));
+        await Promise.resolve();
+      });
+
+      const hiddenStructure = host.querySelector('#diss-organ-ventral_skin');
+      expect(hiddenStructure).not.toBeNull();
+      expect(hiddenStructure.querySelector('.diss-directory-index')?.textContent).toBe('2');
+      expect(hiddenStructure.getAttribute('aria-disabled')).toBe('true');
+      expect(hiddenStructure.getAttribute('aria-label')).toContain('preview only');
+      expect(hiddenStructure.title).toContain('recovery cue');
+
+      await act(async () => {
+        hiddenStructure.click();
+        await Promise.resolve();
+      });
+
+      expect(latestToolData.dissection.selectedOrgan).not.toBe('ventral_skin');
+      expect(latestToolData.dissection.exploredOrgans || {}).not.toHaveProperty('frog|ventral_skin');
+      expect(latestToolData.dissection.procedureFeedback.message).toMatch(/occluded|not yet exposed/);
+    } finally {
+      if (root) {
+        await act(async () => {
+          root.unmount();
+          await Promise.resolve();
+        });
+      }
+      if (host) host.remove();
+      canvasContext.mockRestore();
+      window._dissectionKeyHandler = null;
+      document.getElementById('allo-live-dissection')?.remove();
+    }
+  });
+
+  it('falls back to multiple choice without changing an unanswerable hotspot question', () => {
+    const html = renderTool('dissection', {
+      dissection: {
+        specimen: 'frog',
+        activeLayer: 'organs',
+        anatomicalView: 'dorsal',
+        _dissLoadedSpec: 'frog',
+        revealedLayers: { skin: true, muscle: true },
+        quizMode: true,
+        quizIdx: 0,
+        quizSeed: 42,
+        quizAnswerMode: 'hotspot',
+      },
+    });
+
+    expect(html).toContain('data-assessment-mode="true"');
+    expect(html).toContain('Specimen answer unavailable');
+    expect(html).toContain('The current question is not visible on the specimen; use multiple choice');
+    expect(html).toContain('This question is not visible in the current field, so multiple choice is active.');
+    expect(html).toContain('Canvas selection will not submit in multiple-choice mode.');
+    expect(html).not.toContain('Select the matching visible structure to submit.');
+  });
+
+  it('keeps a restricted tray keyboard-safe even when a hydration tool was persisted as active', () => {
+    const html = renderTool('dissection', {
+      dissection: {
+        specimen: 'frog',
+        activeLayer: 'skin',
+        anatomicalView: 'ventral',
+        _dissLoadedSpec: 'frog',
+        procedureScenario: 'restricted-tray',
+        activeInstrument: 'dropper',
+      },
+    });
+
+    document.body.innerHTML = html;
+    const probe = document.querySelector('#diss-instrument-probe');
+    const dropper = document.querySelector('#diss-instrument-dropper');
+    const fullscreenSelect = document.querySelector('select[aria-label="Fullscreen active instrument"]');
+
+    expect(probe?.getAttribute('aria-checked')).toBe('true');
+    expect(probe?.tabIndex).toBe(0);
+    expect(dropper?.disabled).toBe(true);
+    expect(dropper?.tabIndex).toBe(-1);
+    expect(fullscreenSelect?.querySelector('option[value="dropper"]')?.disabled).toBe(true);
+    expect(fullscreenSelect?.querySelector('option[value="wick"]')?.disabled).toBe(true);
+    document.body.innerHTML = '';
+  });
+
   it('renders canvas-answer assessment with a keyboard alternative', () => {
     const html = renderTool('dissection', {
       dissection: {
@@ -1145,12 +1531,29 @@ describe('dissection improved UI render', () => {
         quizIdx: 1,
         quizSeed: 42,
         quizAnswerMode: 'hotspot',
+        toolbarViewOpen: true,
+        labelMode: 'show',
+        traceNervous: true, traceCirculation: true, traceDigestion: true,
+        traceRespiration: true, traceExcretory: true, showEndocrine: true, livingFunctionEnabled: true,
       },
     });
+
+    document.body.innerHTML = html;
+    const labelToggle = document.querySelector('button[aria-label="Organ name labels hidden during assessment"]');
+    const assessmentCanvas = document.querySelector('#diss-canvas');
+    expect(document.querySelector('[data-dissection-directory]')).toBeNull();
+    expect(document.querySelector('.diss-optics')).toBeNull();
+    expect(document.querySelector('button[aria-label="Toggle Tools toolbar"]')).toBeNull();
+    expect(document.querySelector('button[aria-label="Toggle detailed pointer-following instrument visuals and contact response"]')).toBeNull();
+    expect(assessmentCanvas?.style.touchAction).toBe('pan-y');
 
     expect(html).toContain('Select on specimen');
     expect(html).toContain('keyboard-accessible multiple-choice answers');
     expect(html).toContain('Diagram location clue');
+    expect(labelToggle?.disabled).toBe(true);
+    expect(labelToggle?.getAttribute('aria-pressed')).toBe('false');
+    expect(document.querySelector('[data-dissection-overlays]')).toBeNull();
+    document.body.innerHTML = '';
   });
 
   it('renders guided instruments, progress, depth controls, and an equivalent action button', () => {
@@ -1158,6 +1561,7 @@ describe('dissection improved UI render', () => {
       dissection: {
         specimen: 'frog',
         activeLayer: 'skin',
+        anatomicalView: 'ventral',
         _dissLoadedSpec: 'frog',
         activeInstrument: 'scalpel',
         incisionDepth: 'shallow',
@@ -1180,7 +1584,7 @@ describe('dissection improved UI render', () => {
     expect(html).toContain('Frog ventral midline access');
     expect(html).toContain('Ventral surface centered with the limbs stabilized symmetrically.');
     expect(html).toContain('Protected landmarks');
-    expect(html).toContain('Align to ventral view');
+    expect(html).toContain('View aligned to procedure recommendation');
     expect(html).toContain('Heart (3-chamber), Liver (3 lobes), Lungs');
     expect(html).toContain('role="radiogroup"');
     expect(html).toContain('Scalpel');
@@ -1198,10 +1602,15 @@ describe('dissection improved UI render', () => {
     expect(html).toContain('data-selected="true"');
     expect(html).toContain('Pre-contact check');
     expect(html).toContain('Run field check');
-    expect(html).toContain('Align view');
+    expect(html).toContain('All checks pass');
     expect(html).toContain('Prepare next');
     expect(html).toContain('Next · Begin the shallow ventral midline opening');
-    expect(html).toContain('Step 2/6');
+    const guidedDocument = new DOMParser().parseFromString(html, 'text/html');
+    const guidedHandoff = guidedDocument.querySelector('.diss-stage__handoff');
+    const guidedProgress = guidedHandoff.querySelector('.diss-stage__handoff-progress').textContent;
+    const guidedStep = guidedProgress.match(/^Workflow ([1-6])\/6$/);
+    expect(guidedStep).not.toBeNull();
+    expect(guidedHandoff.getAttribute('aria-label')).toContain('Workflow step ' + guidedStep[1] + ' of 6');
     expect(html).toContain('diss-fullscreen-dock__handoff');
     expect(html).toContain('Fullscreen next action: Begin the shallow ventral midline opening');
     expect(html).toContain('Follow the shallow ventral midline corridor');
@@ -1472,7 +1881,7 @@ describe('dissection improved UI render', () => {
       expect(source).toContain("className: \"diss-shortcuts\"");
       expect(source).toContain("'Ctrl + wheel', 'Zoom around the pointer'");
       expect(source).toContain('var macroLikelyOnLeft = inspectionLens && macroInset');
-      expect(source).toContain('var compassBottomInset = guidedMode && currentGuided ? 72 : 14');
+      expect(source).toContain('var compassBottomInset = guidedMode && currentGuided ? Math.max(72, 64 * canvasHudScale) : 14');
       expect(source).toContain('var lensNearCompass = inspectionLens');
       expect(source).not.toContain("var z = Math.max(0.5, (d.canvasZoom || 1) - 0.25)");
       expect(source).not.toContain("var z = Math.min(3, (d.canvasZoom || 1) + 0.25)");
@@ -1777,7 +2186,8 @@ describe('dissection improved UI render', () => {
       expect(source).toContain('Interaction: ');
       expect(source).toContain('tabIndex: activeInstrument === tool.id ? 0 : -1');
       expect(source).toContain("selectProcedureInstrument(keyboardTool.id, 'keyboard shortcut ' + e.key)");
-      expect(source).toContain("announceToSR(selectionMessage + ' ' + toolState.instruction)");
+      expect(source).toContain("setProcedureFeedback(selectionMessage, readiness.tone === 'ready' || readiness.tone === 'complete' ? 'success' : 'caution')");
+      expect(source).not.toContain("announceToSR(selectionMessage + ' ' + toolState.instruction)");
       expect(source).toContain('var actionOutcome = procedureOutcomeFeedbackData(action, patch, tissueBefore, next.tissueState, tone)');
       expect(source).toContain('outcomeDetail: actionOutcome.detail');
       expect(source).toContain('diss-procedure__timeline-outcome');
@@ -1829,7 +2239,13 @@ describe('dissection improved UI render', () => {
       expect(source).toContain("title: 'Pupillary light reflex', motion: 'eye-pupil'");
       expect(source).toContain("title: 'Coordinated cardiac cycle', motion: 'heart-cycle'");
       expect(source).toContain('The living-function model is opt-in and explicitly distinct from preserved specimen behavior.');
-      expect(source).toContain('var livingPhase = dissMotionReduced ? 0.5');
+      expect(source).toContain('function updateLivingFunctionTimeline(nowMs)');
+      expect(source).toContain('var timelineRunning = !!d.livingFunctionEnabled && !d.livingFunctionPaused && !dissMotionReduced;');
+      expect(source).toContain('if (timelineRunning) canvas._livingFunctionElapsedMs += frameDeltaMs * speed;');
+      expect(source).toContain('var livingTimeline = updateLivingFunctionTimeline(frameStartedAt);');
+      expect(source).toContain('var livingPhase = livingTimeline.phase;');
+      expect(source).toContain('var livingWave = livingTimeline.wave;');
+      expect(source).toContain('return { phase: phase, wave: (1 - Math.cos(phase * Math.PI * 2)) / 2, running: timelineRunning, elapsedMs: canvas._livingFunctionElapsedMs };');
       expect(source).toContain('livingFunctionReplayToken');
       expect(source).toContain('LIVING FUNCTION MODEL');
       expect(source).toContain('In-life physiology');
@@ -1858,6 +2274,103 @@ describe('dissection improved UI render', () => {
     expect(html).toContain('Replay');
     expect(html).toContain('Speed: slow');
   });
+
+  it('keeps living-function pause, speed, replay, and control state synchronized', async () => {
+    const contextSpy = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const config = window.StemLab._registry.dissection;
+    let latestToolData;
+    let root;
+    let host;
+
+    function Component() {
+      const [toolData, setToolData] = React.useState({
+        dissection: {
+          specimen: 'earthworm',
+          activeLayer: 'organs',
+          anatomicalView: 'dorsal',
+          _dissLoadedSpec: 'earthworm',
+          livingFunctionEnabled: true,
+          livingFunctionPaused: false,
+          livingFunctionSpeed: 'normal',
+          livingFunctionReplayToken: 1,
+        },
+      });
+      latestToolData = toolData;
+      return config.render(makeCtx({ toolData, setToolData }));
+    }
+
+    function livingModel() {
+      return host.querySelector('[aria-label="Specimen-specific living function model"]');
+    }
+
+    function livingButton(label) {
+      return Array.from(livingModel().querySelectorAll('button')).find((button) => button.textContent.includes(label));
+    }
+
+    async function clickLivingButton(label) {
+      const button = livingButton(label);
+      expect(button).not.toBeNull();
+      await act(async () => {
+        button.click();
+        await Promise.resolve();
+      });
+    }
+
+    try {
+      host = document.createElement('div');
+      document.body.appendChild(host);
+      root = ReactDOMClient.createRoot(host);
+      await act(async () => {
+        root.render(React.createElement(Component));
+        await Promise.resolve();
+      });
+
+      expect(livingModel().textContent).toContain('Playing');
+      expect(livingModel().textContent).toContain('normal');
+      expect(livingButton('Pause').getAttribute('aria-pressed')).toBe('false');
+      expect(livingButton('Speed: normal').disabled).toBe(false);
+
+      await clickLivingButton('Pause');
+      expect(latestToolData.dissection.livingFunctionPaused).toBe(true);
+      expect(livingModel().textContent).toContain('Paused');
+      expect(livingModel().textContent).toContain('normal');
+      expect(livingButton('Resume').getAttribute('aria-pressed')).toBe('true');
+
+      await clickLivingButton('Speed: normal');
+      expect(latestToolData.dissection.livingFunctionSpeed).toBe('slow');
+      expect(latestToolData.dissection.livingFunctionPaused).toBe(true);
+      expect(livingModel().textContent).toContain('Paused');
+      expect(livingModel().textContent).toContain('slow');
+
+      await clickLivingButton('Resume');
+      expect(latestToolData.dissection.livingFunctionPaused).toBe(false);
+      expect(livingModel().textContent).toContain('Playing');
+      expect(livingModel().textContent).toContain('slow');
+
+      await clickLivingButton('Speed: slow');
+      expect(latestToolData.dissection.livingFunctionSpeed).toBe('fast');
+      await clickLivingButton('Pause');
+      const replayTokenBefore = latestToolData.dissection.livingFunctionReplayToken;
+      await clickLivingButton('Replay');
+      expect(latestToolData.dissection.livingFunctionPaused).toBe(false);
+      expect(latestToolData.dissection.livingFunctionReplayToken).toBeGreaterThan(replayTokenBefore);
+      expect(livingModel().textContent).toContain('Playing');
+      expect(livingModel().textContent).toContain('fast');
+
+      await clickLivingButton('Function model on');
+      expect(latestToolData.dissection.livingFunctionEnabled).toBe(false);
+      expect(latestToolData.dissection.livingFunctionPaused).toBe(false);
+      expect(livingModel().textContent).toContain('Off');
+      expect(livingButton('Pause').disabled).toBe(true);
+      expect(livingModel().querySelector('[aria-label="Cycle living function speed"]').disabled).toBe(true);
+    } finally {
+      if (root) await act(async () => { root.unmount(); await Promise.resolve(); });
+      if (host) host.remove();
+      window._dissectionKeyHandler = null;
+      document.getElementById('allo-live-dissection')?.remove();
+      contextSpy.mockRestore();
+    }
+  }, 60000);
 
   it('drives flap physics from tissue state and smoothly frames selected anatomy', () => {
     for (const filePath of DISSECTION_PATHS) {
@@ -2142,7 +2655,7 @@ describe('dissection improved UI render', () => {
       expect(source).toContain("var liveStatus = document.querySelector('#diss-canvas-status') || document.querySelector('[data-diss-tool-status]')");
       expect(source).toContain("var resistanceStatus = document.querySelector('#diss-canvas-status') || document.querySelector('[data-diss-tool-status]')");
       expect(source).toContain("var strokeSafetyStatus = document.querySelector('#diss-canvas-status') || document.querySelector('[data-diss-tool-status]')");
-      expect(source).toContain("'Tool ' + activeInstrumentDefinition.label + ' · ' + currentToolReadiness.label");
+      expect(source).toContain("'Next: ' + stageHandoffLabel + ' \\u00B7 ' + stageHandoffDetail");
       expect(source).toContain("window.__alloStemFS(stage); setProcedureFeedback('Exited fullscreen specimen mode.");
     }
     for (const filePath of STEM_SHARED_PATHS) {

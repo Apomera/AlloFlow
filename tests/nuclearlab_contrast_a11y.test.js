@@ -123,11 +123,9 @@ describe('the source uses it', () => {
 
     it('keeps every text colour in the draw loop above AA', () => {
       const a = SRC.indexOf('function draw(ts) {');
-      // LAST occurrence, not the first: the idle-skip guard re-arms the frame
-      // and returns early, so slicing to the first requestAnimationFrame cut
-      // the slice before any drawing code and found nothing to measure. The
-      // "no text inks found" guard below is what caught that.
-      const b = SRC.lastIndexOf('rxAnim.current = requestAnimationFrame(draw);');
+      // The loop now parks completely when idle; slice to the observer setup
+      // that follows draw() rather than relying on a tail RAF call.
+      const b = SRC.indexOf("var ro = typeof ResizeObserver", a);
       expect(a, 'reactor draw loop not found').toBeGreaterThan(-1);
       expect(b, 'reactor loop tail not found').toBeGreaterThan(a);
       const loop = SRC.slice(a, b);

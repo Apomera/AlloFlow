@@ -21,6 +21,10 @@ let act;
 let root;
 let host;
 let recordings;   // aria-label prefix -> recording
+let rafCallbacks;
+let nextRafId;
+let originalRaf;
+let originalCancelRaf;
 
 beforeAll(() => {
   ({ act } = require(resolve(process.cwd(), 'desktop/web-app/node_modules', 'react-dom/test-utils')));
@@ -81,6 +85,34 @@ function recordingContext(canvas) {
   return rec;
 }
 
+function installRafHarness() {
+  rafCallbacks = new Map();
+  nextRafId = 1;
+  originalRaf = globalThis.requestAnimationFrame;
+  originalCancelRaf = globalThis.cancelAnimationFrame;
+  globalThis.requestAnimationFrame = (cb) => {
+    const id = nextRafId++;
+    rafCallbacks.set(id, cb);
+    return id;
+  };
+  globalThis.cancelAnimationFrame = (id) => {
+    rafCallbacks.delete(id);
+  };
+}
+
+function flushRaf(timestamp = 1000) {
+  const batch = [...rafCallbacks.values()];
+  rafCallbacks.clear();
+  if (batch.length) act(() => batch.forEach((cb) => cb(timestamp)));
+  return batch.length;
+}
+
+function flushRafFrames(count, start = 1000, step = 100) {
+  let ran = 0;
+  for (let i = 0; i < count; i++) ran += flushRaf(start + i * step);
+  return ran;
+}
+
 function mount(state, overrides) {
   const cfg = window.StemLab._registry.nuclearLab;
   const ctx = makeCtx(Object.assign({ toolData: { _nuclearLab: state || {} } }, overrides || {}));
@@ -89,6 +121,7 @@ function mount(state, overrides) {
     root = ReactDOMClient.createRoot(host);
     root.render(React.createElement(Comp));
   });
+  flushRaf();
   recordings = {};
   for (const cv of host.querySelectorAll('canvas')) {
     if (cv.__rec) recordings[(cv.getAttribute('aria-label') || '').slice(0, 28)] = cv.__rec;
@@ -97,6 +130,7 @@ function mount(state, overrides) {
 }
 
 beforeEach(() => {
+  installRafHarness();
   resetStemLab();
   loadTool('stem_lab/stem_tool_nuclearlab.js', 'nuclearLab');
   host = document.createElement('div');
@@ -112,6 +146,9 @@ afterEach(() => {
   if (root) { act(() => root.unmount()); root = null; }
   host?.remove();
   host = null;
+  globalThis.requestAnimationFrame = originalRaf;
+  globalThis.cancelAnimationFrame = originalCancelRaf;
+  rafCallbacks.clear();
 });
 
 const recFor = (fragment) => {
@@ -121,16 +158,15 @@ const recFor = (fragment) => {
 };
 
 describe('every canvas actually draws', () => {
-  it('mounts and paints all five', () => {
+  it('mounts and paints every canvas, including the reactor panel', () => {
     const recs = mount({});
-    // Five canvases: decay, chain map, binding, body burden, inverse square.
-    // (The reactor sim canvas only paints once its animation loop starts.)
-    const painted = Object.values(recs).filter((r) => r.calls.length > 0);
-    expect(painted.length, 'canvases that drew nothing').toBeGreaterThanOrEqual(5);
+    expect(Object.keys(recs).length, 'expected every chart and the reactor panel').toBeGreaterThanOrEqual(8);
     for (const [label, r] of Object.entries(recs)) {
-      if (!r.calls.length) continue;
-      expect(r.badNumbers, `${label}: non-finite coordinates — draws an empty box silently`).toEqual([]);
+      expect(r.calls.length, label + ': canvas drew nothing').toBeGreaterThan(0);
+      expect(r.badNumbers, `${label}: non-finite coordinates - draws an empty box silently`).toEqual([]);
     }
+    expect(recFor('Reactor control panel').texts).toContain('POWER');
+    expect(rafCallbacks.size, 'paused reactor left a frame polling forever').toBe(0);
   });
 
   it('never emits a non-finite coordinate under any state', () => {
@@ -151,6 +187,42 @@ describe('every canvas actually draws', () => {
       host.innerHTML = '';
     }
   }, 60000);
+
+  it('parks while idle, wakes for controls, updates telemetry, and resets cleanly', () => {
+    mount({});
+    const reactor = recFor('Reactor control panel');
+    const clears = () => reactor.calls.filter((c) => c[0] === 'clearRect').length;
+    const initialClears = clears();
+
+    expect(host.querySelector('#rx-live-state').textContent).toBe('Paused');
+    expect(host.querySelector('#rx-live-power').textContent).toBe('100%');
+    expect(flushRaf(1100), 'idle reactor unexpectedly queued another frame').toBe(0);
+
+    const stopPumps = host.querySelector('button[aria-label="Stop the coolant pumps"]');
+    expect(stopPumps, 'pump control missing').toBeTruthy();
+    act(() => stopPumps.click());
+    const restorePumps = host.querySelector('button[aria-label="Restore the coolant pumps"]');
+    expect(restorePumps, 'pump label did not follow the state change').toBeTruthy();
+    expect(restorePumps.getAttribute('aria-pressed')).toBe('false');
+    expect(rafCallbacks.size, 'pump change did not wake the parked panel').toBeGreaterThan(0);
+    flushRaf(1200);
+    expect(clears()).toBeGreaterThan(initialClears);
+    expect(rafCallbacks.size, 'paused panel did not park again after repainting').toBe(0);
+
+    const start = host.querySelector('button[aria-label="Start the simulation"]');
+    act(() => start.click());
+    expect(flushRafFrames(6, 1300, 100)).toBeGreaterThan(0);
+    expect(host.querySelector('#rx-live-state').textContent).toBe('Running');
+    expect(rafCallbacks.size, 'running simulation failed to keep its loop alive').toBeGreaterThan(0);
+
+    const reset = host.querySelector('button[aria-label="Reset the reactor to its starting condition"]');
+    act(() => reset.click());
+    flushRaf(2000);
+    expect(host.querySelector('#rx-live-state').textContent).toBe('Paused');
+    expect(host.querySelector('#rx-live-power').textContent).toBe('100%');
+    expect(host.querySelector('button[aria-label="Stop the coolant pumps"]').getAttribute('aria-pressed')).toBe('true');
+    expect(rafCallbacks.size, 'reset reactor did not return to its parked state').toBe(0);
+  });
 });
 
 describe('the chain map is the chain', () => {
@@ -240,15 +312,15 @@ describe('canvas ink follows the theme', () => {
       const recs = mount({ cdSrc: 'cs137', bioId: 'cs137' }, overrides);
       const bad = [];
       for (const [label, r] of Object.entries(recs)) {
-        if (!r.calls.length) continue;
+        const canvasBg = label.includes('Reactor control panel') ? hex('#0b1120') : bg;
         for (const v of new Set(r.fillStyles)) {
           const c = parse(v);
           // Only fully-opaque inks: the translucent ones are fills, plates and
           // gradients, which carry no text.
           if (!c || c[3] < 0.9) continue;
           // The chart background itself is painted with fillStyle too.
-          if (ratio(c.slice(0, 3), bg) < 1.2) continue;
-          const rr = ratio(over(c, bg), bg);
+          if (ratio(c.slice(0, 3), canvasBg) < 1.2) continue;
+          const rr = ratio(over(c, canvasBg), canvasBg);
           if (rr < 4.5) bad.push(`${label}: ${v} = ${rr.toFixed(2)}:1`);
         }
       }

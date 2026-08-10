@@ -31175,7 +31175,16 @@
     "run_lesson_blueprint_hint": "தற்போதைய திட்டத்தில் உள்ள அனைத்து வளங்களையும் உருவாக்கும்",
     "cancelled": "ரத்துசெய்யக் கோரப்பட்டது. அதன் வழங்குநர் இதை ஆதரிக்கும்போது தற்போதைய செயல்பாடு நிறுத்தப்படும்.",
     "cancel": "ரத்து செய்",
-    "retry": "மீண்டும் முயற்சி செய்"
+    "retry": "மீண்டும் முயற்சி செய்",
+    "open_stem_tool": "Open a specific STEM tool",
+    "open_stem_tool_ambiguous": "More than one tool matches that: ",
+    "open_stem_tool_done": "Opened ",
+    "open_stem_tool_hint": "Name any STEM Lab tool and go straight to it",
+    "open_stem_tool_miss": "No STEM tool matched ",
+    "open_stem_tool_miss_tail": ". STEM Lab opened so you can browse.",
+    "open_stem_tool_no_index": "STEM Lab opened. The tool catalog was not available, so browse the list.",
+    "open_stem_tool_none": "STEM Lab opened. Name a tool and I can go straight to it.",
+    "open_stem_tool_unsupported": "STEM Lab opened. This build cannot jump straight to a named tool."
   },
   "palette": {
     "aria": "AlloFlow கட்டளைப் பலகை",

@@ -90,7 +90,8 @@
     label: 'Molecule Shelf',
     desc: 'Explore real 3D molecular structures in Mol* — the viewer used by the world’s Protein Data Bank — from crambin and B-DNA to hemoglobin, an antibody, and the coronavirus spike. Rotate, zoom, and switch representations, with a Notice → Wonder observation coach beside it.',
     color: 'indigo',
-    category: 'general',
+    category: 'chemistry',
+    aliases: ['molecules', '3D structures', 'Mol*', 'Protein Data Bank'],
     questHooks: [
       { id: 'mol_open', label: 'Open a molecular structure', icon: '🧬',
         check: function (d) { return !!(d && d.opened); } },

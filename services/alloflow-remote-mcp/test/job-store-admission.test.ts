@@ -4,11 +4,19 @@ import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 
 import {
+  claimJobAttempt,
   claimUploadGrant,
+  completeJob,
   createJob,
   createUpload,
+  failJob,
+  getInternalJob,
+  listCleanupJobs,
+  markJobRunning,
   rejectUpload,
+  renewJobLease,
   type RemediationJobOptions,
+  type RunnerResult,
 } from "../src/job-store";
 import type {
   PilotConfig,
@@ -143,6 +151,18 @@ function testDatabase(): {
   sqlite.exec(
     readFileSync(
       `${migrationDirectory}0003_upload_attempt_admission.sql`,
+      "utf8",
+    ),
+  );
+  sqlite.exec(
+    readFileSync(
+      `${migrationDirectory}0004_job_attempt_leases.sql`,
+      "utf8",
+    ),
+  );
+  sqlite.exec(
+    readFileSync(
+      `${migrationDirectory}0005_job_checkpoints.sql`,
       "utf8",
     ),
   );
@@ -395,5 +415,206 @@ describe("D1 workload admission and immutable remediation options", () => {
       "remediation_quota_exceeded",
       429,
     );
+  });
+});
+
+describe("D1 remediation attempt leases and fencing", () => {
+  it("lets only a monotonically newer Workflow retry own the job", async () => {
+    const { env, db } = testDatabase();
+    const limits = config();
+    const uploadId = await createUploadedInput(env, db, limits);
+    const created = await createJob(
+      env,
+      limits,
+      principal,
+      uploadId,
+      standardOptions,
+    );
+    const jobId = created.job.id;
+    const workflowId = created.job.workflow_id;
+    const firstAttempt = `${jobId}:run-1:attempt-1`;
+    const secondAttempt = `${jobId}:run-1:attempt-2`;
+
+    await markJobRunning(env, jobId, workflowId);
+    const first = await claimJobAttempt(
+      env,
+      jobId,
+      workflowId,
+      firstAttempt,
+      1,
+    );
+    expect(first.job).toMatchObject({
+      attempt_id: firstAttempt,
+      attempt_number: 1,
+      run_stage: "starting",
+    });
+    expect(first.job.result_key).toContain("/attempt-1/tagged.pdf");
+
+    const second = await claimJobAttempt(
+      env,
+      jobId,
+      workflowId,
+      secondAttempt,
+      2,
+    );
+    expect(second.job).toMatchObject({
+      attempt_id: secondAttempt,
+      attempt_number: 2,
+    });
+    expect(second.supersededArtifactKeys).toContain(
+      first.job.result_key,
+    );
+
+    await expectPilotError(
+      renewJobLease(env, jobId, firstAttempt, "running"),
+      "job_attempt_lost",
+      409,
+    );
+    await expectPilotError(
+      claimJobAttempt(
+        env,
+        jobId,
+        workflowId,
+        firstAttempt,
+        1,
+      ),
+      "job_attempt_lost",
+      409,
+    );
+    await expect(
+      failJob(env, jobId, firstAttempt, "stale_attempt_failed"),
+    ).resolves.toBe(false);
+
+    await renewJobLease(env, jobId, secondAttempt, "validating");
+    const owned = await getInternalJob(env, jobId);
+    expect(owned).toMatchObject({
+      status: "running",
+      attempt_id: secondAttempt,
+      run_stage: "validating",
+    });
+    expect(owned.lease_expires_at).toBeGreaterThan(nowSeconds() + 290);
+  });
+
+  it("keeps completion idempotent and never downgrades it to failed", async () => {
+    const { env, db } = testDatabase();
+    const limits = config();
+    const uploadId = await createUploadedInput(env, db, limits);
+    const created = await createJob(
+      env,
+      limits,
+      principal,
+      uploadId,
+      standardOptions,
+    );
+    const jobId = created.job.id;
+    const attemptId = `${jobId}:run-1:attempt-1`;
+    const result: RunnerResult = {
+      resultSizeBytes: 128,
+      resultSha256: "a".repeat(64),
+      autoContinueRoundsRun: 0,
+      reportSizeBytes: 64,
+      reportSha256: "b".repeat(64),
+      beforeScore: 70,
+      afterScore: 98,
+    };
+
+    await markJobRunning(env, jobId, created.job.workflow_id);
+    await claimJobAttempt(
+      env,
+      jobId,
+      created.job.workflow_id,
+      attemptId,
+      1,
+    );
+    await completeJob(env, limits, jobId, attemptId, result);
+    await expect(
+      completeJob(env, limits, jobId, attemptId, result),
+    ).resolves.toBeUndefined();
+    await expect(
+      failJob(env, jobId, attemptId, "late_attempt_failure"),
+    ).resolves.toBe(false);
+
+    expect(await getInternalJob(env, jobId)).toMatchObject({
+      status: "completed",
+      attempt_id: attemptId,
+      result_sha256: result.resultSha256,
+      run_stage: "completed",
+      lease_expires_at: null,
+    });
+  });
+
+  it("expires queued age separately from a running idle lease", async () => {
+    const { env, db } = testDatabase();
+    const limits = config({
+      unstartedInputTtlSeconds: 10 * 60,
+      maxActiveJobsPerOwner: 2,
+      maxActiveJobsPerInstitution: 2,
+    });
+    const runningUpload = await createUploadedInput(env, db, limits);
+    const queuedUpload = await createUploadedInput(env, db, limits);
+    const running = await createJob(
+      env,
+      limits,
+      principal,
+      runningUpload,
+      standardOptions,
+    );
+    const queued = await createJob(
+      env,
+      limits,
+      principal,
+      queuedUpload,
+      standardOptions,
+    );
+    const attemptId = `${running.job.id}:run-1:attempt-1`;
+    await markJobRunning(
+      env,
+      running.job.id,
+      running.job.workflow_id,
+    );
+    await claimJobAttempt(
+      env,
+      running.job.id,
+      running.job.workflow_id,
+      attemptId,
+      1,
+    );
+
+    const now = nowSeconds();
+    db.sqlite
+      .prepare(
+        `UPDATE jobs
+         SET started_at = ?, updated_at = ?, heartbeat_at = ?,
+             lease_expires_at = ?
+         WHERE id = ?`,
+      )
+      .run(now - 7200, now - 7200, now - 7200, now + 120, running.job.id);
+    db.sqlite
+      .prepare(
+        "UPDATE jobs SET created_at = ?, updated_at = ? WHERE id = ?",
+      )
+      .run(now - 601, now, queued.job.id);
+
+    await listCleanupJobs(env, limits);
+    expect(await getInternalJob(env, running.job.id)).toMatchObject({
+      status: "running",
+      attempt_id: attemptId,
+    });
+    expect(await getInternalJob(env, queued.job.id)).toMatchObject({
+      status: "cancelling",
+      error_code: "job_queue_expired",
+    });
+
+    db.sqlite
+      .prepare(
+        "UPDATE jobs SET lease_expires_at = ? WHERE id = ?",
+      )
+      .run(now - 1, running.job.id);
+    await listCleanupJobs(env, limits);
+    expect(await getInternalJob(env, running.job.id)).toMatchObject({
+      status: "cancelling",
+      error_code: "job_lease_expired",
+      run_stage: "cancelling",
+    });
   });
 });

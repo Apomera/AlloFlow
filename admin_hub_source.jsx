@@ -87,6 +87,12 @@ function AdminHubPanel(props) {
       accent: 'from-amber-50 to-orange-50 border-amber-600', titleCls: 'text-amber-800', descCls: 'text-amber-700',
     },
     {
+      id: 'diagnosisEligibility', icon: '🧩',
+      title: tt('adminhub.eligibility_title', 'Diagnosis, Evaluation & School Eligibility'),
+      desc: tt('adminhub.eligibility_desc', 'Compare clinical diagnosis, IDEA, and Section 504; follow the evaluation path; review federal definitions, safeguards, and timelines; explore open-question cases; and build a privacy-safe meeting-preparation guide. Never decides eligibility, services, or placement.'),
+      accent: 'from-fuchsia-50 to-violet-50 border-fuchsia-700', titleCls: 'text-fuchsia-900', descCls: 'text-fuchsia-800',
+    },
+    {
       id: 'meetings', icon: '📋',
       title: tt('adminhub.meetings_title', 'Meeting Documentation'),
       desc: tt('adminhub.meetings_desc', 'Turn notes or a transcript into your district’s meeting format — SST, IEP team, 504, and custom templates — with source-anchored decisions, an action-item tracker, and local name masking before any AI call.'),
@@ -118,7 +124,7 @@ function AdminHubPanel(props) {
           ))}
         </div>
         <p className="mt-5 text-[11px] text-slate-500 border-t border-slate-200 pt-3">
-          {tt('adminhub.covenant', 'How this suite handles data: tools work from aggregate counts or de-identified codes, everything is computed on this device, and results are descriptive and growth-framed — a prompt for professional judgment and root-cause review, never an automated verdict about a teacher or a student.')}
+          {tt('adminhub.covenant', 'How this suite handles information: reference guides ask for no student data. Analysis tools use aggregate counts or de-identified codes and disclose when a feature uses AI. Results are descriptive and growth-framed - a prompt for professional judgment and root-cause review, never an automated verdict about a teacher or a student.')}
         </p>
       </div>
     </div>
