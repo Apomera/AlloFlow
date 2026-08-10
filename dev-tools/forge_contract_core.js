@@ -118,7 +118,7 @@
   // surface check (returns null) rather than emit false positives — the Node gate
   // (Tier-2) resolves shadows precisely.
   function collectCtxMembers(fnNode, ctxName) {
-    var shadowed = false, members = {};
+    var shadowed = false, members = Object.create(null);
     // ObjectPattern param: function render({ React, t }) {...}
     var p0 = fnNode.params && fnNode.params[0];
     if (p0 && p0.type === 'ObjectPattern') {
@@ -168,9 +168,9 @@
     });
     if (!calls.length) { out.errors.push('no window.StemLab/SelHub.registerTool(id, config) call found'); return out; }
 
-    var ctxSet = {};
+    var ctxSet = Object.create(null);
     for (var c = 0; c < CONTRACT.ctxSurface.length; c++) ctxSet[CONTRACT.ctxSurface[c]] = true;
-    var colorSet = {};
+    var colorSet = Object.create(null);
     for (var d = 0; d < CONTRACT.themeColors.length; d++) colorSet[CONTRACT.themeColors[d]] = true;
 
     for (var ci = 0; ci < calls.length; ci++) {
@@ -194,7 +194,7 @@
       if (cfg.type === 'Identifier') { t.warns.push('config is a variable reference (fields not statically checked)'); out.tools.push(t); continue; }
       if (cfg.type !== 'ObjectExpression') { t.errors.push('config (arg 2) is not an object literal or variable'); out.tools.push(t); continue; }
 
-      var props = {}, kinds = {}, hasSpread = false;
+      var props = Object.create(null), kinds = Object.create(null), hasSpread = false;
       for (var pi = 0; pi < cfg.properties.length; pi++) {
         var p = cfg.properties[pi];
         if (p.type === 'SpreadElement' || p.type === 'ExperimentalSpreadProperty') { hasSpread = true; continue; }
@@ -247,8 +247,18 @@
       out.tools.push(t);
     }
 
+    // Multi-registration is legal and shipped (stem_tool_rocks.js registers
+    // rocks + rockCycle; stem_tool_geo.js registers geoQuiz + geometryProver;
+    // stem_tool_fractions.js aliases one config under two ids). Tier-2
+    // (check_tool_contract.cjs) already WARNS rather than errors on this, so
+    // mirror it here — and say which tool the downstream steps actually use,
+    // since the render-smoke and the submission metadata both take the first.
+    if (out.tools.length > 1 && out.tools[0]) {
+      out.tools[0].warns.push(out.tools.length + ' registerTool calls (expected 1) — only the first (' + (out.tools[0].id || '?') + ') is render-smoked and submitted');
+    }
+
     // id uniqueness within this source
-    var seen = {};
+    var seen = Object.create(null);
     for (var ti = 0; ti < out.tools.length; ti++) {
       var tid = out.tools[ti].id;
       if (tid) { if (seen[tid]) out.tools[ti].warns.push('duplicate tool id "' + tid + '" in this source (alias?)'); else seen[tid] = true; }

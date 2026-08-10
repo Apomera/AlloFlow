@@ -18692,7 +18692,21 @@ test('no a11y violations', async () => {
       var useCallback = React.useCallback;
       var useRef = React.useRef;
       var d = (ctx.toolData && ctx.toolData.appLab) || {};
-      var upd = function(key, val) { ctx.setToolData(function(prev) { var td = Object.assign({}, (prev && prev.appLab) || {}); td[key] = val; var patch = {}; patch.appLab = td; return Object.assign({}, prev, patch); }); };
+      // Accepts a value OR an updater. The updater form lets counters derive
+      // from the previous value instead of from `d`, which is a render-time
+      // snapshot: reading it inside an async callback was both a stale read
+      // and the reason `d` had to sit in every dep array, churning the
+      // callback identity on every single toolData write.
+      var upd = function(key, val) {
+        ctx.setToolData(function(prev) {
+          var td = Object.assign({}, (prev && prev.appLab) || {});
+          td[key] = (typeof val === 'function') ? val(td[key]) : val;
+          var patch = {};
+          patch.appLab = td;
+          return Object.assign({}, prev, patch);
+        });
+      };
+      var bump = function(key) { upd(key, function(v) { return (v || 0) + 1; }); };
       var callGemini = ctx.callGemini;
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
@@ -18803,6 +18817,8 @@ test('no a11y violations', async () => {
       var _iframeErrors = useState([]); var iframeErrors = _iframeErrors[0]; var setIframeErrors = _iframeErrors[1];
       var iframeRef = useRef(null);
       var importInputRef = useRef(null);
+      var editorRef = useRef(null);
+      var gutterRef = useRef(null);
       var cancelRef = useRef(false);
       var CANCEL_SIGNAL = '__applab_cancelled__';
       function throwIfCancelled() { if (cancelRef.current) throw new Error(CANCEL_SIGNAL); }
@@ -18952,7 +18968,22 @@ test('no a11y violations', async () => {
         function onMessage(ev) {
           var data = ev && ev.data;
           if (!data || data.__allolab !== PREVIEW_ERR_TOKEN || !data.payload) return;
-          setIframeErrors(function(prev) { return prev.concat([data.payload]).slice(-5); });
+          // Only trust our own preview frame. Any page, extension, or other
+          // frame can post a message carrying the right token, and the overlay
+          // would happily display it. stem_tool_forge.js already guards its
+          // smoke-test channel this way; match it.
+          var frame = iframeRef.current;
+          if (!frame || !frame.contentWindow || ev.source !== frame.contentWindow) return;
+          var p = data.payload;
+          // Cap the strings so a runaway loop in the generated app cannot
+          // stuff the parent UI with a huge payload.
+          setIframeErrors(function(prev) {
+            return prev.concat([{
+              msg: String(p.msg == null ? 'Unknown error' : p.msg).slice(0, 500),
+              line: p.line,
+              col: p.col
+            }]).slice(-5);
+          });
         }
         window.addEventListener('message', onMessage);
         return function() { window.removeEventListener('message', onMessage); };
@@ -19274,7 +19305,7 @@ test('no a11y violations', async () => {
           setHtml(finalHtml);
           setEditHtml(finalHtml);
           pushHistory(finalHtml);
-          upd('appsGenerated', (d.appsGenerated || 0) + 1);
+          bump('appsGenerated');
           upd('lastPipelineLog', pipelineLog);
           if (awardXP) awardXP('appLab', 15);
           var agentCount = pipelineLog.reduce(function(acc, p) { return acc + 1 + (p.children ? p.children.length : 0); }, 0);
@@ -19300,7 +19331,7 @@ test('no a11y violations', async () => {
         setPipelineLive(null);
         setIsGenerating(false);
         setGenStep('');
-      }, [callGemini, gradeLevel, addToast, awardXP, announceToSR, d, pipelineConfig]);
+      }, [callGemini, gradeLevel, addToast, awardXP, announceToSR, pipelineConfig]);
 
       // ── Enhance (iterate) ──
       var enhanceApp = useCallback(async function() {
@@ -19331,7 +19362,7 @@ test('no a11y violations', async () => {
             setEditHtml(cleaned);
             pushHistory(cleaned);
             setEnhancePrompt('');
-            upd('enhanceCount', (d.enhanceCount || 0) + 1);
+            bump('enhanceCount');
             if (awardXP) awardXP('appLab', 10);
             addToast && addToast('App enhanced!', 'success');
             if (announceToSR) announceToSR('App enhanced');
@@ -19345,7 +19376,7 @@ test('no a11y violations', async () => {
         }
         setIsGenerating(false);
         setGenStep('');
-      }, [callGemini, html, enhancePrompt, addToast, awardXP, announceToSR, d]);
+      }, [callGemini, html, enhancePrompt, addToast, awardXP, announceToSR]);
 
       // ── Suggest Ideas ──
       var suggestIdeas = useCallback(async function() {
@@ -19397,7 +19428,7 @@ test('no a11y violations', async () => {
         } else {
           addToast && addToast('Saved to gallery!', 'success');
         }
-      }, [html, prompt, gallery, addToast, d]);
+      }, [html, prompt, gallery, addToast]);
 
       // ── Export as HTML file ──
       var exportHtml = useCallback(function() {
@@ -19413,7 +19444,7 @@ test('no a11y violations', async () => {
         URL.revokeObjectURL(url);
         upd('hasExported', true);
         addToast && addToast('Exported ' + base + '.html', 'success');
-      }, [html, prompt, addToast, d]);
+      }, [html, prompt, addToast]);
 
       // ── Import HTML file ──
       var importHtml = useCallback(function(file) {
@@ -19457,6 +19488,144 @@ test('no a11y violations', async () => {
         }
       }, [editHtml, html, addToast]);
 
+      // ── Fix the errors the preview actually reported ─────────────────
+      // The overlay used to be a dead end: it named the failure and left the
+      // student stuck. Feeding the captured messages back through the Fixer
+      // is the whole point of having captured them.
+      var fixReportedErrors = useCallback(async function() {
+        if (!callGemini || !html || !iframeErrors.length) return;
+        if (tooBigForModel(html)) {
+          addToast && addToast('This app is ' + kchars(html) + ' chars — too large to fix without truncating it. Edit the source directly instead.', 'error');
+          return;
+        }
+        setIsGenerating(true);
+        step('🔧 Fixing ' + iframeErrors.length + ' runtime error(s)...', 'Fixing ' + iframeErrors.length + ' runtime errors');
+        try {
+          var errList = iframeErrors.map(function(e, i) {
+            return (i + 1) + '. ' + (e.msg || 'Unknown error') + (e.line ? ' (line ' + e.line + ')' : '');
+          }).join('\n');
+          var fPrompt = 'This HTML mini-app throws these errors when it runs:\n\n' + errList + '\n\n'
+            + 'CODE:\n```html\n' + html + '\n```\n\n'
+            + 'Fix ONLY these errors. Keep every other behaviour and all styling exactly as it is.\n'
+            + 'Return the COMPLETE fixed HTML document. No markdown, no explanation.';
+          var fixed = cleanHtmlResponse(await callGemini(fPrompt, false));
+          if (fixed && looksCompleteDoc(fixed) && fixed.length > html.length * 0.5) {
+            setHtml(fixed);
+            setEditHtml(fixed);
+            pushHistory(fixed);
+            setIframeErrors([]);
+            bump('errorsFixed');
+            if (awardXP) awardXP('appLab', 10);
+            addToast && addToast('Applied a fix — watch the preview to see if the error is gone.', 'success');
+            if (announceToSR) announceToSR('Fix applied. Re-running the preview.');
+          } else {
+            addToast && addToast('The fix came back incomplete, so your app was left unchanged.', 'error');
+          }
+        } catch(err) {
+          addToast && addToast('Could not fix the errors: ' + (err && err.message), 'error');
+        }
+        setIsGenerating(false);
+        setGenStep('');
+      }, [callGemini, html, iframeErrors, addToast, awardXP, announceToSR]);
+
+      // Gutter contents. Capped so pasting an enormous file cannot build a
+      // multi-megabyte string on every keystroke.
+      var MAX_GUTTER_LINES = 5000;
+      var editorLineCount = Math.min((editHtml || '').split('\n').length, MAX_GUTTER_LINES);
+      var editorLineNumbers = React.useMemo(function() {
+        var out = [];
+        for (var i = 1; i <= editorLineCount; i++) out.push(i);
+        return out.join('\n');
+      }, [editorLineCount]);
+
+      // ── Version diff ─────────────────────────────────────────────────
+      // Every Enhance/Fix silently swaps the whole document, so a student had
+      // no way to see WHAT the AI changed — only that something did. This is a
+      // plain LCS line diff (no dependency) between two history entries.
+      function diffLines(before, after) {
+        var a = String(before || '').split('\n');
+        var b = String(after || '').split('\n');
+        // Trim the common head and tail first: generated docs share most lines,
+        // and the LCS table is O(n*m), so this keeps it cheap on big files.
+        var head = 0;
+        while (head < a.length && head < b.length && a[head] === b[head]) head++;
+        var tail = 0;
+        while (tail < (a.length - head) && tail < (b.length - head)
+          && a[a.length - 1 - tail] === b[b.length - 1 - tail]) tail++;
+
+        // Keep CONTEXT common lines on each side: fully trimming them means
+        // the reader sees the changed lines with nothing to locate them by.
+        var CONTEXT = 3;
+        head = Math.max(0, head - CONTEXT);
+        tail = Math.max(0, tail - CONTEXT);
+
+        var aMid = a.slice(head, a.length - tail);
+        var bMid = b.slice(head, b.length - tail);
+
+        // Guard rail: a pathological pair would otherwise build a huge table.
+        var MAX_CELLS = 1200000;
+        if (aMid.length * bMid.length > MAX_CELLS) {
+          return { tooBig: true, added: bMid.length, removed: aMid.length, rows: [] };
+        }
+
+        var n = aMid.length, m = bMid.length;
+        var lcs = [];
+        for (var i = 0; i <= n; i++) lcs.push(new Array(m + 1).fill(0));
+        for (var i2 = n - 1; i2 >= 0; i2--) {
+          for (var j2 = m - 1; j2 >= 0; j2--) {
+            lcs[i2][j2] = aMid[i2] === bMid[j2]
+              ? lcs[i2 + 1][j2 + 1] + 1
+              : Math.max(lcs[i2 + 1][j2], lcs[i2][j2 + 1]);
+          }
+        }
+
+        var rows = [];
+        var added = 0, removed = 0;
+        var i3 = 0, j3 = 0;
+        while (i3 < n && j3 < m) {
+          if (aMid[i3] === bMid[j3]) {
+            rows.push({ kind: 'same', text: aMid[i3], line: head + j3 + 1 });
+            i3++; j3++;
+          } else if (lcs[i3 + 1][j3] >= lcs[i3][j3 + 1]) {
+            rows.push({ kind: 'del', text: aMid[i3], line: head + i3 + 1 });
+            removed++; i3++;
+          } else {
+            rows.push({ kind: 'add', text: bMid[j3], line: head + j3 + 1 });
+            added++; j3++;
+          }
+        }
+        while (i3 < n) { rows.push({ kind: 'del', text: aMid[i3], line: head + i3 + 1 }); removed++; i3++; }
+        while (j3 < m) { rows.push({ kind: 'add', text: bMid[j3], line: head + j3 + 1 }); added++; j3++; }
+
+        if (added === 0 && removed === 0) return { tooBig: false, added: 0, removed: 0, rows: [] };
+
+        // Collapse long unchanged runs so the changes are actually findable.
+        var keep = new Array(rows.length).fill(false);
+        for (var r = 0; r < rows.length; r++) {
+          if (rows[r].kind === 'same') continue;
+          for (var k = Math.max(0, r - CONTEXT); k <= Math.min(rows.length - 1, r + CONTEXT); k++) keep[k] = true;
+        }
+        var out = [];
+        var skipping = 0;
+        for (var q = 0; q < rows.length; q++) {
+          if (keep[q]) {
+            if (skipping > 0) { out.push({ kind: 'gap', count: skipping }); skipping = 0; }
+            out.push(rows[q]);
+          } else {
+            skipping++;
+          }
+        }
+        if (skipping > 0) out.push({ kind: 'gap', count: skipping });
+
+        return { tooBig: false, added: added, removed: removed, rows: out };
+      }
+
+      var _showDiff = useState(false); var showDiff = _showDiff[0]; var setShowDiff = _showDiff[1];
+      var canDiff = historyIdx > 0 && history.length > 1;
+      var currentDiff = (showDiff && canDiff)
+        ? diffLines(history[historyIdx - 1], history[historyIdx])
+        : null;
+
       // ── Undo/Redo ──
       var canUndo = historyIdx > 0;
       var canRedo = historyIdx < history.length - 1;
@@ -19465,8 +19634,25 @@ test('no a11y violations', async () => {
 
       // ── Styles ──
       var PURPLE = '#7c3aed';
-      var btn = function(bg, fg, dis) { return { padding: '8px 16px', background: dis ? '#e5e7eb' : bg, color: dis ? '#4b5563' : fg, border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '12px', cursor: dis ? 'not-allowed' : 'pointer', transition: 'all 0.15s' }; };
-      var card = { background: '#fff', borderRadius: '14px', padding: '16px', border: '1px solid #e5e7eb', marginBottom: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' };
+      // Every neutral control in this tool was hardcoded light-grey-on-slate,
+      // so controls stayed light no matter what theme the shell was in. The
+      // theme already publishes button vars — route the neutral pairing (and
+      // the disabled state) through them. Accent colours passed explicitly by
+      // callers, e.g. btn(PURPLE, '#fff'), are left alone; the current values
+      // are the fallbacks, so an unthemed host renders exactly as before.
+      var NEUTRAL_BG = '#f1f5f9';
+      var btn = function(bg, fg, dis) {
+        var neutral = bg === NEUTRAL_BG;
+        return {
+          padding: '8px 16px',
+          background: dis ? 'var(--allo-stem-deeper, #e5e7eb)' : (neutral ? 'var(--allo-stem-button-bg, #f1f5f9)' : bg),
+          color: dis ? 'var(--allo-stem-text-soft, #4b5563)' : (neutral ? 'var(--allo-stem-button-text, #374151)' : fg),
+          border: neutral && !dis ? '1px solid var(--allo-stem-button-border, transparent)' : '1px solid transparent',
+          borderRadius: '10px', fontWeight: 700, fontSize: '12px',
+          cursor: dis ? 'not-allowed' : 'pointer', transition: 'all 0.15s'
+        };
+      };
+      var card = { background: 'var(--allo-stem-panel, #fff)', color: 'var(--allo-stem-text, #1e293b)', borderRadius: '14px', padding: '16px', border: '1px solid var(--allo-stem-border, #e5e7eb)', marginBottom: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' };
 
       // ── Tab system state ──
       var _activeTab = useState(function() {
@@ -20077,6 +20263,14 @@ test('no a11y violations', async () => {
             h('button', { onClick: undo, disabled: !canUndo, style: btn('#f1f5f9', '#374151', !canUndo), title: __alloT('stem.applab.undo', 'Undo') }, '↩'),
             h('button', { onClick: redo, disabled: !canRedo, style: btn('#f1f5f9', '#374151', !canRedo), title: __alloT('stem.applab.redo', 'Redo') }, '↪'),
             h('button', { onClick: function() { setShowCode(!showCode); }, style: btn(showCode ? PURPLE : '#f1f5f9', showCode ? '#fff' : '#374151', false), 'aria-label': __alloT('stem.applab.toggle_code_view', 'Toggle code view') }, showCode ? '</> Hide Code' : '</> View Code'),
+            // Shows what the last Enhance/Fix actually changed.
+            h('button', { onClick: function() { setShowDiff(!showDiff); }, disabled: !canDiff,
+              style: btn(showDiff ? PURPLE : '#f1f5f9', showDiff ? '#fff' : '#374151', !canDiff),
+              'aria-pressed': showDiff,
+              title: canDiff
+                ? __alloT('stem.applab.show_what_changed', 'Show what changed in the last step')
+                : __alloT('stem.applab.no_earlier_version_yet', 'No earlier version to compare against yet'),
+              'aria-label': __alloT('stem.applab.toggle_changes_view', 'Toggle changes view') }, '± Changes'),
             h('button', { onClick: saveToGallery, style: btn('#f1f5f9', '#374151', false), title: __alloT('stem.applab.save_to_gallery', 'Save to gallery'), 'aria-label': __alloT('stem.applab.save_to_gallery_2', 'Save to gallery') }, '💾'),
             h('button', { onClick: exportHtml, style: btn('#f1f5f9', '#374151', false), title: __alloT('stem.applab.export_as_html_file', 'Export as HTML file'), 'aria-label': __alloT('stem.applab.export_as_html_file_2', 'Export as HTML file') }, '📥'),
             // Import was a <label> wrapping a display:none file input. A label
@@ -20088,11 +20282,14 @@ test('no a11y violations', async () => {
               style: btn('#f1f5f9', '#374151', false),
               title: __alloT('stem.applab.import_html_file', 'Import HTML file'),
               'aria-label': __alloT('stem.applab.import_html_file_2', 'Import HTML file') }, '📂'),
-            h('input', { ref: importInputRef, type: 'file', accept: '.html,.htm', tabIndex: -1, 'aria-hidden': true,
-              style: { display: 'none' },
-              onChange: function(ev) { if (ev.target.files && ev.target.files[0]) importHtml(ev.target.files[0]); ev.target.value = ''; } }),
             h('button', { onClick: function() { setFullscreen(!fullscreen); }, style: btn('#f1f5f9', '#374151', false), 'aria-pressed': fullscreen, 'aria-label': __alloT('stem.applab.toggle_fullscreen', 'Toggle fullscreen') }, fullscreen ? '🗗' : '⛶')
-          )
+          ),
+          // The file input lives OUTSIDE the toolbar, which only renders once
+          // an app is loaded — otherwise importInputRef would be null on the
+          // empty state, where Import is most useful.
+          h('input', { ref: importInputRef, type: 'file', accept: '.html,.htm', tabIndex: -1, 'aria-hidden': true,
+            style: { display: 'none' },
+            onChange: function(ev) { if (ev.target.files && ev.target.files[0]) importHtml(ev.target.files[0]); ev.target.value = ''; } })
         ),
 
         // ── Tab bar ──
@@ -20253,7 +20450,7 @@ test('no a11y violations', async () => {
 
           // Prompt input
           h('div', { style: card },
-            h('label', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', marginBottom: '6px', display: 'block' } }, __alloT('stem.applab.what_do_you_want_to_build', 'What do you want to build?')),
+            h('label', { style: { fontSize: '13px', fontWeight: 700, color: 'var(--allo-stem-text, #374151)', marginBottom: '6px', display: 'block' } }, __alloT('stem.applab.what_do_you_want_to_build', 'What do you want to build?')),
             h('textarea', { value: prompt, onChange: function(ev) { setPrompt(ev.target.value); },
               placeholder: __alloT('stem.applab.describe_an_interactive_app_simulation', 'Describe an interactive app, simulation, or visualization...\n\nExamples:\n• "Interactive solar system with orbiting planets and info on click"\n• "Color mixing tool where you combine primary colors"\n• "Simple calculator with history"'),
               rows: 4, style: { width: '100%', padding: '10px 14px', border: '2px solid #d1d5db', borderRadius: '12px', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical', outline: 'none' },
@@ -20275,7 +20472,14 @@ test('no a11y violations', async () => {
               h('button', { onClick: suggestIdeas, disabled: sugLoading,
                 style: btn('#f1f5f9', '#374151', sugLoading) }, sugLoading ? '⏳ Thinking...' : '✨ Suggest Ideas'),
               h('button', { onClick: function() { setShowGallery(!showGallery); },
-                style: btn('#f1f5f9', '#374151', false) }, '📂 Gallery (' + gallery.length + ')')
+                style: btn('#f1f5f9', '#374151', false) }, '📂 Gallery (' + gallery.length + ')'),
+              // The toolbar that normally carries Import only renders once an
+              // app is loaded, so from a blank slate there was no way to bring
+              // an existing file in at all.
+              h('button', { onClick: function() { importInputRef.current && importInputRef.current.click(); },
+                style: btn('#f1f5f9', '#374151', false),
+                'aria-label': __alloT('stem.applab.import_html_file_2', 'Import HTML file') },
+                __alloT('stem.applab.import_html', '📄 Import HTML'))
             )
           ),
 
@@ -20285,9 +20489,9 @@ test('no a11y violations', async () => {
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '8px' } },
               suggestions.map(function(s, i) {
                 return h('button', { key: i, onClick: function() { setPrompt(s.prompt || s.description); setShowSuggestions(false); },
-                  style: { padding: '10px', borderRadius: '10px', border: '1px solid #e5e7eb', background: '#fff', cursor: 'pointer', textAlign: 'left', fontSize: '11px' }
+                  style: { padding: '10px', borderRadius: '10px', border: '1px solid var(--allo-stem-border, #e5e7eb)', background: 'var(--allo-stem-deeper, #fff)', color: 'var(--allo-stem-text, #1e293b)', cursor: 'pointer', textAlign: 'left', fontSize: '11px' }
                 },
-                  h('div', { style: { fontWeight: 700, color: '#1e293b', marginBottom: '2px' } }, s.title),
+                  h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #1e293b)', marginBottom: '2px' } }, s.title),
                   h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px', lineHeight: 1.4 } }, s.description),
                   s.difficulty && h('span', { style: { fontSize: '9px', background: s.difficulty === 'Beginner' ? '#dcfce7' : s.difficulty === 'Advanced' ? '#fee2e2' : '#fef3c7', color: s.difficulty === 'Beginner' ? '#166534' : s.difficulty === 'Advanced' ? '#991b1b' : '#92400e', padding: '1px 6px', borderRadius: '6px', marginTop: '4px', display: 'inline-block' } }, s.difficulty)
                 );
@@ -20297,7 +20501,7 @@ test('no a11y violations', async () => {
 
           // Templates
           h('div', { style: card },
-            h('h3', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', marginBottom: '8px' } }, __alloT('stem.applab.quick_templates', '\uD83D\uDCCB Quick Templates')),
+            h('h3', { style: { fontSize: '13px', fontWeight: 700, color: 'var(--allo-stem-text, #374151)', marginBottom: '8px' } }, __alloT('stem.applab.quick_templates', '\uD83D\uDCCB Quick Templates')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
               TEMPLATES.map(function(cat) {
                 return h('div', { key: cat.cat },
@@ -20305,7 +20509,7 @@ test('no a11y violations', async () => {
                   h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '6px' } },
                     cat.items.map(function(t) {
                       return h('button', { key: t.title, onClick: function() { setPrompt(t.prompt); },
-                        style: { padding: '4px 10px', borderRadius: '8px', border: '1px solid #e5e7eb', background: '#f9fafb', cursor: 'pointer', fontSize: '11px', fontWeight: 600, color: '#374151' }
+                        style: { padding: '4px 10px', borderRadius: '8px', border: '1px solid var(--allo-stem-border, #e5e7eb)', background: 'var(--allo-stem-deeper, #f9fafb)', cursor: 'pointer', fontSize: '11px', fontWeight: 600, color: 'var(--allo-stem-text, #374151)' }
                       }, t.title);
                     })
                   )
@@ -20316,20 +20520,22 @@ test('no a11y violations', async () => {
 
           // Gallery
           showGallery && gallery.length > 0 && h('div', { style: card },
-            h('h3', { style: { fontSize: '14px', fontWeight: 700, color: '#374151', marginBottom: '8px' } }, __alloT('stem.applab.saved_apps', '\uD83D\uDCC2 Saved Apps')),
+            h('h3', { style: { fontSize: '14px', fontWeight: 700, color: 'var(--allo-stem-text, #374151)', marginBottom: '8px' } }, __alloT('stem.applab.saved_apps', '\uD83D\uDCC2 Saved Apps')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '200px', overflowY: 'auto' } },
               gallery.map(function(app) {
-                return h('div', { key: app.id, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px' } },
+                return h('div', { key: app.id, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'var(--allo-stem-deeper, #f9fafb)', border: '1px solid var(--allo-stem-border, #e5e7eb)', borderRadius: '8px' } },
                   h('div', null,
-                    h('div', { style: { fontWeight: 600, fontSize: '12px', color: '#1e293b' } }, app.title),
-                    h('div', { style: { fontSize: '10px', color: '#6b7280' } }, new Date(app.created).toLocaleDateString())
+                    h('div', { style: { fontWeight: 600, fontSize: '12px', color: 'var(--allo-stem-text, #1e293b)' } }, app.title),
+                    h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #6b7280)' } }, new Date(app.created).toLocaleDateString())
                   ),
                   h('div', { style: { display: 'flex', gap: '4px' } },
                     h('button', { onClick: function() { setHtml(app.html); setEditHtml(app.html); setPrompt(app.prompt || ''); resetHistory(app.html); setShowGallery(false); },
                       style: btn('#f1f5f9', '#374151', false) }, __alloT('stem.applab.load', 'Load')),
                     h('button', { onClick: function() {
                       var updated = gallery.filter(function(g) { return g.id !== app.id; });
-                      setGallery(persistGallery(updated) || updated);
+                      var kept = persistGallery(updated) || updated;
+                      setGallery(kept);
+                      upd('galleryCount', kept.length);
                     }, style: btn('#fee2e2', '#991b1b', false) }, '✕')
                   )
                 );
@@ -20339,12 +20545,12 @@ test('no a11y violations', async () => {
         ),
 
         // ── Behind the Scenes: Agent Pipeline Visualizer ──
-        activeTab === 'build' && d.lastPipelineLog && d.lastPipelineLog.length > 0 && h('details', { style: { background: 'linear-gradient(135deg, #1e1b4b, #312e81)', borderRadius: '12px', border: '1px solid #4338ca', overflow: 'hidden' } },
-          h('summary', { style: { padding: '10px 14px', color: '#c4b5fd', fontSize: '11px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' } },
+        activeTab === 'build' && d.lastPipelineLog && d.lastPipelineLog.length > 0 && h('details', { style: { background: 'var(--allo-stem-panel, #1e1b4b)', borderRadius: '12px', border: '1px solid var(--allo-stem-border, #4338ca)', overflow: 'hidden' } },
+          h('summary', { style: { padding: '10px 14px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' } },
             __alloT('stem.applab.behind_the_scenes_how_ai_built_this_ap', '\uD83E\uDD16 Behind the Scenes — How AI Built This App')
           ),
           h('div', { style: { padding: '12px 14px', paddingTop: 0 } },
-            h('p', { style: { fontSize: '10px', color: '#a5b4fc', marginBottom: '10px', lineHeight: 1.6 } },
+            h('p', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #a5b4fc)', marginBottom: '10px', lineHeight: 1.6 } },
               __alloT('stem.applab.this_app_was_built_by_a_team_of_ai_age', 'This app was built by a team of AI agents working together \u2014 each specializing in a different aspect of software development. This is called "agentic AI" or "multi-agent orchestration." Each agent has a specific role and passes its work to the next agent in the pipeline.')
             ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
@@ -20373,13 +20579,59 @@ test('no a11y violations', async () => {
               })
             ),
             h('div', { style: { marginTop: '10px', padding: '8px 10px', background: 'rgba(99,102,241,0.1)', borderRadius: '8px', border: '1px solid rgba(99,102,241,0.2)' } },
-              h('p', { style: { fontSize: '10px', color: '#a5b4fc', fontWeight: 600, marginBottom: '4px' } }, __alloT('stem.applab.how_does_this_relate_to_real_software_', '\uD83D\uDCA1 How does this relate to real software engineering?')),
+              h('p', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #a5b4fc)', fontWeight: 600, marginBottom: '4px' } }, __alloT('stem.applab.how_does_this_relate_to_real_software_', '\uD83D\uDCA1 How does this relate to real software engineering?')),
               h('p', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } },
                 'This app was built using a hierarchical multi-agent architecture. An Architect AI decomposed the app into independent sections, then EACH section was built, reviewed, and fixed by separate specialist AI agents, one section at a time \u2014 just like how professional software teams work. '
                 + 'This is called "component-based architecture" \u2014 the same pattern used by React, Vue, and Angular. Each component is small enough for an AI to build perfectly, and the Assembler combines them into a working whole. '
                 + 'The result is higher quality than a single AI trying to build everything at once, because each agent focuses on one thing and does it well.'
               )
             )
+          )
+        ),
+
+        // ── What changed in the last step ──
+        activeTab === 'build' && html && showDiff && canDiff && currentDiff && h('div', {
+          style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '12px', padding: '10px 12px', marginBottom: '8px', flexShrink: 0 } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' } },
+            h('span', { style: { fontSize: '12px', fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)' } },
+              __alloT('stem.applab.what_changed_in_this_step', '± What changed in this step')),
+            h('span', { style: { fontSize: '10px', fontWeight: 700, color: '#16a34a', background: 'rgba(22,163,74,0.15)', border: '1px solid #16a34a', borderRadius: '6px', padding: '1px 6px' } },
+              '+' + currentDiff.added),
+            h('span', { style: { fontSize: '10px', fontWeight: 700, color: '#dc2626', background: 'rgba(220,38,38,0.15)', border: '1px solid #dc2626', borderRadius: '6px', padding: '1px 6px' } },
+              '−' + currentDiff.removed),
+            h('span', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginLeft: 'auto' } },
+              __alloT('stem.applab.version_x_of_y', 'Version ') + (historyIdx + 1) + '/' + history.length)
+          ),
+          currentDiff.tooBig
+            ? h('p', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', margin: 0 } },
+                __alloT('stem.applab.diff_too_large', 'This step rewrote too much of the file to show line by line — ')
+                + currentDiff.removed + ' line(s) replaced by ' + currentDiff.added + '.')
+            : h('div', { style: { maxHeight: '220px', overflow: 'auto', fontFamily: 'Consolas, Monaco, monospace', fontSize: '10px', lineHeight: 1.55, background: 'var(--allo-stem-deeper, #020617)', borderRadius: '8px', padding: '6px 0' } },
+                currentDiff.rows.length === 0
+                  ? h('div', { style: { padding: '4px 10px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+                      __alloT('stem.applab.no_line_changes', 'No line-level changes.'))
+                  : currentDiff.rows.map(function(row, ri) {
+                      if (row.kind === 'gap') {
+                        return h('div', { key: ri, style: { padding: '2px 10px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
+                          '⋯ ' + row.count + ' unchanged line(s)');
+                      }
+                      var isAdd = row.kind === 'add';
+                      var isDel = row.kind === 'del';
+                      return h('div', { key: ri, style: {
+                        display: 'flex', gap: '8px', padding: '0 10px', whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+                        background: isAdd ? 'rgba(22,163,74,0.16)' : isDel ? 'rgba(220,38,38,0.16)' : 'transparent',
+                        color: 'var(--allo-stem-text, #e2e8f0)'
+                      } },
+                        // The +/- marker is text, not colour alone, so the diff
+                        // is readable without colour vision.
+                        h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', minWidth: '3.5em', textAlign: 'right', flexShrink: 0, userSelect: 'none' } },
+                          (isAdd ? '+' : isDel ? '−' : ' ') + ' ' + row.line),
+                        h('span', null, row.text === '' ? ' ' : row.text)
+                      );
+                    })
+              ),
+          h('p', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '6px 0 0', lineHeight: 1.5 } },
+            __alloT('stem.applab.diff_teaching_note', 'Reading a diff is how developers review each other\'s work. Green lines were added, red lines were removed, and everything else stayed the same. If an AI edit changed more than you asked for, this is where you would spot it.')
           )
         ),
 
@@ -20396,11 +20648,26 @@ test('no a11y violations', async () => {
                 h('button', { onClick: function() { setEditHtml(html); }, style: btn('#f1f5f9', '#374151', false) }, __alloT('stem.applab.reset_2', '↩ Reset'))
               )
             ),
-            h('textarea', { value: editHtml, onChange: function(ev) { setEditHtml(ev.target.value); },
-              style: { flex: 1, fontFamily: 'Consolas, Monaco, monospace', fontSize: '11px', padding: '10px', border: '1px solid #d1d5db', borderRadius: '8px', resize: 'none', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #e2e8f0)', outline: 'none', tabSize: 2, lineHeight: 1.5 },
-              onFocus: function(e) { e.target.style.boxShadow = '0 0 0 3px rgba(34,211,238,0.5)'; },
-              onBlur: function(e) { e.target.style.boxShadow = 'none'; },
-              spellCheck: false, 'aria-label': __alloT('stem.applab.html_source_code_editor', 'HTML source code editor') })
+            // Editor with a line-number gutter. The preview's error overlay
+            // reports "Line 47", which was unactionable against a bare
+            // textarea. The gutter scrolls in lockstep with the textarea and
+            // is aria-hidden — it is a visual aid, not content.
+            h('div', { style: { flex: 1, display: 'flex', minHeight: 0, border: '1px solid var(--allo-stem-border, #d1d5db)', borderRadius: '8px', overflow: 'hidden', background: 'var(--allo-stem-panel, #1e293b)' } },
+              h('div', { ref: gutterRef, 'aria-hidden': true, style: {
+                width: '3.2em', flexShrink: 0, overflow: 'hidden', textAlign: 'right',
+                padding: '10px 6px 10px 0', borderRight: '1px solid var(--allo-stem-border, #334155)',
+                fontFamily: 'Consolas, Monaco, monospace', fontSize: '11px', lineHeight: 1.5,
+                color: 'var(--allo-stem-text-soft, #94a3b8)', background: 'var(--allo-stem-deeper, #020617)',
+                userSelect: 'none', whiteSpace: 'pre'
+              } }, editorLineNumbers),
+              h('textarea', { ref: editorRef, value: editHtml,
+                onChange: function(ev) { setEditHtml(ev.target.value); },
+                onScroll: function(ev) { if (gutterRef.current) gutterRef.current.scrollTop = ev.target.scrollTop; },
+                style: { flex: 1, fontFamily: 'Consolas, Monaco, monospace', fontSize: '11px', padding: '10px', border: 'none', resize: 'none', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', outline: 'none', tabSize: 2, lineHeight: 1.5, minWidth: 0 },
+                onFocus: function(e) { e.target.parentNode.style.boxShadow = 'inset 0 0 0 2px rgba(34,211,238,0.6)'; },
+                onBlur: function(e) { e.target.parentNode.style.boxShadow = 'none'; },
+                spellCheck: false, 'aria-label': __alloT('stem.applab.html_source_code_editor', 'HTML source code editor') })
+            )
           ),
 
           // Preview iframe with error capture
@@ -20420,13 +20687,23 @@ test('no a11y violations', async () => {
               style: { flex: 1, border: '2px solid #e5e7eb', borderRadius: '12px', background: '#fff', width: '100%', boxShadow: '0 10px 30px rgba(15,23,42,0.15)' }
             }),
             // Error overlay (shows runtime errors from generated app)
-            iframeErrors.length > 0 && h('div', { style: { position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(220,38,38,0.95)', color: '#fff', padding: '8px 12px', borderRadius: '0 0 12px 12px', fontSize: '11px', fontFamily: 'monospace', maxHeight: '80px', overflowY: 'auto', zIndex: 10 } },
-              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' } },
-                h('span', { style: { fontWeight: 'bold' } }, '\u26A0\uFE0F ' + iframeErrors.length + ' error(s) in generated app'),
-                h('button', { onClick: function() { setIframeErrors([]); }, style: { background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', padding: '2px 6px', borderRadius: '4px', cursor: 'pointer', fontSize: '10px' } }, '\u2715')
+            iframeErrors.length > 0 && h('div', { role: 'alert', style: { position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(185,28,28,0.97)', color: '#fff', padding: '8px 12px', borderRadius: '0 0 12px 12px', fontSize: '11px', fontFamily: 'monospace', maxHeight: '120px', overflowY: 'auto', zIndex: 10 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '4px' } },
+                h('span', { style: { fontWeight: 'bold' } }, '⚠️ ' + iframeErrors.length + ' error(s) in generated app'),
+                h('div', { style: { display: 'flex', gap: '4px', alignItems: 'center' } },
+                  // Closes the loop: the errors we captured become the fix.
+                  h('button', { onClick: fixReportedErrors, disabled: isGenerating,
+                    style: { background: isGenerating ? 'rgba(255,255,255,0.15)' : '#fff', border: 'none', color: isGenerating ? '#fff' : '#991b1b', padding: '3px 10px', borderRadius: '5px', cursor: isGenerating ? 'not-allowed' : 'pointer', fontSize: '10px', fontWeight: 700, fontFamily: 'inherit' },
+                    'aria-label': __alloT('stem.applab.fix_these_errors_with_ai', 'Fix these errors with AI')
+                  }, isGenerating ? '⏳' : __alloT('stem.applab.fix_these_errors', '🔧 Fix these')),
+                  h('button', { onClick: function() { setIframeErrors([]); },
+                    style: { background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', padding: '3px 8px', borderRadius: '5px', cursor: 'pointer', fontSize: '10px' },
+                    'aria-label': __alloT('stem.applab.dismiss_errors', 'Dismiss errors') }, '✕')
+                )
               ),
               iframeErrors.map(function(err, i) {
-                return h('div', { key: i, style: { fontSize: '10px', opacity: 0.9 } }, 'Line ' + (err.line || '?') + ': ' + (err.msg || 'Unknown error'));
+                return h('div', { key: i, style: { fontSize: '10px', opacity: 0.92 } },
+                  (err.line ? 'Line ' + err.line + ': ' : '') + (err.msg || 'Unknown error'));
               })
             ),
             // Enhance bar (below preview)

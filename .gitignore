@@ -163,6 +163,7 @@ test_extract_query.js
 # Playwright e2e artifacts
 test-results/
 playwright-report/
+playwright-report-mobile/
 playwright/.cache/
 
 # Reading Library scraper cache — 9.4 MB / 200+ downloaded source HTML files,

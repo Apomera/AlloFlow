@@ -183,6 +183,65 @@ describe('every quest can actually be earned', () => {
   });
 });
 
+describe('no quest is granted for free', () => {
+  // The mirror image of the block above, and the failure it was written for.
+  // "Hold a chain reaction critical" was awarded on MOUNT: the rod slider
+  // defaulted to 50% inserted, k = 1.30 - 0.006 x 50 is exactly 1.000, that
+  // lands inside the critical band, and the effect wrote heldCritical with no
+  // interaction at all. The section also opened on a green tick, so the one
+  // thing it teaches — that holding k at 1 is a thing you do — was handed over
+  // before the reader touched anything. Every check here is on the arithmetic
+  // rather than on a remembered number, so retuning the model cannot quietly
+  // restore the free pass.
+  const num = (re, label) => {
+    const m = re.exec(SRC);
+    expect(m, 'not found: ' + label).toBeTruthy();
+    return parseFloat(m[1]);
+  };
+  const rodDefault = num(/typeof d\.rods === 'number' \? d\.rods : (\d+)/, 'rod default');
+  const kIntercept = num(/var kEff = ([\d.]+) - [\d.]+ \* rods/, 'k intercept');
+  const kSlope = num(/var kEff = [\d.]+ - ([\d.]+) \* rods/, 'k slope');
+  const kAt = (rods) => kIntercept - kSlope * rods;
+  const isCritical = (k) => k >= 0.995 && k <= 1.005;
+
+  it('does not open the chain-reaction section already critical', () => {
+    expect(isCritical(kAt(rodDefault)), `rods default ${rodDefault}% gives k=${kAt(rodDefault)}`).toBe(false);
+  });
+
+  it('still leaves criticality reachable, or the quest becomes impossible', () => {
+    // Over-correcting is the other way to break this.
+    const reachable = [];
+    for (let r = 0; r <= 100; r++) if (isCritical(kAt(r))) reachable.push(r);
+    expect(reachable.length, 'no rod position produces k = 1').toBeGreaterThan(0);
+  });
+
+  it('requires a rod movement before crediting the quest, whatever the default is', () => {
+    const effect = /if \(kState === 'critical'([^)]*)\) upd\(\{ heldCritical: true \}\)/.exec(SRC);
+    expect(effect, 'the heldCritical effect changed shape').toBeTruthy();
+    expect(effect[1], 'heldCritical is written without an interaction guard').toMatch(/d\.rodsMoved/);
+  });
+
+  it('sets that interaction flag from the control the learner actually moves', () => {
+    expect(SRC).toMatch(/upd\(\{ rods: v, rodsMoved: true \}\)/);
+  });
+
+  it('pays each XP award at most once', () => {
+    // The same class of bug one layer down, and the general form of it. The
+    // carbon-dating award sat behind an accuracy test but no PERSISTED flag,
+    // so "Reveal" with a good guess still in the box paid out on every press
+    // and the button became an XP tap. Two of the three awards in the file
+    // were already guarded correctly, which is the pattern this enforces on
+    // all of them rather than on the one that broke.
+    const calls = [...SRC.matchAll(/awardXP\(\s*'([^']+)'/g)];
+    expect(calls.length, 'no awardXP calls found — did the API change?').toBeGreaterThanOrEqual(3);
+    for (const c of calls) {
+      const before = SRC.slice(Math.max(0, c.index - 320), c.index);
+      expect(before, `awardXP('${c[1]}') has no "!d.<flag>" re-award guard above it`)
+        .toMatch(/!\s*d\.[A-Za-z0-9_]+/);
+    }
+  });
+});
+
 describe('safety, provenance, and mobile reading safeguards', () => {
   it('keeps official-instructions warnings beside every actionable model', () => {
     expect(SRC).toContain('Educational model — not emergency or medical instructions');

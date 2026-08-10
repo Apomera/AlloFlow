@@ -11930,7 +11930,19 @@
       "warn_architect_after_builder": "Runs after the Builder — plan arrives too late, so it is skipped",
       "warn_reviewer_before_builder": "Runs before the Builder — no code exists yet, so it is skipped",
       "warn_fixer_no_reviewer": "Needs the Reviewer — with no issue list there is nothing to fix",
-      "warn_fixer_before_reviewer": "Runs before the Reviewer — no issue list yet, so it is skipped"
+      "warn_fixer_before_reviewer": "Runs before the Reviewer — no issue list yet, so it is skipped",
+      "import_html": "📄 Import HTML",
+      "fix_these_errors": "🔧 Fix these",
+      "fix_these_errors_with_ai": "Fix these errors with AI",
+      "dismiss_errors": "Dismiss errors",
+      "toggle_changes_view": "Toggle changes view",
+      "show_what_changed": "Show what changed in the last step",
+      "no_earlier_version_yet": "No earlier version to compare against yet",
+      "what_changed_in_this_step": "± What changed in this step",
+      "version_x_of_y": "Version ",
+      "diff_too_large": "This step rewrote too much of the file to show line by line — ",
+      "no_line_changes": "No line-level changes.",
+      "diff_teaching_note": "Reading a diff is how developers review each other's work. Green lines were added, red lines were removed, and everything else stayed the same. If an AI edit changed more than you asked for, this is where you would spot it."
     },
     "aquarium": {
       "bony_fish_osteichthyes": "Bony Fish (Osteichthyes)",

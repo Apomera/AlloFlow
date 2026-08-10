@@ -277,6 +277,68 @@ describe('App Lab generation pipeline', () => {
   });
 });
 
+describe('App Lab version diff', () => {
+  // diffLines is a closure inside render(), so lift it out of the source.
+  function loadDiff() {
+    const start = source.indexOf('      function diffLines(before, after) {');
+    const end = source.indexOf('      var _showDiff = useState(false);');
+    expect(start, 'diffLines should be present').toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    // eslint-disable-next-line no-new-func
+    return new Function(source.slice(start, end) + '\n; return diffLines;')();
+  }
+
+  const BASE = ['<html>', '<head>', '<title>A</title>', '</head>', '<body>', '<h1>Hi</h1>', '</body>', '</html>'].join('\n');
+
+  it('reports nothing for identical documents', () => {
+    const d = loadDiff()(BASE, BASE);
+    expect(d.added).toBe(0);
+    expect(d.removed).toBe(0);
+    expect(d.rows).toHaveLength(0);
+  });
+
+  it('pins a changed line to the right 1-based line number', () => {
+    const d = loadDiff()(BASE, BASE.replace('<h1>Hi</h1>', '<h1>Hello</h1>'));
+    expect(d.added).toBe(1);
+    expect(d.removed).toBe(1);
+    const add = d.rows.find((r) => r.kind === 'add');
+    expect(add.text).toBe('<h1>Hello</h1>');
+    expect(add.line).toBe(6);
+  });
+
+  it('distinguishes a pure insertion from a pure deletion', () => {
+    const diff = loadDiff();
+    const ins = diff(BASE, BASE.replace('<h1>Hi</h1>', '<h1>Hi</h1>\n<p>New</p>'));
+    expect([ins.added, ins.removed]).toEqual([1, 0]);
+    const del = diff(BASE, BASE.replace('<h1>Hi</h1>\n', ''));
+    expect([del.added, del.removed]).toEqual([0, 1]);
+  });
+
+  it('collapses long unchanged runs but keeps surrounding context', () => {
+    const big = Array.from({ length: 200 }, (_, i) => 'line ' + i).join('\n');
+    const d = loadDiff()(big, big.replace('line 100', 'line 100 CHANGED'));
+    expect([d.added, d.removed]).toEqual([1, 1]);
+    expect(d.rows.length).toBeLessThan(20);
+    // Without context the changed lines have nothing to locate them by.
+    expect(d.rows.some((r) => r.kind === 'same')).toBe(true);
+  });
+
+  it('bails out instead of building a huge table on a total rewrite', () => {
+    const a = Array.from({ length: 1500 }, (_, i) => 'a' + i).join('\n');
+    const b = Array.from({ length: 1500 }, (_, i) => 'b' + i).join('\n');
+    const t0 = Date.now();
+    const d = loadDiff()(a, b);
+    expect(d.tooBig).toBe(true);
+    expect(Date.now() - t0).toBeLessThan(1000);
+  });
+
+  it('handles empty and null inputs without throwing', () => {
+    const diff = loadDiff();
+    expect(diff('', '').added).toBe(0);
+    expect(diff(null, 'x').added).toBe(1);
+  });
+});
+
 describe('App Lab preview frame', () => {
   function renderWithApp(app) {
     const tool = loadTool({
@@ -312,6 +374,17 @@ describe('App Lab preview frame', () => {
     expect(doc).toContain('<h1>hi</h1>');
   });
 
+  it('only trusts error messages posted by its own preview frame', () => {
+    // The token alone is not proof of origin: any page, extension, or other
+    // frame could post it. stem_tool_forge.js guards its channel the same way.
+    const listener = source.slice(source.indexOf('function onMessage(ev) {'));
+    const body = listener.slice(0, listener.indexOf('window.addEventListener'));
+    expect(body).toContain('ev.source !== frame.contentWindow');
+    // And a runaway app must not be able to stuff the parent UI.
+    expect(body).toContain('.slice(0, 500)');
+    expect(body).toContain('.slice(-5)');
+  });
+
   it('permits modals and forms while still withholding same-origin', () => {
     const frame = findAll(renderWithApp(APP), (n) => n.type === 'iframe' && n.props.srcDoc)[0];
     expect(frame.props.sandbox).toBe('allow-scripts allow-modals allow-forms');
@@ -326,6 +399,48 @@ describe('App Lab preview frame', () => {
     // the a11y tree, so the old markup was mouse-only.
     const labels = findAll(tree, (n) => n.type === 'label' && n.props.title === 'Import HTML file');
     expect(labels).toHaveLength(0);
+  });
+
+  it('offers a Fix-these-errors action once the preview reports an error', () => {
+    // The overlay only renders when iframeErrors is non-empty, which the shim
+    // cannot populate, so assert the handler and its wiring exist in source.
+    expect(source).toContain('var fixReportedErrors = useCallback(');
+    expect(source).toContain("onClick: fixReportedErrors");
+    // It must go through the same truncation guard as every other AI pass.
+    const fn = source.slice(source.indexOf('var fixReportedErrors = useCallback('));
+    const body = fn.slice(0, fn.indexOf('// ── Version diff'));
+    expect(body).toContain('tooBigForModel(html)');
+    expect(body).toContain('looksCompleteDoc(fixed)');
+    expect(body).toContain('pushHistory(fixed)');
+  });
+
+  it('reaches Import from the empty state, not just the loaded-app toolbar', () => {
+    const tool = loadTool({ alloAppLabTab: 'build' });
+    const tree = tool.render({
+      React: makeReact(), t: (k, fb) => fb, toolData: {}, setToolData: () => {},
+      callGemini: async () => '', addToast: () => {}, awardXP: () => {},
+      announceToSR: () => {}, gradeLevel: '5th Grade', icons: { ArrowLeft: 'x' },
+    });
+    // No app loaded: the toolbar is absent, so Import has to live elsewhere.
+    const importControls = findAll(tree, (n) => n.props && n.props['aria-label'] === 'Import HTML file');
+    expect(importControls.length).toBeGreaterThan(0);
+    // ...and the hidden input it drives must be rendered too, or the ref is null.
+    const fileInputs = findAll(tree, (n) => n.type === 'input' && n.props.type === 'file');
+    expect(fileInputs).toHaveLength(1);
+  });
+
+  it('gives the code editor a line-number gutter tied to the content', () => {
+    const app = ['<!DOCTYPE html>', '<html>', '<head></head>', '<body>', '<p>x</p>', '</body>', '</html>'].join('\n');
+    const tool = loadTool({
+      alloAppLabTab: 'build',
+      alloAppLabShowCode: '1',
+      alloAppLabDraft: JSON.stringify({ html: app, prompt: 'demo' }),
+    });
+    // showCode defaults false, so assert the gutter wiring in source instead.
+    expect(source).toContain('ref: gutterRef');
+    expect(source).toContain('gutterRef.current.scrollTop = ev.target.scrollTop');
+    expect(source).toContain('var MAX_GUTTER_LINES');
+    expect(tool).toBeTruthy();
   });
 
   it('gives the code playground the same modal-capable sandbox', () => {

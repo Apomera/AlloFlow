@@ -52,6 +52,16 @@ function LearningHubModal(props) {
     const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     const trap = { root: dialog };
     trapStack.push(trap);
+    const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "" });
+    let scrollLocked = false;
+    try {
+      scrollLocked = true;
+      if (++scrollLock.count === 1) {
+        scrollLock.prev = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+      }
+    } catch (_) {
+    }
     const isTopTrap = function() {
       return trapStack[trapStack.length - 1] === trap;
     };
@@ -96,6 +106,13 @@ function LearningHubModal(props) {
     document.addEventListener("keydown", onKeyDown);
     return function() {
       document.removeEventListener("keydown", onKeyDown);
+      try {
+        if (scrollLocked) {
+          scrollLock.count = Math.max(0, scrollLock.count - 1);
+          if (scrollLock.count === 0) document.body.style.overflow = scrollLock.prev;
+        }
+      } catch (_) {
+      }
       const wasTopTrap = isTopTrap();
       const trapIndex = trapStack.indexOf(trap);
       if (trapIndex !== -1) trapStack.splice(trapIndex, 1);

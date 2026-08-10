@@ -1,0 +1,87 @@
+name: Render trailer
+
+# The AlloFlow trailer is a Remotion project (trailer/). It CANNOT be rendered on
+# an arm64 Windows machine: Remotion ships a native Rust compositor with no
+# win32-arm64 build, and Chrome Headless Shell has no Windows/arm64 release
+# either. This workflow renders it on an x64 Linux runner instead.
+#
+# Manual trigger only — rendering ~3,380 frames at 1080p is a long job and should
+# not fire on every commit that touches the trailer.
+#
+# The finished MP4 lands as a build artifact. Download it, then upload it to the
+# AlloFlow Cloudflare origin at:
+#     alloflow-cdn.pages.dev/video/alloflow-trailer-1080p.mp4
+# which is the path the in-app video library already expects
+# (see VIDEO_CATALOG in view_video_library_source.jsx).
+
+on:
+  workflow_dispatch:
+    inputs:
+      composition:
+        description: Composition ID to render
+        default: AlloFlowTrailer
+        required: true
+      crf:
+        description: Quality (lower = better/larger; 18 is visually lossless, 23 is the h264 default)
+        default: "20"
+        required: true
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    defaults:
+      run:
+        working-directory: trailer
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: trailer/package-lock.json
+
+      # Chrome Headless Shell needs these shared libraries on a bare runner.
+      # Ubuntu 24.04 renamed several to the *t64 variants, so fall back to the
+      # older names rather than failing the whole job on one missing package.
+      - name: Install headless Chrome system libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libnss3 libdbus-1-3 libatk1.0-0t64 libatk-bridge2.0-0t64 \
+            libcups2t64 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 \
+            libgbm1 libxkbcommon0 libpango-1.0-0 libcairo2 libasound2t64 \
+          || sudo apt-get install -y \
+            libnss3 libdbus-1-3 libatk1.0-0 libatk-bridge2.0-0 \
+            libcups2 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 \
+            libgbm1 libxkbcommon0 libpango-1.0-0 libcairo2 libasound2
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check the trailer
+        run: npx tsc --noEmit
+
+      - name: Download Chrome Headless Shell
+        run: npx remotion browser ensure
+
+      - name: Render
+        run: |
+          npx remotion render \
+            "${{ inputs.composition }}" \
+            "out/alloflow-trailer-1080p.mp4" \
+            --codec=h264 \
+            --crf=${{ inputs.crf }} \
+            --log=info
+
+      - name: Report output size
+        run: ls -lh out/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: alloflow-trailer-1080p
+          path: trailer/out/alloflow-trailer-1080p.mp4
+          retention-days: 30
+          if-no-files-found: error

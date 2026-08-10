@@ -142,6 +142,108 @@ describe('Shielding', () => {
     expect(Math.LN2 / SHIELDS.find(s => s.id === 'lead').mu).toBeCloseTo(0.9, 1);
   });
 
+  // ── Neutrons ──────────────────────────────────────────────────────────
+  // This branch used to run exp(-0.1·t) for water and concrete and exp(-0.02·t)
+  // for everything else. Those coefficients were invented to make hydrogen win,
+  // and they got the right teaching answer for the wrong reason: the real
+  // fast-neutron removal cross-section of lead (0.118 cm⁻¹) is HIGHER than
+  // water's (0.103), and steel's is higher still. A student who looked the
+  // numbers up would have caught the tool out.
+  //
+  // Hydrogen wins on the second step, not the first, and that is now what the
+  // section says: removing a neutron from the fast group is not stopping it,
+  // and slowing one to thermal takes ~18 collisions with hydrogen against
+  // ~1,900 with lead. Both halves are asserted here.
+  describe('neutrons, where the folk rule and the numbers disagree', () => {
+    const nkXi = (() => {
+      const a = SRC.indexOf('function nkXi(');
+      expect(a, 'nkXi not found').toBeGreaterThan(-1);
+      const b = SRC.indexOf('\n  }', a);
+      return new Function(SRC.slice(a, b + 4) + '\nreturn nkXi;')();
+    })();
+    const SPAN = Math.log(2e6 / 0.025);
+    const collisions = (A) => SPAN / nkXi(A);
+    const sh = (id) => SHIELDS.find((s) => s.id === id);
+
+    it('derives the energy decrement from mass number, matching published xi', () => {
+      // xi = 1 + a·ln a/(1-a). Reference values from any reactor-physics text.
+      const ref = { 1: 1.0, 12: 0.158, 14: 0.136, 16: 0.120, 56: 0.0353, 207: 0.00961 };
+      for (const [A, x] of Object.entries(ref)) {
+        expect(nkXi(Number(A)), 'A=' + A).toBeCloseTo(x, 3);
+      }
+    });
+
+    it('spans 2 MeV down to thermal, and says so in the source', () => {
+      expect(SRC).toContain('Math.log(2e6 / 0.025)');
+      expect(SPAN).toBeCloseTo(18.2, 1);
+    });
+
+    it('needs ~18 collisions on hydrogen and ~1,900 on lead', () => {
+      expect(Math.round(collisions(1))).toBe(18);
+      expect(Math.round(collisions(12))).toBeGreaterThan(100);   // graphite, ~115
+      expect(Math.round(collisions(56))).toBeGreaterThan(450);   // iron, ~516
+      expect(Math.round(collisions(207))).toBeGreaterThan(1800); // lead, ~1890
+      expect(collisions(207) / collisions(1)).toBeGreaterThan(100);
+    });
+
+    it('uses published removal cross-sections, not invented ones', () => {
+      const ref = { water: 0.103, concrete: 0.089, steel: 0.158, lead: 0.118 };
+      for (const [id, v] of Object.entries(ref)) {
+        expect(sh(id).sigR, id).toBeCloseTo(v, 3);
+      }
+      expect(sh('air').sigR, 'air should be effectively transparent').toBeLessThan(1e-3);
+      // the fabricated coefficients are gone
+      expect(SRC).not.toMatch(/Math\.exp\(-0\.1 \* thick\)/);
+      expect(SRC).not.toMatch(/Math\.exp\(-0\.02 \* thick\)/);
+    });
+
+    it('lets lead and steel beat water per centimetre, because they do', () => {
+      // The assertion the old model would have failed. If someone "corrects"
+      // these back to make hydrogen win on removal, this is the tripwire.
+      expect(sh('lead').sigR).toBeGreaterThan(sh('water').sigR);
+      expect(sh('steel').sigR).toBeGreaterThan(sh('water').sigR);
+      expect(sh('steel').sigR).toBeGreaterThan(sh('lead').sigR);
+    });
+
+    it('assigns each shield the nucleus that actually does the moderating', () => {
+      expect(sh('water').modA).toBe(1);
+      expect(sh('concrete').modA).toBe(1);
+      expect(sh('steel').modA).toBe(56);
+      expect(sh('lead').modA).toBe(207);
+      for (const s of SHIELDS) expect(s.modName, s.id + ' has no named moderator').toBeTruthy();
+    });
+
+    it('no longer calls lead useless, and says what it actually fails at', () => {
+      expect(SRC).not.toMatch(/nearly useless/i);
+      expect(SRC).toMatch(/cannot slow them the rest of the way/i);
+      // the two caveats that keep the removal figure honest
+      expect(SRC).toMatch(/below about 1 MeV the inelastic scattering/i);
+      expect(SRC).toMatch(/defined assuming hydrogen sits behind the shield/i);
+    });
+
+    it('follows the capture through to the gamma it produces', () => {
+      expect(SRC).toMatch(/2\.2 MeV gamma/);
+      expect(SRC).toMatch(/boron to capture them without a penetrating photon/i);
+    });
+
+    it('shows both steps, and the right verdict for each material', () => {
+      const lead = renderTool('nuclearLab', { _nuclearLab: { radId: 'neutron', shieldId: 'lead', thick: 10 } });
+      expect(lead).toMatch(/Step 1 · fast neutrons removed per cm/);
+      expect(lead).toMatch(/Step 2 · collisions to slow one to thermal/);
+      expect(lead).toMatch(/1,890 on lead/);
+      expect(lead).toMatch(/is not a neutron shield/);
+
+      const water = renderTool('nuclearLab', { _nuclearLab: { radId: 'neutron', shieldId: 'water', thick: 10 } });
+      expect(water).toMatch(/18 collisions with hydrogen/);
+      expect(water).toMatch(/This is what a neutron shield is for/);
+
+      // 10 cm of lead removes MORE fast neutrons than 10 cm of water, and the
+      // page must not hide that to protect the moral of the story.
+      const pctOf = (html) => Number(/([\d.]+)% of the neutron gets through/.exec(html)[1]);
+      expect(pctOf(lead)).toBeLessThan(pctOf(water));
+    });
+  });
+
   it('models alpha range differently in air and solid material', () => {
     const nearAir = renderTool('nuclearLab', {
       _nuclearLab: { radId: 'alpha', shieldId: 'air', thick: 0.1 },
@@ -288,7 +390,7 @@ describe('Nuclear lab renders', () => {
   it('keeps the topic index in the same order as the sections it links to', () => {
     const registry = [...SRC.matchAll(/\{ id: '([a-z0-9]+)', grp: '[a-z]+', icon:/g)].map((m) => m[1]);
     const dom = [...SRC.matchAll(/^        sec\('([a-z0-9]+)'/gm)].map((m) => m[1]).filter((id) => id !== 'next');
-    expect(registry.length).toBe(19);
+    expect(registry.length).toBe(20);
     // Not a set comparison — order IS the contract, because the index prints
     // each topic's position as its section number.
     expect(dom).toEqual(registry);
@@ -1039,6 +1141,43 @@ describe('Question routes', () => {
   });
 });
 
+describe('The chain reaction is a task, not a display', () => {
+  it('opens shut down, with the job stated', () => {
+    const html = renderTool('nuclearLab', {});
+    expect(html).toContain('The core is shut down. Withdraw the rods until k reads exactly 1.000.');
+    expect(html).toMatch(/subcritical/);
+    expect(html).not.toMatch(/✓ k = 1\.000/);
+  });
+
+  it('confirms it once the learner finds k = 1', () => {
+    const html = renderTool('nuclearLab', { _nuclearLab: { rods: 50, rodsMoved: true } });
+    expect(html).toMatch(/✓ k = 1\.000/);
+    expect(html).not.toContain('The core is shut down.');
+  });
+
+  it('tells a screen-reader user what the rod position did', () => {
+    // A range input announces "50%", which says nothing about whether the core
+    // went critical — the one thing the control exists to find.
+    expect(SRC).toMatch(/announceToSR\('k is ' \+ k\.toFixed\(3\)/);
+    expect(SRC).toMatch(/if \(state !== kState && typeof announceToSR/);
+  });
+});
+
+describe('Carbon dating scores the guess it was given', () => {
+  it('reports the margin rather than only the answer', () => {
+    const html = renderTool('nuclearLab', { _nuclearLab: { c14Frac: 25 } });
+    expect(html, 'nothing revealed before the button is pressed').not.toMatch(/too old|too young|counts as dated/);
+    // 25% remaining is two half-lives, 11,460 years.
+    expect(SRC).toMatch(/counts as dated/);
+    expect(SRC).toMatch(/the clock is logarithmic/);
+  });
+
+  it('captures the guess at reveal time instead of re-scoring while it is edited', () => {
+    expect(SRC).toMatch(/setShownGuess\(isNaN\(g\) \? null : g\)/);
+    expect(SRC).toMatch(/setAgeShown\(false\); setShownGuess\(null\)/);
+  });
+});
+
 describe('Taking a route', () => {
   it('offers every route on first load', () => {
     const html = renderTool('nuclearLab', {});
@@ -1059,16 +1198,25 @@ describe('Taking a route', () => {
 
   it('still shows the section numbers, so a step is locatable in the document', () => {
     const html = renderTool('nuclearLab', { _nuclearLab: { nkPath: 'know' } });
-    expect(html).toMatch(/§12/);   // detect
+    expect(html).toMatch(/§13/);   // detect
     expect(html).toMatch(/§2/);    // dating
   });
 
-  it('hides nothing — every section is still rendered under a route', () => {
-    // The route filters the INDEX, not the document. A student who takes a
-    // route and then scrolls must still meet everything else.
+  it('renders the route steps and only the route steps', () => {
+    // A route is progressive disclosure, not just a reordered index: a student
+    // following one question sees a short coherent path instead of scrolling
+    // past eleven thousand pixels of everything else. This assertion USED to
+    // require the opposite ("the route filters the INDEX, not the document")
+    // and was left behind when the behaviour was deliberately changed; the
+    // filter itself is asserted in nuclearlab_consistency.test.js. Off-route
+    // sections must be absent from the DOM, not merely unlinked.
+    const route = NK_PATHS.find((r) => r.id === 'safe');
     const html = renderTool('nuclearLab', { _nuclearLab: { nkPath: 'safe' } });
-    for (const id of SECTION_IDS) {
-      expect(html, 'section ' + id + ' vanished under a route').toContain('id="nksec-' + id + '"');
+    for (const id of route.steps) {
+      expect(html, 'route step ' + id + ' is missing').toContain('id="nksec-' + id + '"');
+    }
+    for (const id of SECTION_IDS.filter((s) => !route.steps.includes(s))) {
+      expect(html, 'off-route section ' + id + ' should not render').not.toContain('id="nksec-' + id + '"');
     }
   });
 

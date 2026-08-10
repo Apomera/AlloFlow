@@ -8525,7 +8525,17 @@ const useFocusTrap = (ref, isOpen, onEscape) => {
     };
     document.addEventListener('keydown', handleKeyDown);
     const focusableElements = getFocusableElements();
-    try { (focusableElements[0] || root).focus(); } catch (_) {}
+    // Prefer an element the dialog explicitly nominates. Without this the trap
+    // always lands on focusableElements[0], which in DOM order is usually the
+    // "X" close button rendered in the corner — so the first Space/Enter after
+    // opening dismisses the dialog instead of typing. Opt-in via
+    // `data-autofocus`: dialogs that do not set it keep the old behaviour.
+    // React does not emit the `autofocus` attribute (it focuses imperatively),
+    // so `data-autofocus` is the reliable marker.
+    let initialFocus = null;
+    try { initialFocus = root.querySelector('[data-autofocus]'); } catch (_) {}
+    if (initialFocus && focusableElements.indexOf(initialFocus) === -1) initialFocus = null;
+    try { (initialFocus || focusableElements[0] || root).focus(); } catch (_) {}
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
       const wasTopTrap = isTopTrap();
@@ -46806,9 +46816,21 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             <div className={`absolute top-[20%] right-[10%] w-[30vw] h-[30vw] rounded-full blur-[80px] animate-pulse ${theme === 'dark' ? 'bg-blue-500/10 mix-blend-screen' : 'bg-blue-200/20 mix-blend-multiply'}`} style={{ animationDuration: '5s' }}></div>
         </div>
         )}
-        {colorOverlay !== 'none' && (
+        {/* Reading tint (Irlen-style). Portalled to <body> and fixed to the
+            viewport ON PURPOSE. Rendered inline it was `absolute inset-0 z-[60]`
+            inside .allo-docsuite, which measured 1280x480 of a 720px-tall
+            viewport (67% — the header strip untinted), sat below every modal,
+            toast (z-400), FAB stack (z-180) and the Launch Pad, and could never
+            cover anything portalled to <body>. A reading support has to cover
+            the whole visual field, chrome included, or it silently stops
+            working exactly where the student is looking.
+            pointer-events:none keeps it from intercepting any interaction, and
+            aria-hidden keeps it out of the accessibility tree. */}
+        {colorOverlay !== 'none' && typeof document !== 'undefined' && document.body && ReactDOM.createPortal(
             <div
-                className={`absolute inset-0 pointer-events-none z-[60] transition-colors duration-300 ${
+                aria-hidden="true"
+                data-allo-color-overlay={colorOverlay}
+                className={`fixed inset-0 pointer-events-none transition-colors duration-300 ${
                     theme !== 'contrast' ? (
                         colorOverlay === 'blue' ? 'bg-blue-200/30' :
                         colorOverlay === 'peach' ? 'bg-orange-200/30' :
@@ -46816,6 +46838,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     ) : ''
                 }`}
                 style={{
+                    // Above the Launch Pad (2147483000) and its language
+                    // switcher (2147483001), with headroom under the 32-bit max.
+                    zIndex: 2147483600,
                     backgroundColor: theme === 'contrast'
                         ? (colorOverlay === 'blue' ? 'rgba(0, 255, 255, 0.15)' :
                            colorOverlay === 'peach' ? 'rgba(255, 0, 255, 0.15)' :
@@ -46823,7 +46848,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         : undefined,
                     mixBlendMode: theme === 'light' ? 'multiply' : 'normal',
                 }}
-            />
+            />,
+            document.body
         )}
         <aside
             aria-label={t('sidebar.tools_header')}
@@ -51353,7 +51379,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 </h2>
                 <div className="mb-6">
                     <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{t('modals.save_project.filename_label')}</label>
-                    <input aria-label={t('common.modals_save_project_placeholder')}
+                    <input aria-label={t('common.modals_save_project_placeholder')} data-autofocus
                         type="text"
                         value={saveFileName}
                         onChange={(e) => setSaveFileName(e.target.value)}

@@ -16,3 +16,64 @@ code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
         monospace;
 }
+
+/*
+ * Touch-device affordances.
+ *
+ * Scoped to `pointer: coarse` so desktop layout is untouched: these rules only
+ * apply where the primary input is a finger.
+ *
+ * 1. iOS Safari zooms the whole page when a form control with a font under
+ *    16px receives focus, and does not zoom back out. Several controls in the
+ *    header use text-xs (12px) and text-[11px]. Raising the *rendered* font to
+ *    16px on touch is the only fix that does not break pinch zoom; the
+ *    alternative (maximum-scale=1 on the viewport meta) disables user zoom and
+ *    fails WCAG 1.4.4.
+ *
+ * 2. WCAG 2.5.5 asks for a 44px minimum target. Small icon buttons (p-1/p-1.5
+ *    around a 12px icon land at 32x32) are hard to hit accurately with a
+ *    thumb. min-height/min-width raises the hit area without changing the
+ *    icon, so the visual design holds.
+ */
+/*
+ * `!important` is load-bearing here, not laziness. These are element
+ * selectors (specificity 0,0,1) competing with Tailwind utilities like
+ * `text-xs` and `text-[11px]` (0,1,0), which win on specificity regardless of
+ * source order. Without it the font-size rule silently does nothing, which is
+ * exactly what happened on the first attempt: min-height applied, font-size
+ * did not. A touch-input floor has to beat arbitrary utility classes wherever
+ * they appear.
+ */
+@media (pointer: coarse) {
+    input:not([type='checkbox']):not([type='radio']),
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+
+    /*
+     * Height only, deliberately. A global `min-width: 44px` regressed the
+     * STEM Lab tile grid and reintroduced horizontal overflow: min-width
+     * forces elements to grow sideways, which is precisely what breaks a
+     * grid or a tight toolbar row on a narrow screen. min-height grows
+     * downward, where there is room to spare.
+     *
+     * Controls that are still too narrow need per-component padding rather
+     * than a global rule, since only the component knows what it can afford.
+     *
+     * Anchors are excluded entirely: inline prose links are exempt under
+     * WCAG 2.5.8 and sizing them would break text flow.
+     */
+    button,
+    [role='button'],
+    select {
+        min-height: 44px !important;
+    }
+
+    /* Inputs need the height but not the width: a full-width text field must
+       still be allowed to shrink inside a narrow row. */
+    input:not([type='checkbox']):not([type='radio']),
+    textarea {
+        min-height: 44px !important;
+    }
+}

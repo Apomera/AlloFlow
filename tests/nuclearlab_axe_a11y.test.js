@@ -107,11 +107,16 @@ describe('nuclearLab — axe audit of every reachable surface', () => {
     it(name + ' has no axe violations', async () => {
       const violations = await auditState(state, ctx);
       expect(violations, name + report(violations)).toEqual([]);
-    // Renders nineteen sections and runs a full axe scan over them. Roughly a
+    // Renders twenty sections and runs a full axe scan over them. Roughly a
     // second each in isolation, but vitest runs test FILES in parallel, and
     // under that contention the 5 s default started timing out fifteen of these
     // at once — which reads like a real accessibility failure and is not one.
-    }, 30000);
+    // Raised again from 30 s when the low-dose-risk section took the document
+    // from nineteen sections to twenty: every surface here re-renders the WHOLE
+    // document before scanning it, so each new section lengthens all 41 of
+    // them. If this starts timing out again the answer is not a bigger number
+    // — it is to render once per surface and share the tree.
+    }, 90000);
   }
 });
 
@@ -135,7 +140,7 @@ describe('nuclearLab — checks axe cannot make for us', () => {
         expect(Boolean(named), `${name}: unnamed ${el.tagName} — ${el.outerHTML.slice(0, 140)}`).toBe(true);
       }
     }
-  }, 60000);
+  }, 150000);
 
   it('no id is emitted twice on any surface', () => {
     for (const [name, state, ctx] of SURFACES) {
@@ -144,7 +149,7 @@ describe('nuclearLab — checks axe cannot make for us', () => {
       const dupes = ids.filter((v, i) => ids.indexOf(v) !== i);
       expect(dupes, `${name}: duplicate ids ${dupes.join(', ')}`).toEqual([]);
     }
-  }, 60000);
+  }, 150000);
 
   // Seventeen sections used to share exactly one heading element between them
   // (the tool title), so heading navigation — the primary way a screen reader
@@ -211,7 +216,7 @@ describe('nuclearLab — checks axe cannot make for us', () => {
         expect(label, `${name}: canvas label leaks a bad number`).not.toMatch(/NaN|Infinity|undefined/);
       }
     }
-  }, 60000);
+  }, 150000);
 
   it('exposes reactor telemetry as semantic text linked from the canvas', () => {
     host.innerHTML = renderTool('nuclearLab', {});
@@ -293,8 +298,21 @@ describe('nuclearLab — the index folds without stranding anyone', () => {
 
   it('still renders every section while the index is collapsed', () => {
     // Folding is navigation only. Nothing may become unreachable by scrolling.
-    const html = renderTool('nuclearLab', { _nuclearLab: { nkOpen: false, nkPath: 'know' } });
+    // No route here: a route is separately allowed to narrow the document to
+    // its own steps, and the original fixture set one, so this was really
+    // asserting that a route shows everything — which stopped being true when
+    // routes became progressive disclosure. Folding alone must hide nothing.
+    const html = renderTool('nuclearLab', { _nuclearLab: { nkOpen: false } });
     const ids = [...SRC.matchAll(/\{ id: '([a-z0-9]+)', grp: '[a-z]+', icon:/g)].map((m) => m[1]);
     for (const id of ids) expect(html, id + ' unreachable').toContain('id="nksec-' + id + '"');
+  });
+
+  it('still renders the route steps while the index is collapsed', () => {
+    // The same guarantee inside a route: folding must not cost the reader the
+    // steps the route is made of.
+    const html = renderTool('nuclearLab', { _nuclearLab: { nkOpen: false, nkPath: 'know' } });
+    for (const id of ['detect', 'dating', 'chain']) {
+      expect(html, id + ' unreachable while folded').toContain('id="nksec-' + id + '"');
+    }
   });
 });

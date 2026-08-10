@@ -3222,8 +3222,11 @@ return React.createElement("div", {
 
   ),
 
-  // ── Tab Navigation ──
-  React.createElement("section", { "data-titration-command": true, className: "relative overflow-hidden rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-cyan-950/70 via-slate-900 to-indigo-950/60 p-4 sm:p-5", "aria-labelledby": "titration-command-title" },
+  // ── Experiment command (Titrate only) ──
+  // Everything in here is the Titrate experiment's live state. See the note in pass 11:
+  // on Challenge it contradicted the graded mode's "no pH readout" rule, and on the
+  // other tabs it was stale. The per-tab hero band below carries the correct heading.
+  labTab === 'titrate' && React.createElement("section", { "data-titration-command": true, className: "relative overflow-hidden rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-cyan-950/70 via-slate-900 to-indigo-950/60 p-4 sm:p-5", "aria-labelledby": "titration-command-title" },
     React.createElement("div", { className: "absolute -right-5 -top-8 text-8xl opacity-[0.06]", "aria-hidden": true }, "🧪"),
     React.createElement("div", { className: "relative grid gap-4 lg:grid-cols-[1.1fr_.9fr]" },
       React.createElement("div", null,
@@ -4346,6 +4349,10 @@ return React.createElement("div", {
     };
     var setZoom = function (z) { upd('gZoom3d', Math.max(0.5, Math.min(2.6, z))); };
     BURETTE_GL.push({
+      // A still life — see pass 13. Nothing in this scene moves on its own, so the
+      // viewer must not re-arm rAF after each frame; it repaints on push, resize and
+      // on scrolling back into view, which covers orbit, zoom and every eye-height step.
+      static: true,
       sig: [Math.round(gEyeCm * 4), spec.id, Math.abs(parErr) <= BURETTE.TOLERANCE_ML,
             gVb.toFixed(2), gRecordedVb.toFixed(2)].join('|'),
       eyeCm: gEyeCm, contrast: !!(ctx && ctx.isContrast),
@@ -4981,6 +4988,7 @@ return React.createElement("div", {
       var bZoom = d.benchZoom || 1;
       var setBRot = function (y, x) { upd('benchRot', { rotY: y, rotX: Math.max(-40, Math.min(70, x)) }); };
       BENCH_GL.push({
+        static: true,                      // still life; see the burette push above
         sig: [benchSel, !!(ctx && ctx.isContrast)].join('|'),
         selected: benchSel, contrast: !!(ctx && ctx.isContrast),
         rotY: bRot.rotY, rotX: bRot.rotX, zoom: bZoom
@@ -5283,13 +5291,16 @@ return React.createElement("div", {
     // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
     // TITRATION CURVE animation
     // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-    React.createElement("div", { className: "mt-5 rounded-2xl border border-emerald-300 bg-white p-3 shadow-sm" },
+    // Dark tokens, matching the panels around it. This card used to be bg-white with an
+    // emerald-300 border — the only light surface in the tool, wrapped around a canvas
+    // that renders on near-black.
+    React.createElement("div", { className: "mt-5 rounded-2xl border border-emerald-800/40 bg-slate-900/40 p-3" },
       React.createElement("div", { className: "flex items-center justify-between mb-2" },
         React.createElement("div", { className: "flex items-center gap-2" },
           React.createElement("span", { className: "text-lg" }, "\uD83E\uDDEB"),
-          React.createElement("h4", { className: "text-sm font-bold text-emerald-700" }, __alloT('stem.titration.titration_curve_finding_the_equivalenc', "Titration Curve \u2014 Finding the equivalence point"))
+          React.createElement("h4", { className: "text-sm font-bold text-emerald-400" }, __alloT('stem.titration.titration_curve_finding_the_equivalenc', "Titration Curve \u2014 Finding the equivalence point"))
         ),
-        React.createElement("span", { className: "text-[10px] italic text-slate-500" }, __alloT('stem.titration.strong_acid_strong_base_ph_meter_shows', "strong acid + strong base \u00B7 pH meter shows the jump"))
+        React.createElement("span", { className: "text-[10px] italic text-slate-400" }, __alloT('stem.titration.strong_acid_strong_base_ph_meter_shows', "strong acid + strong base \u00B7 pH meter shows the jump"))
       ),
       React.createElement("div", { className: "rounded-xl overflow-hidden border border-emerald-200", style: { background: '#020210', aspectRatio: '16/6' } },
         React.createElement("canvas", {

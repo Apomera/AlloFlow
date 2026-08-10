@@ -29,7 +29,9 @@
     nrc: { label: 'NRC radiological-emergency guidance', url: 'https://www.nrc.gov/about-nrc/emerg-preparedness/in-radiological-emerg' },
     iter: { label: 'ITER 2024 baseline', url: 'https://www.iter.org/node/20687/new-baseline-prioritize-robust-start-exploitation' },
     nif: { label: 'LLNL NIF 2022 result', url: 'https://annual.llnl.gov/fy-2022/national-ignition-facility-2022' },
-    nuscale: { label: 'NuScale project termination', url: 'https://www.nuscalepower.com/press-releases/2023/utah-associated-municipal-power-systems-and-nuscale-power-agree-to-terminate-the-carbon-free-power-project' }
+    nuscale: { label: 'NuScale project termination', url: 'https://www.nuscalepower.com/press-releases/2023/utah-associated-municipal-power-systems-and-nuscale-power-agree-to-terminate-the-carbon-free-power-project' },
+    icrp103: { label: 'ICRP Publication 103 (2007)', url: 'https://www.icrp.org/publication.asp?id=ICRP%20Publication%20103' },
+    inworks: { label: 'INWORKS worker cohort, BMJ 2023', url: 'https://www.bmj.com/content/382/bmj-2022-074520' }
   };
 
   // ── Isotopes. Half-lives from the NNDC / IAEA chart of nuclides. ──
@@ -63,20 +65,62 @@
       danger: 'Passes right through you, so it irradiates every organ. This is the dominant external hazard after an accident.',
       colour: '#a78bfa', ionising: 1, penetration: 8 },
     { id: 'neutron', name: 'Neutron', symbol: 'n', what: 'A free neutron, released in fission. Uncharged, so it ignores electrons entirely.',
-      stops: 'Water, concrete or polyethylene — anything full of hydrogen. Lead is nearly useless.',
+      stops: 'Water, concrete or polyethylene — anything full of hydrogen. Lead knocks fast neutrons down but cannot slow them the rest of the way, so on its own it does not finish the job.',
       range: 'Hundreds of metres of air',
       danger: 'Very damaging, and it makes other materials radioactive by being absorbed. Mostly a concern inside an operating reactor.',
       colour: '#34d399', ionising: 4, penetration: 9 }
   ];
 
   // Linear attenuation coefficients for 1 MeV gamma, cm^-1 (NIST XCOM).
+  //
+  // sigR is the fast-neutron macroscopic REMOVAL cross-section, cm^-1, for a
+  // fission spectrum (Rockwell, Reactor Shielding Design Manual; Chilton,
+  // Shultz & Faw). It is a different quantity from mu and it does not behave
+  // the way the folk rule predicts: per centimetre, steel and lead remove fast
+  // neutrons BETTER than water does. The neutron branch used to paper over
+  // that with a made-up 0.02 for every non-hydrogenous material, which got the
+  // right teaching answer for the wrong reason and would not survive a student
+  // looking the numbers up.
+  //
+  // The real reason hydrogen wins is the SECOND step. Removing a neutron from
+  // the fast group is not stopping it; it has to be slowed all the way to
+  // thermal energy before anything will reliably capture it, and how fast that
+  // happens depends on what it is bouncing off. modA is the mass number of the
+  // nucleus doing that slowing, and the collision count is derived from it
+  // below rather than quoted. Two caveats the tool states out loud rather than
+  // hiding: removal cross-sections are DEFINED for a shield with hydrogenous
+  // material behind it, so a bare lead slab does worse than its sigR suggests;
+  // and below roughly 1 MeV lead stops removing neutrons almost entirely,
+  // because inelastic scattering has a threshold.
   var SHIELDS = [
-    { id: 'air', name: 'Air', mu: 0.0000807, note: 'Effectively transparent. This is why distance, not shielding, is the first line of defence.' },
-    { id: 'water', name: 'Water', mu: 0.0707, note: 'A spent-fuel pool is deliberately deep: several metres of water bring the dose at the surface down to background.' },
-    { id: 'concrete', name: 'Concrete', mu: 0.149, note: 'Cheap, structural, and works on both gamma and neutrons. Reactor biological shields are metres thick.' },
-    { id: 'steel', name: 'Steel', mu: 0.470, note: 'Dense and strong. Used where a shield also has to hold pressure.' },
-    { id: 'lead', name: 'Lead', mu: 0.771, note: 'The densest practical shield. Thin lead does what thick concrete does — which is why aprons are lead, not concrete.' }
+    { id: 'air', name: 'Air', mu: 0.0000807, sigR: 0.00004, modA: 14, modName: 'nitrogen',
+      note: 'Effectively transparent. This is why distance, not shielding, is the first line of defence.' },
+    { id: 'water', name: 'Water', mu: 0.0707, sigR: 0.103, modA: 1, modName: 'hydrogen',
+      note: 'A spent-fuel pool is deliberately deep: several metres of water bring the dose at the surface down to background.' },
+    { id: 'concrete', name: 'Concrete', mu: 0.149, sigR: 0.089, modA: 1, modName: 'hydrogen',
+      note: 'Cheap, structural, and works on both gamma and neutrons. Reactor biological shields are metres thick.' },
+    { id: 'steel', name: 'Steel', mu: 0.470, sigR: 0.158, modA: 56, modName: 'iron',
+      note: 'Dense and strong. Used where a shield also has to hold pressure.' },
+    { id: 'lead', name: 'Lead', mu: 0.771, sigR: 0.118, modA: 207, modName: 'lead',
+      note: 'The densest practical shield. Thin lead does what thick concrete does — which is why aprons are lead, not concrete.' }
   ];
+
+  // Average logarithmic energy decrement: the mean fractional step down in
+  // ln(E) a neutron takes per elastic collision. Pure kinematics of a billiard
+  // ball hitting a heavier one, so it follows from the mass number alone.
+  //   xi = 1 + a·ln(a)/(1-a),  a = ((A-1)/(A+1))²
+  // Hydrogen is the special case: a = 0, and a head-on hit can take ALL of the
+  // neutron's energy, which no heavier nucleus can do.
+  function nkXi(A) {
+    if (A <= 1) return 1;
+    var a = Math.pow((A - 1) / (A + 1), 2);
+    return 1 + a * Math.log(a) / (1 - a);
+  }
+  // Collisions to take a 2 MeV fission neutron down to thermal (0.025 eV).
+  // Comes out at 18 for hydrogen and about 1,900 for lead — the two-orders-of-
+  // magnitude gap that is the actual reason a neutron shield is made of water.
+  var NK_THERMAL_SPAN = Math.log(2e6 / 0.025);
+  function nkCollisionsToThermal(A) { return NK_THERMAL_SPAN / nkXi(A); }
 
   // ── Dose comparisons, in millisieverts. Sources: UNSCEAR 2008/2020,
   //    ICRP 103, US NCRP 160, PHE/UKHSA. ──
@@ -96,6 +140,93 @@
     { name: 'Highest Chernobyl responder doses', mSv: 16000, note: 'The firefighters on the roof. 28 died of acute radiation syndrome within months.' }
   ];
 
+
+  // ── How risky is a SMALL dose? ─────────────────────────────────────────
+  // The dose ladder ends by saying the science below about 100 mSv is
+  // unsettled, and then stops. That is the honest place to stop only if the
+  // reader has no further use for the question — and almost every nuclear
+  // number anyone argues about is downstream of it. The 1 mSv public limit,
+  // the 20 mSv worker limit, ALARA, the case for evacuating and the case
+  // against it, and BOTH ends of the Chernobyl death range this tool already
+  // calls disputed are the same arithmetic run with different assumptions.
+  //
+  // So this section does not settle it, because it is not settled. It shows
+  // the arithmetic, runs it under each model, and then shows why the argument
+  // does not resolve: the study needed to measure a small dose directly is
+  // larger than any cohort that has ever existed, and it grows as 1/dose².
+  //
+  // Coefficients are the detriment-adjusted nominal risk coefficients of ICRP
+  // Publication 103 (2007), Table 1 — cancer, whole population, 5.5% per
+  // sievert. ICRP reaches that figure by HALVING the slope measured in the
+  // atomic-bomb survivors, a dose and dose-rate effectiveness factor of 2, so
+  // the undiscounted reading of the same data is about 11% per sievert. Both
+  // are offered here, because which one holds at low dose rate IS the
+  // argument, and a tool that shows only one has taken a side by omission.
+  var RISK_MODELS = [
+    { id: 'icrp', name: 'Linear no-threshold', short: 'LNT (ICRP)', coeff: 0.055, threshold: 0, colour: '#a78bfa',
+      who: 'ICRP, the US NRC, the EPA, and every national regulator. Every dose limit in this tool comes from it.',
+      says: 'Risk is proportional to dose all the way down to zero, with no safe threshold. Half the dose, half the risk — never none.',
+      forIt: 'It fits the atomic-bomb survivor data well above 100 mSv, it is simple to administer, and it errs in the direction that protects people. The pooled study of over 300,000 nuclear workers exposed slowly across whole careers (INWORKS) finds a dose-response consistent with a straight line rather than with a threshold.',
+      against: 'Below about 100 mSv it is an extrapolation, not a measurement. It is routinely applied several orders of magnitude outside the range where anyone has tested it.' },
+    { id: 'direct', name: 'Linear, with no low-dose-rate discount', short: 'Linear, no discount', coeff: 0.11, threshold: 0, colour: '#f87171',
+      who: 'No regulator, but it is the reading a number of epidemiologists defend.',
+      says: 'The same straight line without ICRP\'s factor-of-two discount for dose delivered slowly. Exactly twice the risk of the row above, at every dose.',
+      forIt: 'That discount is a judgement call, not a measurement. Studies of workers who accumulated their dose slowly have not found the reduction it assumes.',
+      against: 'Radiobiology gives real reasons to expect slow dose to do less harm: repair machinery has time to work between hits, and a dose spread over a career is not the same insult as the same dose in one second.' },
+    { id: 'threshold', name: 'Threshold at 100 mSv', short: 'Threshold', coeff: 0.055, threshold: 100, colour: '#fbbf24',
+      who: 'No major body uses it to set limits. It has genuine support among some radiobiologists.',
+      says: 'Below the lowest dose at which an effect has ever been measured, the risk is zero — repair clears the damage completely.',
+      forIt: 'Cells demonstrably repair radiation damage, and the body carries a very large natural rate of DNA damage from ordinary metabolism that it deals with continuously.',
+      against: 'No threshold dose has ever been demonstrated; 100 mSv is where measurement runs out, not where an effect was shown to stop. "We cannot detect it" and "it is zero" are different claims, and this model treats them as one.' },
+    { id: 'hormesis', name: 'Hormesis', short: 'Hormesis', coeff: null, threshold: 0, colour: '#34d399',
+      who: 'A minority position. No health body adopts it, and none of the death projections quoted in public debate are built on it.',
+      says: 'Small doses are net BENEFICIAL, because they stimulate repair and immune response by more than they damage.',
+      forIt: 'Adaptive response is real and reproducible in the laboratory: a small priming dose measurably reduces the damage a later large one does.',
+      against: 'It has no agreed dose-response coefficient, so there is nothing to multiply a population by — which is why this row returns NO NUMBER rather than a small one. That is the honest output, and it is also the model\'s central weakness: a model that cannot produce a falsifiable population prediction cannot be checked against one.' }
+  ];
+
+  // people × dose each. The last two exist to be compared: identical
+  // arithmetic, and only one of the answers means anything.
+  var COLLECTIVE_CASES = [
+    { id: 'ct', name: 'One person, one CT of the abdomen', people: 1, mSv: 10, colour: '#fbbf24',
+      note: 'A single identifiable person and a dose a hundred times their daily background. This is the scale the models were built to talk about, and the number that comes out is a genuine, if small, personal risk to weigh against the reason for the scan.' },
+    { id: 'liquidators', name: '530,000 Chernobyl recovery workers, 120 mSv each', people: 530000, mSv: 120, colour: '#f87171',
+      note: 'The case where the arithmetic earns its keep — and the check on it. UNSCEAR puts the average dose to the recovery operation workers at roughly 120 mSv, which is above the line where excess cancer has actually been observed. Run it and you get about three and a half thousand; the Chernobyl Forum\'s published projection for the most exposed groups is around four thousand. The same calculation, on the same population, lands where the experts landed. Keep that in mind for the rows further down, where it does not.' },
+    { id: 'crew', name: '100,000 aircrew, 3 mSv a year for 20 years', people: 100000, mSv: 60, colour: '#22d3ee',
+      note: 'A defensible use of the arithmetic. These are monitored people with individually meaningful doses, classed as radiation workers in much of Europe for exactly this reason, and the projection is used to decide rostering and dose tracking rather than to count bodies.' },
+    { id: 'city', name: 'A city of 1 million, 1 mSv each after a release', people: 1000000, mSv: 1, colour: '#fb923c',
+      note: 'The emergency-planning case. One millisievert each is small individually and large collectively, and this is exactly the calculation an authority runs to compare sheltering against evacuating. Treat the answer as a planning quantity for comparing OPTIONS, not as a prediction of identifiable deaths.' },
+    { id: 'europe', name: '500 million people, 0.05 mSv each', people: 500000000, mSv: 0.05, colour: '#f472b6',
+      note: 'The shape of the Europe-wide Chernobyl calculation, and the reason the published projections range so widely. A dose of 0.05 mSv is well under the amount by which natural background differs between one town and the next — so the model is being asked about a difference nobody could detect, across a population nobody could follow.' },
+    { id: 'banana', name: 'Everyone on Earth eats a banana a day for a year', people: 8000000000, mSv: 0.0365, colour: '#a3e635',
+      note: 'The reductio, and it is not a joke — the arithmetic is identical to the row above it. The true answer is zero for TWO independent reasons: the calculation is outside any range the model was validated in, and your body holds potassium at a set point, so eating more of it does not raise your potassium-40 burden at all. Any method that returns thousands of deaths here is not a method you can trust in the row above.' }
+  ];
+
+  function nkProjected(model, people, mSvEach) {
+    if (!model || model.coeff == null) return null;                 // hormesis: no coefficient, no number
+    if (model.threshold && mSvEach < model.threshold) return 0;
+    return people * (mSvEach / 1000) * model.coeff;
+  }
+
+  // ── Why the argument does not resolve ──────────────────────────────────
+  // Not "scientists disagree", which explains nothing. To SEE an excess you
+  // need an exposed cohort and a matched control group large enough that a
+  // difference this small is not noise, and ordinary cancer is common: about a
+  // quarter of people die of one regardless. Standard two-proportion sizing at
+  // 5% significance and 80% power gives the number per group, and because the
+  // excess enters squared in the denominator, the requirement grows as the
+  // INVERSE SQUARE of the dose. Ten times smaller dose, a hundred times the
+  // people. That single fact is the whole reason the low-dose question stays
+  // open, and it is arithmetic a student can check.
+  var NK_BASE_CANCER = 0.25;     // lifetime cancer mortality, order of 1 in 4
+  var NK_Z_ALPHA = 1.959964;     // two-sided, alpha = 0.05
+  var NK_Z_BETA = 0.8416212;     // 80% power
+  function nkCohortNeeded(mSv, coeff) {
+    var excess = (mSv / 1000) * (coeff == null ? 0.055 : coeff);
+    if (!(excess > 0)) return Infinity;
+    var p1 = NK_BASE_CANCER, p2 = Math.min(0.999, p1 + excess);
+    return (Math.pow(NK_Z_ALPHA + NK_Z_BETA, 2) * (p1 * (1 - p1) + p2 * (1 - p2))) / Math.pow(p2 - p1, 2);
+  }
 
   // ── The uranium-238 decay series, the full 14 steps to stable lead-206.
   //    Half-lives from the NNDC chart of nuclides. This chain is the answer to
@@ -400,7 +531,7 @@
       note: 'The case where biology does not rescue you. An alpha emitter that lodges in bone and stays for fifty years is, for a human lifetime, permanent — so the intake limits are correspondingly tiny. Intact skin blocks most alpha radiation, but contamination can still reach the eye or an open wound; inhaling or swallowing plutonium is the dominant hazard.' }
   ];
 
-  // ── Time, distance, shielding. Sections 5 and 12 cover two of the three
+  // ── Time, distance, shielding. Sections 5 and 13 cover two of the three
   //    levers and the tool never names the third, which is the cheapest and
   //    the one an actual radiation worker reaches for first.
   //
@@ -460,7 +591,7 @@
       note: 'A sealed 1-curie source in a steel housing on a production line, measuring how thick the sheet passing under it is. Perfectly safe shuttered; the accidents happen when a source is left unshuttered and someone works next to it not knowing.' },
     { id: 'co60', name: 'A sterilisation source', nuclide: 'Co-60', gbq: 37,
       lines: [[1.1732, 0.9985], [1.3325, 0.9998]], colour: '#f87171',
-      note: 'Same activity in becquerels as the gauge above and four times the dose rate, because cobalt emits two hard gammas per decay rather than one soft one — the becquerel-versus-dose distinction from section 12, now in units that matter. A real irradiator holds tens of thousands of times this, behind metres of concrete.' }
+      note: 'Same activity in becquerels as the gauge above and four times the dose rate, because cobalt emits two hard gammas per decay rather than one soft one — the becquerel-versus-dose distinction from section 13, now in units that matter. A real irradiator holds tens of thousands of times this, behind metres of concrete.' }
   ];
   // Where the numbers land, for the stay-time readout.
   var DOSE_LIMITS = [
@@ -757,7 +888,7 @@
   window.StemLab.registerTool('nuclearLab', {
     icon: '☢️',
     label: 'Nuclear & Radiation Lab',
-    desc: 'Half-life and decay you can run, what actually stops alpha, beta and gamma, how fission and fusion work, radiation doses on a scale you can read, a simulated Geiger counter that shows why one short count lies, the three accidents in honest numbers, what to do with the waste, and where small modular reactors really stand.',
+    desc: 'Half-life and decay you can run, what actually stops alpha, beta and gamma, how fission and fusion work, radiation doses on a scale you can read, a simulated Geiger counter that shows why one short count lies, why the same accident gets two death tolls a hundredfold apart, the three accidents in honest numbers, what to do with the waste, and where small modular reactors really stand.',
     color: 'violet',
     category: 'science',
     aliases: ['nuclear', 'radiation', 'radioactive', 'radioactivity', 'half-life', 'halflife', 'isotope', 'isotopes',
@@ -774,7 +905,12 @@
       'time distance shielding', 'ALARA', 'stay time', 'dose rate', 'gamma constant', 'half-value layer',
       'sealed source', 'radiation protection', 'radiography source', 'occupational dose',
       'shelter in place', 'evacuation', 'protective action', 'emergency planning', 'plume', 'PAG',
-      'dose reduction factor', 'shielding factor', 'exclusion zone'],
+      'dose reduction factor', 'shielding factor', 'exclusion zone',
+      'linear no-threshold', 'LNT', 'hormesis', 'threshold model', 'low-dose risk', 'radiation risk',
+      'collective dose', 'person-sievert', 'man-sievert', 'risk coefficient', 'DDREF', 'radiation epidemiology',
+      'statistical power', 'sample size', 'INWORKS', 'atomic bomb survivors', 'is a small dose dangerous',
+      'neutron shielding', 'moderator', 'moderation', 'removal cross-section', 'thermal neutrons', 'thermalise',
+      'elastic scattering', 'polyethylene', 'boron', 'capture gamma', 'why lead does not stop neutrons'],
 
     questHooks: [
       { id: 'nk_decay', label: 'Run three isotopes through their half-lives', icon: '⏳',
@@ -797,6 +933,10 @@
         check: function (d) { return !!(d && d.doseEstimated); } },
       { id: 'nk_dose', label: 'Compare five doses on the ladder', icon: '📏',
         check: function (d) { return !!(d && (d.dosesSeen || []).length >= 5); } },
+      { id: 'nk_lowdose', label: 'Run one exposure through three risk models', icon: '📉',
+        check: function (d) { return !!(d && (d.riskModelsTried || []).length >= 3); } },
+      { id: 'nk_collective', label: 'Find where the collective-dose sum stops meaning anything', icon: '➗',
+        check: function (d) { return !!(d && (d.ldCasesTried || []).length >= 3); } },
       { id: 'nk_weighting', label: 'Weight the same joule three ways', icon: '⚖️',
         check: function (d) { return !!(d && d.doseWeighted && (d.wrTried || []).length >= 3); } },
       { id: 'nk_biohalf', label: 'Compare four nuclides inside a body', icon: '🫀',
@@ -845,6 +985,11 @@
       var ageGuess = stGuess[0], setAgeGuess = stGuess[1];
       var stShown = React.useState(false);
       var ageShown = stShown[0], setAgeShown = stShown[1];
+      // The guess AS IT WAS when Reveal was pressed. Reading the live input
+      // instead would let the margin re-score itself while the reader edits the
+      // box, which turns a result into a hint.
+      var stShownGuess = React.useState(null);
+      var shownGuess = stShownGuess[0], setShownGuess = stShownGuess[1];
 
       var d = (ctx.toolData && ctx.toolData._nuclearLab) || {};
       function upd(patch) {
@@ -912,22 +1057,38 @@
       var alphaRangeCm = shieldId === 'air' ? 4 : 0.01;
       var alphaStopped = thick >= alphaRangeCm;
       var betaStopped = (shieldId === 'air' ? thick > 300 : thick > 0.3);
-      var neutronThrough = shieldId === 'water' || shieldId === 'concrete'
-        ? Math.exp(-0.1 * thick) * 100
-        : Math.exp(-0.02 * thick) * 100;
+      // Fast-neutron removal, from the published cross-section rather than a
+      // coefficient chosen to make hydrogen look good. This number now says
+      // lead beats water per centimetre, which is true and is the start of the
+      // argument rather than the end of it — the collision count below is the
+      // other half.
+      var neutronThrough = Math.exp(-shield.sigR * thick) * 100;
+      var neutronCollisions = nkCollisionsToThermal(shield.modA);
+      var neutronHydrogenous = shield.modA <= 1;
 
       // ── 4. chain reaction ──
-      var rods = typeof d.rods === 'number' ? d.rods : 50;             // percent inserted
-      // k rises as rods withdraw. Tuned so critical (k=1) sits near 50%.
+      // Start SHUT DOWN, not critical. This defaulted to 50% inserted, which is
+      // exactly k = 1.000 — so the section opened on a green "✅ Critical", and
+      // the effect below handed out the "Hold a chain reaction critical" quest
+      // on mount to anyone who scrolled past it. Both halves of that were
+      // wrong: the one thing this section is about is that holding k at exactly
+      // 1 is something you DO, and it was being given away before the reader
+      // touched the slider. 65% in is a real shutdown state to start up from.
+      var rods = typeof d.rods === 'number' ? d.rods : 65;             // percent inserted
+      // k rises as rods withdraw. Tuned so critical (k=1) sits at 50%.
       var kEff = 1.30 - 0.006 * rods;
       var kState = kEff < 0.995 ? 'subcritical' : (kEff > 1.005 ? 'supercritical' : 'critical');
       var gens = [];
       var pop = 100;
       for (var g = 0; g < 12; g++) { gens.push(pop); pop = pop * kEff; }
 
+      // Credit requires BOTH a critical core and a rod movement that got it
+      // there. The second condition is not redundant with the new default — it
+      // is what stops a future change to that default from silently restoring
+      // the free pass, which is how this got here in the first place.
       React.useEffect(function () {
-        if (kState === 'critical' && !d.heldCritical) upd({ heldCritical: true });
-      }, [kState, d.heldCritical]);
+        if (kState === 'critical' && d.rodsMoved && !d.heldCritical) upd({ heldCritical: true });
+      }, [kState, d.rodsMoved, d.heldCritical]);
 
       // ── 5. counting ──
       var cdSrcId = d.cdSrc || 'cs137';
@@ -1663,7 +1824,7 @@
 
         // xenon-135: builds from iodine when power drops, burns out at high flux
         var phi = s.power / 100;
-        var prodI = phi, lossI = RX_LAM_I * s.iod * 3600 / 3600;
+        var prodI = phi;
         s.iod += (prodI * 0.0000642 - RX_LAM_I * s.iod) * dt * 60;
         s.xe += (RX_LAM_I * s.iod + 0.0000032 * phi - RX_LAM_X * s.xe - 0.0000181 * phi * s.xe) * dt * 60;
         s.xe = Math.max(0.05, Math.min(6, s.xe));
@@ -1999,6 +2160,62 @@
         { name: 'Medical imaging', v: dsMedical, colour: '#fbbf24' }
       ];
 
+      // ── low-dose risk: the same exposure under four models ──
+      var ldModel = RISK_MODELS.filter(function (m) { return m.id === d.ldModel; })[0] || RISK_MODELS[0];
+      var ldCase = COLLECTIVE_CASES.filter(function (c) { return c.id === d.ldCase; })[0]
+        || COLLECTIVE_CASES.filter(function (c) { return c.id === 'city'; })[0];
+      var ldDeaths = nkProjected(ldModel, ldCase.people, ldCase.mSv);
+      var ldPersonSv = ldCase.people * ldCase.mSv / 1000;
+      // Per-person lifetime risk under this model, as a 1-in-N. Threshold model
+      // returns 0 below its cut, which has no reciprocal — say so rather than
+      // rendering Infinity.
+      var ldPerPerson = ldModel.coeff == null
+        ? null
+        : ((ldModel.threshold && ldCase.mSv < ldModel.threshold) ? 0 : (ldCase.mSv / 1000) * ldModel.coeff);
+      // Three tiers, keyed on the INDIVIDUAL dose, because that is what decides
+      // whether the sum means anything — not how big the population is.
+      var ldTier = ldCase.mSv >= 100
+        ? { id: 'measured', colour: '#f87171', label: 'Measured territory',
+            what: 'At and above 100 mSv the excess has actually been observed in survivor studies, so the projection is an estimate of something real. Look at what the four models do here: the threshold model, which returns zero at every dose below this line, now returns the SAME answer as the regulator\'s, and only the dose-rate discount still separates them — a factor of two. The models agree wherever anyone can check them. They diverge by a hundredfold only where nobody can. That is the whole shape of this argument.' }
+        : (ldCase.mSv >= 1
+          ? { id: 'planning', colour: '#fbbf24', label: 'A planning quantity, not a body count',
+              what: 'Between about 1 and 100 mSv the number is below what epidemiology can resolve, but the individual doses are still large enough to be worth managing. Use it to COMPARE options — shelter against evacuate, scan against no scan — and not as a prediction of identifiable deaths.' }
+          : { id: 'improper', colour: '#e879f9', label: 'Outside what the sum can support',
+              what: 'The individual dose here is smaller than the amount natural background varies between one town and the next. ICRP — the body that publishes the coefficient being used — states directly that computing numbers of deaths by multiplying trivial individual doses across large populations should be avoided. The arithmetic still works; that is exactly the problem.' });
+
+      // ── why it does not resolve: the cohort you would need ──
+      // Log slider, 0.1 to 100 mSv in ten steps per decade, because the point
+      // is a power law and a linear axis would hide two of its three decades.
+      var ldPowIdx = typeof d.ldPow === 'number' ? d.ldPow : 20;
+      var ldPowMSv = 0.1 * Math.pow(10, ldPowIdx / 10);
+      var ldCohort = nkCohortNeeded(ldPowMSv, 0.055);
+      // Population counts here run from 1 to eight billion, and a raw
+      // toLocaleString at the top of that range is a wall of digits nobody
+      // reads. Words above a million, digits below.
+      var ldBig = function (n) {
+        if (n == null) return '—';
+        if (!isFinite(n)) return 'more people than exist';
+        if (n >= 1e9) return nkFmt(n / 1e9, 2) + ' billion';
+        if (n >= 1e6) return nkFmt(n / 1e6, 1) + ' million';
+        if (n >= 1000) return nkFmt(n, 0);
+        if (n >= 1) return nkFmt(n, 1);
+        if (n > 0) return nkFmt(n, 4);
+        return '0';
+      };
+      // NOT nkFmt. nkFmt ends in toLocaleString, which caps at three fraction
+      // digits regardless of the rounding it just did, so the banana case
+      // printed "0.037 mSv" beside a total computed from 0.0365 — and a reader
+      // who multiplied the two numbers on screen got 16,280 against the 16,060
+      // displayed. The dose is the one figure here that has to be quotable.
+      var ldDose = function (v) {
+        return v < 0.1 ? String(Number(v.toFixed(4))) : nkFmt(v, 2);
+      };
+      var ldOneIn = function (risk) {
+        if (risk == null) return 'no number';
+        if (!(risk > 0)) return 'zero, under this model';
+        return '1 in ' + nkFmt(Math.round(1 / risk), 0);
+      };
+
       // ── shared UI ──
       // Accent in, readable text colour out. Pass-through for anything not in
       // the table (rgba strings, already-theme-aware ternaries, '#0b1020'),
@@ -2141,13 +2358,14 @@
         { id: 'dating', grp: 'decay', icon: '🦴', label: 'Carbon dating', kw: 'carbon-14 c14 archaeology age sample radiocarbon 5730 years old' },
         { id: 'chain', grp: 'decay', icon: '⛓️', label: 'Uranium decay chain', kw: 'u238 lead radon basement alpha beta daughter series progeny' },
         { id: 'enrichment', grp: 'reactors', icon: '🔢', label: 'Enrichment', kw: 'u235 percent centrifuge weapons grade reactor fuel not a bomb proliferation' },
-        { id: 'shielding', grp: 'radiation', icon: '🛡️', label: 'Shielding', kw: 'alpha beta gamma neutron lead concrete paper stopping attenuation' },
+        { id: 'shielding', grp: 'radiation', icon: '🛡️', label: 'Shielding', kw: 'alpha beta gamma neutron lead concrete paper stopping attenuation moderation moderator removal cross-section thermalise thermalize elastic scattering hydrogen polyethylene boron capture gamma layered shield half-value layer why lead does not stop neutrons' },
         { id: 'criticality', grp: 'reactors', icon: '⚛️', label: 'Chain reaction', kw: 'critical subcritical supercritical k neutron multiplication moderator control' },
         { id: 'binding', grp: 'decay', icon: '⛰️', label: 'Binding energy', kw: 'curve iron-56 fission fusion mass defect e=mc2 nucleon why energy' },
         { id: 'weighting', grp: 'radiation', icon: '🎚️', label: 'Gray vs sievert', kw: 'absorbed equivalent effective dose weighting factor icrp 103 gray gy sievert sv wr wt tissue organ why alpha is worse units' },
         { id: 'biohalf', grp: 'radiation', icon: '🫀', label: 'Half-life inside a body', kw: 'biological effective half-life excretion internal contamination caesium potassium iodide ki tablets thyroid strontium bone plutonium ingestion' },
         { id: 'mydose', grp: 'radiation', icon: '🧮', label: 'Your annual dose', kw: 'personal estimate radon flights scans altitude millisievert msv background' },
         { id: 'doseladder', grp: 'radiation', icon: '📏', label: 'Dose ladder', kw: 'sievert banana flight ct scan lethal acute compare how much is a lot' },
+        { id: 'lowdose', grp: 'radiation', icon: '📉', label: 'How risky is a small dose?', kw: 'linear no-threshold lnt hormesis threshold collective dose person-sievert man-sievert icrp risk coefficient ddref statistical power epidemiology inworks chernobyl projection why the numbers disagree banana is a small dose dangerous' },
         { id: 'detect', grp: 'radiation', icon: '🔬', label: 'Measure it: counts vs dose', kw: 'geiger counter cpm cps becquerel activity counting statistics poisson inverse square distance background subtraction detection limit uncertainty error bars' },
         { id: 'protect', grp: 'radiation', icon: '⏱️', label: 'Time, distance, shielding', kw: 'protection alara stay time dose rate gamma constant sealed source patient nuclear medicine half value layer worker limit how long can i stand here' },
         { id: 'accidents', grp: 'society', icon: '📋', label: 'The three accidents', kw: 'chernobyl fukushima three mile island deaths tmi meltdown numbers' },
@@ -2171,11 +2389,11 @@
       // so a student can take one, ignore them all, or search as before.
       var NK_PATHS = [
         { id: 'safe', q: 'Is nuclear power safe?', icon: '⚖️',
-          why: 'Start with the comparison, then the three accidents that shape how people feel about it, then the two problems that are genuinely unsolved.',
-          steps: ['compare', 'accidents', 'shelter', 'waste', 'reactors'] },
+          why: 'Start with the comparison, then the three accidents that shape how people feel about it, then why their death tolls are quoted so differently, then the two problems that are genuinely unsolved.',
+          steps: ['compare', 'accidents', 'lowdose', 'shelter', 'waste', 'reactors'] },
         { id: 'me', q: 'Does this dose matter to me?', icon: '🧍',
-          why: 'What a sievert actually is, what happens once something is inside you, your own yearly total, and where it all sits on a scale.',
-          steps: ['weighting', 'biohalf', 'mydose', 'doseladder'] },
+          why: 'What a sievert actually is, what happens once something is inside you, your own yearly total, where it all sits on a scale, and what a small number on that scale does and does not mean.',
+          steps: ['weighting', 'biohalf', 'mydose', 'doseladder', 'lowdose'] },
         { id: 'safety', q: 'How would I protect myself?', icon: '🛡️',
           why: 'What stops each kind of radiation, the three levers you can actually pull, and the one emergency decision that is genuinely a judgement call.',
           steps: ['shielding', 'protect', 'shelter'] },
@@ -2519,7 +2737,7 @@
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Living things take in carbon-14 while alive and stop at death. Measure how much is left and you can run the half-life backwards to a date.'),
           slider('nk-c14', 'C-14 remaining', 1, 100, 1, c14Frac,
-            function (e) { upd({ c14Frac: parseFloat(e.target.value) }); setAgeShown(false); }, c14Frac + '%'),
+            function (e) { upd({ c14Frac: parseFloat(e.target.value) }); setAgeShown(false); setShownGuess(null); }, c14Frac + '%'),
           h('div', { className: 'flex flex-wrap items-end gap-2 mt-2' },
             h('div', { className: 'flex-1 min-w-[150px]' },
               h('label', { htmlFor: 'nk-age-guess', className: 'block text-[11px] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Your estimate (years)'),
@@ -2530,13 +2748,23 @@
             h('button', { type: 'button', 'aria-label': 'Reveal the calculated age of the sample',
               onClick: function () {
                 setAgeShown(true);
-                upd({ datedOnce: true });
                 var g = parseFloat(ageGuess);
-                if (!isNaN(g) && Math.abs(g - c14Age) / c14Age < 0.15) {
+                setShownGuess(isNaN(g) ? null : g);
+                var close = !isNaN(g) && Math.abs(g - c14Age) / c14Age < 0.15;
+                var patch = { datedOnce: true };
+                // Guarded like the other two XP awards in this file. It was not:
+                // pressing Recalculate with a good guess still in the box paid
+                // out again every time, so the button was an XP tap.
+                if (close && !d.datedClose) {
+                  patch.datedClose = true;
                   if (typeof celebrate === 'function') celebrate();
                   if (typeof awardXP === 'function') awardXP('nuclear_dating', 10, 'Dated a sample from its carbon-14');
                 }
-                if (typeof announceToSR === 'function') announceToSR('The sample is about ' + nkFmt(c14Age, 0) + ' years old.');
+                upd(patch);
+                if (typeof announceToSR === 'function') {
+                  announceToSR('The sample is about ' + nkFmt(c14Age, 0) + ' years old.' +
+                    (isNaN(g) ? '' : ' Your estimate was ' + nkFmt(Math.abs(g - c14Age), 0) + ' years ' + (g > c14Age ? 'high' : 'low') + '.'));
+                }
               },
               className: 'min-h-11 px-4 py-2 rounded-lg text-[11px] font-black text-white',
               style: { background: '#0e7490', border: '1px solid #0e7490' } }, ageShown ? 'Recalculate' : 'Reveal')
@@ -2544,6 +2772,18 @@
           ageShown ? h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(34,211,238,0.5)', background: isDark ? 'rgba(15,23,42,0.7)' : 'rgba(236,254,255,0.9)' } },
             h('p', { className: 'text-sm font-black', style: { color: ink('#0891b2') } }, 'About ' + nkFmt(c14Age, 0) + ' years old'),
             h('p', { className: 'text-[11px] mt-1 font-mono', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'age = 5730 × ln(100 / ' + c14Frac + ') / ln 2'),
+            // Revealing the answer beside a guess and saying nothing about the
+            // gap wastes the guess. The margin is the feedback.
+            shownGuess != null ? (function () {
+              var offBy = shownGuess - c14Age;
+              var pct = Math.abs(offBy) / c14Age * 100;
+              var col = pct < 15 ? '#34d399' : (pct < 40 ? '#fbbf24' : '#fb923c');
+              return h('p', { className: 'text-[11px] mt-1 font-bold', style: { color: ink(col) } },
+                pct < 15
+                  ? '✓ Your estimate of ' + nkFmt(shownGuess, 0) + ' was within ' + nkFmt(pct, 0) + '% — that counts as dated.'
+                  : 'You said ' + nkFmt(shownGuess, 0) + ', which is ' + nkFmt(Math.abs(offBy), 0) + ' years ' +
+                    (offBy > 0 ? 'too old' : 'too young') + ' (' + nkFmt(pct, 0) + '% out). Halving what is left adds one half-life, not half the age — the clock is logarithmic.');
+            })() : null,
             h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               c14Frac <= 2
                 ? 'Below about 1–2% remaining the measurement gets unreliable, which is why radiocarbon runs out at roughly 50,000 years. Older samples need a different clock — uranium-238 for rocks, potassium-argon for volcanic ash.'
@@ -2689,9 +2929,21 @@
                 : 'Still getting through. Beta needs a few millimetres of solid; air barely slows it.';
             } else if (radId === 'neutron') {
               through = neutronThrough;
-              verdict = (shieldId === 'water' || shieldId === 'concrete')
-                ? 'Working. Neutrons are slowed by bouncing off nuclei of similar mass, so hydrogen-rich materials win. Water and concrete are excellent.'
-                : 'Barely touched. Lead is nearly useless against neutrons — a heavy nucleus barely recoils, so the neutron keeps its energy. Counter-intuitive, and it catches people out.';
+              if (shieldId === 'air') {
+                verdict = 'Nothing to hit. Neutrons are uncharged, so they ignore electrons entirely and only interact when they meet a nucleus head on — and air has almost no nuclei in the way. Distance alone is a poor defence here, because that goes on being true for hundreds of metres.';
+              } else if (neutronHydrogenous) {
+                verdict = 'This is what a neutron shield is for. It takes only about ' + nkFmt(neutronCollisions, 0) +
+                  ' collisions with hydrogen to bring a 2 MeV neutron down to thermal energy, because a neutron and a proton have almost the same mass — a head-on hit can take the whole of the neutron\'s energy, which no heavier nucleus can do. Once thermal, it is captured.' +
+                  (shieldId === 'concrete'
+                    ? ' Concrete is only about 1% hydrogen by weight, so it is doing this with far fewer targets than water — which is exactly why a biological shield is metres thick rather than centimetres.'
+                    : ' Note what the removal figure above does NOT say: per centimetre, steel and lead strip fast neutrons out of the beam faster than water does. Water wins on the step after that one.');
+              } else {
+                verdict = 'Read this one carefully, because the number above is not the whole story and on its own it flatters ' + shield.name.toLowerCase() + '. ' +
+                  'Heavy nuclei ARE good at knocking a fast neutron out of the fast group — that is the removal cross-section, and ' + shield.name.toLowerCase() +
+                  '\'s is higher per centimetre than water\'s. What they cannot do is SLOW one down: it takes roughly ' + nkFmt(neutronCollisions, 0) +
+                  ' collisions with ' + shield.modName + ' to reach thermal energy against about 18 with hydrogen, because a neutron bouncing off a nucleus ' +
+                  shield.modA + ' times its mass barely loses any. So you are left with a flux of intermediate-energy neutrons that nothing has captured. Worse, below about 1 MeV the inelastic scattering this material relies on switches off altogether, and removal cross-sections are defined assuming hydrogen sits behind the shield anyway. A slab of ' + shield.name.toLowerCase() + ' on its own is not a neutron shield.';
+              }
             } else {
               through = gammaThrough;
               verdict = gammaThrough < 1
@@ -2705,6 +2957,17 @@
                 h('div', { style: { height: '100%', width: nkClamp(through, 0, 100).toFixed(1) + '%', background: rad.colour, borderRadius: '999px', transition: 'width 160ms linear' } })),
               h('p', { className: 'text-[11px] font-black mt-1', style: { color: ink(rad.colour) } },
                 nkFmt(through, through < 1 ? 3 : 1) + '% of the ' + rad.name.toLowerCase() + ' gets through ' + nkFmt(thick, 1) + ' cm of ' + shield.name.toLowerCase()),
+              // Neutrons are the one case where a single "% through" bar is not
+              // enough to be honest, because two different mechanisms have to
+              // both succeed. Show them side by side so the comparison between
+              // materials is visible rather than asserted in prose.
+              radId === 'neutron' ? h('div', { className: 'grid grid-cols-2 gap-2 mt-2' },
+                stat('Step 1 · fast neutrons removed per cm',
+                  nkFmt(shield.sigR, 3) + ' cm⁻¹', neutronHydrogenous ? '#34d399' : '#fbbf24'),
+                stat('Step 2 · collisions to slow one to thermal',
+                  shield.sigR < 0.001 ? '—' : nkFmt(neutronCollisions, 0) + ' on ' + shield.modName,
+                  neutronHydrogenous ? '#34d399' : '#f87171')
+              ) : null,
               h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, verdict));
           })(),
           h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: rad.colour + '60', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(255,255,255,0.9)' } },
@@ -2712,7 +2975,15 @@
             h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, rad.what),
             h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, h('b', null, 'Stopped by: '), rad.stops),
             h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#fca5a5' : '#b91c1c' } }, h('b', null, 'Why it matters: '), rad.danger)),
-          h('p', { className: 'text-[11px] mt-2', style: { color: isDark ? '#94a3b8' : '#475569' } }, shield.note)
+          h('p', { className: 'text-[11px] mt-2', style: { color: isDark ? '#94a3b8' : '#475569' } }, shield.note),
+          // The consequence nobody mentions: capturing the neutron is not the
+          // end of it. This is also why the four radiation types on this page
+          // are not four independent problems.
+          radId === 'neutron' ? h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(167,139,250,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(245,243,255,0.9)' } },
+            h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#a78bfa') } }, 'And then the shield starts glowing'),
+            h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+              'When hydrogen finally captures the thermalised neutron it becomes deuterium and emits a 2.2 MeV gamma — harder than anything caesium-137 produces. So a water shield solves the neutron problem by creating a gamma problem, which is why real shields are built in layers: something hydrogen-rich to slow the neutrons, boron to capture them without a penetrating photon, and then lead for the capture gammas that get made anyway. Neutron shielding is the clearest case in this section that the four kinds of radiation are one problem, not four.')
+          ) : null
         ),
 
         // ── 4. chain reaction ──
@@ -2720,8 +2991,25 @@
           heading(ink('#34d399'), '⚛️ 6. The chain reaction, and what holds it steady'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'A uranium-235 nucleus absorbs a neutron, splits, and releases 2 or 3 more. k is how many of those go on to cause another fission. Everything about reactor control is holding k at exactly 1.'),
+          h('p', { className: 'text-[11px] mb-1 font-bold', style: { color: ink(kState === 'critical' ? '#34d399' : '#fbbf24') } },
+            kState === 'critical'
+              ? '✓ k = 1.000. That is the whole job — and notice it is one position out of a hundred.'
+              : 'The core is shut down. Withdraw the rods until k reads exactly 1.000.'),
           slider('nk-rods', 'Control rods in', 0, 100, 1, rods,
-            function (e) { upd({ rods: parseFloat(e.target.value) }); }, rods + '%'),
+            function (e) {
+              var v = parseFloat(e.target.value);
+              var k = 1.30 - 0.006 * v;
+              var state = k < 0.995 ? 'subcritical' : (k > 1.005 ? 'supercritical' : 'critical');
+              upd({ rods: v, rodsMoved: true });
+              // The slider is the only way to find k = 1, and its value alone
+              // ("50%") does not tell a screen-reader user whether they have
+              // arrived. Announce the state, and only when it CHANGES, so
+              // dragging does not produce a stream of identical messages.
+              if (state !== kState && typeof announceToSR === 'function') {
+                announceToSR('k is ' + k.toFixed(3) + '. ' + state +
+                  (state === 'critical' ? '. Every fission causes exactly one more.' : '.'));
+              }
+            }, rods + '%'),
           h('div', { className: 'mt-2 grid grid-cols-3 gap-2' },
             stat('k (neutron multiplication)', kEff.toFixed(3), ink(kState === 'critical' ? '#34d399' : (kState === 'supercritical' ? '#f87171' : '#60a5fa'))),
             stat('State', kState, ink(kState === 'critical' ? '#34d399' : (kState === 'supercritical' ? '#f87171' : '#60a5fa'))),
@@ -3006,9 +3294,123 @@
           )
         ),
 
+        // ── low-dose risk: the argument behind every number above ──
+        sec('lowdose', '#e879f9',
+          heading(ink('#e879f9'), '📉 12. How risky is a small dose? Why one event gets two death tolls'),
+          h('p', { className: 'text-[11px] mb-2 leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+            'Everything above 100 mSv on the ladder is measured. Everything below it is modelled — and the model you pick is where the public argument actually lives. Two people can quote the same accident, use the same physics, make no arithmetic error, and differ by a factor of a hundred on the death toll. Here is how.'),
+
+          h('p', { className: 'text-[11px] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Pick an exposure'),
+          h('div', { className: 'flex flex-wrap gap-1' },
+            COLLECTIVE_CASES.map(function (c) {
+              return pill(ldCase.id === c.id, c.colour, c.name, function () {
+                upd({ ldCase: c.id });
+                pushOnce('ldCasesTried', c.id);
+                if (typeof beep === 'function') beep();
+              }, 'Use the exposure: ' + c.name + ', ' + ldDose(c.mSv) + ' millisieverts each');
+            })
+          ),
+
+          // The divergence, always visible. Selecting a model below explains one
+          // row; this table is why the reader should care that there is a choice.
+          h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(232,121,249,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(253,244,255,0.9)' } },
+            h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#e879f9') } },
+              ldBig(ldCase.people) + (ldCase.people === 1 ? ' person' : ' people') + ' × ' + ldDose(ldCase.mSv) + ' mSv = ' + nkFmt(ldPersonSv, 2) + ' person-sieverts'),
+            h('p', { className: 'text-[11px] mb-1.5', style: { color: isDark ? '#94a3b8' : '#475569' } },
+              ldCase.people === 1
+                ? 'One dose. Four ways to turn it into a personal risk.'
+                : 'One collective dose. Four ways to turn it into a number of people.'),
+            h('div', { role: 'list', className: 'space-y-1' },
+              RISK_MODELS.map(function (m) {
+                var n = nkProjected(m, ldCase.people, ldCase.mSv);
+                var txt = m.coeff == null
+                  ? 'no defensible number'
+                  : (ldCase.people === 1 ? ldOneIn(n) : (n === 0 ? 'zero' : ldBig(n) + (n >= 2 ? ' deaths' : ' death')));
+                return h('div', {
+                  key: m.id, role: 'listitem',
+                  'aria-label': m.name + ': ' + txt,
+                  className: 'flex items-center gap-2 rounded-md px-1.5 py-1',
+                  style: ldModel.id === m.id ? { background: m.colour + '1f' } : null
+                },
+                  h('span', { className: 'text-[11px] font-bold flex-1', style: { color: isDark ? '#e2e8f0' : '#334155' } }, m.short),
+                  h('span', { className: 'text-[11px] font-mono font-black text-right', style: { color: ink(m.colour) } }, txt));
+              })
+            ),
+            h('div', { className: 'mt-2 rounded-md border p-2', style: { borderColor: ldTier.colour + '88', background: isDark ? 'rgba(15,23,42,0.5)' : 'rgba(255,255,255,0.85)' } },
+              h('p', { className: 'text-[11px] font-black', style: { color: ink(ldTier.colour) } }, 'Can you use this sum? ' + ldTier.label),
+              h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, ldTier.what)),
+            h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, ldCase.note)
+          ),
+
+          h('p', { className: 'text-[11px] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Now read one model properly'),
+          h('div', { className: 'flex flex-wrap gap-1' },
+            RISK_MODELS.map(function (m) {
+              return pill(ldModel.id === m.id, m.colour, m.short, function () {
+                upd({ ldModel: m.id });
+                pushOnce('riskModelsTried', m.id);
+                if (typeof beep === 'function') beep();
+                if (typeof announceToSR === 'function') {
+                  var n = nkProjected(m, ldCase.people, ldCase.mSv);
+                  announceToSR(m.name + '. ' + (m.coeff == null
+                    ? 'This model produces no number.'
+                    : (n === 0 ? 'This model projects zero for this exposure.'
+                      : 'Projects ' + ldBig(n) + ' for this exposure.')));
+                }
+              }, 'Explain the ' + m.name + ' model');
+            })
+          ),
+          h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: ldModel.colour + '77', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(255,255,255,0.92)' } },
+            h('p', { className: 'text-sm font-black', style: { color: ink(ldModel.colour) } }, ldModel.name),
+            h('p', { className: 'text-[11px] font-mono mt-0.5', style: { color: isDark ? '#94a3b8' : '#475569' } },
+              ldModel.coeff == null ? 'No agreed coefficient' : nkFmt(ldModel.coeff * 100, 1) + '% per sievert'
+                + (ldModel.threshold ? ', and nothing at all below ' + ldModel.threshold + ' mSv' : '')),
+            h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2' },
+              [{ k: 'What it claims', v: ldModel.says, c: ldModel.colour },
+               { k: 'Who uses it', v: ldModel.who, c: '#94a3b8' },
+               { k: 'The case for it', v: ldModel.forIt, c: '#34d399' },
+               { k: 'The case against it', v: ldModel.against, c: '#f87171' }
+              ].map(function (x) {
+                return h('div', { key: x.k },
+                  h('p', { className: 'text-[10px] font-black', style: { color: ink(x.c) } }, x.k.toUpperCase()),
+                  h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, x.v));
+              })
+            )
+          ),
+
+          // The part that is usually left out: not "scientists disagree" but
+          // the reason the disagreement cannot be settled by measuring harder.
+          h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(34,211,238,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(236,254,255,0.9)' } },
+            h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#0891b2') } }, 'So why not just go and measure it?'),
+            h('p', { className: 'text-[11px] leading-relaxed mb-1', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+              'People have tried, and the obstacle is not funding or will — it is arithmetic. About a quarter of everyone dies of cancer anyway, so to see a small addition you need an exposed group and a matched unexposed group big enough that the difference is not noise. Set the dose and read off how many people that takes.'),
+            slider('ld-pow', 'Dose to detect', 0, 30, 1, ldPowIdx,
+              function (e) { upd({ ldPow: parseFloat(e.target.value) }); },
+              (ldPowMSv < 1 ? nkFmt(ldPowMSv, 2) : nkFmt(ldPowMSv, ldPowMSv < 10 ? 1 : 0)) + ' mSv'),
+            h('div', { className: 'grid grid-cols-2 gap-2 mt-2' },
+              stat('People needed in each group', ldBig(ldCohort), '#22d3ee'),
+              stat('Both groups together', ldBig(ldCohort * 2), '#a78bfa')),
+            h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+              'Ten times smaller dose, a HUNDRED times the people: the excess enters the sizing squared, so the requirement grows as the inverse square of the dose. At 10 mSv — one CT scan — the answer is already larger than any radiation cohort ever assembled; at 1 mSv it exceeds the population of most countries. Published estimates agree: Brenner and colleagues put the 10 mSv study at roughly 5 million per group under slightly more favourable assumptions.'),
+            h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+              'Slide it to 100 mSv and watch what the calculation says: about a hundred thousand people per group. The atomic-bomb survivor study follows roughly that many — and 100 mSv is exactly where this tool says the excess becomes measurable. That is not a coincidence, and it is the check on this arithmetic: the same formula that says the low-dose question is unanswerable correctly predicts where the answer we DO have came from.'),
+            h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
+              'Two-proportion sample size at 5% significance and 80% power, against a 25% baseline lifetime cancer mortality, using the ICRP coefficient. It assumes something even a perfect study could not have: that every person\'s dose is known exactly and nothing else differs between the groups. The real requirement is larger.')
+          ),
+
+          h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(251,191,36,0.6)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(255,251,235,0.9)' } },
+            h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#f59e0b') } }, 'What this section is NOT saying'),
+            h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+              'Not that low-dose radiation is harmless: no threshold has ever been demonstrated, and the best evidence at low dose RATE — the pooled nuclear-worker cohorts — is consistent with a straight line rather than a floor. Not that the regulators are wrong either: assuming linearity when you cannot measure is the cautious choice, and caution is what a limit is for. What remains genuinely disputed among radiation biologists is the shape of the curve below about 100 mSv, and the honest answer to "how many will this kill" at those doses is that the arithmetic gives a number and the world may not. Be equally suspicious of anyone who quotes that number as a body count and of anyone who tells you it is zero.'),
+            h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+              'This is where the Chernobyl range in section 15 comes from. Apply the model to the most exposed few hundred thousand people and you get a projection of a few thousand; apply the same model to a whole continent receiving doses smaller than the difference between two towns\' background, and you get tens of thousands. Neither side fabricated anything. They chose a different population, and the model does not know it is being asked something it cannot answer.')
+          ),
+          safetyNotice('dose'),
+          sourceNote(['icrp103', 'inworks', 'unscear'])
+        ),
+
         // ── counting: where every number above actually comes from ──
         sec('detect', '#2dd4bf',
-          heading(ink('#2dd4bf'), '🔬 12. Measure it yourself — and why one short count lies'),
+          heading(ink('#2dd4bf'), '🔬 13. Measure it yourself — and why one short count lies'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Every figure above came out of a detector, and a detector does not measure sieverts. It measures clicks — and radioactive decay is random, so the same source counted twice gives two different answers. Neither is wrong. Take some counts and watch it happen.'),
 
@@ -3128,10 +3530,10 @@
 
         // ── the third lever ──
         sec('protect', '#38bdf8',
-          heading(ink('#38bdf8'), '⏱️ 13. Time, distance, shielding — all three levers'),
+          heading(ink('#38bdf8'), '⏱️ 14. Time, distance, shielding — all three levers'),
           safetyNotice('medical'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
-            'Section 5 covered what stops radiation and section 12 covered distance. There is a third lever, it is free, and it is the one a radiation worker reaches for first: leave sooner. Every dose in this tool is a rate multiplied by a time, and you can pull on any of the three.'),
+            'Section 5 covered what stops radiation and section 13 covered distance. There is a third lever, it is free, and it is the one a radiation worker reaches for first: leave sooner. Every dose in this tool is a rate multiplied by a time, and you can pull on any of the three.'),
 
           h('p', { className: 'text-[11px] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'What are you standing near?'),
           h('div', { className: 'flex flex-wrap gap-1 mb-1' },
@@ -3227,7 +3629,7 @@
 
         // ── 6. accidents ──
         sec('accidents', '#f87171',
-          heading(ink('#f87171'), '📋 14. The three accidents, in the actual numbers'),
+          heading(ink('#f87171'), '📋 15. The three accidents, in the actual numbers'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'These are the events that shaped how the world thinks about nuclear power. The figures below come from UNSCEAR and the relevant national reports, and where the range is disputed the tool says so.'),
           h('div', { className: 'space-y-1' },
@@ -3253,12 +3655,12 @@
         // ── 7. reactors and SMRs ──
         // ── the decision the last section leaves you with ──
         sec('shelter', '#a3e635',
-          heading(ink('#84cc16'), '🏠 15. Shelter or evacuate? Work the numbers'),
+          heading(ink('#84cc16'), '🏠 16. Shelter or evacuate? Work the numbers'),
           safetyNotice('emergency'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Around 2,200 people died because of the Fukushima evacuation and one from radiation. That is a fact, not an argument — and the wrong lesson to draw from it is that evacuating is a mistake. The right lesson is that it is a CHOICE with a cost on both sides, and which side is cheaper depends on numbers you can work out.'),
           h('p', { className: 'text-[11px] mb-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
-            'Sheltering is not a third option. It is two of the three levers from section 13: a building is shielding, and staying put costs less time in the open than driving through a plume. So the question is only ever which arithmetic is smaller.'),
+            'Sheltering is not a third option. It is two of the three levers from section 14: a building is shielding, and staying put costs less time in the open than driving through a plume. So the question is only ever which arithmetic is smaller.'),
 
           slider('sh-rate', 'Outdoor dose rate', 0.1, 30, 0.1, shRate,
             function (e) { upd({ shRate: parseFloat(e.target.value) }); }, nkFmt(shRate, 1) + ' mSv/h'),
@@ -3337,7 +3739,7 @@
         ),
 
         sec('reactors', '#38bdf8',
-          heading(ink('#38bdf8'), '🏭 16. Reactor designs, and where SMRs really stand'),
+          heading(ink('#38bdf8'), '🏭 17. Reactor designs, and where SMRs really stand'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Every row says how it works, what makes it safe, and — the part usually left out — what the catch is.'),
           h('div', { className: 'space-y-1' },
@@ -3384,7 +3786,7 @@
 
         // ── 8. waste ──
         sec('waste', '#94a3b8',
-          heading(isDark ? '#cbd5e1' : '#475569', '🗄️ 17. The waste question, taken seriously'),
+          heading(isDark ? '#cbd5e1' : '#475569', '🗄️ 18. The waste question, taken seriously'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'This is the objection that survives every other answer, so it deserves a straight one — including the part that genuinely has no solution.'),
           h('div', { className: 'space-y-1' },
@@ -3404,7 +3806,7 @@
 
         // ── 9. comparison ──
         sec('compare', '#a3e635',
-          heading(ink('#84cc16'), '⚖️ 18. Compared with the alternatives'),
+          heading(ink('#84cc16'), '⚖️ 19. Compared with the alternatives'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Risk only means something next to the risk of the thing you would do instead. Both charts are full life cycle, including mining, construction and accidents.'),
           h('p', { className: 'text-[11px] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Deaths per terawatt-hour of electricity'),
@@ -3443,7 +3845,7 @@
 
         // ── reactor operation simulator ──
         sec('operate', '#34d399',
-          heading(ink('#34d399'), '🎛️ 19. Operate a reactor'),
+          heading(ink('#34d399'), '🎛️ 20. Operate a reactor'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'A modern reactor, run properly. The two accident conditions are here as engineering case studies — the point is to watch the physics do it, not to score a disaster.'),
 
