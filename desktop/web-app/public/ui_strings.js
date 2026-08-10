@@ -717,6 +717,7 @@
     "items_correct": "Items Correct",
     "items_done_of": "{done}/{goal} items",
     "items_per_min": "Items / Min",
+    "probe_interrupted": "This probe was interrupted for about {s} seconds while the tab was in the background. The timer kept running, so the rate above understates how fast this child was working.",
     "kokoro_recommended": "Recommended for Word Sounds: Kokoro local voice",
     "label_details": "Label Details",
     "lang_hidden_activities": "Some activities are English-only",
