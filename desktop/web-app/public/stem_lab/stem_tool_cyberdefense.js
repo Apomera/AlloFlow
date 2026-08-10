@@ -173,6 +173,44 @@
 
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
+  // ── Cipher functions + decode-challenge bank (module scope, pure) ──
+  // Exposed on window.__cyberDefensePure so tests machine-verify that every
+  // challenge ciphertext actually decodes to its expected answer (two of the
+  // original ciphertexts did not: 'JVILY' decoded to COBER, 'QRIRE' to DEVER).
+  // Answers are intentionally NOT translated: the decoded plaintext is fixed by
+  // the ciphertext, so a translated answer would make a challenge unsolvable.
+  function caesarCipher(text, shift, encode) {
+    var s = encode ? shift : (26 - shift) % 26;
+    return text.split('').map(function(ch) {
+      var c = ch.charCodeAt(0);
+      if (c >= 65 && c <= 90) return String.fromCharCode(((c - 65 + s) % 26) + 65);
+      if (c >= 97 && c <= 122) return String.fromCharCode(((c - 97 + s) % 26) + 97);
+      return ch;
+    }).join('');
+  }
+  function atbashCipher(text) {
+    return text.split('').map(function(ch) {
+      var c = ch.charCodeAt(0);
+      if (c >= 65 && c <= 90) return String.fromCharCode(90 - (c - 65));
+      if (c >= 97 && c <= 122) return String.fromCharCode(122 - (c - 97));
+      return ch;
+    }).join('');
+  }
+  function xorCipher(text, key) {
+    var k = key || 42;
+    return text.split('').map(function(ch) {
+      return String.fromCharCode(ch.charCodeAt(0) ^ k);
+    }).join('');
+  }
+  var CIPHER_CHALLENGES = [
+    { type: 'caesar', shift: 3, encoded: 'FRPSXWHU VFLHQFH LV IXQ', answer: 'COMPUTER SCIENCE IS FUN', hintKey: 'stem.cyberdefense.shift_of_3_classic_caesar', hintFallback: 'Shift of 3 (classic Caesar)' },
+    { type: 'caesar', shift: 7, encoded: 'JFILY KLMLUZL', answer: 'CYBER DEFENSE', hintKey: 'stem.cyberdefense.shift_of_7', hintFallback: 'Shift of 7' },
+    { type: 'atbash', shift: 0, encoded: 'KZHHDLIW HZUVGB', answer: 'PASSWORD SAFETY', hintKey: 'stem.cyberdefense.a_z_b_y_c_x', hintFallback: 'A=Z, B=Y, C=X...' },
+    { type: 'caesar', shift: 13, encoded: 'ARIRE FGNGR LBHE CNFFJBEQ', answer: 'NEVER STATE YOUR PASSWORD', hintKey: 'stem.cyberdefense.rot13_shift_of_13', hintFallback: 'ROT13 - shift of 13' },
+    { type: 'atbash', shift: 0, encoded: 'GSRMP YVULIV BLF XORXP', answer: 'THINK BEFORE YOU CLICK', hintKey: 'stem.cyberdefense.reverse_the_alphabet', hintFallback: 'Reverse the alphabet' }
+  ];
+  try { window.__cyberDefensePure = { caesarCipher: caesarCipher, atbashCipher: atbashCipher, xorCipher: xorCipher, CIPHER_CHALLENGES: CIPHER_CHALLENGES }; } catch (_e) {}
+
   window.StemLab.registerTool('cyberDefense', {
     name: 'Cyber Defense Lab',
     icon: '\uD83D\uDEE1\uFE0F',
@@ -218,7 +256,10 @@
           var caesarShift      = d.caesarShift != null ? d.caesarShift : 3;
           var cipherEncode    = d.cipherEncode != null ? d.cipherEncode : true;
           var cipherChallenge = d.cipherChallenge || '';
-          var challengeSolved = d.challengeSolved || false;
+          // Solved state is per-challenge (keyed by ciphertext): the active
+          // challenge rotates with phishScore + caesarShift, so a single global
+          // flag leaked "solved" onto challenges the student never decoded.
+          var solvedCiphers = d.solvedCiphers || {};
           var difficulty      = d.difficulty || 'medium';
           var pwChallengeDone = d.pwChallengeDone || false;
           var phishMode       = d.phishMode || 'investigate';
@@ -847,41 +888,9 @@
             return { score: score, label: labels[score], color: colors[score], entropy: Math.round(entropy), crackTime: crackTime, checks: { length: len, hasLower: hasLower, hasUpper: hasUpper, hasDigit: hasDigit, hasSymbol: hasSymbol, isCommon: isCommon, poolSize: poolSize } };
           }
 
-          // ── Cipher Functions ──
-          function caesarCipher(text, shift, encode) {
-            var s = encode ? shift : (26 - shift) % 26;
-            return text.split('').map(function(ch) {
-              var c = ch.charCodeAt(0);
-              if (c >= 65 && c <= 90) return String.fromCharCode(((c - 65 + s) % 26) + 65);
-              if (c >= 97 && c <= 122) return String.fromCharCode(((c - 97 + s) % 26) + 97);
-              return ch;
-            }).join('');
-          }
-          function atbashCipher(text) {
-            return text.split('').map(function(ch) {
-              var c = ch.charCodeAt(0);
-              if (c >= 65 && c <= 90) return String.fromCharCode(90 - (c - 65));
-              if (c >= 97 && c <= 122) return String.fromCharCode(122 - (c - 97));
-              return ch;
-            }).join('');
-          }
-          function xorCipher(text, key) {
-            var k = key || 42;
-            return text.split('').map(function(ch) {
-              return String.fromCharCode(ch.charCodeAt(0) ^ k);
-            }).join('');
-          }
-
-          // Cipher challenges
-          var cipherChallenges = [
-            { type: 'caesar', shift: 3, encoded: 'FRPSXWHU VFLHQFH LV IXQ', answer: t('stem.cyberdefense.computer_science_is_fun', 'COMPUTER SCIENCE IS FUN'), hint: t('stem.cyberdefense.shift_of_3_classic_caesar', 'Shift of 3 (classic Caesar)') },
-            { type: 'caesar', shift: 7, encoded: 'JVILY KLMLUZL', answer: t('stem.cyberdefense.cyber_defense', 'CYBER DEFENSE'), hint: t('stem.cyberdefense.shift_of_7', 'Shift of 7') },
-            { type: 'atbash', shift: 0, encoded: 'KZHHDLIW HZUVGB', answer: t('stem.cyberdefense.password_safety', 'PASSWORD SAFETY'), hint: t('stem.cyberdefense.a_z_b_y_c_x', 'A=Z, B=Y, C=X...') },
-            { type: 'caesar', shift: 13, encoded: 'QRIRE FGNGR LBHE CNFFJBEQ', answer: t('stem.cyberdefense.never_state_your_password', 'NEVER STATE YOUR PASSWORD'), hint: t('stem.cyberdefense.rot13_shift_of_13', 'ROT13 - shift of 13') },
-            { type: 'atbash', shift: 0, encoded: 'GSRMP YVULIV BLF XORXP', answer: t('stem.cyberdefense.think_before_you_click', 'THINK BEFORE YOU CLICK'), hint: t('stem.cyberdefense.reverse_the_alphabet', 'Reverse the alphabet') }
-          ];
-
-          var activeChallengeData = cipherChallenges[Math.abs(phishScore + caesarShift) % cipherChallenges.length];
+          // Cipher functions + challenge bank live at module scope (pure,
+          // test-exposed via window.__cyberDefensePure).
+          var activeChallengeData = CIPHER_CHALLENGES[Math.abs(phishScore + caesarShift) % CIPHER_CHALLENGES.length];
 
           var pwStrength = calcPasswordStrength(pwInput);
 
@@ -2639,7 +2648,16 @@
             return { label: t('stem.cyberdefense.junior_analyst', 'Junior Analyst'), icon: '\uD83D\uDD0D', color: '#22c55e' };
           })();
 
-          return el('div', { className: 'animate-in fade-in duration-300', style: { background: 'linear-gradient(135deg, #0f172a 0%, #16172e 50%, var(--allo-stem-canvas, #0f172a) 100%)', borderRadius: 16, minHeight: '70vh', padding: 0, boxShadow: '0 0 40px rgba(99,102,241,0.15)' } },
+          return el('div', { id: 'cyber-defense-region', className: 'animate-in fade-in duration-300', style: { background: 'linear-gradient(135deg, #0f172a 0%, #16172e 50%, var(--allo-stem-canvas, #0f172a) 100%)', borderRadius: 16, minHeight: '70vh', padding: 0, boxShadow: '0 0 40px rgba(99,102,241,0.15)' } },
+            // Dark-designed tool on a hardcoded #0f172a surface: rebind the theme
+            // palette variables for THIS SUBTREE ONLY so surface and text come
+            // from the same palette. Without this, light theme resolves
+            // --allo-stem-text to #0f172a on the #0f172a root = 1.00:1 invisible
+            // across ~215 text sites (kitchenLab/archStudio class). The second
+            // rule keeps high-contrast yellow from being flattened by the first.
+            el('style', null,
+              '#cyber-defense-region{--allo-stem-text:#e2e8f0;--allo-stem-text-soft:#94a3b8;--allo-stem-canvas:#0f172a;}' +
+              '.theme-contrast #cyber-defense-region{--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;--allo-stem-canvas:#000000;}'),
             // Header
             el('div', { style: { padding: '20px 24px 16px', borderBottom: '1px solid rgba(99,102,241,0.2)', display: 'flex', alignItems: 'center', gap: 12 } },
               el('button', { onClick: function() { ctx.setStemLabTool(null); }, 'aria-label': t('stem.cyberdefense.back_to_stem_tools', 'Back to STEM tools'), title: t('stem.cyberdefense.back', 'Back'), style: { background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 16 } }, '\u2190'),
@@ -3151,16 +3169,29 @@
                 // Challenge Mode
                 el('div', { style: { padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(245,158,11,0.08), rgba(234,179,8,0.08))', border: '1px solid rgba(245,158,11,0.2)' } },
                   el('div', { style: { color: '#fbbf24', fontSize: 14, fontWeight: 900, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 } }, '\uD83C\uDFC6 Decode Challenge'),
-                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginBottom: 6 } }, 'Cipher: ' + (activeChallengeData.type === 'caesar' ? 'Caesar (shift ' + activeChallengeData.shift + ')' : 'Atbash') + ' \u2022 Hint: ' + activeChallengeData.hint),
+                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginBottom: 6 } }, 'Cipher: ' + (activeChallengeData.type === 'caesar' ? 'Caesar (shift ' + activeChallengeData.shift + ')' : 'Atbash') + ' \u2022 Hint: ' + t(activeChallengeData.hintKey, activeChallengeData.hintFallback)),
                   el('div', { style: { padding: '10px 14px', borderRadius: 8, background: 'rgba(0,0,0,0.3)', fontFamily: 'monospace', fontSize: 14, fontWeight: 700, color: '#fbbf24', letterSpacing: 2, marginBottom: 10 } }, activeChallengeData.encoded),
-                  el('input', { value: cipherChallenge, onChange: function(e) {
-                    var val = e.target.value.toUpperCase();
-                    upd('cipherChallenge', val);
-                    if (val.trim() === activeChallengeData.answer) { upd('challengeSolved', true); ctx.awardXP('cyberDefense', 5); if (ctx.addToast) ctx.addToast('\uD83D\uDD11 +5 XP! Cipher cracked!', 'success'); if (announceToSR) announceToSR('Cipher cracked! Plus 5 XP.'); }
-                    else { upd('challengeSolved', false); }
-                  }, placeholder: t('stem.cyberdefense.type_the_decoded_message', 'Type the decoded message...'), 'aria-label': t('stem.cyberdefense.cipher_challenge_answer', 'Cipher challenge answer'), disabled: challengeSolved,
-                    style: { width: '100%', padding: '10px 14px', borderRadius: 8, border: '2px solid ' + (challengeSolved ? '#22c55e' : 'rgba(255,255,255,0.1)'), background: challengeSolved ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.06)', color: challengeSolved ? '#4ade80' : '#e2e8f0', fontSize: 13, fontFamily: 'monospace', fontWeight: 600, boxSizing: 'border-box' }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
-                  challengeSolved && el('div', { style: { marginTop: 8, color: '#4ade80', fontSize: 13, fontWeight: 800, textAlign: 'center' } }, '\u2705 Decoded! The message is: "' + activeChallengeData.answer + '"')
+                  (function() {
+                    var activeChallengeSolved = !!solvedCiphers[activeChallengeData.encoded];
+                    return el(React.Fragment, null,
+                      el('input', { value: cipherChallenge, onChange: function(e) {
+                        var val = e.target.value.toUpperCase();
+                        upd('cipherChallenge', val);
+                        // Whitespace-tolerant compare; case already normalized above.
+                        var normalized = val.trim().replace(/\s+/g, ' ');
+                        if (!activeChallengeSolved && normalized === activeChallengeData.answer) {
+                          var nextSolved = Object.assign({}, solvedCiphers);
+                          nextSolved[activeChallengeData.encoded] = true;
+                          upd('solvedCiphers', nextSolved);
+                          ctx.awardXP('cyberDefense', 5);
+                          if (ctx.addToast) ctx.addToast('\uD83D\uDD11 +5 XP! Cipher cracked!', 'success');
+                          if (announceToSR) announceToSR('Cipher cracked! Plus 5 XP.');
+                        }
+                      }, placeholder: t('stem.cyberdefense.type_the_decoded_message', 'Type the decoded message...'), 'aria-label': t('stem.cyberdefense.cipher_challenge_answer', 'Cipher challenge answer'), disabled: activeChallengeSolved,
+                        style: { width: '100%', padding: '10px 14px', borderRadius: 8, border: '2px solid ' + (activeChallengeSolved ? '#22c55e' : 'rgba(255,255,255,0.1)'), background: activeChallengeSolved ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.06)', color: activeChallengeSolved ? '#4ade80' : '#e2e8f0', fontSize: 13, fontFamily: 'monospace', fontWeight: 600, boxSizing: 'border-box' }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
+                      activeChallengeSolved && el('div', { style: { marginTop: 8, color: '#4ade80', fontSize: 13, fontWeight: 800, textAlign: 'center' } }, '\u2705 Decoded! The message is: "' + activeChallengeData.answer + '"')
+                    );
+                  })()
                 )
               ),
 
