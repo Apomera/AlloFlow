@@ -1430,10 +1430,19 @@
              setGeneratedCount(0);
              setPrewarmCount(0);
              setPrewarmTotal(0);
-             // Flag that stops TTS prewarm after a 429 is seen; reset per preload run so
-             // subsequent sessions start fresh. The Kokoro offer also resets so a user who
-             // declined last time still gets a fresh chance when a new 429 occurs.
-             let prewarmAborted = false;
+             // Rate-limit handling for the TTS prewarm, reset per preload run.
+             //
+             // This used to be a one-way switch: the first 429 anywhere set it
+             // and every remaining word packed NOTHING. A pack was found in the
+             // wild with six clips for five words — word one's options, then
+             // silence — because the limiter tripped early and the run gave up
+             // on everything after it. The limit is a ~60 second cooldown, not
+             // a permanent failure, so wait it out and carry on. Two cooldowns
+             // is the cap: past that the quota is genuinely gone and stalling a
+             // teacher for minutes helps nobody.
+             const ttsGate = { aborted: false, cooldowns: 0, rateLimited: false };
+             const TTS_COOLDOWN_MS = 15000;
+             const TTS_MAX_COOLDOWNS = 2;
              if (typeof window !== 'undefined') window.__kokoroOfferedThisPreload = false;
              const processed = [];
 
@@ -1781,14 +1790,14 @@
                  });
                  const taskList = [...tasks].filter(Boolean);
                  setPrewarmTotal((prev) => prev + taskList.length);
-                 const results = await Promise.allSettled(taskList.map(async (text) => {
+                 const runTasks = async (list) => Promise.allSettled(list.map(async (text) => {
                      const key = normalizePackKey(text);
                      if (packedTtsAssets[key]) {
                          setPrewarmCount((prev) => prev + 1);
                          return packedTtsAssets[key];
                      }
                      try {
-                         if (prewarmAborted || typeof callTTS !== 'function') throw new Error('TTS unavailable');
+                         if (ttsGate.aborted || typeof callTTS !== 'function') throw new Error('TTS unavailable');
                          const src = await callTTS(text, voiceForTts, speedForTts);
                          const asset = await packTtsSource(src);
                          if (!asset) throw new Error('TTS returned no portable audio');
@@ -1798,12 +1807,25 @@
                          setPrewarmCount((prev) => prev + 1);
                      }
                  }));
-                 const hit429 = results.some((result) => result.status === 'rejected' && /429|Rate Limit/i.test(result.reason?.message || ''));
-                 if (hit429) {
-                     prewarmAborted = true;
+                 const was429 = (results) => results.some((r) => r.status === 'rejected' && /429|Rate Limit/i.test(r.reason?.message || ''));
+                 let results = await runTasks(taskList);
+                 if (was429(results)) {
+                     ttsGate.rateLimited = true;
                      if (typeof window !== 'undefined' && !window.__kokoroOfferDeclined && onRequestKokoroOffer && !window.__kokoroOfferedThisPreload) {
                          window.__kokoroOfferedThisPreload = true;
                          try { onRequestKokoroOffer('word_sounds'); } catch (_) {}
+                     }
+                     if (ttsGate.cooldowns < TTS_MAX_COOLDOWNS) {
+                         // Wait out the cooldown and retry only what is still
+                         // missing, so the words after this one still get audio.
+                         ttsGate.cooldowns += 1;
+                         await new Promise((r) => setTimeout(r, TTS_COOLDOWN_MS * ttsGate.cooldowns));
+                         const stillMissing = taskList.filter((text) => !packedTtsAssets[normalizePackKey(text)]);
+                         setPrewarmTotal((prev) => prev + stillMissing.length);
+                         results = await runTasks(stillMissing);
+                         if (was429(results) && ttsGate.cooldowns >= TTS_MAX_COOLDOWNS) ttsGate.aborted = true;
+                     } else {
+                         ttsGate.aborted = true;
                      }
                  }
                  item.ttsReady = !!packedTtsAssets[normalizePackKey(word)];
@@ -1811,6 +1833,17 @@
              }
              if (processed[0]) {
                  processed[0]._studentPackVersion = 2;
+                 // What the packing run actually managed, recorded at the point
+                 // of truth. A pack that lost its audio to a rate limit looks
+                 // identical to a complete one from the outside, and the only
+                 // place that difference is knowable is here.
+                 processed[0]._ttsCoverage = {
+                     clips: Object.keys(packedTtsAssets).length,
+                     wordsWithAudio: processed.filter((it) => it.ttsReady).length,
+                     words: processed.length,
+                     rateLimited: ttsGate.rateLimited,
+                     gaveUp: ttsGate.aborted,
+                 };
                  processed[0]._ttsAssets = packedTtsAssets;
                  processed[0]._decodingAssets = decodingAssets;
                  if (Object.keys(aacAssets).length) processed[0]._aacAssets = aacAssets;

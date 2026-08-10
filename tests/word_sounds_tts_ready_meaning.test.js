@@ -62,8 +62,10 @@ describe('what the teacher sees stays accurate', () => {
     // reports "unchanged" forever.
     const gap = MISC.slice(MISC.indexOf("key: 'audio',"), MISC.indexOf("key: 'audio_runtime',"));
     expect(gap).toMatch(/each: null/);
-    expect(gap).toMatch(/re-prepare the pack in setup/);
     expect(gap).not.toMatch(/batch:/);
+    // The remedy is named in packNote, which the line interpolates.
+    expect(gap).toMatch(/\$\{packNote\}/);
+    expect(MISC).toMatch(/re-prepare the pack in setup/);
   });
 
   it('runtime failures keep the Retry button, which is what it does fix', () => {

@@ -638,10 +638,12 @@ const WordSoundsReviewPanel = ({
       gaps.push({ ...gap, indices, text: gap.text(indices.length) });
     };
     const ttsIsLocal = typeof window !== "undefined" && !!(window._kokoroTTS && window._kokoroTTS.ready);
+    const coverage = (preloadedWords[0] || {})._ttsCoverage;
+    const packNote = coverage && coverage.rateLimited ? coverage.gaveUp ? " The last packing run was cut short by a rate limit, so most of this audio was never generated. Re-prepare in setup, ideally on the Kokoro local voice." : " The last packing run hit a rate limit and recovered, so some audio may be missing." : " Student devices will be silent for these; re-prepare the pack in setup to fix this.";
     addGap({
       key: "audio",
       test: (w) => w && !w.ttsReady && !portableKeys.has(norm(w.targetWord || w.word || w.term)),
-      text: (n) => `\u{1F507} ${n} word${n === 1 ? "" : "s"} without portable audio. Student devices will be silent for ${n === 1 ? "it" : "them"}; re-prepare the pack in setup to fix this.`,
+      text: (n) => `\u{1F507} ${n} word${n === 1 ? "" : "s"} without portable audio.${packNote}`,
       each: null
     });
     addGap({

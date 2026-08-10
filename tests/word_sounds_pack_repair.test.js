@@ -186,3 +186,50 @@ describe('only a guess is flagged as a guess', () => {
       .toMatch(/espeakPackPhonemes/);
   });
 });
+
+describe('one rate limit no longer costs the whole pack', () => {
+  it('the abort is not a one-way switch any more', () => {
+    // It used to be: the first 429 anywhere set prewarmAborted and every
+    // remaining word packed nothing. A pack shipped with six clips for five
+    // words because of it.
+    expect(SOURCE).not.toMatch(/let prewarmAborted = false;/);
+    expect(SOURCE).not.toMatch(/prewarmAborted = true;/);
+  });
+
+  it('it waits out the cooldown and retries what is still missing', () => {
+    // The limit is a ~60 second cooldown, not a permanent failure.
+    expect(SOURCE).toMatch(/const TTS_COOLDOWN_MS = 15000;/);
+    expect(SOURCE).toMatch(/ttsGate\.cooldowns \+= 1;/);
+    expect(SOURCE).toMatch(/const stillMissing = taskList\.filter\(\(text\) => !packedTtsAssets\[normalizePackKey\(text\)\]\)/);
+    expect(SOURCE).toMatch(/results = await runTasks\(stillMissing\)/);
+  });
+
+  it('it does give up eventually, rather than stalling a teacher for minutes', () => {
+    expect(SOURCE).toMatch(/const TTS_MAX_COOLDOWNS = 2;/);
+    expect(SOURCE).toMatch(/ttsGate\.cooldowns < TTS_MAX_COOLDOWNS/);
+    expect(SOURCE).toMatch(/ttsGate\.aborted = true;/);
+  });
+
+  it('the Kokoro offer still fires on the first limit', () => {
+    // Kokoro is local and rate-limit-free, so it is the actual way out.
+    const idx = SOURCE.indexOf('ttsGate.rateLimited = true;');
+    expect(idx).toBeGreaterThan(0);
+    expect(SOURCE.slice(idx, idx + 500)).toMatch(/onRequestKokoroOffer\('word_sounds'\)/);
+  });
+
+  it('what the run managed is recorded on the pack', () => {
+    // A pack that lost its audio looks identical to a complete one from the
+    // outside; this is the only place the difference is knowable.
+    expect(SOURCE).toMatch(/_ttsCoverage = \{/);
+    expect(SOURCE).toMatch(/wordsWithAudio: processed\.filter\(\(it\) => it\.ttsReady\)\.length/);
+    expect(SOURCE).toMatch(/rateLimited: ttsGate\.rateLimited/);
+    expect(SOURCE).toMatch(/gaveUp: ttsGate\.aborted/);
+  });
+
+  it('and the readiness line explains it instead of just counting', () => {
+    const misc = readFileSync(resolve(process.cwd(), 'misc_components_source.jsx'), 'utf8');
+    expect(misc).toMatch(/_ttsCoverage/);
+    expect(misc).toMatch(/cut short by a rate limit/);
+    expect(misc).toMatch(/hit a rate limit and recovered/);
+  });
+});

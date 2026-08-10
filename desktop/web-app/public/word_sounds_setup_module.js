@@ -1497,7 +1497,9 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       setGeneratedCount(0);
       setPrewarmCount(0);
       setPrewarmTotal(0);
-      let prewarmAborted = false;
+      const ttsGate = { aborted: false, cooldowns: 0, rateLimited: false };
+      const TTS_COOLDOWN_MS = 15e3;
+      const TTS_MAX_COOLDOWNS = 2;
       if (typeof window !== "undefined") window.__kokoroOfferedThisPreload = false;
       const processed = [];
       const preloadedMap = {};
@@ -1822,14 +1824,14 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         });
         const taskList = [...tasks].filter(Boolean);
         setPrewarmTotal((prev) => prev + taskList.length);
-        const results = await Promise.allSettled(taskList.map(async (text) => {
+        const runTasks = async (list) => Promise.allSettled(list.map(async (text) => {
           const key = normalizePackKey(text);
           if (packedTtsAssets[key]) {
             setPrewarmCount((prev) => prev + 1);
             return packedTtsAssets[key];
           }
           try {
-            if (prewarmAborted || typeof callTTS !== "function") throw new Error("TTS unavailable");
+            if (ttsGate.aborted || typeof callTTS !== "function") throw new Error("TTS unavailable");
             const src = await callTTS(text, voiceForTts, speedForTts);
             const asset = await packTtsSource(src);
             if (!asset) throw new Error("TTS returned no portable audio");
@@ -1839,9 +1841,10 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
             setPrewarmCount((prev) => prev + 1);
           }
         }));
-        const hit429 = results.some((result) => result.status === "rejected" && /429|Rate Limit/i.test(result.reason?.message || ""));
-        if (hit429) {
-          prewarmAborted = true;
+        const was429 = (results2) => results2.some((r) => r.status === "rejected" && /429|Rate Limit/i.test(r.reason?.message || ""));
+        let results = await runTasks(taskList);
+        if (was429(results)) {
+          ttsGate.rateLimited = true;
           if (typeof window !== "undefined" && !window.__kokoroOfferDeclined && onRequestKokoroOffer && !window.__kokoroOfferedThisPreload) {
             window.__kokoroOfferedThisPreload = true;
             try {
@@ -1849,12 +1852,29 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
             } catch (_) {
             }
           }
+          if (ttsGate.cooldowns < TTS_MAX_COOLDOWNS) {
+            ttsGate.cooldowns += 1;
+            await new Promise((r) => setTimeout(r, TTS_COOLDOWN_MS * ttsGate.cooldowns));
+            const stillMissing = taskList.filter((text) => !packedTtsAssets[normalizePackKey(text)]);
+            setPrewarmTotal((prev) => prev + stillMissing.length);
+            results = await runTasks(stillMissing);
+            if (was429(results) && ttsGate.cooldowns >= TTS_MAX_COOLDOWNS) ttsGate.aborted = true;
+          } else {
+            ttsGate.aborted = true;
+          }
         }
         item.ttsReady = !!packedTtsAssets[normalizePackKey(word)];
         item._ttsFailed = !item.ttsReady;
       }
       if (processed[0]) {
         processed[0]._studentPackVersion = 2;
+        processed[0]._ttsCoverage = {
+          clips: Object.keys(packedTtsAssets).length,
+          wordsWithAudio: processed.filter((it) => it.ttsReady).length,
+          words: processed.length,
+          rateLimited: ttsGate.rateLimited,
+          gaveUp: ttsGate.aborted
+        };
         processed[0]._ttsAssets = packedTtsAssets;
         processed[0]._decodingAssets = decodingAssets;
         if (Object.keys(aacAssets).length) processed[0]._aacAssets = aacAssets;

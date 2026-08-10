@@ -655,10 +655,20 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                         // a blob that dies with the tab. So this line carries NO
                         // fix button — offering one that cannot close the gap
                         // would be worse than saying plainly what does.
+                        // If the packing run itself reported trouble, say what
+                        // happened rather than leaving the teacher to infer it
+                        // from a count. A rate limit is recoverable by trying
+                        // again later; nothing else about the pack is wrong.
+                        const coverage = (preloadedWords[0] || {})._ttsCoverage;
+                        const packNote = coverage && coverage.rateLimited
+                            ? (coverage.gaveUp
+                                ? ' The last packing run was cut short by a rate limit, so most of this audio was never generated. Re-prepare in setup, ideally on the Kokoro local voice.'
+                                : ' The last packing run hit a rate limit and recovered, so some audio may be missing.')
+                            : ' Student devices will be silent for these; re-prepare the pack in setup to fix this.';
                         addGap({
                             key: 'audio',
                             test: (w) => w && !w.ttsReady && !portableKeys.has(norm(w.targetWord || w.word || w.term)),
-                            text: (n) => `🔇 ${n} word${n === 1 ? '' : 's'} without portable audio. Student devices will be silent for ${n === 1 ? 'it' : 'them'}; re-prepare the pack in setup to fix this.`,
+                            text: (n) => `🔇 ${n} word${n === 1 ? '' : 's'} without portable audio.${packNote}`,
                             each: null,
                         });
 
