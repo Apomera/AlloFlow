@@ -994,6 +994,71 @@ const PhonemeVoicePackEditor = ({ onClose, t }) => {
     return /* @__PURE__ */ React.createElement("div", { key: slot.id, className: `flex items-center gap-1.5 rounded-xl border-2 px-2 py-1.5 ${hasI ? "border-emerald-300 bg-emerald-50" : "border-slate-200 bg-white"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-slate-800 text-sm leading-tight" }, slot.label, " ", hasI && /* @__PURE__ */ React.createElement("span", { className: "text-emerald-600" }, "\u2713")), slot.hint ? /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 leading-snug" }, slot.hint) : null), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => playInstrReference(slot.id), disabled: !hasRefI, "aria-label": T("word_sounds.voice_pack_hear_default_for", "Hear the default for {label}", { label: slot.label }), title: T("word_sounds.voice_pack_hear_default", "Hear the default"), className: `w-9 h-9 rounded-full flex items-center justify-center transition-colors ${hasRefI ? "bg-amber-100 text-amber-700 hover:bg-amber-200" : "bg-slate-50 text-slate-300 cursor-not-allowed"}` }, "\u{1F442}"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => startRecording(slot.id, { instr: true, label: slot.label }), disabled: !consentOk, "aria-label": recI ? T("word_sounds.voice_pack_stop_recording", "Stop recording {label}", { label: slot.label }) : T("word_sounds.voice_pack_record", "Record {label}", { label: slot.label }), className: `w-9 h-9 rounded-full flex items-center justify-center text-sm transition-colors ${recI ? "bg-red-500 text-white animate-pulse motion-reduce:animate-none" : consentOk ? "bg-violet-100 text-violet-700 hover:bg-violet-200" : "bg-slate-50 text-slate-300 cursor-not-allowed"}` }, recI ? "\u23F9" : "\u{1F399}\uFE0F"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => playInstrClip(slot.id), disabled: !hasI, "aria-label": T("word_sounds.voice_pack_play_recording", "Play your recording of {label}", { label: slot.label }), className: `w-9 h-9 rounded-full flex items-center justify-center transition-colors ${hasI ? "bg-slate-100 text-slate-700 hover:bg-slate-200" : "bg-slate-50 text-slate-300 cursor-not-allowed"}` }, "\u{1F50A}"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => clearInstrClip(slot.id), disabled: !hasI, "aria-label": T("word_sounds.voice_pack_clear", "Clear {label}", { label: slot.label }), className: `w-7 h-7 rounded-full flex items-center justify-center text-xs transition-colors ${hasI ? "text-rose-500 hover:bg-rose-50" : "text-slate-200 cursor-not-allowed"}` }, "\u{1F5D1}\uFE0F"));
   })))), status ? /* @__PURE__ */ React.createElement("div", { className: "px-5 py-2 text-xs font-semibold text-violet-700 bg-violet-50 border-t border-violet-100", role: "status", "aria-live": "polite" }, status) : null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-5 py-3 border-t border-slate-200 flex-wrap" }, /* @__PURE__ */ React.createElement("input", { type: "text", value: pack.name, onChange: (e) => setPack((prev) => Object.assign({}, prev, { name: e.target.value })), "aria-label": T("word_sounds.voice_pack_name_label", "Pack name"), className: "flex-1 min-w-[120px] border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-semibold", placeholder: T("word_sounds.voice_pack_name_label", "Pack name") }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: savePack, className: "px-4 py-1.5 rounded-lg bg-violet-600 text-white font-bold text-sm hover:bg-violet-700 transition-colors" }, T("word_sounds.voice_pack_save", "Save & Use")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: exportPack, className: "px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-sm hover:bg-emerald-100 transition-colors" }, "\u2B07\uFE0F ", T("word_sounds.voice_pack_export", "Export")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => fileInputRef.current && fileInputRef.current.click(), className: "px-3 py-1.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 font-bold text-sm hover:bg-slate-100 transition-colors" }, "\u{1F4E5} ", T("word_sounds.voice_pack_import", "Import")), /* @__PURE__ */ React.createElement("input", { ref: fileInputRef, type: "file", accept: "application/json,.json", onChange: importPack, className: "hidden", "aria-hidden": "true" }))), showDeletePackConfirm && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[420] bg-black/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement("div", { ref: deletePackDialogRef, role: "alertdialog", "aria-modal": "true", "aria-labelledby": "voice-pack-delete-title", "aria-describedby": "voice-pack-delete-message", tabIndex: -1, onKeyDownCapture: handleDeletePackDialogKeyDown, className: "w-full max-w-sm rounded-2xl border-2 border-rose-300 bg-white p-6 shadow-2xl" }, /* @__PURE__ */ React.createElement("h3", { id: "voice-pack-delete-title", className: "text-lg font-black text-slate-900" }, "Delete voice pack?"), /* @__PURE__ */ React.createElement("p", { id: "voice-pack-delete-message", className: "mt-2 text-sm text-slate-700" }, 'Delete "', pack.name || "Untitled", '"? Its recordings and progress log will be permanently removed.'), /* @__PURE__ */ React.createElement("div", { className: "mt-5 flex justify-end gap-2" }, /* @__PURE__ */ React.createElement("button", { ref: deletePackCancelRef, type: "button", onClick: () => setShowDeletePackConfirm(false), className: "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50" }, "Keep pack"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: performDeletePack, className: "rounded-lg bg-rose-600 px-4 py-2 text-sm font-bold text-white hover:bg-rose-700" }, "Delete pack")))));
 };
+const PACK_COMMON_WORDS = ["cat", "dog", "sun", "map", "bed", "pig", "cup", "hat", "fish", "star", "tree", "frog", "duck", "book", "run", "red", "sit", "fan", "hop", "moon", "pen", "top", "ring", "rock", "look", "mug"];
+const packRimeOfWord = (w, isEnglish) => {
+  const v = String(w || "").trim().toLowerCase();
+  if (!v) return "";
+  if (isEnglish) return (v.match(/[aeiou][a-z]*$/) || [""])[0];
+  return v.slice(-2);
+};
+const derivePackRhyme = (word, batchWords, isEnglish) => {
+  const w = String(word || "").trim().toLowerCase();
+  if (!w) return "";
+  const rime = packRimeOfWord(w, isEnglish);
+  if (!rime || rime.length < 2) return "";
+  const pool = [
+    ...Array.isArray(batchWords) ? batchWords : [],
+    ...isEnglish ? PACK_COMMON_WORDS : []
+  ];
+  const seen = /* @__PURE__ */ new Set([w]);
+  for (const candidate of pool) {
+    const c = String(candidate || "").trim().toLowerCase();
+    if (!c || seen.has(c)) continue;
+    seen.add(c);
+    if (packRimeOfWord(c, isEnglish) === rime) return c;
+  }
+  return "";
+};
+let _espeakPackLoad = null;
+const ensureEspeakLoaded = () => {
+  if (_espeakPackLoad) return _espeakPackLoad;
+  _espeakPackLoad = (async () => {
+    try {
+      if (typeof window === "undefined") return false;
+      if (window.AlloPhonics && typeof window.AlloPhonics.toPhonemes === "function") return true;
+      if (typeof window.__alloLoadPlugin !== "function") return false;
+      await Promise.race([
+        window.__alloLoadPlugin("phonics_g2p_loader.js"),
+        new Promise((resolve) => setTimeout(resolve, 6e3))
+      ]);
+      return !!(window.AlloPhonics && typeof window.AlloPhonics.toPhonemes === "function");
+    } catch (e) {
+      return false;
+    }
+  })();
+  return _espeakPackLoad;
+};
+const espeakPackPhonemes = async (word, language) => {
+  const w = String(word || "").trim();
+  if (!w) return null;
+  try {
+    if (!await ensureEspeakLoaded()) return null;
+    const espeak = await Promise.race([
+      window.AlloPhonics.toPhonemes(w, { lang: language }),
+      new Promise((resolve) => setTimeout(() => resolve(null), 5e3))
+    ]);
+    if (!espeak || !Array.isArray(espeak.ipa) || !espeak.ipa.length) return null;
+    if (typeof window.AlloPhonics.buildPhonemes !== "function") return null;
+    const built = window.AlloPhonics.buildPhonemes(w, espeak, null);
+    const graphemes = (built && built.phonemes || []).map(
+      (p) => typeof p === "string" ? p : p && (p.grapheme || p.ipa) || ""
+    );
+    if (!graphemes.length || graphemes.some((g) => !g)) return null;
+    return graphemes;
+  } catch (e) {
+    return null;
+  }
+};
 const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview, onMinimize, onExpand, isProbeMode, probeActivity, selectedVoice, setSelectedVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage, probeStudentNames = [] }) => {
   const tf = (key, fallback, params) => {
     let v;
@@ -1315,7 +1380,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     return { mime: blob.type || "audio/mpeg", base64: btoa(binary) };
   };
   const compileActivityItems = (items) => {
-    const commonWords = packIsEnglish ? ["cat", "dog", "sun", "map", "bed", "pig", "cup", "hat", "fish", "star", "tree", "frog", "duck", "book", "run", "red", "sit", "fan", "hop", "moon", "pen", "top", "ring", "rock", "look", "mug"] : [];
+    const commonWords = packIsEnglish ? PACK_COMMON_WORDS : [];
     const itemWords = items.map((item) => normalizePackKey(item.targetWord || item.word || item.term)).filter(Boolean);
     const wordPool = [.../* @__PURE__ */ new Set([...itemWords, ...commonWords])];
     const allPackPhonemes = [...new Set(items.flatMap((it) => (it.phonemes || []).map(flatPackPhoneme)).filter(Boolean))];
@@ -1551,7 +1616,14 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
             }
           }
           const _phonemesMissing = !(data.phonemes && data.phonemes.length > 0);
-          const validatedPhonemes = _phonemesMissing ? estimatePackPhonemes(data.word) : data.phonemes;
+          let _espeakPhonemes = null;
+          if (_phonemesMissing) {
+            _espeakPhonemes = await espeakPackPhonemes(data.word, wordSoundsLanguage);
+          }
+          const validatedPhonemes = !_phonemesMissing ? data.phonemes : _espeakPhonemes || estimatePackPhonemes(data.word);
+          const _phonemeSource = !_phonemesMissing ? "gemini" : _espeakPhonemes ? "espeak" : "estimated";
+          const _hasAiRhyme = !!(data.rhymeWord || data.rhymes && data.rhymes[0]);
+          const _derivedRhyme = _hasAiRhyme ? "" : derivePackRhyme(data.word, wordsToProcess, packIsEnglish);
           let manipTask = null;
           if (data.manipulationTask && data.manipulationTask.answer && Array.isArray(data.manipulationTask.distractors) && data.manipulationTask.distractors.length >= 2 && data.manipulationTask.instruction) {
             manipTask = {
@@ -1574,7 +1646,11 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
             syllableBlendingOptions: data.syllableBlendingOptions || [],
             graphemes: data.graphemes || [],
             rhymes: data.rhymes || [data.rhymeWord],
-            rhymeWord: data.rhymeWord || data.rhymes && data.rhymes[0] || "",
+            // Fall back to a derived rhyme rather than shipping an
+            // empty answer for the player to improvise, so the pack
+            // is complete on a student device with AI switched off.
+            rhymeWord: data.rhymeWord || data.rhymes && data.rhymes[0] || _derivedRhyme || "",
+            _rhymeSource: data.rhymeWord || data.rhymes && data.rhymes[0] ? "gemini" : _derivedRhyme ? "derived" : void 0,
             rhymeDistractors: data.rhymeDistractors || [],
             blendingDistractors: data.blendingDistractors || [],
             orthographyDistractors: data.orthographyDistractors || [],
@@ -1585,11 +1661,18 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
             definition: data.definition,
             image: imageUrl,
             manipulationTask: manipTask,
-            _fallbackUsed: _phonemesMissing || void 0
+            // Only a spelling guess is "estimated". An eSpeak
+            // result is a real G2P answer and must not raise the
+            // teacher-facing warning, but its provenance is still
+            // recorded so the review panel can say where the
+            // sounds came from.
+            _fallbackUsed: _phonemeSource === "estimated" || void 0,
+            _phonemeSource
           });
         } catch (e) {
           warnLog("Word processing failed for:", rawWord, e.message);
-          const fallbackPhonemes = estimatePackPhonemes(rawWord);
+          const _espeakRescue = await espeakPackPhonemes(rawWord, wordSoundsLanguage);
+          const fallbackPhonemes = _espeakRescue || estimatePackPhonemes(rawWord);
           processed.push({
             term: rawWord,
             word: rawWord,
@@ -1599,7 +1682,8 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
             firstSound: fallbackPhonemes[0] || rawWord[0],
             lastSound: fallbackPhonemes[fallbackPhonemes.length - 1] || rawWord[rawWord.length - 1],
             image: null,
-            _fallbackUsed: true
+            _fallbackUsed: !_espeakRescue,
+            _phonemeSource: _espeakRescue ? "espeak" : "estimated"
           });
         }
         setGeneratedCount((prev) => prev + 1);

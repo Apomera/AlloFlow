@@ -838,6 +838,108 @@
         );
     };
 
+    // Decodable filler words. Shared by the board compiler and the rhyme
+    // derivation below so the two cannot drift apart. English only by
+    // construction — every consumer gates on packIsEnglish.
+    const PACK_COMMON_WORDS = ['cat','dog','sun','map','bed','pig','cup','hat','fish','star','tree','frog','duck','book','run','red','sit','fan','hop','moon','pen','top','ring','rock','look','mug'];
+    // Trailing vowel-plus-coda: the rime that has to match for two words to
+    // rhyme. Same rule the board compiler uses, and the non-Latin branch is
+    // there because the [aeiou] scan matches nothing outside Latin script.
+    const packRimeOfWord = (w, isEnglish) => {
+        const v = String(w || '').trim().toLowerCase();
+        if (!v) return '';
+        if (isEnglish) return (v.match(/[aeiou][a-z]*$/) || [''])[0];
+        return v.slice(-2);
+    };
+    // A rhyme answer the pack can carry to a student device. The player can
+    // already derive one at runtime, but a device with AI switched off is
+    // better served by a pack that is complete before it leaves the teacher.
+    // Drawn from the session's own words first (a rhyme the child is also
+    // learning is worth more than a stranger), then the filler pool.
+    const derivePackRhyme = (word, batchWords, isEnglish) => {
+        const w = String(word || '').trim().toLowerCase();
+        if (!w) return '';
+        const rime = packRimeOfWord(w, isEnglish);
+        // A one-letter rime ('a' from 'sofa') matches far too much to be a
+        // rhyme; leave those to the player rather than assert a bad pair.
+        if (!rime || rime.length < 2) return '';
+        const pool = [
+            ...(Array.isArray(batchWords) ? batchWords : []),
+            ...(isEnglish ? PACK_COMMON_WORDS : []),
+        ];
+        const seen = new Set([w]);
+        for (const candidate of pool) {
+            const c = String(candidate || '').trim().toLowerCase();
+            if (!c || seen.has(c)) continue;
+            seen.add(c);
+            if (packRimeOfWord(c, isEnglish) === rime) return c;
+        }
+        return '';
+    };
+
+    // ── eSpeak G2P: the middle rung of the phoneme fallback ladder ──────────
+    // When Gemini returns no phonemes for a word, the pack used to drop
+    // straight to estimatePackPhonemes — a spelling heuristic, which is where
+    // "letter-split sounds (generation failed)" on the readiness panel comes
+    // from. eSpeak NG is a real grapheme-to-phoneme engine and belongs between
+    // the two, so that warning is only ever raised for words a G2P engine
+    // could not do either, rather than for every word Gemini hiccuped on.
+    //
+    // Load once per session, and only when something actually needs it: the
+    // wasm is ~18.5MB per language. `_espeakPackLoad` caches the attempt,
+    // INCLUDING a failed one, so a pack of 40 words cannot serialise 40
+    // six-second timeouts on a school network.
+    let _espeakPackLoad = null;
+    const ensureEspeakLoaded = () => {
+        if (_espeakPackLoad) return _espeakPackLoad;
+        _espeakPackLoad = (async () => {
+            try {
+                if (typeof window === 'undefined') return false;
+                if (window.AlloPhonics && typeof window.AlloPhonics.toPhonemes === 'function') return true;
+                if (typeof window.__alloLoadPlugin !== 'function') return false;
+                await Promise.race([
+                    window.__alloLoadPlugin('phonics_g2p_loader.js'),
+                    new Promise((resolve) => setTimeout(resolve, 6000)),
+                ]);
+                return !!(window.AlloPhonics && typeof window.AlloPhonics.toPhonemes === 'function');
+            } catch (e) {
+                return false;
+            }
+        })();
+        return _espeakPackLoad;
+    };
+    // Returns grapheme clusters in the same shape estimatePackPhonemes produces
+    // (['sh','i','p']), or null to let the caller fall through. Grapheme, not
+    // IPA: the phoneme audio bank is keyed by grapheme, and flatPackPhoneme
+    // reads .grapheme first, so this keeps the pack's existing contract.
+    const espeakPackPhonemes = async (word, language) => {
+        const w = String(word || '').trim();
+        if (!w) return null;
+        try {
+            if (!(await ensureEspeakLoaded())) return null;
+            const espeak = await Promise.race([
+                window.AlloPhonics.toPhonemes(w, { lang: language }),
+                new Promise((resolve) => setTimeout(() => resolve(null), 5000)),
+            ]);
+            // toPhonemes returns null when the language has no eSpeak voice.
+            // Running the English voice on, say, Somali would return
+            // confidently wrong sounds, which is worse than falling through.
+            if (!espeak || !Array.isArray(espeak.ipa) || !espeak.ipa.length) return null;
+            if (typeof window.AlloPhonics.buildPhonemes !== 'function') return null;
+            const built = window.AlloPhonics.buildPhonemes(w, espeak, null);
+            const graphemes = ((built && built.phonemes) || []).map(
+                (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.ipa)) || '')
+            );
+            // A gap in the alignment means the graphemes do not reconstruct the
+            // word, and a blank phoneme has no audio clip. Reject the whole
+            // result rather than ship a hole in the middle of a board.
+            if (!graphemes.length || graphemes.some((g) => !g)) return null;
+            return graphemes;
+        } catch (e) {
+            return null;
+        }
+    };
+
     const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview , onMinimize, onExpand, isProbeMode, probeActivity, selectedVoice, setSelectedVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage, probeStudentNames = []}) => {
         // t-with-fallback: the host's t(key, params) returns UNDEFINED on a
         // missing key and treats a string second argument as params — so every
@@ -1180,9 +1282,7 @@
             // English filler words join the pool ONLY for English packs — for
             // any other language the pool is the pack's own words, so every
             // board stays same-language.
-            const commonWords = packIsEnglish
-                ? ['cat','dog','sun','map','bed','pig','cup','hat','fish','star','tree','frog','duck','book','run','red','sit','fan','hop','moon','pen','top','ring','rock','look','mug']
-                : [];
+            const commonWords = packIsEnglish ? PACK_COMMON_WORDS : [];
             const itemWords = items.map((item) => normalizePackKey(item.targetWord || item.word || item.term)).filter(Boolean);
             const wordPool = [...new Set([...itemWords, ...commonWords])];
             // Same-language distractor inventories for non-English packs:
@@ -1465,9 +1565,23 @@
                      // letter-split here shipped 'car' as [c,a,r] with no
                      // teacher-visible warning.
                      const _phonemesMissing = !(data.phonemes && data.phonemes.length > 0);
-                     const validatedPhonemes = _phonemesMissing
-                         ? estimatePackPhonemes(data.word)
-                         : data.phonemes;
+                     // Gemini, then eSpeak, then the spelling heuristic. Only
+                     // the last rung is a guess, so only the last rung earns
+                     // the "estimated sounds" flag the teacher sees.
+                     let _espeakPhonemes = null;
+                     if (_phonemesMissing) {
+                         _espeakPhonemes = await espeakPackPhonemes(data.word, wordSoundsLanguage);
+                     }
+                     const validatedPhonemes = !_phonemesMissing
+                         ? data.phonemes
+                         : (_espeakPhonemes || estimatePackPhonemes(data.word));
+                     const _phonemeSource = !_phonemesMissing
+                         ? 'gemini'
+                         : (_espeakPhonemes ? 'espeak' : 'estimated');
+                     const _hasAiRhyme = !!(data.rhymeWord || (data.rhymes && data.rhymes[0]));
+                     const _derivedRhyme = _hasAiRhyme
+                         ? ''
+                         : derivePackRhyme(data.word, wordsToProcess, packIsEnglish);
                      // Validate manipulationTask — Gemini sometimes skips it or
                      // returns partial data; null-it-out so the activity's
                      // on-demand fallback kicks in rather than shipping a
@@ -1498,7 +1612,16 @@
                          syllableBlendingOptions: data.syllableBlendingOptions || [],
                          graphemes: data.graphemes || [],
                          rhymes: data.rhymes || [data.rhymeWord],
-                         rhymeWord: data.rhymeWord || (data.rhymes && data.rhymes[0]) || '',
+                         // Fall back to a derived rhyme rather than shipping an
+                         // empty answer for the player to improvise, so the pack
+                         // is complete on a student device with AI switched off.
+                         rhymeWord: data.rhymeWord
+                             || (data.rhymes && data.rhymes[0])
+                             || _derivedRhyme
+                             || '',
+                         _rhymeSource: (data.rhymeWord || (data.rhymes && data.rhymes[0]))
+                             ? 'gemini'
+                             : (_derivedRhyme ? 'derived' : undefined),
                          rhymeDistractors: data.rhymeDistractors || [],
                          blendingDistractors: data.blendingDistractors || [],
                          orthographyDistractors: data.orthographyDistractors || [],
@@ -1509,11 +1632,21 @@
                          definition: data.definition,
                          image: imageUrl,
                          manipulationTask: manipTask,
-                         _fallbackUsed: _phonemesMissing || undefined
+                         // Only a spelling guess is "estimated". An eSpeak
+                         // result is a real G2P answer and must not raise the
+                         // teacher-facing warning, but its provenance is still
+                         // recorded so the review panel can say where the
+                         // sounds came from.
+                         _fallbackUsed: (_phonemeSource === 'estimated') || undefined,
+                         _phonemeSource
                      });
                  } catch (e) {
                      warnLog("Word processing failed for:", rawWord, e.message);
-                     const fallbackPhonemes = estimatePackPhonemes(rawWord);
+                     // The word threw, so there is no Gemini answer at all —
+                     // but a G2P engine does not need one. Try eSpeak before
+                     // giving the child sounds derived from spelling.
+                     const _espeakRescue = await espeakPackPhonemes(rawWord, wordSoundsLanguage);
+                     const fallbackPhonemes = _espeakRescue || estimatePackPhonemes(rawWord);
                      processed.push({
                          term: rawWord,
                          word: rawWord,
@@ -1523,7 +1656,8 @@
                          firstSound: fallbackPhonemes[0] || rawWord[0],
                          lastSound: fallbackPhonemes[fallbackPhonemes.length - 1] || rawWord[rawWord.length - 1],
                          image: null,
-                         _fallbackUsed: true
+                         _fallbackUsed: !_espeakRescue,
+                         _phonemeSource: _espeakRescue ? 'espeak' : 'estimated'
                      });
                  }
                      setGeneratedCount(prev => prev + 1);
