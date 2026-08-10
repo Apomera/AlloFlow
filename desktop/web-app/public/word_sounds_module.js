@@ -6313,6 +6313,41 @@
       }, []);
       const [showProbeResults, setShowProbeResults] = React.useState(false);
       const probeStartTimeRef = React.useRef(null);
+      // The probe clock is wall-clock: elapsed time, and therefore the
+      // items-per-minute a teacher may tier a child on, keeps running while the
+      // tab is in the background. Minimising mid-probe is already blocked, but
+      // a tab switch, a notification or a fire drill is not, and nothing about
+      // the result said it had happened. Rather than quietly subtract the time
+      // — which changes what the measure IS, and is the teacher's call, not
+      // mine — record it and report it, so a rate that was collected under an
+      // interruption can be recognised instead of trusted.
+      const probeHiddenMsRef = React.useRef(0);
+      const probeHiddenSinceRef = React.useRef(null);
+      React.useEffect(() => {
+        if (!isProbeMode) return;
+        if (typeof document === "undefined" || !document.addEventListener) return;
+        const onVisibility = () => {
+          if (document.hidden) {
+            probeHiddenSinceRef.current = Date.now();
+          } else if (probeHiddenSinceRef.current) {
+            probeHiddenMsRef.current += Date.now() - probeHiddenSinceRef.current;
+            probeHiddenSinceRef.current = null;
+          }
+        };
+        document.addEventListener("visibilitychange", onVisibility);
+        return () => {
+          // Count time still hidden at teardown, or a probe ended from the
+          // background would report none of it.
+          onVisibility();
+          document.removeEventListener("visibilitychange", onVisibility);
+        };
+      }, [isProbeMode]);
+      // Hidden time so far, including an interruption still in progress.
+      const probeHiddenMs = () => probeHiddenMsRef.current +
+        (probeHiddenSinceRef.current ? Date.now() - probeHiddenSinceRef.current : 0);
+      // Two seconds of backgrounding is a glance at a notification, not a
+      // fire drill. Below that, saying "interrupted" would be noise.
+      const PROBE_INTERRUPTION_MS = 2000;
       React.useEffect(() => {
         if (typeof document === "undefined" || isMinimized) return undefined;
         const dialog = showProbeResults
@@ -6434,6 +6469,8 @@
               // A consumer reading one field name got nothing from this path.
               elapsed: Math.round(totalTime),
               activity: wordSoundsActivity,
+              hiddenMs: Math.round(probeHiddenMs()),
+              interrupted: probeHiddenMs() >= PROBE_INTERRUPTION_MS,
               byDifficulty: { easy: { ..._byBand.easy }, medium: { ..._byBand.medium }, hard: { ..._byBand.hard } },
             });
           onClose();
@@ -6566,6 +6603,25 @@
                 ),
               ),
             ),
+            // A rate collected across an interruption should be read
+            // differently, and only this screen can say so: the clock kept
+            // running while the tab was in the background.
+            probeHiddenMs() >= PROBE_INTERRUPTION_MS &&
+              /*#__PURE__*/ React.createElement(
+                "div",
+                {
+                  role: "note",
+                  className:
+                    "mt-3 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900",
+                },
+                // ui_strings uses {s} (host t() substitutes it) and allo_data
+                // uses {{s}} (this fallback does). ts() can resolve from
+                // either, so accept both rather than print a literal brace.
+                (ts("word_sounds.probe_interrupted") ||
+                  "This probe was interrupted for about {{s}} seconds while the tab was in the background. The timer kept running, so the rate above understates how fast this child was working.")
+                  .replace("{{s}}", String(Math.round(probeHiddenMs() / 1000)))
+                  .replace("{s}", String(Math.round(probeHiddenMs() / 1000))),
+              ),
             _bandTotal > 0 &&
             /*#__PURE__*/ React.createElement(
               "div",
@@ -6621,6 +6677,8 @@
           !probeStartTimeRef.current
         ) {
           probeStartTimeRef.current = Date.now();
+            probeHiddenMsRef.current = 0;
+            probeHiddenSinceRef.current = null;
         }
       }, [isProbeMode, wordSoundsScore.total]);
       const [probeElapsed, setProbeElapsed] = React.useState(0);
@@ -10611,6 +10669,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             // the rate denominator — inflating items/min — and its timestamp
             // filter dropped item 1 from the by-band breakdown).
             probeStartTimeRef.current = Date.now();
+            probeHiddenMsRef.current = 0;
+            probeHiddenSinceRef.current = null;
             setProbeElapsed(0);
           }
           setBlendingProgress(0);
@@ -12396,6 +12456,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       total: postScore.total,
                       elapsed: Math.round(elapsedMinutes * 60),
                       activity: wordSoundsActivity,
+                      hiddenMs: Math.round(probeHiddenMs()),
+                      interrupted: probeHiddenMs() >= PROBE_INTERRUPTION_MS,
                       byDifficulty: computeProbeByBand(_historyEntry),
                     });
                   }
@@ -12973,6 +13035,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           total: postScore.total,
                           elapsed: Math.round(elapsedMinutes * 60),
                           activity: wordSoundsActivity,
+                          hiddenMs: Math.round(probeHiddenMs()),
+                          interrupted: probeHiddenMs() >= PROBE_INTERRUPTION_MS,
                           byDifficulty: computeProbeByBand(_historyEntry),
                         });
                       }

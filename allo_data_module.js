@@ -68,6 +68,7 @@ const WORD_SOUNDS_STRINGS = {
     'word_sounds.items_attempted': 'Items Attempted',
     'word_sounds.items_correct': 'Items Correct',
     'word_sounds.items_per_min': 'Items / Min',
+    'word_sounds.probe_interrupted': 'This probe was interrupted for about {{s}} seconds while the tab was in the background. The timer kept running, so the rate above understates how fast this child was working.',
     'word_sounds.duration_label': 'Duration: ',
     'word_sounds.download_csv': 'Download CSV',
     'word_sounds.grade_label': 'Grade ',
