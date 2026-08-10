@@ -381,7 +381,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
   var MAINE_SPECIES = [
     {
-      id: 'grayWolf', name: 'Gray Wolf', icon: '🐺', color: 'var(--allo-stem-text-soft, #64748b)',
+      id: 'grayWolf', name: 'Gray Wolf', icon: '🐺', color: '#64748b',
       role: 'Apex predator (extirpated)',
       desc: 'Locally extirpated in Maine for over a century. Reintroduction is the most dramatic conservation move possible: documented in Yellowstone to trigger a trophic cascade by reducing elk browse, letting streamside willows and aspen recover. (Whether wolves also reshaped stream channels themselves is still debated among scientists.)',
       defaultState: { pop: 0, habitat: 60, support: 35 },
@@ -2728,7 +2728,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                     vx: (Math.random() - 0.5) * 1.5,
                     vy: -Math.random() * 1.5,
                     life: 1.0,
-                    color: 'var(--allo-stem-text-soft, #94a3b8)'  // gray puff = starved, distinct from kill puff
+                    color: '#94a3b8'  // gray puff = starved, distinct from kill puff
                   });
                 }
                 continue;
