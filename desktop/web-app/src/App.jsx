@@ -14422,17 +14422,17 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('UILanguageSelector', './ui_language_selector_module.js');
     // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
     loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
-    loadModule('AudioBanks', './audio_banks_module.js');
-    loadModule('VerificationPolicy', './verification_policy_module.js');
-    loadModule('DocBuilderRenderer', './doc_builder_renderer_module.js');
-    loadModule('PdfAuditView', './view_pdf_audit_module.js');
-    loadModule('ExportPreviewView', './view_export_preview_module.js');
-    loadModule('MiscModals', './view_misc_modals_module.js');
-    loadModule('GeminiBridge', './view_gemini_bridge_module.js');
-    loadModule('MiscPanels', './view_misc_panels_module.js');
-    loadModule('UIPolish', './ui_polish_module.js');
-    loadModule('SidebarPanels', './view_sidebar_panels_module.js');
-    loadModule('ModuleScopeExtras', './module_scope_extras_module.js');
+    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=afc130a59');
+    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=afc130a59');
+    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=afc130a59');
+    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=ce85961b0');
+    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=ce85961b0');
+    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=afc130a59');
+    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=afc130a59');
+    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=afc130a59');
+    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=afc130a59');
+    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=afc130a59');
+    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=afc130a59');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // The generic loadModule() doesn't accept post-load callbacks, and the
     // upgrade-on-parse calls at lines ~693 and ~2002 fire before the CDN script

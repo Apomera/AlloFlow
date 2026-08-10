@@ -153,7 +153,7 @@ uses an open range.
 | [axe-core](https://github.com/dequelabs/axe-core) | accessibility rule checks | MPL-2.0 | Copyright (c) Deque Systems, Inc. |
 | [IBM Equal Access](https://github.com/IBMa/equal-access) | second accessibility checker | Apache-2.0 | Copyright (c) IBM Corp. |
 | [DOMPurify](https://github.com/cure53/DOMPurify) | HTML sanitizing | Apache-2.0 / MPL-2.0 | Copyright (c) 2015 Dr.-Ing. Mario Heiderich, Cure53 |
-| [Harper](https://writewithharper.com) | grammar & spelling checks | Apache-2.0 | Copyright 2024 Elijah Potter |
+| [Harper](https://writewithharper.com) | grammar & spelling checks; v2.4.0 runtime vendored under `vendor/harper/2.4.0/` | Apache-2.0 ([vendored license](./vendor/harper/2.4.0/LICENSE)) | Copyright 2024 Elijah Potter |
 | [Free Dictionary API](https://dictionaryapi.dev) | word definitions/pronunciation | API free; data CC BY-SA (Wiktionary) | Definitions © Wiktionary contributors (CC BY-SA) |
 | [liblouis](https://liblouis.io) | UEB Grade 2 braille (.brf) translation | GPLv3 (engine) / LGPL-2.1+ (tables) | Copyright (c) liblouis contributors |
 | [Open Board Format (OBF/OBZ)](https://www.openboardformat.org) | AAC board interchange (Symbol Studio) | open specification | © Open AAC / CoughDrop |

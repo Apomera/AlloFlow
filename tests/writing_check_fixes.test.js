@@ -18,8 +18,10 @@ const files = {
 for (const [name, src] of Object.entries(files)) {
   describe(`writing-check fixes — ${name}`, () => {
     it('(b) applies via execCommand insertText (undoable) with a direct-write fallback', () => {
-      expect(src).toContain("_ok = doc.execCommand('insertText', false, replacement);");
-      expect(src).toContain('if (!_ok) { const raw = hit.node.textContent;');
+      expect(src).toContain('function _applyHarperTextReplacement');
+      expect(src).toContain("doc.execCommand?.('insertText', false, String(replacement))");
+      expect(src).toContain('textNode.textContent = raw.slice(0, localStart)');
+      expect(src).toContain('_applyHarperTextReplacement(doc, hit.node, hit.local, _badLen, replacement)');
     });
 
     it('(b) shifts sibling-card offsets in the same block after an apply (no more false "text changed")', () => {
