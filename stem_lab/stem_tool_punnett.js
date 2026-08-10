@@ -170,8 +170,8 @@ window.StemLab = window.StemLab || {
       { label: '\uD83D\uDC04 Roan Cattle (Rr \u00D7 Rr)', p1: ['R', 'r'], p2: ['R', 'r'], trait: 'Coat pattern', domEmoji: '\uD83D\uDD34', recEmoji: '\u26AA', blendEmoji: '\uD83D\uDD35', domLabel: 'Red', recLabel: 'White', blendLabel: 'Roan (mixed)', tip: 'Roan cattle show both red and white hairs together' }
     ],
     sexLinked: [
-      { label: '\uD83D\uDC41 Color Vision (Cc \u00D7 cY)', p1: ['C', 'c'], p2: ['C', 'Y'], trait: 'Color vision', domEmoji: '\uD83D\uDC41', recEmoji: '\uD83D\uDE36\u200D\uD83C\uDF2B\uFE0F', domLabel: 'Normal', recLabel: 'Colorblind', tip: 'Carrier mother \u00D7 normal father: 50% sons affected' },
-      { label: '\uD83E\uDE78 Hemophilia (Hh \u00D7 hY)', p1: ['H', 'h'], p2: ['H', 'Y'], trait: 'Blood clotting', domEmoji: '\uD83E\uDE78', recEmoji: '\uD83E\uDE79', domLabel: 'Normal', recLabel: 'Hemophilia', tip: 'X-linked recessive: carrier mother can produce affected sons' }
+      { label: '\uD83D\uDC41 Color Vision (Cc \u00D7 CY)', p1: ['C', 'c'], p2: ['C', 'Y'], trait: 'Color vision', domEmoji: '\uD83D\uDC41', recEmoji: '\uD83D\uDE36\u200D\uD83C\uDF2B\uFE0F', domLabel: 'Normal', recLabel: 'Colorblind', tip: 'Carrier mother \u00D7 normal father: 50% sons affected' },
+      { label: '\uD83E\uDE78 Hemophilia (Hh \u00D7 HY)', p1: ['H', 'h'], p2: ['H', 'Y'], trait: 'Blood clotting', domEmoji: '\uD83E\uDE78', recEmoji: '\uD83E\uDE79', domLabel: 'Normal', recLabel: 'Hemophilia', tip: 'X-linked recessive: carrier mother can produce affected sons' }
     ]
   };
 
@@ -1646,10 +1646,12 @@ window.StemLab = window.StemLab || {
               if (popMutation > 0) {
                 p = p * (1 - popMutation) + (1 - p) * popMutation;
               }
-              // Genetic drift (binomial sampling)
+              // Genetic drift (binomial sampling). Sample the full 2N allele pool:
+              // the slider allows N up to 1000 and a silent cap at 500 would double
+              // the drift variance students observe for the largest populations.
               if (popDrift) {
                 var count = 0;
-                var n2 = 2 * Math.min(popSize, 500);
+                var n2 = 2 * popSize;
                 for (var i = 0; i < n2; i++) {
                   if (Math.random() < p) count++;
                 }
