@@ -1628,6 +1628,16 @@ window.StemLab = window.StemLab || {
             var genFewestCoinsChallenge = function () {
               var maxC = isJPY ? 5000 : gc.maxPrice;
               var target = isJPY ? (Math.floor(Math.random() * 49 + 1) * 100 + Math.floor(Math.random() * 10) * 10) : (Math.round((Math.random() * maxC + 0.10) * 100) / 100);
+              // Snap to the currency's smallest coin, exactly as genChangeProblem does.
+              // AUD's smallest coin is 5c, MXN's 10c, INR's Rs 1 — an unsnapped target
+              // like A$3.47 cannot be composed from the tray at all, so the student can
+              // never match the total and the greedy "optimal" is counted against an
+              // unpayable remainder.
+              if (!isJPY) {
+                var fcSmallest = Math.min.apply(null, cur.coins.map(function (coin) { return coin.value; }));
+                target = Math.max(fcSmallest, Math.round(target / fcSmallest) * fcSmallest);
+                target = Math.round(target * 100) / 100;
+              }
               // Greedy algorithm for fewest coins+bills
               var allDenoms = cur.bills.map(function (b) { return b.value; }).concat(cur.coins.map(function (c) { return c.value; })).sort(function (a, b) { return b - a; });
               var remaining = Math.round(target * 100);
@@ -1765,8 +1775,8 @@ window.StemLab = window.StemLab || {
             var FIN_QUIZZES = [
               { q: 'If you invest $1,000 at 7% annual compound interest for 10 years, approximately how much will you have?', choices: ['$1,700', '$1,967', '$2,500', '$3,000'], correct: 1, explanation: __alloT('stem.money.1_000_1_07_1_967_compound_interest_gro', '$1,000 \u00D7 (1.07)\u00B9\u2070 \u2248 $1,967. Compound interest grows exponentially over time.') },
               { q: 'Which costs more total: a $20,000 loan at 5% for 5 years, or at 3% for 10 years?', choices: ['5% for 5 years', '3% for 10 years', 'They cost the same', 'Can\'t determine'], correct: 1, explanation: __alloT('stem.money.at_5_5yr_2_645_interest_at_3_10yr_3_17', 'At 5%/5yr: ~$2,645 interest. At 3%/10yr: ~$3,174 interest. Lower rate but longer term costs more in total interest.') },
-              { q: 'Starting to invest $200/month at age 25 vs. age 35 (retire at 65, 7% return). How much more does the early starter have?', choices: ['About $50,000 more', 'About $130,000 more', 'About $260,000 more', 'More than $300,000 more'], correct: 2, explanation: __alloT('stem.money.age_25_262k_age_35_122k_that_s_140k_di', 'Age 25: ~$262K. Age 35: ~$122K. That\'s ~$140K difference! Time is the most powerful factor in investing.') },
-              { q: 'You have $500 in credit card debt at 22% APR. Paying $25/month, roughly how long to pay off?', choices: ['About 1 year', 'About 2 years', 'About 5 years', 'Never (minimum too low)'], correct: 1, explanation: __alloT('stem.money.at_25_month_and_22_apr_it_takes_about_', 'At $25/month and 22% APR, it takes about 24 months and you pay ~$95 in interest. High-interest debt is expensive!') },
+              { q: 'Starting to invest $200/month at age 25 vs. age 35 (retire at 65, 7% return). How much more does the early starter have?', choices: ['About $50,000 more', 'About $130,000 more', 'About $260,000 more', 'More than $300,000 more'], correct: 2, explanation: __alloT('stem.money.age_25_262k_age_35_122k_that_s_140k_di', 'At 7% compounded annually, starting at 25 grows to about $479K by 65, while starting at 35 reaches about $227K — roughly $250K more for the early starter. Time is the most powerful factor in investing.') },
+              { q: 'You have $500 in credit card debt at 22% APR. Paying $25/month, roughly how long to pay off?', choices: ['About 1 year', 'About 2 years', 'About 5 years', 'Never (minimum too low)'], correct: 1, explanation: __alloT('stem.money.at_25_month_and_22_apr_it_takes_about_', 'At $25/month and 22% APR, it takes about 25 months and you pay roughly $125 in interest — a quarter of the original debt. High-interest debt is expensive!') },
               { q: 'The "Rule of 72" estimates how long to double your money. At 6% interest, roughly how many years?', choices: ['6 years', '8 years', '10 years', '12 years'], correct: 3, explanation: __alloT('stem.money.72_6_12_years_the_rule_of_72_divide_72', '72 \u00F7 6 = 12 years. The Rule of 72: divide 72 by your interest rate to estimate doubling time.') },
               { q: 'An emergency fund should ideally cover how many months of expenses?', choices: ['1-2 months', '3-6 months', '12 months', '24 months'], correct: 1, explanation: __alloT('stem.money.financial_advisors_recommend_3_6_month', 'Financial advisors recommend 3-6 months of expenses. This covers most unexpected events like job loss or medical emergencies.') }
             ];
