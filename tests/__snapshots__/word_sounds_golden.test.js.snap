@@ -1220,10 +1220,6 @@ exports[`layer 2 — render behavior per activity > activity "blending" renders 
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
-<span class="lucide-icon" data-icon="Edit2">
-</span>
-</button>
 <button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
@@ -1436,10 +1432,6 @@ exports[`layer 2 — render behavior per activity > activity "counting" renders 
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
-<span class="lucide-icon" data-icon="Edit2">
-</span>
-</button>
 <button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
@@ -1669,10 +1661,6 @@ exports[`layer 2 — render behavior per activity > activity "decoding" renders 
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
-<span class="lucide-icon" data-icon="Edit2">
-</span>
-</button>
 <button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
@@ -1869,10 +1857,6 @@ exports[`layer 2 — render behavior per activity > activity "isolation" renders
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
-<span class="lucide-icon" data-icon="Edit2">
-</span>
-</button>
 <button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
@@ -2065,10 +2049,6 @@ exports[`layer 2 — render behavior per activity > activity "letter_tracing" re
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
-<span class="lucide-icon" data-icon="Edit2">
-</span>
-</button>
 <button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
@@ -2297,10 +2277,6 @@ exports[`layer 2 — render behavior per activity > activity "manipulation" rend
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
-<span class="lucide-icon" data-icon="Edit2">
-</span>
-</button>
 <button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
@@ -2515,10 +2491,6 @@ exports[`layer 2 — render behavior per activity > activity "mapping" renders i
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
-<span class="lucide-icon" data-icon="Edit2">
-</span>
-</button>
 <button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
@@ -2738,10 +2710,6 @@ exports[`layer 2 — render behavior per activity > activity "orthography" rende
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
-<span class="lucide-icon" data-icon="Edit2">
-</span>
-</button>
 <button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
@@ -2982,10 +2950,6 @@ exports[`layer 2 — render behavior per activity > activity "rhyming" renders i
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
-<span class="lucide-icon" data-icon="Edit2">
-</span>
-</button>
 <button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
@@ -3203,10 +3167,6 @@ exports[`layer 2 — render behavior per activity > activity "segmentation" rend
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
-<span class="lucide-icon" data-icon="Edit2">
-</span>
-</button>
 <button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
@@ -3429,10 +3389,6 @@ exports[`layer 2 — render behavior per activity > activity "sound_sort" render
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
-<span class="lucide-icon" data-icon="Edit2">
-</span>
-</button>
 <button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
@@ -3662,10 +3618,6 @@ exports[`layer 2 — render behavior per activity > activity "spelling_bee" rend
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
-<span class="lucide-icon" data-icon="Edit2">
-</span>
-</button>
 <button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
@@ -3875,10 +3827,6 @@ exports[`layer 2 — render behavior per activity > activity "syllable_blending"
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
-<span class="lucide-icon" data-icon="Edit2">
-</span>
-</button>
 <button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
@@ -4100,10 +4048,6 @@ exports[`layer 2 — render behavior per activity > activity "syllable_counting"
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
-<span class="lucide-icon" data-icon="Edit2">
-</span>
-</button>
 <button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
@@ -4322,10 +4266,6 @@ exports[`layer 2 — render behavior per activity > activity "word_families" ren
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
-<span class="lucide-icon" data-icon="Edit2">
-</span>
-</button>
 <button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
@@ -4572,10 +4512,6 @@ exports[`layer 2 — render behavior per activity > correct-answer feedback bann
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
-<span class="lucide-icon" data-icon="Edit2">
-</span>
-</button>
 <button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>
@@ -4789,10 +4725,6 @@ exports[`layer 2 — render behavior per activity > incorrect-answer feedback ba
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button aria-label="common.confirm" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Edit">
-<span class="lucide-icon" data-icon="Edit2">
-</span>
-</button>
 <button aria-label="common.voice_input" class="p-1.5 rounded-full transition-colors flex items-center justify-center bg-white/10 text-white hover:bg-white/20" title="Switch to Microphone Mode">
 <span class="lucide-icon" data-icon="MicOff">
 </span>

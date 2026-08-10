@@ -3103,6 +3103,12 @@
       onProbeComplete,
       getWordSoundsString,
       isParentMode = false,
+      // Review Words and Edit are for a teacher preparing the activity. On a
+      // student device they are a way to read the word list, the correct
+      // answers and the distractors before answering any of it. Defaults to
+      // false so a host that does not pass it hides them rather than exposing
+      // them; a teacher still reaches review from the setup screen.
+      isTeacherMode = false,
       allowRuntimeAi,
     }) => {
       // One central boundary: student players receive prepared assets only.
@@ -16711,6 +16717,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 // Teacher review/edit are practice affordances \u2014 opening the
                 // review panel mid-probe replaces the probe UI entirely and
                 // its Start button wipes the evidence (setWordSoundsHistory([])).
+                // Teacher-only for a second reason: the panel lists every word
+                // with its phonemes, rhyme answers and distractors, so on a
+                // student device it hands over the answers to the activity
+                // they are about to be scored on.
+                isTeacherMode &&
                 !isProbeMode &&
                 preloadedWords.length > 0 &&
                   /*#__PURE__*/ React.createElement(
@@ -16724,6 +16735,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   },
                   ts("word_sounds.review_words") || "\u270F\uFE0F Review Words",
                 ),
+                isTeacherMode &&
                 !isProbeMode &&
                 /*#__PURE__*/ React.createElement(
                   "button",

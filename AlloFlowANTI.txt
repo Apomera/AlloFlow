@@ -21873,6 +21873,26 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           }
       } catch (e) { warnLog('word-sounds sync hydration failed', e); }
   };
+  // Hydration safety net. Every route that opens the player is supposed to
+  // populate wsPreloadedWords first — the live-session pushes, the resource
+  // card, the setup launch — but a route that forgets leaves the player with
+  // no words and the child looking at "Loading your words… ⏳". Rather than
+  // audit each entry point forever, reconcile at the one place they all pass
+  // through: the player being open. Idempotent, and it only ever fills a gap.
+  useEffect(() => {
+      if (!isWordSoundsMode) return;
+      if (Array.isArray(wsPreloadedWords) && wsPreloadedWords.length > 0) return;
+      const gc = generatedContent;
+      if (!gc || gc.type !== 'word-sounds') return;
+      const words = (Array.isArray(gc.wsPreloadedWords) && gc.wsPreloadedWords.length > 0)
+          ? gc.wsPreloadedWords
+          : (Array.isArray(gc.data) ? gc.data : []);
+      if (!words.length) return;
+      debugLog('🩹 Word Sounds opened with no words; hydrating', words.length, 'from the open resource');
+      setWsPreloadedWords(words.map(w => ({ ...w, _audioRequested: false })));
+      const seq = Array.isArray(gc.lessonPlanSequence) ? gc.lessonPlanSequence : [];
+      if (seq.length > 0) setWsActivitySequence(seq);
+  }, [isWordSoundsMode, wsPreloadedWords, generatedContent]);
   useEffect(() => {
       if (!user) {
           return;
@@ -48498,6 +48518,11 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                             wordSoundsDailyProgress, setWordSoundsDailyProgress,
                             wordSoundsConfusionPatterns, setWordSoundsConfusionPatterns,
                             playSound, disableAnimations, addToast,
+                            // Who is holding the device. The player shows
+                            // Review Words and Edit, which are for a teacher
+                            // preparing the activity: on a student device they
+                            // are a way to read the answers before answering.
+                            isTeacherMode,
                             isProbeMode, probeGradeLevel, getWordSoundsString,
                             onProbeComplete: (results) => {
                                     setIsProbeMode(false);
