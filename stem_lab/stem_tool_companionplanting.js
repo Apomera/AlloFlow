@@ -563,6 +563,31 @@ var d = (labToolData.companionPlanting) || {};
               options: ['Plant drought-resistant varieties only', 'Use squash as living mulch between rows', 'Water at night', 'Dig deeper beds'], correct: 1,
               explain: 'Living mulch (squash, clover, sweet potato vines) shades soil, reducing evaporation by 40-60% and soil temperature by 10\u00B0F. This is exactly why squash is a "Sister" \u2014 it\'s nature\'s mulch!', concept: 'Living Mulch & Water Conservation' }
           ];
+          // The authored scenarios put the answer in slot 2 eight times out of
+          // ten and never in slots 3 or 4, so it could be guessed by position.
+          // Rotate each scenario by a per-question offset.
+          //
+          // Deterministic and applied once to the bank: the active scenario is
+          // re-read as GARDEN_SCENARIOS[gardenScenarioIdx] on every render, so a
+          // render-time Math.random() would deal new options mid-question.
+          //
+          // Correctness is index-based (oi === sc.correct), so `correct` is
+          // remapped with the options. `explain` is one string covering the whole
+          // scenario, not per-option feedback, so it needs no reordering.
+          function cgRotateScenario(sc, seedIdx) {
+            if (!sc || !Array.isArray(sc.options) || sc.options.length < 2) return sc;
+            var n = sc.options.length;
+            var shift = ((seedIdx * 7) + 3) % n;
+            if (shift === 0) return sc;
+            var out = Object.assign({}, sc);
+            var moved = new Array(n);
+            for (var i = 0; i < n; i++) moved[(i + shift) % n] = sc.options[i];
+            out.options = moved;
+            if (typeof sc.correct === "number") out.correct = (sc.correct + shift) % n;
+            return out;
+          }
+          GARDEN_SCENARIOS = GARDEN_SCENARIOS.map(cgRotateScenario);
+
 
           // === Wave 3: GARDEN_FACTS ===
           var GARDEN_FACTS = [
