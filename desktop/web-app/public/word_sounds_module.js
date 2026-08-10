@@ -8134,7 +8134,7 @@
               }
               return {
                 ...wordEntry,
-                ttsReady: true,
+                _runtimeAudioReady: true,
                 difficulty:
                   wordEntry.difficulty || categorizeWordDifficulty(targetWord),
               };
@@ -8636,7 +8636,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   );
                 }
               }
-              return { ...wordEntry, phonemes: phonemeData, ttsReady: true };
+              return { ...wordEntry, phonemes: phonemeData, _runtimeAudioReady: true };
             } catch (err) {
               warnLog("Parallel fetch failed for", targetWord, err);
               return null;
@@ -8691,7 +8691,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
       React.useEffect(() => {
         if (!preloadedWords || preloadedWords.length === 0) return;
         const wordsNeedingAudio = preloadedWords.filter(
-          (w) => !w.ttsReady && !w._audioRequested,
+          // Either kind of readiness means nothing needs fetching now: a
+          // portable clip in the pack, or one already fetched this session.
+          (w) => !w.ttsReady && !w._runtimeAudioReady && !w._audioRequested,
         );
         if (wordsNeedingAudio.length === 0) return;
         debugLog(
@@ -8755,7 +8757,15 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 if (pw.word === text) {
                   return {
                     ...pw,
-                    ttsReady: ok,
+                    // RUNTIME playability, not the pack's claim. This used to
+                    // write ttsReady, which the pack compiler owns and which
+                    // means "a portable clip is in _ttsAssets" — so merely
+                    // opening the player rewrote the pack's honest false to
+                    // true and the project saved with five words claiming
+                    // portable audio it had never held. A blob fetched now
+                    // dies with the tab; it is not something a student device
+                    // can use.
+                    _runtimeAudioReady: ok,
                     _audioRequested: false,
                     _ttsFailed: !ok,
                   };

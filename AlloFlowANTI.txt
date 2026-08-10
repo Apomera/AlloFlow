@@ -37289,9 +37289,25 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       if (item.type === 'word-sounds') {
           if (item.wsPreloadedWords && Array.isArray(item.wsPreloadedWords) && item.wsPreloadedWords.length > 0) {
               debugLog("📥 Restoring preloaded words from saved wsPreloadedWords:", item.wsPreloadedWords.length);
+              // ttsReady means "a portable clip is in _ttsAssets", and it is
+              // not safe to take a saved file's word for it: the player used to
+              // write the same field to mean "audio played a moment ago", so
+              // packs exist that claim five ready words while holding clips for
+              // none of them. Recompute it from what the pack actually carries.
+              // That repairs those files on open instead of carrying the claim
+              // forward, and it is cheap — the asset map is already in memory.
+              const _portableKeys = new Set();
+              item.wsPreloadedWords.forEach(w => {
+                  if (w && w._ttsAssets && typeof w._ttsAssets === 'object') {
+                      Object.keys(w._ttsAssets).forEach(k => {
+                          if (w._ttsAssets[k]) _portableKeys.add(String(k).trim().toLowerCase().replace(/\s+/g, ' '));
+                      });
+                  }
+              });
               const wordsWithFreshTtsFlags = item.wsPreloadedWords.map(w => ({
                   ...w,
-                  ttsReady: false,
+                  ttsReady: _portableKeys.has(String((w && (w.targetWord || w.word || w.term)) || '').trim().toLowerCase().replace(/\s+/g, ' ')),
+                  _runtimeAudioReady: false,
                   _audioRequested: false
               }));
               setWsPreloadedWords(wordsWithFreshTtsFlags);

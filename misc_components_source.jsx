@@ -647,10 +647,28 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                         // Kokoro setup this fix touches no network at all.
                         const ttsIsLocal = typeof window !== 'undefined' && !!(window._kokoroTTS && window._kokoroTTS.ready);
 
+                        // Two different problems that both sound like "no audio".
+                        //
+                        // PORTABLE audio is what travels to a student device, and
+                        // it is written once, by the pack compiler in setup.
+                        // Nothing in the player can create it: Retry audio fetches
+                        // a blob that dies with the tab. So this line carries NO
+                        // fix button — offering one that cannot close the gap
+                        // would be worse than saying plainly what does.
                         addGap({
                             key: 'audio',
                             test: (w) => w && !w.ttsReady && !portableKeys.has(norm(w.targetWord || w.word || w.term)),
-                            text: (n) => `🔇 ${n} word${n === 1 ? '' : 's'} without portable audio`,
+                            text: (n) => `🔇 ${n} word${n === 1 ? '' : 's'} without portable audio. Student devices will be silent for ${n === 1 ? 'it' : 'them'}; re-prepare the pack in setup to fix this.`,
+                            each: null,
+                        });
+
+                        // RUNTIME failures are what Retry audio actually fixes:
+                        // a fetch that failed this session on a device that can
+                        // still reach TTS.
+                        addGap({
+                            key: 'audio_runtime',
+                            test: (w) => w && w._ttsFailed,
+                            text: (n) => `🔁 ${n} word${n === 1 ? '' : 's'} whose audio failed to load in this session`,
                             label: t('word_sounds.fix_audio') || 'Retry audio',
                             needsNetwork: !ttsIsLocal,
                             // Batch by nature: it re-arms the prefetch for every
@@ -894,7 +912,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                     setPlayingWordIndex(null);
                                                 }
                                             }}
-                                            disabled={playingWordIndex !== null || !word.ttsReady}
+                                            disabled={playingWordIndex !== null || !(word.ttsReady || word._runtimeAudioReady)}
                                             className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none ${
                                                 word._ttsFailed
                                                     ? 'bg-red-100 hover:bg-red-200 text-red-600 border-2 border-red-300'
@@ -904,9 +922,9 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                             ? 'bg-pink-50 text-pink-300 cursor-not-allowed'
                                                             : 'bg-pink-100 hover:bg-pink-200 text-pink-600'
                                             }`}
-                                            title={playingWordIndex === idx ? (t('word_sounds.playing') || 'Playing...') : word._ttsFailed ? (t('word_sounds.audio_failed_retry_hint') || 'Audio failed to generate — click Retry audio in header') : !word.ttsReady ? (t('word_sounds.loading_audio') || 'Loading audio...') : (t('word_sounds.play_word') || 'Play word')}
-                                            aria-busy={playingWordIndex === idx || (!word._ttsFailed && !word.ttsReady)}
-                                            aria-label={playingWordIndex === idx ? (t('word_sounds.playing') || 'Playing') : word._ttsFailed ? (t('word_sounds.audio_failed_aria') || 'Audio failed') : !word.ttsReady ? (t('word_sounds.loading_audio') || 'Loading audio') : (t('word_sounds.play_word') || 'Play word')}
+                                            title={playingWordIndex === idx ? (t('word_sounds.playing') || 'Playing...') : word._ttsFailed ? (t('word_sounds.audio_failed_retry_hint') || 'Audio failed to generate — click Retry audio in header') : !(word.ttsReady || word._runtimeAudioReady) ? (t('word_sounds.loading_audio') || 'Loading audio...') : (t('word_sounds.play_word') || 'Play word')}
+                                            aria-busy={playingWordIndex === idx || (!word._ttsFailed && !(word.ttsReady || word._runtimeAudioReady))}
+                                            aria-label={playingWordIndex === idx ? (t('word_sounds.playing') || 'Playing') : word._ttsFailed ? (t('word_sounds.audio_failed_aria') || 'Audio failed') : !(word.ttsReady || word._runtimeAudioReady) ? (t('word_sounds.loading_audio') || 'Loading audio') : (t('word_sounds.play_word') || 'Play word')}
                                         >
                                             {word._ttsFailed ? <span aria-hidden="true">🔇</span> : (playingWordIndex === idx ? <RefreshCw size={18} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <Volume2 size={18} aria-hidden="true" />)}
                                         </button>

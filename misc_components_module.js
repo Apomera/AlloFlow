@@ -641,7 +641,13 @@ const WordSoundsReviewPanel = ({
     addGap({
       key: "audio",
       test: (w) => w && !w.ttsReady && !portableKeys.has(norm(w.targetWord || w.word || w.term)),
-      text: (n) => `\u{1F507} ${n} word${n === 1 ? "" : "s"} without portable audio`,
+      text: (n) => `\u{1F507} ${n} word${n === 1 ? "" : "s"} without portable audio. Student devices will be silent for ${n === 1 ? "it" : "them"}; re-prepare the pack in setup to fix this.`,
+      each: null
+    });
+    addGap({
+      key: "audio_runtime",
+      test: (w) => w && w._ttsFailed,
+      text: (n) => `\u{1F501} ${n} word${n === 1 ? "" : "s"} whose audio failed to load in this session`,
       label: t("word_sounds.fix_audio") || "Retry audio",
       needsNetwork: !ttsIsLocal,
       // Batch by nature: it re-arms the prefetch for every
@@ -850,11 +856,11 @@ const WordSoundsReviewPanel = ({
             setPlayingWordIndex(null);
           }
         },
-        disabled: playingWordIndex !== null || !word.ttsReady,
+        disabled: playingWordIndex !== null || !(word.ttsReady || word._runtimeAudioReady),
         className: `w-10 h-10 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none ${word._ttsFailed ? "bg-red-100 hover:bg-red-200 text-red-600 border-2 border-red-300" : playingWordIndex === idx ? "bg-pink-200 text-pink-700 animate-pulse motion-reduce:animate-none" : playingWordIndex !== null ? "bg-pink-50 text-pink-300 cursor-not-allowed" : "bg-pink-100 hover:bg-pink-200 text-pink-600"}`,
-        title: playingWordIndex === idx ? t("word_sounds.playing") || "Playing..." : word._ttsFailed ? t("word_sounds.audio_failed_retry_hint") || "Audio failed to generate \u2014 click Retry audio in header" : !word.ttsReady ? t("word_sounds.loading_audio") || "Loading audio..." : t("word_sounds.play_word") || "Play word",
-        "aria-busy": playingWordIndex === idx || !word._ttsFailed && !word.ttsReady,
-        "aria-label": playingWordIndex === idx ? t("word_sounds.playing") || "Playing" : word._ttsFailed ? t("word_sounds.audio_failed_aria") || "Audio failed" : !word.ttsReady ? t("word_sounds.loading_audio") || "Loading audio" : t("word_sounds.play_word") || "Play word"
+        title: playingWordIndex === idx ? t("word_sounds.playing") || "Playing..." : word._ttsFailed ? t("word_sounds.audio_failed_retry_hint") || "Audio failed to generate \u2014 click Retry audio in header" : !(word.ttsReady || word._runtimeAudioReady) ? t("word_sounds.loading_audio") || "Loading audio..." : t("word_sounds.play_word") || "Play word",
+        "aria-busy": playingWordIndex === idx || !word._ttsFailed && !(word.ttsReady || word._runtimeAudioReady),
+        "aria-label": playingWordIndex === idx ? t("word_sounds.playing") || "Playing" : word._ttsFailed ? t("word_sounds.audio_failed_aria") || "Audio failed" : !(word.ttsReady || word._runtimeAudioReady) ? t("word_sounds.loading_audio") || "Loading audio" : t("word_sounds.play_word") || "Play word"
       },
       word._ttsFailed ? /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F507}") : playingWordIndex === idx ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 18, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Volume2, { size: 18, "aria-hidden": "true" })
     ), word.phonemes && Array.isArray(word.phonemes) && word.phonemes.length > 0 && /* @__PURE__ */ React.createElement(
