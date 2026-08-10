@@ -3796,6 +3796,10 @@
       const [preloadProgress, setPreloadProgress] = React.useState(0);
       const [isPreloading, setIsPreloading] = React.useState(false);
       const [firstWordReady, setFirstWordReady] = React.useState(false);
+      // Set when startActivity gave up because no words had arrived yet. The
+      // effect below consumes it exactly once, so a retry that also finds
+      // nothing cannot spin.
+      const waitingForWordsRef = React.useRef(false);
       React.useEffect(() => {
         if (isProbeMode && preloadedWords && preloadedWords.length > 0 && !firstWordReady) {
           debugLog("📊 Probe mode: setting firstWordReady=true for", preloadedWords.length, "preloaded probe words");
@@ -8001,6 +8005,15 @@
         }
         if (!wordPool || wordPool.length === 0) {
           warnLog("Word pool empty, skipping preload");
+          // wordPool is built from glossaryTerms ALONE, so a pack-only project
+          // (the normal shape of a saved Word Sounds session) has an empty one
+          // and never reached the line below that sets firstWordReady. That
+          // flag gates the auto-start effect, so the player could sit on
+          // "Loading your words…" forever with a perfectly good pack in hand.
+          // A prepared pack needs no preload; it is already ready.
+          if (preloadedWords && preloadedWords.length > 0 && isMountedRef.current) {
+            setFirstWordReady(true);
+          }
           return;
         }
         setIsPreloading(true);
@@ -8782,6 +8795,38 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         },
         [setWsPreloadedWords],
       );
+      // Dropping a word's packed clip has to drop the claim that the word has
+      // audio, or the pack advertises a clip it no longer holds. Both callers
+      // delete from _ttsAssets (which lives on word[0]) while ttsReady lives on
+      // the word's OWN entry, so the two were updated independently and drifted
+      // apart: a saved project turned up with all five target words flagged
+      // ttsReady:true and not one of them present in _ttsAssets, because each
+      // had been regenerated in the review panel. The only clips left were the
+      // distractors nobody had touched. The teacher's readiness panel called
+      // that pack complete.
+      const dropPackedClip = (words, packKey) =>
+        (Array.isArray(words) ? words : []).map((it) => {
+          if (!it) return it;
+          const isTheWord =
+            String(it.targetWord || it.word || it.term || "")
+              .trim().toLowerCase().replace(/\s+/g, " ") === packKey;
+          const holdsClip =
+            it._ttsAssets && typeof it._ttsAssets === "object" && it._ttsAssets[packKey];
+          if (!isTheWord && !holdsClip) return it;
+          let next = it;
+          if (holdsClip) {
+            const nextAssets = { ...it._ttsAssets };
+            delete nextAssets[packKey];
+            next = { ...next, _ttsAssets: nextAssets };
+          }
+          if (isTheWord) {
+            // Not ready any more, and not failed either — a fresh request is
+            // about to be made. These are the flags the prefetch effect and the
+            // readiness panel's Retry audio button both key off.
+            next = { ...next, ttsReady: false, _ttsFailed: false, _audioRequested: false };
+          }
+          return next;
+        });
       // A word's packed audio is keyed by its TEXT. Rename "cat" to "cot" in
       // the review panel and the pack still holds a clip for "cat", nothing
       // for "cot", and ttsReady stays true from the old word — so the readiness
@@ -8984,12 +9029,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             const packKey = targetWord.trim().toLowerCase().replace(/\s+/g, " ");
             packAudioInvalidatedRef.current.add(packKey);
             if (typeof setPreloadedWords === "function") {
-              setPreloadedWords((prev) => (Array.isArray(prev) ? prev : []).map((it) => {
-                if (!it || !it._ttsAssets || typeof it._ttsAssets !== "object" || !it._ttsAssets[packKey]) return it;
-                const nextAssets = { ...it._ttsAssets };
-                delete nextAssets[packKey];
-                return { ...it, _ttsAssets: nextAssets };
-              }));
+              setPreloadedWords((prev) => dropPackedClip(prev, packKey));
+            }
+            if (typeof setWsPreloadedWords === "function") {
+              // The persisted copy too, or the stale ttsReady rides into the
+              // saved project file — which is exactly how this was found.
+              setWsPreloadedWords((prev) => dropPackedClip(prev, packKey));
             }
           }
           // Invalidate the pinned sound-sort/word-families items so the
@@ -9364,12 +9409,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             const packKey = raw.trim().toLowerCase().replace(/\s+/g, " ");
             packAudioInvalidatedRef.current.add(packKey);
             if (typeof setPreloadedWords === "function") {
-              setPreloadedWords((prev) => (Array.isArray(prev) ? prev : []).map((it) => {
-                if (!it || !it._ttsAssets || typeof it._ttsAssets !== "object" || !it._ttsAssets[packKey]) return it;
-                const nextAssets = { ...it._ttsAssets };
-                delete nextAssets[packKey];
-                return { ...it, _ttsAssets: nextAssets };
-              }));
+              setPreloadedWords((prev) => dropPackedClip(prev, packKey));
+            }
+            if (typeof setWsPreloadedWords === "function") {
+              setWsPreloadedWords((prev) => dropPackedClip(prev, packKey));
             }
             await handleAudio(raw);
           } catch (e) {
@@ -10602,6 +10645,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               (preloadedWords && preloadedWords.length > 0);
             if (!hasAnyWords) {
               debugLog("WordSounds: No words available, waiting for data...");
+              // This used to be terminal. Nothing re-ran startActivity when the
+              // words finally arrived, so a restore that hydrated a moment
+              // later left the player showing this message with a full pack
+              // sitting in state. Arm a retry instead of giving up.
+              waitingForWordsRef.current = true;
               setWordSoundsFeedback?.({
                 type: "info",
                 message: "Loading your words... ⏳",
@@ -10787,6 +10835,29 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           ACTIVITIES,
         ],
       );
+      // Recovery for the "Loading your words… ⏳" dead end. startActivity arms
+      // waitingForWordsRef when it finds no words; this runs the moment any
+      // arrive. The flag is cleared BEFORE the retry, so a retry that also
+      // finds nothing simply re-arms it rather than looping.
+      React.useEffect(() => {
+        if (!waitingForWordsRef.current) return;
+        const haveWords =
+          (preloadedWords && preloadedWords.length > 0) ||
+          (wordPool && wordPool.length > 0);
+        if (!haveWords) return;
+        waitingForWordsRef.current = false;
+        const retry = setTimeout(() => {
+          if (!isMountedRef.current) return;
+          const target =
+            wordSoundsActivity ||
+            (activitySequence && activitySequence[0]) ||
+            (ACTIVITIES[0] && ACTIVITIES[0].id) ||
+            "counting";
+          debugLog("🔁 Words arrived after an empty start — retrying", target);
+          startActivity(target);
+        }, 0);
+        return () => clearTimeout(retry);
+      }, [preloadedWords, wordPool, wordSoundsActivity, activitySequence, ACTIVITIES, startActivity]);
       React.useEffect(() => {
         if (
           firstWordReady &&
