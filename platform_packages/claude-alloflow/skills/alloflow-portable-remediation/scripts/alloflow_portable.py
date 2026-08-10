@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 
-VERSION = "0.2.2"
+VERSION = "0.2.3"
 MAX_SOURCE_BYTES = 200 * 1024 * 1024
 MAX_PLAN_BYTES = 8 * 1024 * 1024
 MAX_HTML_BYTES = 8 * 1024 * 1024
@@ -655,6 +655,32 @@ def render_html(validated: Dict[str, Any]) -> str:
                 for index, value in enumerate(row):
                     runs = row_runs[index] if row_runs and index < len(row_runs) else None
                     body = render_inline(value, runs)
+                    # An EMPTY cell needs something to draw, or it does not
+                    # survive into the tagged PDF at all. Chromium's export
+                    # builds structure elements from MARKED CONTENT, and a cell
+                    # with nothing in it paints nothing, so no /TD is emitted
+                    # and the row reaches veraPDF one column short:
+                    # "Table rows shall have the same number of columns"
+                    # (PDF/UA-1 clause 7.2). It cost 22 failed checks on the
+                    # i1040 rebuild, one for every worksheet whose Amount
+                    # column is blank because that is where a filer writes.
+                    #
+                    # A NO-BREAK SPACE fixes it: it has a nonzero advance
+                    # width, so Chromium always emits a text run (and thus a
+                    # /TD) for the cell, while a screen reader still reports
+                    # the cell as blank and text extraction sees only
+                    # whitespace. A ZERO-WIDTH space was tried first on the
+                    # theory that painting no ink at all was purer - and it
+                    # cut the i1040 failures from 22 to 1, but the last one
+                    # (IRA Deduction Worksheet part 2, 2026-08-09 run) showed
+                    # Chromium CULLS a zero-advance-only cell under some
+                    # fragmentation conditions, dropping exactly one of two
+                    # adjacent ZWSP cells per row while the identically shaped
+                    # part 1 on the previous page kept all of its cells. A
+                    # blank that survives layout beats an invisible one that
+                    # does not.
+                    if not body:
+                        body = "&#160;"
                     if index == 0 and block.get("row_headers"):
                         cells.append(f'<th scope="row">{body}</th>')
                     else:
@@ -739,6 +765,15 @@ a {{ color: #0645ad; text-decoration: underline; text-underline-offset: .12em; }
 blockquote {{ border-left: .3rem solid #475569; margin-left: 0; padding-left: 1rem; }}
 table {{ border-collapse: collapse; width: 100%; margin: 1rem 0; break-inside: avoid; }}
 caption {{ font-weight: 700; text-align: left; margin-bottom: .35rem; }}
+/* A ROW must not straddle a page break: `break-inside: avoid` on the table
+   cannot help a table taller than a page (the i1040 tax tables run to 180
+   rows), so without this a tall row can split and its two halves carry
+   different cell counts.
+   HONEST SCOPE: this is good practice for tagged output, but it did NOT
+   resolve the one remaining PDF/UA-1 clause 7.2 failure on the i1040 rebuild
+   - that count was 1 both before and after. Kept because it is correct, not
+   because it was shown to fix that case. */
+tr, th, td {{ break-inside: avoid; }}
 th, td {{ border: 1px solid #4b5563; padding: .45rem; text-align: left; vertical-align: top; }}
 th {{ background: #e5e7eb; color: #111827; }}
 img {{ display: block; height: auto; max-width: 100%; }}
@@ -1338,11 +1373,13 @@ def remediate(args: argparse.Namespace) -> Dict[str, Any]:
                 }
                 pdf_ua = {"status": "not_run", "reason": "No generated PDF was available to validate."}
 
-        if args.verapdf == "required":
-            if pdf_ua.get("status") != "completed":
-                raise PortableError("PDF/UA validation was required but did not complete.", 5)
-            if pdf_ua.get("compliant") is not True:
-                raise PortableError("PDF/UA validation was required to pass but found unresolved rules.", 6)
+        # NOTE: the --verapdf required gate is enforced AFTER publish_staged,
+        # not here. Raising inside the TemporaryDirectory context deletes the
+        # staging dir, which left the output directory EMPTY on gate failure -
+        # so the failure could never be diagnosed from the run that produced
+        # it (every 2026-08 i1040 diagnosis had to re-run with --verapdf
+        # auto). A failed gate now still leaves the artifacts and the report
+        # behind, then exits nonzero.
 
         artifacts = {
             "accessibleHtml": names["html"],
@@ -1473,6 +1510,21 @@ def remediate(args: argparse.Namespace) -> Dict[str, Any]:
         if pdf_result.get("status") == "completed":
             staged_pairs.insert(1, (staged_paths["pdf"], final_paths["pdf"]))
         publish_staged(staged_pairs)
+
+    if args.verapdf == "required":
+        if pdf_ua.get("status") != "completed":
+            raise PortableError(
+                "PDF/UA validation was required but did not complete. "
+                "The generated artifacts and report were kept for diagnosis.",
+                5,
+            )
+        if pdf_ua.get("compliant") is not True:
+            raise PortableError(
+                "PDF/UA validation was required to pass but found unresolved rules. "
+                "The generated artifacts and report were kept; see failedRules in the "
+                "accessibility report.",
+                6,
+            )
 
     return {
         "ok": True,

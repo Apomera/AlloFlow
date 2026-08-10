@@ -269,7 +269,7 @@ describe('AlloFlow portable remediation core', () => {
     expect(result.stdout).not.toContain(dirname(SOURCE));
   }, 30_000);
 
-  it('publishes no partial artifacts when strict PDF/UA mode fails', () => {
+  it('keeps the artifacts and report when strict PDF/UA mode fails', () => {
     const capability = runPortable(['capabilities', '--json']);
     expect(capability.status, capability.stderr).toBe(0);
     if (!capability.json?.taggedPdfGeneration || !capability.json?.pdfUaValidation) return;
@@ -288,7 +288,19 @@ describe('AlloFlow portable remediation core', () => {
     ], { ALLOFLOW_PORTABLE_DISABLE_UA_FINALIZE: '1' });
     expect(result.status).not.toBe(0);
     expect(result.json).toMatchObject({ ok: false, code: 6 });
-    expect(readdirSync(output)).toEqual([]);
+    // The gate fails the RUN, not the diagnosis: the artifacts and the
+    // accessibility report survive so the failure can be inspected from the
+    // run that produced it. (The old contract deleted the staging dir, which
+    // left the output empty and forced every diagnosis to re-run with
+    // --verapdf auto.)
+    const published = readdirSync(output).sort();
+    expect(published).toContain('multi-column-scrambled-accessibility-report.json');
+    expect(published).toContain('multi-column-scrambled-accessible.html');
+    const report = JSON.parse(
+      readFileSync(join(output, 'multi-column-scrambled-accessibility-report.json'), 'utf8'),
+    );
+    expect(report.checks?.pdfUaValidation?.compliant).toBe(false);
+    expect(report.checks?.pdfUaValidation?.failedRules?.length).toBeGreaterThan(0);
   }, 60_000);
 
   it('passes strict PDF/UA mode when the finalizer runs', () => {
