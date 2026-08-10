@@ -1,8 +1,8 @@
 # Student-Requested Adaptations — Design
 
 **Date:** 2026-08-05 · **Status:** DESIGN — nothing built · **Owner:** Aaron Pomeranz
-**Companion reading:** the `signal` enum in the participant write allowlist; Gemini Bridge's
-per-device local generation; `resolveLiveStudentResourceTarget`'s individual > group > class
+**Companion reading:** the `signal` enum in the participant write allowlist;
+`handleBatchGenerateForRoster`; `resolveLiveStudentResourceTarget`'s individual > group > class
 precedence.
 
 ---
@@ -19,24 +19,26 @@ Today the only fix is the teacher noticing and acting. This design lets the stud
 
 ## 2. Is this a good idea?
 
-**Yes, with one condition and three named failure modes.**
+**Yes. It is also smaller than it first appears.** — *CORRECTED 2026-08-05, see §7.*
 
-It fits the existing architecture unusually well — see §3 — and it addresses a real gap rather
-than an imagined one. The condition is that it must degrade gracefully when the student has no
-AI, because a feature that only works for students on the paid path is a feature that widens
-the gap it claims to close.
+The first draft of this doc treated adaptation as a generation problem to be solved on the
+student device. That was wrong, and it invented complexity that does not exist. **The teacher
+generates the variant, using tooling that already ships**, and sends it with per-student
+targeting that already ships. The student device needs no AI at all.
 
-The three ways it fails:
+What is actually missing is narrow: a student cannot **ask**, and a teacher has no **queue**
+of asks. Everything downstream of the ask already works.
+
+The failure modes that remain:
 
 1. **Regeneration quality.** A simplification that loses the learning objective, or a
-   mistranslation of the one term the lesson turns on. The student who needed the adaptation
-   is the least able to detect that it is wrong. This is the strongest argument for teacher
-   oversight and it drives §5.
+   mistranslation of the one term the lesson turns on. Mitigated structurally now — the
+   teacher generates it, so the teacher has seen it before it is sent.
 2. **Sync-mode divergence.** The teacher says "look at the second paragraph" while a student
-   is on a rewritten version whose paragraphs do not correspond. Adapted content must preserve
-   structure, not just meaning.
-3. **Pack bloat.** Per-student variants written back to the session multiply payload against
-   the 85KB ceiling and the chunked pack channel. §6 keeps artifacts local for this reason.
+   is on a rewritten version whose paragraphs do not correspond. Adapted content must
+   preserve structure, not just meaning (§9).
+3. **Teacher load.** The real cost moved here. Thirty students who can all ask is thirty
+   requests during a lesson. §5 and §11 exist to keep that manageable.
 
 ## 3. Why it fits what already exists
 
@@ -51,9 +53,10 @@ allowlist, and `signal` is an enum (`stuck | slow | repeat | ready`) precisely s
 never write free text into shared storage. An adaptation request is enum-shaped too: a
 bounded set of adjustment types, not prose. It needs no privacy exception.
 
-**Per-device generation has precedent.** Gemini Bridge already regenerates teacher messages
-on the *student's* device using their group profile, for exactly the reason that applies here:
-the adaptation belongs to the reader.
+**Teacher-side generation already ships.** The teacher can batch-generate differentiated
+variants today and push them per student. This is the piece the first draft missed, and it is
+why the design is a workflow on top of existing capability rather than new machinery. (Gemini
+Bridge does per-DEVICE generation, but for a fan-out reason that does not apply here — §7.)
 
 **Standing preferences already have a home.** A per-student adaptation profile is what a group
 profile already is (`language`, `readingLevel`, `simplifyLevel`, `visualDensity`,
@@ -62,7 +65,12 @@ concept.
 
 ## 4. Two kinds of adjustment, and why the distinction carries the design
 
-This is the load-bearing decision.
+> **Partly superseded by §5.** The access-versus-content distinction below is still the right
+> way to think about *authority* — who gets to decide. But the split that drives the BUILD is
+> presentation-versus-generation (§5), because that is what determines whether a student can
+> be served without waiting for anyone.
+
+This remains the load-bearing decision about authority.
 
 | | **Access adjustments** | **Content adjustments** |
 |---|---|---|
@@ -78,64 +86,82 @@ Treating those the same is the mistake this design exists to avoid.
 
 ## 5. Teacher preview — recommended answer
 
-**Not for everything, and preview is the wrong frame for half of it.**
+*Rewritten 2026-08-05. The original answer argued against gating translations behind teacher
+approval. That argument survives, but the framing changed: since the teacher generates, the
+question is no longer "should the teacher preview?" (they always will) but **"which
+adjustments should not need the teacher at all?"***
 
-Aaron's instinct is right that the teacher must not be bypassed. But requiring approval before
-a Spanish-speaking student may *read the page* recreates the bottleneck the feature exists to
-remove, and does it to the student with the least slack. A teacher mid-lesson is the busiest
-person in the room.
+**Preview is now inherent for anything generated.** The teacher makes it, so they have seen
+it. There is nothing to design.
 
-The useful split is not preview-vs-no-preview, it is **approval before delivery** versus
-**visibility after delivery**:
+The remaining question is which adjustments a student can get **immediately**, and the honest
+split is not access-versus-content but **presentation versus generation**:
 
-- **Access adjustments: immediate, always visible.** No gate. The teacher sees that it
-  happened and can revert or intervene. Withholding a translation pending approval is not
-  caution, it is a barrier with a permission slip attached.
-- **Content adjustments: teacher approval by default.** The request reaches the teacher as a
-  card ("Falcon 7 asked for a simpler version of Resource 3"), the teacher previews the
-  generated variant, and approves, edits, or declines. The student sees "asked — waiting" and
-  keeps the original meanwhile, never a blank screen.
-- **Per-assignment override.** A teacher who wants content adjustments to flow freely can turn
-  approval off; a teacher who wants to approve even translations can turn it on. Default as
-  above.
+| | **Presentation adjustments** | **Generative adjustments** |
+|---|---|---|
+| Examples | read-aloud, text size, visual density, karaoke, contrast, existing glossary | translate, simplify, change reading level, regenerate as a visual |
+| Needs AI? | **No** | Yes |
+| Needs the teacher? | **No** | Yes |
+| Latency | instant | as fast as the teacher gets to it |
 
-**Why approval defaults ON for content:** failure mode 1. The student who needs a simplified
-text cannot audit whether the simplification kept the point. Somebody must, and it is the
-person accountable for the instruction.
+**Presentation adjustments should be immediate and local.** They need no AI, no teacher and
+no request at all — they are settings the student device applies to content it already has.
+Routing read-aloud through an approval queue would be absurd, and would contradict a rule the
+codebase already enforces: checkpoints never suppress access supports, which is what
+`CHECKPOINT_ALWAYS_ALLOWED` exists for.
 
-**Why approval defaults OFF for access:** a student is entitled to their accommodations
-without asking permission each time, and the app's own design already says so — checkpoints
-never suppress access supports, and `CHECKPOINT_ALWAYS_ALLOWED` exists for exactly this
-reason. Gating translation would contradict a rule the codebase already enforces elsewhere.
+**Generative adjustments go to the teacher**, who generates, reviews and sends. Translation
+lands here, which is the one uncomfortable case: a student who cannot read the page waits for
+a human. Mitigations, in order of preference:
+
+- The teacher pre-generates for languages the roster shows (they can already batch-generate).
+- The request is visible immediately and prominently, not buried in a panel.
+- **Optionally**, if student AI happens to be enabled, translation may resolve on-device
+   without waiting. This is an accelerant for a configuration most classrooms will not have,
+   and explicitly NOT the design centre. The first draft had this backwards.
 
 ## 6. What gets stored, and where
 
-**The request goes to the session. The artifact stays on the device.**
+*Simplified 2026-08-05.* With the teacher generating, a variant is an ordinary resource made
+the ordinary way. It enters the pack exactly as any teacher-made differentiated resource does
+today, and is delivered by `roster[uid].resourceId`. There is no new storage path, no
+device-local artifact, and no promotion step — the earlier draft invented all three.
 
-- The **request** (uid, resourceId, adjustment type, settings, timestamp) is small, enum-shaped
-  and Tier-1 safe. It rides the participant write allowlist as a new validated field.
-- The **generated variant** stays local to the requesting device, exactly as Gemini Bridge's
-  regenerated messages do. It is never written back to the session doc.
-- The **teacher's history** records the request and its settings, not the artifact. That is
-  what gives the teacher the durable value ("three students needed Spanish; two needed a
-  simpler version of the same page") without multiplying pack size.
-- **Promotion is a teacher act.** If a variant is good and worth reusing, the teacher can add
-  it to the pack deliberately. Automatic promotion is how the 85KB ceiling gets hit.
+What is new is small:
 
-## 7. Who generates it
+- The **request** (uid, resourceId, adjustment type, settings, timestamp): enum-shaped,
+  Tier-1 safe, rides the participant write allowlist as a new validated field.
+- The **queue state** (open / generating / sent / declined) so a request cannot be silently
+  lost, and so a student is never left staring at "asked" forever.
 
-Ordered by preference, degrading rather than failing:
+Pack growth is whatever it already is when a teacher differentiates by hand. The 85KB ceiling
+concern in the first draft came from per-student local variants, which this design no longer
+has.
 
-1. **Student device**, when student AI is available. Matches the bridge precedent and costs
-   the teacher nothing.
-2. **Teacher device**, when the student has none and the teacher is present. Bounded by the
-   approval queue, which conveniently rate-limits it.
-3. **Neither** — the request still reaches the teacher as a signal ("2 students requested
-   Spanish"). No AI required, and this is the path that works on the no-AI Cloudflare shell.
-   The teacher can act on it however they like, including outside the app.
+## 7. Who generates it — CORRECTED
 
-Path 3 is the important one. It means the feature has value even where the AI does not exist,
-which is what keeps it from being a feature for well-resourced classrooms only.
+**The teacher. Using `handleBatchGenerateForRoster` and the existing per-student push.**
+
+The first draft ranked student-device generation first, on the strength of the Gemini Bridge
+precedent. That was a mis-transfer. The bridge generates per-device because it fans **one**
+message out to **N** languages simultaneously; doing that centrally would mean N calls and N
+variants in a size-limited document. That is a fan-out problem.
+
+An adaptation request is not fan-out. It is **one student, one resource, one variant, with the
+teacher already in the loop**. The teacher has the AI, has the authority, and has to see the
+result anyway. Generating anywhere else adds cost and risk for nothing.
+
+Consequences of getting this right, all of them simplifications:
+
+- **No student AI required.** The "condition" §2 originally attached to this design
+  disappears; it works on the no-AI Cloudflare shell by default rather than by fallback.
+- **Preview is free.** The teacher generated it.
+- **Quality control is inherent** rather than bolted on.
+- **No new generation code.** The teacher already has the buttons.
+
+The async case (homework, no teacher present) is not an exception: the request simply queues
+until the teacher opens the session. A student waiting for a human is the honest behaviour,
+and it is better than a silently wrong machine translation nobody checked.
 
 ## 8. One-off or standing?
 
@@ -178,14 +204,16 @@ rather than in permitting it:
    session starts adapted? Convenient, but it makes a transient preference durable and
    therefore a record.
 
-## 11. Rough sequencing
+## 11. Rough sequencing — CORRECTED
 
 | Phase | Scope |
 |---|---|
-| A | Request channel: allowlisted enum field, teacher-visible queue, no generation. Delivers value on its own (path 3 of §7). |
-| B | Access adjustments, immediate, generated on the student device. |
-| C | Standing preference as a group of one, layered over group profile. |
-| D | Content adjustments with teacher approval + preview. |
-| E | Promotion of a variant into the pack, as a teacher act. |
+| A | **Presentation adjustments, local and instant.** No request, no teacher, no AI. Read-aloud, text size, density, contrast. Pure win, no protocol. |
+| B | **Request channel**: allowlisted enum field + teacher queue. No generation — the teacher fulfils by hand with existing tools. Useful immediately. |
+| C | **One-tap fulfilment**: the queue card wires the existing generate-and-push actions together so a request is two taps rather than six. |
+| D | **Standing preference** as a group of one, layered over the group profile (§8). |
+| E | Optional: on-device resolution for translation where student AI exists. Accelerant only. |
 
-A is small and independently useful. D is where the preview UI lands and should not be first.
+A is genuinely free and should probably ship regardless of the rest. B is where the idea
+actually lives, and it needs no AI anywhere.
+
