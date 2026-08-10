@@ -602,6 +602,8 @@
   ];
 
   // ── Lab emergency scenarios ──
+  // APPEND-ONLY: safety progress ids are index-based (recordSafetyScenario(ext,
+  // emergIdx)), so inserting or reordering scenarios corrupts saved progress.
   var EMERGENCIES = [
     { title: 'Acid Splash on Skin', urgency: 'HIGH',
       q: 'HCl splashes on your hand. What do you do FIRST?',
@@ -647,7 +649,34 @@
         { text: 'Move the fuming reaction yourself', correct: false },
         { text: 'Hold your breath and finish quickly', correct: false }
       ],
-      explain: 'Do not sniff or waft an unknown or irritating vapor, and do not move an actively fuming reaction. Move to fresh air, warn others, and alert the teacher. The teacher or emergency responder decides whether to shut down, ventilate, or evacuate under the local plan.' }
+      explain: 'Do not sniff or waft an unknown or irritating vapor, and do not move an actively fuming reaction. Move to fresh air, warn others, and alert the teacher. The teacher or emergency responder decides whether to shut down, ventilate, or evacuate under the local plan.' },
+    { title: 'Broken Glassware', urgency: 'MEDIUM',
+      q: 'A beaker slips and shatters on the floor. What do you do?',
+      opts: [
+        { text: 'Pick up the shards quickly with your fingers', correct: false },
+        { text: 'Alert the teacher, keep others clear, and help only as directed', correct: true },
+        { text: 'Kick the pieces out of the walkway', correct: false },
+        { text: 'Put the shards in the regular trash can', correct: false }
+      ],
+      explain: 'Never touch broken glass with bare hands. The teacher directs cleanup with a brush and dustpan, and fragments go in the designated glass-disposal container, never the regular trash.' },
+    { title: 'Burn from Hot Equipment', urgency: 'HIGH',
+      q: 'You touch a hot crucible and burn your finger. What do you do FIRST?',
+      opts: [
+        { text: 'Put ice directly on the burn', correct: false },
+        { text: 'Spread butter or ointment on it', correct: false },
+        { text: 'Cool it under cool running water and alert the teacher', correct: true },
+        { text: 'Wrap it tightly and keep working', correct: false }
+      ],
+      explain: 'Cool the burn under cool (not icy) running water and tell the teacher right away. Do not put ice, butter, or ointment on a fresh burn. The teacher decides on first aid and medical follow-up under the local plan.' },
+    { title: 'Clothing Catches Fire', urgency: 'HIGH',
+      q: 'A classmate’s sleeve catches fire at the burner. What should they do?',
+      opts: [
+        { text: 'Run to the door for help', correct: false },
+        { text: 'Fan the flames to blow them out', correct: false },
+        { text: 'Wave the arm to shake off the fire', correct: false },
+        { text: 'Stop, drop, and roll while you alert the teacher', correct: true }
+      ],
+      explain: 'Running feeds the flames. Stop, drop, and roll (or use the safety shower or a fire blanket if immediately at hand) to smother the fire, while others alert the teacher and follow the emergency plan.' }
   ];
 
   // ── Challenge questions (3 tiers) ──
@@ -712,21 +741,36 @@
 
   // Exposed here (not in the main __alloChemPure block, which runs before this
   // initializer) so tests get the populated bank, not a hoisted undefined.
-  try { if (window.__alloChemPure) window.__alloChemPure.CHALLENGE_QS = CHALLENGE_QS; } catch (_e) {}
+  try { if (window.__alloChemPure) { window.__alloChemPure.CHALLENGE_QS = CHALLENGE_QS; window.__alloChemPure.EMERGENCIES = EMERGENCIES; } } catch (_e) {}
 
   // ── Battle questions ──
+  // Answer order is NOT persisted (progress is only the battleWon flag), so
+  // reordering answers here is safe. Keep correct-answer positions spread --
+  // the original bank never used position 3, which made "never pick D" a
+  // winning strategy. `check` tags are executed by the invariant test.
   var BATTLE_QS = [
     { q: 'What is the chemical formula for table salt?', a: ['NaCl', 'KCl', 'NaOH', 'HCl'], correct: 0, dmg: 15 },
-    { q: 'How many atoms in one molecule of H\u2082O?', a: ['2', '3', '4', '1'], correct: 1, dmg: 15 },
-    { q: 'Which element has symbol Fe?', a: ['Fluorine', 'Iron', 'Francium', 'Fermium'], correct: 1, dmg: 15 },
+    { q: 'How many atoms in one molecule of H\u2082O?', a: ['2', '4', '1', '3'], correct: 3, dmg: 15, check: { kind: 'atomTotal', formula: 'H2O' } },
+    { q: 'Which element has symbol Fe?', a: ['Fluorine', 'Francium', 'Fermium', 'Iron'], correct: 3, dmg: 15, check: { kind: 'elementName', symbol: 'Fe' } },
     { q: 'What gas do plants produce in photosynthesis?', a: ['CO\u2082', 'N\u2082', 'O\u2082', 'H\u2082'], correct: 2, dmg: 20 },
-    { q: 'At 25 °C, what is the pH of neutral pure water?', a: ['0', '7', '14', '1'], correct: 1, dmg: 20 },
-    { q: 'Rust is an oxide of which element?', a: ['Copper', 'Aluminum', 'Iron', 'Zinc'], correct: 2, dmg: 15 },
+    { q: 'At 25 \u00B0C, what is the pH of neutral pure water?', a: ['0', '14', '1', '7'], correct: 3, dmg: 20 },
+    { q: 'Rust is an oxide of which element?', a: ['Iron', 'Copper', 'Aluminum', 'Zinc'], correct: 0, dmg: 15 },
     { q: 'Which subatomic particle has no charge?', a: ['Proton', 'Electron', 'Neutron', 'Ion'], correct: 2, dmg: 20 },
-    { q: 'What is the most abundant gas in Earth\u2019s atmosphere?', a: ['Oxygen', 'Carbon dioxide', 'Nitrogen', 'Argon'], correct: 2, dmg: 20 },
+    { q: 'What is the most abundant gas in Earth\u2019s atmosphere?', a: ['Nitrogen', 'Oxygen', 'Carbon dioxide', 'Argon'], correct: 0, dmg: 20 },
     { q: 'Diamond and graphite are both forms of:', a: ['Silicon', 'Carbon', 'Sulfur', 'Iron'], correct: 1, dmg: 25 },
-    { q: 'Acid + Base \u2192 Salt + ?', a: ['Gas', 'Metal', 'Water', 'Acid'], correct: 2, dmg: 20 }
+    { q: 'Acid + Base \u2192 Salt + ?', a: ['Gas', 'Metal', 'Water', 'Acid'], correct: 2, dmg: 20 },
+    { q: 'What is the chemical symbol for gold?', a: ['Ag', 'Au', 'Go', 'Gd'], correct: 1, dmg: 15, check: { kind: 'elementSymbol', name: 'Gold' } },
+    { q: 'How many atoms are in one molecule of CO\u2082?', a: ['1', '2', '4', '3'], correct: 3, dmg: 15, check: { kind: 'atomTotal', formula: 'CO2' } },
+    { q: 'Which element has the symbol Na?', a: ['Sodium', 'Nickel', 'Neon', 'Nitrogen'], correct: 0, dmg: 15, check: { kind: 'elementName', symbol: 'Na' } },
+    { q: 'The molar mass of NaCl is closest to:', a: ['23 g/mol', '35 g/mol', '58 g/mol', '81 g/mol'], correct: 2, dmg: 20, check: { kind: 'molarMass', formula: 'NaCl', tol: 1 } },
+    { q: 'What charge does a proton carry?', a: ['Negative', 'None', 'Positive', 'It varies'], correct: 2, dmg: 15 },
+    { q: 'Which of these is a noble gas?', a: ['Chlorine', 'Helium', 'Hydrogen', 'Sulfur'], correct: 1, dmg: 20 },
+    { q: 'H\u2082SO\u2084 is the formula for which acid?', a: ['Hydrochloric acid', 'Nitric acid', 'Carbonic acid', 'Sulfuric acid'], correct: 3, dmg: 20 },
+    { q: 'At sea level (1 atm), pure water boils at:', a: ['100 \u00B0C', '0 \u00B0C', '50 \u00B0C', '212 \u00B0C'], correct: 0, dmg: 15 },
+    { q: 'An atom with exactly 6 protons is always:', a: ['Oxygen', 'Nitrogen', 'Carbon', 'Silicon'], correct: 2, dmg: 25, check: { kind: 'elementZ', symbol: 'C', z: 6 } },
+    { q: 'Which pH value is the most acidic?', a: ['13', '2', '9', '7'], correct: 1, dmg: 20 }
   ];
+  try { if (window.__alloChemPure) window.__alloChemPure.BATTLE_QS = BATTLE_QS; } catch (_e) {}
 
   // ── Learn topics ──
   var LEARN_TOPICS = [

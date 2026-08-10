@@ -201,6 +201,95 @@ describe('chemBalance — challenge-quiz bank invariants', () => {
   });
 });
 
+describe('chemBalance — battle-quiz bank invariants', () => {
+  let bank;
+  beforeAll(() => { bank = chem.BATTLE_QS; });
+
+  it('has grown to 20 well-formed questions with sane damage values', () => {
+    expect(bank.length).toBeGreaterThanOrEqual(20);
+    const allQs = [];
+    for (const item of bank) {
+      expect(item.a.length, item.q).toBe(4);
+      expect(new Set(item.a).size, item.q).toBe(4);
+      expect(item.correct, item.q).toBeGreaterThanOrEqual(0);
+      expect(item.correct, item.q).toBeLessThanOrEqual(3);
+      expect(item.dmg, item.q).toBeGreaterThanOrEqual(10);
+      expect(item.dmg, item.q).toBeLessThanOrEqual(30);
+      allQs.push(item.q);
+    }
+    expect(new Set(allQs).size).toBe(allQs.length);
+  });
+
+  it('correct-answer positions are distributed (the legacy bank never used position 3)', () => {
+    const counts = [0, 0, 0, 0];
+    for (const item of bank) counts[item.correct]++;
+    for (let i = 0; i < 4; i++) {
+      expect(counts[i] / bank.length, 'position ' + i + ' share').toBeGreaterThanOrEqual(0.15);
+      expect(counts[i] / bank.length, 'position ' + i + ' share').toBeLessThanOrEqual(0.4);
+    }
+  });
+
+  it('declared chemistry checks agree with the marked correct answer', () => {
+    let executed = 0;
+    for (const item of bank) {
+      if (!item.check) continue;
+      const c = item.check;
+      const marked = item.a[item.correct];
+      if (c.kind === 'molarMass') {
+        const stated = parseFloat(marked);
+        expect(Math.abs(chem.parseFormula(c.formula).mass - stated), item.q).toBeLessThanOrEqual(c.tol);
+      } else if (c.kind === 'atomTotal') {
+        const elems = chem.parseFormula(c.formula).elems;
+        const totalAtoms = Object.values(elems).reduce((s, n) => s + n, 0);
+        expect(String(totalAtoms), item.q).toBe(marked);
+      } else if (c.kind === 'elementName') {
+        expect(chem.ELEMENTS[c.symbol].n, item.q).toBe(marked);
+      } else if (c.kind === 'elementSymbol') {
+        expect(chem.ELEMENTS[marked] && chem.ELEMENTS[marked].n, item.q).toBe(c.name);
+      } else if (c.kind === 'elementZ') {
+        expect(chem.ELEMENTS[c.symbol].z, item.q).toBe(c.z);
+        expect(chem.ELEMENTS[c.symbol].n, item.q).toBe(marked);
+      } else {
+        throw new Error('unknown check kind ' + c.kind + ' on: ' + item.q);
+      }
+      executed++;
+    }
+    expect(executed).toBeGreaterThanOrEqual(6);
+  });
+});
+
+describe('chemBalance — safety scenario invariants', () => {
+  let scenarios;
+  beforeAll(() => { scenarios = chem.EMERGENCIES; });
+
+  it('has grown append-only to 8 scenarios, each with exactly one correct option', () => {
+    expect(scenarios.length).toBeGreaterThanOrEqual(8);
+    for (const s of scenarios) {
+      expect(['HIGH', 'MEDIUM', 'LOW'], s.title).toContain(s.urgency);
+      expect(s.opts.length, s.title).toBe(4);
+      expect(s.opts.filter(o => o.correct).length, s.title).toBe(1);
+      expect(s.explain.length, s.title).toBeGreaterThan(0);
+    }
+    const titles = scenarios.map(s => s.title);
+    expect(new Set(titles).size).toBe(titles.length);
+  });
+
+  it('correct options are not all parked at one position', () => {
+    const positions = new Set();
+    for (const s of scenarios) positions.add(s.opts.findIndex(o => o.correct));
+    expect(positions.size).toBeGreaterThanOrEqual(3);
+  });
+
+  it('every explanation defers to the teacher, responder, or local plan (never DIY cleanup)', () => {
+    for (const s of scenarios) {
+      const text = s.explain.toLowerCase();
+      const defers = text.includes('teacher') || text.includes('responder') || text.includes('local plan')
+        || text.includes('emergency plan') || text.includes('fire plan');
+      expect(defers, s.title + ' explanation must route to an adult/plan').toBe(true);
+    }
+  });
+});
+
 describe('chemBalance — practice-next control renders', () => {
   it('the balance subtool offers the retry-weighted Practice next button', () => {
     resetStemLab();
