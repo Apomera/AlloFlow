@@ -195,7 +195,7 @@ window.StemLab = window.StemLab || {
         '\u2022 NUMERICAL \u2014 Score popups, damage numbers, combo counters\n' +
         '\u2022 HAPTIC \u2014 Controller vibration, screen pulse\n\n' +
         'Good feedback tells the player: "Your action mattered!" Even our simple Game Studio shows toast messages, XP awards, and score changes as feedback.',
-      funFact: 'The game "Vlambeer\'s Action" became famous for demonstrating "juice" \u2014 adding screen shake, particles, and sound to a boring game made it feel 10x better without changing gameplay!',
+      funFact: 'Game studio Vlambeer\'s famous talk "The Art of Screenshake" demonstrates "juice" live \u2014 adding screen shake, particles, and sound to a plain shooter makes it feel 10x better without changing the gameplay rules at all!',
       realGame: 'When Mario collects a coin, you see it spin upward, hear "bling!", see a +200 score popup, and your coin counter increases. That\'s 4 layers of feedback for one tiny action!',
       quiz: {
         question: 'A player collects a coin but gets no feedback (no sound, no visual, just a silent score increase). What is the likely problem?',
@@ -380,7 +380,9 @@ window.StemLab = window.StemLab || {
       t['12,3']='coin'; t['13,3']='coin'; t['5,2']='coin';
       t['6,10']='spikes'; t['7,10']='spikes';
       t['1,10']='player'; t['4,2']='flag';
-      t['9,5']='enemy'; t['13,3']='enemy';
+      // 9,5 and 13,3 already hold coins — placing enemies there silently
+      // erased 2 of the 7 coins. Neighboring platform-top cells are free.
+      t['10,5']='enemy'; t['14,3']='enemy';
       return t;
     }),
     makeStarter('Puzzle Dungeon', 'puzzle', '\uD83E\uDDE9', 'Find keys to unlock doors!', function() {
