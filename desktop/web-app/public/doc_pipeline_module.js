@@ -14322,7 +14322,10 @@ var createDocPipeline = function(deps) {
       // deterministic audits and skipped the baseline (early return). Every write now marks the
       // object AFTER finalization; unmarked entries are legacy bad snapshots — reject them.
       if (!cached.audit._auditFinalized) return null;
-      return cached.audit;
+      // Return the record, not the bare audit: the caller stamps cache provenance
+      // (_fromAuditCache/_auditCachedAt) on its own UI copy from savedAt, and the
+      // stored object must never carry those stamps (a first-run write would lie).
+      return { audit: cached.audit, savedAt: cached.savedAt };
     } catch (_) { return null; }
   };
   // ── Bounded eviction sweep for the PDF audit/remediation caches ──
@@ -14391,6 +14394,29 @@ var createDocPipeline = function(deps) {
       }
     } catch (_) { /* sweep is best-effort; never break the write path */ }
     finally { _pdfCacheSweepRunning = false; }
+  };
+  // ── User-requested cache clear (2026-08-10) ── The audit/remediation caches are a
+  // 7-day-TTL optimization, and a hit replays instantly — which a teacher who WANTS a
+  // fresh look at a previously-processed document experiences as "it never ran".
+  // This deletes exactly the two prefixes the sweep above owns; it can NOT touch the
+  // batch-resume keys (different prefix) or the multi-session/chunk-progress stores
+  // (separate IndexedDB the default store's keys() cannot even see).
+  const clearPdfDocumentCaches = async () => {
+    if (typeof window === 'undefined' || !window.idbKeyval || typeof window.idbKeyval.keys !== 'function') {
+      return { ok: false, removed: 0, reason: 'cache store unavailable' };
+    }
+    let removed = 0;
+    try {
+      const allKeys = await window.idbKeyval.keys();
+      const candidates = (allKeys || []).filter(k => typeof k === 'string' && _PDF_CACHE_KEY_PREFIXES.some(p => k.startsWith(p)));
+      for (const k of candidates) {
+        try { await window.idbKeyval.del(k); removed++; } catch (_) {}
+      }
+    } catch (err) {
+      return { ok: false, removed, reason: (err && err.message) || 'cache enumeration failed' };
+    }
+    warnLog('[PDF Cache] Cleared ' + removed + ' cached audit/remediation result(s) at user request.');
+    return { ok: true, removed };
   };
   const _writeAuditCache = async (key, audit) => {
     if (!key || typeof window === 'undefined' || !window.idbKeyval || !audit) return;
@@ -15445,13 +15471,17 @@ var createDocPipeline = function(deps) {
       _cacheKey = !_skipCache ? await _auditCacheKey(base64Data, _auditorCount, _outputLanguage, _runDocumentDigest) : null;
       if (_auditCancelled()) { _finishAuditUi(); return null; }
       if (_cacheKey) {
-        const cached = await _readAuditCache(_cacheKey);
+        const _cachedRec = await _readAuditCache(_cacheKey);
+        const cached = _cachedRec && _cachedRec.audit;
         if (_auditCancelled()) { _finishAuditUi(); return null; }
         if (cached && (!cached.documentDigest || cached.documentDigest === _runDocumentDigest)) {
           // Upgrade finalized entries written before documentDigest existed without
           // mutating adapters that preserve the stored object's identity in memory.
-          const cachedForDocument = { ...cached, documentDigest: _runDocumentDigest };
-          if (!cached.documentDigest) { try { _writeAuditCache(_cacheKey, cachedForDocument); } catch (_) {} }
+          // The write-back stays UNstamped; only the UI copy carries cache provenance
+          // (2026-08-10: a silent replay was indistinguishable from a fresh run, so
+          // users read a cache hit as "the modal just exited and never ran").
+          if (!cached.documentDigest) { try { _writeAuditCache(_cacheKey, { ...cached, documentDigest: _runDocumentDigest }); } catch (_) {} }
+          const cachedForDocument = { ...cached, documentDigest: _runDocumentDigest, _fromAuditCache: true, _auditCachedAt: (_cachedRec.savedAt || null) };
           warnLog(`[PDF Audit] Cache hit for ${_cacheKey.slice(0, 24)}... — skipping ${_auditorCount} audit calls`);
           if (_auditUiCurrent()) {
             addToast && addToast('♿ Audit loaded from cache (identical document seen recently)', 'info');
@@ -41456,6 +41486,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     precedingHeadingLevel: precedingHeadingLevel,
     headingOutlineIssue: _headingOutlineIssue,
     runPdfAccessibilityAudit: _wrapAsync(runPdfAccessibilityAudit),
+    clearPdfDocumentCaches: _wrapAsync(clearPdfDocumentCaches), // user-facing: force-forget cached audit/remediation results (2026-08-10)
     auditOutputAccessibility: _wrapAsync(auditOutputAccessibility),
     runAxeAudit: _wrapAsync(runAxeAudit),
     runEqualAccessAudit: _wrapAsync(runEqualAccessAudit),

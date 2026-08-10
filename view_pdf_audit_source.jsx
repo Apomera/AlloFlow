@@ -8978,7 +8978,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 <div className="p-4 bg-white space-y-3">
                   <p className="text-xs text-slate-600 text-center">{t('pdf_audit.unavailable.retry_hint') || 'A completed baseline audit is required before remediation. Retry the audit, or cancel and re-export the source document before trying again.'}</p>
                   <div className="flex gap-2 justify-center">
-                    <button disabled={pdfAuditLoading || !_auditInputReady} onClick={async () => { if (!_requireAuditReady()) return; const _auditSnapshot = pdfAuditResult; const _auditEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : null; const _auditCurrent = () => _auditEpoch == null || typeof isPdfDocumentIntakeCurrent !== 'function' || isPdfDocumentIntakeCurrent(_auditEpoch); setPdfAuditResult(null); addToast(t('toasts.retrying_audit'), 'info'); try { const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType }); if (!_auditCurrent()) return; if (!_result) { setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile)); addToast(t('toasts.audit_retryable_error') || 'The audit retry did not complete. Please try again.', 'error'); } else if (_result?.score === -1) { addToast(t('toasts.audit_retryable_error') || 'The audit retry could not complete. Please try again.', 'error'); } } catch (error) { if (!_auditCurrent()) return; setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile)); addToast('Audit retry failed: ' + ((error && error.message) || error), 'error'); } }} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">🔄 Retry Audit</button>
+                    <button disabled={pdfAuditLoading || !_auditInputReady} onClick={async () => { if (!_requireAuditReady()) return; const _auditSnapshot = pdfAuditResult; const _auditEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : null; const _auditCurrent = () => _auditEpoch == null || typeof isPdfDocumentIntakeCurrent !== 'function' || isPdfDocumentIntakeCurrent(_auditEpoch); setPdfAuditResult(null); addToast(t('toasts.retrying_audit'), 'info'); try { /* Retry means RETRY: a user pressing this after a cached replay wants a fresh audit, and the content-hash cache would otherwise hand back the identical result instantly (2026-08-10). */ const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType, skipCache: true }); if (!_auditCurrent()) return; if (!_result) { setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile)); addToast(t('toasts.audit_retryable_error') || 'The audit retry did not complete. Please try again.', 'error'); } else if (_result?.score === -1) { addToast(t('toasts.audit_retryable_error') || 'The audit retry could not complete. Please try again.', 'error'); } } catch (error) { if (!_auditCurrent()) return; setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile)); addToast('Audit retry failed: ' + ((error && error.message) || error), 'error'); } }} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">🔄 Retry Audit</button>
                     <button onClick={() => { _closePdfAuditModal(); }} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors">Cancel</button>
                   </div>
                 </div>
@@ -9014,6 +9014,30 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   {pdfAuditResult._isWebAudit && <p className="text-xs mt-1 bg-black/20 inline-block px-2 py-0.5 rounded-full font-bold">Verification: {pdfAuditResult.verificationState || 'partial'} · AI + axe-core + IBM Equal Access</p>}
                   {!_auditScoreKnown && <p className="text-xs mt-1 bg-black/20 inline-block px-3 py-1 rounded-full font-bold">Coverage incomplete - no numeric baseline was assigned</p>}
                   {pdfAuditResult._slicedAudit && <p className="text-[11px] mt-1 bg-white/20 inline-block px-2 py-0.5 rounded-full font-bold" title="Merged from page-slices because a single whole-document pass exceeded the model; cross-page checks (reading order, heading continuity) are approximate. Not cached.">🧩 Approximate — audited in {pdfAuditResult._sliceCount || 'multiple'} page-slices</p>}
+                  {/* Cache provenance + escape hatch (2026-08-10): a content-hash cache hit replays this
+                      audit instantly, which looked like "nothing ran". Say so, and offer the two fresh
+                      paths right where the replay is noticed: Retry Audit (now cache-skipping) and a
+                      full cache clear via the pipeline's clearPdfDocumentCaches export. */}
+                  {pdfAuditResult._fromAuditCache && (
+                    <p className="text-[11px] mt-1 bg-white/20 inline-block px-2 py-0.5 rounded-full font-bold">
+                      ♻️ {(t('pdf_audit.cached_result_pill') || 'Cached audit') + (pdfAuditResult._auditCachedAt ? ' · ' + new Date(pdfAuditResult._auditCachedAt).toLocaleString() : '')} — {t('pdf_audit.cached_result_hint') || 'Retry Audit runs fresh'}
+                      <button
+                        type="button"
+                        className="underline ml-2 font-bold"
+                        disabled={_modalWorkBusy}
+                        title={t('pdf_audit.clear_cache_title') || 'Forget every cached audit/remediation result so all documents run fresh'}
+                        onClick={async () => {
+                          try {
+                            const _pipe = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.DocPipelineModule) || null;
+                            if (!_pipe || typeof _pipe.clearPdfDocumentCaches !== 'function') { addToast(t('pdf_audit.clear_cache_unavailable') || 'Cache clearing is unavailable on this host version.', 'warning'); return; }
+                            const _res = await _pipe.clearPdfDocumentCaches();
+                            if (_res && _res.ok) addToast((t('pdf_audit.clear_cache_done') || 'Cleared cached results') + ' (' + (_res.removed || 0) + ')', 'success');
+                            else addToast((t('pdf_audit.clear_cache_failed') || 'Could not clear the cache') + ((_res && _res.reason) ? ': ' + _res.reason : ''), 'error');
+                          } catch (_e) { addToast((t('pdf_audit.clear_cache_failed') || 'Could not clear the cache') + (_e && _e.message ? ': ' + _e.message : ''), 'error'); }
+                        }}
+                      >{t('pdf_audit.clear_cache_btn') || 'Clear cache'}</button>
+                    </p>
+                  )}
                   {pdfAuditResult._slicedAudit
                     ? <p className="text-xs opacity-70 mt-0.5">One pass per page-slice (same model) · approximate cross-page coverage</p>
                     : (pdfAuditResult.scores && pdfAuditResult.scores.length > 1 && <p className="text-xs opacity-70 mt-0.5">{pdfAuditResult.auditorCount || pdfAuditResult.scores.length} AI audit passes (varied persona prompts, same model) · scores: {pdfAuditResult.scores.join(', ')} · SD: {pdfAuditResult.scoreSD ?? '?'}</p>)}
