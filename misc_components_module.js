@@ -694,6 +694,17 @@ const WordSoundsReviewPanel = ({
       each: onGenerateImage ? ((i) => onGenerateImage(i, preloadedWords[i] && (preloadedWords[i].targetWord || preloadedWords[i].word))) : null
     });
     addGap({
+      key: "unverified",
+      test: (w) => w && Array.isArray(w._unverifiedWords) && w._unverifiedWords.length > 0,
+      text: (n) => {
+        const sample = [...new Set(preloadedWords.flatMap((w) => w && w._unverifiedWords || []))].slice(0, 6);
+        return `\u{1F4D6} ${n} word${n === 1 ? "" : "s"} generated rhymes or family members that are not in the K-2 word lists: ${sample.join(", ")}${sample.length < n ? "\u2026" : ""}. Worth a look before teaching them.`;
+      },
+      // A judgement call, not a repair: the teacher edits
+      // or regenerates the word if they disagree.
+      each: null
+    });
+    addGap({
       key: "edited",
       test: (w) => w && w._packEdited,
       text: (n) => `\u270F\uFE0F ${n} word${n === 1 ? "" : "s"} edited since preparation (boards rebuild from your edits)`,

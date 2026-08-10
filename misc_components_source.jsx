@@ -726,6 +726,26 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                             each: onGenerateImage ? ((i) => onGenerateImage(i, preloadedWords[i] && (preloadedWords[i].targetWord || preloadedWords[i].word))) : null,
                         });
 
+                        // Generated words the app cannot vouch for. Not an
+                        // error: the curated lists are a few hundred words and
+                        // a real vocabulary is far larger, so this is a "worth
+                        // your eye" list, not a verdict. It is how "hon" — an
+                        // informal clipping of "honey", and a flawless CVC that
+                        // no shape rule can catch — reaches a teacher before it
+                        // reaches a child.
+                        addGap({
+                            key: 'unverified',
+                            test: (w) => w && Array.isArray(w._unverifiedWords) && w._unverifiedWords.length > 0,
+                            text: (n) => {
+                                const sample = [...new Set(preloadedWords
+                                    .flatMap((w) => (w && w._unverifiedWords) || []))].slice(0, 6);
+                                return `📖 ${n} word${n === 1 ? '' : 's'} generated rhymes or family members that are not in the K-2 word lists: ${sample.join(', ')}${sample.length < n ? '…' : ''}. Worth a look before teaching them.`;
+                            },
+                            // A judgement call, not a repair: the teacher edits
+                            // or regenerates the word if they disagree.
+                            each: null,
+                        });
+
                         addGap({
                             key: 'edited',
                             test: (w) => w && w._packEdited,

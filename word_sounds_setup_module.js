@@ -1019,6 +1019,43 @@ const derivePackRhyme = (word, batchWords, isEnglish) => {
   }
   return "";
 };
+let _k2Known = null;
+const k2KnownWords = () => {
+  if (_k2Known) return _k2Known;
+  const set = new Set(PACK_COMMON_WORDS);
+  const add = (w) => {
+    const v = String(w || "").trim().toLowerCase();
+    if (v) set.add(v);
+  };
+  try {
+    const data = typeof window !== "undefined" && window.AlloModules && window.AlloModules.AlloData || {};
+    (data.SOUND_MATCH_POOL || []).forEach(add);
+    Object.values(data.RIME_FAMILIES || {}).forEach((list) => (list || []).forEach(add));
+    Object.values(data.SIGHT_WORD_PRESETS || {}).forEach((list) => (list || []).forEach(add));
+    Object.values(data.WORD_FAMILY_PRESETS || {}).forEach((list) => {
+      if (Array.isArray(list)) list.forEach(add);
+      else if (list && Array.isArray(list.words)) list.words.forEach(add);
+    });
+  } catch (e) {
+  }
+  _k2Known = set;
+  return set;
+};
+const isUnusableAsPhonicsWord = (w) => {
+  const v = String(w || "").trim();
+  if (!v) return true;
+  if (!/^[a-zA-Z]+$/.test(v)) return true;
+  if (v.length < 2 || v.length > 10) return true;
+  if (!/[aeiouy]/i.test(v)) return true;
+  return false;
+};
+const isUnverifiedK2Word = (w, sessionWords) => {
+  const v = String(w || "").trim().toLowerCase();
+  if (!v) return false;
+  if (k2KnownWords().has(v)) return false;
+  if (sessionWords && sessionWords.has(v)) return false;
+  return true;
+};
 let _espeakPackLoad = null;
 const ensureEspeakLoaded = () => {
   if (_espeakPackLoad) return _espeakPackLoad;
@@ -1653,11 +1690,11 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
             // is complete on a student device with AI switched off.
             rhymeWord: data.rhymeWord || data.rhymes && data.rhymes[0] || _derivedRhyme || "",
             _rhymeSource: data.rhymeWord || data.rhymes && data.rhymes[0] ? "gemini" : _derivedRhyme ? "derived" : void 0,
-            rhymeDistractors: data.rhymeDistractors || [],
-            blendingDistractors: data.blendingDistractors || [],
+            rhymeDistractors: (data.rhymeDistractors || []).filter((w) => !isUnusableAsPhonicsWord(w)),
+            blendingDistractors: (data.blendingDistractors || []).filter((w) => !isUnusableAsPhonicsWord(w)),
             orthographyDistractors: data.orthographyDistractors || [],
             familyEnding: data.familyEnding || "",
-            familyMembers: data.familyMembers || [],
+            familyMembers: (data.familyMembers || []).filter((w) => !isUnusableAsPhonicsWord(w)),
             firstSound: data.firstSound || validatedPhonemes[0] || "",
             lastSound: data.lastSound || validatedPhonemes[validatedPhonemes.length - 1] || "",
             definition: data.definition,
@@ -1689,6 +1726,23 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
           });
         }
         setGeneratedCount((prev) => prev + 1);
+      }
+      {
+        const sessionWords = new Set(
+          processed.map((it) => String(it.targetWord || it.word || it.term || "").trim().toLowerCase()).filter(Boolean)
+        );
+        processed.forEach((item) => {
+          const candidates = [
+            item.rhymeWord,
+            ...item.rhymes || [],
+            ...item.familyMembers || [],
+            ...item.rhymeDistractors || []
+          ].filter(Boolean);
+          const unverified = [...new Set(
+            candidates.map((w) => String(w).trim().toLowerCase()).filter((w) => isUnverifiedK2Word(w, sessionWords))
+          )];
+          if (unverified.length) item._unverifiedWords = unverified;
+        });
       }
       compileActivityItems(processed);
       const decodingAssets = {};

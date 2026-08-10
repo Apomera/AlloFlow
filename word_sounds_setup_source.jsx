@@ -877,6 +877,59 @@
         return '';
     };
 
+    // ── Decodability screen for AI-generated words ──────────────────────────
+    // A generated rhyme family arrived with "hon" in it. Structurally it is a
+    // flawless CVC — lowercase, one vowel, three letters — so no shape rule
+    // can catch it. It is a poor K-2 item because it is an informal clipping
+    // of "honey", and only a word list knows that.
+    //
+    // So this does two different jobs and keeps them apart. It REJECTS things
+    // that cannot be phonics items at all, which is safe to do silently. It
+    // FLAGS words that are merely unrecognised, because the curated lists here
+    // are a few hundred words and a real vocabulary is tens of thousands:
+    // dropping everything unfamiliar would gut legitimate content and quietly
+    // narrow what a teacher can teach. Flagged words are surfaced for the
+    // teacher to judge, which is the right place for that decision.
+    let _k2Known = null;
+    const k2KnownWords = () => {
+        if (_k2Known) return _k2Known;
+        const set = new Set(PACK_COMMON_WORDS);
+        const add = (w) => {
+            const v = String(w || '').trim().toLowerCase();
+            if (v) set.add(v);
+        };
+        try {
+            const data = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AlloData) || {};
+            (data.SOUND_MATCH_POOL || []).forEach(add);
+            Object.values(data.RIME_FAMILIES || {}).forEach((list) => (list || []).forEach(add));
+            Object.values(data.SIGHT_WORD_PRESETS || {}).forEach((list) => (list || []).forEach(add));
+            Object.values(data.WORD_FAMILY_PRESETS || {}).forEach((list) => {
+                if (Array.isArray(list)) list.forEach(add);
+                else if (list && Array.isArray(list.words)) list.words.forEach(add);
+            });
+        } catch (e) { /* the screen degrades to structure-only */ }
+        _k2Known = set;
+        return set;
+    };
+    // Hard rejects: not a candidate phonics word under any reading.
+    const isUnusableAsPhonicsWord = (w) => {
+        const v = String(w || '').trim();
+        if (!v) return true;
+        if (!/^[a-zA-Z]+$/.test(v)) return true;          // digits, punctuation, spaces
+        if (v.length < 2 || v.length > 10) return true;   // "a" is a sight word, not a family member
+        if (!/[aeiouy]/i.test(v)) return true;            // no vowel = not a word
+        return false;
+    };
+    // Soft flag: real-looking, but not in any list this app can vouch for.
+    const isUnverifiedK2Word = (w, sessionWords) => {
+        const v = String(w || '').trim().toLowerCase();
+        if (!v) return false;
+        if (k2KnownWords().has(v)) return false;
+        // A word the teacher put in this session is vouched for by the teacher.
+        if (sessionWords && sessionWords.has(v)) return false;
+        return true;
+    };
+
     // ── eSpeak G2P: the middle rung of the phoneme fallback ladder ──────────
     // When Gemini returns no phonemes for a word, the pack used to drop
     // straight to estimatePackPhonemes — a spelling heuristic, which is where
@@ -1631,11 +1684,11 @@
                          _rhymeSource: (data.rhymeWord || (data.rhymes && data.rhymes[0]))
                              ? 'gemini'
                              : (_derivedRhyme ? 'derived' : undefined),
-                         rhymeDistractors: data.rhymeDistractors || [],
-                         blendingDistractors: data.blendingDistractors || [],
+                         rhymeDistractors: (data.rhymeDistractors || []).filter((w) => !isUnusableAsPhonicsWord(w)),
+                         blendingDistractors: (data.blendingDistractors || []).filter((w) => !isUnusableAsPhonicsWord(w)),
                          orthographyDistractors: data.orthographyDistractors || [],
                          familyEnding: data.familyEnding || '',
-                         familyMembers: data.familyMembers || [],
+                         familyMembers: (data.familyMembers || []).filter((w) => !isUnusableAsPhonicsWord(w)),
                          firstSound: data.firstSound || validatedPhonemes[0] || '',
                          lastSound: data.lastSound || validatedPhonemes[validatedPhonemes.length - 1] || '',
                          definition: data.definition,
@@ -1670,6 +1723,31 @@
                      });
                  }
                      setGeneratedCount(prev => prev + 1);
+             }
+             // Flag generated words this app cannot vouch for. Done here, after
+             // every word is processed, so the session's own vocabulary counts
+             // as vouched for: a teacher who typed a word has already made the
+             // judgement this screen is asking for.
+             {
+                 const sessionWords = new Set(
+                     processed
+                         .map((it) => String(it.targetWord || it.word || it.term || '').trim().toLowerCase())
+                         .filter(Boolean)
+                 );
+                 processed.forEach((item) => {
+                     const candidates = [
+                         item.rhymeWord,
+                         ...(item.rhymes || []),
+                         ...(item.familyMembers || []),
+                         ...(item.rhymeDistractors || []),
+                     ].filter(Boolean);
+                     const unverified = [...new Set(
+                         candidates
+                             .map((w) => String(w).trim().toLowerCase())
+                             .filter((w) => isUnverifiedK2Word(w, sessionWords))
+                     )];
+                     if (unverified.length) item._unverifiedWords = unverified;
+                 });
              }
              compileActivityItems(processed);
 
