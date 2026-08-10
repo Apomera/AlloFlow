@@ -5558,7 +5558,7 @@ var d = labToolData.brainAtlas || {};
                 ctx.font = Math.round(10 * fontScale) + 'px Inter, system-ui, sans-serif';
                 ctx.textAlign = 'right';
                 var stageLabels = [
-                  {name:t('stem.brainatlas.awake', 'Awake'),y:0.05,color: 'var(--allo-stem-text-soft, #94a3b8)'},
+                  {name:t('stem.brainatlas.awake', 'Awake'),y:0.05,color: '#94a3b8'},
                   {name:'REM',y:0.15,color:'#a855f7'},
                   {name:'N1',y:0.25,color:'#38bdf8'},
                   {name:'N2',y:0.50,color:'#3b82f6'},
@@ -9502,7 +9502,7 @@ var d = labToolData.brainAtlas || {};
                 { id: 'hippocampus', label: t('stem.brainatlas.hippocampus', 'Hippocampus'),     color: '#ec4899', icon: '📚', def: 'Memory formation + consolidation; spatial memory (London-taxi-driver studies). Bilateral damage = anterograde amnesia (HM / Henry Molaison case).' },
                 { id: 'amygdala',    label: t('stem.brainatlas.amygdala', 'Amygdala'),        color: '#dc2626', icon: '⚡', def: 'Emotion processing, fear recognition + conditioning, threat detection. Damage = Klüver-Bucy / fear-blindness; hyperactivity = PTSD, anxiety disorders.' },
                 { id: 'cerebellum',  label: t('stem.brainatlas.cerebellum', 'Cerebellum'),      color: '#0891b2', icon: '🦴', def: 'Motor coordination, balance, motor learning, timing. Damage = ipsilateral ataxia, dysmetria, intention tremor, scanning speech (NOT contralateral like cerebrum).' },
-                { id: 'brainstem',   label: t('stem.brainatlas.brainstem_2', 'Brainstem'),       color: 'var(--allo-stem-text-soft, #64748b)', icon: '🌳', def: 'Cranial nerve nuclei (III-XII), reticular activating system (consciousness), vital centers (cardiac, respiratory). Damage = coma, cranial palsies, vital instability.' }
+                { id: 'brainstem',   label: t('stem.brainatlas.brainstem_2', 'Brainstem'),       color: '#64748b', icon: '🌳', def: 'Cranial nerve nuclei (III-XII), reticular activating system (consciousness), vital centers (cardiac, respiratory). Damage = coma, cranial palsies, vital instability.' }
               ];
               var FM_V = [
                 { id: 1, scenario: 'Patient produces telegraphic, non-fluent speech ("water... want...") with intact comprehension. Aware of the deficit and frustrated by it. Right hemiparesis on exam.', correct: 'frontal',
