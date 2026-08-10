@@ -1,0 +1,24 @@
+{
+  "binding": {
+    "html_sha256": "7cfbaf5114e4f9c5fc47f2c282a3cf5570ae38467f327a0f06730ed47aa3eeb6",
+    "plan_sha256": "7120411aba578baa128bf00c03021db4ae0bf5790c85e1dd313f12880b8e39b9",
+    "source_sha256": "d0a3b06606378733a2ec96cfa01e3b12c111d13059d070e3e039b751347a4529"
+  },
+  "counts": {
+    "discrepancies": 0,
+    "items": 388,
+    "unreadable": 0,
+    "verified": 388
+  },
+  "createdAt": "2026-08-10T07:17:29Z",
+  "discrepancies": [],
+  "meaning": "'verified' means an independent reader attested every item against the source. It does not upgrade any compliance claim, and the script cannot prove the reader's independence - it records the attestation.",
+  "result": "verified",
+  "schemaVersion": "1.0",
+  "unreadable": [],
+  "verifier": {
+    "context_isolation": "fresh-context",
+    "model": "claude-fable-5",
+    "statement": "I am a fresh-context second verifier (claude-fable-5) and did not author the repair plan or the first reading. I attested the 12 open items directly: I rendered source PDF pages 3, 4, 5, 13, 14, 22, 30, 31, and 32 to PNG and read them, read the corrected rebuilt HTML's tables, lists, imprint text, and block order against those renders cell-by-cell and item-by-item, verified the binding sha256 of the HTML, plan, and source PDF I read, and checked all 15 plan review notes against what the rebuild actually does. The other 376 attestations are the first fresh-context reader's, carried byte-identical from their reading because those items' content is unchanged in this rebuild; I did not modify them."
+  }
+}

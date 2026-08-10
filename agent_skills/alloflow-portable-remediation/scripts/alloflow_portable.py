@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 
-VERSION = "0.2.4"
+VERSION = "0.2.5"
 MAX_SOURCE_BYTES = 200 * 1024 * 1024
 MAX_PLAN_BYTES = 8 * 1024 * 1024
 MAX_HTML_BYTES = 8 * 1024 * 1024
@@ -2028,7 +2028,12 @@ def audit_source_command(args: argparse.Namespace) -> Dict[str, Any]:
     has_xmp = re.search(rb"/Type\s*/Metadata\b", data) is not None
     claims_pdfua = b"pdfuaid:part" in data or b"http://www.aiim.org/pdfua/ns/id/" in data
     encrypted = re.search(rb"/Encrypt\s+\d+\s+0\s+R", data) is not None
-    has_acroform = b"/AcroForm" in data
+    # Same detector the remediate gate uses: an /AcroForm dictionary alone is
+    # NOT a form - authoring tools leave an empty one behind on ordinary prose
+    # documents (corpus round 12: a USGS teacher-guide booklet carried
+    # /Fields[] and the audit wrongly announced interactive form fields while
+    # the remediate gate, correctly, let the same file through).
+    has_form_fields = _has_interactive_fields(data)
     has_outline = b"/Outlines" in data
     has_title = re.search(rb"/Title\s*[(<]", data) is not None or b"<dc:title>" in data
 
@@ -2075,7 +2080,7 @@ def audit_source_command(args: argparse.Namespace) -> Dict[str, Any]:
         issue("no-title", "moderate", "No document title was found in Info or XMP metadata.")
     if not has_xmp:
         issue("no-xmp-metadata", "minor", "No XMP metadata stream is present.")
-    if has_acroform:
+    if has_form_fields:
         issue(
             "form-fields",
             "review",
@@ -2097,7 +2102,7 @@ def audit_source_command(args: argparse.Namespace) -> Dict[str, Any]:
             "hasXmpMetadata": has_xmp,
             "claimsPdfUa": claims_pdfua,
             "encrypted": encrypted,
-            "hasFormFields": has_acroform,
+            "hasFormFields": has_form_fields,
             "hasOutline": has_outline,
             "contentStreamInflateFailures": inflate_failures,
         },

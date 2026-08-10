@@ -1,0 +1,24 @@
+{
+  "alloflowServiceInvokedByScripts": false,
+  "artifacts": {
+    "accessibilityReport": "usgs-water-cycle-accessibility-report.json",
+    "accessibleHtml": "usgs-water-cycle-accessible.html",
+    "privacyReceipt": "usgs-water-cycle-privacy-receipt.json",
+    "taggedPdf": "usgs-water-cycle-alloflow-accessible.pdf"
+  },
+  "assuranceScope": "AlloFlow packaged scripts only; excludes the host AI provider, operating system, filesystem synchronization, and resolved local executables.",
+  "createdAt": "2026-08-10T07:03:38Z",
+  "documentNetworkPolicy": "deny",
+  "documentRequestsBlockedByRenderer": 0,
+  "documentTextLoggedByScripts": false,
+  "modelApiCalledByScripts": false,
+  "remoteMcpInvokedByScripts": false,
+  "schemaVersion": "1.0",
+  "source": {
+    "basename": "usgs-water-cycle.pdf",
+    "bytes": 4478406,
+    "kind": "pdf",
+    "sha256": "d0a3b06606378733a2ec96cfa01e3b12c111d13059d070e3e039b751347a4529"
+  },
+  "systemWideNetworkUseVerified": false
+}
