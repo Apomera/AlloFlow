@@ -305,7 +305,16 @@ window.StemLab = window.StemLab || {
 
               var op = tok;
 
-              var right = parseExpr(tokens, left.pos + 1, prec + 1);
+              // Implication is RIGHT-associative by standard convention:
+              // P → Q → R means P → (Q → R). Recursing at the same precedence
+              // (not prec+1) lets the right side absorb further arrows first.
+              // With prec+1 the chain parsed as (P → Q) → R, which genuinely
+              // differs (P=F, Q=T, R=F: standard reading true, left-assoc
+              // reading false). All other connectives stay left-associative;
+              // for ∧, ∨, ⊕, ↔ the grouping cannot change the truth table.
+              var nextMin = op === '→' ? prec : prec + 1;
+
+              var right = parseExpr(tokens, left.pos + 1, nextMin);
 
               left = { node: { type: 'bin', op: op, left: left.node, right: right.node }, pos: right.pos };
 
@@ -523,6 +532,27 @@ window.StemLab = window.StemLab || {
             return null;
           };
 
+          // Strip balanced outer parentheses so rule matching compares the
+          // formula, not its punctuation. Without this, Proof Challenge 5 was
+          // unsolvable: its premise reads "(P ∧ Q) → R", Conjunction produces
+          // the string "P ∧ Q", and Modus Ponens compared the two literally —
+          // '(P ∧ Q)' never equalled 'P ∧ Q', so the taught conj-then-MP proof
+          // could not complete. Only BALANCED outer parens are stripped:
+          // "(P) ∧ (Q)" is left alone because its first paren closes early.
+          var stripOuterParens = function(s) {
+            s = s.trim();
+            while (s.length > 1 && s[0] === '(' && s[s.length - 1] === ')') {
+              var depth = 0, closesEarly = false;
+              for (var i = 0; i < s.length - 1; i++) {
+                if (s[i] === '(') depth++;
+                else if (s[i] === ')') { depth--; if (depth === 0) { closesEarly = true; break; } }
+              }
+              if (closesEarly) break;
+              s = s.slice(1, -1).trim();
+            }
+            return s;
+          };
+
           var RULES = [
 
             { id: 'mp', name: t('stem.logiclab.modus_ponens', 'Modus Ponens'), form: 'P→Q, P ∴ Q', eng: 'If you study, you pass. You studied. ∴ You pass.', needs: 2,
@@ -535,7 +565,7 @@ window.StemLab = window.StemLab || {
 
                   var m = sel[i].match(/^(.+)\s*→\s*(.+)$/);
 
-                  if (m && m[1].trim() === sel[j].trim()) return m[2].trim();
+                  if (m && stripOuterParens(m[1]) === stripOuterParens(sel[j])) return m[2].trim();
 
                 }
 
@@ -555,9 +585,9 @@ window.StemLab = window.StemLab || {
 
                   var m = sel[i].match(/^(.+)\s*→\s*(.+)$/);
 
-                  if (m && sel[j].trim() === '¬' + m[2].trim()) return '¬' + m[1].trim();
+                  if (m && stripOuterParens(sel[j]) === '¬' + stripOuterParens(m[2])) return '¬' + m[1].trim();
 
-                  if (m && sel[j].trim() === '¬(' + m[2].trim() + ')') return '¬' + m[1].trim();
+                  if (m && stripOuterParens(sel[j]) === '¬(' + stripOuterParens(m[2]) + ')') return '¬' + m[1].trim();
 
                 }
 
@@ -579,7 +609,7 @@ window.StemLab = window.StemLab || {
 
                   var m2 = sel[j].match(/^(.+)\s*→\s*(.+)$/);
 
-                  if (m1 && m2 && m1[2].trim() === m2[1].trim()) return m1[1].trim() + ' → ' + m2[2].trim();
+                  if (m1 && m2 && stripOuterParens(m1[2]) === stripOuterParens(m2[1])) return m1[1].trim() + ' → ' + m2[2].trim();
 
                 }
 
@@ -599,9 +629,9 @@ window.StemLab = window.StemLab || {
 
                   var m = sel[i].match(/^(.+)\s*∨\s*(.+)$/);
 
-                  if (m && sel[j].trim() === '¬' + m[1].trim()) return m[2].trim();
+                  if (m && stripOuterParens(sel[j]) === '¬' + stripOuterParens(m[1])) return m[2].trim();
 
-                  if (m && sel[j].trim() === '¬' + m[2].trim()) return m[1].trim();
+                  if (m && stripOuterParens(sel[j]) === '¬' + stripOuterParens(m[2])) return m[1].trim();
 
                 }
 
