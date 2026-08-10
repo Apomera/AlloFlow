@@ -3696,7 +3696,7 @@ window.StemLab = window.StemLab || {
           }, '\u00D7')
         ),
         h('div', { className: 'flex gap-2' },
-          h('input', {
+          h('input', { 'aria-label': __alloT('stem.fractions.ai_question_label', 'Ask a question about fractions'),
             type: 'text', value: aiQuestion,
             onChange: function(e) { upd({ aiQuestion: e.target.value }); },
             onKeyDown: function(e) { if (e.key === 'Enter' && aiQuestion.trim()) askAITutor(); },
@@ -4840,7 +4840,7 @@ window.StemLab = window.StemLab || {
             )
           ),
           h('div', { className: 'flex gap-2' },
-            h('input', {
+            h('input', { 'aria-label': __alloT('stem.fractions.pattern_guess_label', 'Next fraction in the pattern'),
               type: 'text', value: pb.answer || '',
               onChange: function(e) { upd({ pbgGame: Object.assign({}, pb, { answer: e.target.value }) }); },
               onKeyDown: function(e) { if (e.key === 'Enter') guessNext(pb.answer || ''); },
@@ -5139,7 +5139,7 @@ window.StemLab = window.StemLab || {
               (hs.hintsShown < 3 ? 'transition-colors bg-pink-200 text-pink-900 hover:bg-pink-300' : 'bg-slate-100 text-slate-600 cursor-not-allowed')
           }, '💡 Reveal clue ' + (hs.hintsShown + 1)),
           !hs.gameOver && h('div', { className: 'flex gap-2 mt-2' },
-            h('input', {
+            h('input', { 'aria-label': __alloT('stem.fractions.hidden_guess_label', 'Guess the hidden fraction'),
               type: 'text', value: hs.guess || '',
               onChange: function(e) { upd({ hsGame: Object.assign({}, hs, { guess: e.target.value }) }); },
               onKeyDown: function(e) { if (e.key === 'Enter') guessHs(hs.guess || ''); },
@@ -8108,7 +8108,7 @@ window.StemLab = window.StemLab || {
             __alloT('stem.fractions.comprehensive_fraction_glossary_with_e', 'Comprehensive fraction glossary with examples. Covers vocabulary from K-8 fraction instruction.')
           )
         ),
-        h('input', {
+        h('input', { 'aria-label': __alloT('stem.fractions.glossary_search_label', 'Search fraction glossary'),
           type: 'text', value: _f.glossarySearch || '',
           onChange: function(e) { upd({ glossarySearch: e.target.value }); },
           placeholder: __alloT('stem.fractions.search_glossary', 'Search glossary...'),
@@ -9746,11 +9746,11 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'bg-white rounded-lg p-3 border border-indigo-200' },
             h('p', { className: 'text-xs font-bold text-indigo-700 mb-2' }, __alloT('stem.fractions.fraction_a_3', 'Fraction A')),
             h('div', { className: 'flex items-center gap-2 justify-center' },
-              h('input', { type: 'number', min: 1, value: ff1,
+              h('input', { 'aria-label': __alloT('stem.fractions.frac_a_num_label', 'Fraction A numerator'), type: 'number', min: 1, value: ff1,
                 onChange: function(e) { upd({ ffNum1: parseInt(e.target.value) || 1 }); },
                 className: 'w-16 px-2 py-1 rounded border border-indigo-300 text-center text-lg font-bold' }),
               h('span', { className: 'text-xl font-bold text-indigo-900' }, '/'),
-              h('input', { type: 'number', min: 2, value: ffD1,
+              h('input', { 'aria-label': __alloT('stem.fractions.frac_a_den_label', 'Fraction A denominator'), type: 'number', min: 2, value: ffD1,
                 onChange: function(e) { upd({ ffDen1: parseInt(e.target.value) || 2 }); },
                 className: 'w-16 px-2 py-1 rounded border border-indigo-300 text-center text-lg font-bold' })
             )
@@ -9758,11 +9758,11 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'bg-white rounded-lg p-3 border border-indigo-200' },
             h('p', { className: 'text-xs font-bold text-indigo-700 mb-2' }, __alloT('stem.fractions.fraction_b_3', 'Fraction B')),
             h('div', { className: 'flex items-center gap-2 justify-center' },
-              h('input', { type: 'number', min: 1, value: ff2,
+              h('input', { 'aria-label': __alloT('stem.fractions.frac_b_num_label', 'Fraction B numerator'), type: 'number', min: 1, value: ff2,
                 onChange: function(e) { upd({ ffNum2: parseInt(e.target.value) || 1 }); },
                 className: 'w-16 px-2 py-1 rounded border border-indigo-300 text-center text-lg font-bold' }),
               h('span', { className: 'text-xl font-bold text-indigo-900' }, '/'),
-              h('input', { type: 'number', min: 2, value: ffD2,
+              h('input', { 'aria-label': __alloT('stem.fractions.frac_b_den_label', 'Fraction B denominator'), type: 'number', min: 2, value: ffD2,
                 onChange: function(e) { upd({ ffDen2: parseInt(e.target.value) || 2 }); },
                 className: 'w-16 px-2 py-1 rounded border border-indigo-300 text-center text-lg font-bold' })
             )
@@ -11329,7 +11329,7 @@ window.StemLab = window.StemLab || {
             h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ n: iq.num, d: iq.den, c: iq.count, t: total.toFixed(2), st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.fractions.log', '📋 Log')),
             h('button', { onClick: function() { setIQ({ num: 1, den: 4, count: 3, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.fractions.reset', '↺ Reset'))
           ),
-          h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.fractions.hypothesis_when_do_n_copies_of_a_fract', 'Hypothesis: When do N copies of a fraction equal exactly 1?'),
+          h('textarea', { 'aria-label': __alloT('stem.fractions.hypothesis_input', 'Fraction equivalence hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.fractions.hypothesis_when_do_n_copies_of_a_fract', 'Hypothesis: When do N copies of a fraction equal exactly 1?'),
             className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug mb-3', rows: 3 }),
           !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300 mb-3' }, __alloT('stem.fractions.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
           iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed mb-3' },
@@ -11339,7 +11339,7 @@ window.StemLab = window.StemLab || {
           h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
             h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
             __alloT('stem.fractions.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-          iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.fractions.explain_how_count_num_den_determines_w', 'Explain how count × (num/den) determines whether you reach 1.'),
+          iq.understood && h('textarea', { 'aria-label': __alloT('stem.fractions.explanation_input', 'Fraction equivalence explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.fractions.explain_how_count_num_den_determines_w', 'Explain how count × (num/den) determines whether you reach 1.'),
             className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 3 }),
           h('div', { className: 'mt-2 text-[10px] italic text-slate-500' }, __alloT('stem.fractions.design_note_discrete_3_state_outcome_n', 'Design note: discrete 3-state outcome; no exact-match score; no reveal — by design.'))
         );
@@ -11382,7 +11382,7 @@ window.StemLab = window.StemLab || {
               ),
               h('p', { className: 'text-sm font-bold text-rose-800' }, challenge.question),
               h('div', { className: 'flex gap-2' },
-                h('input', {
+                h('input', { 'aria-label': __alloT('stem.fractions.challenge_answer_label', 'Your answer'),
                   type: 'number', value: answer,
                   onChange: function(e) { upd({ answer: e.target.value }); },
                   onKeyDown: function(e) { if (e.key === 'Enter' && answer) checkChallenge(); },

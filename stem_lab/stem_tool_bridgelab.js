@@ -472,6 +472,109 @@
    * bracing at every panel point the two lengths are equal and the check is
    * unchanged — which is the default, so existing designs keep their numbers.
    */
+  // The single source of truth for "does this bridge stand up?".
+  //
+  // Returns the exact Method-of-Joints forces, the yield check and the Euler buckling
+  // check over EVERY compression member, plus the combined status. Pure: it reads a
+  // settings object and returns numbers, so the design brief and the Stress Test tab
+  // can render the same verdict without either one re-deriving it. They used to, and
+  // they disagreed — see the note at the top of this change.
+  function bridgeGoverningAnalysis(d, mat) {
+    var analysis = analyzeTruss(d.span, d.height, d.nBays, d.loadPerJoint);
+    var trussStyle = d.trussStyle || 'warren';
+    var supportsMOJ = trussStyle !== 'ktruss';
+    var loadMode = d.loadMode || 'uniform';
+    var loadOpts = loadMode === 'vehicle'
+      ? { mode: 'vehicle', position: d.vehiclePos != null ? d.vehiclePos : 0.5, totalKN: d.vehicleLoad || 150 }
+      : { mode: 'uniform', loadPerJoint: d.loadPerJoint };
+    var spec = supportsMOJ ? buildTrussSpec(trussStyle, d.span, d.nBays, d.height, loadOpts) : null;
+    var moj = spec ? solveTrussMOJ(spec.joints, spec.members, spec.loads, spec.supports) : { ok: false };
+    // If MOJ succeeded, replace approximate maxChord + maxDiag with exact values
+    if (moj.ok) {
+      var maxAbsForce = 0;
+      var maxChordExact = 0, maxDiagExact = 0;
+      for (var fk in moj.memberForces) {
+        var fv = Math.abs(moj.memberForces[fk]);
+        if (fv > maxAbsForce) maxAbsForce = fv;
+        if (fk.indexOf('BC') === 0 || fk.indexOf('TC') === 0) {
+          if (fv > maxChordExact) maxChordExact = fv;
+        } else if (fk.indexOf('DL') === 0 || fk.indexOf('DR') === 0 || fk.indexOf('ED') === 0 || fk.indexOf('ID') === 0 || fk.indexOf('V') === 0) {
+          if (fv > maxDiagExact) maxDiagExact = fv;
+        }
+      }
+      if (maxChordExact > 0) analysis.maxChord = maxChordExact;
+      if (maxDiagExact > 0) analysis.maxDiag = maxDiagExact;
+    }
+    var stressChord = analysis.maxChord * 1000 / d.crossSectionMm2; // MPa
+    var stressDiag = analysis.maxDiag * 1000 / d.crossSectionMm2; // MPa
+    var maxStress = Math.max(stressChord, stressDiag);
+    var safetyFactor = mat.yieldMPa / maxStress;
+
+    var sideMm = Math.sqrt(d.crossSectionMm2);
+    var I_mm4 = (sideMm * sideMm * sideMm * sideMm) / 12;
+    var E_MPa = mat.modulusGPa * 1000;
+    var braceEvery = Math.max(1, Math.min(d.nBays, d.lateralBraceEvery || 1));
+    var unbracedLenM = bridgeUnbracedLenM(d.span, d.nBays, braceEvery);
+    var compressionCases = [];
+    if (moj.ok && spec) {
+      var jointByIdBuckling = {};
+      spec.joints.forEach(function(joint) { jointByIdBuckling[joint.id] = joint; });
+      spec.members.forEach(function(member) {
+        var forceKN = moj.memberForces[member.id];
+        if (!(forceKN < -0.001)) return;
+        var j1 = jointByIdBuckling[member.j1];
+        var j2 = jointByIdBuckling[member.j2];
+        if (!j1 || !j2) return;
+        var dx = j2.x - j1.x;
+        var dy = j2.y - j1.y;
+        var ownLenM = Math.sqrt(dx * dx + dy * dy);
+        var isTopChord = member.id.indexOf('TC') === 0;
+        var effLenM = isTopChord ? Math.max(ownLenM, unbracedLenM) : ownLenM;
+        compressionCases.push({
+          id: member.id, forceKN: Math.abs(forceKN), lengthMm: effLenM * 1000,
+          outOfPlane: isTopChord && effLenM > ownLenM + 1e-9
+        });
+      });
+    }
+    if (!compressionCases.length) {
+      compressionCases.push({ id: 'top chord (approx.)', forceKN: Math.max(0.001, analysis.maxChord), lengthMm: (d.span / d.nBays) * 1000 });
+    }
+    var governingCompression = null;
+    compressionCases.forEach(function(memberCase) {
+      var pcr = (Math.PI * Math.PI * E_MPa * I_mm4) / (memberCase.lengthMm * memberCase.lengthMm) / 1000;
+      var margin = pcr / Math.max(0.001, memberCase.forceKN);
+      if (!governingCompression || margin < governingCompression.margin) {
+        governingCompression = { id: memberCase.id, forceKN: memberCase.forceKN, lengthMm: memberCase.lengthMm, pcrKN: pcr, margin: margin, outOfPlane: !!memberCase.outOfPlane };
+      }
+    });
+    var bucklingMargin = governingCompression.margin;
+    var buckles = bucklingMargin < 1;
+    var bucklingMarginal = bucklingMargin >= 1 && bucklingMargin < 2;
+    var yieldStatus = safetyFactor >= 2 ? 'safe' : safetyFactor >= 1 ? 'marginal' : 'failed';
+    var bucklingStatus = !buckles && !bucklingMarginal ? 'safe' : bucklingMarginal ? 'marginal' : 'failed';
+    return {
+      analysis: analysis, spec: spec, moj: moj, trussStyle: trussStyle,
+      // The cost optimiser sweeps material and cross-section over these same member
+      // forces and lengths, so it needs the list, not just the winner.
+      compressionCases: compressionCases,
+      supportsMOJ: supportsMOJ, loadMode: loadMode,
+      maxStress: maxStress, safetyFactor: safetyFactor,
+      sideMm: sideMm, braceEvery: braceEvery, unbracedLenM: unbracedLenM,
+      governingCompression: governingCompression,
+      pcrKN: governingCompression.pcrKN, bucklingMargin: bucklingMargin,
+      buckles: buckles, bucklingMarginal: bucklingMarginal,
+      governingLengthMm: governingCompression.lengthMm,
+      slenderness: governingCompression.lengthMm / (sideMm / Math.sqrt(12)),
+      yieldStatus: yieldStatus, bucklingStatus: bucklingStatus,
+      status: (yieldStatus === 'failed' || bucklingStatus === 'failed') ? 'failed'
+            : (yieldStatus === 'marginal' || bucklingStatus === 'marginal') ? 'marginal'
+            : 'safe',
+      // The governing safety factor is the SMALLER of the two checks. A bridge is only
+      // as strong as its first failure mode, and for slender members that is buckling.
+      governingSF: Math.min(safetyFactor, bucklingMargin)
+    };
+  }
+
   function bridgeUnbracedLenM(span, nBays, braceEvery) {
     var bay = span / Math.max(1, nBays);
     return bay * Math.max(1, Math.min(nBays, braceEvery || 1));
@@ -859,15 +962,18 @@
         { id: 'cycle', label: __alloT('stem.bridgelab.route_cycle', 'Design cycle'), hint: __alloT('stem.bridgelab.route_cycle_hint', 'Plan, test, revise, and document.') }
       ];
       var bridgeBriefMat = MATERIALS.find(function(m) { return m.id === d.materialId; }) || MATERIALS[3];
-      var bridgeBriefLoad = d.loadMode === 'vehicle'
-        ? Math.max(1, (d.vehicleLoad || 150) / Math.max(1, d.nBays || 4))
-        : d.loadPerJoint;
-      var bridgeBriefAnalysis = analyzeTruss(d.span, d.height, d.nBays, bridgeBriefLoad);
+      // The SAME analysis the Stress Test tab renders — exact Method-of-Joints forces,
+      // yield AND Euler buckling. This panel used to run analyzeTruss() alone with no
+      // buckling check, so it announced "Ready for testing, SF 18.67, SAFE" about the
+      // default bridge while the tab below it announced "FAILED — BUCKLING FAILURE".
+      var bridgeBriefGov = bridgeGoverningAnalysis(d, bridgeBriefMat);
+      var bridgeBriefAnalysis = bridgeBriefGov.analysis;
       var bridgeBriefAreaM2 = d.crossSectionMm2 / 1e6;
       var bridgeBriefVolumeM3 = bridgeBriefAnalysis.totalLen * bridgeBriefAreaM2;
-      var bridgeBriefStress = Math.max(bridgeBriefAnalysis.maxChord, bridgeBriefAnalysis.maxDiag) * 1000 / Math.max(1, d.crossSectionMm2);
-      var bridgeBriefSF = bridgeBriefMat.yieldMPa / Math.max(0.001, bridgeBriefStress);
-      var bridgeBriefStatus = bridgeBriefSF >= 2 ? 'safe' : bridgeBriefSF >= 1 ? 'marginal' : 'failed';
+      var bridgeBriefStress = bridgeBriefGov.maxStress;
+      // The GOVERNING factor, not the yield factor: whichever mode fails first.
+      var bridgeBriefSF = bridgeBriefGov.governingSF;
+      var bridgeBriefStatus = bridgeBriefGov.status;
       var bridgeBriefStatusCopy = bridgeBriefStatus === 'safe'
         ? __alloT('stem.bridgelab.brief_safe', 'Ready for testing')
         : bridgeBriefStatus === 'marginal'
@@ -908,107 +1014,36 @@
       // ──────────────────────────────────────────────────────────────
       function renderBuild() {
         var mat = MATERIALS.find(function(m) { return m.id === d.materialId; }) || MATERIALS[3];
-        var analysis = analyzeTruss(d.span, d.height, d.nBays, d.loadPerJoint);
-        // Build truss spec + run MOJ solver for exact forces (Warren / Pratt / Howe only; K-truss uses approximation)
-        var trussStyle = d.trussStyle || 'warren';
-        var supportsMOJ = trussStyle !== 'ktruss';
-        var loadMode = d.loadMode || 'uniform';
-        var loadOpts = loadMode === 'vehicle'
-          ? { mode: 'vehicle', position: d.vehiclePos != null ? d.vehiclePos : 0.5, totalKN: d.vehicleLoad || 150 }
-          : { mode: 'uniform', loadPerJoint: d.loadPerJoint };
-        var spec = supportsMOJ ? buildTrussSpec(trussStyle, d.span, d.nBays, d.height, loadOpts) : null;
-        var moj = spec ? solveTrussMOJ(spec.joints, spec.members, spec.loads, spec.supports) : { ok: false };
-        // If MOJ succeeded, replace approximate maxChord + maxDiag with exact values
-        if (moj.ok) {
-          var maxAbsForce = 0;
-          var maxChordExact = 0, maxDiagExact = 0;
-          for (var fk in moj.memberForces) {
-            var fv = Math.abs(moj.memberForces[fk]);
-            if (fv > maxAbsForce) maxAbsForce = fv;
-            if (fk.indexOf('BC') === 0 || fk.indexOf('TC') === 0) {
-              if (fv > maxChordExact) maxChordExact = fv;
-            } else if (fk.indexOf('DL') === 0 || fk.indexOf('DR') === 0 || fk.indexOf('ED') === 0 || fk.indexOf('ID') === 0 || fk.indexOf('V') === 0) {
-              if (fv > maxDiagExact) maxDiagExact = fv;
-            }
-          }
-          if (maxChordExact > 0) analysis.maxChord = maxChordExact;
-          if (maxDiagExact > 0) analysis.maxDiag = maxDiagExact;
-        }
+        // One analysis, shared with the design brief at the top of the tool. Everything
+        // from here down reads the same numbers the brief reports, which is the point.
+        var gov = bridgeGoverningAnalysis(d, mat);
+        var analysis = gov.analysis;
+        var trussStyle = gov.trussStyle;
+        var supportsMOJ = gov.supportsMOJ;
+        var loadMode = gov.loadMode;
+        var spec = gov.spec;
+        var moj = gov.moj;
 
-        // Stress = force / cross-section. Stress (MPa) = force (N) / area (mm²).
-        // Force in kN → multiply by 1000 to get N. So MPa = force_kN * 1000 / area_mm².
-        var stressChord = analysis.maxChord * 1000 / d.crossSectionMm2; // MPa
-        var stressDiag = analysis.maxDiag * 1000 / d.crossSectionMm2; // MPa
-        var maxStress = Math.max(stressChord, stressDiag);
-        var safetyFactor = mat.yieldMPa / maxStress;
+        // Stress = force / cross-section, in MPa. Computed in bridgeGoverningAnalysis.
+        var maxStress = gov.maxStress;
+        var safetyFactor = gov.safetyFactor;
 
-        // ── Euler buckling check for the longest compression member ──
-        // The top chord is the longest compression member: length = bay width a.
-        // For an asssumed-square cross-section (side = sqrt(area)), moment of inertia
-        // I = side^4 / 12. Radius of gyration r = sqrt(I/A) = side/sqrt(12).
-        // Critical buckling load (pinned ends): P_cr = π² EI / L²
-        //   E in GPa → convert to N/mm² (= MPa) by *1000. So E_MPa = mat.modulusGPa * 1000.
-        //   I in mm⁴ (computed from area mm²).
-        //   L in mm.
-        // P_cr in N → convert to kN by /1000.
-        var sideMm = Math.sqrt(d.crossSectionMm2);
-        var I_mm4 = (sideMm * sideMm * sideMm * sideMm) / 12;
-        var E_MPa = mat.modulusGPa * 1000;
-        // Lateral bracing sets the OUT-OF-PLANE buckling length of the top chord.
-        // In the plane of the truss the chord is held at every panel point by the
-        // diagonals; out of plane it is held only where bracing crosses to the
-        // other truss. A chord braced every 3 bays has 3x the unbraced length and
-        // so 1/9 the Euler capacity, which is the whole point of the 1/L² lesson
-        // the quiz already teaches. Default 1 = braced at every panel point, which
-        // reproduces the previous numbers exactly.
-        var braceEvery = Math.max(1, Math.min(d.nBays, d.lateralBraceEvery || 1));
-        var unbracedLenM = bridgeUnbracedLenM(d.span, d.nBays, braceEvery);
-        var compressionCases = [];
-        if (moj.ok && spec) {
-          var jointByIdBuckling = {};
-          spec.joints.forEach(function(joint) { jointByIdBuckling[joint.id] = joint; });
-          spec.members.forEach(function(member) {
-            var forceKN = moj.memberForces[member.id];
-            if (!(forceKN < -0.001)) return;
-            var j1 = jointByIdBuckling[member.j1];
-            var j2 = jointByIdBuckling[member.j2];
-            if (!j1 || !j2) return;
-            var dx = j2.x - j1.x;
-            var dy = j2.y - j1.y;
-            var ownLenM = Math.sqrt(dx * dx + dy * dy);
-            // Only the top chord is continuous between braces. Diagonals and
-            // verticals are single members pinned at both ends in both planes.
-            var isTopChord = member.id.indexOf('TC') === 0;
-            var effLenM = isTopChord ? Math.max(ownLenM, unbracedLenM) : ownLenM;
-            compressionCases.push({
-              id: member.id, forceKN: Math.abs(forceKN), lengthMm: effLenM * 1000,
-              outOfPlane: isTopChord && effLenM > ownLenM + 1e-9
-            });
-          });
-        }
-        if (!compressionCases.length) {
-          compressionCases.push({ id: 'top chord (approx.)', forceKN: Math.max(0.001, analysis.maxChord), lengthMm: (d.span / d.nBays) * 1000 });
-        }
-        var governingCompression = null;
-        compressionCases.forEach(function(memberCase) {
-          var pcr = (Math.PI * Math.PI * E_MPa * I_mm4) / (memberCase.lengthMm * memberCase.lengthMm) / 1000;
-          var margin = pcr / Math.max(0.001, memberCase.forceKN);
-          if (!governingCompression || margin < governingCompression.margin) {
-            governingCompression = { id: memberCase.id, forceKN: memberCase.forceKN, lengthMm: memberCase.lengthMm, pcrKN: pcr, margin: margin, outOfPlane: !!memberCase.outOfPlane };
-          }
-        });
-        var P_cr_top_kN = governingCompression.pcrKN;
-        var bucklingMargin = governingCompression.margin;
-        var buckles = bucklingMargin < 1;
-        var bucklingMarginal = bucklingMargin >= 1 && bucklingMargin < 2;
-        var governingLengthMm = governingCompression.lengthMm;
-        var slenderness = governingLengthMm / (sideMm / Math.sqrt(12));
-        // Status combines yield + buckling
-        var yieldStatus = safetyFactor >= 2 ? 'safe' : safetyFactor >= 1 ? 'marginal' : 'failed';
-        var bucklingStatus = !buckles && !bucklingMarginal ? 'safe' : bucklingMarginal ? 'marginal' : 'failed';
-        var status = (yieldStatus === 'failed' || bucklingStatus === 'failed') ? 'failed'
-                   : (yieldStatus === 'marginal' || bucklingStatus === 'marginal') ? 'marginal'
-                   : 'safe';
+        // Yield, Euler buckling over every compression member, and the combined
+        // verdict all come from bridgeGoverningAnalysis — see the note there.
+        var sideMm = gov.sideMm;
+        var braceEvery = gov.braceEvery;
+        var unbracedLenM = gov.unbracedLenM;
+        var compressionCases = gov.compressionCases;
+        var governingCompression = gov.governingCompression;
+        var P_cr_top_kN = gov.pcrKN;
+        var bucklingMargin = gov.bucklingMargin;
+        var buckles = gov.buckles;
+        var bucklingMarginal = gov.bucklingMarginal;
+        var governingLengthMm = gov.governingLengthMm;
+        var slenderness = gov.slenderness;
+        var yieldStatus = gov.yieldStatus;
+        var bucklingStatus = gov.bucklingStatus;
+        var status = gov.status;
 
         // Estimate weight: density (kg/m³) * volume. Volume = totalLen (m) * area (m²).
         // Area_m² = mm² / 1e6
@@ -1281,6 +1316,11 @@
               + (bowedId ? ' Member ' + bowedId + ' has failed its buckling check and is drawn bowed '
                   + (governingCompression.outOfPlane ? 'sideways, out of the plane of its truss.' : 'within the plane of its truss.') : '');
             BridgeGL.push({
+              // A still life: nothing in this scene moves on its own (no S.tick), so the
+              // viewer must not re-arm requestAnimationFrame after every frame. It still
+              // repaints on push — which covers orbit, zoom and every model change below —
+              // on resize, and on scrolling back into view.
+              static: true,
               sig: [trussStyle, d.span, d.height, d.nBays, braceEvery, loadMode,
                     d.loadPerJoint, d.vehiclePos, d.vehicleLoad, bowedId,
                     moj.ok ? Object.keys(moj.memberForces).map(function (k) {

@@ -3919,7 +3919,7 @@ window.StemLab = window.StemLab || {
                     dmOptions.map(function(opt, oi) {
                       var key = oi + '-' + ci;
                       return h('td', { key: oi, className: 'px-2 py-1 text-center' },
-                        h('input', { type: 'range', 'aria-label': __alloT('stem.lifeskills.dm_scores', 'dm scores'), 'aria-valuetext': (dmScores[key] || 3) + ' of 5', min: 1, max: 5, value: dmScores[key] || 3, onChange: function(e) {
+                        h('input', { type: 'range', 'aria-valuetext': (dmScores[key] || 3) + ' of 5', min: 1, max: 5, value: dmScores[key] || 3, onChange: function(e) {
                           var s = Object.assign({}, dmScores); s[key] = parseInt(e.target.value); upd('dmScores', s); checkBadge('decisionPro');
                         }, className: 'w-full', 'aria-label': opt + ' ' + c.name }),
                         h('span', { className: 'text-[11px] font-mono' }, dmScores[key] || 3)
@@ -6482,7 +6482,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, __alloT('stem.lifeskills.ai_home_advisor', '\uD83E\uDDE0 AI Home Advisor')),
             h('p', { className: 'text-xs text-slate-600 mb-2' }, __alloT('stem.lifeskills.ask_ai_about_any_home_system_question', 'Ask AI about any home system question:')),
             h('div', { className: 'flex gap-2' },
-              h('input', { type: 'text', value: d.homeQ || '', onChange: function(e) { upd('homeQ', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter' && d.homeQ) {
+              h('input', { 'aria-label': __alloT('stem.lifeskills.home_question_label', 'Ask a home maintenance question'), type: 'text', value: d.homeQ || '', onChange: function(e) { upd('homeQ', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter' && d.homeQ) {
                 upd('homeALoading', true);
                 callGemini('Answer this home maintenance question for a ' + gradeBand + ' student in 2-3 sentences: ' + d.homeQ).then(function(r) { updMulti({ homeA: r, homeALoading: false }); }).catch(function() { upd('homeALoading', false); });
               }}, placeholder: __alloT('stem.lifeskills.e_g_why_does_my_furnace_make_a_clickin', 'e.g. "Why does my furnace make a clicking sound?"'), className: 'flex-1 px-3 py-2 border border-slate-400 rounded-xl text-xs' }),
@@ -6655,7 +6655,7 @@ window.StemLab = window.StemLab || {
                 h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ i: iq.income, n: iq.needsPct, w: iq.wantsPct, s: iq.savesPct, t: total, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.lifeskills.log', '\uD83D\uDCCB Log')),
                 h('button', { onClick: function() { setIQ({ income: 4000, needsPct: 50, wantsPct: 30, savesPct: 20, monthlySave: 500, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.lifeskills.reset', '\u21BA Reset'))
               ),
-              h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.lifeskills.hypothesis_at_what_income_does_50_30_2', 'Hypothesis: At what income does 50/30/20 become hard?'),
+              h('textarea', { 'aria-label': __alloT('stem.lifeskills.hypothesis_input', 'Budget feasibility hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.lifeskills.hypothesis_at_what_income_does_50_30_2', 'Hypothesis: At what income does 50/30/20 become hard?'),
                 className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
               !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.lifeskills.stuck_show_open_prompts', '\uD83E\uDD14 Stuck \u2014 show open prompts')),
               iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700' },
@@ -6665,7 +6665,7 @@ window.StemLab = window.StemLab || {
               h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
                 h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                 __alloT('stem.lifeskills.i_understand_explain', 'I understand \u2014 explain')),
-              iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.lifeskills.explain_how_income_level_affects_budge', 'Explain how income level affects budget feasibility.'),
+              iq.understood && h('textarea', { 'aria-label': __alloT('stem.lifeskills.explanation_input', 'Budget feasibility explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.lifeskills.explain_how_income_level_affects_budge', 'Explain how income level affects budget feasibility.'),
                 className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
               h('div', { className: 'text-[10px] italic text-slate-500' }, __alloT('stem.lifeskills.design_note_discrete_5_state_budget_ma', 'Design note: discrete 5-state budget marker; SVG stacked bar; no allocation score \u2014 by design.'))
             );

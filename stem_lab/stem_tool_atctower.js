@@ -1802,7 +1802,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: '10px', marginTop: '14px', alignItems: 'start' } },
                 h('label', { style: { display: 'block', fontSize: '12px', fontWeight: 800, color: '#f8fafc' } },
                   t('stem.atctower.your_hypothesis_what_combo_do_you_expe', 'Your hypothesis (what combo do you expect to break ops first?)'),
-                  h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, style: { width: '100%', marginTop: '6px', padding: '8px', borderRadius: '8px', border: '1px solid ' + loadMeta.border, background: 'rgba(2, 6, 23, 0.66)', color: '#f8fafc', fontSize: '12px', resize: 'vertical' }, placeholder: t('stem.atctower.e_g_low_separation_high_spawn_rate_com', 'Example: low separation plus high spawn rate compounds before wind matters...') })
+                  h('textarea', { 'aria-label': t('stem.atctower.hypothesis_input', 'Aircraft separation hypothesis'),  value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, style: { width: '100%', marginTop: '6px', padding: '8px', borderRadius: '8px', border: '1px solid ' + loadMeta.border, background: 'rgba(2, 6, 23, 0.66)', color: '#f8fafc', fontSize: '12px', resize: 'vertical' }, placeholder: t('stem.atctower.e_g_low_separation_high_spawn_rate_com', 'Example: low separation plus high spawn rate compounds before wind matters...') })
                 ),
                 h('button', { onClick: function() {
                   var stamp = new Date().toISOString().slice(11, 19);

@@ -6514,7 +6514,7 @@
 
               h('label', { htmlFor: 'chem-ph-hypothesis', className: 'block text-sm font-bold text-slate-800 mb-1' },
                 __alloT('stem.chembalance.ph_hypothesis_label', 'Your pH hypothesis')),
-              h('textarea', {
+              h('textarea', { 'aria-label': __alloT('stem.chembalance.hypothesis_input', 'pH and hydronium hypothesis'), 
                 id: 'chem-ph-hypothesis',
                 value: iq.hypothesis || '',
                 onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
@@ -6546,7 +6546,7 @@
                   __alloT('stem.chembalance.i_think_i_understand_explain_in_own_wo', 'I think I understand — explain in my own words')),
                 iq.understood && h('label', { htmlFor: 'chem-ph-explanation', className: 'block text-sm font-bold text-emerald-900 mt-2 mb-1' },
                   __alloT('stem.chembalance.ph_explanation_label', 'Explain your reasoning')),
-                iq.understood && h('textarea', {
+                iq.understood && h('textarea', { 'aria-label': __alloT('stem.chembalance.explanation_input', 'pH and hydronium explanation'), 
                   id: 'chem-ph-explanation',
                   value: iq.explanation || '',
                   onChange: function(e) { setIQ({ explanation: e.target.value }); },

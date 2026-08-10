@@ -25599,7 +25599,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.ammonia, n: iq.nitrite, t: iq.tempC, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.aquarium.log', '📋 Log')),
                   h('button', { onClick: function() { setIQ({ ammonia: 0.1, nitrite: 0.05, tempC: 25, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.aquarium.reset_2', '↺ Reset'))
                 ),
-                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.aquarium.hypothesis_which_parameter_is_most_tox', 'Hypothesis: Which parameter is most toxic at what level?'),
+                h('textarea', { 'aria-label': __alloT('stem.aquarium.hypothesis_input', 'Water toxicity hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.aquarium.hypothesis_which_parameter_is_most_tox', 'Hypothesis: Which parameter is most toxic at what level?'),
                   className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
                 !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.aquarium.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
@@ -25609,7 +25609,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   __alloT('stem.aquarium.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.aquarium.explain_why_nitrogen_cycle_balance_is_', 'Explain why nitrogen cycle balance is critical for fish health.'),
+                iq.understood && h('textarea', { 'aria-label': __alloT('stem.aquarium.explanation_input', 'Nitrogen cycle explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.aquarium.explain_why_nitrogen_cycle_balance_is_', 'Explain why nitrogen cycle balance is critical for fish health.'),
                   className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
                 h('div', { className: 'text-[10px] italic text-slate-500' }, __alloT('stem.aquarium.design_note_discrete_3_state_stress_ma', 'Design note: discrete 3-state stress marker; no toxicity score; no reveal — by design.'))
               );

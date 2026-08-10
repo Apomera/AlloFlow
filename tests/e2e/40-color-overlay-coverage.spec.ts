@@ -24,7 +24,7 @@
  * FIXED in AlloFlowANTI.txt (portalled to <body>, fixed inset-0, z-2147483600)
  * and asserted at the source by tests/color_overlay_coverage.test.js.
  *
- * The three `test.fail()` markers below remain ONLY because this spec runs
+ * The three `test()` markers below remain ONLY because this spec runs
  * against the DEPLOYED app, which still serves the old build. Once the fix is
  * deployed these flip to "unexpected pass" — that is the signal to delete the
  * markers, not to re-open the bug.
@@ -37,7 +37,10 @@ async function bootWithOverlay(page: Page, mode: 'blue' | 'peach' | 'yellow' = '
     try { localStorage.setItem('allo_color_overlay', m as string); } catch {}
   }, mode);
   await page.goto('./', { waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(7000);
+  // Deterministic: wait for the tint itself rather than sleeping a fixed 7s,
+  // which was the sole source of flake in this spec.
+  await page.locator('[data-allo-color-overlay]').waitFor({ state: 'attached', timeout: 45000 });
+  await page.waitForTimeout(500);
 }
 
 /** The tint layer: pointer-events:none, non-transparent, largest such box. */
@@ -75,6 +78,10 @@ async function overlayFacts(page: Page) {
 }
 
 test.describe('colour overlay coverage', () => {
+  // The app boots from CDN; a cold first paint routinely exceeds Playwright's
+  // 30s default, and this spec waits on a post-mount element.
+  test.describe.configure({ timeout: 120000 });
+
   test('the tint renders when the preference is set', async ({ page }) => {
     await bootWithOverlay(page);
     const facts = await overlayFacts(page);
@@ -82,7 +89,7 @@ test.describe('colour overlay coverage', () => {
     expect(facts, 'the colour overlay should render when allo_color_overlay is set').toBeTruthy();
   });
 
-  test.fail('the tint spans the full viewport', async ({ page }) => {
+  test('the tint spans the full viewport', async ({ page }) => {
     await bootWithOverlay(page);
     const facts = await overlayFacts(page);
     expect(facts).toBeTruthy();
@@ -92,7 +99,7 @@ test.describe('colour overlay coverage', () => {
       .toBeGreaterThanOrEqual(facts!.viewport.h - 2);
   });
 
-  test.fail('the tint stacks above every other layer', async ({ page }) => {
+  test('the tint stacks above every other layer', async ({ page }) => {
     await bootWithOverlay(page);
     const facts = await overlayFacts(page);
     expect(facts).toBeTruthy();
@@ -101,7 +108,7 @@ test.describe('colour overlay coverage', () => {
       .toBeGreaterThanOrEqual(facts!.highestOtherZ);
   });
 
-  test.fail('the tint is attached to the body so portalled modals are covered', async ({ page }) => {
+  test('the tint is attached to the body so portalled modals are covered', async ({ page }) => {
     await bootWithOverlay(page);
     const facts = await overlayFacts(page);
     expect(facts).toBeTruthy();

@@ -199,6 +199,22 @@ describe('Heat pump boundary', () => {
     expect(html).not.toMatch(/Realistic COP/);
   });
 
+  it('keeps the COP curve above the bar-heater line the caption promises', () => {
+    // The chart draws a reference line at 1.0 and the caption under it states
+    // the curve "never touches 1.0". That sentence is only true because of how
+    // the approach temperatures and defrost penalty happen to be tuned, so it
+    // is worth pinning across the whole of both sliders rather than trusting it.
+    for (let indoor = 15; indoor <= 26; indoor++) {
+      for (let outdoor = -20; outdoor < indoor; outdoor += 0.5) {
+        const m = HEAT_MODELS.heatPump(outdoor, indoor);
+        if (!m.heating) continue;
+        expect(m.realisticCOP, `outdoor ${outdoor}, indoor ${indoor}`).toBeGreaterThan(1);
+      }
+    }
+    const html = renderTool('heatLab', { _heatLab: { hpOut: -20, hpIn: 21 } });
+    expect(html).toMatch(/never touches 1\.0/);
+  });
+
   it('describes insulation and entropy limits without contradicting the implemented models', () => {
     const html = renderTool('heatLab', { _heatLab: { thickness: 10, entSplit: 39 } });
     expect(html).toMatch(/approaches a one-half reduction only when the wrap dominates/i);
@@ -260,6 +276,23 @@ describe('Composite wall', () => {
   it('shows that mass is not insulation', () => {
     const brickWall = Array(13).fill('brick');
     expect(U(brickWall), 'thirteen layers of brick').toBeGreaterThan(0.18);
+  });
+
+  it('splits the surface films for display without moving the total they contribute', () => {
+    // The cross-section drawing shows the inside and outside air films as
+    // separate bands so the arithmetic on screen adds up. Their SUM is what
+    // every U-value on the page depends on, so a change to one film that is not
+    // matched by the other would silently shift every result in this section.
+    const inside = Number(/var WALL_FILM_INSIDE = ([\d.]+)/.exec(SRC)[1]);
+    const outside = Number(/var WALL_FILM_OUTSIDE = ([\d.]+)/.exec(SRC)[1]);
+    expect(inside + outside).toBeCloseTo(SURFACE, 9);
+    // Published still-air film resistances: the inside face resists appreciably
+    // more than the wind-scoured outside face.
+    expect(inside).toBeGreaterThan(outside);
+
+    const html = renderTool('heatLab', {});
+    expect(html).toContain('Inside air film');
+    expect(html).toContain('Outside air film');
   });
 
   it('makes the 0.18 target reachable but not trivial', () => {

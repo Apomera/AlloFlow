@@ -12727,7 +12727,7 @@ var d = (labToolData.companionPlanting) || {};
                   h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ c: iq.cornDensity, b: iq.beanDensity, sq: iq.squashDensity, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.companionplanting.log', '📋 Log')),
                   h('button', { onClick: function() { setIQ({ cornDensity: 50, beanDensity: 30, squashDensity: 20, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.companionplanting.reset', '↺ Reset'))
                 ),
-                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.companionplanting.hypothesis_what_ratio_makes_the_three_', 'Hypothesis: What ratio makes the Three Sisters mutually beneficial?'),
+                h('textarea', { 'aria-label': __alloT('stem.companionplanting.hypothesis_input', 'Three Sisters ratio hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.companionplanting.hypothesis_what_ratio_makes_the_three_', 'Hypothesis: What ratio makes the Three Sisters mutually beneficial?'),
                   className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
                 !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.companionplanting.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
@@ -12737,7 +12737,7 @@ var d = (labToolData.companionPlanting) || {};
                 h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   __alloT('stem.companionplanting.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-                iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.companionplanting.explain_how_each_species_supports_the_', 'Explain how each species supports the others.'),
+                iq.understood && h('textarea', { 'aria-label': __alloT('stem.companionplanting.explanation_input', 'Three Sisters ratio explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.companionplanting.explain_how_each_species_supports_the_', 'Explain how each species supports the others.'),
                   className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
                 h('div', { className: 'text-[10px] italic text-slate-500' }, __alloT('stem.companionplanting.design_note_discrete_4_state_synergy_m', 'Design note: discrete 4-state synergy marker; no yield score; no reveal — by design.'))
               );

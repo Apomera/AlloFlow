@@ -2491,6 +2491,79 @@ function _alloOrderTextItems(items, opts) {
       medianChars: nLines ? charCounts[Math.floor(nLines / 2)] : 0,
     };
   };
+  // ── Region classifier primitives (corpus round 13) ──────────────────────
+  // Rounds 9-10 recorded that several gates "want a real region classifier,
+  // not another constant". These helpers are that classifier's vocabulary:
+  // every region can report its dominant face+size (char-mass weighted) and
+  // per-line shape, and the gates below consult THAT instead of loosening
+  // their constants globally (the measured-and-rejected round-10 policies).
+  var _itemSize = function (it) {
+    return it && it.transform ? Math.round(Math.abs(it.transform[0]) * 2) / 2 : 0;
+  };
+  var _itemKey = function (it) {
+    return ((it && it.fontName) || '?') + '|' + _itemSize(it);
+  };
+  // Dominant face|size key of a set of items, by character mass. Returns
+  // { key, size, share } or null when the set is empty.
+  var _domKey = function (set) {
+    var mass = Object.create(null), total = 0, kD;
+    for (var iD = 0; iD < set.length; iD++) {
+      var n = String(set[iD].str || '').length;
+      if (!n) continue;
+      mass[_itemKey(set[iD])] = (mass[_itemKey(set[iD])] || 0) + n;
+      total += n;
+    }
+    var bestK = null, bestN = 0;
+    for (kD in mass) if (mass[kD] > bestN) { bestN = mass[kD]; bestK = kD; }
+    if (!bestK || !total) return null;
+    return { key: bestK, size: parseFloat(bestK.split('|')[1]) || 0, share: bestN / total };
+  };
+  // A side reads as PURE BODY PROSE when >=80% of its characters share one
+  // face|size key at body size. Used to relax the 8-line prose floor for
+  // short columns (i1040 p121's five-line columns over a packed table) —
+  // ONLY when both sides are the same pure prose, so the round-9 lesson
+  // (loosening the floor globally lost more than it won) stays honored.
+  var _prosePureKey = function (side) {
+    var d = _domKey(side);
+    return d && d.share >= 0.8 && d.size >= 9 ? d.key : null;
+  };
+  // A side reads as a LIST/INDEX column — many short left-aligned entries on
+  // a regular pitch — when its lines align at few left stops and its leading
+  // is regular. An index's baselines match across columns (dense same-pitch
+  // lines alias into the 3pt buckets), so the table veto killed i1040 p124
+  // even though column-major reading is exactly right there. A TABLE differs
+  // on items-per-line (cells), a FORM on pitch regularity and stop
+  // concentration, a FIGURE page on line count.
+  var _listLike = function (side, S) {
+    if (!(S.lines >= 12 && S.itemsPerLine <= 3.0 && S.medianChars >= 8 && S.medianChars <= 40)) return null;
+    var lines = Object.create(null), kL2;
+    for (var iL2 = 0; iL2 < side.length; iL2++) {
+      var kk = Math.round(_y(side[iL2]) / 3);
+      var xa2 = _x(side[iL2]);
+      if (!(kk in lines) || xa2 < lines[kk]) lines[kk] = xa2;
+    }
+    var ys3 = [], stops = Object.create(null), nL = 0;
+    for (kL2 in lines) {
+      ys3.push(parseFloat(kL2) * 3);
+      var stop = Math.round(lines[kL2] / 6);
+      stops[stop] = (stops[stop] || 0) + 1;
+      nL++;
+    }
+    var aligned = 0, kS;
+    for (kS in stops) if (stops[kS] >= 3) aligned += stops[kS];
+    var alignedShare = nL ? aligned / nL : 0;
+    ys3.sort(function (p, q) { return q - p; });
+    var gapCount = Object.create(null), nG = 0, modal = 0;
+    for (var iG = 1; iG < ys3.length; iG++) {
+      var gp = Math.round(ys3[iG - 1] - ys3[iG]);
+      gapCount[gp] = (gapCount[gp] || 0) + 1;
+      nG++;
+    }
+    for (kS in gapCount) if (gapCount[kS] > modal) modal = gapCount[kS];
+    var pitchShare = nG ? modal / nG : 0;
+    return { alignedShare: alignedShare, pitchShare: pitchShare,
+             pass: alignedShare >= 0.75 && pitchShare >= 0.5 };
+  };
   var MAX_DEPTH = 4; // deeper than the old 2: a band cut may sit above a column cut
   var MIN_GUTTER_PT = 8; // measured: real gutters here are 10-12pt (see below)
   // Horizontal band cut (corpus round 8). Together with the vertical gutter
@@ -2529,11 +2602,42 @@ function _alloOrderTextItems(items, opts) {
     // Widest first, but keep looking: the widest blank strip on a page is often
     // the one above the footer, which would peel off a band of one item. Take
     // the widest cut that actually leaves two substantial regions.
+    // BANNER PEEL (corpus round 13): the 6-item floor also blocked peeling a
+    // page TITLE — i1040 p125's "Your Rights as a Taxpayer" is two 43.5pt
+    // items over a 25.5pt band, and with them unpeeled the x-histogram never
+    // finds the two columns below (the banner floods every gutter bin). A
+    // side smaller than the floor is allowed when every item on it is
+    // display-scale furniture: >=1.6x the region's dominant body size, or a
+    // single item spanning most of the region. Body-size items keep the
+    // floor, so a stray caption or footer still cannot become its own band.
+    var _bodySizeD = _domKey(arr);
+    var _bannerSide = function (side, regionSpan) {
+      if (!side.length || side.length > 5) return false;
+      for (var iBn = 0; iBn < side.length; iBn++) {
+        var big = _bodySizeD && _itemSize(side[iBn]) >= _bodySizeD.size * 1.6;
+        var wide = _w(side[iBn]) >= regionSpan * 0.55;
+        if (!big && !wide) return false;
+      }
+      return true;
+    };
+    var _bandSpan = 0;
+    { var _bMinX = Infinity, _bMaxX = -Infinity;
+      for (var iSp = 0; iSp < arr.length; iSp++) {
+        var xs0 = _x(arr[iSp]), xs1 = xs0 + _w(arr[iSp]);
+        if (xs0 < _bMinX) _bMinX = xs0; if (xs1 > _bMaxX) _bMaxX = xs1;
+      }
+      _bandSpan = Math.max(1, _bMaxX - _bMinX); }
     candidates.sort(function (a, b) { return b.gap - a.gap; });
     for (var c2 = 0; c2 < candidates.length; c2++) {
       var top = [], bottom = [];
       for (var iC = 0; iC < arr.length; iC++) (_y(arr[iC]) > candidates[c2].yCut ? top : bottom).push(arr[iC]);
       if (top.length >= 6 && bottom.length >= 6) return { top: top, bottom: bottom };
+      if (top.length && bottom.length
+          && (top.length >= 6 || _bannerSide(top, _bandSpan))
+          && (bottom.length >= 6 || _bannerSide(bottom, _bandSpan))) {
+        _t('  bandCut: banner peel @' + candidates[c2].yCut.toFixed(0) + ' sides ' + top.length + '/' + bottom.length);
+        return { top: top, bottom: bottom };
+      }
       _t('  bandCut: cut@' + candidates[c2].yCut.toFixed(0) + ' gap=' + candidates[c2].gap.toFixed(1) + ' sides ' + top.length + '/' + bottom.length + ' too small');
     }
     return null;
@@ -2748,12 +2852,89 @@ function _alloOrderTextItems(items, opts) {
       _t('d' + depth + ' crosserPartition: ' + merged.length + ' bands (' + crossLevels + ' crosser levels), gutters=' + guttersOut.length);
       return { cols: colsOut, gutters: guttersOut };
     };
+    // FACE BAND CUT (corpus round 13). When no BLANK band exists — i1040
+    // p121 packs a full-width table right against its three columns of prose
+    // — the region can still carry a hard layout boundary: the y where the
+    // dominant face|size flips completely. Continuing columns carry their
+    // face across any figure or caption they flow around, so requiring the
+    // flip to be bidirectional (neither side's dominant key appears
+    // meaningfully in the other) is what keeps this away from the
+    // flow-around pages that sank banding-at-depth-0 in round 10.
+    var faceBandCut = function () {
+      var linesFB = Object.create(null), kFB;
+      for (var iF = 0; iF < arr.length; iF++) {
+        var kk2 = Math.round(_y(arr[iF]) / 3) * 3;
+        var rec = linesFB[kk2] || (linesFB[kk2] = { y: kk2, items: 0, mass: Object.create(null), tot: 0 });
+        var n2 = String(arr[iF].str || '').length;
+        rec.items++; rec.tot += n2;
+        rec.mass[_itemKey(arr[iF])] = (rec.mass[_itemKey(arr[iF])] || 0) + n2;
+      }
+      var recs = [];
+      for (kFB in linesFB) recs.push(linesFB[kFB]);
+      if (recs.length < 8) return null;
+      recs.sort(function (p, q) { return q.y - p.y; }); // top first
+      var massOf = function (a, b) {
+        var m = Object.create(null), items = 0, tot = 0, kM;
+        for (var iM6 = a; iM6 <= b; iM6++) {
+          items += recs[iM6].items; tot += recs[iM6].tot;
+          for (kM in recs[iM6].mass) m[kM] = (m[kM] || 0) + recs[iM6].mass[kM];
+        }
+        var bk = null, bn = 0;
+        for (kM in m) if (m[kM] > bn) { bn = m[kM]; bk = kM; }
+        return { m: m, items: items, tot: tot, dom: bk, domShare: tot ? bn / tot : 0 };
+      };
+      var bestCut = null;
+      for (var bI = 3; bI < recs.length - 4; bI++) {
+        var A = massOf(0, bI), B = massOf(bI + 1, recs.length - 1);
+        if (A.items < 8 || B.items < 8 || !A.dom || !B.dom || A.dom === B.dom) continue;
+        var sizeA = parseFloat(A.dom.split('|')[1]) || 0;
+        if (sizeA < 8 || Math.max(A.domShare, B.domShare) < 0.75) continue;
+        var aInB = (B.m[A.dom] || 0) / Math.max(1, B.tot);
+        var bInA = (A.m[B.dom] || 0) / Math.max(1, A.tot);
+        if (aInB > 0.2 || bInA > 0.2) continue;
+        var gapF = recs[bI].y - recs[bI + 1].y;
+        if (!bestCut || gapF > bestCut.gap) bestCut = { gap: gapF, yCut: (recs[bI].y + recs[bI + 1].y) / 2 };
+      }
+      if (!bestCut) return null;
+      var topF = [], botF = [];
+      for (var iF2 = 0; iF2 < arr.length; iF2++) (_y(arr[iF2]) > bestCut.yCut ? topF : botF).push(arr[iF2]);
+      _t('d' + depth + ' faceBandCut @' + bestCut.yCut.toFixed(0) + ' sides ' + topF.length + '/' + botF.length);
+      return { top: topF, bottom: botF };
+    };
+    var tryFaceBand = function () {
+      var fb = faceBandCut();
+      if (!fb) return null;
+      var FT = split(fb.top, depth + 1), FB2 = split(fb.bottom, depth + 1);
+      if (FT.gutters.length + FB2.gutters.length === 0) {
+        _t('d' + depth + ' faceBandCut rejected: no gutters found in bands');
+        return null;
+      }
+      // Column-continuation guard: when both sides find columns at the SAME
+      // x positions, the face flip sits INSIDE continuing columns (a styled
+      // intro, a face-changed section) and cutting would interleave each
+      // column's halves. A real layout reset changes the gutter set.
+      if (FT.gutters.length && FB2.gutters.length) {
+        var sameCount = 0;
+        for (var iG1 = 0; iG1 < FT.gutters.length; iG1++) {
+          for (var iG2 = 0; iG2 < FB2.gutters.length; iG2++) {
+            if (Math.abs(FT.gutters[iG1] - FB2.gutters[iG2]) <= 6) { sameCount++; break; }
+          }
+        }
+        if (sameCount === FT.gutters.length && FT.gutters.length === FB2.gutters.length) {
+          _t('d' + depth + ' faceBandCut rejected: identical gutters both sides (continuing columns)');
+          return null;
+        }
+      }
+      return { cols: FT.cols.concat(FB2.cols), gutters: FT.gutters.concat(FB2.gutters) };
+    };
     var noVertical = function () {
       var band = bandCut(arr);
       if (!band) {
         _t('d' + depth + ' bandCut=null');
         var part = crosserPartition();
         if (part) return part;
+        var faceOrg = tryFaceBand();
+        if (faceOrg) return faceOrg;
         return { cols: [arr], gutters: [] };
       }
       _t('d' + depth + ' bandCut top=' + band.top.length + ' bottom=' + band.bottom.length);
@@ -2766,6 +2947,8 @@ function _alloOrderTextItems(items, opts) {
         _t('d' + depth + ' bandCut rejected: no gutters found in bands');
         var part2 = crosserPartition();
         if (part2) return part2;
+        var faceOrg2 = tryFaceBand();
+        if (faceOrg2) return faceOrg2;
         return { cols: [arr], gutters: [] };
       }
       return { cols: T.cols.concat(B.cols), gutters: T.gutters.concat(B.gutters) };
@@ -2843,7 +3026,29 @@ function _alloOrderTextItems(items, opts) {
       if (!(lY > 0 && matches / lY >= 0.55)) return true;
       var LS = _sideLines(lSide, minX, xCut), RS = _sideLines(rSide, xCut, maxX);
       _t('  notATable stats: L{lines=' + LS.lines + ' fill=' + LS.medianFill.toFixed(2) + ' ipl=' + LS.itemsPerLine.toFixed(1) + ' chars=' + LS.medianChars + '} R{lines=' + RS.lines + ' fill=' + RS.medianFill.toFixed(2) + ' ipl=' + RS.itemsPerLine.toFixed(1) + ' chars=' + RS.medianChars + '} baselineMatch=' + (matches / lY).toFixed(2));
-      return LS.lines >= 8 && RS.lines >= 8 &&
+      // LIST-REGION gate (corpus round 13). An index/list column is short
+      // left-aligned entries on a regular pitch: its baselines match across
+      // columns (dense same-leading lines alias into the 3pt buckets) and
+      // its fill/chars read nothing like prose, so the prose gates below
+      // vetoed exactly the pages where column-major reading is most right
+      // (i1040 p124's Index, 0.68 as one interleaved column). Both sides
+      // must classify as lists; tables fail on items-per-line, forms on
+      // pitch regularity/stop concentration, figure pages on line count.
+      var LL = _listLike(lSide, LS), RL = _listLike(rSide, RS);
+      if (LL && RL && LL.pass && RL.pass) {
+        _t('  listLike both sides (align ' + LL.alignedShare.toFixed(2) + '/' + RL.alignedShare.toFixed(2) + ', pitch ' + LL.pitchShare.toFixed(2) + '/' + RL.pitchShare.toFixed(2) + ') -> cut allowed');
+        return true;
+      }
+      // PROSE-PURITY floor relaxation (corpus round 13). The 8-line floor
+      // exists because short columns are usually table cells — but when both
+      // sides are >=80% one body-size face (the classifier's pure-prose
+      // verdict) they are short PARAGRAPH columns: i1040 p121's five-line
+      // columns over a packed full-width table. Every other prose gate
+      // still applies at full strength.
+      var _ppL = _prosePureKey(lSide), _ppR = _prosePureKey(rSide);
+      var _lineFloor = (_ppL && _ppR && _ppL === _ppR) ? 3 : 8;
+      _t('  prose-pure: L=' + _ppL + ' R=' + _ppR + ' -> line floor ' + _lineFloor);
+      return LS.lines >= _lineFloor && RS.lines >= _lineFloor &&
         LS.medianFill >= 0.8 && LS.itemsPerLine <= 2.5 && RS.itemsPerLine <= 4.5 &&
         LS.medianChars >= 18 && RS.medianChars >= 18;
     };

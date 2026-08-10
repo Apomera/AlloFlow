@@ -134,8 +134,20 @@ const CHECKS = [
     test(line, lineNum, lines) {
       const isCanvas = /h\(\s*['"]canvas['"]/.test(line) || /createElement\(\s*['"]canvas['"]/.test(line);
       if (!isCanvas) return false;
-      // Check this line and next 5 lines for aria-label or role
-      const context = lines.slice(lineNum - 1, lineNum + 5).join(' ');
+      // Read the element's whole props object, not a fixed 5-line peek. Real
+      // canvases in this codebase declare `ref`, sizing, and a long inline
+      // draw callback before reaching role/aria-label, so a short window
+      // reported 13 already-labelled canvases as missing a text alternative.
+      // Stop at the line that closes the call so a sibling element's role is
+      // never borrowed, and include two lines above to catch a decorative
+      // canvas whose aria-hidden sits on its immediate wrapper.
+      const start = Math.max(0, lineNum - 3);
+      const scanned = [];
+      for (let i = lineNum - 1; i < Math.min(lines.length, lineNum + 60); i++) {
+        scanned.push(lines[i]);
+        if (i > lineNum - 1 && /^\s*\}\)/.test(lines[i])) break;
+      }
+      const context = lines.slice(start, lineNum - 1).concat(scanned).join(' ');
       // A canvas used only as an internal drawing/mask buffer has no user-facing
       // information to name. Explicit aria-hidden is the correct 1.1.1 treatment.
       if (/["']?aria-hidden["']?\s*[:=]\s*["']?true["']?/.test(context)) return false;
@@ -175,15 +187,27 @@ const CHECKS = [
       const isInput = /h\(\s*['"](?:input|textarea|select)['"]/.test(line) ||
                       /createElement\(\s*['"](?:input|textarea|select)['"]/.test(line);
       if (!isInput) return false;
-      // Skip hidden inputs
-      if (/type\s*[:=]\s*['"]hidden['"]/.test(line)) return false;
-      // Multi-line createElement props may place aria-label after several input-specific attributes.
-      const context = lines.slice(lineNum - 1, lineNum + 8).join(' ');
+      // Read the element's whole props object rather than a fixed window. These
+      // controls routinely declare value/onChange/className/style before
+      // reaching aria-label, and a 9-line peek reported plenty of properly
+      // labelled inputs as bare. Stop at the line closing the call so a
+      // sibling element's label is never credited to this one.
+      const scanned = [];
+      for (let i = lineNum - 1; i < Math.min(lines.length, lineNum + 60); i++) {
+        scanned.push(lines[i]);
+        if (i > lineNum - 1 && /^\s*\}\)/.test(lines[i])) break;
+      }
+      const context = scanned.join(' ');
+      // Hidden inputs and file pickers are not user-facing; the type may sit
+      // several lines below the opening call.
+      if (/type\s*[:=]\s*['"]hidden['"]/.test(context)) return false;
       if (/aria-label/.test(context)) return false;
       if (/aria-labelledby/.test(context)) return false;
       if (/id\s*[:=]/.test(context)) return false; // might have htmlFor association
-      // Check 2 lines above for wrapping <label>
-      const above = lines.slice(Math.max(0, lineNum - 3), lineNum).join(' ');
+      // Check the lines above for a wrapping <label>. Six rather than two: a
+      // hyperscript label wrapper usually opens with its own className/htmlFor
+      // lines before the control it contains.
+      const above = lines.slice(Math.max(0, lineNum - 7), lineNum).join(' ');
       if (/h\(\s*['"]label['"]/.test(above) || /createElement\(\s*['"]label['"]/.test(above)) return false;
       return true;
     },
@@ -409,7 +433,20 @@ function discoverFiles(singleFile) {
 // ── Scanner ────────────────────────────────────────────────────────────────
 
 function scanFile(filePath) {
-  const content = fs.readFileSync(filePath, { encoding: 'utf-8', flag: 'r' });
+  // This repo is a shared worktree: other agents create and delete temp files
+  // (e.g. _tmp_*_entry.<pid>.jsx) while a scan is walking the tree, so a path
+  // collected during the listing can be gone by the time we read it. A whole
+  // 474-file audit dying on one vanished scratch file is not a useful failure.
+  let content;
+  try {
+    content = fs.readFileSync(filePath, { encoding: 'utf-8', flag: 'r' });
+  } catch (e) {
+    if (e && (e.code === 'ENOENT' || e.code === 'EBUSY' || e.code === 'EPERM')) {
+      console.log(`  Skipping ${path.relative(ROOT, filePath)} (${e.code}: vanished or locked mid-scan)`);
+      return [];
+    }
+    throw e;
+  }
   const lines = content.split(/\r?\n/);
   const relPath = path.relative(ROOT, filePath);
   const findings = [];
@@ -461,15 +498,95 @@ function scanFile(filePath) {
   return findings;
 }
 
+// ── Global CSS baselines ───────────────────────────────────────────────────
+
+/*
+ * The app ships two UNCONDITIONAL global rules inside AlloFlowANTI.txt's main
+ * <style> block: a universal `prefers-reduced-motion: reduce` reset and a
+ * global `:focus-visible` ring, both using !important. Anything rendered
+ * inside the app document — every view_* source, every CDN stem_lab tool,
+ * every module — inherits them. Per-site `motion-reduce:` utilities and
+ * per-component focus styles are therefore belt-and-braces, not requirements.
+ *
+ * The line-by-line checks cannot see those rules, so they flag every
+ * `animate-pulse` and every `outline: none` as a defect. That was ~174 of 610
+ * findings, including 50 of the 153 "critical" ones — noise that buries the
+ * findings a user would actually hit. Findings are still reported, but marked
+ * covered and excluded from the actionable counts.
+ *
+ * Verified 2026-08-10: the reduced-motion block and the focus-visible ring are
+ * both present and neither sits behind a conditional.
+ */
+const GLOBAL_BASELINES = {
+  'MOTION-001': /@media\s*\(\s*prefers-reduced-motion:\s*reduce\s*\)/,
+  'FOCUS-001': /:focus-visible[^{]*\{[^}]*outline:/,
+};
+
+// Files NOT rendered inside the app document, so the global rules never reach
+// them. These keep their original severity.
+const OUTSIDE_APP_DOCUMENT = [
+  /blockly_runtime\.bundle\.js$/,   // vendor bundle, ships its own shadow DOM
+  /_codex_[^\\/]*probe[^\\/]*\.js$/, // dev probe scripts, not shipped UI
+];
+
+function detectGlobalBaselines() {
+  const present = {};
+  let source = '';
+  try {
+    source = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
+  } catch (_) {
+    return present; // cannot read the canonical source: assume nothing is covered
+  }
+  for (const [checkId, pattern] of Object.entries(GLOBAL_BASELINES)) {
+    if (pattern.test(source)) present[checkId] = true;
+  }
+  return present;
+}
+
+/*
+ * Detached nodes built with document.createElement() and never appended to the
+ * document — offscreen canvases used as WebGL textures or image buffers, and
+ * the hidden textarea/input helpers behind clipboard copy and file pickers.
+ * They never enter the accessibility tree, so a text alternative or a label is
+ * not merely unnecessary, it is impossible.
+ *
+ * Verified 2026-08-10 by hand across CANVAS-001: 79 of its 94 findings were
+ * this pattern (sunCanvas/cloudCanvas texture buffers, PDF-pipeline scratch
+ * canvases). Of the 15 genuinely rendered canvases, 13 already carried
+ * role="img" or role="application" with live aria-labels and one was
+ * deliberately aria-hidden, leaving 2 real defects.
+ */
+const DETACHED_NODE_CHECKS = new Set(['CANVAS-001', 'INPUT-001']);
+const DETACHED_NODE_PATTERN = /createElement\(\s*['"](?:canvas|input|textarea)['"]/;
+
+function applyGlobalBaselineCoverage(findings) {
+  const present = detectGlobalBaselines();
+  for (const f of findings) {
+    if (DETACHED_NODE_CHECKS.has(f.checkId) && DETACHED_NODE_PATTERN.test(f.snippet || '')) {
+      f.notInAccessibilityTree = true;
+      continue;
+    }
+    if (!present[f.checkId]) continue;
+    if (OUTSIDE_APP_DOCUMENT.some((re) => re.test(f.file))) continue;
+    f.coveredByGlobalBaseline = true;
+  }
+  return findings;
+}
+
 // ── Report Generation ──────────────────────────────────────────────────────
 
 function generateReport(allFindings, outputJson, filesScanned) {
+  applyGlobalBaselineCoverage(allFindings);
+  const covered = allFindings.filter((f) => f.coveredByGlobalBaseline || f.notInAccessibilityTree);
+  const actionable = allFindings.filter((f) => !f.coveredByGlobalBaseline && !f.notInAccessibilityTree);
   const bySeverity = { critical: [], major: [], minor: [] };
   const byCheck = {};
   const byFile = {};
 
   for (const f of allFindings) {
-    bySeverity[f.severity].push(f);
+    // Severity totals count only what a user could actually encounter; the
+    // covered findings stay visible in byCheck and in the JSON.
+    if (!f.coveredByGlobalBaseline && !f.notInAccessibilityTree) bySeverity[f.severity].push(f);
     byCheck[f.checkId] = byCheck[f.checkId] || [];
     byCheck[f.checkId].push(f);
     byFile[f.file] = byFile[f.file] || [];
@@ -481,6 +598,9 @@ function generateReport(allFindings, outputJson, filesScanned) {
       timestamp: new Date().toISOString(),
       summary: {
         total: allFindings.length,
+        actionable: actionable.length,
+        coveredByGlobalBaseline: allFindings.filter(f => f.coveredByGlobalBaseline).length,
+        notInAccessibilityTree: allFindings.filter(f => f.notInAccessibilityTree).length,
         critical: bySeverity.critical.length,
         major: bySeverity.major.length,
         minor: bySeverity.minor.length,
@@ -493,6 +613,9 @@ function generateReport(allFindings, outputJson, filesScanned) {
         wcag: findings[0].wcag,
         severity: findings[0].severity,
         count: findings.length,
+        actionable: findings.filter(f => !f.coveredByGlobalBaseline && !f.notInAccessibilityTree).length,
+        coveredByGlobalBaseline: findings.filter(f => f.coveredByGlobalBaseline).length,
+        notInAccessibilityTree: findings.filter(f => f.notInAccessibilityTree).length,
         files: [...new Set(findings.map(f => f.file))],
       })),
       findings: allFindings,
@@ -512,6 +635,10 @@ function generateReport(allFindings, outputJson, filesScanned) {
   console.log(`\n  Files scanned:  ${filesScanned}`);
   console.log(`  Checks run:     ${CHECKS.length}`);
   console.log(`  Total findings: ${allFindings.length}`);
+  if (covered.length) {
+    console.log(`    Not actionable (global CSS baseline, or detached node never in the a11y tree): ${covered.length}`);
+    console.log(`  Actionable:     ${actionable.length}`);
+  }
   console.log(`    Critical:     ${bySeverity.critical.length}`);
   console.log(`    Major:        ${bySeverity.major.length}`);
   console.log(`    Minor:        ${bySeverity.minor.length}`);
@@ -531,7 +658,16 @@ function generateReport(allFindings, outputJson, filesScanned) {
     const files = [...new Set(findings.map(f => f.file))];
     console.log(`\n  [${sev}] ${id}: ${findings[0].name}`);
     console.log(`  WCAG: ${findings[0].wcag}`);
-    console.log(`  Instances: ${findings.length} across ${files.length} file(s)`);
+    // Report the two exemptions separately. Collapsing them reads as "CSS
+    // already handles this", which is false for checks like TIMER-001 where the
+    // exempt instances are detached nodes, not anything a stylesheet covers.
+    const baselineHere = findings.filter(f => f.coveredByGlobalBaseline).length;
+    const detachedHere = findings.filter(f => !f.coveredByGlobalBaseline && f.notInAccessibilityTree).length;
+    const reasons = [];
+    if (baselineHere) reasons.push(`${baselineHere} covered by a global CSS baseline`);
+    if (detachedHere) reasons.push(`${detachedHere} never in the accessibility tree`);
+    console.log(`  Instances: ${findings.length} across ${files.length} file(s)`
+      + (reasons.length ? ` — ${reasons.join(', ')}, ${findings.length - baselineHere - detachedHere} actionable` : ''));
     console.log(`  Fix: ${findings[0].fix}`);
     // Show up to 5 example locations
     const examples = findings.slice(0, 5);

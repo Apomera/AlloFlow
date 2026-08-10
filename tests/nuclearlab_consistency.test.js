@@ -242,6 +242,46 @@ describe('no quest is granted for free', () => {
   });
 });
 
+describe('the tool does not contradict itself in the headline', () => {
+  // Both of these are the same failure: someone fixed the careful case and
+  // left the summary sentence stating the thing they had just disproved.
+  it('does not promise "the shorter clock wins" when its own verdict denies it', () => {
+    // The biological half-life section opened by asserting the shorter of the
+    // two clocks wins, and then, four elements down the page, told the reader
+    // "Neither clock is running this one" for strontium-90 — where the two are
+    // a factor of 1.6 apart and the effective half-life lands 38% below even
+    // the shorter. The branching verdict was written specifically to handle
+    // that case; the intro was never updated to match it.
+    expect(SRC).not.toMatch(/The shorter clock wins/);
+    expect(SRC).toMatch(/shorter than EITHER of them/);
+    expect(SRC).toMatch(/Neither clock is running this one/);
+  });
+
+  it('keeps the effective half-life below both inputs, which is what the intro now claims', () => {
+    const BIO = table('var BIO_NUCLIDES = [');
+    for (const b of BIO) {
+      const eff = (b.tp * b.tb) / (b.tp + b.tb);
+      expect(eff, b.name + ' effective vs physical').toBeLessThan(b.tp);
+      expect(eff, b.name + ' effective vs biological').toBeLessThan(b.tb);
+    }
+  });
+
+  it('only sends the reader to tools that exist', () => {
+    // sec('next') offers four cross-links, and setStemLabTool on a renamed id
+    // fails silently — the button just does nothing.
+    const closing = SRC.slice(SRC.indexOf("sec('next'"));
+    const ids = [...closing.matchAll(/\{ id: '([A-Za-z0-9_]+)', icon:/g)].map((m) => m[1]);
+    expect(ids.length, 'cross-links not found — did sec(next) change shape?').toBeGreaterThanOrEqual(4);
+    const all = fs.readdirSync('stem_lab')
+      .filter((f) => f.startsWith('stem_tool_') && f.endsWith('.js'))
+      .map((f) => fs.readFileSync('stem_lab/' + f, 'utf8'))
+      .join('\n');
+    for (const id of ids) {
+      expect(all.includes("registerTool('" + id + "'"), `"${id}" is linked but no tool registers it`).toBe(true);
+    }
+  });
+});
+
 describe('safety, provenance, and mobile reading safeguards', () => {
   it('keeps official-instructions warnings beside every actionable model', () => {
     expect(SRC).toContain('Educational model — not emergency or medical instructions');

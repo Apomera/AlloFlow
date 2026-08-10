@@ -2770,7 +2770,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 '\u2194\uFE0F', t('stem.singing.cents_meter', 'Cents Meter')),
               h('p', { className: subTextClass + ' mb-2' },
                 t('stem.singing.how_sharp_or_flat_you_are_aim_for_the_', 'How sharp or flat you are. Aim for the green center zone (\u00B110 cents).')),
-              h('canvas', { tabIndex: 0, 'aria-label': t('stem.singing.singing_visualization', 'Singing visualization'),
+              h('canvas', { tabIndex: 0, 
                 ref: centsMeterCanvasRef,
                 width: 400,
                 height: 40,
@@ -2786,7 +2786,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 '\uD83C\uDFB9', t('stem.singing.piano_roll', 'Piano Roll')),
               h('p', { className: subTextClass + ' mb-2' },
                 t('stem.singing.your_pitch_over_time_mapped_to_musical', 'Your pitch over time, mapped to musical notes. Green = on pitch, yellow = close, red = off.')),
-              h('canvas', { tabIndex: 0, 'aria-label': t('stem.singing.singing_visualization_2', 'Singing visualization'),
+              h('canvas', { tabIndex: 0, 
                 ref: pitchRollCanvasRef,
                 width: 600,
                 height: 200,
@@ -3023,7 +3023,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 displayLow && displayHigh
                   ? 'Green keys show your vocal range from ' + midiToNoteName(displayLow).str + ' to ' + midiToNoteName(displayHigh).str + '.'
                   : 'Complete the range test above to see your range highlighted.'),
-              h('canvas', { role: 'img', 'aria-label': t('stem.singing.singing_visualization_3', 'Singing visualization'),
+              h('canvas', { 
                 ref: rangeKeyboardCanvasRef,
                 width: 600,
                 height: 80,
@@ -3147,7 +3147,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 '\uD83C\uDF0A', t('stem.singing.vibrato_waveform', 'Vibrato Waveform')),
               h('p', { className: subTextClass + ' mb-2' },
                 t('stem.singing.sustain_a_note_to_see_your_vibrato_pat', 'Sustain a note to see your vibrato pattern. The center line is your average pitch.')),
-              h('canvas', { tabIndex: 0, 'aria-label': t('stem.singing.singing_visualization_4', 'Singing visualization'),
+              h('canvas', { tabIndex: 0, 
                 ref: vibratoCanvasRef,
                 width: 600,
                 height: 160,
@@ -3341,7 +3341,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                     ' (' + Math.round(Math.abs(currentNote.midi - intervalActive.targetMidi) * 100) + '\u00A2 off)')
                 ),
                 // Staff canvas
-                h('canvas', { tabIndex: 0, 'aria-label': t('stem.singing.singing_visualization_5', 'Singing visualization'),
+                h('canvas', { tabIndex: 0, 
                   ref: intervalStaffCanvasRef,
                   width: 400,
                   height: 120,
@@ -3537,7 +3537,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
                 // Canvas diagram
                 h('div', { className: 'flex justify-center' },
-                  h('canvas', { 'aria-label': t('stem.singing.singing_visualization_6', 'Singing visualization'),
+                  h('canvas', { 
                     ref: anatomyCanvasRef,
                     width: 500,
                     height: 400,
@@ -3600,7 +3600,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                         key: mode,
                         className: 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border ' +
                           (isActive
-                            ? (isDark ? 'bg-rose-600 border-rose-500 text-white' : 'bg-rose-600 border-rose-500 text-white')
+                            ? ('bg-rose-600 border-rose-500 text-white')
                             : (isDark ? 'transition-colors bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600 active:scale-[0.97]' : 'transition-colors bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 active:scale-[0.97]')),
                         onClick: function() { setAnatomyAnim(mode); }
                       }, icons[mode] + ' ' + labels[mode]);
@@ -3613,14 +3613,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                     h('button', {
                       className: 'px-3 py-1 rounded text-xs font-semibold transition-colors ' +
                         (!anatomyPitchHigh
-                          ? (isDark ? 'bg-indigo-600 text-white' : 'bg-indigo-600 text-white')
+                          ? ('bg-indigo-600 text-white')
                           : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600')),
                       onClick: function() { setAnatomyPitchHigh(false); }
                     }, t('stem.singing.low_pitch_slow_vibration', 'Low Pitch (slow vibration)')),
                     h('button', {
                       className: 'px-3 py-1 rounded text-xs font-semibold transition-colors ' +
                         (anatomyPitchHigh
-                          ? (isDark ? 'bg-indigo-600 text-white' : 'bg-indigo-600 text-white')
+                          ? ('bg-indigo-600 text-white')
                           : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600')),
                       onClick: function() { setAnatomyPitchHigh(true); }
                     }, t('stem.singing.high_pitch_fast_vibration', 'High Pitch (fast vibration)'))
@@ -3635,7 +3635,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                         key: v.id,
                         className: 'px-3 py-1 rounded text-xs font-semibold transition-colors ' +
                           (isActive
-                            ? (isDark ? 'bg-emerald-700 text-white' : 'bg-emerald-700 text-white')
+                            ? ('bg-emerald-700 text-white')
                             : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600')),
                         onClick: function() { setAnatomyVowelIdx(vi); }
                       }, v.label);
@@ -4221,7 +4221,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             srNotes && h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
                 '\uD83C\uDFB5', t('stem.singing.staff', 'Staff')),
-              h('canvas', { tabIndex: 0, 'aria-label': t('stem.singing.singing_visualization_7', 'Singing visualization'),
+              h('canvas', { tabIndex: 0, 
                 ref: sightReadCanvasRef,
                 width: 700,
                 height: 160,
@@ -4279,7 +4279,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 h('div', { className: 'flex items-center gap-2 ml-auto' },
                   h('label', { className: subTextClass }, 'Tempo:'),
                   h('input', {
-                    type: 'range', 'aria-valuetext': srTempo + ' BPM', 'aria-label': t('stem.singing.singing_slider', 'Singing slider'),
+                    type: 'range', 'aria-valuetext': srTempo + ' BPM', 
                     min: 40,
                     max: 120,
                     value: srTempo,

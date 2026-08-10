@@ -22354,7 +22354,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             h('input', { type: 'checkbox', id: 'sh-und', checked: !!sh.understood, onChange: function(e) { setSH({ understood: e.target.checked }); }, style: { width: 14, height: 14 } }),
             h('label', { htmlFor: 'sh-und', style: { fontSize: 12, fontWeight: 700, color: '#86efac', cursor: 'pointer' } },
               'I think I understand the trade-offs — let me explain them in my own words')),
-          sh.understood && h('textarea', { value: sh.explanation || '',
+          sh.understood && h('textarea', { 'aria-label': 'Pond oxygen explanation', value: sh.explanation || '',
             onChange: function(e) { setSH({ explanation: e.target.value }); },
             placeholder: 'Explain in your own words: what drives oxygen consumption? What replenishes it? Why does feed rate matter even at constant density? What is the trade-off a real fish farmer faces?',
             style: { width: '100%', minHeight: 80, padding: 6, background: '#0f1c2f', color: '#e2e8f0', border: '1px solid rgba(134,239,172,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace' }, rows: 4 }),

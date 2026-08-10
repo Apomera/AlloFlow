@@ -23136,6 +23136,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           h('style', null, '#skyschool-flight-container .skyschool-command-rail button{transition:transform .14s ease,filter .14s ease}#skyschool-flight-container .skyschool-command-rail button:hover{transform:translateX(2px);filter:brightness(1.1)}#skyschool-flight-container .skyschool-command-rail button:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}@media(max-width:820px){#skyschool-flight-container{min-height:620px!important;border-radius:10px!important}.skyschool-command-rail{top:8px!important;left:8px!important;right:8px!important;max-width:none!important;flex-direction:row!important;flex-wrap:wrap!important}.skyschool-command-rail .skyschool-rail-label{width:100%}.skyschool-command-rail button{flex:1 1 110px;justify-content:center}.skyschool-status-rail{top:auto!important;left:8px!important;right:8px!important;bottom:8px!important;flex-direction:row!important;justify-content:space-between!important;align-items:center!important}.skyschool-tutorial-card{top:auto!important;left:8px!important;right:8px!important;bottom:58px!important;transform:none!important;max-width:none!important;max-height:42vh!important;overflow:auto!important}}'),
           threeLoaded && h('canvas', {
             ref: webglCanvasRef,
+            // Purely the WebGL paint layer stacked under the labelled
+            // role="application" canvas below; exposing it would put a second,
+            // nameless canvas node in the tree for the same content.
+            'aria-hidden': 'true',
             style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1, display: 'block' }
           }),
           h('canvas', {
@@ -23443,7 +23447,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Flight Path Map (from black box data)
           blackBoxRef.current.length > 3 ? h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #1e293b', marginBottom: '16px' } },
             h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#60a5fa', textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.flightsim.flight_path', '🗺️ Flight Path')),
-            h('canvas', { 'aria-label': __alloT('stem.flightsim.flightsim_interactive_visualization', 'Flightsim interactive visualization'),
+            h('canvas', { role: 'img', 'aria-label': __alloT('stem.flightsim.flightsim_interactive_visualization', 'Flightsim interactive visualization'),
               ref: function(canvas) {
                 if (!canvas) return;
                 var g = canvas.getContext('2d');
@@ -23514,7 +23518,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               style: { width: '100%', height: '120px', borderRadius: '6px', display: 'block' }
             }),
             // Altitude + Speed profile chart
-            h('canvas', { 'aria-label': __alloT('stem.flightsim.flightsim_visualization', 'Flightsim visualization'), 
+            h('canvas', { role: 'img', 'aria-label': __alloT('stem.flightsim.flightsim_visualization', 'Flightsim visualization'),
               ref: function(canvas) {
                 if (!canvas) return;
                 var g = canvas.getContext('2d');
@@ -24307,7 +24311,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                   h('td', { style: { padding: '4px 6px' } }, o.st));
               }))
             ),
-            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
+            h('textarea', { 'aria-label': __alloT('stem.flightsim.hypothesis_input', 'Stall factors hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
               placeholder: __alloT('stem.flightsim.hypothesis_free_text_no_right_answer_w', 'Hypothesis (free text — no right answer): Which slider matters most for stall? Is airspeed alone sufficient to prevent it?'),
               style: { width: '100%', minHeight: '60px', padding: '6px', background: '#0f1c2f', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: '4px', fontSize: '12px', fontFamily: 'monospace', marginBottom: '10px' }, rows: 3 }),
             !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
@@ -24323,7 +24327,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               h('label', { style: { display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
                 h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
                 __alloT('stem.flightsim.i_think_i_understand_explain_in_own_wo', 'I think I understand — explain in own words')),
-              iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
+              iq.understood && h('textarea', { 'aria-label': __alloT('stem.flightsim.explanation_input', 'Stall factors explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
                 placeholder: __alloT('stem.flightsim.explain_in_your_own_words_what_role_do', 'Explain in your own words: what role do airspeed, altitude, and AoA each play?'),
                 style: { width: '100%', minHeight: '80px', padding: '6px', background: '#0f1c2f', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '4px', fontSize: '12px', fontFamily: 'monospace', marginTop: '6px' }, rows: 4 })
             ),

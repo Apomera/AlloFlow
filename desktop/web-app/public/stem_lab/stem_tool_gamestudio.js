@@ -1192,7 +1192,7 @@ window.StemLab = window.StemLab || {
                       (function() {
                         var trig = TRIGGERS.find(function(t) { return t.id === rule.trigger; });
                         if (!trig || !trig.params || trig.params.length === 0) return null;
-                        return h('select', {
+                        return h('select', { 'aria-label': __alloT('stem.gamestudio.trigger_param_label', 'Trigger parameter'),
                           value: rule.param || '',
                           onChange: function(e) {
                             var ne = Object.assign({}, events); var arr = (ne[activeSprite] || []).slice();
@@ -1216,7 +1216,7 @@ window.StemLab = window.StemLab || {
                       (function() {
                         var act = ACTIONS.find(function(a) { return a.id === rule.action; });
                         if (!act || !act.params || act.params.length === 0) return null;
-                        return h('select', {
+                        return h('select', { 'aria-label': __alloT('stem.gamestudio.action_param_label', 'Action parameter'),
                           value: rule.actionParam || '',
                           onChange: function(e) {
                             var ne = Object.assign({}, events); var arr = (ne[activeSprite] || []).slice();
@@ -1883,7 +1883,7 @@ window.StemLab = window.StemLab || {
                   )
                 ),
                 // Hypothesis textarea
-                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.gamestudio.hypothesis_free_text_no_right_answer_w', 'Hypothesis (free text — no right answer): Which slider has the biggest effect on difficulty? Does the curve change shape, or just height?'),
+                h('textarea', { 'aria-label': __alloT('stem.gamestudio.hypothesis_input', 'Difficulty curve hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.gamestudio.hypothesis_free_text_no_right_answer_w', 'Hypothesis (free text — no right answer): Which slider has the biggest effect on difficulty? Does the curve change shape, or just height?'),
                   className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
                 // Opt-in stuck prompts
                 !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.gamestudio.stuck_show_open_prompts_no_answers', '🤔 Stuck — show open prompts (no answers)')),
@@ -1901,7 +1901,7 @@ window.StemLab = window.StemLab || {
                     h('input', { type: 'checkbox', id: 'dt-und', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                     h('label', { htmlFor: 'dt-und', className: 'text-[12px] font-bold text-emerald-900 cursor-pointer' },
                       __alloT('stem.gamestudio.i_think_i_understand_difficulty_tuning', 'I think I understand difficulty tuning now — let me explain it in my own words'))),
-                  iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.gamestudio.explain_in_your_own_words_how_do_the_5', 'Explain in your own words: how do the 5 parameters jointly determine difficulty? What player-experience metric does each map to?'),
+                  iq.understood && h('textarea', { 'aria-label': __alloT('stem.gamestudio.explanation_input', 'Difficulty curve explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.gamestudio.explain_in_your_own_words_how_do_the_5', 'Explain in your own words: how do the 5 parameters jointly determine difficulty? What player-experience metric does each map to?'),
                     className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug', rows: 4 }),
                   iq.understood && (iq.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[10px] italic text-emerald-700' },
                     __alloT('stem.gamestudio.saved_notice_nobody_checked_your_answe', '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.'))

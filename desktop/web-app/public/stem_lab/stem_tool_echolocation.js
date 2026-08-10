@@ -827,12 +827,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             PLAYABLE_SPECIES.map(function(sp) {
               var isSelected = selectedPlayableSpecies === sp.id;
               // Stat bar helper
-              function statBar(label, value, max, barColor) {
+              // `display` is the number the reader sees; `value`/`max` only size
+              // the bar. The two came apart because some of these stats have a
+              // real unit and others are relative game figures — beam width was
+              // being shown as a bare "80", a normalised index that reads as a
+              // measurement when the actual beam is 144 degrees wide.
+              function statBar(label, value, max, barColor, display) {
                 var pct = Math.round((value / max) * 100);
                 return h('div', { className: 'mb-1' },
-                  h('div', { className: 'flex justify-between text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') },
+                  h('div', { className: 'flex justify-between text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
                     h('span', null, label),
-                    h('span', null, Math.round(value))),
+                    h('span', null, display == null ? Math.round(value) : display)),
                   h('div', { className: 'h-1.5 rounded-full overflow-hidden ' + (isDark ? 'bg-slate-700' : 'bg-slate-200') },
                     h('div', { style: { width: pct + '%', background: barColor }, className: 'h-full rounded-full transition-all' }))
                 );
@@ -857,13 +862,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('p', { className: 'text-[11px] mb-3 ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.echolocation.' + (sp.id) + '_desc', sp.desc)),
                 // Stats visualization
                 h('div', { className: 'space-y-0.5 mb-3' },
-                  statBar('Sonar Range', sp.sonarRange, 300, '#6366f1'),
-                  statBar('Beam Width', (sp.sonarWidth / Math.PI) * 100, 150, '#8b5cf6'),
-                  statBar('Pulse Speed', (25 - sp.pulseCooldown), 20, '#06b6d4'),
-                  statBar('Flight Speed', sp.speed, 5, '#10b981'),
-                  statBar('Energy Efficiency', (1 - sp.energyDrain) * 100, 100, '#f59e0b')
+                  statBar('Sonar Range', sp.sonarRange, 300, '#6366f1', 'relative ' + Math.round(sp.sonarRange / 250 * 100) + '%'),
+                  // The beam really is this wide: sonarWidth is stored in radians
+                  // and drives the sweep the simulator draws.
+                  statBar('Beam Width', (sp.sonarWidth / Math.PI) * 100, 150, '#8b5cf6',
+                    Math.round(sp.sonarWidth * 180 / Math.PI) + '°'),
+                  // pulseCooldown counts animation frames between pulses, so at
+                  // 60 fps this is a genuine rate — and it lands near the real
+                  // search-phase rates these two species use.
+                  statBar('Pulse Rate', (25 - sp.pulseCooldown), 20, '#06b6d4',
+                    (60 / sp.pulseCooldown).toFixed(1) + '/s'),
+                  statBar('Flight Speed', sp.speed, 5, '#10b981', 'relative ' + Math.round(sp.speed / 4 * 100) + '%'),
+                  statBar('Energy Efficiency', (1 - sp.energyDrain) * 100, 100, '#f59e0b',
+                    Math.round((1 - sp.energyDrain) * 100) + '%')
                 ),
-                h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') },
+                h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
                   h('div', null, '\uD83C\uDF1F Prey: ' + sp.preyEmoji + ' ' + sp.preyLabel),
                   h('div', null, '\uD83D\uDD0A Sonar: ' + sp.sonarType)),
                 // Select button
@@ -876,6 +889,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               );
             })
           ),
+          // One note under both cards, not one inside each: it describes the
+          // stat block as a whole, and duplicating it read as two claims.
+          h('div', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') },
+            'Beam width, pulse rate and efficiency are real figures for this simulation. Range and flight speed are shown relative to the Little Brown Bat.'),
           // Science comparison
           selectedPlayableSpecies ? h('div', { className: 'rounded-xl p-3 ' + (isDark ? 'bg-indigo-900/20 border border-indigo-800/30' : 'bg-indigo-50 border border-indigo-200') },
             h('div', { className: 'text-xs font-bold mb-1 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.science_note', '\uD83E\uDDEC Science Note')),
@@ -886,9 +903,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           ) : null,
           // Start playing button (visible once species selected)
           selectedPlayableSpecies ? h('div', { className: 'text-center' },
-            h('div', { className: 'text-[11px] mb-2 ' + (isDark ? 'text-slate-200' : 'text-slate-200') },
+            h('div', { className: 'text-[11px] mb-2 ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
               t('stem.echolocation.species_selected_the_sonar_simulator_b', 'Species selected! The sonar simulator below is now configured for your bat.')),
-            h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') },
+            h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
               t('stem.echolocation.you_can_change_species_anytime_using_t', 'You can change species anytime using the toggle in the game HUD.'))
           ) : null
         );
@@ -1979,7 +1996,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       }
 
       function renderSonarTab() {
-        var sonarCanvasEl = h('canvas', { 'aria-label': t('stem.echolocation.echolocation_visualization', 'Echolocation visualization'),
+        // Every canvas in this file carried TWO 'aria-label' keys in one props
+        // object: a generic translated one written first, and the specific
+        // hand-written one below it. Duplicate keys are legal JavaScript and the
+        // last wins, so the generic label never reached the DOM and its
+        // translation key was dead weight. The specific label is the one screen
+        // readers have always actually received; only the dead key is removed.
+        var sonarCanvasEl = h('canvas', {
           ref: sonarCanvasRef,
           width: 800,
           height: 500,
@@ -2355,7 +2378,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   h('div', { style: { width: '12px', height: '12px', borderRadius: '50%', background: m.color }, 'aria-hidden': 'true' }),
                   h('div', null,
                     h('div', { className: 'text-[11px] font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, m.material + ' (' + m.reflectivity + ')'),
-                    h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') }, m.desc))
+                    h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, m.desc))
                 );
               })
             )
@@ -3057,7 +3080,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83C\uDF0A'),
               h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.wave_visualizer', 'Wave Visualizer'))),
-            h('canvas', { 'aria-label': t('stem.echolocation.echolocation_visualization_2', 'Echolocation visualization'),
+            h('canvas', {
               ref: waveCanvasRef,
               width: 700,
               height: 180,
@@ -3082,7 +3105,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   onChange: function(e) { upd('waveFreq', parseInt(e.target.value)); },
                   className: 'w-full accent-indigo-500'
                 }),
-                h('div', { className: 'flex justify-between text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') },
+                h('div', { className: 'flex justify-between text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
                   h('span', null, t('stem.echolocation.20_hz', '20 Hz')),
                   h('span', { className: 'text-green-500' }, t('stem.echolocation.audible', '\u2190 Audible \u2192')),
                   h('span', { className: 'text-purple-500' }, t('stem.echolocation.bat_range', '\u2190 Bat range \u2192')),
@@ -3108,7 +3131,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 }
               },
               className: 'transition-colors mt-2 px-4 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700'
-            }, '\uD83D\uDD0A Play Tone (' + waveFreq + ' Hz)') : h('div', { className: 'mt-2 text-[11px] italic ' + (isDark ? 'text-slate-200' : 'text-slate-200') },
+            }, '\uD83D\uDD0A Play Tone (' + waveFreq + ' Hz)') : h('div', { className: 'mt-2 text-[11px] italic ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
               waveFreq < 20 ? '\uD83D\uDC33 This frequency is infrasonic \u2014 too low for human hearing (below 20 Hz)' :
               '\uD83E\uDD87 This frequency is ultrasonic \u2014 above human hearing! Bats can hear this, but we cannot.'),
             // Properties readout
@@ -3197,7 +3220,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 }, mat.label + ' (' + Math.round(mat.reflection * 100) + '%)');
               })
             ),
-            h('canvas', { 'aria-label': t('stem.echolocation.echolocation_visualization_3', 'Echolocation visualization'),
+            h('canvas', {
               ref: reflCanvasRef,
               width: 700,
               height: 150,
@@ -3231,7 +3254,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83D\uDCC9'),
               h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.inverse_square_law', 'Inverse Square Law'))),
-            h('canvas', { 'aria-label': t('stem.echolocation.echolocation_visualization_4', 'Echolocation visualization'),
+            h('canvas', {
               ref: invSqCanvasRef,
               width: 700,
               height: 160,
@@ -3648,7 +3671,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83D\uDEA8'),
               h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.doppler_effect_simulator', 'Doppler Effect Simulator'))),
-            h('canvas', { 'aria-label': t('stem.echolocation.echolocation_visualization_5', 'Echolocation visualization'),
+            h('canvas', {
               ref: dopplerCanvasRef,
               width: 700,
               height: 280,
@@ -4110,7 +4133,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           bioSection === 'anatomy' && h('div', { className: 'space-y-3' },
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
               h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.bat_anatomy_click_a_part_to_learn_more', '\uD83E\uDDA0 Bat Anatomy \u2014 Click a part to learn more')),
-              h('canvas', { 'aria-label': t('stem.echolocation.echolocation_visualization_6', 'Echolocation visualization'),
+              h('canvas', {
                 ref: anatomyCanvasRef,
                 width: 500,
                 height: 300,
@@ -4165,7 +4188,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                     h('p', { className: 'text-[11px] ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, part.physics))
                 );
               })(),
-              !selectedAnatomyPart && h('div', { className: 'mt-2 text-[11px] italic text-center ' + (isDark ? 'text-slate-200' : 'text-slate-200') },
+              !selectedAnatomyPart && h('div', { className: 'mt-2 text-[11px] italic text-center ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
                 t('stem.echolocation.click_or_tap_a_part_of_the_bat_to_expl', 'Click or tap a part of the bat to explore it. Use arrow keys for keyboard navigation.'))
             ),
 
@@ -4300,7 +4323,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                     h('span', { className: 'text-2xl' }, sp.emoji),
                     h('div', null,
                       h('div', { className: 'text-xs font-bold ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, sp.name),
-                      h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') }, sp.region))),
+                      h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, sp.region))),
                   expanded && h('div', { className: 'space-y-1 mt-2' },
                     h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-300' : 'text-slate-600') },
                       h('strong', null, 'Size: '), sp.size, ' | ',
@@ -4380,13 +4403,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               h('div', { className: 'grid grid-cols-3 gap-2 mt-2 text-center' },
                 h('div', { className: 'p-2 rounded ' + (isDark ? 'bg-slate-700/40' : 'bg-slate-100') },
                   h('div', { className: 'text-lg font-black ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, '1,400+'),
-                  h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') }, t('stem.echolocation.bat_species_worldwide', 'bat species worldwide'))),
+                  h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, t('stem.echolocation.bat_species_worldwide', 'bat species worldwide'))),
                 h('div', { className: 'p-2 rounded ' + (isDark ? 'bg-slate-700/40' : 'bg-slate-100') },
                   h('div', { className: 'text-lg font-black ' + (isDark ? 'text-amber-300' : 'text-amber-700') }, '~25%'),
-                  h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') }, t('stem.echolocation.threatened_or_endangered', 'threatened or endangered'))),
+                  h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, t('stem.echolocation.threatened_or_endangered', 'threatened or endangered'))),
                 h('div', { className: 'p-2 rounded ' + (isDark ? 'bg-slate-700/40' : 'bg-slate-100') },
                   h('div', { className: 'text-lg font-black ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, '$23B'),
-                  h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') }, t('stem.echolocation.annual_value_of_pest_control', 'annual value of pest control')))
+                  h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, t('stem.echolocation.annual_value_of_pest_control', 'annual value of pest control')))
               )
             ),
             // Bat myths busted
@@ -4597,7 +4620,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               h('div', { className: 'flex items-center gap-2 mb-3' },
                 h('span', { className: 'text-xl' }, '\uD83C\uDF33'),
                 h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, t('stem.echolocation.night_soundscape_toggle_animals_to_hea', 'Night Soundscape \u2014 Toggle animals to hear how they share the frequency space'))),
-              h('canvas', { 'aria-label': t('stem.echolocation.echolocation_visualization_7', 'Echolocation visualization'),
+              h('canvas', {
                 ref: soundscapeCanvasRef,
                 width: 700,
                 height: 250,
@@ -4694,7 +4717,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                     h('div', { className: 'w-10 text-right text-[11px] font-mono font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, item.dB + ' dB'),
                     h('div', { className: 'flex-1 h-3 rounded-full overflow-hidden ' + (isDark ? 'bg-slate-700' : 'bg-slate-200') },
                       h('div', { style: { width: item.bar + '%', background: item.color }, className: 'h-full rounded-full' })),
-                    h('div', { className: 'flex-1 text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-200') }, item.label));
+                    h('div', { className: 'flex-1 text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, item.label));
                 })
               ),
               h('div', { className: 'mt-2 text-[11px] italic ' + (isDark ? 'text-indigo-400' : 'text-indigo-600') },
@@ -4813,7 +4836,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   )
                 )
               ),
-              h('div', { className: 'mt-2 text-[11px] italic ' + (isDark ? 'text-slate-200' : 'text-slate-200') },
+              h('div', { className: 'mt-2 text-[11px] italic ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
                 t('stem.echolocation.note_sound_travels_4_3x_faster_in_wate', 'Note: Sound travels ~4.3x faster in water than air, so dolphin sonar has much greater range than bat sonar at similar frequencies.'))
             ),
 

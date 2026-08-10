@@ -23518,6 +23518,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 });
               },
               style: { display: 'block', width: '100%', borderRadius: '8px' },
+              // role="img" is load-bearing: <canvas> has no implicit role, and an
+              // aria-label on a role-less element is not reliably exposed. Every
+              // other labelled canvas in this file pairs the two.
+              role: 'img',
               'aria-label': 'Colony metrics history chart showing workers, honey, varroa, and morale over ' + history.length + ' days'
             })
           ),

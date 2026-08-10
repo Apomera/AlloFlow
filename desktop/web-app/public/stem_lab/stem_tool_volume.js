@@ -3477,8 +3477,7 @@ window.StemLab = window.StemLab || {
           // pointerEvents stay ON so freeform picking works; the rotate-drag
           // handler on the viewport still gets the same events by bubbling.
           glMode && h('canvas', {
-            role: 'img', 'aria-label': 'Interactive 3D volume model',
-            ref: volGlRef,
+                        ref: volGlRef,
             'data-volume-gl': 'true',
             // Named rather than aria-hidden: the surrounding role="application"
             // carries the *instructions*, but a screen-reader user still needs

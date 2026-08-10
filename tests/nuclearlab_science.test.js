@@ -1141,6 +1141,72 @@ describe('Question routes', () => {
   });
 });
 
+describe('Every question the lab asks, it also answers', () => {
+  // Five sections closed on a "🤔" prompt and then stopped. Good questions,
+  // which is exactly why leaving them open was a problem: a reader with a
+  // teacher asks; a reader in independent mode has no way to find out whether
+  // what they worked out was right. Only one of the five was answered anywhere
+  // at all, and that answer sat in an EARLIER section with nothing linking them.
+  const PROMPTS = ['halflife', 'chain', 'criticality', 'binding', 'compare'];
+
+  it('routes every prompt through the think-then-check control', () => {
+    const raw = [...SRC.matchAll(/ponder\('([a-z]+)'/g)].map((m) => m[1]);
+    expect(raw.sort()).toEqual([...PROMPTS].sort());
+  });
+
+  it('leaves no bare 🤔 prompt that just stops', () => {
+    // The helper prints its own marker, so any OTHER emitted occurrence is a
+    // question that was never wired up. Matches the marker as it appears in a
+    // string literal ("'🤔 ") so prose about it in comments does not count.
+    const render = SRC.slice(SRC.indexOf('render: function (ctx)'));
+    const marks = [...render.matchAll(/'🤔 /g)];
+    expect(marks.length, 'a 🤔 prompt is not going through ponder()').toBe(1);
+  });
+
+  it('hides the answer until it is asked for', () => {
+    const shut = renderTool('nuclearLab', {});
+    expect(shut).toContain('Worked it out? Check');
+    expect(shut).toMatch(/What does that mean for a star once its core is iron and nickel\?/);
+    expect(shut, 'the answer is on screen before the reader has thought').not.toMatch(/core-collapse supernova/);
+  });
+
+  it('reveals it, and only the one that was opened', () => {
+    const open = renderTool('nuclearLab', { _nuclearLab: { ponderOpen: { binding: true } } });
+    expect(open).toMatch(/core-collapse supernova/);
+    expect(open).toContain('Hide the answer');
+    // the other four stay shut
+    expect(open, 'opening one prompt opened another').not.toMatch(/sub-slab depressurisation/);
+  });
+
+  it('answers each one on the physics, not with a gesture', () => {
+    const open = renderTool('nuclearLab', {
+      _nuclearLab: { ponderOpen: Object.fromEntries(PROMPTS.map((p) => [p, true])) },
+    });
+    // half-life: the convention, and where the smooth curve stops being smooth
+    expect(open).toMatch(/is a CONVENTION/);
+    expect(open).toMatch(/still a kilogram of caesium-137/);
+    // radon: it is a flow, not a stock — which is why sealing is the wrong fix
+    expect(open).toMatch(/not a stock, it is a flow/);
+    expect(open).toMatch(/sub-slab depressurisation/);
+    // bomb: fuel, not safety systems
+    expect(open).toMatch(/cannot sustain a fast chain reaction at any mass or in any shape/i);
+    // star: and where the uranium in section 3 came from
+    expect(open).toMatch(/colliding neutron stars/);
+    // risk perception: names the research and refuses the smug conclusion
+    expect(open).toMatch(/Slovic/);
+    expect(open).toMatch(/NOT that the fear is irrational/);
+  });
+
+  it('keeps the disclosure accessible — named button, answer outside it', () => {
+    const open = renderTool('nuclearLab', { _nuclearLab: { ponderOpen: { chain: true } } });
+    expect(open).toMatch(/aria-expanded="true"/);
+    // the revealed prose must be a sibling after the button, not swallowed by it
+    const btn = open.indexOf('Hide the answer');
+    const answer = open.indexOf('not a stock, it is a flow');
+    expect(answer, 'answer should follow the button, not sit inside it').toBeGreaterThan(btn);
+  });
+});
+
 describe('The chain reaction is a task, not a display', () => {
   it('opens shut down, with the job stated', () => {
     const html = renderTool('nuclearLab', {});

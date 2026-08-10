@@ -778,7 +778,7 @@ window.StemLab = window.StemLab || {
             h('button', { onClick: function() { updCG({ showAITutor: false }); }, className: 'text-sky-400 hover:text-sky-600 text-lg font-bold' }, '\u00D7')
           ),
           h('div', { className: 'flex gap-2' },
-            h('input', {
+            h('input', { 'aria-label': t('stem.coordgrid.ai_question_label', 'Ask the coordinate tutor a question'),
               type: 'text', value: aiQuestion,
               onChange: function(e) { updCG({ aiQuestion: e.target.value }); },
               onKeyDown: function(e) { if (e.key === 'Enter' && aiQuestion.trim()) askAITutor(); },
@@ -2080,7 +2080,7 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-sm font-bold text-green-800 mb-2' }, '\uD83D\uDCCF Find the distance: (' + gridChallenge.p1.x + ',' + gridChallenge.p1.y + ') to (' + gridChallenge.p2.x + ',' + gridChallenge.p2.y + ')'),
           h('p', { className: 'text-[11px] text-green-600 mb-2 italic' }, t('stem.coordgrid.d_x_x_y_y_round_to_1_decimal_place', '\uD83D\uDCA1 d = \u221A((x\u2082\u2212x\u2081)\u00B2 + (y\u2082\u2212y\u2081)\u00B2)  \u2014 Round to 1 decimal place')),
           h('div', { className: 'flex gap-2 items-center' },
-            h('input', {
+            h('input', { 'aria-label': t('stem.coordgrid.distance_answer_label', 'Distance answer'),
               type: 'number', step: '0.1', placeholder: t('stem.coordgrid.distance', 'Distance = ?'),
               value: (gridFeedback && gridFeedback.distanceAnswer) || '',
               onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { distanceAnswer: e.target.value }); }); },
@@ -2255,7 +2255,7 @@ window.StemLab = window.StemLab || {
               h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ x: iq.x, y: iq.y, q: quadrant }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, t('stem.coordgrid.log', '📋 Log')),
               h('button', { onClick: function() { setIQ({ x: 3, y: 4, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, t('stem.coordgrid.reset_2', '↺ Reset'))
             ),
-            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.coordgrid.hypothesis_what_sign_combinations_defi', 'Hypothesis: What sign combinations define each quadrant?'),
+            h('textarea', { 'aria-label': t('stem.coordgrid.hypothesis_input', 'Quadrant sign hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.coordgrid.hypothesis_what_sign_combinations_defi', 'Hypothesis: What sign combinations define each quadrant?'),
               className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
             !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, t('stem.coordgrid.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
             iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
@@ -2265,7 +2265,7 @@ window.StemLab = window.StemLab || {
             h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
               h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
               t('stem.coordgrid.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-            iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.coordgrid.explain_the_sign_pattern_that_defines_', 'Explain the sign pattern that defines each quadrant.'),
+            iq.understood && h('textarea', { 'aria-label': t('stem.coordgrid.explanation_input', 'Quadrant sign explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.coordgrid.explain_the_sign_pattern_that_defines_', 'Explain the sign pattern that defines each quadrant.'),
               className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
             h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.coordgrid.design_note_discrete_7_state_region_ma', 'Design note: discrete 7-state region marker; no coordinate score; no reveal — by design.'))
           );

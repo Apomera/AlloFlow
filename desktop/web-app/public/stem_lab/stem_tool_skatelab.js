@@ -3808,8 +3808,7 @@ window.StemLab = window.StemLab || {
             )
           ),
           h('canvas', {
-            role: 'img', 'aria-label': 'Interactive skate motion simulation canvas',
-            ref: canvasRef,
+                        ref: canvasRef,
             width: 640, height: 320,
             role: 'img',
             'data-a11y-static': 'true',

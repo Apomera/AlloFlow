@@ -3319,7 +3319,7 @@ window.StemLab = window.StemLab || {
                 h('span', null, t.op),
                 h('span', null, t.b),
                 h('span', null, '='),
-                h('input', {
+                h('input', { 'aria-label': __alloT('stem.manipulatives.cra_answer_label', 'Answer to the equation'),
                   type: 'number', value: _m.craUserAns || '',
                   onChange: function(e) { upd({ craUserAns: e.target.value }); },
                   onKeyDown: function(e) {
@@ -3498,7 +3498,7 @@ window.StemLab = window.StemLab || {
                 }, g === 'all' ? 'All' : 'Grade ' + g);
               })
             ),
-            h('input', {
+            h('input', { 'aria-label': __alloT('stem.manipulatives.standards_search_label', 'Search standards'),
               type: 'search',
               value: standardsSearch,
               onChange: function(e) { upd({ standardsSearch: e.target.value }); },
@@ -3619,7 +3619,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'bg-white rounded-xl border-2 border-slate-200 p-3' },
             h('p', { className: 'text-xs font-bold text-slate-700 mb-2' }, __alloT('stem.manipulatives.save_the_current_workspace_from_the_ma', '💾 Save the current workspace (from the manipulative you were just on):')),
             h('div', { className: 'flex gap-2' },
-              h('input', {
+              h('input', { 'aria-label': __alloT('stem.manipulatives.library_name_label', 'Workspace name'),
                 type: 'text', value: libraryName,
                 onChange: function(e) { upd({ libraryName: e.target.value }); },
                 onKeyDown: function(e) { if (e.key === 'Enter') saveCurrent(); },
@@ -3737,7 +3737,7 @@ window.StemLab = window.StemLab || {
               iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · g' + e.g + ' abs' + e.a + ' sc' + e.sc + ' et' + e.et + ' → idx ' + e.idx); })
             ),
             h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, __alloT('stem.manipulatives.your_hypothesis_which_slider_should_a_', 'Your hypothesis (which slider should a beginning teacher worry about most? Why?)')),
-            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.manipulatives.e_g_abstractness_mismatch_causes_the_m', 'e.g., abstractness mismatch causes the most damage because students can\'t see what they\'re even working on...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+            h('textarea', { 'aria-label': __alloT('stem.manipulatives.hypothesis_input', 'Manipulative mismatch hypothesis'), value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.manipulatives.e_g_abstractness_mismatch_causes_the_m', 'e.g., abstractness mismatch causes the most damage because students can\'t see what they\'re even working on...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
             !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, __alloT('stem.manipulatives.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
             iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
               h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, __alloT('stem.manipulatives.open_questions_no_answer_key', 'Open questions (no answer key)')),
@@ -3752,7 +3752,7 @@ window.StemLab = window.StemLab || {
               h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
               h('span', null, __alloT('stem.manipulatives.i_can_explain_why_this_lesson_design_l', 'I can explain why this lesson design lands in this state.'))
             ),
-            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.manipulatives.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+            iq.understood && h('textarea', { 'aria-label': __alloT('stem.manipulatives.explanation_input', 'Manipulative mismatch explanation'), value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.manipulatives.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
             h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, __alloT('stem.manipulatives.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Load index is a heuristic; real lesson design depends on prior knowledge, motivation, peer dynamics, and many more dimensions than four.'))
           )
         );
@@ -4236,7 +4236,7 @@ window.StemLab = window.StemLab || {
                 crChallenge.q
               ),
               !crFeedback && h('div', { className: 'flex gap-2' },
-                h('input', { type: crChallenge.strAnswer ? 'text' : 'number',
+                h('input', { 'aria-label': __alloT('stem.manipulatives.challenge_answer_label', 'Your answer'), type: crChallenge.strAnswer ? 'text' : 'number',
                   value: _m.crUserAns || '',
                   onChange: function(e) { upd({ crUserAns: e.target.value }); },
                   onKeyDown: function(e) { if (e.key === 'Enter') chCheck(); },

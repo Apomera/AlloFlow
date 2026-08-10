@@ -3153,7 +3153,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   React.createElement("span", { className: "text-xs font-bold text-slate-700" }, __alloT('stem.music.sequencer', "\uD83C\uDFBC Sequencer")),
                   React.createElement("span", { className: "text-[11px] text-slate-200" }, __alloT('stem.music.16_steps_1_bar', "16 steps = 1 bar")),
                   // Scale selector
-                  React.createElement("select", { value: d.bpScale || 'major', onChange: function (e) { upd('bpScale', e.target.value); },
+                  React.createElement("select", { 'aria-label': __alloT('stem.music.scale_select_label', 'Musical scale'), value: d.bpScale || 'major', onChange: function (e) { upd('bpScale', e.target.value); },
                     className: "ml-auto px-2 py-0.5 rounded text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-600"
                   },
                     Object.keys(SCALE_PATTERNS).map(function (k) {
@@ -4591,7 +4591,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       h('td', { className: 'px-1 border border-slate-200' }, o.t));
                   }))
                 ),
-                h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.music.hypothesis_free_text_which_harmonic_le', 'Hypothesis (free text): Which harmonic level dictates "bright" vs "warm"?'),
+                h('textarea', { 'aria-label': __alloT('stem.music.hypothesis_input', 'Timbre hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.music.hypothesis_free_text_which_harmonic_le', 'Hypothesis (free text): Which harmonic level dictates "bright" vs "warm"?'),
                   className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug mb-3', rows: 3 }),
                 !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300 mb-3' }, __alloT('stem.music.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed mb-3' },
@@ -4603,7 +4603,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
                     h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                     __alloT('stem.music.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-                  iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.music.explain_how_harmonic_content_determine', 'Explain how harmonic content determines timbre perception.'),
+                  iq.understood && h('textarea', { 'aria-label': __alloT('stem.music.explanation_input', 'Timbre explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.music.explain_how_harmonic_content_determine', 'Explain how harmonic content determines timbre perception.'),
                     className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
                 h('div', { className: 'mt-3 text-[10px] italic text-slate-500' }, __alloT('stem.music.design_note_discrete_5_class_timbre_ma', 'Design note: discrete 5-class timbre marker; no acoustic fidelity score; no reveal — by design.'))
               );

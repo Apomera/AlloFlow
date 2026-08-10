@@ -12426,7 +12426,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               })}
                             </div>
                           )}
-                          {(pdfFixResult.verificationAudit.passes || []).length > 0 && (
+                          {(pdfFixResult.verificationAudit?.passes || []).length > 0 && (
                             <div className="bg-green-50 rounded-lg p-2 border border-green-200">
                               <div className="text-[11px] font-bold text-green-600 uppercase mb-1">{t('pdf_audit.results.ai_reported_passing') || 'Reported passing (AI rubric — not independently verified)'}</div>
                               {pdfFixResult.verificationAudit.passes.map((pass, i) => (

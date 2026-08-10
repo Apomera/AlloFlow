@@ -120,7 +120,8 @@ const EXPECTED_MARKERS = [
   { id: 'fractions', file: 'stem_tool_fractions.js', marker: 'data-fraction-focus', label: 'Fraction Lab focus panel' },
   { id: 'galaxy', file: 'stem_tool_galaxy.js', marker: 'data-galaxy-canvas', label: 'Galaxy 3D canvas' },
   { id: 'semiconductor', file: 'stem_tool_semiconductor.js', marker: 'data-semiconductor-command', label: 'Semiconductor command bench' },
-  { id: 'wave', file: 'stem_tool_wave.js', marker: 'data-wave-canvas', label: 'Wave canvas' }
+  { id: 'wave', file: 'stem_tool_wave.js', marker: 'data-wave-canvas', label: 'Wave canvas' },
+  { id: 'heatLab', file: 'stem_tool_heatlab.js', marker: 'data-heat-lab', label: 'Heat & Thermodynamics Lab' }
 ];
 
 const STARTER_DATA = {

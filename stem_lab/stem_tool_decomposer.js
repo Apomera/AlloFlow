@@ -2752,8 +2752,7 @@
 
             /* Canvas */
             h('div', { className: 'bg-white rounded-xl border-2 border-indigo-200 overflow-hidden mb-3' },
-              h('canvas', { role: 'img', 'aria-label': 'Decomposer visualization',
-                ref: canvasRef,
+              h('canvas', { role: 'img',                 ref: canvasRef,
                 className: 'w-full cursor-pointer',
                 style: { height: '280px', display: 'block' },
                 'aria-label': 'Molecular visualization of ' + sel.name

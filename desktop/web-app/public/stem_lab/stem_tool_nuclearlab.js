@@ -933,6 +933,8 @@
         check: function (d) { return !!(d && d.doseEstimated); } },
       { id: 'nk_dose', label: 'Compare five doses on the ladder', icon: '📏',
         check: function (d) { return !!(d && (d.dosesSeen || []).length >= 5); } },
+      { id: 'nk_ponder', label: 'Work out three of the lab\'s own questions, then check', icon: '🤔',
+        check: function (d) { return !!(d && (d.ponderSeen || []).length >= 3); } },
       { id: 'nk_lowdose', label: 'Run one exposure through three risk models', icon: '📉',
         check: function (d) { return !!(d && (d.riskModelsTried || []).length >= 3); } },
       { id: 'nk_collective', label: 'Find where the collective-dose sum stops meaning anything', icon: '➗',
@@ -2317,6 +2319,45 @@
               h('span', { className: 'text-[11px] font-bold', 'aria-hidden': 'true', style: { color: ink(accent) } }, on ? '▾' : '›'))),
           on ? h('div', { className: 'px-2.5 pb-2 -mt-0.5' }, body) : null);
       };
+      // ── Think first, then check ────────────────────────────────────────
+      // Five sections ended on a "🤔" question and then stopped. They are good
+      // questions — that is the problem. A reader with a teacher asks them; a
+      // reader in independent mode, which is most of them, hits a dead end and
+      // has no way to find out whether the thing they worked out was right.
+      // Only one of the five was answered anywhere, and its answer sat in an
+      // EARLIER section with nothing linking the two.
+      //
+      // The beat is still think-first: the question stays on screen on its own,
+      // and the answer is one deliberate press away. The revealed text is a
+      // sibling AFTER the button rather than inside it, for the reason recorded
+      // on expandRow above — an aria-label on the button would otherwise become
+      // the accessible name and swallow the prose it wraps.
+      var ponder = function (id, accent, question, answer) {
+        var open = !!(d.ponderOpen || {})[id];
+        return h('div', {
+          key: 'ponder-' + id, className: 'mt-2 rounded-lg border p-2.5',
+          style: { borderColor: accent + '55', background: isDark ? 'rgba(15,23,42,0.5)' : 'rgba(255,255,255,0.75)' }
+        },
+          h('p', { className: 'text-[11px] font-bold leading-relaxed', style: { color: ink(accent) } }, '🤔 ' + question),
+          h('button', {
+            type: 'button',
+            'aria-expanded': open ? 'true' : 'false',
+            onClick: function () {
+              var map = Object.assign({}, d.ponderOpen || {});
+              map[id] = !open;
+              upd({ ponderOpen: map });
+              if (!open) pushOnce('ponderSeen', id);
+              if (typeof beep === 'function') beep();
+            },
+            className: 'min-h-11 mt-1.5 px-3 py-2 rounded-lg text-[11px] font-black',
+            style: {
+              background: open ? 'transparent' : accent,
+              color: open ? ink(accent) : '#0b1020',
+              border: '1px solid ' + accent
+            }
+          }, open ? 'Hide the answer' : 'Worked it out? Check'),
+          open ? h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, answer) : null);
+      };
       var para = function (txt, colour) {
         return h('span', { className: 'block text-[11px] leading-relaxed mt-1', style: { color: ink(colour) || (isDark ? '#e2e8f0' : '#334155') } }, txt);
       };
@@ -2725,10 +2766,11 @@
           ),
           h('p', { id: 'nk-decay-description', className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             h('b', null, iso.name + ' (' + iso.decay + '): '), iso.use),
-          h('p', { className: 'text-[11px] mt-1.5 font-bold', style: { color: ink('#a78bfa') } },
+          ponder('halflife', '#a78bfa',
             halves >= 7
-              ? '🤔 After ' + nkFmt(halves, 0) + ' half-lives less than 1% is left — but never exactly zero. Why can this curve never actually reach the axis?'
-              : '🤔 Drag to 7 half-lives. What fraction is left, and why is "ten half-lives and it is gone" only roughly true?')
+              ? 'After ' + nkFmt(halves, 0) + ' half-lives less than 1% is left — but never exactly zero. Why can this curve never actually reach the axis?'
+              : 'Drag to 7 half-lives. What fraction is left, and why is "ten half-lives and it is gone" only roughly true?',
+            'Seven half-lives leaves 1/2⁷, about 0.8%; ten leaves 1/2¹⁰, about 0.1%. The curve never reaches the axis because halving something forever never gets you to nothing — that is arithmetic, not physics. Two things follow. First, "gone after ten half-lives" is a CONVENTION (near enough, below 0.1%), not a law, and whether 0.1% is negligible depends entirely on how much you started with: a tonne of caesium-137 after ten half-lives is still a kilogram of caesium-137. Second, the real world does eventually hit zero, because you have a finite number of atoms rather than a smooth curve — decay is a probability per nucleus per second, and once you are down to the last few, one of them decays at some definite moment and there are none left. The smooth exponential is an average over enormous numbers, and it stops being smooth exactly when the numbers get small. That is the same randomness you can watch directly in section 13.')
         ),
 
         // ── 2. carbon dating ──
@@ -2844,8 +2886,9 @@
             h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               'Every step below the parent is far faster than it, so each daughter decays about as fast as it is made. The chain settles into secular equilibrium and the whole thing ticks along at the rate of the slowest step — 4.47 billion years. That is why radon keeps appearing in a basement year after year and never runs out: it is being made continuously from uranium in the ground beneath, and the supply lasts as long as the planet does.')
           ),
-          h('p', { className: 'text-[11px] mt-2 font-bold', style: { color: ink('#c084fc') } },
-            '🤔 Radon has a half-life of under four days. Sealing a basement for a fortnight would clear what is already there. Why does that not fix the problem?')
+          ponder('chain', '#c084fc',
+            'Radon has a half-life of under four days. Sealing a basement for a fortnight would clear what is already there. Why does that not fix the problem?',
+            'Because the radon in your basement is not a stock, it is a flow. It is being MADE, continuously, by the radium-226 in the rock and soil underneath — and radium-226 has a half-life of 1,600 years, so on any human timescale the supply never runs down. Clear the room and you have simply made space for the next lot. This is the secular equilibrium above, seen from indoors: the chain delivers radon at whatever rate the uranium below dictates, and it will still be doing it long after the house is gone. That is why radon mitigation is never about sealing. It is about ventilation and sub-slab depressurisation — putting a pipe and a fan under the floor slab and taking the gas away before it gets in. Sealing a basement tight can make matters worse, because it cuts the air exchange that was diluting what arrives.')
         ),
 
         // ── enrichment ──
@@ -3029,8 +3072,9 @@
               : (kState === 'supercritical'
                 ? 'Supercritical: k > 1. Power climbs generation after generation. Reactors do this deliberately and briefly when raising power, then settle back to k = 1. What makes it controllable is that about 0.65% of neutrons arrive SECONDS late, from decaying fission products — without those delayed neutrons no mechanical control could ever keep up.'
                 : 'Subcritical: k < 1. The chain dies out. This is a shut-down reactor — though it still needs cooling, because decay heat continues for days. That is precisely what went wrong at Fukushima: the reactors shut down correctly and then could not be cooled.')),
-          h('p', { className: 'text-[11px] mt-1.5 font-bold', style: { color: ink('#34d399') } },
-            '🤔 A bomb needs k far above 1 with fast neutrons and over 90% enrichment. Reactor fuel is 3–5%. Why can a power reactor not explode like a weapon, whatever else goes wrong?')
+          ponder('criticality', '#34d399',
+            'A bomb needs k far above 1 with fast neutrons and over 90% enrichment. Reactor fuel is 3–5%. Why can a power reactor not explode like a weapon, whatever else goes wrong?',
+            'It cannot, and not because of the safety systems — because of the fuel. A weapon needs a FAST chain reaction, run on unmoderated neutrons and held together for the microseconds it takes to complete. Reactor fuel at 3–5% cannot sustain a fast chain reaction at any mass or in any shape: the U-238 making up the other 95% absorbs fast neutrons before they can find a U-235 nucleus. The fuel only works at all because a moderator slows the neutrons down first, and moderated neutrons are far too slow for the runaway a weapon needs. There is also the delayed-neutron point from this section: reactor control is possible at all only because about 0.65% of neutrons arrive seconds late, and a weapon operates entirely above that margin where nothing arrives late enough to matter. Chernobyl was a steam explosion that destroyed the building, not a nuclear detonation. Section 4 has the enrichment ladder this rests on.')
         ),
 
 
@@ -3076,8 +3120,9 @@
             h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               'The peak is usually given as iron-56. The actual maximum is nickel-62 at ' + bePeak.be.toFixed(3) + ' MeV per nucleon, just above iron-58 and then iron-56 at 8.790. Iron-56 is the most ABUNDANT end point, because stellar burning makes nickel-56 which decays to it — that is a statement about supernovae, not about binding. Both facts are true; they are answers to different questions.')
           ),
-          h('p', { className: 'text-[11px] mt-2 font-bold', style: { color: ink('#38bdf8') } },
-            '🤔 Nothing past the peak can release energy by fusing, and nothing before it by splitting. What does that mean for a star once its core is iron and nickel?')
+          ponder('binding', '#38bdf8',
+            'Nothing past the peak can release energy by fusing, and nothing before it by splitting. What does that mean for a star once its core is iron and nickel?',
+            'It means the star has run out of anything it can burn. A massive star holds itself up against its own gravity with the pressure of the energy pouring out of its core, and it gets that energy by fusing its way up this curve — hydrogen to helium, then carbon, oxygen, silicon, each stage faster than the last. Reach iron and nickel and the curve turns over: fusing them COSTS energy rather than releasing it. So the furnace does not gradually fade, it stops, and with nothing holding it up the core collapses in about a second. The rebound and the flood of neutrinos that follow blow the rest of the star apart — a core-collapse supernova. And that closes a loop with section 3: everything heavier than iron, including the uranium in that decay chain, could not have been built by ordinary fusion, because building it costs energy. It was made in explosions like that one and in colliding neutron stars. The reason there is uranium in the ground under your house is that the peak of this curve is where stars die.')
         ),
 
         // ── personal dose ──
@@ -3151,7 +3196,7 @@
         sec('biohalf', '#f472b6',
           heading(ink('#f472b6'), '🫀 9. Half-life inside a body is a different number'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
-            'Every half-life so far has been PHYSICAL — how fast the nuclei fall apart, which nothing can change. But a nuclide inside a person is also being excreted, and the two processes run at once. Decay and excretion are rates, so they add: 1/T' + 'ₑ' + ' = 1/T' + 'ₚ' + ' + 1/T' + 'ᵦ' + '. The shorter clock wins.'),
+            'Every half-life so far has been PHYSICAL — how fast the nuclei fall apart, which nothing can change. But a nuclide inside a person is also being excreted, and the two processes run at once. Decay and excretion are rates, so they add: 1/T' + 'ₑ' + ' = 1/T' + 'ₚ' + ' + 1/T' + 'ᵦ' + '. That makes the effective half-life shorter than EITHER of them — always. When the two are far apart the shorter one very nearly sets it on its own; when they are close, as they are for strontium and polonium below, neither number will do and only the formula gets you there.'),
           h('div', { className: 'flex flex-wrap gap-1 mb-2' },
             BIO_NUCLIDES.map(function (x) {
               return pill(bioId === x.id, x.colour, x.name, function () {
@@ -3839,8 +3884,9 @@
             h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               'They show that on deaths and on carbon, nuclear sits with wind and solar rather than with fossil fuels — and that is not a close call. They do not settle the argument, because the real objections to nuclear are mostly not about these two numbers. They are about capital cost, build times that have run to a decade or more in the West, waste policy that no country except Finland has finished, and weapons proliferation. Anyone who tells you the deaths-per-TWh chart ends the debate is skipping the parts that are actually hard.')
           ),
-          h('p', { className: 'text-[11px] mt-2 font-bold', style: { color: ink('#84cc16') } },
-            '🤔 Coal kills roughly 800 times more people per unit of energy than nuclear, yet nuclear provokes far more fear. What does that tell you about how people weigh a rare, dramatic, involuntary risk against a constant, invisible, familiar one?')
+          ponder('compare', '#84cc16',
+            'Coal kills roughly 800 times more people per unit of energy than nuclear, yet nuclear provokes far more fear. What does that tell you about how people weigh a rare, dramatic, involuntary risk against a constant, invisible, familiar one?',
+            'That expected deaths are not the thing people are measuring. Risk-perception research — Slovic\'s work in Science in 1987 is the standard reference — finds judgements track a handful of other factors far more strongly: whether the harm is dreaded and catastrophic rather than dispersed, whether it is taken on voluntarily, how familiar it is, how much control you have over it, and whether it falls fairly. Coal scores low on every one. Its deaths arrive one at a time, over decades, from something people have lived beside all their lives. Nuclear scores high on all of them: rare, concentrated, invisible, imposed, and historically tied to weapons. The honest conclusion is NOT that the fear is irrational. Dread, involuntariness and unfairness are real things to weigh, and a society is entitled to decide it would rather carry a larger dispersed harm than a smaller concentrated one. What the research does show is which factors are doing the work — so an argument conducted purely in deaths per terawatt-hour will not move anybody, and neither will one that ignores the numbers.')
         ),
 
         // ── reactor operation simulator ──
@@ -4027,7 +4073,7 @@
         h('footer', { className: 'mt-3 rounded-lg border p-3 text-center', style: { borderColor: isDark ? 'rgba(148,163,184,.25)' : 'rgba(100,116,139,.22)' } },
           h('p', { className: 'text-[10px] leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'Reviewed ' + NK_REVIEWED + '. Half-lives use NNDC NuDat 3; attenuation uses NIST XCOM at 1 MeV; dose and accident context uses UNSCEAR, ICRP 103 and NCRP 160. Where a figure is disputed, the tool gives the range rather than choosing.'),
-          sourceNote(['nudat', 'nist', 'unscear', 'nrc', 'iter', 'nif', 'nuscale']))
+          sourceNote(['nudat', 'nist', 'unscear', 'icrp103', 'inworks', 'nrc', 'iter', 'nif', 'nuscale']))
       );
     }
   });

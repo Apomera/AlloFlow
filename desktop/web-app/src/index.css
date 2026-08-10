@@ -76,4 +76,40 @@ code {
     textarea {
         min-height: 44px !important;
     }
+
+    /*
+     * AlloBot's four corner controls (sleep / settings / mute / mic).
+     *
+     * On desktop they are `opacity-0` and revealed by `group-hover`, then
+     * drawn at `scale-75`. Neither survives touch: there is no hover event to
+     * reveal them, and the transform shrinks the hit-tested box to ~24px
+     * regardless of any min-height/min-width, because browsers hit-test the
+     * *transformed* box. The `group-focus-within` fallback depends on the
+     * container taking focus from a tap, which is too fragile to rely on as
+     * the only way to reach mute and mic.
+     *
+     * So on touch: always visible, unscaled, and a full 44px target.
+     * Desktop is untouched — this whole block is inside `pointer: coarse`.
+     */
+    [data-help-key='bot_sleep_btn'],
+    [data-help-key='bot_settings_btn'],
+    [data-help-key='bot_mute_btn'],
+    [data-help-key='bot_mic_btn'] {
+        opacity: 1 !important;
+        transform: none !important;
+        min-height: 44px !important;
+        min-width: 44px !important;
+    }
+
+    /*
+     * Growing 24px buttons to 44px around a 64px avatar makes the corner pairs
+     * collide: at the original -8px offsets the two top buttons would overlap
+     * by 8px, so a tap in the middle would hit whichever won the stacking
+     * order. Pushing every offset to -12px puts their edges exactly flush
+     * (64 + 12 - 44 = 32 = -12 + 44) — full-size targets, zero overlap.
+     */
+    [data-help-key='bot_sleep_btn'] { top: -12px !important; right: -12px !important; }
+    [data-help-key='bot_settings_btn'] { top: -12px !important; left: -12px !important; }
+    [data-help-key='bot_mute_btn'] { bottom: -12px !important; right: -12px !important; }
+    [data-help-key='bot_mic_btn'] { bottom: -12px !important; left: -12px !important; }
 }

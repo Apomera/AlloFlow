@@ -3887,7 +3887,6 @@ window.StemLab = window.StemLab || {
                 upd('workspaceTab', wt.id);
                 plAnnounce(wt.label + ' workspace.');
               },
-              'aria-selected': sel,
               'data-pl-focusable': 'true',
               title: wt.title,
               style: playLabChoiceButtonStyle(sel, { compact: true, square: true, accent: '#7dd3fc', activeBorder: '#bae6fd', activeText: '#082f49' })
@@ -4644,8 +4643,7 @@ window.StemLab = window.StemLab || {
                 )
               ),
               h('canvas', {
-              role: 'img', 'aria-label': 'Interactive play field canvas',
-              ref: canvasRef,
+                            ref: canvasRef,
               // The 2:1 CSS aspect ratio reserves space before HiDPI setup.
               // The effect sets the internal 720x360 drawing buffer only.
               role: 'img', tabIndex: 0, 'data-pl-focusable': 'true',

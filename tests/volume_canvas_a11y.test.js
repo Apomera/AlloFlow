@@ -15,8 +15,22 @@ describe('Volume Lab WebGL canvas semantics', () => {
 
   it('names the 3D volume model and retains its stateful label', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
-    expect(source).toContain("role: 'img', 'aria-label': 'Interactive 3D volume model'");
-    expect(source).toContain("'aria-label': (function() {");
-    expect(source).toContain("'aria-describedby': 'volume-gl-description'");
+    // The static "Interactive 3D volume model" label this used to require was a
+    // SECOND aria-label in the same props object. Duplicate keys are legal
+    // JavaScript and the last wins, so it never reached the DOM — only the
+    // stateful label did. Assert what the element actually exposes, and that the
+    // duplicate does not come back.
+    const marker = source.indexOf("'data-volume-gl': 'true'");
+    expect(marker, 'GL canvas marker should exist').toBeGreaterThan(-1);
+    const opener = source.lastIndexOf("h('canvas'", marker);
+    expect(opener, 'marker should sit inside a canvas element').toBeGreaterThan(-1);
+    const labelAt = source.indexOf("'aria-label': (function() {", marker);
+    expect(labelAt, 'GL canvas should carry the stateful label').toBeGreaterThan(marker);
+
+    const props = source.slice(opener, labelAt);
+    expect(props, 'GL canvas should declare role="img"').toMatch(/role:\s*'img'/);
+    expect(props).toContain("'aria-describedby': 'volume-gl-description'");
+    expect((props.match(/'aria-label'\s*:/g) || []).length,
+      'GL canvas should declare aria-label exactly once').toBe(0);
   });
 });

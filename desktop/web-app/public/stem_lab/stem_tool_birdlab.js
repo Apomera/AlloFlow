@@ -22041,7 +22041,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
               className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, __alloT('stem.birdlab.menu_40', '← Menu'))),
           h('p', { className: 'text-sm text-slate-700 italic mb-3' }, COMPLETE_GLOSSARY.length + ' birding terms — the vocabulary you need.'),
-          h('input', { type: 'text', value: q, onInput: function(e) { setQ(e.target.value); },
+          h('input', { 'aria-label': __alloT('stem.birdlab.glossary_search_label', 'Search birding glossary'), type: 'text', value: q, onInput: function(e) { setQ(e.target.value); },
             placeholder: __alloT('stem.birdlab.search_terms_or_definitions', 'Search terms or definitions...'),
             className: 'w-full px-4 py-2 rounded-lg border-2 border-stone-300 mb-3 text-sm' }),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
