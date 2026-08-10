@@ -106,13 +106,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for cell 
 
 exports[`science-sim + studio render goldens > renders + pins a digest for chemBalance [ssr] 1`] = `
 {
-  "buttons": 12,
-  "canvases": 1,
+  "buttons": 16,
+  "canvases": 0,
   "inputs": 1,
-  "lengthBucket": 43,
+  "lengthBucket": 66,
   "paths": 0,
   "selects": 0,
-  "sha": "d25a16895be6b512",
+  "sha": "10cedbb154e8e630",
   "svgs": 0,
 }
 `;

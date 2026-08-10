@@ -134,7 +134,21 @@
     { name: 'Thermite Reaction', tier: 'advanced', eq: 'Al + Fe\u2082O\u2083 \u2192 Al\u2082O\u2083 + Fe', target: [2, 1, 1, 2], atoms: { Al: [1, 0, 2, 0], Fe: [0, 2, 0, 1], O: [0, 3, 3, 0] }, hint: 'Aluminum replaces iron' },
     { name: 'Ethanol Combustion', tier: 'advanced', eq: 'C\u2082H\u2085OH + O\u2082 \u2192 CO\u2082 + H\u2082O', target: [1, 3, 2, 3], atoms: { C: [2, 0, 1, 0], H: [6, 0, 0, 2], O: [1, 2, 2, 1] }, hint: 'Balance C, then H, then adjust O last' },
     { name: 'CaCO\u2083 Decomposition', tier: 'advanced', eq: 'CaCO\u2083 \u2192 CaO + CO\u2082', target: [1, 1, 1], atoms: { Ca: [1, 1, 0], C: [1, 0, 1], O: [3, 1, 2] }, hint: 'Decomposition: already balanced!' },
-    { name: 'Glucose Combustion', tier: 'advanced', eq: 'C\u2086H\u2081\u2082O\u2086 + O\u2082 \u2192 CO\u2082 + H\u2082O', target: [1, 6, 6, 6], atoms: { C: [6, 0, 1, 0], H: [12, 0, 0, 2], O: [6, 2, 2, 1] }, hint: 'Balance C (6), then H (12\u219206), then O last' }
+    { name: 'Glucose Combustion', tier: 'advanced', eq: 'C\u2086H\u2081\u2082O\u2086 + O\u2082 \u2192 CO\u2082 + H\u2082O', target: [1, 6, 6, 6], atoms: { C: [6, 0, 1, 0], H: [12, 0, 0, 2], O: [6, 2, 2, 1] }, hint: 'Balance C (6), then H (12\u219206), then O last' },
+    { name: 'Hydrogen Peroxide Breakdown', tier: 'beginner', eq: 'H\u2082O\u2082 \u2192 H\u2082O + O\u2082', target: [2, 2, 1], atoms: { H: [2, 2, 0], O: [2, 1, 2] }, hint: 'Count oxygen carefully \u2014 the lone O\u2082 collects what the water can\u2019t hold' },
+    { name: 'Potassium Bromide', tier: 'beginner', eq: 'K + Br\u2082 \u2192 KBr', target: [2, 1, 2], atoms: { K: [1, 0, 1], Br: [0, 2, 1] }, hint: 'Bromine travels in pairs, just like chlorine' },
+    { name: 'Lithium Oxide', tier: 'beginner', eq: 'Li + O\u2082 \u2192 Li\u2082O', target: [4, 1, 2], atoms: { Li: [1, 0, 2], O: [0, 2, 1] }, hint: 'Each Li\u2082O needs 2 lithium, and one O\u2082 makes 2 of them' },
+    { name: 'Sulfur Dioxide', tier: 'beginner', eq: 'S + O\u2082 \u2192 SO\u2082', target: [1, 1, 1], atoms: { S: [1, 0, 1], O: [0, 2, 2] }, hint: 'Count both sides first \u2014 some equations start out balanced' },
+    { name: 'Aluminum Chloride', tier: 'beginner', eq: 'Al + Cl\u2082 \u2192 AlCl\u2083', target: [2, 3, 2], atoms: { Al: [1, 0, 1], Cl: [0, 2, 3] }, hint: 'Chlorine comes in 2s but AlCl\u2083 wants 3s \u2014 six chlorines satisfies both' },
+    { name: 'Zinc + Acid', tier: 'intermediate', eq: 'Zn + HCl \u2192 ZnCl\u2082 + H\u2082', target: [1, 2, 1, 1], atoms: { Zn: [1, 0, 1, 0], H: [0, 1, 0, 2], Cl: [0, 1, 2, 0] }, hint: 'ZnCl\u2082 needs 2 chlorines, and each HCl brings just one' },
+    { name: 'Propane Combustion', tier: 'intermediate', eq: 'C\u2083H\u2088 + O\u2082 \u2192 CO\u2082 + H\u2082O', target: [1, 5, 3, 4], atoms: { C: [3, 0, 1, 0], H: [8, 0, 0, 2], O: [0, 2, 2, 1] }, hint: 'Balance C first (3), then H (4 waters), and count O last' },
+    { name: 'Sodium + Water', tier: 'intermediate', eq: 'Na + H\u2082O \u2192 NaOH + H\u2082', target: [2, 2, 2, 1], atoms: { Na: [1, 0, 1, 0], H: [0, 2, 1, 2], O: [0, 1, 1, 0] }, hint: 'Hydrogen hides in three different compounds \u2014 tally every one' },
+    { name: 'Potassium Chlorate', tier: 'intermediate', eq: 'KClO\u2083 \u2192 KCl + O\u2082', target: [2, 2, 3], atoms: { K: [1, 1, 0], Cl: [1, 1, 0], O: [3, 0, 2] }, hint: 'K and Cl match 1:1 \u2014 oxygen needs a number 3 and 2 both divide' },
+    { name: 'Copper Recovery', tier: 'intermediate', eq: 'Al + CuCl\u2082 \u2192 AlCl\u2083 + Cu', target: [2, 3, 2, 3], atoms: { Al: [1, 0, 1, 0], Cu: [0, 1, 0, 1], Cl: [0, 2, 3, 0] }, hint: 'AlCl\u2083 wants 3 Cl but CuCl\u2082 brings 2 \u2014 meet at 6' },
+    { name: 'Ammonia Oxidation (Ostwald)', tier: 'advanced', eq: 'NH\u2083 + O\u2082 \u2192 NO + H\u2082O', target: [4, 5, 4, 6], atoms: { N: [1, 0, 1, 0], H: [3, 0, 0, 2], O: [0, 2, 1, 1] }, hint: 'Settle N and H first, then tally oxygen across BOTH products' },
+    { name: 'Ethane Combustion', tier: 'advanced', eq: 'C\u2082H\u2086 + O\u2082 \u2192 CO\u2082 + H\u2082O', target: [2, 7, 4, 6], atoms: { C: [2, 0, 1, 0], H: [6, 0, 0, 2], O: [0, 2, 2, 1] }, hint: 'One C\u2082H\u2086 needs 3\u00bd O\u2082 \u2014 double everything to clear the half' },
+    { name: 'Lead Iodide Precipitate', tier: 'advanced', eq: 'Pb(NO\u2083)\u2082 + KI \u2192 PbI\u2082 + KNO\u2083', target: [1, 2, 1, 2], atoms: { Pb: [1, 0, 1, 0], N: [2, 0, 0, 1], O: [6, 0, 0, 3], K: [0, 1, 0, 1], I: [0, 1, 2, 0] }, hint: 'Treat NO\u2083 as one unbreakable unit and balance it like a single atom' },
+    { name: 'Phosphorus Combustion', tier: 'advanced', eq: 'P\u2084 + O\u2082 \u2192 P\u2084O\u2081\u2080', target: [1, 5, 1], atoms: { P: [4, 0, 4], O: [0, 2, 10] }, hint: 'P\u2084 already matches \u2014 just deliver 10 oxygens in pairs' }
   ];
 
   // ── Reaction types ──
@@ -533,7 +547,8 @@
       recordSolvedPreset: recordSolvedPreset,
       recordSafetyScenario: recordSafetyScenario,
       recordCorrectChallenge: recordCorrectChallenge,
-      ELEMENTS: ELEMENTS
+      ELEMENTS: ELEMENTS,
+      BALANCE_PRESETS: ALL_PRESETS
     };
   } catch (_e) {}
 
@@ -3385,7 +3400,7 @@
         Object.keys(rightAtoms).forEach(function(k) { rightTotal += rightAtoms[k]; });
         var tilt = leftTotal === rightTotal ? 0 : leftTotal > rightTotal ? -1 : 1;
 
-        var atomColors = { H:'#60a5fa',O:'#ef4444',C:'#1e293b',N:'#3b82f6',Na:'#a855f7',Cl:'#22c55e',Mg:'#fbbf24',Fe:'#fb923c',Ca:'#f59e0b',Al:'#94a3b8',S:'#eab308',K:'#f87171' };
+        var atomColors = { H:'#60a5fa',O:'#ef4444',C:'#1e293b',N:'#3b82f6',Na:'#a855f7',Cl:'#22c55e',Mg:'#fbbf24',Fe:'#fb923c',Ca:'#f59e0b',Al:'#94a3b8',S:'#eab308',K:'#f87171',Li:'#f472b6',Br:'#b45309',Zn:'#6366f1',Cu:'#ea580c',P:'#f97316',Pb:'#64748b',I:'#7c3aed' };
         var tierLabels = { beginner:'\uD83C\uDF31 Beginner', intermediate:'\u26A1 Intermediate', advanced:'\uD83D\uDE80 Advanced' };
 
         var checkBalance = function() {
@@ -3393,7 +3408,9 @@
           var atLowest = coeffs.every(function(c, i) { return c === preset.target[i]; });
           if (!isCorrect) {
             chemSound('wrong');
-            updMulti({ streak: 0, feedback: { correct: false, msg: '\u274C Not balanced yet. Check atom counts on each side.' } });
+            var missedNext = Object.assign({}, d.missedByName || {});
+            missedNext[preset.name] = (missedNext[preset.name] || 0) + 1;
+            updMulti({ streak: 0, missedByName: missedNext, feedback: { correct: false, msg: '\u274C Not balanced yet. Check atom counts on each side.' } });
             return;
           }
 
@@ -3426,6 +3443,31 @@
           var len = (found && found.target) ? found.target.length : 4;
           var arr = []; for (var ai2 = 0; ai2 < len; ai2++) arr.push(1);
           updMulti({ equation: name, coefficients: arr, feedback: null });
+        };
+
+        // Smart practice picker: unsolved equations first, and among those the
+        // ones this student has missed most often come back first (same
+        // retry-weighting idea as the Word Sounds practice loop). Deterministic:
+        // ties resolve in bank order, no randomness (render goldens stay stable).
+        var missedByName = d.missedByName || {};
+        var pickPracticeNext = function() {
+          var solvedNames = ext.solvedPresetIds || [];
+          var pool = filtered.filter(function(p) { return p.name !== preset.name; });
+          if (!pool.length) pool = filtered;
+          var unsolved = pool.filter(function(p) { return solvedNames.indexOf(p.name) === -1; });
+          var candidates = unsolved.length ? unsolved : pool;
+          var best = candidates[0];
+          for (var ci = 1; ci < candidates.length; ci++) {
+            if ((missedByName[candidates[ci].name] || 0) > (missedByName[best.name] || 0)) best = candidates[ci];
+          }
+          if (!best) return;
+          var misses = missedByName[best.name] || 0;
+          switchPreset(best.name);
+          var msg = misses > 0
+            ? 'Retrying ' + best.name + ' — missed ' + misses + ' time' + (misses === 1 ? '' : 's') + ' before.'
+            : (unsolved.length ? 'Next unsolved equation: ' + best.name + '.' : 'All equations here are solved — reviewing ' + best.name + '.');
+          if (typeof announceToSR === 'function') announceToSR(msg);
+          if (addToast) addToast(msg);
         };
 
         // ═══ STOICH STATE ═══
@@ -4365,6 +4407,17 @@
                     (presetSelected ? 'bg-lime-700 text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-lime-50 border border-slate-400')
                 }, p.name);
               })
+            ),
+            // Practice-next: retry-weighted smart picker
+            h('div', { className: 'flex flex-wrap items-center gap-2 mb-3' },
+              h('button', {
+                type: 'button',
+                onClick: pickPracticeNext,
+                'aria-label': __alloT('stem.chembalance.practice_next_aria', 'Practice next: pick my next equation, retrying ones I missed first'),
+                className: 'min-h-[40px] px-4 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-1'
+              }, '🎯 ' + __alloT('stem.chembalance.practice_next', 'Practice next')),
+              h('span', { className: 'text-xs text-slate-600' },
+                __alloT('stem.chembalance.practice_next_hint', 'Picks an unsolved equation — ones you missed come back first.'))
             ),
             // Balance Scale SVG
             h('svg', { viewBox: '0 0 400 100', role: 'img', 'aria-label': __alloT('stem.chembalance.balance_scale_accessible_summary', 'Balance scale comparing reactant and product atom counts') + '. ' + (isBalanced ? 'Balanced.' : 'Not balanced.') + ' Reactant atoms: ' + Object.keys(leftAtoms).map(function(atom) { return atom + ' ' + leftAtoms[atom]; }).join(', ') + '. Product atoms: ' + Object.keys(rightAtoms).map(function(atom) { return atom + ' ' + rightAtoms[atom]; }).join(', ') + '.', className: 'w-full mb-3', style: { maxHeight: '100px' } },
