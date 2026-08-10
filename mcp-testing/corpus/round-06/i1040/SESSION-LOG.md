@@ -2561,3 +2561,16 @@ without re-deriving it.
 - `verify-init` derived the **1,664-item** worksheet (committed in the run
   dir). Item 2 of "what remains" — `verify-check` by a fresh-context reader —
   is still open and still must not be filled by the tranche author.
+
+## PDF/UA-1 PASS (2026-08-09, same day, engine 0.2.3) - 7.2-43 FIXED
+
+`runs/2026-08-09_i1040-126pp-ua1-pass_portable/` — the empty-cell filler
+changed from ZERO-WIDTH space to NO-BREAK space (@008c75de7): Chromium culls
+a zero-advance-only cell under fragmentation, and an nbsp always emits a text
+run, so the /TD survives. **veraPDF: failedRules [], identifier claimed and
+earned, exit 0 under `--verapdf required`.** Both recall figures are
+byte-identical pre/post fix — the filler is whitespace-only. A fresh 319-page
+struct-tree walk confirms zero malformed tables. `--verapdf required` also
+now keeps artifacts+report on gate failure instead of deleting the staging
+dir. The worksheet was REGENERATED against the passing run's HTML (sha256
+bindings); the fresh-context `verify-check` remains the open item.
