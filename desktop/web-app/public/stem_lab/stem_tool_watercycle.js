@@ -700,6 +700,23 @@
     mixed: { label: 'A mixed or small shift', shortLabel: 'Mixed / small', emoji: '\u2194\uFE0F' }
   };
 
+  // Present quiz options in a random order. The authored banks are heavily
+  // position-biased (59% of correct answers sat at index 1 and index 3 was
+  // NEVER correct), so an unshuffled draw let "always pick the second option"
+  // score most of the quiz without reading it. Safe to reorder: the correct
+  // answer is identified by the STRING `a`, never by index, and wrongFeedback
+  // is keyed by option text. Called once per draw and the result is stored in
+  // state, so re-renders never reshuffle the answers under the student.
+  function wcShuffleOpts(opts, rnd) {
+    var out = (opts || []).slice();
+    var r = typeof rnd === 'function' ? rnd : Math.random;
+    for (var i = out.length - 1; i > 0; i--) {
+      var j = Math.floor(r() * (i + 1));
+      var tmp = out[i]; out[i] = out[j]; out[j] = tmp;
+    }
+    return out;
+  }
+
   var WATER_CYCLE_QUIZZES = {
     'K-2': [
       {
@@ -1565,6 +1582,8 @@
   };
 
   if(!window.StemLab||!window.StemLab.registerTool) return;
+  try { window.__waterCyclePure = { WATER_CYCLE_QUIZZES: WATER_CYCLE_QUIZZES, wcShuffleOpts: wcShuffleOpts }; } catch (_e) {}
+
   window.StemLab.registerTool('waterCycle',{
     icon:'\uD83C\uDF0A', label:'Water Cycle', desc:'Live water cycle canvas plus Journey Mode: ride one droplet through evaporation, condensation, precipitation, collection, transpiration, and infiltration with real choices along the way.',
     color:'sky', category:'science',
@@ -4436,7 +4455,7 @@ const d = labToolData.waterCycle || {};
                          '3-5': 'If all the water vapor in the atmosphere rained at once, it would cover Earth with only 2.5 cm of water!',
                          '6-8': 'The atmosphere holds about 12,900 km\u00B3 of water vapor at any time  -  but that is only 0.001% of all water on Earth.',
                          '9-12': 'Global mean evaporation is ~1,200 mm/yr over oceans. The Bowen ratio (sensible/latent heat) determines partitioning of surface energy into evaporation vs heating.' } },
-            { id: 'condensation', label: t('stem.water_cycle.condensation'), emoji: '\u2601', color: 'var(--allo-stem-text-soft, #94a3b8)',
+            { id: 'condensation', label: t('stem.water_cycle.condensation'), emoji: '\u2601', color: '#64748b',
               desc: { 'K-2': 'When the warm, wet air goes high up where it is cold, the water vapor turns back into tiny water drops. These tiny drops stick together and make clouds!',
                       '3-5': 'Water vapor cools as it rises, forming tiny droplets around particles of dust, pollen, or pollution, creating clouds. Each cloud droplet is about 10 micrometers wide.',
                       '6-8': 'As air rises, it cools at ~6.5\u00B0C/km (environmental lapse rate). When temperature reaches the dew point, vapor condenses onto cloud condensation nuclei (CCN)  -  aerosol particles 0.1-1 \u00B5m wide. Cloud droplets are typically 5-15 \u00B5m.',
@@ -5845,7 +5864,7 @@ const d = labToolData.waterCycle || {};
 
                 { id: 'evaporation', text: t('stem.watercycle.evaporation', '\u2191 Evaporation'), x: 8, y: cH * 0.54, color: '#fbbf24' },
 
-                { id: 'condensation', text: t('stem.watercycle.condensation', '\u2601 Condensation'), x: cW * 0.28, y: cH * 0.06, color: 'var(--allo-stem-text-soft, #94a3b8)' },
+                { id: 'condensation', text: t('stem.watercycle.condensation', '\u2601 Condensation'), x: cW * 0.28, y: cH * 0.06, color: '#64748b' },
 
                 { id: 'precipitation', text: t('stem.watercycle.precipitation', '\u2193 Precipitation'), x: cW * 0.08, y: cH * 0.28, color: '#60a5fa' },
 
@@ -12802,7 +12821,7 @@ React.createElement("div", {
                   upd('wcQuiz', {
                     q: q.q,
                     a: q.a,
-                    opts: q.opts,
+                    opts: wcShuffleOpts(q.opts),
                     answered: false,
                     score: (d.wcQuiz && d.wcQuiz.score) || 0,
                     concept: q.concept,
@@ -12837,7 +12856,9 @@ React.createElement("div", {
                       var clean = (typeof resp === 'string' ? resp : '').replace(/```json?\n?/g, '').replace(/```/g, '').trim();
                       var parsed = JSON.parse(clean);
                       if (parsed.question && parsed.correct && parsed.distractors && parsed.distractors.length >= 3) {
-                        var allOpts = [parsed.correct].concat(parsed.distractors.slice(0, 3)).sort(function() { return Math.random() - 0.5; });
+                        // Fisher-Yates, not sort(() => Math.random() - 0.5): an
+                        // inconsistent comparator gives a non-uniform order.
+                        var allOpts = wcShuffleOpts([parsed.correct].concat(parsed.distractors.slice(0, 3)));
                         upd('wcQuiz', {
                           q: parsed.question,
                           a: parsed.correct,
@@ -12856,14 +12877,14 @@ React.createElement("div", {
                       // Fallback to static
                       var fb = [{ q: 'What percentage of Earth is covered by water?', a: '71%', opts: ['50%', '60%', '71%', '85%'], concept: 'collection', wrongFeedback: { '50%': 'Too low. Earth is 71% water.', '60%': 'Too low. Earth is 71% water.', '85%': 'Too high. Earth is 71% water.' } }];
                       var q2 = fb[0];
-                      upd('wcQuiz', { q: q2.q, a: q2.a, opts: q2.opts, answered: false, score: (d.wcQuiz && d.wcQuiz.score) || 0, concept: q2.concept, wrongFeedback: q2.wrongFeedback });
+                      upd('wcQuiz', { q: q2.q, a: q2.a, opts: wcShuffleOpts(q2.opts), answered: false, score: (d.wcQuiz && d.wcQuiz.score) || 0, concept: q2.concept, wrongFeedback: q2.wrongFeedback });
                     }
                   }).catch(function() {
                     addToast('\u26A0\uFE0F AI unavailable, using static question', 'error');
                     upd('aiQuizLoading', false);
                     var fb = [{ q: 'How much of Earth\'s water is freshwater?', a: '3%', opts: ['3%', '10%', '25%', '50%'], concept: 'collection', wrongFeedback: { '10%': 'Too high. Only 3% is fresh.', '25%': 'Too high. Only 3% is fresh.', '50%': 'Too high. Only 3% is fresh.' } }];
                     var q2 = fb[0];
-                    upd('wcQuiz', { q: q2.q, a: q2.a, opts: q2.opts, answered: false, score: (d.wcQuiz && d.wcQuiz.score) || 0, concept: q2.concept, wrongFeedback: q2.wrongFeedback });
+                    upd('wcQuiz', { q: q2.q, a: q2.a, opts: wcShuffleOpts(q2.opts), answered: false, score: (d.wcQuiz && d.wcQuiz.score) || 0, concept: q2.concept, wrongFeedback: q2.wrongFeedback });
                   });
                 },
                 disabled: d.aiQuizLoading,
