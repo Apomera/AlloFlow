@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 
-VERSION = "0.2.3"
+VERSION = "0.2.4"
 MAX_SOURCE_BYTES = 200 * 1024 * 1024
 MAX_PLAN_BYTES = 8 * 1024 * 1024
 MAX_HTML_BYTES = 8 * 1024 * 1024
@@ -1432,6 +1432,21 @@ def remediate(args: argparse.Namespace) -> Dict[str, Any]:
                     f"{source_recall}: a measurable share of the source PDF's own text layer "
                     "is absent from the plan. Re-read the source before trusting this rebuild."
                 )
+        elif source_recall_detail.get("status") == "not_measurable":
+            # A pure scan can sail through every OTHER check: the plan renders,
+            # veraPDF passes, outputTextRecall is 1.0 - all true, and none of it
+            # says whether the plan covers the pages. Corpus round 11 probed
+            # this with the 1954 Form 1040 scan and a one-heading plan: every
+            # automated signal read as success. The report must say in its OWN
+            # voice - not only via the recall detail, and independent of any
+            # disclosure the plan author chose to write - that content fidelity
+            # is unverifiable here.
+            manual_review.append(
+                "The source has no usable extractable text layer, so NO automated check in "
+                "this report could compare the rebuild's content against the source. "
+                "outputTextRecall only proves the PDF carries the plan. Fidelity rests "
+                "entirely on the plan author's reading plus independent verification."
+            )
 
         if pdf_result.get("status") != "completed":
             verdict = "html_only_review_required"
@@ -1738,29 +1753,77 @@ def _write_png(path: Path, width: int, height: int, color_type: int, raw: bytes,
 
 def _resolve_color_space(
     dictionary: bytes, index: Dict[int, Tuple[bytes, Optional[bytes]]]
-) -> Tuple[Optional[int], str]:
-    """Resolve /ColorSpace to (png_color_type, label, palette), following refs.
+) -> Tuple[Optional[int], str, Optional[bytes], Optional[str]]:
+    """Resolve /ColorSpace to (png_color_type, label, palette, transform).
 
     Direct names, indirect refs, and [/ICCBased N 0 R] arrays are handled - an
     ICC profile's /N gives the component count, and decoding its samples as
     Device colour is the standard close-enough treatment (the profile is almost
-    always sRGB-like). Indexed/Separation/Lab return (None, label) so the
-    caller can skip with an honest reason instead of mis-decoding.
+    always sRGB-like). Indexed bases behind indirect refs are resolved and the
+    palette normalised to RGB. `transform` asks the caller for a post-predictor
+    sample rewrite: "cmyk" (4-component naive conversion to RGB) or "invert"
+    (single-ink DeviceN tint to gray). Spaces still outside deterministic
+    scope (Lab, multi-ink DeviceN, Separation) return (None, label, ...) so
+    the caller can skip with an honest reason instead of mis-decoding.
     """
     match = re.search(rb"/ColorSpace\s*(/\w+|\d+\s+0\s+R|\[[^\]]*\])", dictionary)
     if not match:
-        return None, "no /ColorSpace", None
+        return None, "no /ColorSpace", None, None
     blob = match.group(1)
     ref = re.match(rb"(\d+)\s+0\s+R", blob)
     if ref:
         entry = index.get(int(ref.group(1)))
         if entry is None:
-            return None, f"unresolvable colour space ref {int(ref.group(1))}", None
+            return None, f"unresolvable colour space ref {int(ref.group(1))}", None, None
         blob = entry[0]
+
+    def base_components(base_blob: bytes) -> Tuple[Optional[int], str]:
+        """Component count of a base colour space (for Indexed palettes)."""
+        base_ref = re.match(rb"(\d+)\s+0\s+R", base_blob.strip())
+        if base_ref:
+            base_entry = index.get(int(base_ref.group(1)))
+            if base_entry is None:
+                return None, f"unresolvable base ref {int(base_ref.group(1))}"
+            base_blob = base_entry[0]
+        if b"/DeviceRGB" in base_blob:
+            return 3, "DeviceRGB"
+        if b"/DeviceGray" in base_blob:
+            return 1, "DeviceGray"
+        if b"/DeviceCMYK" in base_blob:
+            return 4, "DeviceCMYK"
+        base_icc = re.search(rb"/ICCBased\s+(\d+)\s+0\s+R", base_blob)
+        if base_icc:
+            icc_entry2 = index.get(int(base_icc.group(1)))
+            if icc_entry2 is not None:
+                n2 = re.search(rb"/N\s+(\d+)", icc_entry2[0])
+                if n2:
+                    return int(n2.group(1)), f"ICCBased N={int(n2.group(1))}"
+            return None, "ICCBased base unresolvable"
+        return None, "unsupported base " + base_blob[:30].decode("latin1", "replace")
+
     if re.search(rb"/DeviceRGB\b", blob) and b"/Indexed" not in blob:
-        return 2, "DeviceRGB", None
-    if re.search(rb"/DeviceGray\b", blob) and b"/Indexed" not in blob:
-        return 0, "DeviceGray", None
+        return 2, "DeviceRGB", None, None
+    if re.search(rb"/DeviceGray\b", blob) and b"/Indexed" not in blob and b"/DeviceN" not in blob:
+        return 0, "DeviceGray", None, None
+    if re.search(rb"/DeviceCMYK\b", blob) and b"/Indexed" not in blob and b"/DeviceN" not in blob:
+        # PNG has no CMYK: the caller converts the 4-component scanlines with
+        # the naive formula (no ICC intent). Corpus round 11: NASA Artemis
+        # obj 44 - the only CMYK raster in the corpus - is a chart whose
+        # colours survive the approximation fine; exact colorimetry was never
+        # this pathway's claim.
+        return 2, "DeviceCMYK (converted to RGB, naive)", None, "cmyk"
+    # A single-colorant /DeviceN (one ink over an alternate space) is a tint
+    # ramp: sample 0 = no ink = white, 255 = full ink. Decoding as INVERTED
+    # gray applies the identity tint transform instead of executing the
+    # embedded Type-4 function - the standard close-enough treatment for one
+    # ink (Artemis objs 327/367, [/DeviceN[/Black]/DeviceCMYK ...] figures).
+    device_n = re.search(rb"/DeviceN\s*\[\s*(/\w+)\s*\]", blob)
+    if device_n:
+        return 0, (
+            "DeviceN single ink "
+            + device_n.group(1).decode("latin1", "replace")
+            + " (decoded as inverted gray, naive tint)"
+        ), None, "invert"
     indexed = re.search(
         rb"/Indexed\s*(/\w+|\[[^\]]*\]|\d+\s+0\s+R)\s+(\d+)\s+(\d+\s+0\s+R|\([^)]*\)|<[0-9A-Fa-f\s]*>)",
         blob,
@@ -1779,22 +1842,42 @@ def _resolve_color_space(
             palette = bytes.fromhex(digits.decode("ascii"))
         elif lookup_blob.startswith(b"("):
             palette = lookup_blob[1:-1]
-        base_rgb = b"/DeviceRGB" in indexed.group(1) or b"/ICCBased" in indexed.group(1)
-        if palette is not None and base_rgb and len(palette) >= 3 * (hival + 1):
-            return 3, f"Indexed RGB ({hival + 1} colours)", palette[: 3 * (hival + 1)]
-        return None, f"Indexed with unresolvable base/lookup (hival={hival})", None
+        # The base may be inline OR an indirect ref ([/Indexed 590 0 R 255
+        # 305 0 R] - Artemis objs 309/376/409); resolve it and normalise the
+        # palette to RGB triplets whatever the base's component count.
+        comps, base_label = base_components(indexed.group(1))
+        if palette is not None and comps and len(palette) >= comps * (hival + 1):
+            entries = hival + 1
+            if comps == 3:
+                rgb = palette[: 3 * entries]
+            elif comps == 1:
+                rgb = bytes(b for value in palette[:entries] for b in (value, value, value))
+            else:  # CMYK base: naive conversion per palette entry
+                rgb_list = bytearray()
+                for e in range(entries):
+                    c, m, y, k = palette[4 * e : 4 * e + 4]
+                    rgb_list.append((255 - c) * (255 - k) // 255)
+                    rgb_list.append((255 - m) * (255 - k) // 255)
+                    rgb_list.append((255 - y) * (255 - k) // 255)
+                rgb = bytes(rgb_list)
+            return 3, f"Indexed RGB ({entries} colours, base {base_label})", rgb, None
+        return None, (
+            f"Indexed with unresolvable base/lookup (hival={hival}, base {base_label})"
+        ), None, None
     icc = re.search(rb"/ICCBased\s+(\d+)\s+0\s+R", blob)
     if icc:
         icc_entry = index.get(int(icc.group(1)))
         if icc_entry is not None:
             n = re.search(rb"/N\s+(\d+)", icc_entry[0])
             if n and n.group(1) == b"3":
-                return 2, "ICCBased N=3 (decoded as RGB)", None
+                return 2, "ICCBased N=3 (decoded as RGB)", None, None
             if n and n.group(1) == b"1":
-                return 0, "ICCBased N=1 (decoded as Gray)", None
-            return None, f"ICCBased N={(n.group(1).decode() if n else '?')}", None
-        return None, "ICCBased profile unresolvable", None
-    return None, "unsupported colour space " + blob[:40].decode("latin1", "replace"), None
+                return 0, "ICCBased N=1 (decoded as Gray)", None, None
+            if n and n.group(1) == b"4":
+                return 2, "ICCBased N=4 (converted to RGB, naive CMYK)", None, "cmyk"
+            return None, f"ICCBased N={(n.group(1).decode() if n else '?')}", None, None
+        return None, "ICCBased profile unresolvable", None, None
+    return None, "unsupported colour space " + blob[:40].decode("latin1", "replace"), None, None
 
 
 def extract_images_command(args: argparse.Namespace) -> Dict[str, Any]:
@@ -1857,16 +1940,17 @@ def extract_images_command(args: argparse.Namespace) -> Dict[str, Any]:
                 bits = int(bits_match.group(1)) if bits_match else 8
                 if bits != 8:
                     raise PortableError(f"Unsupported bit depth {bits}.")
-                color_type, cs_label, palette = _resolve_color_space(dictionary, object_index)
+                color_type, cs_label, palette, transform = _resolve_color_space(dictionary, object_index)
                 if color_type is None:
                     raise PortableError(f"Unsupported colour space for deterministic decode: {cs_label}.")
                 entry["colorSpace"] = cs_label
                 parms = _decode_parms(dictionary)
                 pixels = _zlib.decompress(raw)
+                source_colors = 4 if transform == "cmyk" else (3 if color_type == 2 else 1)
                 if parms["predictor"] >= 10:
                     pixels = _undo_png_predictor(
                         pixels,
-                        parms["colors"] or (3 if color_type == 2 else 1),
+                        parms["colors"] or source_colors,
                         parms["bits"],
                         parms["columns"] or width,
                     )
@@ -1874,6 +1958,22 @@ def extract_images_command(args: argparse.Namespace) -> Dict[str, Any]:
                     raise PortableError(
                         f"Unsupported predictor {parms['predictor']} (TIFF prediction)."
                     )
+                if transform == "cmyk":
+                    expected = width * height * 4
+                    if len(pixels) < expected:
+                        raise PortableError(
+                            f"CMYK sample data short: {len(pixels)} of {expected} bytes."
+                        )
+                    rgb_pixels = bytearray(width * height * 3)
+                    for px in range(width * height):
+                        c, m, y, k = pixels[4 * px : 4 * px + 4]
+                        white = 255 - k
+                        rgb_pixels[3 * px] = (255 - c) * white // 255
+                        rgb_pixels[3 * px + 1] = (255 - m) * white // 255
+                        rgb_pixels[3 * px + 2] = (255 - y) * white // 255
+                    pixels = bytes(rgb_pixels)
+                elif transform == "invert":
+                    pixels = pixels.translate(bytes(255 - v for v in range(256)))
                 target = out_dir / f"{name}.png"
                 _write_png(target, width, height, color_type, pixels, palette)
                 entry.update({"file": target.name, "format": "png"})

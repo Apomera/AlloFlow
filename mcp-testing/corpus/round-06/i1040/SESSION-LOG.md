@@ -2613,3 +2613,21 @@ PRE-fix artifact. The changes are 16 metadata integers and 3 styling runs,
 each the exact repair the discrepancy note prescribes; re-attesting those 19
 items (not the other 1,645) is the honest residual if anyone wants the loop
 fully closed.
+
+## Re-attestation (2026-08-10) - the residual CLOSED: `result: "verified"`
+
+A SECOND fresh-context reader re-attested exactly the 19 corrected items
+against the corrected artifact. The new worksheet was derived from the
+corrected plan/HTML (1,663 items - the two de-italicised blocks dropped one
+inline_style item net); the 1,644 items whose content is byte-identical
+carried the first reader's attestations, disclosed in the verifier statement.
+The reader rebuilt the Tax Topics columns from page-118/119 geometry (all
+eight categories print on 118; topics 751-752 on 118 and 753-763 on 119, so
+table-077's start-page-118 attribution follows the convention) and confirmed
+the three emphasis fixes against resolved font programs
+(TimesNewRomanPS-ItalicMT vs -PSMT). **All 19 verified. verify-check:
+1,663/1,663, 0 discrepancies, `result: "verified"`** -
+`verification-report-v2.json` in the ua1-pass run dir.
+
+THE PROTOCOL IS COMPLETE: authored (126/126), conformant (UA-1 identifier
+earned), independently verified, discrepancies fixed, re-verified clean.
