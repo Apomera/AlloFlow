@@ -28,8 +28,10 @@ for (const f of files) {
   const counts = {};   // arity -> array of counts
   let total = 0;
 
-  // Schema A: options array followed by `correct: n`  (options|opts|a)
-  const reA = /(?:options|opts|a):\s*\[([^\]]{4,600})\]\s*,\s*correct:\s*(\d+)/g;
+  // Schema A: options array followed by `correct: n`  (options|opts|a|choices)
+  // `choices` was missed in the first pass and hid 68 questions in autorepair
+  // alone — keep this alternation in sync with any new authoring style.
+  const reA = /(?:options|opts|choices|a):\s*\[([^\]]{4,600})\]\s*,\s*correct:\s*(\d+)/g;
   let m;
   while ((m = reA.exec(src))) {
     const opts = splitOptions(m[1]);
@@ -39,7 +41,7 @@ for (const f of files) {
     counts[opts.length][idx]++; total++;
   }
   // Schema A': `correct: n` preceding the array
-  const reA2 = /correct:\s*(\d+)\s*,\s*(?:options|opts|a):\s*\[([^\]]{4,600})\]/g;
+  const reA2 = /correct:\s*(\d+)\s*,\s*(?:options|opts|choices|a):\s*\[([^\]]{4,600})\]/g;
   while ((m = reA2.exec(src))) {
     const opts = splitOptions(m[2]);
     const idx = parseInt(m[1], 10);
