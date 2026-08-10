@@ -57,6 +57,25 @@ describe('chemBalance — preset bank invariants', () => {
     }
   });
 
+  it('rtype classifications are valid and the drill covers all five textbook types', () => {
+    const VALID = ['synthesis', 'decomposition', 'single', 'double', 'combustion'];
+    const seen = new Set();
+    for (const p of presets) {
+      if (p.rtype === undefined) continue; // photosynthesis + Ostwald: honestly unlabeled
+      expect(VALID, p.name).toContain(p.rtype);
+      seen.add(p.rtype);
+    }
+    for (const t of VALID) expect([...seen], 'missing coverage for ' + t).toContain(t);
+    // the tool defines combustion as hydrocarbon + O2 → CO2 + H2O; hold labeled presets to it
+    for (const p of presets) {
+      if (p.rtype !== 'combustion') continue;
+      const eq = toAsciiEquation(p.eq);
+      expect(eq, p.name).toMatch(/O2/);
+      expect(eq, p.name).toMatch(/CO2/);
+      expect(eq, p.name).toMatch(/H2O/);
+    }
+  });
+
   it('every target coefficient fits the 12-cap stepper and is a positive integer', () => {
     for (const p of presets) {
       for (const c of p.target) {
@@ -104,5 +123,26 @@ describe('chemBalance — practice-next control renders', () => {
     loadTool('stem_lab/stem_tool_chembalance.js', 'chemBalance');
     const html = renderTool('chemBalance', { chemBalance: { subtool: 'balance', _activeCategory: 'core', _everPicked: true } });
     expect(html).toContain('Practice next');
+  });
+
+  it('the equation card shows name, tier, and reaction-type chip for the default preset', () => {
+    resetStemLab();
+    loadTool('stem_lab/stem_tool_chembalance.js', 'chemBalance');
+    const html = renderTool('chemBalance', { chemBalance: { subtool: 'balance', _activeCategory: 'core', _everPicked: true } });
+    // default preset is Water Formation (beginner, synthesis)
+    expect(html).toContain('Water Formation');
+    expect(html).toContain('Beginner');
+    expect(html).toContain('Synthesis (Combination)');
+  });
+
+  it('equation chips surface missed counts (retry loop is visible, with SR text)', () => {
+    resetStemLab();
+    loadTool('stem_lab/stem_tool_chembalance.js', 'chemBalance');
+    const html = renderTool('chemBalance', { chemBalance: {
+      subtool: 'balance', _activeCategory: 'core', _everPicked: true,
+      missedByName: { 'Table Salt': 2 },
+    } });
+    expect(html).toContain('↻2');
+    expect(html).toContain('missed ×2');
   });
 });
