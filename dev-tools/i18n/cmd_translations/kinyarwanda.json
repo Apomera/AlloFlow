@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "Kora gahunda y’isomo",
   "cmd.run_lesson_blueprint_done": "Gahunda irakorwa — ushobora gukurikirana buri ntambwe ku ikarita.",
   "cmd.run_lesson_blueprint_hint": "Kora umutungo wose uri muri gahunda iriho",
-  "cmd.cancelled": "Gusubika byasabwe. Igikorwa kiriho kizarahagarara igihe utanga serivisi azagishyigikira."
+  "cmd.cancelled": "Gusubika byasabwe. Igikorwa kiriho kizarahagarara igihe utanga serivisi azagishyigikira.",
+  "cmd.open_share_collect": "Fungura Share & Collect",
+  "cmd.open_share_collect_hint": "Amatora, kwiyandikisha, ubushakashatsi n’ibisubizo byabyo",
+  "cmd.open_share_collect_done": "Share & Collect yafunguwe."
 }

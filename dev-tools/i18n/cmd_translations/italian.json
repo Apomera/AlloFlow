@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "Genera il piano della lezione",
   "cmd.run_lesson_blueprint_done": "Generazione del piano — puoi seguire ogni passaggio sulla scheda.",
   "cmd.run_lesson_blueprint_hint": "Genera tutte le risorse del piano attuale",
-  "cmd.cancelled": "Annullamento richiesto. L’operazione corrente si fermerà quando il provider lo consentirà."
+  "cmd.cancelled": "Annullamento richiesto. L’operazione corrente si fermerà quando il provider lo consentirà.",
+  "cmd.open_share_collect": "Apri Share & Collect",
+  "cmd.open_share_collect_hint": "Sondaggi, iscrizioni, questionari e i loro risultati",
+  "cmd.open_share_collect_done": "Share & Collect aperto."
 }

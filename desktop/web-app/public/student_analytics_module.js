@@ -2748,7 +2748,8 @@ try {
         });
       });
       if (!allResponses.length) { addToast && addToast(t('toasts.survey_responses_export'), 'info'); return; }
-      var headers = ['Timestamp', 'Type', 'Respondent', 'Timepoint', 'Study_Name'];
+      var headers = ['Timestamp', 'Type', 'Respondent', 'Timepoint', 'Study_Name', 'Consent_Provenance'];
+      var consentProvenance = (researchMode && researchMode.consentProvenance) || '';
       var questionIds = new Set();
       allResponses.forEach(function(r) {
         Object.keys(r).forEach(function(k) {
@@ -2763,7 +2764,8 @@ try {
           r.type || '',
           '"' + String(r.respondent || '').replace(/"/g, '""') + '"',
           r.timepoint || 'unspecified',
-          '"' + String(r.studyName || '').replace(/"/g, '""') + '"'
+          '"' + String(r.studyName || '').replace(/"/g, '""') + '"',
+          '"' + String(consentProvenance).replace(/"/g, '""') + '"'
         ];
         var answers = qids.map(function(q) { return r[q] !== undefined ? r[q] : ''; });
         return base.concat(answers).join(',');
@@ -3211,6 +3213,11 @@ try {
               studyName: (researchMode && researchMode.studyName) || 'No active study',
               itemKeys: wire.itemKeys,
             },
+            // A neutral, factual starting point — the teacher edits it in the
+            // dialog before anything is shared. Deliberately makes NO claims
+            // about outcomes and states only what is true of the form itself.
+            info: ((researchMode && researchMode.studyName) ? 'Part of "' + researchMode.studyName + '". ' : '')
+              + 'These questions help us understand how the program is working. Taking part is voluntary, and you can skip any question that is not marked required.',
             droppedImages: wire.droppedImages,
           },
         }));
@@ -3869,6 +3876,7 @@ try {
       studyName: '',
       surveyFrequency: '5',
       irb: '',
+      consentProvenance: '',
       notes: ''
     });
     const renderResearchSetupModal = () => {
@@ -3936,6 +3944,21 @@ try {
         placeholder: 'e.g. IRB-2026-0042'
       })), React.createElement('div', null, React.createElement('label', {
         className: 'text-xs font-bold text-slate-600 uppercase'
+      }, 'Consent records (kept outside AlloFlow)'), React.createElement('select', {
+        'aria-label': 'Where consent records are kept',
+        className: 'w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm bg-white',
+        value: researchSetupForm.consentProvenance,
+        onChange: e => setResearchSetupForm(p => ({
+          ...p,
+          consentProvenance: e.target.value
+        }))
+      }, React.createElement('option', { value: '' }, 'Not specified'),
+        React.createElement('option', { value: 'external_forms' }, 'Collected outside AlloFlow - signed forms on file'),
+        React.createElement('option', { value: 'not_required' }, 'Not required - internal program evaluation')),
+      React.createElement('p', {
+        className: 'text-[10px] text-slate-500 mt-1'
+      }, 'AlloFlow never collects consent itself. This records where yours lives, and rides along in every CSV export.')), React.createElement('div', null, React.createElement('label', {
+        className: 'text-xs font-bold text-slate-600 uppercase'
       }, 'Notes'), React.createElement('textarea', {
         'aria-label': 'Research notes',
         className: 'w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm resize-none',
@@ -3960,6 +3983,7 @@ try {
             studyName: researchSetupForm.studyName || 'Untitled Study',
             surveyFrequency: researchSetupForm.surveyFrequency,
             irb: researchSetupForm.irb,
+            consentProvenance: researchSetupForm.consentProvenance || '',
             notes: researchSetupForm.notes
           });
           setShowResearchSetup(false);

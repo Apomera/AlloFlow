@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "ສ້າງແຜນບົດຮຽນ",
   "cmd.run_lesson_blueprint_done": "ກຳລັງສ້າງແຜນ — ທ່ານສາມາດເບິ່ງແຕ່ລະຂັ້ນຕອນໃນບັດ.",
   "cmd.run_lesson_blueprint_hint": "ສ້າງຊັບພະຍາກອນທັງໝົດໃນແຜນປັດຈຸບັນ",
-  "cmd.cancelled": "ຮ້ອງຂໍຍົກເລີກແລ້ວ. ການດຳເນີນງານປັດຈຸບັນຈະຢຸດເມື່ອຜູ້ໃຫ້ບໍລິການຮອງຮັບການຍົກເລີກ."
+  "cmd.cancelled": "ຮ້ອງຂໍຍົກເລີກແລ້ວ. ການດຳເນີນງານປັດຈຸບັນຈະຢຸດເມື່ອຜູ້ໃຫ້ບໍລິການຮອງຮັບການຍົກເລີກ.",
+  "cmd.open_share_collect": "ເປີດ Share & Collect",
+  "cmd.open_share_collect_hint": "ການລົງຄະແນນ, ການລົງທະບຽນ, ແບບສອບຖາມ ແລະ ຜົນຂອງມັນ",
+  "cmd.open_share_collect_done": "ເປີດ Share & Collect ແລ້ວ."
 }

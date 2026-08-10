@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "የትምህርት ዕቅዱን ፍጠር",
   "cmd.run_lesson_blueprint_done": "ዕቅዱን በመፍጠር ላይ ነው — እያንዳንዱን ደረጃ በካርዱ ላይ ማየት ይችላሉ።",
   "cmd.run_lesson_blueprint_hint": "በአሁኑ ዕቅድ ውስጥ ያሉ ሁሉንም ምንጮች ይፈጥራል",
-  "cmd.cancelled": "ስረዛ ተጠይቋል። አቅራቢው ሲደግፈው የአሁኑ ሥራ ይቆማል።"
+  "cmd.cancelled": "ስረዛ ተጠይቋል። አቅራቢው ሲደግፈው የአሁኑ ሥራ ይቆማል።",
+  "cmd.open_share_collect": "Share & Collect ክፈት",
+  "cmd.open_share_collect_hint": "ምርጫዎች፣ ምዝገባዎች፣ መጠይቆች እና ውጤቶቻቸው",
+  "cmd.open_share_collect_done": "Share & Collect ተከፍቷል።"
 }

@@ -42,5 +42,8 @@
   "cmd.run_lesson_blueprint": "Generi la lecionplanon",
   "cmd.run_lesson_blueprint_done": "Generas la planon — vi povas rigardi ĉiun paŝon sur la karto.",
   "cmd.run_lesson_blueprint_hint": "Generas ĉiun rimedon en la nuna plano",
-  "cmd.cancelled": "Nuligo petita. La nuna operacio haltos kiam ĝia provizanto tion subtenos."
+  "cmd.cancelled": "Nuligo petita. La nuna operacio haltos kiam ĝia provizanto tion subtenos.",
+  "cmd.open_share_collect": "Malfermu Share & Collect",
+  "cmd.open_share_collect_hint": "Balotenketoj, aliĝoj, demandaroj kaj iliaj rezultoj",
+  "cmd.open_share_collect_done": "Share & Collect malfermita."
 }

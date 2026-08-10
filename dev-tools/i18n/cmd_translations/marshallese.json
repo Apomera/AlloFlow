@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "Kōṃṃan lesson plan",
   "cmd.run_lesson_blueprint_done": "Plan eo ej kōṃṃan — kwōmaroñ kile kajjojo step ilo card.",
   "cmd.run_lesson_blueprint_hint": "Kōṃṃan resource ko aolep ilo plan eo kiiō",
-  "cmd.cancelled": "Kōjerbal kōṃṃan bwe en jako. Kōṃṃan eo an jānṃōṃṃan enaaj bōk jān ñe provider eo ej jipan kōjerbal bwe en jako."
+  "cmd.cancelled": "Kōjerbal kōṃṃan bwe en jako. Kōṃṃan eo an jānṃōṃṃan enaaj bōk jān ñe provider eo ej jipan kōjerbal bwe en jako.",
+  "cmd.open_share_collect": "Kapeḷḷọk Share & Collect",
+  "cmd.open_share_collect_hint": "Poll ko, jeje etam, survey ko im tōprak ko aer",
+  "cmd.open_share_collect_done": "Share & Collect emōj kapeḷḷọk."
 }

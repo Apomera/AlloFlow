@@ -42,5 +42,8 @@
   "cmd.run_lesson_blueprint": "പാഠപദ്ധതി സൃഷ്ടിക്കുക",
   "cmd.run_lesson_blueprint_done": "പ്ലാൻ സൃഷ്ടിക്കുന്നു — കാർഡിലെ ഓരോ ഘട്ടവും കാണാം.",
   "cmd.run_lesson_blueprint_hint": "നിലവിലെ പ്ലാനിലെ എല്ലാ റിസോഴ്‌സുകളും സൃഷ്ടിക്കുന്നു",
-  "cmd.cancelled": "റദ്ദാക്കാൻ അഭ്യർത്ഥിച്ചു. ദാതാവ് ഇത് പിന്തുണയ്ക്കുമ്പോൾ നിലവിലെ പ്രവർത്തനം നിർത്തും."
+  "cmd.cancelled": "റദ്ദാക്കാൻ അഭ്യർത്ഥിച്ചു. ദാതാവ് ഇത് പിന്തുണയ്ക്കുമ്പോൾ നിലവിലെ പ്രവർത്തനം നിർത്തും.",
+  "cmd.open_share_collect": "Share & Collect തുറക്കുക",
+  "cmd.open_share_collect_hint": "വോട്ടെടുപ്പുകൾ, സൈൻ-അപ്പുകൾ, സർവേകൾ, അവയുടെ ഫലങ്ങൾ",
+  "cmd.open_share_collect_done": "Share & Collect തുറന്നു."
 }

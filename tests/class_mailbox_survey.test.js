@@ -148,6 +148,25 @@ describe('hosting a survey', () => {
         expect(hostSurvey(call, { items: [{ type: 'choice', text: 'Pick', options: ['Only'] }] }).hosted.e).toBe('bad-activity');
     });
 
+    it('carries the study information sheet to respondents, sanitized and capped', () => {
+        // Consent is collected OUTSIDE the app by design; the info sheet is
+        // the informational half — who is asking and what answers are for.
+        const { call, driveFiles } = makeGsSandbox();
+        const { hosted } = hostSurvey(call, {
+            info: '  Part of "Pilot A".   Taking part is voluntary. ' + 'x'.repeat(700),
+        });
+        expect(hosted.ok).toBe(true);
+        const manifest = JSON.parse(driveFiles.get(`pack-${ID}.json`));
+        const info = manifest.activities[0].info;
+        expect(info.startsWith('Part of "Pilot A". Taking part is voluntary.')).toBe(true);
+        expect(info.length).toBeLessThanOrEqual(600);
+        expect(info).not.toContain('  ');   // whitespace collapsed
+        // The respondent-facing summary carries it too.
+        const student = join(call);
+        const view = call({ a: 'getactivitysummary', ...actor(student) });
+        expect(view.info).toBe(info);
+    });
+
     it('advertises the survey capability from hello, so a stale deployment is detectable', () => {
         const { call } = makeGsSandbox();
         const hello = call({ a: 'hello' });

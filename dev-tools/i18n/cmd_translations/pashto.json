@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "د درس پلان جوړ کړئ",
   "cmd.run_lesson_blueprint_done": "پلان جوړېږي — تاسو کولی شئ هره مرحله په کارت کې وګورئ.",
   "cmd.run_lesson_blueprint_hint": "د اوسني پلان ټولې سرچینې جوړوي",
-  "cmd.cancelled": "د لغوه کولو غوښتنه وشوه. اوسنی عملیات به هغه وخت ودرېږي چې چمتوکوونکی یې ملاتړ وکړي."
+  "cmd.cancelled": "د لغوه کولو غوښتنه وشوه. اوسنی عملیات به هغه وخت ودرېږي چې چمتوکوونکی یې ملاتړ وکړي.",
+  "cmd.open_share_collect": "Share & Collect پرانیزه",
+  "cmd.open_share_collect_hint": "سروې‌ګانې، نوم‌لیکنې، پوښتنلیکونه او د هغوی پایلې",
+  "cmd.open_share_collect_done": "Share & Collect پرانیستل شو."
 }

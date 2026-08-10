@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "Unterrichtsplan erstellen",
   "cmd.run_lesson_blueprint_done": "Plan wird erstellt — du kannst jeden Schritt auf der Karte verfolgen.",
   "cmd.run_lesson_blueprint_hint": "Erstellt jede Ressource im aktuellen Plan",
-  "cmd.cancelled": "Abbruch angefordert. Der aktuelle Vorgang wird beendet, sobald der Anbieter dies unterstützt."
+  "cmd.cancelled": "Abbruch angefordert. Der aktuelle Vorgang wird beendet, sobald der Anbieter dies unterstützt.",
+  "cmd.open_share_collect": "Share & Collect öffnen",
+  "cmd.open_share_collect_hint": "Umfragen, Anmeldelisten, Fragebögen und ihre Ergebnisse",
+  "cmd.open_share_collect_done": "Share & Collect geöffnet."
 }

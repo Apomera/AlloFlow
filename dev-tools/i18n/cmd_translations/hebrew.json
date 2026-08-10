@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "צור את תוכנית השיעור",
   "cmd.run_lesson_blueprint_done": "התוכנית נוצרת — אפשר לעקוב אחרי כל שלב בכרטיס.",
   "cmd.run_lesson_blueprint_hint": "מייצר את כל המשאבים בתוכנית הנוכחית",
-  "cmd.cancelled": "בקשת הביטול נשלחה. הפעולה הנוכחית תיעצר כאשר הספק שלה יתמוך בכך."
+  "cmd.cancelled": "בקשת הביטול נשלחה. הפעולה הנוכחית תיעצר כאשר הספק שלה יתמוך בכך.",
+  "cmd.open_share_collect": "פתח את Share & Collect",
+  "cmd.open_share_collect_hint": "סקרים, הרשמות, שאלונים והתוצאות שלהם",
+  "cmd.open_share_collect_done": "Share & Collect נפתח."
 }

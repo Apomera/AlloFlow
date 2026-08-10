@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "Tạo kế hoạch bài học",
   "cmd.run_lesson_blueprint_done": "Đang tạo kế hoạch — bạn có thể theo dõi từng bước trên thẻ.",
   "cmd.run_lesson_blueprint_hint": "Tạo mọi tài nguyên trong kế hoạch hiện tại",
-  "cmd.cancelled": "Đã yêu cầu hủy. Thao tác hiện tại sẽ dừng khi nhà cung cấp hỗ trợ việc đó."
+  "cmd.cancelled": "Đã yêu cầu hủy. Thao tác hiện tại sẽ dừng khi nhà cung cấp hỗ trợ việc đó.",
+  "cmd.open_share_collect": "Mở Share & Collect",
+  "cmd.open_share_collect_hint": "Bình chọn, đăng ký, khảo sát và kết quả của chúng",
+  "cmd.open_share_collect_done": "Đã mở Share & Collect."
 }

@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "Cwec plan me pwony",
   "cmd.run_lesson_blueprint_done": "Plan tye ka cwece — in twero neno laa acel acel i card.",
   "cmd.run_lesson_blueprint_hint": "Cwec gin tic ducu ma tye i plan man.",
-  "cmd.cancelled": "Kwayo me juko otyeko. Tic ma tye kawuono bi juki ka ngat ma cung ne oyie."
+  "cmd.cancelled": "Kwayo me juko otyeko. Tic ma tye kawuono bi juki ka ngat ma cung ne oyie.",
+  "cmd.open_share_collect": "Yab Share & Collect",
+  "cmd.open_share_collect_hint": "Peny, coc me nying, peny-lok ki adwogi-gi",
+  "cmd.open_share_collect_done": "Share & Collect oyabbe."
 }

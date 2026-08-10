@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "สร้างแผนการสอน",
   "cmd.run_lesson_blueprint_done": "กำลังสร้างแผน — คุณดูแต่ละขั้นตอนได้บนการ์ด",
   "cmd.run_lesson_blueprint_hint": "สร้างทรัพยากรทั้งหมดในแผนปัจจุบัน",
-  "cmd.cancelled": "มีการขอยกเลิกแล้ว การดำเนินการปัจจุบันจะหยุดเมื่อผู้ให้บริการรองรับการยกเลิก"
+  "cmd.cancelled": "มีการขอยกเลิกแล้ว การดำเนินการปัจจุบันจะหยุดเมื่อผู้ให้บริการรองรับการยกเลิก",
+  "cmd.open_share_collect": "เปิด Share & Collect",
+  "cmd.open_share_collect_hint": "โพล การลงชื่อ แบบสอบถาม และผลลัพธ์",
+  "cmd.open_share_collect_done": "เปิด Share & Collect แล้ว"
 }

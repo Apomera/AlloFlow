@@ -42,5 +42,8 @@
   "cmd.run_lesson_blueprint": "Lesplan genereren",
   "cmd.run_lesson_blueprint_done": "Bezig met het plan — je kunt elke stap op de kaart volgen.",
   "cmd.run_lesson_blueprint_hint": "Genereert alle resources in het huidige plan",
-  "cmd.cancelled": "Annulering aangevraagd. De huidige bewerking stopt zodra de provider dit ondersteunt."
+  "cmd.cancelled": "Annulering aangevraagd. De huidige bewerking stopt zodra de provider dit ondersteunt.",
+  "cmd.open_share_collect": "Open Share & Collect",
+  "cmd.open_share_collect_hint": "Peilingen, inschrijvingen, vragenlijsten en hun resultaten",
+  "cmd.open_share_collect_done": "Share & Collect geopend."
 }

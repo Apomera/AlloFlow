@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "Tsim txoj kev npaj qhia",
   "cmd.run_lesson_blueprint_done": "Tab tom tsim txoj kev npaj — koj tuaj yeem saib txhua kauj ruam ntawm daim npav.",
   "cmd.run_lesson_blueprint_hint": "Tsim txhua yam peev txheej hauv txoj kev npaj tam sim no",
-  "cmd.cancelled": "Tau thov tso tseg. Txoj haujlwm tam sim no yuav nres thaum nws tus neeg muab kev pab txhawb nqa qhov no."
+  "cmd.cancelled": "Tau thov tso tseg. Txoj haujlwm tam sim no yuav nres thaum nws tus neeg muab kev pab txhawb nqa qhov no.",
+  "cmd.open_share_collect": "Qhib Share & Collect",
+  "cmd.open_share_collect_hint": "Kev xaiv tsa, kev sau npe, ntawv nug thiab cov txiaj ntsig",
+  "cmd.open_share_collect_done": "Twb qhib Share & Collect lawm."
 }

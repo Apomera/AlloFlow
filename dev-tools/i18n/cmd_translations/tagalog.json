@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "Bumuo ng lesson plan",
   "cmd.run_lesson_blueprint_done": "Binubuo ang plano — makikita mo ang bawat hakbang sa card.",
   "cmd.run_lesson_blueprint_hint": "Binubuo ang lahat ng resource sa kasalukuyang plano",
-  "cmd.cancelled": "Hiniling ang pagkansela. Hihinto ang kasalukuyang operasyon kapag sinusuportahan ito ng provider nito."
+  "cmd.cancelled": "Hiniling ang pagkansela. Hihinto ang kasalukuyang operasyon kapag sinusuportahan ito ng provider nito.",
+  "cmd.open_share_collect": "Buksan ang Share & Collect",
+  "cmd.open_share_collect_hint": "Mga botohan, pagpapatala, sarbey at ang kanilang mga resulta",
+  "cmd.open_share_collect_done": "Binuksan ang Share & Collect."
 }

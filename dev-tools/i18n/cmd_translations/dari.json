@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "ایجاد برنامهٔ درس",
   "cmd.run_lesson_blueprint_done": "برنامه در حال ایجاد است — می‌توانید هر مرحله را روی کارت ببینید.",
   "cmd.run_lesson_blueprint_hint": "همهٔ منابع برنامهٔ فعلی را ایجاد می‌کند",
-  "cmd.cancelled": "درخواست لغو ارسال شد. عملیات فعلی وقتی ارائه‌دهنده‌اش آن را پشتیبانی کند متوقف می‌شود."
+  "cmd.cancelled": "درخواست لغو ارسال شد. عملیات فعلی وقتی ارائه‌دهنده‌اش آن را پشتیبانی کند متوقف می‌شود.",
+  "cmd.open_share_collect": "باز کردن Share & Collect",
+  "cmd.open_share_collect_hint": "نظرسنجی‌ها، ثبت‌نام‌ها، پرسشنامه‌ها و نتایج آنها",
+  "cmd.open_share_collect_done": "Share & Collect باز شد."
 }

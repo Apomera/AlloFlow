@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "Tengeneza mpango wa somo",
   "cmd.run_lesson_blueprint_done": "Mpango unatengenezwa — unaweza kufuatilia kila hatua kwenye kadi.",
   "cmd.run_lesson_blueprint_hint": "Hutengeneza rasilimali zote kwenye mpango wa sasa",
-  "cmd.cancelled": "Ombi la kughairi limetumwa. Operesheni ya sasa itasimama mtoa huduma wake akiunga mkono hilo."
+  "cmd.cancelled": "Ombi la kughairi limetumwa. Operesheni ya sasa itasimama mtoa huduma wake akiunga mkono hilo.",
+  "cmd.open_share_collect": "Fungua Share & Collect",
+  "cmd.open_share_collect_hint": "Kura za maoni, usajili, hojaji na matokeo yake",
+  "cmd.open_share_collect_done": "Share & Collect imefunguliwa."
 }

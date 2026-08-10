@@ -31060,7 +31060,10 @@
     "open_stem_tool_miss_tail": ". STEM Lab opened so you can browse.",
     "open_stem_tool_no_index": "STEM Lab opened. The tool catalog was not available, so browse the list.",
     "open_stem_tool_none": "STEM Lab opened. Name a tool and I can go straight to it.",
-    "open_stem_tool_unsupported": "STEM Lab opened. This build cannot jump straight to a named tool."
+    "open_stem_tool_unsupported": "STEM Lab opened. This build cannot jump straight to a named tool.",
+    "open_share_collect": "Share & Collect తెరవండి",
+    "open_share_collect_done": "Share & Collect తెరవబడింది.",
+    "open_share_collect_hint": "పోల్స్, సైన్-అప్‌లు, సర్వేలు మరియు వాటి ఫలితాలు"
   },
   "palette": {
     "aria": "AlloFlow కమాండ్ పాలెట్",

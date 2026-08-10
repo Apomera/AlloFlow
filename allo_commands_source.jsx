@@ -446,6 +446,7 @@ const DEMO_BLOCKED_COMMANDS = new Set([
   'preview_assignment_as_student',
   'review_teacher_feedback',
   'open_class_analytics',
+  'open_share_collect',
   'open_ai_settings',
   'open_roster',
   'open_project_settings',
@@ -759,7 +760,8 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: 'open_pictionary_host', icon: '🎨', roles: 'teacher', when: (c) => !!c.activeSessionCode && !!c.openPictionaryHost, label: t('cmd.open_pictionary_host', 'Start Concept Pictionary'), aliases: ['concept pictionary', 'pictionary', 'drawing game', 'draw a concept', 'class drawing game'], hint: t('cmd.open_pictionary_host_hint', 'Open the teacher host for Concept Pictionary'), run: (c) => { c.openPictionaryHost(); return t('cmd.open_pictionary_host_done', 'Concept Pictionary opened. Choose a concept and start the round from there.'); } },
     { id: 'open_group_tools', icon: '👥', roles: 'teacher', when: (c) => !!c.activeSessionCode && !!c.openGroupTools, label: t('cmd.open_group_tools', 'Open group tools'), aliases: ['group tools', 'groups', 'manage groups', 'student groups', 'make groups'], hint: t('cmd.open_group_tools_hint', 'Manage live-session groups'), run: (c) => { c.openGroupTools(); return t('cmd.open_group_tools_done', 'Group tools opened.'); } },
     { id: 'open_student_signal', icon: '✋', roles: 'student', when: (c) => !!c.activeSessionCode && !c.isTeacherMode && !!c.openStudentSignals, label: t('cmd.open_student_signal', 'Send a teacher signal'), aliases: ['signal teacher', 'help signal', 'quick signal', 'i need help', 'i am confused', 'send signal'], hint: t('cmd.open_student_signal_hint', 'Tell the teacher you need help, more time, or are ready'), run: (c) => { c.openStudentSignals(); return t('cmd.open_student_signal_done', 'Teacher signal panel opened. Pick one option to send.'); } },
-    { id: 'open_class_analytics', opensPanel: 'classAnalytics', icon: '📈', roles: 'teacher', label: t('cmd.open_class_analytics', 'Open class analytics'), aliases: ['analytics', 'class data', 'progress data'], hint: t('cmd.open_class_analytics_hint', 'Whole-class progress'), run: (c) => { c.setShowClassAnalytics(true); return t('cmd.open_class_analytics_done', 'Class analytics opened.'); } },
+    { id: 'open_class_analytics', opensPanel: 'classAnalytics', icon: '📈', roles: 'teacher', label: t('cmd.open_class_analytics', 'Open class analytics'), aliases: ['analytics', 'class data', 'progress data', 'research suite', 'research dashboard', 'embedded research', 'study', 'irb', 'likert', 'assessment center', 'progress monitoring'], hint: t('cmd.open_class_analytics_hint', 'Whole-class progress'), run: (c) => { c.setShowClassAnalytics(true); return t('cmd.open_class_analytics_done', 'Class analytics opened.'); } },
+    { id: 'open_share_collect', opensPanel: 'recentQrShares', icon: '🔗', roles: 'teacher', label: t('cmd.open_share_collect', 'Open Share & Collect'), aliases: ['share and collect', 'share collect', 'polls', 'poll results', 'sign-up sheet', 'signup results', 'survey', 'surveys', 'send survey', 'survey link', 'survey results', 'collect responses', 'availability poll', 'parent survey'], hint: t('cmd.open_share_collect_hint', 'Polls, sign-ups, surveys and their results'), run: (c) => { c.setShowRecentQrShares(true); return t('cmd.open_share_collect_done', 'Share & Collect opened.'); } },
     { id: 'open_export_menu', opensPanel: 'exportMenu', icon: '📤', roles: 'teacher', label: t('cmd.open_export_menu', 'Open the export menu'), aliases: ['export', 'download menu', 'share'], hint: t('cmd.open_export_menu_hint', 'Export the current content'), run: (c) => { c.setShowExportMenu(true); return t('cmd.open_export_menu_done', 'Export menu opened.'); } },
     { id: 'open_ai_settings', icon: '🤖', roles: 'teacher', label: t('cmd.open_ai_settings', 'Open AI settings'), aliases: ['ai settings', 'ai backend', 'api key', 'model settings'], hint: t('cmd.open_ai_settings_hint', 'Configure the AI backend'), run: (c) => { c.setShowAIBackendModal(true); return t('cmd.open_ai_settings_done', 'AI settings opened.'); } },
 
@@ -2441,7 +2443,7 @@ function scoreCommand(cmd, q) {
 // command to be explicitly grouped so browse metadata cannot silently drift.
 const CMD_GROUP = {
   open_educator_hub:'navigate', open_learning_hub:'navigate', open_source_input:'navigate', open_source_url:'navigate', open_source_generator:'navigate', open_history:'navigate', open_document_builder:'navigate', open_wizard:'navigate',
-  open_notebook:'navigate', open_translate:'navigate', open_class_session:'navigate', open_class_analytics:'navigate',
+  open_notebook:'navigate', open_translate:'navigate', open_class_session:'navigate', open_class_analytics:'navigate', open_share_collect:'navigate',
   open_live_session_center:'live', open_live_poll:'live', open_quick_check:'live', open_pictionary_host:'live', open_group_tools:'live', open_student_signal:'live',
   open_export_menu:'navigate', open_ai_settings:'navigate', go_dashboard:'navigate', open_roster:'navigate', open_project_settings:'navigate',
   generate_quiz:'create', generate_glossary:'create', generate_simplified:'create', generate_sentence_frames:'create',
@@ -2468,7 +2470,7 @@ const CMD_GROUP = {
 const CMD_CONTEXT = {
   pipeline_score:['pipeline'], pipeline_issues:['pipeline'], pipeline_downloads:['pipeline'], pipeline_verification:['pipeline'], pipeline_tour:['pipeline'], translate_document:['pipeline'],
   open_document_builder:['educatorHub','content'], open_source_input:['sourceSetup'], open_source_url:['sourceSetup'], open_source_generator:['sourceSetup'], open_history:['content'], open_wizard:['educatorHub'], create_lesson:['educatorHub'], open_translate:['educatorHub','content'],
-  open_class_session:['educatorHub','liveSession'], open_class_analytics:['educatorHub','behaviorLens'],
+  open_class_session:['educatorHub','liveSession'], open_class_analytics:['educatorHub','behaviorLens'], open_share_collect:['educatorHub'],
   open_live_session_center:['liveSession'], open_live_poll:['liveSession'], open_quick_check:['liveSession'], open_pictionary_host:['liveSession'], open_group_tools:['liveSession'], open_student_signal:['liveSession'], open_roster:['educatorHub'], open_project_settings:['educatorHub'],
   open_notebook:['learningHub'], toggle_socratic:['learningHub'],
   open_video_studio:['educatorHub','videoStudio'], open_cinematic_studio:['educatorHub','videoStudio','cinematicStudio'], open_allo_studio:['educatorHub','alloStudio'],

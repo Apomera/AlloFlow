@@ -271,3 +271,79 @@ describe('host + Suite wiring pins', () => {
     expect(suiteSource).toContain("'source','importKey'");   // CSV must not grow bookkeeping columns
   });
 });
+
+describe('discoverability (Plan 3)', () => {
+  const commandsSource = fs.readFileSync(path.join(ROOT, 'allo_commands_source.jsx'), 'utf8');
+
+  it('the research vocabulary reaches the palette', () => {
+    // Before this, no command, label, or alias anywhere contained "survey",
+    // "study", "research" (outside Research Hub), "Likert", or "IRB".
+    expect(commandsSource).toContain("'research suite'");
+    expect(commandsSource).toContain("'irb'");
+    expect(commandsSource).toContain("'likert'");
+    expect(commandsSource).toContain("id: 'open_share_collect'");
+    expect(commandsSource).toContain("'parent survey'");
+  });
+
+  it('the new command is demo-blocked, grouped, and panel-tagged like its siblings', () => {
+    expect(commandsSource).toContain("  'open_share_collect',");
+    expect(commandsSource).toContain("open_share_collect:'navigate'");
+    expect(commandsSource).toContain("open_share_collect:['educatorHub']");
+    expect(commandsSource).toContain("opensPanel: 'recentQrShares'");
+  });
+
+  it('the host exposes the setter and the mutual-exclusion closer', () => {
+    expect(anti).toContain('      setShowRecentQrShares,');
+    expect(anti).toContain('recentQrShares: () => setShowRecentQrShares(false),');
+  });
+
+  it('the generated module and its mirror carry the command', () => {
+    const module = fs.readFileSync(path.join(ROOT, 'allo_commands_module.js'), 'utf8');
+    const mirror = fs.readFileSync(path.join(ROOT, 'desktop/web-app', 'public', 'allo_commands_module.js'), 'utf8');
+    expect(module).toContain('open_share_collect');
+    expect(mirror).toBe(module);
+  });
+
+  it('every language pack carries the three new command keys', () => {
+    const langDir = path.join(ROOT, 'lang');
+    const packs = fs.readdirSync(langDir).filter((f) => f.endsWith('.js'));
+    expect(packs.length).toBeGreaterThanOrEqual(63);
+    const missing = [];
+    for (const pack of packs) {
+      const json = JSON.parse(fs.readFileSync(path.join(langDir, pack), 'utf8'));
+      const get = (k) => k.split('.').reduce((a, p) => (a && typeof a === 'object') ? a[p] : undefined, json);
+      for (const key of ['cmd.open_share_collect', 'cmd.open_share_collect_hint', 'cmd.open_share_collect_done']) {
+        const value = get(key);
+        if (!value || !String(value).trim()) missing.push(pack + ':' + key);
+      }
+    }
+    expect(missing).toEqual([]);
+  });
+});
+
+describe('study info sheet + consent attestation (Plan 4)', () => {
+  it('the dialog authors the info sheet and the packet carries it', () => {
+    expect(anti).toContain('About this survey (optional, shown to respondents)');
+    expect(anti).toContain("info: sharedActivityType === 'survey' ?");
+  });
+
+  it('respondents see the info sheet above the questions', () => {
+    expect(anti).toContain("{(summary?.info || effectiveActivity?.info) && (");
+  });
+
+  it('the Suite dispatch drafts a neutral, factual template the teacher edits', () => {
+    expect(suiteSource).toContain('Taking part is voluntary, and you can skip any question that is not marked required.');
+    // The template must never claim outcomes — pin the absence of the word
+    // the marketing voice would reach for.
+    const templateAt = suiteSource.indexOf('These questions help us understand how the program is working');
+    expect(templateAt).toBeGreaterThan(-1);
+  });
+
+  it('consent provenance is recorded beside the IRB number and rides every CSV row', () => {
+    // Aaron's decision: consent lives OUTSIDE the app. The app records where,
+    // and never gates on it.
+    expect(suiteSource).toContain('Consent records (kept outside AlloFlow)');
+    expect(suiteSource).toContain("'Consent_Provenance'");
+    expect(suiteSource).toContain('AlloFlow never collects consent itself.');
+  });
+});

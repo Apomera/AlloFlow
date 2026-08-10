@@ -425,6 +425,7 @@ const DEMO_BLOCKED_COMMANDS = /* @__PURE__ */ new Set([
   "preview_assignment_as_student",
   "review_teacher_feedback",
   "open_class_analytics",
+  "open_share_collect",
   "open_ai_settings",
   "open_roster",
   "open_project_settings",
@@ -762,9 +763,13 @@ function buildAlloCommands(ctx, opts = {}) {
       c.openStudentSignals();
       return t("cmd.open_student_signal_done", "Teacher signal panel opened. Pick one option to send.");
     } },
-    { id: "open_class_analytics", opensPanel: "classAnalytics", icon: "\u{1F4C8}", roles: "teacher", label: t("cmd.open_class_analytics", "Open class analytics"), aliases: ["analytics", "class data", "progress data"], hint: t("cmd.open_class_analytics_hint", "Whole-class progress"), run: (c) => {
+    { id: "open_class_analytics", opensPanel: "classAnalytics", icon: "\u{1F4C8}", roles: "teacher", label: t("cmd.open_class_analytics", "Open class analytics"), aliases: ["analytics", "class data", "progress data", "research suite", "research dashboard", "embedded research", "study", "irb", "likert", "assessment center", "progress monitoring"], hint: t("cmd.open_class_analytics_hint", "Whole-class progress"), run: (c) => {
       c.setShowClassAnalytics(true);
       return t("cmd.open_class_analytics_done", "Class analytics opened.");
+    } },
+    { id: "open_share_collect", opensPanel: "recentQrShares", icon: "\u{1F517}", roles: "teacher", label: t("cmd.open_share_collect", "Open Share & Collect"), aliases: ["share and collect", "share collect", "polls", "poll results", "sign-up sheet", "signup results", "survey", "surveys", "send survey", "survey link", "survey results", "collect responses", "availability poll", "parent survey"], hint: t("cmd.open_share_collect_hint", "Polls, sign-ups, surveys and their results"), run: (c) => {
+      c.setShowRecentQrShares(true);
+      return t("cmd.open_share_collect_done", "Share & Collect opened.");
     } },
     { id: "open_export_menu", opensPanel: "exportMenu", icon: "\u{1F4E4}", roles: "teacher", label: t("cmd.open_export_menu", "Open the export menu"), aliases: ["export", "download menu", "share"], hint: t("cmd.open_export_menu_hint", "Export the current content"), run: (c) => {
       c.setShowExportMenu(true);
@@ -2985,6 +2990,7 @@ const CMD_GROUP = {
   open_translate: "navigate",
   open_class_session: "navigate",
   open_class_analytics: "navigate",
+  open_share_collect: "navigate",
   open_live_session_center: "live",
   open_live_poll: "live",
   open_quick_check: "live",
@@ -3119,6 +3125,7 @@ const CMD_CONTEXT = {
   open_translate: ["educatorHub", "content"],
   open_class_session: ["educatorHub", "liveSession"],
   open_class_analytics: ["educatorHub", "behaviorLens"],
+  open_share_collect: ["educatorHub"],
   open_live_session_center: ["liveSession"],
   open_live_poll: ["liveSession"],
   open_quick_check: ["liveSession"],

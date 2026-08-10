@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "បង្កើតផែនការមេរៀន",
   "cmd.run_lesson_blueprint_done": "កំពុងបង្កើតផែនការ — អ្នកអាចមើលជំហាននីមួយៗលើកាត។",
   "cmd.run_lesson_blueprint_hint": "បង្កើតធនធានទាំងអស់ក្នុងផែនការបច្ចុប្បន្ន",
-  "cmd.cancelled": "បានស្នើសុំបោះបង់។ ប្រតិបត្តិការបច្ចុប្បន្ននឹងឈប់ នៅពេលអ្នកផ្តល់សេវាគាំទ្រការបោះបង់។"
+  "cmd.cancelled": "បានស្នើសុំបោះបង់។ ប្រតិបត្តិការបច្ចុប្បន្ននឹងឈប់ នៅពេលអ្នកផ្តល់សេវាគាំទ្រការបោះបង់។",
+  "cmd.open_share_collect": "បើក Share & Collect",
+  "cmd.open_share_collect_hint": "ការបោះឆ្នោត ការចុះឈ្មោះ កម្រងសំណួរ និងលទ្ធផលរបស់វា",
+  "cmd.open_share_collect_done": "បានបើក Share & Collect។"
 }

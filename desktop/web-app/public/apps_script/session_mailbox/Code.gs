@@ -1006,12 +1006,17 @@ function normalizeAssignmentActivityConfig(value, expiresAt) {
     var svItems = normalizeSurveyItems(source.items);
     if (!svItems) return null;
     var svCloses = String(source.closesAt || expiresAt || source.expiresAt || '');
+    // Optional study information sheet, shown to respondents above the
+    // questions: who is asking and what the answers are for. Informational
+    // only — consent itself is collected OUTSIDE the app by design.
+    var svInfo = String(source.info || '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 600);
     return {
       v: 1,
       activityId: activityId,
       type: 'survey',
       delivery: 'shared_async',
       prompt: prompt,
+      info: svInfo,
       identityMode: svIdMode,
       items: svItems,
       minParticipants: minParticipants,
@@ -1761,6 +1766,7 @@ function buildSurveySummary(state, isHost) {
     activityId: state.activityId,
     type: 'survey',
     prompt: config.prompt,
+    info: config.info || '',
     identityMode: config.identityMode,
     minParticipants: config.minParticipants,
     closesAt: config.closesAt,

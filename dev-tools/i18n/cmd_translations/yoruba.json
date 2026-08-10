@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "Ṣẹ̀dá ètò ẹ̀kọ́",
   "cmd.run_lesson_blueprint_done": "A ń ṣẹ̀dá ètò náà — o lè wo gbogbo ìgbésẹ̀ lórí káàdì.",
   "cmd.run_lesson_blueprint_hint": "Ó ṣẹ̀dá gbogbo àwọn orísun nínú ètò ìsinsìnyí",
-  "cmd.cancelled": "A ti béèrè fún fífagilé. Iṣẹ́ tó ń lọ yìí yóò dúró nígbà tí olùpèsè rẹ̀ bá ṣe àtìlẹ́yìn fún un."
+  "cmd.cancelled": "A ti béèrè fún fífagilé. Iṣẹ́ tó ń lọ yìí yóò dúró nígbà tí olùpèsè rẹ̀ bá ṣe àtìlẹ́yìn fún un.",
+  "cmd.open_share_collect": "Ṣí Share & Collect",
+  "cmd.open_share_collect_hint": "Ìbò, ìforúkọsílẹ̀, ìwádìí àti àwọn àbájáde wọn",
+  "cmd.open_share_collect_done": "A ti ṣí Share & Collect."
 }

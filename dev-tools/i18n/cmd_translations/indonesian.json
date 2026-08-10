@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "Buat rencana pelajaran",
   "cmd.run_lesson_blueprint_done": "Membuat rencana — Anda dapat melihat setiap langkah pada kartu.",
   "cmd.run_lesson_blueprint_hint": "Membuat semua sumber daya dalam rencana saat ini",
-  "cmd.cancelled": "Pembatalan diminta. Operasi saat ini akan berhenti ketika penyedianya mendukungnya."
+  "cmd.cancelled": "Pembatalan diminta. Operasi saat ini akan berhenti ketika penyedianya mendukungnya.",
+  "cmd.open_share_collect": "Buka Share & Collect",
+  "cmd.open_share_collect_hint": "Jajak pendapat, pendaftaran, survei, dan hasilnya",
+  "cmd.open_share_collect_done": "Share & Collect dibuka."
 }

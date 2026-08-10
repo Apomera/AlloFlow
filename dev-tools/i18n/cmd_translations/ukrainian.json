@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "Створити план уроку",
   "cmd.run_lesson_blueprint_done": "План створюється — ви можете стежити за кожним кроком на картці.",
   "cmd.run_lesson_blueprint_hint": "Створює всі ресурси поточного плану",
-  "cmd.cancelled": "Запит на скасування надіслано. Поточна операція зупиниться, коли постачальник її підтримає."
+  "cmd.cancelled": "Запит на скасування надіслано. Поточна операція зупиниться, коли постачальник її підтримає.",
+  "cmd.open_share_collect": "Відкрити Share & Collect",
+  "cmd.open_share_collect_hint": "Опитування, записи, анкети та їхні результати",
+  "cmd.open_share_collect_done": "Share & Collect відкрито."
 }

@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "Jenere plan leson an",
   "cmd.run_lesson_blueprint_done": "Ap jenere plan an — ou ka suiv chak etap sou kat la.",
   "cmd.run_lesson_blueprint_hint": "Jenere tout resous ki nan plan aktyèl la",
-  "cmd.cancelled": "Yo mande anile. Operasyon aktyèl la ap kanpe lè founisè li sipòte sa."
+  "cmd.cancelled": "Yo mande anile. Operasyon aktyèl la ap kanpe lè founisè li sipòte sa.",
+  "cmd.open_share_collect": "Louvri Share & Collect",
+  "cmd.open_share_collect_hint": "Sondaj, enskripsyon, kesyonè ak rezilta yo",
+  "cmd.open_share_collect_done": "Share & Collect louvri."
 }

@@ -2295,12 +2295,17 @@ function normalizeAssignmentActivityConfig(value, expiresAt) {
     var svItems = normalizeSurveyItems(source.items);
     if (!svItems) return null;
     var svCloses = String(source.closesAt || expiresAt || source.expiresAt || '');
+    // Optional study information sheet, shown to respondents above the
+    // questions: who is asking and what the answers are for. Informational
+    // only — consent itself is collected OUTSIDE the app by design.
+    var svInfo = String(source.info || '').replace(/[\\u0000-\\u001f\\u007f]/g, ' ').replace(/\\s+/g, ' ').trim().slice(0, 600);
     return {
       v: 1,
       activityId: activityId,
       type: 'survey',
       delivery: 'shared_async',
       prompt: prompt,
+      info: svInfo,
       identityMode: svIdMode,
       items: svItems,
       minParticipants: minParticipants,
@@ -3050,6 +3055,7 @@ function buildSurveySummary(state, isHost) {
     activityId: state.activityId,
     type: 'survey',
     prompt: config.prompt,
+    info: config.info || '',
     identityMode: config.identityMode,
     minParticipants: config.minParticipants,
     closesAt: config.closesAt,
@@ -6727,6 +6733,11 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
               <legend className="block text-xs font-black text-slate-800">
                 {summary?.closed ? 'This survey has closed' : 'A few quick questions'}
               </legend>
+              {(summary?.info || effectiveActivity?.info) && (
+                <p className="mt-2 rounded-lg bg-slate-50 px-2 py-1.5 text-[11px] leading-relaxed text-slate-700">
+                  {String(summary?.info || effectiveActivity?.info).slice(0, 600)}
+                </p>
+              )}
               {summary?.identityMode === 'real_name' && (
                 <label className="mt-2 block text-[11px] font-black text-slate-700">
                   Your name
@@ -21346,6 +21357,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           min: item.min,
           max: item.max,
         })),
+        surveyInfo: String(detail.info || '').slice(0, 600),
         _researchMeta: detail.researchMeta || null,
       }));
       setShowClassAnalytics(false);
@@ -25241,6 +25253,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               identityMode: (sharedActivityType === 'availability' || sharedActivityType === 'signup' || sharedActivityType === 'survey') ? String(sharedAssignmentActivity.identityMode || '') : undefined,
               options: (sharedActivityType === 'availability' || sharedActivityType === 'signup') ? pollOptions : undefined,
               items: sharedActivityType === 'survey' ? surveyWireItems : undefined,
+              info: sharedActivityType === 'survey' ? (String(sharedAssignmentActivity.surveyInfo || '').replace(/\s+/g, ' ').trim().slice(0, 600) || undefined) : undefined,
               allowMaybe: sharedActivityType === 'availability' ? sharedAssignmentActivity.allowMaybe !== false : undefined,
               multiSelect: sharedActivityType === 'availability' ? sharedAssignmentActivity.multiSelect !== false : undefined,
               maxPerPerson: sharedActivityType === 'signup'
@@ -39702,6 +39715,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       setShowEducatorHub, setShowLearningHub, openExportPreview, setShowWizard,
       setShowNotebook, openTranslateModal: handleSetIsTranslateModalOpenToTrue,
       setShowSessionModal, setShowClassAnalytics, setShowExportMenu, setShowAIBackendModal,
+      setShowRecentQrShares,
       setShowTextSettings, setShowVoiceSettings, setShowReadThisPage,
       openSourceInput: () => {
         setShowEducatorHub(false); setShowLearningHub(false); setActiveSidebarTab('create'); setActiveView('input');
@@ -40020,6 +40034,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           learningHub: () => setShowLearningHub(false),
           notebook: () => setShowNotebook(false),
           classAnalytics: () => setShowClassAnalytics(false),
+          recentQrShares: () => setShowRecentQrShares(false),
           sessionModal: () => setShowSessionModal(false),
           exportMenu: () => setShowExportMenu(false),
           exportPreview: () => setShowExportPreview(false),
@@ -45059,6 +45074,17 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         + Add question
                       </button>
                     )}
+                    <label className="mt-3 block text-[11px] font-black text-slate-700">
+                      About this survey (optional, shown to respondents)
+                      <textarea
+                        value={String(sharedAssignmentActivity?.surveyInfo || '')}
+                        onChange={event => setSharedAssignmentActivity(previous => ({ ...(previous || {}), surveyInfo: event.target.value.slice(0, 600) }))}
+                        rows={3}
+                        maxLength={600}
+                        placeholder="Who is asking, what the answers are for, and that taking part is voluntary."
+                        className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-xs text-slate-800"
+                      />
+                    </label>
                     <label className="mt-3 block text-[11px] font-black text-slate-700">
                       Who is answering
                       <select

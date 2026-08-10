@@ -320,5 +320,8 @@
   "cmd.run_lesson_blueprint": "Consilium lectionis genera",
   "cmd.run_lesson_blueprint_done": "Consilium nunc generatur — quemque gradum in charta videre potes.",
   "cmd.run_lesson_blueprint_hint": "Omnes opes consilii praesentis generat",
-  "cmd.cancelled": "Cancellatio petita est. Operatio praesens desinet cum eius praebitor eam sustinebit."
+  "cmd.cancelled": "Cancellatio petita est. Operatio praesens desinet cum eius praebitor eam sustinebit.",
+  "cmd.open_share_collect": "Share & Collect aperi",
+  "cmd.open_share_collect_hint": "Suffragia, subscriptiones, quaestionaria et eorum eventus",
+  "cmd.open_share_collect_done": "Share & Collect apertum."
 }
