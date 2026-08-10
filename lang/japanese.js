@@ -26148,7 +26148,7 @@
       "hundreds_chart_count_pattern_and_skip": "100マス表 — 数える、規則、跳び数え",
       "a_10x10_grid_of_1_100_click_to_highlig": "1〜100 の 10×10 のマス目。クリックしてマスを強調します。跳び数えのオーバーレイが掛け算の規則を見せてくれます。CCSS 2.NBT.A.2：5、10、100 とびの跳び数え。",
       "pattern_blocks_fractions_symmetry": "パターンブロック — 分数と対称",
-      "hexagon_trapezoid_rhombus_triangle_squ": "六角形、台形、ひし形、三角形、正方形、細いひし形。6つの台形 = 1つの六角形（なので台形1つ = 六角形の1/2）。3つのひし形 = 1つの六角形（なのでひし形1つ = 1/3）。6つの三角形 = 1つの六角形（なので三角形1つ = 1/6）。",
+      "hexagon_trapezoid_rhombus_triangle_squ": "六角形、台形、ひし形、三角形、正方形、細いひし形。2つの台形 = 1つの六角形（なので台形1つ = 六角形の1/2）。3つのひし形 = 1つの六角形（なのでひし形1つ = 1/3）。6つの三角形 = 1つの六角形（なので三角形1つ = 1/6）。",
       "geoboard_polygons_on_a_peg_grid": "ジオボード — ピン格子の上の多角形",
       "connect_pegs_with_rubber_bands_to_make": "ピンを「輪ゴム」でつないで多角形を作ります。周の長さと面積を測ります。平面幾何とピックの定理のための古典的な具体教具です。",
       "cuisenaire_rods_numbers_in_color": "キュイズネール棒 — 色になった数",

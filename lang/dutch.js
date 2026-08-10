@@ -22481,7 +22481,7 @@
       "hundreds_chart_count_pattern_and_skip": "Honderdveld — tellen, patronen en sprongsgewijs tellen",
       "a_10x10_grid_of_1_100_click_to_highlig": "Een 10x10-raster van 1 tot 100. Klik om vakjes te markeren. Overlays voor sprongsgewijs tellen onthullen vermenigvuldigpatronen. CCSS 2.NBT.A.2: sprongsgewijs tellen met 5, 10, 100.",
       "pattern_blocks_fractions_symmetry": "Patroonblokken — breuken + symmetrie",
-      "hexagon_trapezoid_rhombus_triangle_squ": "Zeshoek, trapezium, ruit, driehoek, vierkant, smalle ruit. 6 trapezia = 1 zeshoek (dus 1 trapezium = 1/2 zeshoek). 3 ruiten = 1 zeshoek (dus 1 ruit = 1/3). 6 driehoeken = 1 zeshoek (dus 1 driehoek = 1/6).",
+      "hexagon_trapezoid_rhombus_triangle_squ": "Zeshoek, trapezium, ruit, driehoek, vierkant, smalle ruit. 2 trapezia = 1 zeshoek (dus 1 trapezium = 1/2 zeshoek). 3 ruiten = 1 zeshoek (dus 1 ruit = 1/3). 6 driehoeken = 1 zeshoek (dus 1 driehoek = 1/6).",
       "geoboard_polygons_on_a_peg_grid": "Geobord — veelhoeken op een pennenraster",
       "connect_pegs_with_rubber_bands_to_make": "Verbind pennen met \"elastiekjes\" om veelhoeken te maken. Meet omtrek en oppervlakte. Het klassieke concrete hulpmiddel voor vlakke meetkunde en de stelling van Pick.",
       "cuisenaire_rods_numbers_in_color": "Cuisenaire-staafjes — getallen in kleur",

@@ -22334,7 +22334,7 @@
       "hundreds_chart_count_pattern_and_skip": "Centa Tabelo — kalkulu, modelu, kaj saltokalkulu",
       "a_10x10_grid_of_1_100_click_to_highlig": "Krado 10x10 de 1-100. Klaku por emfazi ĉelojn. Saltokalkulaj tavoloj malkaŝas multiplikajn modelojn. CCSS 2.NBT.A.2: saltokalkulo per 5, 10, 100.",
       "pattern_blocks_fractions_symmetry": "Modelaj Blokoj — frakcioj + simetrio",
-      "hexagon_trapezoid_rhombus_triangle_squ": "Sesangulo, trapezo, rombo, triangulo, kvadrato, mallarĝa rombo. 6 trapezoj = 1 sesangulo (do 1 trapezo = 1/2 ses.). 3 romboj = 1 ses. (do 1 rombo = 1/3). 6 trianguloj = 1 ses. (do 1 triangulo = 1/6).",
+      "hexagon_trapezoid_rhombus_triangle_squ": "Sesangulo, trapezo, rombo, triangulo, kvadrato, mallarĝa rombo. 2 trapezoj = 1 sesangulo (do 1 trapezo = 1/2 ses.). 3 romboj = 1 ses. (do 1 rombo = 1/3). 6 trianguloj = 1 ses. (do 1 triangulo = 1/6).",
       "geoboard_polygons_on_a_peg_grid": "Geotabulo — plurlateroj sur kejla krado",
       "connect_pegs_with_rubber_bands_to_make": "Konektu kejlojn per \"kaŭĉukaj bendoj\" por fari plurlaterojn. Mezuru perimetron kaj areon. La klasika konkreta ilo por ebena geometrio kaj la teoremo de Pick.",
       "cuisenaire_rods_numbers_in_color": "Cuisenaire-Vergoj — nombroj en koloro",

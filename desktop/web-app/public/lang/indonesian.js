@@ -23996,7 +23996,7 @@
       "hundreds_chart_count_pattern_and_skip": "Tabel Ratusan — menghitung, pola, dan lompat",
       "a_10x10_grid_of_1_100_click_to_highlig": "Kisi 10x10 berisi 1–100. Klik untuk menyoroti sel. Lapisan lompat-hitung mengungkap pola perkalian. CCSS 2.NBT.A.2: melompat menghitung per 5, 10, 100.",
       "pattern_blocks_fractions_symmetry": "Blok Pola — pecahan + simetri",
-      "hexagon_trapezoid_rhombus_triangle_squ": "Segi enam, trapesium, belah ketupat, segitiga, persegi, belah ketupat sempit. 6 trapesium = 1 segi enam (jadi 1 trapesium = 1/2 segi enam). 3 belah ketupat = 1 segi enam (jadi 1 belah ketupat = 1/3). 6 segitiga = 1 segi enam (jadi 1 segitiga = 1/6).",
+      "hexagon_trapezoid_rhombus_triangle_squ": "Segi enam, trapesium, belah ketupat, segitiga, persegi, belah ketupat sempit. 2 trapesium = 1 segi enam (jadi 1 trapesium = 1/2 segi enam). 3 belah ketupat = 1 segi enam (jadi 1 belah ketupat = 1/3). 6 segitiga = 1 segi enam (jadi 1 segitiga = 1/6).",
       "geoboard_polygons_on_a_peg_grid": "Papan Geometri — poligon pada kisi paku",
       "connect_pegs_with_rubber_bands_to_make": "Hubungkan paku dengan \"karet gelang\" untuk membuat poligon. Ukur keliling dan luas. Alat konkret klasik untuk geometri bidang dan teorema Pick.",
       "cuisenaire_rods_numbers_in_color": "Batang Cuisenaire — bilangan dalam warna",

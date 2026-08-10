@@ -22003,7 +22003,7 @@
       "hundreds_chart_count_pattern_and_skip": "Hundreds Chart — suav, pattern, thiab skip",
       "a_10x10_grid_of_1_100_click_to_highlig": "Ib daim 10x10 grid ntawm 1-100. Nias los highlight cov cell. Cov skip-count overlay qhia cov pattern multiplication. CCSS 2.NBT.A.2: skip-counting los ntawm 5s, 10s, 100s.",
       "pattern_blocks_fractions_symmetry": "Pattern Blocks — fractions + symmetry",
-      "hexagon_trapezoid_rhombus_triangle_squ": "Hexagon, trapezoid, rhombus, triangle, square, rhombus nqaim. 6 trapezoids = 1 hexagon (yog li 1 trapezoid = 1/2 hex). 3 rhombi = 1 hex (yog li 1 rhombus = 1/3). 6 triangles = 1 hex (yog li 1 triangle = 1/6).",
+      "hexagon_trapezoid_rhombus_triangle_squ": "Hexagon, trapezoid, rhombus, triangle, square, rhombus nqaim. 2 trapezoids = 1 hexagon (yog li 1 trapezoid = 1/2 hex). 3 rhombi = 1 hex (yog li 1 rhombus = 1/3). 6 triangles = 1 hex (yog li 1 triangle = 1/6).",
       "geoboard_polygons_on_a_peg_grid": "Geoboard — polygons rau ib daim peg grid",
       "connect_pegs_with_rubber_bands_to_make": "Txuas cov peg nrog \"rubber bands\" los ua polygons. Ntsuas perimeter thiab area. Tus cuab yeej concrete classic rau plane geometry thiab Pick's theorem.",
       "cuisenaire_rods_numbers_in_color": "Cuisenaire Rods — cov lej hauv xim",

@@ -21258,7 +21258,7 @@
       "hundreds_chart_count_pattern_and_skip": "Hundreds Chart — kà, pattern, àti fò",
       "a_10x10_grid_of_1_100_click_to_highlig": "Grid 10x10 ti 1-100. Tẹ̀ láti mú cells tàn. Skip-count overlays ń ṣí patterns ìsọdipúpọ̀ payá. CCSS 2.NBT.A.2: skip-counting nípa 5, 10, 100.",
       "pattern_blocks_fractions_symmetry": "Pattern Blocks — fractions àti symmetry",
-      "hexagon_trapezoid_rhombus_triangle_squ": "Hexagon, trapezoid, rhombus, triangle, square, rhombus tóóró. Trapezoids 6 = hexagon 1 (nítorí náà trapezoid 1 = 1/2 hexagon). Rhombi 3 = hexagon 1 (nítorí náà rhombus 1 = 1/3). Triangles 6 = hexagon 1 (nítorí náà triangle 1 = 1/6).",
+      "hexagon_trapezoid_rhombus_triangle_squ": "Hexagon, trapezoid, rhombus, triangle, square, rhombus tóóró. Trapezoids 2 = hexagon 1 (nítorí náà trapezoid 1 = 1/2 hexagon). Rhombi 3 = hexagon 1 (nítorí náà rhombus 1 = 1/3). Triangles 6 = hexagon 1 (nítorí náà triangle 1 = 1/6).",
       "geoboard_polygons_on_a_peg_grid": "Geoboard — polygons lórí grid pegs",
       "connect_pegs_with_rubber_bands_to_make": "So pegs pọ̀ pẹ̀lú \"rubber bands\" láti ṣe polygons. Wọn perimeter àti area. Irinṣẹ́ ìbílẹ̀ tí a lè fọwọ́ kàn fún plane geometry àti Pick's theorem.",
       "cuisenaire_rods_numbers_in_color": "Cuisenaire Rods — nọ́mbà nínú àwọ̀",

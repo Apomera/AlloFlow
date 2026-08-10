@@ -22118,7 +22118,7 @@
       "hundreds_chart_count_pattern_and_skip": "Tabula Centenaria — numera, exemplaria, et saltatim numera",
       "a_10x10_grid_of_1_100_click_to_highlig": "Cratis 10x10 numerorum 1-100. Preme ut cellulas illustres. Superpositiones saltuum exemplaria multiplicationis revelant. CCSS 2.NBT.A.2: numeratio saltatim per 5, 10, 100.",
       "pattern_blocks_fractions_symmetry": "Cubi Formarum — fractiones + symmetria",
-      "hexagon_trapezoid_rhombus_triangle_squ": "Hexagonum, trapezium, rhombus, triangulum, quadratum, rhombus angustus. 6 trapezia = 1 hexagonum (ergo 1 trapezium = 1/2 hex.). 3 rhombi = 1 hex. (ergo 1 rhombus = 1/3). 6 triangula = 1 hex. (ergo 1 triangulum = 1/6).",
+      "hexagon_trapezoid_rhombus_triangle_squ": "Hexagonum, trapezium, rhombus, triangulum, quadratum, rhombus angustus. 2 trapezia = 1 hexagonum (ergo 1 trapezium = 1/2 hex.). 3 rhombi = 1 hex. (ergo 1 rhombus = 1/3). 6 triangula = 1 hex. (ergo 1 triangulum = 1/6).",
       "geoboard_polygons_on_a_peg_grid": "Geotabula — polygona in crate paxillorum",
       "connect_pegs_with_rubber_bands_to_make": "Coniunge paxillos \"funiculis elasticis\" ut polygona facias. Metire perimetrum et aream. Instrumentum classicum concretum geometriae planae et theorematis Pick.",
       "cuisenaire_rods_numbers_in_color": "Virgae Cuisenaire — numeri in colore",

@@ -21250,7 +21250,7 @@
       "hundreds_chart_count_pattern_and_skip": "Hundreds Chart — tanga, pattern, na kopumbwa",
       "a_10x10_grid_of_1_100_click_to_highlig": "Grid ya 10x10 ya 1-100. Fina mpo na kongɛnga ba cell. Skip-count overlays elakisaka ba pattern ya multiplication. CCSS 2.NBT.A.2: skip-counting na 5, 10, 100.",
       "pattern_blocks_fractions_symmetry": "Pattern Blocks — fractions na symmetry",
-      "hexagon_trapezoid_rhombus_triangle_squ": "Hexagon, trapezoid, rhombus, triangle, square, rhombus ya moke. Trapezoids 6 = hexagon 1 (yango wana trapezoid 1 = 1/2 ya hexagon). Rhombi 3 = hexagon 1 (yango wana rhombus 1 = 1/3). Triangles 6 = hexagon 1 (yango wana triangle 1 = 1/6).",
+      "hexagon_trapezoid_rhombus_triangle_squ": "Hexagon, trapezoid, rhombus, triangle, square, rhombus ya moke. Trapezoids 2 = hexagon 1 (yango wana trapezoid 1 = 1/2 ya hexagon). Rhombi 3 = hexagon 1 (yango wana rhombus 1 = 1/3). Triangles 6 = hexagon 1 (yango wana triangle 1 = 1/6).",
       "geoboard_polygons_on_a_peg_grid": "Geoboard — polygons na grid ya ba peg",
       "connect_pegs_with_rubber_bands_to_make": "Kanga ba peg na \"rubber bands\" mpo na kosala polygons. Meka perimeter na area. Esaleli ya bonkɔkɔ ya kosimba mpo na plane geometry na Pick's theorem.",
       "cuisenaire_rods_numbers_in_color": "Cuisenaire Rods — mituya na langi",

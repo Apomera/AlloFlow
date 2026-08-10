@@ -21587,7 +21587,7 @@
       "hundreds_chart_count_pattern_and_skip": "Hundreds Chart — ƙidaya, pattern, da tsallake",
       "a_10x10_grid_of_1_100_click_to_highlig": "Grid na 10x10 daga 1-100. Danna don haskaka cells. Skip-count overlays suna bayyana patterns na ninkawa. CCSS 2.NBT.A.2: skip-counting da 5, 10, 100.",
       "pattern_blocks_fractions_symmetry": "Pattern Blocks — fractions da symmetry",
-      "hexagon_trapezoid_rhombus_triangle_squ": "Hexagon, trapezoid, rhombus, triangle, square, rhombus mai siriri. Trapezoids 6 = hexagon 1 (don haka trapezoid 1 = 1/2 na hexagon). Rhombi 3 = hexagon 1 (don haka rhombus 1 = 1/3). Triangles 6 = hexagon 1 (don haka triangle 1 = 1/6).",
+      "hexagon_trapezoid_rhombus_triangle_squ": "Hexagon, trapezoid, rhombus, triangle, square, rhombus mai siriri. Trapezoids 2 = hexagon 1 (don haka trapezoid 1 = 1/2 na hexagon). Rhombi 3 = hexagon 1 (don haka rhombus 1 = 1/3). Triangles 6 = hexagon 1 (don haka triangle 1 = 1/6).",
       "geoboard_polygons_on_a_peg_grid": "Geoboard — polygons a kan grid na pegs",
       "connect_pegs_with_rubber_bands_to_make": "Haɗa pegs da \"rubber bands\" don yin polygons. Auna perimeter da area. Kayan aiki na gargajiya mai tabbata don plane geometry da Pick's theorem.",
       "cuisenaire_rods_numbers_in_color": "Cuisenaire Rods — lambobi cikin launi",

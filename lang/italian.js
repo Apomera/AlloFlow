@@ -22312,7 +22312,7 @@
       "hundreds_chart_count_pattern_and_skip": "Tabella del cento — contare, schemi e salti",
       "a_10x10_grid_of_1_100_click_to_highlig": "Una griglia 10x10 da 1 a 100. Clicca per evidenziare le celle. Le sovrapposizioni del conteggio a salti rivelano gli schemi della moltiplicazione. CCSS 2.NBT.A.2: contare a salti di 5, 10, 100.",
       "pattern_blocks_fractions_symmetry": "Blocchi geometrici — frazioni + simmetria",
-      "hexagon_trapezoid_rhombus_triangle_squ": "Esagono, trapezio, rombo, triangolo, quadrato, rombo stretto. 6 trapezi = 1 esagono (quindi 1 trapezio = 1/2 esagono). 3 rombi = 1 esagono (quindi 1 rombo = 1/3). 6 triangoli = 1 esagono (quindi 1 triangolo = 1/6).",
+      "hexagon_trapezoid_rhombus_triangle_squ": "Esagono, trapezio, rombo, triangolo, quadrato, rombo stretto. 2 trapezi = 1 esagono (quindi 1 trapezio = 1/2 esagono). 3 rombi = 1 esagono (quindi 1 rombo = 1/3). 6 triangoli = 1 esagono (quindi 1 triangolo = 1/6).",
       "geoboard_polygons_on_a_peg_grid": "Geopiano — poligoni su una griglia di chiodini",
       "connect_pegs_with_rubber_bands_to_make": "Collega i chiodini con degli \"elastici\" per formare poligoni. Misura perimetro e area. Lo strumento concreto classico per la geometria piana e il teorema di Pick.",
       "cuisenaire_rods_numbers_in_color": "Regoli Cuisenaire — i numeri a colori",

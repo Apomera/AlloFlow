@@ -22290,7 +22290,7 @@
       "hundreds_chart_count_pattern_and_skip": "Tablica setek — liczenie, wzory i liczenie skokami",
       "a_10x10_grid_of_1_100_click_to_highlig": "Siatka 10x10 od 1 do 100. Kliknij, aby wyróżnić pola. Nakładki liczenia skokami ujawniają wzory mnożenia. CCSS 2.NBT.A.2: liczenie skokami po 5, 10, 100.",
       "pattern_blocks_fractions_symmetry": "Klocki wzorów — ułamki + symetria",
-      "hexagon_trapezoid_rhombus_triangle_squ": "Sześciokąt, trapez, romb, trójkąt, kwadrat, wąski romb. 6 trapezów = 1 sześciokąt (więc 1 trapez = 1/2 sześc.). 3 romby = 1 sześc. (więc 1 romb = 1/3). 6 trójkątów = 1 sześc. (więc 1 trójkąt = 1/6).",
+      "hexagon_trapezoid_rhombus_triangle_squ": "Sześciokąt, trapez, romb, trójkąt, kwadrat, wąski romb. 2 trapezów = 1 sześciokąt (więc 1 trapez = 1/2 sześc.). 3 romby = 1 sześc. (więc 1 romb = 1/3). 6 trójkątów = 1 sześc. (więc 1 trójkąt = 1/6).",
       "geoboard_polygons_on_a_peg_grid": "Geoplansza — wielokąty na siatce kołków",
       "connect_pegs_with_rubber_bands_to_make": "Połącz kołki „gumkami”, aby tworzyć wielokąty. Zmierz obwód i pole. Klasyczne konkretne narzędzie do geometrii płaskiej i twierdzenia Picka.",
       "cuisenaire_rods_numbers_in_color": "Liczby w kolorach — pałeczki Cuisenaire'a",

@@ -22596,7 +22596,7 @@
       "hundreds_chart_count_pattern_and_skip": "Tabela de Centenas — contar, padrões e contagem por saltos",
       "a_10x10_grid_of_1_100_click_to_highlig": "Uma grade 10x10 de 1 a 100. Clique para destacar células. As sobreposições de contagem por saltos revelam padrões de multiplicação. CCSS 2.NBT.A.2: contagem por saltos de 5, 10, 100.",
       "pattern_blocks_fractions_symmetry": "Blocos de Padrões — frações + simetria",
-      "hexagon_trapezoid_rhombus_triangle_squ": "Hexágono, trapézio, losango, triângulo, quadrado, losango estreito. 6 trapézios = 1 hexágono (então 1 trapézio = 1/2 hex.). 3 losangos = 1 hex. (então 1 losango = 1/3). 6 triângulos = 1 hex. (então 1 triângulo = 1/6).",
+      "hexagon_trapezoid_rhombus_triangle_squ": "Hexágono, trapézio, losango, triângulo, quadrado, losango estreito. 2 trapézios = 1 hexágono (então 1 trapézio = 1/2 hex.). 3 losangos = 1 hex. (então 1 losango = 1/3). 6 triângulos = 1 hex. (então 1 triângulo = 1/6).",
       "geoboard_polygons_on_a_peg_grid": "Geoplano — polígonos numa grade de pinos",
       "connect_pegs_with_rubber_bands_to_make": "Conecte os pinos com \"elásticos\" para formar polígonos. Meça o perímetro e a área. A clássica ferramenta concreta para geometria plana e o teorema de Pick.",
       "cuisenaire_rods_numbers_in_color": "Barras Cuisenaire — números em cores",

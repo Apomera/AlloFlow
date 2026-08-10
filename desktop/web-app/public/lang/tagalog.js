@@ -22011,7 +22011,7 @@
       "hundreds_chart_count_pattern_and_skip": "Hundreds Chart — bilang, pattern, at skip",
       "a_10x10_grid_of_1_100_click_to_highlig": "Isang 10x10 na grid ng 1-100. I-click para i-highlight ang mga cell. Inilalantad ng skip-count overlays ang mga pattern ng multiplication. CCSS 2.NBT.A.2: skip-counting nang tig-5, 10, 100.",
       "pattern_blocks_fractions_symmetry": "Pattern Blocks — fractions + symmetry",
-      "hexagon_trapezoid_rhombus_triangle_squ": "Hexagon, trapezoid, rhombus, triangle, square, makitid na rhombus. 6 trapezoids = 1 hexagon (kaya 1 trapezoid = 1/2 hex). 3 rhombi = 1 hex (kaya 1 rhombus = 1/3). 6 triangles = 1 hex (kaya 1 triangle = 1/6).",
+      "hexagon_trapezoid_rhombus_triangle_squ": "Hexagon, trapezoid, rhombus, triangle, square, makitid na rhombus. 2 trapezoids = 1 hexagon (kaya 1 trapezoid = 1/2 hex). 3 rhombi = 1 hex (kaya 1 rhombus = 1/3). 6 triangles = 1 hex (kaya 1 triangle = 1/6).",
       "geoboard_polygons_on_a_peg_grid": "Geoboard — polygons sa isang peg grid",
       "connect_pegs_with_rubber_bands_to_make": "Ikabit ang mga peg gamit ang \"rubber bands\" para gumawa ng polygons. Sukatin ang perimeter at area. Ang klasikong konkretong tool para sa plane geometry at Pick's theorem.",
       "cuisenaire_rods_numbers_in_color": "Cuisenaire Rods — mga bilang na may kulay",

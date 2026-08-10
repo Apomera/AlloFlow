@@ -21139,7 +21139,7 @@
       "hundreds_chart_count_pattern_and_skip": "Hundreds Chart — tiri, pattern, iyo bood",
       "a_10x10_grid_of_1_100_click_to_highlig": "Grid 10x10 oo ah 1-100. Guji si aad u iftiimiso cells. Skip-count overlays waxay muujiyaan patterns isku-dhufashada. CCSS 2.NBT.A.2: skip-counting 5, 10, 100.",
       "pattern_blocks_fractions_symmetry": "Pattern Blocks — fractions iyo symmetry",
-      "hexagon_trapezoid_rhombus_triangle_squ": "Hexagon, trapezoid, rhombus, triangle, square, rhombus dhuuban. Trapezoids 6 = hexagon 1 (sidaas darteed trapezoid 1 = 1/2 hexagon). Rhombi 3 = hexagon 1 (sidaas darteed rhombus 1 = 1/3). Triangles 6 = hexagon 1 (sidaas darteed triangle 1 = 1/6).",
+      "hexagon_trapezoid_rhombus_triangle_squ": "Hexagon, trapezoid, rhombus, triangle, square, rhombus dhuuban. Trapezoids 2 = hexagon 1 (sidaas darteed trapezoid 1 = 1/2 hexagon). Rhombi 3 = hexagon 1 (sidaas darteed rhombus 1 = 1/3). Triangles 6 = hexagon 1 (sidaas darteed triangle 1 = 1/6).",
       "geoboard_polygons_on_a_peg_grid": "Geoboard — polygons grid pegs ah",
       "connect_pegs_with_rubber_bands_to_make": "Isku xir pegs adigoo isticmaalaya \"rubber bands\" si aad u samayso polygons. Cabbir perimeter iyo area. Qalabka dhaqameed ee la taaban karo ee plane geometry iyo Pick's theorem.",
       "cuisenaire_rods_numbers_in_color": "Cuisenaire Rods — tirooyin midab leh",

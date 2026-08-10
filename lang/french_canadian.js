@@ -23978,7 +23978,7 @@
       "hundreds_chart_count_pattern_and_skip": "Tableau des centaines — compter, motifs et sauts",
       "a_10x10_grid_of_1_100_click_to_highlig": "Une grille 10x10 de 1 à 100. Clique pour surligner des cases. Les calques de comptage par bonds révèlent les motifs de la multiplication. CCSS 2.NBT.A.2 : compter par bonds de 5, 10, 100.",
       "pattern_blocks_fractions_symmetry": "Blocs de formes — fractions + symétrie",
-      "hexagon_trapezoid_rhombus_triangle_squ": "Hexagone, trapèze, losange, triangle, carré, losange étroit. 6 trapèzes = 1 hexagone (donc 1 trapèze = 1/2 hexagone). 3 losanges = 1 hexagone (donc 1 losange = 1/3). 6 triangles = 1 hexagone (donc 1 triangle = 1/6).",
+      "hexagon_trapezoid_rhombus_triangle_squ": "Hexagone, trapèze, losange, triangle, carré, losange étroit. 2 trapèzes = 1 hexagone (donc 1 trapèze = 1/2 hexagone). 3 losanges = 1 hexagone (donc 1 losange = 1/3). 6 triangles = 1 hexagone (donc 1 triangle = 1/6).",
       "geoboard_polygons_on_a_peg_grid": "Géoplan — des polygones sur une grille de clous",
       "connect_pegs_with_rubber_bands_to_make": "Relie les clous avec des « élastiques » pour former des polygones. Mesure le périmètre et l'aire. L'outil concret classique pour la géométrie plane et le théorème de Pick.",
       "cuisenaire_rods_numbers_in_color": "Réglettes Cuisenaire — les nombres en couleur",

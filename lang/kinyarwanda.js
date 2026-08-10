@@ -21251,7 +21251,7 @@
       "hundreds_chart_count_pattern_and_skip": "Hundreds Chart — bara, pattern, no gusimbuka",
       "a_10x10_grid_of_1_100_click_to_highlig": "Grid ya 10x10 ya 1-100. Kanda kugira ngo umurikire cells. Skip-count overlays zerekana patterns za multiplication. CCSS 2.NBT.A.2: skip-counting ku 5, 10, 100.",
       "pattern_blocks_fractions_symmetry": "Pattern Blocks — fractions na symmetry",
-      "hexagon_trapezoid_rhombus_triangle_squ": "Hexagon, trapezoid, rhombus, triangle, square, rhombus yagoramye. Trapezoids 6 = hexagon 1 (bityo trapezoid 1 = 1/2 ya hexagon). Rhombi 3 = hexagon 1 (bityo rhombus 1 = 1/3). Triangles 6 = hexagon 1 (bityo triangle 1 = 1/6).",
+      "hexagon_trapezoid_rhombus_triangle_squ": "Hexagon, trapezoid, rhombus, triangle, square, rhombus yagoramye. Trapezoids 2 = hexagon 1 (bityo trapezoid 1 = 1/2 ya hexagon). Rhombi 3 = hexagon 1 (bityo rhombus 1 = 1/3). Triangles 6 = hexagon 1 (bityo triangle 1 = 1/6).",
       "geoboard_polygons_on_a_peg_grid": "Geoboard — polygons ku grid ya pegs",
       "connect_pegs_with_rubber_bands_to_make": "Huza pegs na \"rubber bands\" kugira ngo ukore polygons. Pima perimeter na area. Igikoresho gakondo gikorwakora cya plane geometry na Pick's theorem.",
       "cuisenaire_rods_numbers_in_color": "Cuisenaire Rods — imibare mu ibara",

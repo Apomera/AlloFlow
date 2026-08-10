@@ -24269,7 +24269,7 @@
       "hundreds_chart_count_pattern_and_skip": "百數表——數數、找規律與跳數",
       "a_10x10_grid_of_1_100_click_to_highlig": "一個 1–100 的 10×10 方格。點擊以高亮格子。跳數疊加層會顯現乘法規律。CCSS 2.NBT.A.2：以 5、10、100 跳數。",
       "pattern_blocks_fractions_symmetry": "圖案塊——分數與對稱",
-      "hexagon_trapezoid_rhombus_triangle_squ": "六邊形、梯形、菱形、三角形、正方形、窄菱形。6 個梯形 = 1 個六邊形（所以 1 個梯形 = 1/2 六邊形）。3 個菱形 = 1 個六邊形（所以 1 個菱形 = 1/3）。6 個三角形 = 1 個六邊形（所以 1 個三角形 = 1/6）。",
+      "hexagon_trapezoid_rhombus_triangle_squ": "六邊形、梯形、菱形、三角形、正方形、窄菱形。2 個梯形 = 1 個六邊形（所以 1 個梯形 = 1/2 六邊形）。3 個菱形 = 1 個六邊形（所以 1 個菱形 = 1/3）。6 個三角形 = 1 個六邊形（所以 1 個三角形 = 1/6）。",
       "geoboard_polygons_on_a_peg_grid": "幾何釘板——釘格上的多邊形",
       "connect_pegs_with_rubber_bands_to_make": "用“橡皮筋”連接釘子來做出多邊形。測量周長和面積。平面幾何與皮克定理的經典具體工具。",
       "cuisenaire_rods_numbers_in_color": "古氏數棒——彩色中的數字",

@@ -22300,7 +22300,7 @@
       "hundreds_chart_count_pattern_and_skip": "Tabla sutei — numărare, tipare și numărare din x în x",
       "a_10x10_grid_of_1_100_click_to_highlig": "O grilă 10x10 de la 1 la 100. Dă clic pentru a evidenția celule. Suprapunerile de numărare din x în x dezvăluie tiparele înmulțirii. CCSS 2.NBT.A.2: numărare din 5 în 5, din 10 în 10, din 100 în 100.",
       "pattern_blocks_fractions_symmetry": "Blocuri geometrice — fracții + simetrie",
-      "hexagon_trapezoid_rhombus_triangle_squ": "Hexagon, trapez, romb, triunghi, pătrat, romb îngust. 6 trapeze = 1 hexagon (deci 1 trapez = 1/2 hexagon). 3 romburi = 1 hexagon (deci 1 romb = 1/3). 6 triunghiuri = 1 hexagon (deci 1 triunghi = 1/6).",
+      "hexagon_trapezoid_rhombus_triangle_squ": "Hexagon, trapez, romb, triunghi, pătrat, romb îngust. 2 trapeze = 1 hexagon (deci 1 trapez = 1/2 hexagon). 3 romburi = 1 hexagon (deci 1 romb = 1/3). 6 triunghiuri = 1 hexagon (deci 1 triunghi = 1/6).",
       "geoboard_polygons_on_a_peg_grid": "Geoplan — poligoane pe o grilă de cuie",
       "connect_pegs_with_rubber_bands_to_make": "Conectează cuiele cu „elastice” pentru a forma poligoane. Măsoară perimetrul și aria. Instrumentul concret clasic pentru geometria plană și teorema lui Pick.",
       "cuisenaire_rods_numbers_in_color": "Riglete Cuisenaire — numerele în culori",

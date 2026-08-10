@@ -23996,7 +23996,7 @@
       "hundreds_chart_count_pattern_and_skip": "100 수 배열표 — 세기, 규칙, 뛰어 세기",
       "a_10x10_grid_of_1_100_click_to_highlig": "1–100의 10×10 격자. 클릭해 칸을 강조합니다. 뛰어 세기 오버레이가 곱셈 규칙을 드러냅니다. CCSS 2.NBT.A.2: 5, 10, 100씩 뛰어 세기.",
       "pattern_blocks_fractions_symmetry": "패턴 블록 — 분수와 대칭",
-      "hexagon_trapezoid_rhombus_triangle_squ": "육각형, 사다리꼴, 마름모, 삼각형, 정사각형, 좁은 마름모. 사다리꼴 6개 = 육각형 1개(그래서 사다리꼴 1개 = 육각형의 1/2). 마름모 3개 = 육각형 1개(그래서 마름모 1개 = 1/3). 삼각형 6개 = 육각형 1개(그래서 삼각형 1개 = 1/6).",
+      "hexagon_trapezoid_rhombus_triangle_squ": "육각형, 사다리꼴, 마름모, 삼각형, 정사각형, 좁은 마름모. 사다리꼴 2개 = 육각형 1개(그래서 사다리꼴 1개 = 육각형의 1/2). 마름모 3개 = 육각형 1개(그래서 마름모 1개 = 1/3). 삼각형 6개 = 육각형 1개(그래서 삼각형 1개 = 1/6).",
       "geoboard_polygons_on_a_peg_grid": "지오보드 — 못 격자 위의 다각형",
       "connect_pegs_with_rubber_bands_to_make": "못을 “고무줄”로 이어 다각형을 만듭니다. 둘레와 넓이를 잽니다. 평면 기하와 픽의 정리를 위한 고전적 구체 교구입니다.",
       "cuisenaire_rods_numbers_in_color": "퀴즈네르 막대 — 색이 된 수",

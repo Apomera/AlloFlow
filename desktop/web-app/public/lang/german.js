@@ -22288,7 +22288,7 @@
       "hundreds_chart_count_pattern_and_skip": "Hundertertafel — zählen, Muster erkennen und im Schritt zählen",
       "a_10x10_grid_of_1_100_click_to_highlig": "Ein 10x10-Raster von 1–100. Klicke, um Felder hervorzuheben. Schrittzähl-Überlagerungen enthüllen Multiplikationsmuster. CCSS 2.NBT.A.2: Zählen in Schritten von 5, 10, 100.",
       "pattern_blocks_fractions_symmetry": "Musterplättchen — Brüche + Symmetrie",
-      "hexagon_trapezoid_rhombus_triangle_squ": "Sechseck, Trapez, Rhombus, Dreieck, Quadrat, schmaler Rhombus. 6 Trapeze = 1 Sechseck (also 1 Trapez = 1/2 Sechseck). 3 Rhomben = 1 Sechseck (also 1 Rhombus = 1/3). 6 Dreiecke = 1 Sechseck (also 1 Dreieck = 1/6).",
+      "hexagon_trapezoid_rhombus_triangle_squ": "Sechseck, Trapez, Rhombus, Dreieck, Quadrat, schmaler Rhombus. 2 Trapeze = 1 Sechseck (also 1 Trapez = 1/2 Sechseck). 3 Rhomben = 1 Sechseck (also 1 Rhombus = 1/3). 6 Dreiecke = 1 Sechseck (also 1 Dreieck = 1/6).",
       "geoboard_polygons_on_a_peg_grid": "Geobrett — Vielecke auf einem Stiftraster",
       "connect_pegs_with_rubber_bands_to_make": "Verbinde Stifte mit „Gummibändern“, um Vielecke zu bilden. Miss Umfang und Fläche. Das klassische anschauliche Werkzeug für die ebene Geometrie und den Satz von Pick.",
       "cuisenaire_rods_numbers_in_color": "Cuisenaire-Stäbe — Zahlen in Farbe",

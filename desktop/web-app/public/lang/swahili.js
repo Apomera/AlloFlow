@@ -21409,7 +21409,7 @@
       "hundreds_chart_count_pattern_and_skip": "Chati ya Mia — hesabu, mchoro, na uruke",
       "a_10x10_grid_of_1_100_click_to_highlig": "Gridi ya 10x10 ya 1-100. Bofya kuangazia visanduku. Tabaka za kuhesabu kwa kuruka hufunua michoro ya kuzidisha. CCSS 2.NBT.A.2: kuhesabu kwa kuruka kwa 5, 10, 100.",
       "pattern_blocks_fractions_symmetry": "Vitalu vya Mchoro — sehemu na ulinganifu",
-      "hexagon_trapezoid_rhombus_triangle_squ": "Pembesita, trapezia, rombasi, pembetatu, mraba, rombasi nyembamba. Trapezia 6 = pembesita 1 (hivyo trapezia 1 = 1/2 ya pembesita). Rombasi 3 = pembesita 1 (hivyo rombasi 1 = 1/3). Pembetatu 6 = pembesita 1 (hivyo pembetatu 1 = 1/6).",
+      "hexagon_trapezoid_rhombus_triangle_squ": "Pembesita, trapezia, rombasi, pembetatu, mraba, rombasi nyembamba. Trapezia 2 = pembesita 1 (hivyo trapezia 1 = 1/2 ya pembesita). Rombasi 3 = pembesita 1 (hivyo rombasi 1 = 1/3). Pembetatu 6 = pembesita 1 (hivyo pembetatu 1 = 1/6).",
       "geoboard_polygons_on_a_peg_grid": "Ubao wa Jiometri — poligoni kwenye gridi ya vigingi",
       "connect_pegs_with_rubber_bands_to_make": "Unganisha vigingi kwa \"mipira ya mpira\" kutengeneza poligoni. Pima mzingo na eneo. Zana ya kawaida inayoshikika kwa jiometri ya uwanda na nadharia ya Pick.",
       "cuisenaire_rods_numbers_in_color": "Vijiti vya Cuisenaire — namba kwa rangi",

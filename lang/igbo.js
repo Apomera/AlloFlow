@@ -21263,7 +21263,7 @@
       "hundreds_chart_count_pattern_and_skip": "Hundreds Chart — gụọ, pattern, na wụfe",
       "a_10x10_grid_of_1_100_click_to_highlig": "Grid 10x10 nke 1-100. Pịa iji mee ka cells nwuo. Skip-count overlays na-ekpughe patterns nke ịba ụba. CCSS 2.NBT.A.2: skip-counting site na 5, 10, 100.",
       "pattern_blocks_fractions_symmetry": "Pattern Blocks — fractions na symmetry",
-      "hexagon_trapezoid_rhombus_triangle_squ": "Hexagon, trapezoid, rhombus, triangle, square, rhombus dị warara. Trapezoids 6 = hexagon 1 (ya mere trapezoid 1 = 1/2 nke hexagon). Rhombi 3 = hexagon 1 (ya mere rhombus 1 = 1/3). Triangles 6 = hexagon 1 (ya mere triangle 1 = 1/6).",
+      "hexagon_trapezoid_rhombus_triangle_squ": "Hexagon, trapezoid, rhombus, triangle, square, rhombus dị warara. Trapezoids 2 = hexagon 1 (ya mere trapezoid 1 = 1/2 nke hexagon). Rhombi 3 = hexagon 1 (ya mere rhombus 1 = 1/3). Triangles 6 = hexagon 1 (ya mere triangle 1 = 1/6).",
       "geoboard_polygons_on_a_peg_grid": "Geoboard — polygons na grid nke pegs",
       "connect_pegs_with_rubber_bands_to_make": "Jikọọ pegs na \"rubber bands\" iji mee polygons. Tụọ perimeter na area. Ngwaọrụ ọdịnala a na-emetụ aka maka plane geometry na Pick's theorem.",
       "cuisenaire_rods_numbers_in_color": "Cuisenaire Rods — ọnụọgụgụ n'agba",

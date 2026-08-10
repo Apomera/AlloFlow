@@ -23297,7 +23297,7 @@
       "hundreds_chart_count_pattern_and_skip": "Tablo Santèn — konte, modèl, ak konte an so",
       "a_10x10_grid_of_1_100_click_to_highlig": "Yon griy 10x10 de 1-100. Klike pou make selil yo. Kouch konte-an-so revele modèl miltiplikasyon. CCSS 2.NBT.A.2: konte an so pa 5, 10, 100.",
       "pattern_blocks_fractions_symmetry": "Blòk Modèl — fraksyon + simetri",
-      "hexagon_trapezoid_rhombus_triangle_squ": "Egzagòn, trapèz, lozanj, triyang, kare, lozanj fen. 6 trapèz = 1 egzagòn (donk 1 trapèz = 1/2 egz.). 3 lozanj = 1 egz. (donk 1 lozanj = 1/3). 6 triyang = 1 egz. (donk 1 triyang = 1/6).",
+      "hexagon_trapezoid_rhombus_triangle_squ": "Egzagòn, trapèz, lozanj, triyang, kare, lozanj fen. 2 trapèz = 1 egzagòn (donk 1 trapèz = 1/2 egz.). 3 lozanj = 1 egz. (donk 1 lozanj = 1/3). 6 triyang = 1 egz. (donk 1 triyang = 1/6).",
       "geoboard_polygons_on_a_peg_grid": "Jeoplan — poligòn sou yon griy klou",
       "connect_pegs_with_rubber_bands_to_make": "Konekte klou yo ak \"elastik\" pou fè poligòn. Mezire perimèt ak sifas. Zouti klasik konkrè pou jeometri plan ak teyorèm Pick la.",
       "cuisenaire_rods_numbers_in_color": "Baton Cuisenaire — nonm an koulè",

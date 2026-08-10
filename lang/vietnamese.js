@@ -24574,7 +24574,7 @@
       "hundreds_chart_count_pattern_and_skip": "Bảng số trăm — đếm, quy luật và đếm cách",
       "a_10x10_grid_of_1_100_click_to_highlig": "Một lưới 10x10 gồm 1–100. Nhấp để tô sáng các ô. Lớp phủ đếm cách để lộ quy luật nhân. CCSS 2.NBT.A.2: đếm cách theo 5, 10, 100.",
       "pattern_blocks_fractions_symmetry": "Khối hình mẫu — phân số + đối xứng",
-      "hexagon_trapezoid_rhombus_triangle_squ": "Lục giác, hình thang, hình thoi, tam giác, hình vuông, hình thoi hẹp. 6 hình thang = 1 lục giác (nên 1 hình thang = 1/2 lục giác). 3 hình thoi = 1 lục giác (nên 1 hình thoi = 1/3). 6 tam giác = 1 lục giác (nên 1 tam giác = 1/6).",
+      "hexagon_trapezoid_rhombus_triangle_squ": "Lục giác, hình thang, hình thoi, tam giác, hình vuông, hình thoi hẹp. 2 hình thang = 1 lục giác (nên 1 hình thang = 1/2 lục giác). 3 hình thoi = 1 lục giác (nên 1 hình thoi = 1/3). 6 tam giác = 1 lục giác (nên 1 tam giác = 1/6).",
       "geoboard_polygons_on_a_peg_grid": "Bảng đinh hình học — đa giác trên lưới đinh",
       "connect_pegs_with_rubber_bands_to_make": "Nối các đinh bằng \"dây thun\" để tạo đa giác. Đo chu vi và diện tích. Công cụ cụ thể kinh điển cho hình học phẳng và định lý Pick.",
       "cuisenaire_rods_numbers_in_color": "Thanh Cuisenaire — những con số trong màu sắc",

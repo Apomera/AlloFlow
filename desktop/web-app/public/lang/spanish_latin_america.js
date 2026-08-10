@@ -24412,7 +24412,7 @@
       "hundreds_chart_count_pattern_and_skip": "Tabla del cien — contar, patrones y saltos",
       "a_10x10_grid_of_1_100_click_to_highlig": "Una cuadrícula de 10x10 del 1 al 100. Haz clic para resaltar celdas. Las capas de conteo por saltos revelan patrones de multiplicación. CCSS 2.NBT.A.2: contar de 5 en 5, de 10 en 10, de 100 en 100.",
       "pattern_blocks_fractions_symmetry": "Bloques de patrones — fracciones + simetría",
-      "hexagon_trapezoid_rhombus_triangle_squ": "Hexágono, trapecio, rombo, triángulo, cuadrado, rombo estrecho. 6 trapecios = 1 hexágono (así que 1 trapecio = 1/2 hexágono). 3 rombos = 1 hexágono (así que 1 rombo = 1/3). 6 triángulos = 1 hexágono (así que 1 triángulo = 1/6).",
+      "hexagon_trapezoid_rhombus_triangle_squ": "Hexágono, trapecio, rombo, triángulo, cuadrado, rombo estrecho. 2 trapecios = 1 hexágono (así que 1 trapecio = 1/2 hexágono). 3 rombos = 1 hexágono (así que 1 rombo = 1/3). 6 triángulos = 1 hexágono (así que 1 triángulo = 1/6).",
       "geoboard_polygons_on_a_peg_grid": "Geoplano — polígonos en una malla de clavijas",
       "connect_pegs_with_rubber_bands_to_make": "Conecta clavijas con «gomas elásticas» para formar polígonos. Mide el perímetro y el área. La herramienta concreta clásica para la geometría plana y el teorema de Pick.",
       "cuisenaire_rods_numbers_in_color": "Regletas Cuisenaire — los números en color",

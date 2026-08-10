@@ -22480,7 +22480,7 @@
       "hundreds_chart_count_pattern_and_skip": "Yüzler Tablosu — say, örüntü bul ve ritmik say",
       "a_10x10_grid_of_1_100_click_to_highlig": "1-100 arası 10x10'luk bir ızgara. Hücreleri vurgulamak için tıkla. Ritmik sayma katmanları çarpma örüntülerini ortaya çıkarır. CCSS 2.NBT.A.2: 5'er, 10'ar, 100'er ritmik sayma.",
       "pattern_blocks_fractions_symmetry": "Örüntü Blokları — kesirler + simetri",
-      "hexagon_trapezoid_rhombus_triangle_squ": "Altıgen, yamuk, eşkenar dörtgen, üçgen, kare, dar eşkenar dörtgen. 6 yamuk = 1 altıgen (yani 1 yamuk = altıgenin 1/2'si). 3 eşkenar dörtgen = 1 altıgen (yani 1 eşkenar dörtgen = 1/3). 6 üçgen = 1 altıgen (yani 1 üçgen = 1/6).",
+      "hexagon_trapezoid_rhombus_triangle_squ": "Altıgen, yamuk, eşkenar dörtgen, üçgen, kare, dar eşkenar dörtgen. 2 yamuk = 1 altıgen (yani 1 yamuk = altıgenin 1/2'si). 3 eşkenar dörtgen = 1 altıgen (yani 1 eşkenar dörtgen = 1/3). 6 üçgen = 1 altıgen (yani 1 üçgen = 1/6).",
       "geoboard_polygons_on_a_peg_grid": "Geometri Tahtası — çivi ızgarasında çokgenler",
       "connect_pegs_with_rubber_bands_to_make": "Çokgen yapmak için çivileri \"lastiklerle\" bağla. Çevre ve alanı ölç. Düzlem geometrisi ve Pick teoremi için klasik somut araç.",
       "cuisenaire_rods_numbers_in_color": "Cuisenaire Çubukları — renkli sayılar",

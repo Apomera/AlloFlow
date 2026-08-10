@@ -14497,7 +14497,7 @@
       "hundreds_chart_count_pattern_and_skip": "Hundreds Chart — count, pattern, and skip",
       "a_10x10_grid_of_1_100_click_to_highlig": "A 10x10 grid of 1-100. Click to highlight cells. Skip-count overlays reveal multiplication patterns. CCSS 2.NBT.A.2: skip-counting by 5s, 10s, 100s.",
       "pattern_blocks_fractions_symmetry": "Pattern Blocks — fractions + symmetry",
-      "hexagon_trapezoid_rhombus_triangle_squ": "Hexagon, trapezoid, rhombus, triangle, square, narrow rhombus. 6 trapezoids = 1 hexagon (so 1 trapezoid = 1/2 hex). 3 rhombi = 1 hex (so 1 rhombus = 1/3). 6 triangles = 1 hex (so 1 triangle = 1/6).",
+      "hexagon_trapezoid_rhombus_triangle_squ": "Hexagon, trapezoid, rhombus, triangle, square, narrow rhombus. 2 trapezoids = 1 hexagon (so 1 trapezoid = 1/2 hex). 3 rhombi = 1 hex (so 1 rhombus = 1/3). 6 triangles = 1 hex (so 1 triangle = 1/6).",
       "geoboard_polygons_on_a_peg_grid": "Geoboard — polygons on a peg grid",
       "connect_pegs_with_rubber_bands_to_make": "Connect pegs with \"rubber bands\" to make polygons. Measure perimeter and area. The classic concrete tool for plane geometry and Pick's theorem.",
       "cuisenaire_rods_numbers_in_color": "Cuisenaire Rods — numbers in color",
