@@ -125,7 +125,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for cyber
   "lengthBucket": 55,
   "paths": 0,
   "selects": 0,
-  "sha": "44f8c4af49bf7ff6",
+  "sha": "5841cff08874b651",
   "svgs": 0,
 }
 `;

@@ -23,7 +23,7 @@ describe('cyberDefense — cipher decode challenges', () => {
   it('exposes the pure cipher functions and challenge bank', () => {
     expect(typeof pure.caesarCipher).toBe('function');
     expect(typeof pure.atbashCipher).toBe('function');
-    expect(pure.CIPHER_CHALLENGES.length).toBeGreaterThanOrEqual(5);
+    expect(pure.CIPHER_CHALLENGES.length).toBeGreaterThanOrEqual(8);
   });
 
   it('every ciphertext decodes to its expected answer using the tool\'s own ciphers', () => {
@@ -60,6 +60,19 @@ describe('cyberDefense — phishing bank balance', () => {
     const share = phish / (phish + legit);
     expect(share).toBeGreaterThanOrEqual(0.4);
     expect(share).toBeLessThanOrEqual(0.7);
+  });
+
+  it('every difficulty tier has a real pool with both classes (no all-phish filter)', () => {
+    const src = fs.readFileSync('stem_lab/stem_tool_cyberdefense.js', 'utf8');
+    const pairs = [...src.matchAll(/isPhish: (true|false), difficulty: '(easy|medium|hard)'/g)];
+    expect(pairs.length).toBeGreaterThanOrEqual(18);
+    const byTier = { easy: { p: 0, l: 0 }, medium: { p: 0, l: 0 }, hard: { p: 0, l: 0 } };
+    for (const m of pairs) byTier[m[2]][m[1] === 'true' ? 'p' : 'l']++;
+    for (const tier of ['easy', 'medium', 'hard']) {
+      expect(byTier[tier].p + byTier[tier].l, tier + ' pool size').toBeGreaterThanOrEqual(5);
+      expect(byTier[tier].p, tier + ' phish count').toBeGreaterThanOrEqual(2);
+      expect(byTier[tier].l, tier + ' legit count').toBeGreaterThanOrEqual(2);
+    }
   });
 });
 
