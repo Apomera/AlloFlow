@@ -115,13 +115,51 @@ describe('Quiz poll mode — endpoints only, and honest about it', () => {
 });
 
 describe('Share & Collect mailbox', () => {
-  it('round-trips a real rating activity', () => {
+  // Code.gs v13 hosts a real multi-item survey activity, so a whole
+  // instrument travels as ONE activity — the earlier N-single-prompt split
+  // was retired before it ever shipped.
+  it('emits one survey activity carrying the whole instrument', () => {
+    const canonical = S.fromResearchSuite([
+      RESEARCH_SUITE_ITEM,
+      { id: 'q2', text: 'Which fits best?', type: 'mcq', labels: [], options: [{ text: 'A', image: null }, { text: 'B', image: null }] },
+      { id: 'q3', text: 'Anything else?', type: 'freetext', labels: [], options: [] },
+    ]);
+    const { activities, overflow } = S.toMailboxActivities(canonical, { identityMode: 'anonymous', prompt: 'Weekly check-in' });
+    expect(activities).toHaveLength(1);
+    expect(overflow).toBe(0);
+    expect(activities[0]).toMatchObject({ type: 'survey', identityMode: 'anonymous', prompt: 'Weekly check-in' });
+    expect(activities[0].items.map((item) => item.type)).toEqual(['likert', 'choice', 'freetext']);
+    expect(activities[0].items[0]).toMatchObject({ steps: 5, labels: ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree'] });
+    expect(activities[0].items[1].options).toEqual([{ label: 'A' }, { label: 'B' }]);
+  });
+
+  it('will not invent an identity mode — the server refuses defaults and so does this', () => {
+    const { activities } = S.toMailboxActivities(S.fromResearchSuite([RESEARCH_SUITE_ITEM]));
+    expect(activities[0].identityMode).toBe('');
+  });
+
+  it('reads a server-normalized survey activity back with its generated ids', () => {
+    const wire = {
+      activityId: 'AC-1', type: 'survey', prompt: 'Weekly check-in',
+      items: [
+        { id: 'i1', type: 'likert', text: 'Confidence', steps: 5, labels: ['Low', '', '', '', 'High'], required: true },
+        { id: 'i2', type: 'choice', text: 'Best support?', options: [{ id: 'o1', label: 'Read-aloud' }, { id: 'o2', label: 'Glossary' }] },
+        { id: 'i3', type: 'numeric', text: 'Minutes', min: 0, max: 240 },
+      ],
+    };
+    const instrument = S.fromMailboxActivity(wire);
+    expect(instrument.map((item) => item.id)).toEqual(['i1', 'i2', 'i3']);
+    expect(instrument[0]).toMatchObject({ type: 'likert', steps: 5, required: true });
+    expect(instrument[0].labels.map((c) => c.text)).toEqual(['Low', '', '', '', 'High']);
+    expect(instrument[1].options.map((c) => c.text)).toEqual(['Read-aloud', 'Glossary']);
+    expect(instrument[2]).toMatchObject({ min: 0, max: 240 });
+  });
+
+  it('still reads a legacy single-prompt rating activity as one item', () => {
     const item = S.fromMailboxActivity(MAILBOX_RATING);
     expect(item.type).toBe('likert');
     expect(item.steps).toBe(5);
-    const { activities } = S.toMailboxActivities([item]);
-    expect(activities[0]).toMatchObject({ type: 'rating', minValue: 1, maxValue: 5, prompt: MAILBOX_RATING.prompt });
-    expect(activities[0].labels).toEqual(MAILBOX_RATING.labels);
+    expect(item.labels.map((c) => c.text)).toEqual(MAILBOX_RATING.labels);
   });
 
   it('reports that label images cannot survive the hop', () => {
@@ -131,15 +169,11 @@ describe('Share & Collect mailbox', () => {
     expect(S.toMailboxActivities(canonical).lossy).toEqual(['label-images']);
   });
 
-  it('says nothing is lossy when nothing is', () => {
-    expect(S.toMailboxActivities([S.fromMailboxActivity(MAILBOX_RATING)]).lossy).toEqual([]);
-  });
-
-  it('reports overflow past the backend cap instead of truncating silently', () => {
+  it('reports overflow past the per-survey item cap instead of truncating silently', () => {
     const many = [];
-    for (let i = 0; i < 11; i += 1) many.push({ id: 'q' + i, text: 'Item ' + i, type: 'likert', steps: 5 });
+    for (let i = 0; i < 15; i += 1) many.push({ id: 'q' + i, text: 'Item ' + i, type: 'likert', steps: 5 });
     const out = S.toMailboxActivities(many);
-    expect(out.activities.length).toBe(S.MAILBOX_MAX_ACTIVITIES);
+    expect(out.activities[0].items.length).toBe(S.MAILBOX_MAX_SURVEY_ITEMS);
     expect(out.overflow).toBe(3);
   });
 });
@@ -181,12 +215,13 @@ describe('research validity is REPORTED, never silently applied', () => {
 });
 
 describe('the three surfaces agree on the same instrument', () => {
-  it('carries one item through Research Suite -> mailbox -> back', () => {
+  it('carries an instrument through Research Suite -> mailbox survey -> back', () => {
     const canonical = S.fromResearchSuite([RESEARCH_SUITE_ITEM]);
-    const { activities } = S.toMailboxActivities(canonical);
+    const { activities } = S.toMailboxActivities(canonical, { identityMode: 'anonymous' });
     const returned = S.fromMailboxActivity(Object.assign({ activityId: 'AC-1' }, activities[0]));
-    expect(returned.text).toBe(RESEARCH_SUITE_ITEM.text);
-    expect(returned.steps).toBe(5);
-    expect(returned.labels.map((c) => c.text)).toEqual(RESEARCH_SUITE_ITEM.labels.map((c) => c.text));
+    expect(returned).toHaveLength(1);
+    expect(returned[0].text).toBe(RESEARCH_SUITE_ITEM.text);
+    expect(returned[0].steps).toBe(5);
+    expect(returned[0].labels.map((c) => c.text)).toEqual(RESEARCH_SUITE_ITEM.labels.map((c) => c.text));
   });
 });

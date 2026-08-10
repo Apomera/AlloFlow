@@ -66,7 +66,7 @@ describe('Code.gs protocol (real source, mocked Google services)', () => {
     it('runs the full live-session lifecycle with separated teacher and participant capabilities', () => {
         const { call } = makeGsSandbox();
         const K = 'k_secret_k_secret_20';
-        expect(call({ a: 'hello' }).v).toBe(12);
+        expect(call({ a: 'hello' }).v).toBe(13);
         const claim = call({ a: 'claim' });
         expect(claim.ok).toBe(true);
         expect(claim.admin.length).toBeGreaterThanOrEqual(32);
@@ -718,7 +718,10 @@ describe('ANTI wiring pins', () => {
         expect(anti).toContain('sharedActivities: sharedActivities.length ? sharedActivities : undefined');
         expect(anti).toContain('activities: built.sharedActivities');
         expect(anti).toContain('sharedActivity: built.sharedActivities[0] || null');
-        expect(anti).toContain('const requiredMailboxVersion = sharedAssignmentActivity.enabled ? 11 : 9;');
+        // Surveys need the v13 script; gating HERE means a too-old mailbox is
+        // named before anything uploads, instead of bouncing as bad-activity.
+        expect(anti).toContain("const requiredMailboxVersion = (sharedAssignmentActivity.enabled && sharedAssignmentActivity.type === 'survey') ? 13");
+        expect(anti).toContain(': sharedAssignmentActivity.enabled ? 11 : 9;');
         expect(anti).not.toContain('activity: built.sharedActivity');
     });
 
@@ -751,12 +754,19 @@ describe('ANTI wiring pins', () => {
         expect(helpers.meta({ type: 'word_cloud' })).toMatchObject({ shortLabel: 'WC', title: 'Class word cloud' });
 
         expect(anti).toContain("callStudentUpdate({ value: ratingValue })");
-        expect(anti).toContain("candidate.type === 'word_cloud' || candidate.type === 'rating'");
+        // The hosted-pack ingest filter now admits every mailbox activity type
+        // (surveys landed with v13; availability/signup never passed the old
+        // two-type filter, so no student could reach them from a hosted pack).
+        expect(anti).toContain("['word_cloud', 'rating', 'availability', 'signup', 'survey'].indexOf(candidate.type) >= 0");
         expect(anti).toContain('Anonymous aggregate only · not scored');
         expect(anti).toContain("SharedAssignmentActivityPanel");
-        expect(headerSource).toContain('<option value="rating">Rating scale (not scored)</option>');
-        expect(headerSource).toContain("labels: event.target.value.split('|').slice(0, 10)");
-        expect(headerSource).toContain('Results are aggregate-only and never scored.');
+        // The activity editor moved from the header's Documents dropdown into
+        // the Share & Collect dialog (ANTI, @afc130a59) and its rating controls
+        // were simplified to defaults; these pins follow the surface that
+        // actually ships rather than the one that was removed.
+        expect(anti).toContain('<option value="rating">Rating scale (not scored)</option>');
+        expect(anti).toContain('const ratingMin = Math.max(1, Math.min(9,');
+        expect(anti).toContain('const ratingMax = Math.max(ratingMin + 1, Math.min(10,');
     });
 
     it('open/putpack are admin-gated in Code.gs and boxes are restricted to up/down', () => {

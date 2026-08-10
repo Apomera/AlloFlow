@@ -6,6 +6,112 @@
 (function () {
   'use strict';
 
+// ── Share & Collect bridge (survey delivery over the class mailbox) ──────
+// Suite question shapes -> the v13 survey wire items. Pure, exported for
+// tests. Images on labels cannot travel (the mailbox stores plain strings),
+// so the flag lets the caller SAY so instead of dropping them silently.
+function _saiSuiteQuestionsToWireItems(questions) {
+  var dropped = false;
+  var itemKeys = [];
+  var items = [];
+  (Array.isArray(questions) ? questions : []).forEach(function (question) {
+    if (!question || !String(question.text || '').trim()) return;
+    var kind = question.type === 'mcq' ? 'choice'
+      : (question.type === 'freetext' || question.type === 'numeric') ? question.type
+      : 'likert';
+    var entry = { type: kind, text: String(question.text).replace(/\s+/g, ' ').trim().slice(0, 240), required: false };
+    var cellText = function (cell) {
+      if (cell && typeof cell === 'object') {
+        if (cell.image) dropped = true;
+        return String(cell.text || '').trim().slice(0, 60);
+      }
+      return String(cell == null ? '' : cell).trim().slice(0, 60);
+    };
+    if (kind === 'likert') {
+      var labels = (Array.isArray(question.labels) ? question.labels : []).map(cellText);
+      if (labels.length < 2) labels = ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree'];
+      entry.steps = Math.max(2, Math.min(10, labels.length));
+      entry.labels = labels.slice(0, entry.steps);
+    } else if (kind === 'choice') {
+      var options = ((question.options && question.options.length) ? question.options : question.labels || [])
+        .map(cellText).filter(Boolean).slice(0, 12);
+      if (options.length < 2) return;
+      entry.options = options.map(function (label) { return { label: label.slice(0, 80) }; });
+    } else if (kind === 'numeric') {
+      if (isFinite(Number(question.min))) entry.min = Number(question.min);
+      if (isFinite(Number(question.max))) entry.max = Number(question.max);
+    }
+    items.push(entry);
+    // The original question id, in item order: the importer uses these to
+    // give mailbox rows the SAME CSV columns as in-person responses, so
+    // pre/post analysis does not care which route an answer took.
+    itemKeys.push(String(question.id || ('q' + (itemKeys.length + 1))));
+  });
+  return { items: items.slice(0, 12), itemKeys: itemKeys.slice(0, 12), droppedImages: dropped };
+}
+
+// Mailbox admin summary -> Suite response rows. Deduped per activity + row
+// so re-importing after new responses only adds the new ones. Anonymous
+// surveys have no rows BY DESIGN (the server refuses to attribute them), so
+// they report aggregateOnly instead of fabricating respondents.
+function _saiImportMailboxSurveySummary(summary, meta) {
+  var info = meta && typeof meta === 'object' ? meta : {};
+  if (!summary || summary.type !== 'survey' || summary.ok === false) return { imported: 0, skipped: 0, error: 'not-a-survey' };
+  var rows = Array.isArray(summary.rows) ? summary.rows : [];
+  if (!rows.length) return { imported: 0, skipped: 0, aggregateOnly: true };
+  var items = Array.isArray(summary.items) ? summary.items : [];
+  var itemKeys = Array.isArray(info.itemKeys) ? info.itemKeys : [];
+  // Only trust the id remap when it still lines up one-to-one; a teacher who
+  // edited the drafted items in the dialog broke the correspondence, and a
+  // wrong column is worse than a raw i1/i2 column.
+  var aligned = itemKeys.length === items.length;
+  var store = {};
+  try { store = JSON.parse(localStorage.getItem('alloflow_survey_responses') || '{}'); } catch (e) { store = {}; }
+  if (!store || typeof store !== 'object' || Array.isArray(store)) store = {};
+  var population = ['student', 'teacher', 'parent'].indexOf(info.population) >= 0 ? info.population : 'parent';
+  var imported = 0;
+  var skipped = 0;
+  rows.forEach(function (row) {
+    if (!row || !row.answers) return;
+    var respondent = String(row.label || '').trim() || 'Respondent';
+    var key = population + '_' + respondent;
+    var list = Array.isArray(store[key]) ? store[key] : [];
+    var importKey = String(summary.activityId || '') + ':' + respondent + ':' + String(row.updatedAt || 0);
+    if (list.some(function (entry) { return entry && entry.importKey === importKey; })) { skipped++; return; }
+    var entry = {
+      timestamp: row.updatedAt ? new Date(row.updatedAt).toISOString() : new Date().toISOString(),
+      type: population,
+      respondent: respondent,
+      timepoint: String(info.timepoint || 'unspecified'),
+      studyName: String(info.studyName || 'No active study'),
+      source: 'mailbox',
+      importKey: importKey
+    };
+    items.forEach(function (item, at) {
+      var value = row.answers[item.id];
+      if (value === undefined || value === null) return;
+      var columnKey = aligned ? (itemKeys[at] || item.id) : item.id;
+      if (item.type === 'choice') {
+        var match = (item.options || []).filter(function (option) { return option.id === value; })[0];
+        entry[columnKey] = match ? match.label : String(value);
+      } else {
+        entry[columnKey] = value;
+      }
+    });
+    store[key] = list.concat([entry]);
+    imported++;
+  });
+  try { localStorage.setItem('alloflow_survey_responses', JSON.stringify(store)); } catch (e) {}
+  try { window.dispatchEvent(new CustomEvent('alloflow:survey-responses-updated')); } catch (e) {}
+  return { imported: imported, skipped: skipped };
+}
+try {
+  window.AlloModules = window.AlloModules || {};
+  var _saiC = (window.AlloModules.StudentAnalyticsInternals = window.AlloModules.StudentAnalyticsInternals || {});
+  _saiC.suiteQuestionsToWireItems = _saiSuiteQuestionsToWireItems;
+  _saiC.importMailboxSurveySummary = _saiImportMailboxSurveySummary;
+} catch (e) {}
+
   // WCAG 2.1 AA: Accessibility CSS injection
   if (!document.getElementById('sa-a11y-css')) {
     var saA11yStyle = document.createElement('style');
@@ -2077,6 +2183,7 @@
     // tests/extracted_logic fork has drifted, so we test the shipped module directly).
     try { window.AlloModules = window.AlloModules || {}; var _saiB = (window.AlloModules.StudentAnalyticsInternals = window.AlloModules.StudentAnalyticsInternals || {}); if (!_saiB.interpretProbeResult) { _saiB.interpretProbeResult = interpretProbeResult; _saiB.CBM_NORMS = CBM_NORMS; _saiB.classifyRTITier = classifyRTITier; } } catch (e) {}
 
+
     // ── Render Probe Interpretation UI ──
     var renderProbeInterpretation = function(probeType, score, grade, season) {
       var result = interpretProbeResult(probeType, score, grade, season);
@@ -2645,7 +2752,7 @@
       var questionIds = new Set();
       allResponses.forEach(function(r) {
         Object.keys(r).forEach(function(k) {
-          if (!['timestamp','type','respondent','timepoint','studyName'].includes(k)) questionIds.add(k);
+          if (!['timestamp','type','respondent','timepoint','studyName','source','importKey'].includes(k)) questionIds.add(k);
         });
       });
       var qids = Array.from(questionIds).sort();
@@ -2954,6 +3061,15 @@
         return {};
       }
     });
+    React.useEffect(() => {
+      // The host writes this store when it imports mailbox survey results;
+      // re-read so an open panel shows them without a remount.
+      const refresh = () => {
+        try { setSurveyResponses(JSON.parse(localStorage.getItem('alloflow_survey_responses') || '{}')); } catch (e) {}
+      };
+      window.addEventListener('alloflow:survey-responses-updated', refresh);
+      return () => window.removeEventListener('alloflow:survey-responses-updated', refresh);
+    }, []);
     const saveSurveyResponse = (type, respondent, responses) => {
       const key = type + '_' + respondent;
       const existing = surveyResponses[key] || [];
@@ -3072,6 +3188,33 @@
         text: 'I would recommend AlloFlow to other parents',
         labels: ['Definitely not', 'Unlikely', 'Unsure', 'Likely', 'Definitely']
       }]
+    };
+    // Hand a population's instrument to Share & Collect. The HOST owns the
+    // dialog, the identity choice and the create step — nothing is shared
+    // from here, and the teacher picks who is answering with the pairing
+    // consequences stated next to the choice.
+    const shareSurveyByLink = (population) => {
+      const customForPop = researchMode && researchMode.customQuestions && researchMode.customQuestions[population];
+      const questions = (Array.isArray(customForPop) && customForPop.length > 0) ? customForPop : (SURVEY_QUESTIONS[population] || []);
+      const wire = _saiSuiteQuestionsToWireItems(questions);
+      if (!wire.items.length) return;
+      try {
+        window.dispatchEvent(new CustomEvent('alloflow:prepare-shared-survey', {
+          detail: {
+            population,
+            prompt: (population === 'parent' ? 'Family check-in' : population === 'teacher' ? 'Staff check-in' : 'Student check-in')
+              + ' (' + (surveyTimepoint || 'unspecified') + ')',
+            items: wire.items,
+            researchMeta: {
+              population,
+              timepoint: surveyTimepoint || 'unspecified',
+              studyName: (researchMode && researchMode.studyName) || 'No active study',
+              itemKeys: wire.itemKeys,
+            },
+            droppedImages: wire.droppedImages,
+          },
+        }));
+      } catch (e) {}
     };
     const renderSurveyModal = () => {
       if (!showSurveyModal) return null;
@@ -3602,6 +3745,15 @@
       }, React.createElement('span', null, '\u{1F46A}'), 'Parent/Guardian Survey', surveyCount > 0 ? React.createElement('span', {
         className: 'bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full text-[11px] font-bold'
       }, surveyCount + ' responses') : null),
+      React.createElement('div', { className: 'col-span-2 rounded-lg border border-sky-300 bg-sky-50 p-2' },
+        React.createElement('p', { className: 'text-[11px] font-black text-sky-900' }, '\u{1F517} Send a survey by link or QR (Share & Collect)'),
+        React.createElement('p', { className: 'text-[10px] text-sky-800 mt-0.5' }, 'Families and staff answer from their own phone, no account. Uses the current timepoint (' + (surveyTimepoint || 'unspecified') + ') and your custom items when you have them.'),
+        React.createElement('div', { className: 'mt-1.5 grid grid-cols-3 gap-1.5' },
+          ['student', 'teacher', 'parent'].map(population => React.createElement('button', {
+            key: population,
+            className: 'px-2 py-1.5 bg-white rounded-md border border-sky-300 hover:bg-sky-100 text-[11px] font-bold text-slate-800',
+            onClick: () => shareSurveyByLink(population)
+          }, population === 'student' ? 'Student link' : population === 'teacher' ? 'Teacher link' : 'Parent link')))),
       React.createElement('button', {
         className: 'col-span-2 flex items-center justify-center gap-2 px-3 py-2 bg-white rounded-lg border-2 border-amber-400 hover:bg-amber-50 transition-all text-xs font-bold text-amber-800 mt-1',
         onClick: () => openCustomQuestions(customQuestionsPopulation || 'student'),

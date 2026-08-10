@@ -1313,7 +1313,7 @@ const ALLO_MB_SCRIPT_SOURCE = `/**
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 12;
+var VERSION = 13;
 var SESSION_TTL_SEC = 6 * 60 * 60;      // live session marker + counters
 var MESSAGE_TTL_SEC = 45 * 60;          // live messages
 var UPLOAD_TTL_SEC = 30 * 60;           // pack upload parts awaiting finalize
@@ -1336,6 +1336,14 @@ var MAX_BOARD_ITEM_CHARS = 200;            // one question on a board
 var MAX_BOARD_ITEMS_PER_STUDENT = 10;      // hard ceiling; per-board config clamps under it
 var MAX_BOARD_ITEMS = 500;                 // absolute board ceiling; byte guard still applies
 var MAX_ASSIGNMENT_ACTIVITIES = 8;
+var MAX_SURVEY_ITEMS = 12;                 // one survey activity holds up to this many questions
+var MAX_SURVEY_CHOICE_OPTIONS = 12;
+var MAX_SURVEY_STEPS = 10;                 // widest Likert the wire accepts; research validity is advisory, client-side
+var MAX_SURVEY_FREETEXT_CHARS = 500;
+// What this deployment can host. Advertised by {a:'hello'} so a NEWER client
+// can tell a teacher "your mailbox needs redeploying" instead of the generic
+// bad-activity it used to hit when a type landed here before the script did.
+var SUPPORTED_ACTIVITY_TYPES = ['word_cloud', 'rating', 'question_board', 'availability', 'signup', 'survey'];
 var ASYNC_ACTIVITY_CACHE_SEC = 5 * 60;
 var FOLDER_NAME = 'AlloFlow Class Mailbox';
 
@@ -1393,7 +1401,7 @@ function actorRateKey(code, actor, kind) {
 
 function handle(p) {
   var a = String(p.a || '');
-  if (a === 'hello') return out({ ok: true, v: VERSION, t: Date.now() });
+  if (a === 'hello') return out({ ok: true, v: VERSION, activities: SUPPORTED_ACTIVITY_TYPES.slice(), t: Date.now() });
 
   var props = PropertiesService.getScriptProperties();
   if (a === 'claim') {
@@ -2275,6 +2283,32 @@ function normalizeAssignmentActivityConfig(value, expiresAt) {
       expiresAt: suCloses
     };
   }
+  if (source.type === 'survey') {
+    // Multi-question survey: several items answered in ONE submission. This is
+    // the piece none of the single-prompt types could provide — a Likert scale
+    // is only a measurement across >=2 items, and pre/post comparison needs
+    // the same instrument delivered as one thing, not eight loose activities.
+    var svIdMode = String(source.identityMode || '');
+    // No default. Identity is a privacy decision (same discipline as the
+    // availability poll): an unset or unknown mode is a rejected config.
+    if (svIdMode !== 'anonymous' && svIdMode !== 'codename' && svIdMode !== 'real_name') return null;
+    var svItems = normalizeSurveyItems(source.items);
+    if (!svItems) return null;
+    var svCloses = String(source.closesAt || expiresAt || source.expiresAt || '');
+    return {
+      v: 1,
+      activityId: activityId,
+      type: 'survey',
+      delivery: 'shared_async',
+      prompt: prompt,
+      identityMode: svIdMode,
+      items: svItems,
+      minParticipants: minParticipants,
+      closesAt: svCloses,
+      deleteAt: String(source.deleteAt || ''),
+      expiresAt: svCloses
+    };
+  }
   if (source.type === 'availability') {
     // Scheduling poll (docs/availability_poll_spec.md). Option labels are the
     // organizer's OWN text: no date parsing and no timezones by design (spec §8).
@@ -2770,6 +2804,266 @@ function availabilityIsClosed(config) {
   return isFinite(closesAt) && Date.now() >= closesAt;
 }
 
+// ── Survey helpers ───────────────────────────────────────────────────────
+// A survey is a multi-item instrument answered in one submission. Item and
+// option ids are GENERATED here, never taken from input, so no client can
+// address a question that is not on the form (same rule as poll options).
+
+function normalizeSurveyItems(value) {
+  var source = value;
+  if (typeof source === 'string') { try { source = JSON.parse(source); } catch (e) { return null; } }
+  if (!Array.isArray(source) || !source.length || source.length > MAX_SURVEY_ITEMS) return null;
+  var items = [];
+  for (var i = 0; i < source.length; i++) {
+    var raw = source[i];
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    var kind = String(raw.type || 'likert');
+    // An unknown item type is a rejected CONFIG, not a dropped item: silently
+    // shipping a survey with questions missing would be worse than refusing.
+    if (kind !== 'likert' && kind !== 'choice' && kind !== 'freetext' && kind !== 'numeric') return null;
+    var itemText = String(raw.text || '').replace(/[\\u0000-\\u001f\\u007f]/g, ' ').replace(/\\s+/g, ' ').trim().slice(0, 240);
+    if (!itemText) return null;
+    var item = { id: 'i' + (items.length + 1), type: kind, text: itemText, required: raw.required === true };
+    if (kind === 'likert') {
+      var rawLabels = Array.isArray(raw.labels) ? raw.labels : [];
+      var labels = [];
+      for (var li = 0; li < rawLabels.length && labels.length < MAX_SURVEY_STEPS; li++) {
+        // Positional: a BLANK label keeps its slot (index i is step i+1), so a
+        // scale with only endpoint labels survives as authored.
+        labels.push(String(rawLabels[li] == null ? '' : (rawLabels[li].text != null ? rawLabels[li].text : rawLabels[li]))
+          .replace(/[\\u0000-\\u001f\\u007f]/g, ' ').replace(/\\s+/g, ' ').trim().slice(0, 60));
+      }
+      var steps = parseInt(raw.steps, 10);
+      // Labels are the stronger signal: five written labels mean five steps
+      // whatever a stale steps field says.
+      if (labels.length >= 2) steps = labels.length;
+      if (!isFinite(steps) || steps < 2 || steps > MAX_SURVEY_STEPS) return null;
+      item.steps = steps;
+      item.labels = labels;
+    } else if (kind === 'choice') {
+      var rawOptions = Array.isArray(raw.options) ? raw.options : [];
+      var options = [];
+      for (var oi = 0; oi < rawOptions.length && options.length < MAX_SURVEY_CHOICE_OPTIONS; oi++) {
+        var optLabel = normalizeAssignmentBoardItemText(
+          rawOptions[oi] && rawOptions[oi].label != null ? rawOptions[oi].label : rawOptions[oi]).slice(0, 80);
+        if (!optLabel) continue;
+        options.push({ id: 'o' + (options.length + 1), label: optLabel });
+      }
+      if (options.length < 2) return null;
+      item.options = options;
+    } else if (kind === 'numeric') {
+      var numMin = Number(raw.min);
+      var numMax = Number(raw.max);
+      item.min = isFinite(numMin) ? numMin : null;
+      item.max = isFinite(numMax) ? numMax : null;
+      if (item.min !== null && item.max !== null && item.min >= item.max) return null;
+    }
+    items.push(item);
+  }
+  return items;
+}
+
+// Answers arrive as a map of itemId -> value. Unknown ids are DROPPED (a
+// stale form can still submit the questions that do still exist — the picks
+// discipline), but a PRESENT answer that fails its item's validation rejects
+// the submission: recording a corrupted answer would poison the aggregate.
+function normalizeSurveyAnswers(value, config) {
+  var source = value;
+  if (typeof source === 'string') { try { source = JSON.parse(source); } catch (e) { return null; } }
+  if (!source || typeof source !== 'object' || Array.isArray(source)) return null;
+  var answers = {};
+  var count = 0;
+  for (var i = 0; i < config.items.length; i++) {
+    var item = config.items[i];
+    var raw = source[item.id];
+    var present = raw !== undefined && raw !== null && raw !== '';
+    if (!present) {
+      if (item.required) return null;
+      continue;
+    }
+    if (item.type === 'likert') {
+      var tick = Number(raw);
+      if (!isFinite(tick) || Math.floor(tick) !== tick || tick < 1 || tick > item.steps) return null;
+      answers[item.id] = tick;
+    } else if (item.type === 'choice') {
+      var chosen = String(raw);
+      var known = false;
+      for (var ci = 0; ci < item.options.length; ci++) if (item.options[ci].id === chosen) known = true;
+      if (!known) return null;
+      answers[item.id] = chosen;
+    } else if (item.type === 'numeric') {
+      var num = Number(raw);
+      if (!isFinite(num)) return null;
+      if (item.min !== null && num < item.min) return null;
+      if (item.max !== null && num > item.max) return null;
+      answers[item.id] = num;
+    } else {
+      var text = String(raw).replace(/[\\u0000-\\u001f\\u007f]/g, ' ').replace(/\\s+/g, ' ').trim().slice(0, MAX_SURVEY_FREETEXT_CHARS);
+      if (!text) return null;
+      answers[item.id] = text;
+    }
+    count++;
+  }
+  if (!count) return null;
+  return answers;
+}
+
+// Per-item aggregates. Free text is COUNTED here and nothing more: the texts
+// themselves live in rows and are handed out only by buildSurveySummary,
+// which knows who is asking.
+function computeSurveyAggregates(config, responses) {
+  var rows = responses && typeof responses === 'object' ? responses : {};
+  var uids = Object.keys(rows);
+  var participantCount = 0;
+  var byItem = {};
+  for (var i = 0; i < config.items.length; i++) {
+    var item = config.items[i];
+    if (item.type === 'likert') {
+      var counts = [];
+      for (var s = 0; s < item.steps; s++) counts.push(0);
+      byItem[item.id] = { id: item.id, type: 'likert', n: 0, counts: counts, sum: 0 };
+    } else if (item.type === 'choice') {
+      var optCounts = {};
+      for (var oi = 0; oi < item.options.length; oi++) optCounts[item.options[oi].id] = 0;
+      byItem[item.id] = { id: item.id, type: 'choice', n: 0, counts: optCounts };
+    } else if (item.type === 'numeric') {
+      byItem[item.id] = { id: item.id, type: 'numeric', n: 0, sum: 0, min: null, max: null };
+    } else {
+      byItem[item.id] = { id: item.id, type: 'freetext', n: 0 };
+    }
+  }
+  for (var ui = 0; ui < uids.length; ui++) {
+    var answers = rows[uids[ui]] && rows[uids[ui]].answers;
+    if (!answers || typeof answers !== 'object' || !Object.keys(answers).length) continue;
+    participantCount++;
+    for (var ii = 0; ii < config.items.length; ii++) {
+      var target = config.items[ii];
+      var slot = byItem[target.id];
+      var value = answers[target.id];
+      if (value === undefined || value === null) continue;
+      if (target.type === 'likert') {
+        var tickValue = parseInt(value, 10);
+        if (!isFinite(tickValue) || tickValue < 1 || tickValue > target.steps) continue;
+        slot.counts[tickValue - 1]++;
+        slot.sum += tickValue;
+        slot.n++;
+      } else if (target.type === 'choice') {
+        if (slot.counts[value] === undefined) continue;
+        slot.counts[value]++;
+        slot.n++;
+      } else if (target.type === 'numeric') {
+        var numValue = Number(value);
+        if (!isFinite(numValue)) continue;
+        slot.sum += numValue;
+        slot.min = slot.min === null ? numValue : Math.min(slot.min, numValue);
+        slot.max = slot.max === null ? numValue : Math.max(slot.max, numValue);
+        slot.n++;
+      } else {
+        slot.n++;
+      }
+    }
+  }
+  var items = [];
+  for (var oi2 = 0; oi2 < config.items.length; oi2++) {
+    var agg = byItem[config.items[oi2].id];
+    if ((agg.type === 'likert' || agg.type === 'numeric') && agg.n) {
+      agg.mean = Math.round((agg.sum / agg.n) * 100) / 100;
+    }
+    delete agg.sum;
+    items.push(agg);
+  }
+  return { items: items, participantCount: participantCount };
+}
+
+// Same bargain as the poll: past deleteAt the aggregates outlive the rows.
+// After this runs the free-text answers are GONE — they were rows.
+function applySurveyRetention(state) {
+  if (!state || !state.config || state.config.type !== 'survey') return false;
+  var deleteAt = Date.parse(state.config.deleteAt);
+  if (!isFinite(deleteAt) || Date.now() < deleteAt) return false;
+  var responses = state.responses && typeof state.responses === 'object' ? state.responses : {};
+  if (!Object.keys(responses).length && state.tally) return false;
+  if (!state.tally) state.tally = computeSurveyAggregates(state.config, responses);
+  state.responses = {};
+  return true;
+}
+
+// Identity mode is enforced HERE, not in the UI (the availability discipline):
+// if this function can hand back attributable rows in anonymous mode, the mode
+// is a promise the data does not keep.
+function buildSurveySummary(state, isHost) {
+  var config = state.config;
+  applySurveyRetention(state);
+  var responses = state.responses && typeof state.responses === 'object' ? state.responses : {};
+  var aggregates = state.tally || computeSurveyAggregates(config, responses);
+  var participantCount = aggregates.participantCount;
+  var revealed = participantCount >= (parseInt(config.minParticipants, 10) || 3);
+  // In anonymous mode the floor guards the organizer too: with two respondents
+  // a per-item distribution can still identify who said what.
+  var showAggregates = config.identityMode === 'anonymous' ? revealed : (isHost || revealed);
+  var aggByItem = {};
+  for (var ai = 0; ai < aggregates.items.length; ai++) aggByItem[aggregates.items[ai].id] = aggregates.items[ai];
+  var items = [];
+  for (var i = 0; i < config.items.length; i++) {
+    var item = config.items[i];
+    var entry = {
+      id: item.id,
+      type: item.type,
+      text: item.text,
+      required: item.required === true
+    };
+    if (item.type === 'likert') { entry.steps = item.steps; entry.labels = item.labels; }
+    if (item.type === 'choice') entry.options = item.options;
+    if (item.type === 'numeric') { entry.min = item.min; entry.max = item.max; }
+    if (showAggregates && aggByItem[item.id]) entry.aggregate = aggByItem[item.id];
+    // Free-text answers go to the HOST only, floor-gated, and detached from
+    // any identity in anonymous mode. Sorted by text, not arrival: iteration
+    // order of the response map follows submission order, which in a small
+    // class is an identity all by itself.
+    if (isHost && item.type === 'freetext' && showAggregates && !state.tally) {
+      var texts = [];
+      Object.keys(responses).forEach(function(uid) {
+        var row = responses[uid];
+        var answer = row && row.answers && row.answers[item.id];
+        if (typeof answer === 'string' && answer) texts.push(answer);
+      });
+      texts.sort();
+      entry.texts = texts;
+    }
+    items.push(entry);
+  }
+  var rows = [];
+  if (isHost && config.identityMode !== 'anonymous') {
+    Object.keys(responses).forEach(function(uid) {
+      var row = responses[uid];
+      if (!row || !row.answers) return;
+      rows.push({
+        label: config.identityMode === 'real_name' ? String(row.name || '') : availabilityCodename(uid),
+        answers: row.answers,
+        updatedAt: parseInt(row.updatedAt, 10) || 0
+      });
+    });
+    rows.sort(function(a, b) { return b.updatedAt - a.updatedAt; });
+  }
+  return {
+    ok: true,
+    activityId: state.activityId,
+    type: 'survey',
+    prompt: config.prompt,
+    identityMode: config.identityMode,
+    minParticipants: config.minParticipants,
+    closesAt: config.closesAt,
+    deleteAt: config.deleteAt,
+    closed: availabilityIsClosed(config),
+    participantCount: participantCount,
+    revealed: revealed,
+    items: items,
+    rows: rows,
+    version: parseInt(state.version, 10) || 0,
+    updatedAt: parseInt(state.updatedAt, 10) || 0
+  };
+}
+
 // Stable per respondent, derived from the uid the deployment already issued, so
 // someone who returns keeps their codename and the tally does not count them
 // twice (spec §3).
@@ -2836,6 +3130,7 @@ function buildAvailabilitySummary(state, isHost) {
 
 function buildAssignmentActivityPublicSummary(state) {
   var responses = state.responses && typeof state.responses === 'object' ? state.responses : {};
+  if (state.config.type === 'survey') return buildSurveySummary(state, false);
   if (state.config.type === 'signup') return buildSignupSummary(state, false);
   if (state.config.type === 'availability') return buildAvailabilitySummary(state, false);
   if (state.config.type === 'rating') {
@@ -2942,6 +3237,12 @@ function assignmentActivitySummaryFor(cache, context, uid) {
     } catch (e) {}
   }
   var state = readAssignmentActivityState(context);
+  // Same persistence rule on the respondent read path, and BEFORE caching:
+  // caching per-uid rows that retention is about to erase would hand out for
+  // the cache TTL exactly what deleteAt promised was gone.
+  if (state.config.type === 'survey' && applySurveyRetention(state)) {
+    writeAssignmentActivityState(state);
+  }
   cacheAssignmentActivitySummary(cache, state);
   var summary = buildAssignmentActivityPublicSummary(state);
   summary.own = state.responses[uid] || null;
@@ -2988,7 +3289,16 @@ function upsertAssignmentActivity(cache, p, admin) {
   var boardText = '';
   var pollPicks = null;
   var signupClaims = null;
-  if (context.config.type === 'question_board') {
+  var surveyAnswers = null;
+  if (context.config.type === 'survey') {
+    if (availabilityIsClosed(context.config)) return out({ ok: false, e: 'poll-closed' });
+    // deleteAt also closes writes. A row arriving after retention ran would
+    // sit invisible under the materialised tally — stored but never counted.
+    var surveyDeleteAt = Date.parse(context.config.deleteAt);
+    if (isFinite(surveyDeleteAt) && Date.now() >= surveyDeleteAt) return out({ ok: false, e: 'poll-closed' });
+    surveyAnswers = normalizeSurveyAnswers(p.answers, context.config);
+    if (!surveyAnswers) return out({ ok: false, e: 'bad-answers' });
+  } else if (context.config.type === 'question_board') {
     boardText = normalizeAssignmentBoardItemText(p.term);
     if (!boardText) return out({ ok: false, e: 'bad-term' });
   } else if (context.config.type === 'signup') {
@@ -3055,6 +3365,25 @@ function upsertAssignmentActivity(cache, p, admin) {
         row.items.pop();
         return out({ ok: false, e: 'board-bytes' });
       }
+    } else if (context.config.type === 'survey') {
+      // One row per actor, replace semantics: a returning respondent CHANGES
+      // their answers rather than appearing twice in the aggregates.
+      var svRow = { answers: surveyAnswers, updatedAt: Date.now() };
+      // A name is stored ONLY in real_name mode. If the row carried one in
+      // the other modes the mode would be a lie, whatever the UI shows.
+      if (context.config.identityMode === 'real_name') {
+        var svName = normalizeAssignmentBoardItemText(p.nm).slice(0, 40);
+        if (svName) svRow.name = svName;
+      }
+      responses[actor.uid] = svRow;
+      // Byte guard BEFORE the write, and refuse rather than truncate: twelve
+      // free-text answers per row add up in a way the single-value types
+      // never could.
+      var svProbe = JSON.stringify(responses);
+      if (svProbe.length > MAX_DOC_CHARS) {
+        if (previous) responses[actor.uid] = previous; else delete responses[actor.uid];
+        return out({ ok: false, e: 'survey-bytes' });
+      }
     } else if (context.config.type === 'signup') {
       // The whole point of doing this here: we are inside LockService, so the
       // seat count cannot change between the check and the write. Checking on
@@ -3109,6 +3438,11 @@ function upsertAssignmentActivity(cache, p, admin) {
     state.updatedAt = Date.now();
     writeAssignmentActivityState(state);
     cacheAssignmentActivitySummary(cache, state);
+    if (context.config.type === 'survey') {
+      var answered = buildSurveySummary(state, false);
+      answered.own = responses[actor.uid] || null;
+      return out(answered);
+    }
     if (context.config.type === 'signup') {
       var claimed = buildSignupSummary(state, false);
       claimed.own = responses[actor.uid] || null;
@@ -3137,6 +3471,21 @@ function getAssignmentActivityAdmin(cache, p) {
     return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
   }
   var state = readAssignmentActivityState(context);
+  if (context.config.type === 'survey') {
+    // Retention must PERSIST from the read path: answers stop arriving after
+    // closesAt, so if erasure only ever lived in memory the Drive file would
+    // keep the rows — free text included — forever. One write, once: the next
+    // applySurveyRetention sees empty rows + a tally and does nothing.
+    var surveyErased = applySurveyRetention(state);
+    // The organizer's endpoint. buildSurveySummary still decides what they
+    // may see: rows only outside anonymous mode, free text floor-gated.
+    var surveySummary = buildSurveySummary(state, true);
+    if (surveyErased) {
+      writeAssignmentActivityState(state);
+      cacheAssignmentActivitySummary(cache, state);
+    }
+    return out(surveySummary);
+  }
   if (context.config.type === 'signup') return out(buildSignupSummary(state, true));
   if (context.config.type === 'availability') {
     // The organizer is the audience for a scheduling poll, so rows come back
@@ -5664,6 +6013,9 @@ function _alloSharedActivityUiMeta(activity) {
     if (activity?.type === 'question_board') {
         return { isRating: false, isBoard: true, shortLabel: 'QB', title: 'Driving questions board', dialogId: 'shared-assignment-question-board-title' };
     }
+    if (activity?.type === 'survey') {
+        return { isRating: false, isSurvey: true, shortLabel: 'SV', title: 'Survey', dialogId: 'shared-assignment-survey-title' };
+    }
     const isRating = activity?.type === 'rating';
     return isRating
         ? { isRating: true, shortLabel: 'RT', title: 'Class rating', dialogId: 'shared-assignment-rating-title' }
@@ -5854,6 +6206,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     const isQuestionBoard = activity?.type === 'question_board';
     const isPoll = activity?.type === 'availability';
     const isSignup = activity?.type === 'signup';
+    const isSurvey = activity?.type === 'survey';
     const [signupClaims, setSignupClaims] = React.useState([]);
     const [signupName, setSignupName] = React.useState('');
     const ratingActivity = _alloNormalizeSharedRatingActivity(activity);
@@ -5877,6 +6230,10 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     // state below it would change hook order when the activity type changes.
     const [pollPicks, setPollPicks] = React.useState({});
     const [pollName, setPollName] = React.useState('');
+    // Survey: one answers map across all items, plus the respondent's name
+    // for real_name mode. Declared with every other hook (see note above).
+    const [surveyAnswers, setSurveyAnswers] = React.useState({});
+    const [surveyName, setSurveyName] = React.useState('');
     const [busy, setBusy] = React.useState(false);
     const [error, setError] = React.useState('');
     const [lastUpdatedAt, setLastUpdatedAt] = React.useState(0);
@@ -5889,6 +6246,8 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
         setSummary(null);
         setTerm('');
         setRatingValue(null);
+        setSurveyAnswers({});
+        setSurveyName('');
         setError('');
         setBusy(false);
         setLastUpdatedAt(0);
@@ -6342,6 +6701,198 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
           </div>
         )}
 
+        {isSurvey && !isTeacher && (
+          <form
+            className="mt-4 rounded-xl border border-sky-100 bg-white p-3"
+            onSubmit={async (event) => {
+              event.preventDefault();
+              if (busy) return;
+              const formItems = (summary?.items && summary.items.length ? summary.items : (effectiveActivity?.items || []));
+              const payload = {};
+              formItems.forEach((formItem) => {
+                const value = surveyAnswers[formItem.id];
+                if (value !== undefined && value !== null && String(value).trim() !== '') payload[formItem.id] = value;
+              });
+              const missing = formItems.filter((formItem) => formItem.required && payload[formItem.id] === undefined);
+              if (missing.length) { addToast('Answer the required questions first: ' + missing.map((formItem) => formItem.text).join(' · '), 'info'); return; }
+              if (!Object.keys(payload).length) { addToast('Answer at least one question first.', 'info'); return; }
+              if (summary?.identityMode === 'real_name' && !surveyName.trim()) { addToast('Add your name so the organizer knows who answered.', 'info'); return; }
+              try {
+                await callStudentUpdate({ answers: JSON.stringify(payload), nm: summary?.identityMode === 'real_name' ? surveyName.trim().slice(0, 40) : '' });
+                addToast('Your answers were saved. You can change them until this closes.', 'success');
+              } catch (submitError) { addToast('That did not save: ' + ((submitError && submitError.message) || 'unknown'), 'error'); }
+            }}
+          >
+            <fieldset disabled={busy || summary?.closed}>
+              <legend className="block text-xs font-black text-slate-800">
+                {summary?.closed ? 'This survey has closed' : 'A few quick questions'}
+              </legend>
+              {summary?.identityMode === 'real_name' && (
+                <label className="mt-2 block text-[11px] font-black text-slate-700">
+                  Your name
+                  <input
+                    type="text"
+                    value={surveyName}
+                    onChange={(event) => setSurveyName(event.target.value.slice(0, 40))}
+                    className="mt-1 w-full rounded-md border border-sky-300 px-2 py-1.5 text-xs font-semibold text-slate-800"
+                  />
+                </label>
+              )}
+              {summary?.identityMode === 'anonymous' && (
+                <p className="mt-1 text-[11px] font-bold text-slate-600">You are answering anonymously. The organizer sees combined results only.</p>
+              )}
+              <div className="mt-3 space-y-3">
+                {((summary?.items && summary.items.length ? summary.items : (effectiveActivity?.items || []))).map((formItem) => (
+                  <div key={formItem.id} className="rounded-lg border border-slate-200 px-2 py-2">
+                    <p className="text-xs font-bold text-slate-800">
+                      {formItem.text}
+                      {formItem.required && <span className="ml-1 text-rose-600" title="Required">*</span>}
+                    </p>
+                    {formItem.type === 'likert' && (
+                      <div className="mt-2">
+                        <div role="group" aria-label={formItem.text} className="flex flex-wrap gap-1">
+                          {Array.from({ length: formItem.steps || 5 }, (_, at) => at + 1).map((tick) => (
+                            <button
+                              key={tick}
+                              type="button"
+                              aria-pressed={surveyAnswers[formItem.id] === tick}
+                              onClick={() => setSurveyAnswers((previous) => ({ ...previous, [formItem.id]: tick }))}
+                              className={`min-h-9 min-w-9 rounded-md px-2 py-1 text-xs font-black ${surveyAnswers[formItem.id] === tick ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700'}`}
+                            >
+                              {tick}
+                            </button>
+                          ))}
+                        </div>
+                        {((formItem.labels || [])[0] || (formItem.labels || [])[(formItem.steps || 5) - 1]) && (
+                          <div className="mt-1 flex justify-between text-[10px] font-bold text-slate-500">
+                            <span>{(formItem.labels || [])[0] || ''}</span>
+                            <span>{(formItem.labels || [])[(formItem.steps || 5) - 1] || ''}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {formItem.type === 'choice' && (
+                      <div role="group" aria-label={formItem.text} className="mt-2 flex flex-col gap-1">
+                        {(formItem.options || []).map((option) => (
+                          <button
+                            key={option.id}
+                            type="button"
+                            aria-pressed={surveyAnswers[formItem.id] === option.id}
+                            onClick={() => setSurveyAnswers((previous) => ({ ...previous, [formItem.id]: option.id }))}
+                            className={`rounded-md px-2 py-1.5 text-left text-xs font-bold ${surveyAnswers[formItem.id] === option.id ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700'}`}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {formItem.type === 'freetext' && (
+                      <textarea
+                        aria-label={formItem.text}
+                        value={String(surveyAnswers[formItem.id] || '')}
+                        onChange={(event) => setSurveyAnswers((previous) => ({ ...previous, [formItem.id]: event.target.value.slice(0, 500) }))}
+                        rows={2}
+                        maxLength={500}
+                        className="mt-2 w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs text-slate-800"
+                      />
+                    )}
+                    {formItem.type === 'numeric' && (
+                      <input
+                        type="number"
+                        aria-label={formItem.text}
+                        value={surveyAnswers[formItem.id] ?? ''}
+                        min={formItem.min ?? undefined}
+                        max={formItem.max ?? undefined}
+                        onChange={(event) => setSurveyAnswers((previous) => ({ ...previous, [formItem.id]: event.target.value === '' ? undefined : Number(event.target.value) }))}
+                        className="mt-2 w-32 rounded-md border border-slate-300 px-2 py-1.5 text-xs text-slate-800"
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+              {summary?.own && (
+                <p className="mt-2 text-[11px] font-bold text-emerald-700">Your answers are recorded. Submitting again replaces them.</p>
+              )}
+              <button type="submit" className="mt-3 rounded-lg bg-sky-700 px-3 py-1.5 text-xs font-black text-white disabled:opacity-50">
+                {busy ? 'Saving...' : (summary?.own ? 'Update my answers' : 'Send my answers')}
+              </button>
+            </fieldset>
+          </form>
+        )}
+
+        {isSurvey && isTeacher && (
+          <div className="mt-4 rounded-xl border border-sky-100 bg-white p-3">
+            <p className="text-xs font-black text-slate-800">
+              {summary?.participantCount || 0} {(summary?.participantCount === 1) ? 'response' : 'responses'}
+              {summary?.closed ? ' - closed' : ''}
+            </p>
+            {!summary?.revealed && summary?.identityMode === 'anonymous' && (
+              <p className="mt-2 text-[11px] font-bold text-slate-600">
+                {`Results appear once ${summary?.minParticipants || 3} people have answered, so no single answer can be picked out.`}
+              </p>
+            )}
+            <div className="mt-2 space-y-2">
+              {(summary?.items || []).map((resultItem) => (
+                <div key={resultItem.id} className="rounded-lg border border-slate-200 px-2 py-2">
+                  <p className="text-xs font-bold text-slate-800">{resultItem.text}</p>
+                  {resultItem.aggregate && resultItem.type === 'likert' && (
+                    <p className="mt-1 text-[11px] font-black text-slate-700">
+                      {`Mean ${resultItem.aggregate.mean ?? '-'} of ${resultItem.steps} · ` + (resultItem.aggregate.counts || []).map((tickCount, at) => `${at + 1}: ${tickCount}`).join('  ')}
+                    </p>
+                  )}
+                  {resultItem.aggregate && resultItem.type === 'choice' && (
+                    <p className="mt-1 text-[11px] font-black text-slate-700">
+                      {(resultItem.options || []).map((option) => `${option.label}: ${(resultItem.aggregate.counts || {})[option.id] || 0}`).join('  ·  ')}
+                    </p>
+                  )}
+                  {resultItem.aggregate && resultItem.type === 'numeric' && (
+                    <p className="mt-1 text-[11px] font-black text-slate-700">
+                      {`n ${resultItem.aggregate.n} · mean ${resultItem.aggregate.mean ?? '-'} · min ${resultItem.aggregate.min ?? '-'} · max ${resultItem.aggregate.max ?? '-'}`}
+                    </p>
+                  )}
+                  {resultItem.type === 'freetext' && Array.isArray(resultItem.texts) && (
+                    <ul className="mt-1 list-disc pl-4 text-[11px] text-slate-700">
+                      {resultItem.texts.map((answerText, at) => <li key={at}>{answerText}</li>)}
+                    </ul>
+                  )}
+                  {resultItem.type === 'freetext' && !Array.isArray(resultItem.texts) && resultItem.aggregate && (
+                    <p className="mt-1 text-[11px] font-bold text-slate-600">{resultItem.aggregate.n} written {resultItem.aggregate.n === 1 ? 'answer' : 'answers'}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+            {!!(summary?.rows || []).length && (
+              <div className="mt-3 overflow-x-auto">
+                <table className="w-full text-left text-[11px]">
+                  <caption className="sr-only">Individual responses</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col" className="px-2 py-1 font-black text-slate-700">Name</th>
+                      {(summary?.items || []).map((resultItem) => (
+                        <th key={resultItem.id} scope="col" className="px-2 py-1 font-black text-slate-700">{resultItem.text.slice(0, 30)}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(summary?.rows || []).map((row, rowIndex) => (
+                      <tr key={`${row.label}-${rowIndex}`} className="border-t border-slate-200">
+                        <th scope="row" className="px-2 py-1 font-bold text-slate-800">{row.label || 'Someone'}</th>
+                        {(summary?.items || []).map((resultItem) => {
+                          const answer = row.answers?.[resultItem.id];
+                          const shown = resultItem.type === 'choice'
+                            ? ((resultItem.options || []).find((option) => option.id === answer)?.label || '-')
+                            : (answer === undefined || answer === null ? '-' : String(answer).slice(0, 60));
+                          return <td key={resultItem.id} className="px-2 py-1 text-slate-700">{shown}</td>;
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
         {isSignup && !isTeacher && (
           <form
             className="mt-4 rounded-xl border border-sky-100 bg-white p-3"
@@ -6439,7 +6990,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
           </div>
         )}
 
-        {!isTeacher && !isRating && !isPoll && !isSignup && (
+        {!isTeacher && !isRating && !isPoll && !isSignup && !isSurvey && (
           <form onSubmit={submitTerm} className="mt-4 rounded-xl border border-sky-100 bg-white p-3">
             <label htmlFor={`shared-word-cloud-${activityId}`} className="block text-xs font-black text-slate-800">Your word or short phrase</label>
             <div className="mt-2 flex flex-col gap-2 sm:flex-row">
@@ -6508,7 +7059,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
           </div>
         )}
 
-        {isTeacher && !isRating && !isPoll && !isSignup && (
+        {isTeacher && !isRating && !isPoll && !isSignup && !isSurvey && (
           <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3">
             <div className="flex flex-wrap gap-2 text-[11px] font-black">
               <span className="rounded-full bg-amber-100 px-2 py-1 text-amber-900">Held {heldCount}</span>
@@ -20766,6 +21317,45 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     window.addEventListener('alloflow:open-video-library', onOpenVideoLibrary);
     return () => window.removeEventListener('alloflow:open-video-library', onOpenVideoLibrary);
   }, []);
+  // Research Suite -> Share & Collect: the Assessment Center dispatches a
+  // drafted survey; this prefills the dialog and hands the teacher the create
+  // step. Nothing is shared until they click create, and the identity choice
+  // stays THEIRS - the draft arrives with none selected on purpose.
+  useEffect(() => {
+    const onPrepareSharedSurvey = (event) => {
+      const detail = event?.detail || {};
+      const items = Array.isArray(detail.items) ? detail.items : [];
+      if (!items.length) return;
+      setSharedAssignmentActivity(previous => ({
+        ...(previous || {}),
+        enabled: true,
+        type: 'survey',
+        prompt: String(detail.prompt || 'Quick check-in').slice(0, 240),
+        identityMode: '',
+        surveyItems: items.slice(0, 12).map(item => ({
+          type: item.type,
+          text: item.text,
+          required: item.required === true,
+          steps: item.steps,
+          // Full positional labels ride along; the endpoint inputs edit the
+          // ends of THIS array, so the middles survive the dialog untouched.
+          labels: Array.isArray(item.labels) ? item.labels : undefined,
+          lowLabel: Array.isArray(item.labels) ? (item.labels[0] || '') : undefined,
+          highLabel: Array.isArray(item.labels) ? (item.labels[item.labels.length - 1] || '') : undefined,
+          optionsText: Array.isArray(item.options) ? item.options.map(option => option.label).join('\n') : undefined,
+          min: item.min,
+          max: item.max,
+        })),
+        _researchMeta: detail.researchMeta || null,
+      }));
+      setShowClassAnalytics(false);
+      setShowRecentQrShares(true);
+      if (detail.droppedImages) addToast('Label images do not travel over the link - the shared survey uses text labels only.', 'info');
+      else addToast('Survey drafted. Pick who is answering, then create the link.', 'info');
+    };
+    window.addEventListener('alloflow:prepare-shared-survey', onPrepareSharedSurvey);
+    return () => window.removeEventListener('alloflow:prepare-shared-survey', onPrepareSharedSurvey);
+  }, []);
   // ── AlloFlow Whiteboard bridge (companion window) ──
   // The Whiteboard (Excalidraw) runs in its own top-level window opened from the
   // Educator Hub — a deliberate escape from the Gemini Canvas iframe. We retain the
@@ -22997,6 +23587,31 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       safeDownloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), 'alloflow-assignment-summary-' + new Date().toISOString().slice(0, 10) + '.csv');
       addToast('Privacy-safe assignment summary exported.', 'success');
   }, [assignmentCenterRows, addToast]);
+  // Pull a shared survey's results into the Research Suite's response store.
+  // The Suite module owns its storage schema; this only fetches the organizer
+  // summary and hands it over with the study bookkeeping from the share.
+  const importSurveyShareToResearchSuite = useCallback(async (share) => {
+      if (!mbConfig?.url || !mbConfig?.admin) { addToast('Connect your Class Mailbox first.', 'info'); return; }
+      const activityId = String(share?.sharedActivity?.activityId || '');
+      const packId = String(share?.packId || '');
+      if (!activityId || !packId) { addToast('This link has no importable survey.', 'info'); return; }
+      try {
+          const summary = await _alloMailboxCallWithRetry(mbConfig.url, { a: 'getactivityadmin', admin: mbConfig.admin, id: packId, aid: activityId });
+          const internals = window.AlloModules && window.AlloModules.StudentAnalyticsInternals;
+          if (!internals || typeof internals.importMailboxSurveySummary !== 'function') {
+              addToast('Analytics module not loaded yet - open the Assessment Center once, then retry.', 'info');
+              return;
+          }
+          const result = internals.importMailboxSurveySummary(summary, share.researchMeta || {});
+          if (result.aggregateOnly) {
+              addToast('Anonymous surveys stay aggregate-only - read results here in Share & Collect. Use codenames or real names when you need pre/post pairing.', 'info');
+          } else {
+              addToast('Imported ' + result.imported + ' response(s) into the Research Suite' + (result.skipped ? ' (' + result.skipped + ' already there)' : '') + '.', result.imported ? 'success' : 'info');
+          }
+      } catch (error) {
+          addToast('Import failed: ' + (error?.message || 'unknown'), 'error');
+      }
+  }, [mbConfig, addToast]);
   const extendAssignmentCenterShare = useCallback(async (share) => {
       if (!share?.url || share.type !== 'assignment-pack-hosted' || share.revokedAt) return;
       const currentExpiry = Date.parse(share.expiresAt || '');
@@ -24532,7 +25147,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           return null;
       }
       const expiresAt = new Date(Date.now() + homeworkExpiryDays * 24 * 60 * 60 * 1000).toISOString();
-      const ALLO_ACTIVITY_TYPES = ['rating', 'availability', 'signup', 'word_cloud'];
+      const ALLO_ACTIVITY_TYPES = ['rating', 'availability', 'signup', 'word_cloud', 'survey'];
       const sharedActivityType = ALLO_ACTIVITY_TYPES.indexOf(sharedAssignmentActivity.type) >= 0
           ? sharedAssignmentActivity.type
           : 'word_cloud';
@@ -24557,6 +25172,54 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           String(Array.isArray(sharedAssignmentActivity.labels) ? (sharedAssignmentActivity.labels[index] || '') : '')
               .replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40)
       ));
+      // Survey items: authored as structured rows in the dialog. The server
+      // re-validates everything and GENERATES item/option ids, so this only
+      // shapes the text. Likert anchors land as positional labels — endpoints
+      // set, middles blank — matching the wire's labels-are-positional rule.
+      const surveyWireItems = sharedAssignmentActivity?.type === 'survey'
+          ? (Array.isArray(sharedAssignmentActivity.surveyItems) ? sharedAssignmentActivity.surveyItems : [])
+              .map(surveyItem => {
+                  const text = String(surveyItem?.text || '').replace(/\s+/g, ' ').trim().slice(0, 240);
+                  if (!text) return null;
+                  const kind = ['likert', 'choice', 'freetext', 'numeric'].indexOf(surveyItem?.type) >= 0 ? surveyItem.type : 'likert';
+                  const entry = { type: kind, text, required: surveyItem?.required === true };
+                  if (kind === 'likert') {
+                      const steps = Math.max(2, Math.min(10, Math.trunc(Number(surveyItem?.steps) || 5)));
+                      const low = String(surveyItem?.lowLabel ?? 'Strongly disagree').trim().slice(0, 60);
+                      const high = String(surveyItem?.highLabel ?? 'Strongly agree').trim().slice(0, 60);
+                      const fullLabels = Array.isArray(surveyItem?.labels)
+                          ? surveyItem.labels.map(label => String(label == null ? '' : label).trim().slice(0, 60))
+                          : null;
+                      // A Research Suite import carries every step's label. Honor them
+                      // when they still match the step count (the endpoint inputs may
+                      // have edited the ends); a changed step count means the teacher
+                      // rebuilt the scale, so endpoint synthesis takes over.
+                      if (fullLabels && fullLabels.length === steps && steps >= 2) {
+                          entry.steps = steps;
+                          entry.labels = [low, ...fullLabels.slice(1, -1), high];
+                      } else {
+                          entry.steps = steps;
+                          entry.labels = Array.from({ length: steps }, (_, at) => (at === 0 ? low : at === steps - 1 ? high : ''));
+                      }
+                  } else if (kind === 'choice') {
+                      entry.options = String(surveyItem?.optionsText || '')
+                          .split(/\r?\n/)
+                          .map(line => line.replace(/\s+/g, ' ').trim().slice(0, 80))
+                          .filter(Boolean)
+                          .slice(0, 12)
+                          .map(label => ({ label }));
+                      if (entry.options.length < 2) return null;
+                  } else if (kind === 'numeric') {
+                      const min = Number(surveyItem?.min);
+                      const max = Number(surveyItem?.max);
+                      if (isFinite(min)) entry.min = min;
+                      if (isFinite(max)) entry.max = max;
+                  }
+                  return entry;
+              })
+              .filter(Boolean)
+              .slice(0, 12)
+          : [];
       const sharedActivity = includeSharedActivity && sharedAssignmentActivity.enabled
           ? stripUndefined({
               v: 1,
@@ -24575,8 +25238,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               minValue: sharedActivityType === 'rating' ? ratingMin : undefined,
               maxValue: sharedActivityType === 'rating' ? ratingMax : undefined,
               labels: sharedActivityType === 'rating' ? ratingLabels : undefined,
-              identityMode: (sharedActivityType === 'availability' || sharedActivityType === 'signup') ? String(sharedAssignmentActivity.identityMode || '') : undefined,
+              identityMode: (sharedActivityType === 'availability' || sharedActivityType === 'signup' || sharedActivityType === 'survey') ? String(sharedAssignmentActivity.identityMode || '') : undefined,
               options: (sharedActivityType === 'availability' || sharedActivityType === 'signup') ? pollOptions : undefined,
+              items: sharedActivityType === 'survey' ? surveyWireItems : undefined,
               allowMaybe: sharedActivityType === 'availability' ? sharedAssignmentActivity.allowMaybe !== false : undefined,
               multiSelect: sharedActivityType === 'availability' ? sharedAssignmentActivity.multiSelect !== false : undefined,
               maxPerPerson: sharedActivityType === 'signup'
@@ -24585,12 +25249,16 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               // Voting closes when the assignment link does; the rows are erased a
               // week later. Two dates, because "stop collecting" and "stop
               // existing" are different events for a scheduling poll (spec §4).
-              closesAt: (sharedActivityType === 'availability' || sharedActivityType === 'signup') ? expiresAt : undefined,
-              deleteAt: (sharedActivityType === 'availability' || sharedActivityType === 'signup')
+              closesAt: (sharedActivityType === 'availability' || sharedActivityType === 'signup' || sharedActivityType === 'survey') ? expiresAt : undefined,
+              deleteAt: (sharedActivityType === 'availability' || sharedActivityType === 'signup' || sharedActivityType === 'survey')
                   ? new Date(Date.parse(expiresAt) + 7 * 24 * 60 * 60 * 1000).toISOString()
                   : undefined,
           })
           : null;
+      if (sharedActivity && sharedActivity.type === 'survey') {
+          if (!surveyWireItems.length) { addToast('Add at least one survey question first.', 'info'); return null; }
+          if (!sharedActivity.identityMode) { addToast('Pick who is answering before you share this survey.', 'info'); return null; }
+      }
       const sharedActivities = sharedActivity ? [sharedActivity] : [];
       const packet = stripUndefined({
           v: 1,
@@ -24665,7 +25333,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // pointer, so it is always small enough to print.
   const hostPackOnMailbox = useCallback(async (resourceIds = null) => {
       const selectedResourceIds = Array.isArray(resourceIds) ? resourceIds : null;
-      const requiredMailboxVersion = sharedAssignmentActivity.enabled ? 11 : 9;
+      const requiredMailboxVersion = (sharedAssignmentActivity.enabled && sharedAssignmentActivity.type === 'survey') ? 13
+          : sharedAssignmentActivity.enabled ? 11 : 9;
       if (mbConfig?.url && mbConfig?.admin && Number(mbConfig.v || 0) < requiredMailboxVersion) {
           addToast(`Update your Class Mailbox script to v${requiredMailboxVersion} before hosting ${sharedAssignmentActivity.enabled ? 'a shared class activity' : 'expiring homework'}.`, 'info');
           setMbPanelOpen(true);
@@ -24704,6 +25373,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               packId: id,
               packSecret: secret,
               sharedActivity: built.sharedActivities[0] || null,
+              // Study bookkeeping (population/timepoint/item-id map) for the
+              // results importer. Client-side only: respondents never see it.
+              researchMeta: (sharedAssignmentActivity && sharedAssignmentActivity._researchMeta) || null,
               sharedActivityEnabled: built.sharedActivities.length > 0,
               aiPolicy: built.aiPolicy,
           });
@@ -37124,7 +37796,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               if (_alloAssignmentIsExpired(packet)) throw new Error('Assignment expired');
               const sharedActivity = (Array.isArray(packet?.sharedActivities) ? packet.sharedActivities : []).find(candidate => (
                   candidate
-                  && (candidate.type === 'word_cloud' || candidate.type === 'rating')
+                  && ['word_cloud', 'rating', 'availability', 'signup', 'survey'].indexOf(candidate.type) >= 0
                   && candidate.delivery === 'shared_async'
                   && /^AC-[0-9a-f-]{36}$/i.test(String(candidate.activityId || ''))
                   && String(candidate.prompt || '').trim()
@@ -44157,6 +44829,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         rating: 'How would you rate your understanding?',
                         availability: 'Which of these times could you make?',
                         signup: 'Choose a time that works for you',
+                        survey: 'How did this week go?',
                       };
                       setSharedAssignmentActivity(previous => ({
                         ...(previous || {}),
@@ -44175,6 +44848,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     <option value="rating">Rating scale (not scored)</option>
                     <option value="availability">Availability poll (find a time)</option>
                     <option value="signup">Sign-up sheet (claim a slot)</option>
+                    <option value="survey">Survey (multiple questions)</option>
                   </select>
                 </label>
                 {sharedAssignmentActivity?.enabled === true && (<>
@@ -44256,8 +44930,169 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                       </label>
                     </>)}
                   </>)}
+                  {sharedAssignmentActivity?.type === 'survey' && (<>
+                    <div className="mt-3 space-y-2">
+                      {(sharedAssignmentActivity?.surveyItems || []).map((surveyItem, surveyIndex) => (
+                        <div key={surveyIndex} className="rounded-lg border border-sky-200 bg-white p-2">
+                          <div className="flex items-start gap-2">
+                            <input
+                              type="text"
+                              aria-label={'Question ' + (surveyIndex + 1)}
+                              value={String(surveyItem?.text || '')}
+                              onChange={event => setSharedAssignmentActivity(previous => {
+                                const rows = [...((previous || {}).surveyItems || [])];
+                                rows[surveyIndex] = { ...rows[surveyIndex], text: event.target.value.slice(0, 240) };
+                                return { ...(previous || {}), surveyItems: rows };
+                              })}
+                              placeholder={'Question ' + (surveyIndex + 1)}
+                              className="flex-1 rounded-md border border-sky-300 px-2 py-1.5 text-xs font-semibold text-slate-800"
+                            />
+                            <button type="button" aria-label={'Remove question ' + (surveyIndex + 1)}
+                              onClick={() => setSharedAssignmentActivity(previous => ({
+                                ...(previous || {}),
+                                surveyItems: ((previous || {}).surveyItems || []).filter((_, at) => at !== surveyIndex),
+                              }))}
+                              className="rounded-md border border-rose-200 px-2 py-1 text-xs font-black text-rose-700">✖</button>
+                          </div>
+                          <div className="mt-2 flex flex-wrap items-center gap-2">
+                            <select
+                              aria-label={'Answer type for question ' + (surveyIndex + 1)}
+                              value={surveyItem?.type || 'likert'}
+                              onChange={event => setSharedAssignmentActivity(previous => {
+                                const rows = [...((previous || {}).surveyItems || [])];
+                                rows[surveyIndex] = { ...rows[surveyIndex], type: event.target.value };
+                                return { ...(previous || {}), surveyItems: rows };
+                              })}
+                              className="rounded-md border border-sky-300 px-2 py-1.5 text-xs font-semibold text-slate-800"
+                            >
+                              <option value="likert">Scale (agree–disagree)</option>
+                              <option value="choice">Multiple choice</option>
+                              <option value="freetext">Short answer</option>
+                              <option value="numeric">Number</option>
+                            </select>
+                            {(surveyItem?.type || 'likert') === 'likert' && (
+                              <select
+                                aria-label={'Scale steps for question ' + (surveyIndex + 1)}
+                                value={Number(surveyItem?.steps) || 5}
+                                onChange={event => setSharedAssignmentActivity(previous => {
+                                  const rows = [...((previous || {}).surveyItems || [])];
+                                  rows[surveyIndex] = { ...rows[surveyIndex], steps: parseInt(event.target.value, 10) };
+                                  return { ...(previous || {}), surveyItems: rows };
+                                })}
+                                className="rounded-md border border-sky-300 px-2 py-1.5 text-xs font-semibold text-slate-800"
+                              >
+                                {[3, 4, 5, 7].map(stepCount => <option key={stepCount} value={stepCount}>{stepCount}-point</option>)}
+                              </select>
+                            )}
+                            <label className="flex items-center gap-1 text-[11px] font-bold text-slate-700">
+                              <input type="checkbox" checked={surveyItem?.required === true}
+                                onChange={event => setSharedAssignmentActivity(previous => {
+                                  const rows = [...((previous || {}).surveyItems || [])];
+                                  rows[surveyIndex] = { ...rows[surveyIndex], required: event.target.checked };
+                                  return { ...(previous || {}), surveyItems: rows };
+                                })} />
+                              Required
+                            </label>
+                          </div>
+                          {(surveyItem?.type || 'likert') === 'likert' && (
+                            <div className="mt-2 grid grid-cols-2 gap-2">
+                              <input type="text" aria-label="Label for the low end"
+                                value={surveyItem?.lowLabel ?? 'Strongly disagree'}
+                                onChange={event => setSharedAssignmentActivity(previous => {
+                                  const rows = [...((previous || {}).surveyItems || [])];
+                                  rows[surveyIndex] = { ...rows[surveyIndex], lowLabel: event.target.value.slice(0, 60) };
+                                  return { ...(previous || {}), surveyItems: rows };
+                                })}
+                                className="rounded-md border border-sky-200 px-2 py-1 text-[11px] text-slate-700" />
+                              <input type="text" aria-label="Label for the high end"
+                                value={surveyItem?.highLabel ?? 'Strongly agree'}
+                                onChange={event => setSharedAssignmentActivity(previous => {
+                                  const rows = [...((previous || {}).surveyItems || [])];
+                                  rows[surveyIndex] = { ...rows[surveyIndex], highLabel: event.target.value.slice(0, 60) };
+                                  return { ...(previous || {}), surveyItems: rows };
+                                })}
+                                className="rounded-md border border-sky-200 px-2 py-1 text-[11px] text-slate-700" />
+                            </div>
+                          )}
+                          {surveyItem?.type === 'choice' && (
+                            <textarea
+                              aria-label={'Choices for question ' + (surveyIndex + 1) + ', one per line'}
+                              value={String(surveyItem?.optionsText || '')}
+                              onChange={event => setSharedAssignmentActivity(previous => {
+                                const rows = [...((previous || {}).surveyItems || [])];
+                                rows[surveyIndex] = { ...rows[surveyIndex], optionsText: event.target.value };
+                                return { ...(previous || {}), surveyItems: rows };
+                              })}
+                              rows={3}
+                              placeholder={'Read-aloud\nGlossary\nPictures'}
+                              className="mt-2 w-full rounded-md border border-sky-200 px-2 py-1 text-[11px] text-slate-700"
+                            />
+                          )}
+                          {surveyItem?.type === 'numeric' && (
+                            <div className="mt-2 flex items-center gap-2 text-[11px] font-bold text-slate-700">
+                              <label>Min <input type="number" value={surveyItem?.min ?? ''}
+                                onChange={event => setSharedAssignmentActivity(previous => {
+                                  const rows = [...((previous || {}).surveyItems || [])];
+                                  rows[surveyIndex] = { ...rows[surveyIndex], min: event.target.value };
+                                  return { ...(previous || {}), surveyItems: rows };
+                                })}
+                                className="ml-1 w-20 rounded-md border border-sky-200 px-2 py-1" /></label>
+                              <label>Max <input type="number" value={surveyItem?.max ?? ''}
+                                onChange={event => setSharedAssignmentActivity(previous => {
+                                  const rows = [...((previous || {}).surveyItems || [])];
+                                  rows[surveyIndex] = { ...rows[surveyIndex], max: event.target.value };
+                                  return { ...(previous || {}), surveyItems: rows };
+                                })}
+                                className="ml-1 w-20 rounded-md border border-sky-200 px-2 py-1" /></label>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    {((sharedAssignmentActivity?.surveyItems || []).length < 12) && (
+                      <button type="button"
+                        onClick={() => setSharedAssignmentActivity(previous => ({
+                          ...(previous || {}),
+                          surveyItems: [...((previous || {}).surveyItems || []), { type: 'likert', text: '', steps: 5, required: false }],
+                        }))}
+                        className="mt-2 rounded-md border border-sky-300 bg-white px-3 py-1.5 text-xs font-black text-sky-800">
+                        + Add question
+                      </button>
+                    )}
+                    <label className="mt-3 block text-[11px] font-black text-slate-700">
+                      Who is answering
+                      <select
+                        value={String(sharedAssignmentActivity?.identityMode || '')}
+                        onChange={event => setSharedAssignmentActivity(previous => ({ ...(previous || {}), identityMode: event.target.value }))}
+                        className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800"
+                      >
+                        <option value="">Choose before sharing...</option>
+                        <option value="real_name">Real names (staff, families)</option>
+                        <option value="codename">Codenames (students)</option>
+                        <option value="anonymous">Anonymous (aggregates only)</option>
+                      </select>
+                    </label>
+                    {!sharedAssignmentActivity?.identityMode && (
+                      <p className="mt-1 text-[10px] font-bold text-amber-700">Pick who is answering before you share this.</p>
+                    )}
+                    {sharedAssignmentActivity?._researchMeta && (
+                      <p className="mt-1 text-[10px] leading-relaxed text-slate-600">
+                        For pre/mid/post comparisons: <b>real names</b> pair the same person across check-ins; <b>codenames</b> pair only when they answer from the same device; <b>anonymous</b> never pairs — group totals only.
+                      </p>
+                    )}
+                    {Number(mbConfig?.v || 0) > 0 && Number(mbConfig?.v || 0) < 13 && (
+                      <p className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[10px] font-bold text-amber-800">
+                        Your Class Mailbox script is v{mbConfig.v} — surveys need v13. Use the update notice below to copy the new script and redeploy, then reconnect.
+                      </p>
+                    )}
+                  </>)}
                   <button type="button" onClick={() => { if (typeof createHomeworkAssignmentLink === 'function') createHomeworkAssignmentLink(); }}
-                    className="mt-4 w-full rounded-lg bg-sky-700 px-3 py-2 text-sm font-black text-white">
+                    disabled={sharedAssignmentActivity?.type === 'survey' && (
+                      !((sharedAssignmentActivity?.surveyItems || []).some(surveyItem => String(surveyItem?.text || '').trim()))
+                      || !sharedAssignmentActivity?.identityMode
+                      || (Number(mbConfig?.v || 0) > 0 && Number(mbConfig?.v || 0) < 13)
+                    )}
+                    className="mt-4 w-full rounded-lg bg-sky-700 px-3 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50">
                     Create the link and QR code
                   </button>
                 </>)}
@@ -44291,7 +45126,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 const action = assignmentCenterActionByUrl[share.url] || {};
                 const actionBusy = !!action.kind;
                 const hosted = share.type === 'assignment-pack-hosted';
-                const activityLabel = share.sharedActivity?.type === 'rating' ? 'Shared rating' : share.sharedActivity ? 'Shared Word Cloud' : 'Resource assignment';
+                const activityLabel = share.sharedActivity?.type === 'rating' ? 'Shared rating' : share.sharedActivity?.type === 'survey' ? 'Shared survey' : share.sharedActivity ? 'Shared Word Cloud' : 'Resource assignment';
                 return (
                   <article key={row.key || index} data-assignment-lifecycle={row.lifecycle} className="rounded-xl border border-slate-200 p-3">
                     <div className="flex flex-wrap items-start justify-between gap-3">
@@ -44317,6 +45152,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
                       <button disabled={closed || actionBusy} onClick={() => { openQrShareModal(share); setShowRecentQrShares(false); }} className="min-h-10 rounded-lg border border-violet-300 bg-violet-50 px-2 text-xs font-bold text-violet-900 disabled:opacity-50">Manage</button>
                       <button disabled={closed || actionBusy} onClick={() => copyToClipboard(share.url)} className="min-h-10 rounded-lg border border-slate-300 bg-white px-2 text-xs font-bold text-slate-800 disabled:opacity-50">Copy active link</button>
+                      {hosted && share.sharedActivity?.type === 'survey' && <button disabled={actionBusy} onClick={() => importSurveyShareToResearchSuite(share)} className="min-h-10 rounded-lg border border-purple-300 bg-white px-3 text-xs font-bold text-purple-800 hover:bg-purple-50 disabled:opacity-50">Import results to Research Suite</button>}
                       {hosted && row.lifecycle === 'active' && <button disabled={actionBusy || Number(mbConfig?.v || 0) < 12} onClick={() => extendAssignmentCenterShare(share)} className="min-h-10 rounded-lg border border-sky-300 bg-sky-50 px-2 text-xs font-bold text-sky-900 disabled:opacity-50">{action.kind === 'extending' ? 'Extending…' : `Extend ${homeworkExpiryDays} days`}</button>}
                       {hosted && row.lifecycle === 'expired' && <button disabled={actionBusy || Number(mbConfig?.v || 0) < 12} onClick={() => duplicateAssignmentCenterShare(share)} className="min-h-10 rounded-lg border border-emerald-300 bg-emerald-50 px-2 text-xs font-bold text-emerald-900 disabled:opacity-50">{action.kind === 'duplicating' ? 'Creating copy…' : 'Create fresh copy'}</button>}
                       {row.lifecycle === 'active' && share.type !== 'assignment-pack' && <button disabled={actionBusy} onClick={() => revokeHomeworkAssignment(share)} className="min-h-10 rounded-lg border border-rose-300 bg-rose-50 px-2 text-xs font-bold text-rose-800 disabled:opacity-50">{action.kind === 'revoking' ? 'Revoking…' : 'Revoke now'}</button>}
@@ -44366,7 +45202,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             </div>
             {qrShareModal.type === 'assignment-pack-hosted' && qrShareModal.sharedActivity && (
               <details className="mb-3 rounded-xl border border-sky-200 bg-sky-50 p-3 text-left">
-                <summary className="cursor-pointer text-xs font-black text-sky-900">Manage shared {qrShareModal.sharedActivity.type === 'rating' ? 'class rating' : 'class Word Cloud'}</summary>
+                <summary className="cursor-pointer text-xs font-black text-sky-900">Manage shared {qrShareModal.sharedActivity.type === 'rating' ? 'class rating' : qrShareModal.sharedActivity.type === 'survey' ? 'survey' : 'class Word Cloud'}</summary>
                 <p className="mt-2 text-[11px] leading-relaxed text-sky-800">{qrShareModal.sharedActivity.type === 'rating' ? 'Students rate on their own time. Only the anonymous distribution appears after the participation threshold.' : 'Students contribute on their own time. Open this section later from Recent homework links to approve or hide entries.'}</p>
                 <div className="mt-3">
                   <SharedAssignmentActivityPanel
@@ -44539,13 +45375,13 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 hand-raise) but lack the session-doc store that powers polls,
                 quiz, groups and Pictionary — tell the teacher how to update
                 (same URL, ~1 minute). */}
-            {mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 12 && (
+            {mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 13 && (
               <div className="mb-3 bg-amber-50 border-2 border-amber-200 rounded-xl p-3">
-                <p className="text-xs font-bold text-amber-800 mb-2">Your mailbox script is v{mbConfig.v}. Update it to v12 to manage deadlines and fresh assignment copies while preparing multiple shared asynchronous class activities while keeping expiring homework links, secure live tools, and automatic student submissions (about 1 minute, the URL stays the same):</p>
+                <p className="text-xs font-bold text-amber-800 mb-2">Your mailbox script is v{mbConfig.v}. Update it to v13 to host surveys and manage deadlines and fresh assignment copies while preparing multiple shared asynchronous class activities while keeping expiring homework links, secure live tools, and automatic student submissions (about 1 minute, the URL stays the same):</p>
                 <ol className="list-decimal list-inside text-xs text-amber-900 space-y-1">
                   <li><button onClick={() => copyToClipboard(ALLO_MB_SCRIPT_SOURCE)} className="font-bold underline underline-offset-2">Copy the updated script</button> and paste it over the old code in your Apps Script project (script.google.com → your AlloFlow Class Mailbox).</li>
                   <li>Deploy → Manage deployments → pencil icon → Version: <b>New version</b> → Deploy.</li>
-                  <li>Press "Connect &amp; self-test" here again — this notice disappears at v12.</li>
+                  <li>Press "Connect &amp; self-test" here again — this notice disappears at v13.</li>
                 </ol>
               </div>
             )}

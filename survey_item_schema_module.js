@@ -251,42 +251,65 @@
     }
 
     // ── Share & Collect mailbox ──
-    // The mailbox takes ONE prompt per activity, so an instrument of N items
-    // becomes N activities. That is a real constraint of the transport, not a
-    // conversion detail: report it so a caller can decide, and remember the
-    // backend caps a pack at 8.
+    // The mailbox hosts a real multi-item survey activity (Code.gs v13), so a
+    // whole instrument travels as ONE activity with one submission across all
+    // items. The earlier adapter here split an instrument into N single-prompt
+    // activities — retired before it ever shipped, which is the point of a
+    // schema layer: the transport grew the right shape instead.
     const MAILBOX_MAX_ACTIVITIES = 8;
+    const MAILBOX_MAX_SURVEY_ITEMS = 12;
 
     function toMailboxActivities(items, options) {
         const opts = isObject(options) ? options : {};
         const list = normalizeInstrument(items);
-        const activities = list.map((item) => {
+        const wireItems = list.map((item) => {
+            const entry = { type: item.type, text: item.text, required: item.required === true };
             if (item.type === 'likert') {
-                return {
-                    type: 'rating',
-                    prompt: item.text,
-                    minValue: 1,
-                    maxValue: item.steps,
-                    // The mailbox stores plain strings, so images do not
-                    // survive this hop. `lossy` below names that.
-                    labels: item.labels.map((c) => c.text)
-                };
+                entry.steps = item.steps;
+                // The mailbox stores plain strings, so images do not survive
+                // this hop. `lossy` below names that.
+                entry.labels = item.labels.map((c) => c.text);
+            } else if (item.type === 'choice') {
+                entry.options = item.options.map((c) => ({ label: c.text }));
+            } else if (item.type === 'numeric') {
+                if (item.min !== null) entry.min = item.min;
+                if (item.max !== null) entry.max = item.max;
             }
-            if (item.type === 'choice') {
-                return { type: 'availability', prompt: item.text, options: item.options.map((c) => ({ label: c.text })), identityMode: opts.identityMode || 'anonymous' };
-            }
-            return { type: 'question_board', prompt: item.text };
+            return entry;
         });
+        const activity = {
+            type: 'survey',
+            prompt: text(opts.prompt, 240) || 'A few quick questions',
+            // Identity is a privacy decision the server refuses to default, so
+            // this adapter will not invent one either.
+            identityMode: opts.identityMode || '',
+            items: wireItems.slice(0, MAILBOX_MAX_SURVEY_ITEMS)
+        };
         const droppedImages = list.some((item) => (item.labels || []).some((c) => c.image) || (item.options || []).some((c) => c.image));
         return {
-            activities: activities.slice(0, MAILBOX_MAX_ACTIVITIES),
-            overflow: Math.max(0, activities.length - MAILBOX_MAX_ACTIVITIES),
+            activities: [activity],
+            overflow: Math.max(0, wireItems.length - MAILBOX_MAX_SURVEY_ITEMS),
             lossy: droppedImages ? ['label-images'] : []
         };
     }
 
     function fromMailboxActivity(activity) {
         const source = isObject(activity) ? activity : {};
+        if (source.type === 'survey') {
+            // The server generated the item ids; keep them so answers can be
+            // joined back to the instrument.
+            return normalizeInstrument((Array.isArray(source.items) ? source.items : []).map((item) => ({
+                id: item && item.id,
+                text: item && item.text,
+                type: item && item.type,
+                required: item && item.required === true,
+                steps: item && item.steps,
+                labels: item && item.labels,
+                options: item && item.options ? item.options.map((o) => o && o.label) : undefined,
+                min: item && item.min,
+                max: item && item.max
+            })));
+        }
         if (source.type === 'rating') {
             const min = parseInt(source.minValue, 10);
             const max = parseInt(source.maxValue, 10);
@@ -313,6 +336,7 @@
         RESEARCH_MAX_STEPS,
         RESEARCH_MIN_ITEMS,
         MAILBOX_MAX_ACTIVITIES,
+        MAILBOX_MAX_SURVEY_ITEMS,
         normalizeItem,
         normalizeInstrument,
         researchValidity,
