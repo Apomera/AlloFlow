@@ -17703,6 +17703,36 @@ var d = labToolData.cell || {};
 
 
 
+          // Every authored question lists its correct answer FIRST, so the quiz
+          // was answerable without reading it (10/10 at slot 1, slots 2-4 never
+          // correct). Rotate the options by a per-question offset so the answer
+          // lands in a different slot for each question.
+          //
+          // Deterministic on purpose: quizQuestion is re-derived from quizIdx on
+          // EVERY render, so a Math.random() shuffle here would deal the options
+          // a new order under the student's cursor mid-question.
+          //
+          // wrongFeedback is a POSITIONAL array (read as wrongFeedback[selected]),
+          // so it must be rotated by the same offset or the explanation would be
+          // attached to the wrong distractor. Correctness itself compares option
+          // TEXT against `a`, so reordering cannot affect scoring.
+          function cellRotateQuizOptions(question, seedIdx) {
+            if (!question || !Array.isArray(question.options) || question.options.length < 2) return question;
+            var n = question.options.length;
+            var shift = ((seedIdx * 7) + 3) % n;   // coprime-ish stride, never 0 for n=4
+            if (shift === 0) return question;
+            var rotate = function (arr) {
+              if (!Array.isArray(arr) || arr.length !== n) return arr;
+              var out = new Array(n);
+              for (var i = 0; i < n; i++) out[(i + shift) % n] = arr[i];
+              return out;
+            };
+            var rotated = Object.assign({}, question);
+            rotated.options = rotate(question.options);
+            if (Array.isArray(question.wrongFeedback)) rotated.wrongFeedback = rotate(question.wrongFeedback);
+            return rotated;
+          }
+
           // ── Quiz questions (observation-based) ──
 
           var QUIZ_BANK = [
@@ -21106,7 +21136,7 @@ var d = labToolData.cell || {};
 
           // ── Quiz logic ──
 
-          var quizQuestion = d.quizMode && QUIZ_BANK[d.quizIdx || 0] ? QUIZ_BANK[d.quizIdx || 0] : null;
+          var quizQuestion = d.quizMode && QUIZ_BANK[d.quizIdx || 0] ? cellRotateQuizOptions(QUIZ_BANK[d.quizIdx || 0], d.quizIdx || 0) : null;
 
           var activeCellMode = d.mode || 'observe';
           var observedCount = (ext.organismsObserved || []).length;
