@@ -3224,6 +3224,22 @@
             return Object.assign({}, prev, { chemBalance: cb });
           });
         };
+        // Declared HERE, not inside the chem-nav block: the hero band below
+        // also calls it, and a declaration inside one IIFE is invisible to
+        // the next — which threw ReferenceError on every learning-path button.
+        function goSection(sid) {
+          upd('subtool', sid);
+          upd('_everPicked', true);
+          if (CHEM_SECTION_TO_CATEGORY[sid] && CHEM_SECTION_TO_CATEGORY[sid] !== d._activeCategory) {
+            upd('_activeCategory', CHEM_SECTION_TO_CATEGORY[sid]);
+          }
+          var destination = SUBTOOLS.find(function(item) { return item.id === sid; });
+          if (typeof announceToSR === 'function') announceToSR('Switched to ' + (destination ? destination.label : sid));
+          setTimeout(function() {
+            var heading = document.getElementById('chem-workspace-title');
+            if (heading && typeof heading.focus === 'function') heading.focus();
+          }, 0);
+        }
 
         var subtool = d.subtool || 'balance';
         var chemSearchRaw = d._chemSearch || '';
@@ -4008,19 +4024,6 @@
               : null;
 
             function setCategory(cid) { upd('_activeCategory', cid); upd('_chemSearch', ''); }
-            function goSection(sid) {
-              upd('subtool', sid);
-              upd('_everPicked', true);
-              if (CHEM_SECTION_TO_CATEGORY[sid] && CHEM_SECTION_TO_CATEGORY[sid] !== d._activeCategory) {
-                upd('_activeCategory', CHEM_SECTION_TO_CATEGORY[sid]);
-              }
-              var destination = SUBTOOLS.find(function(item) { return item.id === sid; });
-              if (typeof announceToSR === 'function') announceToSR('Switched to ' + (destination ? destination.label : sid));
-              setTimeout(function() {
-                var heading = document.getElementById('chem-workspace-title');
-                if (heading && typeof heading.focus === 'function') heading.focus();
-              }, 0);
-            }
 
             var elements = [];
 
