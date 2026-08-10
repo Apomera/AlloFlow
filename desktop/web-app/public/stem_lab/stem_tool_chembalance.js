@@ -651,6 +651,11 @@
   ];
 
   // ── Challenge questions (3 tiers) ──
+  // APPEND-ONLY: progress ids are index-based (chalDiff + ':' + chalIdx), so
+  // inserting or reordering questions corrupts saved correctChallengeIds.
+  // Optional `check` tags declare a deterministic chemistry cross-check that
+  // tests/chembalance_preset_bank_invariants.test.js executes against the
+  // tool's own parseFormula/parseSpecies/balanceEquation ground truth.
   var CHALLENGE_QS = {
     easy: [
       { q: 'What type of reaction is: 2H\u2082 + O\u2082 \u2192 2H\u2082O?', a: ['Synthesis', 'Decomposition', 'Single Replacement', 'Combustion'], correct: 0, explain: 'Two reactants combine to form one product (A + B \u2192 AB)' },
@@ -660,7 +665,14 @@
       { q: 'What is a chemical formula?', a: ['A recipe for food', 'A shorthand for a compound', 'A math equation', 'A lab tool'], correct: 1, explain: 'Chemical formulas use element symbols and subscripts to show composition' },
       { q: 'What does the subscript 2 in H\u2082O mean?', a: ['2 water molecules', '2 hydrogen atoms', '2 oxygen atoms', 'Temperature'], correct: 1, explain: 'Subscript tells how many atoms of that element are in one molecule' },
       { q: 'What is a coefficient in a chemical equation?', a: ['The little number below', 'The big number in front', 'The arrow', 'The element symbol'], correct: 1, explain: 'Coefficients are the numbers placed before formulas to balance equations' },
-      { q: 'Which is a reactant in: CH\u2084 + 2O\u2082 \u2192 CO\u2082 + 2H\u2082O?', a: ['CO\u2082', 'H\u2082O', 'CH\u2084', 'Heat'], correct: 2, explain: 'Reactants are on the LEFT side of the arrow' }
+      { q: 'Which is a reactant in: CH\u2084 + 2O\u2082 \u2192 CO\u2082 + 2H\u2082O?', a: ['CO\u2082', 'H\u2082O', 'CH\u2084', 'Heat'], correct: 2, explain: 'Reactants are on the LEFT side of the arrow' },
+      { q: 'What type of reaction is: 2H\u2082O\u2082 \u2192 2H\u2082O + O\u2082?', a: ['Combustion', 'Synthesis', 'Decomposition', 'Double Replacement'], correct: 2, explain: 'One compound breaks apart into simpler substances (AB \u2192 A + B)' },
+      { q: 'Which side of the arrow shows the products?', a: ['Left', 'Both', 'Neither', 'Right'], correct: 3, explain: 'Products are on the RIGHT side of the arrow; reactants are on the left' },
+      { q: 'How many oxygen atoms are in 3CO\u2082?', a: ['6', '2', '3', '12'], correct: 0, explain: 'The coefficient 3 multiplies the whole molecule: 3 \u00d7 2 oxygen atoms = 6', check: { kind: 'atomCount', species: '3CO2', element: 'O' } },
+      { q: 'In the formula CO\u2082, what does the C stand for?', a: ['Calcium', 'Chlorine', 'Carbon', 'Copper'], correct: 2, explain: 'C is carbon; calcium is Ca, chlorine is Cl, and copper is Cu' },
+      { q: 'Balancing an equation means making both sides have:', a: ['The same atoms of each element', 'The same number of molecules', 'The same coefficients', 'The same compounds'], correct: 0, explain: 'A balanced equation has equal counts of each element\u2019s atoms on both sides' },
+      { q: 'Which of these is a diatomic element (travels in pairs)?', a: ['Helium', 'Carbon', 'Sulfur', 'Oxygen'], correct: 3, explain: 'Oxygen exists as O\u2082; H\u2082, N\u2082, F\u2082, Cl\u2082, Br\u2082, and I\u2082 are also diatomic' },
+      { q: 'Changing a subscript instead of a coefficient is wrong because it:', a: ['Changes the substance itself', 'Makes the math harder', 'Is against lab rules', 'Uses too many atoms'], correct: 0, explain: 'H\u2082O\u2082 is peroxide, not water \u2014 subscripts define the compound; only coefficients may change when balancing' }
     ],
     medium: [
       { q: 'What type of reaction is: CH\u2084 + 2O\u2082 \u2192 CO\u2082 + 2H\u2082O?', a: ['Synthesis', 'Decomposition', 'Combustion', 'Acid-Base'], correct: 2, explain: 'A hydrocarbon reacts with O\u2082 to produce CO\u2082 and H\u2082O' },
@@ -670,7 +682,14 @@
       { q: 'To balance N\u2082 + H\u2082 \u2192 NH\u2083, NH\u2083\u2019s coefficient is:', a: ['1', '2', '3', '4'], correct: 1, explain: 'N\u2082 + 3H\u2082 \u2192 2NH\u2083 gives 2 N and 6 H on each side' },
       { q: 'The molar mass of water (H\u2082O) is approximately:', a: ['2 g/mol', '18 g/mol', '32 g/mol', '16 g/mol'], correct: 1, explain: 'H\u2082O = 2(1.008) + 15.999 = 18.015 g/mol' },
       { q: 'What is Avogadro\u2019s number?', a: ['6.022 \u00D7 10\u00B2\u00B3', '3.14 \u00D7 10\u00B9\u2070', '1.602 \u00D7 10\u207B\u00B9\u2079', '9.81'], correct: 0, explain: 'One mole contains 6.022 \u00D7 10\u00B2\u00B3 particles' },
-      { q: 'In CH\u2084 + 2O\u2082 \u2192 CO\u2082 + 2H\u2082O, total O atoms on the product side:', a: ['2', '3', '4', '6'], correct: 2, explain: 'CO\u2082 has 2 O + 2H\u2082O has 2 O = 4 O total' }
+      { q: 'In CH\u2084 + 2O\u2082 \u2192 CO\u2082 + 2H\u2082O, total O atoms on the product side:', a: ['2', '3', '4', '6'], correct: 2, explain: 'CO\u2082 has 2 O + 2H\u2082O has 2 O = 4 O total' },
+      { q: 'What type is: Pb(NO\u2083)\u2082 + 2KI \u2192 PbI\u2082 + 2KNO\u2083?', a: ['Single Replacement', 'Synthesis', 'Combustion', 'Double Replacement'], correct: 3, explain: 'Two compounds swap partners (AB + CD \u2192 AD + CB); the insoluble PbI\u2082 falls out as a bright yellow precipitate' },
+      { q: 'To balance KClO\u2083 \u2192 KCl + O\u2082, KClO\u2083\u2019s coefficient is:', a: ['1', '2', '3', '4'], correct: 1, explain: '2KClO\u2083 \u2192 2KCl + 3O\u2082 gives 2 K, 2 Cl, and 6 O on each side', check: { kind: 'balanceCoeff', eq: 'KClO3 -> KCl + O2', species: 0 } },
+      { q: 'The molar mass of CO\u2082 is approximately:', a: ['28 g/mol', '32 g/mol', '44 g/mol', '12 g/mol'], correct: 2, explain: 'C(12.011) + 2 \u00d7 O(15.999) = 44.009 g/mol', check: { kind: 'molarMass', formula: 'CO2', tol: 1 } },
+      { q: 'How many total atoms are in one formula unit of Ca(OH)\u2082?', a: ['3', '4', '7', '5'], correct: 3, explain: '1 Ca + 2 O + 2 H = 5 atoms; the subscript outside the parentheses doubles everything inside', check: { kind: 'atomTotal', formula: 'Ca(OH)2' } },
+      { q: 'In 2Al + 3CuCl\u2082 \u2192 2AlCl\u2083 + 3Cu, which element is being replaced?', a: ['Aluminum', 'Chlorine', 'Copper', 'None'], correct: 2, explain: 'Aluminum displaces copper from CuCl\u2082 \u2014 copper leaves the compound as the free metal' },
+      { q: 'Why should O\u2082 get the LAST look when balancing a combustion reaction?', a: ['It is the heaviest molecule', 'It appears alone, so its coefficient can be set freely', 'It never changes', 'It is a product'], correct: 1, explain: 'Balance C, then H first; O\u2082 stands alone as an element, so adjusting its coefficient disturbs nothing else' },
+      { q: 'A student balances an equation and gets coefficients 2:4:2. What should they do next?', a: ['Reduce to lowest terms (1:2:1)', 'Submit it as-is', 'Double everything', 'Start over'], correct: 0, explain: 'Final coefficients should be the smallest whole numbers with the same ratio' }
     ],
     hard: [
       { q: 'What is the correct balanced form of Al + O\u2082 \u2192 Al\u2082O\u2083?', a: ['2Al + O\u2082 \u2192 Al\u2082O\u2083', '4Al + 3O\u2082 \u2192 2Al\u2082O\u2083', 'Al + O\u2082 \u2192 Al\u2082O\u2083', '3Al + 2O\u2082 \u2192 Al\u2082O\u2083'], correct: 1, explain: '4 Al, 6 O on each side' },
@@ -680,9 +699,20 @@
       { q: 'An exothermic reaction:', a: ['Absorbs heat', 'Releases heat', 'Doesn\u2019t involve energy', 'Only occurs in gases'], correct: 1, explain: 'Exothermic reactions release energy to surroundings (\u0394H < 0)' },
       { q: 'What determines the activity series position?', a: ['Atomic mass', 'Reactivity / ease of oxidation', 'Color', 'Melting point'], correct: 1, explain: 'More reactive metals displace less reactive ones from compounds' },
       { q: 'In stoichiometry, "mole ratio" comes from:', a: ['Periodic table', 'Balanced equation coefficients', 'Temperature', 'Pressure'], correct: 1, explain: 'Coefficients in a balanced equation give the mole ratio of reactants and products' },
-      { q: 'Percent yield = (actual/theoretical) \u00D7 100. If theoretical is 10g and actual is 8g:', a: ['80%', '125%', '18%', '2%'], correct: 0, explain: '(8/10) \u00D7 100 = 80% yield' }
+      { q: 'Percent yield = (actual/theoretical) \u00D7 100. If theoretical is 10g and actual is 8g:', a: ['80%', '125%', '18%', '2%'], correct: 0, explain: '(8/10) \u00D7 100 = 80% yield' },
+      { q: 'What is the correct balanced form of C\u2082H\u2086 + O\u2082 \u2192 CO\u2082 + H\u2082O?', a: ['C\u2082H\u2086 + 5O\u2082 \u2192 2CO\u2082 + 3H\u2082O', '2C\u2082H\u2086 + 7O\u2082 \u2192 4CO\u2082 + 6H\u2082O', 'C\u2082H\u2086 + 7O\u2082 \u2192 2CO\u2082 + 6H\u2082O', '2C\u2082H\u2086 + 5O\u2082 \u2192 4CO\u2082 + 3H\u2082O'], correct: 1, explain: 'One C\u2082H\u2086 needs 3\u00BD O\u2082; doubling clears the half: 4 C, 12 H, and 14 O on each side', check: { kind: 'balanceForm', eq: 'C2H6 + O2 -> CO2 + H2O' } },
+      { q: 'How many moles of O\u2082 are needed to burn 2 mol of propane (C\u2083H\u2088 + 5O\u2082 \u2192 3CO\u2082 + 4H\u2082O)?', a: ['5', '7', '12', '10'], correct: 3, explain: 'The mole ratio is 1 C\u2083H\u2088 : 5 O\u2082, so 2 mol \u00D7 5 = 10 mol O\u2082' },
+      { q: 'Molar mass of glucose (C\u2086H\u2081\u2082O\u2086) is approximately:', a: ['180 g/mol', '96 g/mol', '120 g/mol', '60 g/mol'], correct: 0, explain: '6 \u00D7 C(12) + 12 \u00D7 H(1) + 6 \u00D7 O(16) = 180 g/mol', check: { kind: 'molarMass', formula: 'C6H12O6', tol: 1 } },
+      { q: 'If 4 mol Al reacts with 4 mol O\u2082 (4Al + 3O\u2082 \u2192 2Al\u2082O\u2083), the limiting reagent is:', a: ['O\u2082', 'Al', 'Al\u2082O\u2083', 'Neither'], correct: 1, explain: '4 mol Al needs only 3 mol O\u2082; aluminum runs out first while 1 mol O\u2082 is left over' },
+      { q: 'A reaction has a theoretical yield of 25 g but produces 20 g. The percent yield is:', a: ['125%', '5%', '80%', '20%'], correct: 2, explain: '(20 / 25) \u00D7 100 = 80%' },
+      { q: 'When 12 g of carbon burns completely in 32 g of oxygen, the product mass is:', a: ['12 g', '32 g', '44 g', 'Less than 44 g because heat escapes'], correct: 2, explain: 'Conservation of mass: 12 g C + 32 g O\u2082 \u2192 44 g CO\u2082; the energy released does not measurably change the chemical mass' },
+      { q: 'Why can\u2019t H\u2082 + O\u2082 \u2192 H\u2082O be balanced by changing the product to H\u2082O\u2082?', a: ['It can be', 'O\u2082 is not diatomic', 'Water has no oxygen', 'H\u2082O\u2082 is a different compound (hydrogen peroxide)'], correct: 3, explain: 'Changing subscripts changes identity: H\u2082O\u2082 is peroxide. Balance with coefficients instead: 2H\u2082 + O\u2082 \u2192 2H\u2082O' }
     ]
   };
+
+  // Exposed here (not in the main __alloChemPure block, which runs before this
+  // initializer) so tests get the populated bank, not a hoisted undefined.
+  try { if (window.__alloChemPure) window.__alloChemPure.CHALLENGE_QS = CHALLENGE_QS; } catch (_e) {}
 
   // ── Battle questions ──
   var BATTLE_QS = [

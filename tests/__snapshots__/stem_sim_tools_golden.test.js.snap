@@ -112,7 +112,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for chemB
   "lengthBucket": 66,
   "paths": 0,
   "selects": 0,
-  "sha": "10cedbb154e8e630",
+  "sha": "d6e4d84bb895db08",
   "svgs": 0,
 }
 `;

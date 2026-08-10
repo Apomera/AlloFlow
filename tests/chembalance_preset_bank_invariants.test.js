@@ -117,6 +117,90 @@ describe('chemBalance — preset bank invariants', () => {
   });
 });
 
+describe('chemBalance — challenge-quiz bank invariants', () => {
+  let bank;
+  beforeAll(() => { bank = chem.CHALLENGE_QS; });
+
+  it('exposes three tiers, each grown append-only past the original 8', () => {
+    expect(Object.keys(bank).sort()).toEqual(['easy', 'hard', 'medium']);
+    for (const tier of ['easy', 'medium', 'hard']) {
+      expect(bank[tier].length, tier).toBeGreaterThanOrEqual(15);
+    }
+  });
+
+  it('every question is well-formed with unique text and unique answers', () => {
+    const allQs = [];
+    for (const tier of ['easy', 'medium', 'hard']) {
+      for (const item of bank[tier]) {
+        expect(Array.isArray(item.a), item.q).toBe(true);
+        expect(item.a.length, item.q).toBe(4);
+        expect(new Set(item.a).size, item.q).toBe(4);
+        expect(Number.isInteger(item.correct), item.q).toBe(true);
+        expect(item.correct, item.q).toBeGreaterThanOrEqual(0);
+        expect(item.correct, item.q).toBeLessThanOrEqual(3);
+        expect(typeof item.explain, item.q).toBe('string');
+        expect(item.explain.length, item.q).toBeGreaterThan(0);
+        allQs.push(item.q);
+      }
+    }
+    expect(new Set(allQs).size).toBe(allQs.length);
+  });
+
+  it('correct-answer positions are distributed (no position bias)', () => {
+    const counts = [0, 0, 0, 0];
+    let total = 0;
+    for (const tier of ['easy', 'medium', 'hard']) {
+      const tierPositions = new Set();
+      for (const item of bank[tier]) {
+        counts[item.correct]++;
+        tierPositions.add(item.correct);
+        total++;
+      }
+      expect(tierPositions.size, tier + ' uses too few answer positions').toBeGreaterThanOrEqual(3);
+    }
+    for (let i = 0; i < 4; i++) {
+      expect(counts[i] / total, 'position ' + i + ' share').toBeGreaterThanOrEqual(0.15);
+      expect(counts[i] / total, 'position ' + i + ' share').toBeLessThanOrEqual(0.4);
+    }
+  });
+
+  it('declared chemistry checks agree with the marked correct answer', () => {
+    let executed = 0;
+    for (const tier of ['easy', 'medium', 'hard']) {
+      for (const item of bank[tier]) {
+        if (!item.check) continue;
+        const c = item.check;
+        const marked = item.a[item.correct];
+        if (c.kind === 'molarMass') {
+          const stated = parseFloat(marked);
+          expect(Number.isFinite(stated), item.q).toBe(true);
+          expect(Math.abs(chem.parseFormula(c.formula).mass - stated), item.q).toBeLessThanOrEqual(c.tol);
+        } else if (c.kind === 'atomTotal') {
+          const elems = chem.parseFormula(c.formula).elems;
+          const totalAtoms = Object.values(elems).reduce((s, n) => s + n, 0);
+          expect(String(totalAtoms), item.q).toBe(marked);
+        } else if (c.kind === 'atomCount') {
+          const sp = chem.parseSpecies(c.species);
+          expect(sp.ok, item.q).toBe(true);
+          expect(String(sp.coef * (sp.elems[c.element] || 0)), item.q).toBe(marked);
+        } else if (c.kind === 'balanceCoeff') {
+          const r = chem.balanceEquation(c.eq);
+          expect(r.ok, item.q).toBe(true);
+          expect(String(r.coefficients[c.species]), item.q).toBe(marked);
+        } else if (c.kind === 'balanceForm') {
+          const r = chem.balanceEquation(c.eq);
+          expect(r.ok, item.q).toBe(true);
+          expect(toAsciiEquation(marked), item.q).toBe(r.balancedString);
+        } else {
+          throw new Error('unknown check kind ' + c.kind + ' on: ' + item.q);
+        }
+        executed++;
+      }
+    }
+    expect(executed).toBeGreaterThanOrEqual(6);
+  });
+});
+
 describe('chemBalance — practice-next control renders', () => {
   it('the balance subtool offers the retry-weighted Practice next button', () => {
     resetStemLab();
