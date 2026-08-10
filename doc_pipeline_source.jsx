@@ -2423,6 +2423,8 @@ function _alloResolveExtractionPageCount(pageCount, isEstimate, probedPageCount,
 // Pure (items in → ordered items + diagnostics out) → unit-testable without pdf.js.
 function _alloOrderTextItems(items, opts) {
   opts = opts || {};
+  var TRACE = opts.trace || null;
+  var _t = function (msg) { if (TRACE) TRACE.push(msg); };
   var _x = function (it) { return it && it.transform ? it.transform[4] : 0; };
   var _y = function (it) { return it && it.transform ? it.transform[5] : 0; };
   var _w = function (it) {
@@ -2523,7 +2525,7 @@ function _alloOrderTextItems(items, opts) {
     for (var g2 = 0; g2 < gaps.length; g2++) {
       if (gaps[g2] >= need) candidates.push({ gap: gaps[g2], yCut: (ys[g2] + ys[g2 + 1]) / 2 });
     }
-    if (!candidates.length) return null;
+    if (!candidates.length) { _t('  bandCut: levels=' + ys.length + ' leading=' + leading.toFixed(1) + ' need=' + need.toFixed(1) + ' maxGap=' + (gaps.length ? Math.max.apply(null, gaps).toFixed(1) : 'none') + ' -> no candidates'); return null; }
     // Widest first, but keep looking: the widest blank strip on a page is often
     // the one above the footer, which would peel off a band of one item. Take
     // the widest cut that actually leaves two substantial regions.
@@ -2532,6 +2534,7 @@ function _alloOrderTextItems(items, opts) {
       var top = [], bottom = [];
       for (var iC = 0; iC < arr.length; iC++) (_y(arr[iC]) > candidates[c2].yCut ? top : bottom).push(arr[iC]);
       if (top.length >= 6 && bottom.length >= 6) return { top: top, bottom: bottom };
+      _t('  bandCut: cut@' + candidates[c2].yCut.toFixed(0) + ' gap=' + candidates[c2].gap.toFixed(1) + ' sides ' + top.length + '/' + bottom.length + ' too small');
     }
     return null;
   };
@@ -2614,6 +2617,7 @@ function _alloOrderTextItems(items, opts) {
     }
     clean.sort(byLen);
     crossed.sort(byLen);
+    _t('d' + depth + ' n=' + arr.length + ' span=' + Math.round(span) + ' cands=' + cands.length + ' clean=' + clean.length + ' crossed=' + crossed.length);
     // Peel full-width furniture off an EDGE of the region in one cut: walk the
     // y levels inward from the top (then from the bottom) while every item on
     // the level crosses a candidate gutter, and cut below the last such level.
@@ -2652,6 +2656,120 @@ function _alloOrderTextItems(items, opts) {
       return null;
     };
     var best = null;
+    // Every way of REJECTING a vertical split falls through to here, not just
+    // "no gutter found": a page whose layout changes down the page can present
+    // a gutter that the balance or table gates then veto, and the band cut is
+    // exactly what such a page needs (i1040 p9 — three columns of prose above
+    // a full-width chart).
+    // Interior crosser partition (corpus round 10). The edge peel handles
+    // full-width furniture at the TOP or BOTTOM of a region; a full-width
+    // BLOCK stranded mid-region (i1040 p108's second worksheet, p116's 8978
+    // worksheet) used to fall through to a vertical cut straight through the
+    // block, splitting its rows across two "columns". Partition the region's
+    // y-levels instead: contiguous runs of levels that contain a crossing item
+    // become bands kept whole, the clear runs between them are recursed for
+    // columns. Guarded three ways: the crossing content must be a BLOCK (>= 4
+    // levels — a wrapped heading is 1-3 and keeps today's crossed-cut path),
+    // a clear band must actually find columns, and a 1-level clear run
+    // sandwiched between crosser runs is merged into the furniture rather
+    // than allowed to fragment the page.
+    var crosserPartition = function () {
+      if (!cands.length) return null;
+      var levelOf = function (it) { return Math.round(_y(it) / 3) * 3; };
+      var crossLv = {}, allLv = {};
+      for (var iP = 0; iP < arr.length; iP++) {
+        var lvl = levelOf(arr[iP]);
+        allLv[lvl] = true;
+        if (crossesAny(arr[iP])) crossLv[lvl] = true;
+      }
+      var crossLevels = 0, kC;
+      for (kC in crossLv) if (Object.prototype.hasOwnProperty.call(crossLv, kC)) crossLevels++;
+      if (crossLevels < 4) { _t('    partition: crossLevels=' + crossLevels + ' < 4'); return null; }
+      var ys2 = [], kP2;
+      for (kP2 in allLv) if (Object.prototype.hasOwnProperty.call(allLv, kP2)) ys2.push(parseFloat(kP2));
+      if (ys2.length < 6) return null;
+      ys2.sort(function (p, q) { return q - p; });
+      var runs = [], cur = null;
+      for (var iY = 0; iY < ys2.length; iY++) {
+        var isC = !!crossLv[ys2[iY]];
+        if (!cur || cur.cross !== isC) { cur = { cross: isC, yHi: ys2[iY], yLo: ys2[iY], levels: 1 }; runs.push(cur); }
+        else { cur.yLo = ys2[iY]; cur.levels++; }
+      }
+      // Merge 1-level clear runs into the surrounding furniture, then demote
+      // every THIN crosser run to clear: a run of 1-3 crossing levels is an
+      // ordinary heading or caption, and banding around headings slices
+      // continuing columns apart (measured: i1040 p106/p107 exploded to 17-18
+      // "columns" and lost 0.04-0.05 agreement when scattered one-line
+      // crossers were treated as band boundaries). Only a BLOCK - 4+
+      // consecutive occupied levels, all crossing - is furniture worth
+      // isolating.
+      for (var iM2 = 0; iM2 < runs.length; iM2++) {
+        if (!runs[iM2].cross && runs[iM2].levels <= 1 && iM2 > 0 && iM2 < runs.length - 1 &&
+            runs[iM2 - 1].cross && runs[iM2 + 1].cross) runs[iM2].cross = true;
+      }
+      var merged0 = [];
+      for (var iM4 = 0; iM4 < runs.length; iM4++) {
+        var last0 = merged0[merged0.length - 1];
+        if (last0 && last0.cross === runs[iM4].cross) { last0.yLo = runs[iM4].yLo; last0.levels += runs[iM4].levels; }
+        else merged0.push({ cross: runs[iM4].cross, yHi: runs[iM4].yHi, yLo: runs[iM4].yLo, levels: runs[iM4].levels });
+      }
+      var thick = 0;
+      for (var iM5 = 0; iM5 < merged0.length; iM5++) {
+        if (merged0[iM5].cross && merged0[iM5].levels < 4) merged0[iM5].cross = false;
+        else if (merged0[iM5].cross) thick++;
+      }
+      if (!thick) { _t('    partition: no thick crosser run'); return null; }
+      var merged = [];
+      for (var iM3 = 0; iM3 < merged0.length; iM3++) {
+        var last = merged[merged.length - 1];
+        if (last && last.cross === merged0[iM3].cross) { last.yLo = merged0[iM3].yLo; last.levels += merged0[iM3].levels; }
+        else merged.push(merged0[iM3]);
+      }
+      var clearBands = 0;
+      for (var iB3 = 0; iB3 < merged.length; iB3++) if (!merged[iB3].cross) clearBands++;
+      if (!clearBands || merged.length < 2) { _t('    partition: bands=' + merged.length + ' clear=' + clearBands); return null; }
+      var parts = [];
+      for (var iB4 = 0; iB4 < merged.length; iB4++) parts.push([]);
+      for (var iA2 = 0; iA2 < arr.length; iA2++) {
+        var lv2 = levelOf(arr[iA2]);
+        for (var iB5 = 0; iB5 < merged.length; iB5++) {
+          if (lv2 <= merged[iB5].yHi && lv2 >= merged[iB5].yLo) { parts[iB5].push(arr[iA2]); break; }
+        }
+      }
+      var colsOut = [], guttersOut = [];
+      for (var iB6 = 0; iB6 < merged.length; iB6++) {
+        if (!parts[iB6].length) continue;
+        if (merged[iB6].cross) { colsOut.push(parts[iB6]); continue; }
+        var S = split(parts[iB6], depth + 1);
+        colsOut = colsOut.concat(S.cols);
+        guttersOut = guttersOut.concat(S.gutters);
+      }
+      if (!guttersOut.length) { _t('    partition: no gutters in clear bands'); return null; }
+      _t('d' + depth + ' crosserPartition: ' + merged.length + ' bands (' + crossLevels + ' crosser levels), gutters=' + guttersOut.length);
+      return { cols: colsOut, gutters: guttersOut };
+    };
+    var noVertical = function () {
+      var band = bandCut(arr);
+      if (!band) {
+        _t('d' + depth + ' bandCut=null');
+        var part = crosserPartition();
+        if (part) return part;
+        return { cols: [arr], gutters: [] };
+      }
+      _t('d' + depth + ' bandCut top=' + band.top.length + ' bottom=' + band.bottom.length);
+      var T = split(band.top, depth + 1), B = split(band.bottom, depth + 1);
+      // Keep the cut ONLY if it let some band find real columns. A band cut that
+      // merely slices single-column content into stacked pieces changes nothing
+      // a reader would notice and, measured across the corpus, cost more in
+      // subtle reordering than it ever gained.
+      if (T.gutters.length + B.gutters.length === 0) {
+        _t('d' + depth + ' bandCut rejected: no gutters found in bands');
+        var part2 = crosserPartition();
+        if (part2) return part2;
+        return { cols: [arr], gutters: [] };
+      }
+      return { cols: T.cols.concat(B.cols), gutters: T.gutters.concat(B.gutters) };
+    };
     // Peel only when NO channel on this region is clean. One crossed gutter
     // beside a clean one is an ordinary heading spanning two of three columns;
     // every gutter being crossed is the signature of full-width furniture.
@@ -2665,25 +2783,30 @@ function _alloOrderTextItems(items, opts) {
           return { cols: PT.cols.concat(PB.cols), gutters: PT.gutters.concat(PB.gutters) };
         }
       }
+      // Round 10: in a SUB-REGION (depth >= 1) whose every channel is
+      // crossed, prefer a horizontal organization over cutting through the
+      // crossers, kept only when a band actually finds columns. Measured on
+      // the full corpus (order_sweep, 1,068 referee'd pages):
+      //   * i1040 p108 - the crossers-stranded-mid-region case round 9 left
+      //     open - goes 0.8753 -> 0.9479: the mid-page worksheet stops
+      //     slicing columns 2 and 3 through it (+0.073, the round's target);
+      //   * the depth >= 1 gate is load-bearing: fired at depth 0 this also
+      //     banded ordinary two-column article pages whose text FLOWS AROUND
+      //     a figure or caption block, interleaving each column's above- and
+      //     below-figure halves (nsf p2 -0.040, sp800 p21 -0.024, usgs p10
+      //     -0.023, 12 more besides - measured and rejected). A whole PAGE
+      //     with only crossed channels is usually flow-around; a sub-region
+      //     already carved off by a band cut is a layout reset.
+      //   * residual cost, accepted: nces p15 -0.016 and i1040 p47 -0.008,
+      //     both worksheet-grid pages where the content-stream referee is at
+      //     its least reliable (p47 baseline 0.84).
+      if (depth >= 1 && bandCut(arr)) {
+        var hz = noVertical();
+        if (hz.gutters.length) { _t('d' + depth + ' all-crossed sub-region -> horizontal organization kept'); return hz; }
+      }
       // Nothing isolates the crossers: fall through and let the ordered search
       // below try the crossed channels on their own merits.
     }
-    // Every way of REJECTING a vertical split falls through to here, not just
-    // "no gutter found": a page whose layout changes down the page can present
-    // a gutter that the balance or table gates then veto, and the band cut is
-    // exactly what such a page needs (i1040 p9 — three columns of prose above
-    // a full-width chart).
-    var noVertical = function () {
-      var band = bandCut(arr);
-      if (!band) return { cols: [arr], gutters: [] };
-      var T = split(band.top, depth + 1), B = split(band.bottom, depth + 1);
-      // Keep the cut ONLY if it let some band find real columns. A band cut that
-      // merely slices single-column content into stacked pieces changes nothing
-      // a reader would notice and, measured across the corpus, cost more in
-      // subtle reordering than it ever gained.
-      if (T.gutters.length + B.gutters.length === 0) return { cols: [arr], gutters: [] };
-      return { cols: T.cols.concat(B.cols), gutters: T.gutters.concat(B.gutters) };
-    };
     // Try candidates in order — clean before crossed, widest first — and keep
     // the first that survives the gates below (corpus round 9). This used to
     // test the widest channel ALONE and fall straight through to the band cut
@@ -2719,6 +2842,7 @@ function _alloOrderTextItems(items, opts) {
       }
       if (!(lY > 0 && matches / lY >= 0.55)) return true;
       var LS = _sideLines(lSide, minX, xCut), RS = _sideLines(rSide, xCut, maxX);
+      _t('  notATable stats: L{lines=' + LS.lines + ' fill=' + LS.medianFill.toFixed(2) + ' ipl=' + LS.itemsPerLine.toFixed(1) + ' chars=' + LS.medianChars + '} R{lines=' + RS.lines + ' fill=' + RS.medianFill.toFixed(2) + ' ipl=' + RS.itemsPerLine.toFixed(1) + ' chars=' + RS.medianChars + '} baselineMatch=' + (matches / lY).toFixed(2));
       return LS.lines >= 8 && RS.lines >= 8 &&
         LS.medianFill >= 0.8 && LS.itemsPerLine <= 2.5 && RS.itemsPerLine <= 4.5 &&
         LS.medianChars >= 18 && RS.medianChars >= 18;
@@ -2742,13 +2866,22 @@ function _alloOrderTextItems(items, opts) {
     //     on all eight improved and all three regressed pages: no feature
     //     separates them, so there is nothing honest to threshold on. That
     //     search wants a real region classifier, not another constant.
+    // Crosser-volume guard (corpus round 10). A crossed channel is still an
+    // acceptable cut when what crosses it is a HEADING — one to three y-levels
+    // (i1040 p87, where the crossed 1|2 gutter is the right cut). But when the
+    // crossing content is a BLOCK of full-width lines (a worksheet, a chart
+    // legend), cutting through it splits its rows between the two sides:
+    // i1040 p116's 8978 worksheet was emitted between column 2 and column 3
+    // this way. Count the distinct y-levels that cross the candidate; past 3,
+    // refuse the vertical cut and let the band cut / crosser partition
+    // organize the page horizontally first.
     var order = cands.slice().sort(function (p, q) { return q.len - p.len; }).slice(0, 1);
     for (var iQ = 0; iQ < order.length; iQ++) {
       var cand = order[iQ], cl = [], cr2 = [];
       for (var i4 = 0; i4 < arr.length; i4++) { (( _x(arr[i4]) + _w(arr[i4]) / 2 ) < cand.xCut ? cl : cr2).push(arr[i4]); }
       // Balance guard: a stray margin note isn't a column.
-      if (cl.length < 5 || cr2.length < 5 || cl.length / cr2.length > 8 || cr2.length / cl.length > 8) continue;
-      if (!notATable(cl, cr2, cand.xCut)) continue;
+      if (cl.length < 5 || cr2.length < 5 || cl.length / cr2.length > 8 || cr2.length / cl.length > 8) { _t('d' + depth + ' veto=balance l=' + cl.length + ' r=' + cr2.length); continue; }
+      if (!notATable(cl, cr2, cand.xCut)) { _t('d' + depth + ' veto=table xCut=' + Math.round(cand.xCut)); continue; }
       accepted = cand; left = cl; right = cr2;
       break;
     }
