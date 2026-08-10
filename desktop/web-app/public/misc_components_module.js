@@ -185,6 +185,12 @@ const WordSoundsReviewPanel = ({
   onBackToSetup,
   onPlayAudio,
   onRegenerateWord,
+  // The focused phoneme checker (Gemini + eSpeak + dictionary in parallel,
+  // with agreement metadata). The host has always passed it; this panel never
+  // destructured it, so the "Check" button below ran a full word
+  // regeneration instead — which is what the row's own regenerate control
+  // already does, and which does not triangulate.
+  onCheckPhonemes,
   onRegenerateOption,
   onRegenerateManipulationTask,
   onRegenerateAll,
@@ -223,6 +229,42 @@ const WordSoundsReviewPanel = ({
     } catch (_) {
     }
   };
+  const [fixingGap, setFixingGap] = React.useState(null);
+  const [gapFixResult, setGapFixResult] = React.useState(null);
+  const gapFixRef = React.useRef(false);
+  React.useEffect(() => () => {
+    gapFixRef.current = true;
+  }, []);
+  const runGapFix = React.useCallback(async (gap) => {
+    if (!gap || fixingGap !== null) return;
+    setFixingGap(gap.key);
+    setGapFixResult(null);
+    let done = 0;
+    let failed = 0;
+    try {
+      if (gap.batch) {
+        await gap.batch();
+        done = gap.indices.length;
+      } else if (gap.each) {
+        for (const idx of gap.indices) {
+          if (gapFixRef.current) return;
+          try {
+            await gap.each(idx);
+            done += 1;
+          } catch (e) {
+            failed += 1;
+          }
+        }
+      }
+    } finally {
+      if (!gapFixRef.current) {
+        setFixingGap(null);
+        setGapFixResult(
+          failed > 0 ? `${done} fixed, ${failed} could not be fixed \u2014 try again, or edit those words by hand.` : `${done} fixed.`
+        );
+      }
+    }
+  }, [fixingGap]);
   const [imageRefinementInputs, setImageRefinementInputs] = React.useState({});
   const [draggedPhoneme, setDraggedPhoneme] = React.useState(null);
   const [dragOverIndex, setDragOverIndex] = React.useState(null);
@@ -539,24 +581,92 @@ const WordSoundsReviewPanel = ({
       if (w && item.image) imageKeys.add(w);
     });
     const gaps = [];
-    const noAudio = preloadedWords.filter((w) => w && !w.ttsReady && !portableKeys.has(norm(w.targetWord || w.word || w.term))).length;
-    if (noAudio > 0) gaps.push(`\u{1F507} ${noAudio} word${noAudio === 1 ? "" : "s"} without portable audio`);
-    const noRhyme = preloadedWords.filter((w) => w && !(w.rhymeWord || (w.rhymes || [])[0])).length;
-    if (noRhyme > 0) gaps.push(`\u{1F3B5} ${noRhyme} without a rhyme answer (board is built on-device)`);
-    const noTask = preloadedWords.filter((w) => w && !(w.manipulationTask && w.manipulationTask.answer)).length;
-    if (noTask > 0) gaps.push(`\u{1F501} ${noTask} without a Sound Swap task (fallback task used)`);
+    const indicesWhere = (pred) => preloadedWords.map((w, i) => pred(w) ? i : -1).filter((i) => i >= 0);
+    const noAudioIdx = indicesWhere((w) => w && !w.ttsReady && !portableKeys.has(norm(w.targetWord || w.word || w.term)));
+    if (noAudioIdx.length) gaps.push({
+      key: "audio",
+      text: `\u{1F507} ${noAudioIdx.length} word${noAudioIdx.length === 1 ? "" : "s"} without portable audio`,
+      indices: noAudioIdx,
+      label: t("word_sounds.fix_audio") || "Retry audio",
+      spendsAi: true,
+      // Batch by nature: it re-arms the prefetch for every
+      // word at once rather than taking an index.
+      batch: onRetryFailedTTS
+    });
+    const noRhymeIdx = indicesWhere((w) => w && !(w.rhymeWord || (w.rhymes || [])[0]));
+    if (noRhymeIdx.length) gaps.push({
+      key: "rhyme",
+      text: `\u{1F3B5} ${noRhymeIdx.length} without a rhyme answer (board is built on-device)`,
+      indices: noRhymeIdx,
+      // The player derives one at runtime, so this is a
+      // completeness note, not a broken board. Fixing it
+      // means regenerating the whole word.
+      label: t("word_sounds.fix_regenerate") || "Regenerate",
+      spendsAi: true,
+      each: onRegenerateWord
+    });
+    const noTaskIdx = indicesWhere((w) => w && !(w.manipulationTask && w.manipulationTask.answer));
+    if (noTaskIdx.length) gaps.push({
+      key: "task",
+      text: `\u{1F501} ${noTaskIdx.length} without a Sound Swap task (fallback task used)`,
+      indices: noTaskIdx,
+      label: t("word_sounds.fix_tasks") || "Build tasks",
+      spendsAi: true,
+      each: onRegenerateManipulationTask
+    });
     const missingDecodingImgs = preloadedWords.reduce((sum, w) => {
       const choices = w && w.activityItems && w.activityItems.decoding && w.activityItems.decoding.choices;
       if (!Array.isArray(choices)) return sum;
       return sum + choices.filter((c) => !imageKeys.has(norm(c))).length;
     }, 0);
-    if (missingDecodingImgs > 0) gaps.push(`\u{1F5BC}\uFE0F ${missingDecodingImgs} Read & Match picture${missingDecodingImgs === 1 ? "" : "s"} missing`);
-    const edited = preloadedWords.filter((w) => w && w._packEdited).length;
-    if (edited > 0) gaps.push(`\u270F\uFE0F ${edited} word${edited === 1 ? "" : "s"} edited since preparation (boards rebuild from your edits)`);
-    const letterSplit = preloadedWords.filter((w) => w && w._fallbackUsed).length;
-    if (letterSplit > 0) gaps.push(`\u26A0\uFE0F ${letterSplit} using letter-split sounds (generation failed)`);
+    const noImageIdx = indicesWhere((w) => {
+      const choices = w && w.activityItems && w.activityItems.decoding && w.activityItems.decoding.choices;
+      return Array.isArray(choices) && choices.some((c) => !imageKeys.has(norm(c)));
+    });
+    if (missingDecodingImgs > 0) gaps.push({
+      key: "images",
+      text: `\u{1F5BC}\uFE0F ${missingDecodingImgs} Read & Match picture${missingDecodingImgs === 1 ? "" : "s"} missing`,
+      indices: noImageIdx,
+      label: t("word_sounds.fix_images") || "Generate pictures",
+      spendsAi: true,
+      each: onGenerateImage ? ((i) => onGenerateImage(i, preloadedWords[i] && (preloadedWords[i].targetWord || preloadedWords[i].word))) : null
+    });
+    const editedIdx = indicesWhere((w) => w && w._packEdited);
+    if (editedIdx.length) gaps.push({
+      key: "edited",
+      text: `\u270F\uFE0F ${editedIdx.length} word${editedIdx.length === 1 ? "" : "s"} edited since preparation (boards rebuild from your edits)`,
+      indices: editedIdx,
+      // Re-packing an edited word is not built yet, so
+      // there is deliberately no button here rather than
+      // one that quietly does something else.
+      each: null
+    });
+    const estimatedIdx = indicesWhere((w) => w && w._fallbackUsed);
+    if (estimatedIdx.length) gaps.push({
+      key: "phonemes",
+      // Generation now tries eSpeak before the spelling
+      // heuristic, so this means a real G2P engine could
+      // not do the word either.
+      text: `\u26A0\uFE0F ${estimatedIdx.length} with sounds estimated from spelling`,
+      indices: estimatedIdx,
+      label: t("word_sounds.fix_phonemes") || "Re-check sounds",
+      spendsAi: true,
+      each: onCheckPhonemes
+    });
     if (!gaps.length) return null;
-    return /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-300 rounded-xl p-3 text-xs text-amber-900" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold mb-1" }, t("word_sounds.pack_gaps_title") || "Student-device readiness"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-0.5" }, gaps.map((g, i) => /* @__PURE__ */ React.createElement("li", { key: i }, g))));
+    const busy = fixingGap !== null;
+    return /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-300 rounded-xl p-3 text-xs text-amber-900" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold mb-1" }, t("word_sounds.pack_gaps_title") || "Student-device readiness"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1" }, gaps.map((g) => /* @__PURE__ */ React.createElement("li", { key: g.key, className: "flex items-center justify-between gap-3" }, /* @__PURE__ */ React.createElement("span", null, g.text), (g.each || g.batch) && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => runGapFix(g),
+        disabled: busy,
+        "aria-busy": fixingGap === g.key,
+        className: `shrink-0 px-2 py-0.5 rounded-full font-bold border transition-colors motion-reduce:transition-none ${busy ? "bg-white/60 text-amber-800 border-amber-200" : "bg-white text-amber-900 border-amber-400 hover:bg-amber-100"}`,
+        title: g.spendsAi ? t("word_sounds.fix_uses_ai_tooltip") || "Uses AI generation for these words only" : void 0
+      },
+      fixingGap === g.key ? t("word_sounds.fixing") || "Fixing\u2026" : `${g.spendsAi ? "\u2728 " : ""}${g.label} (${g.indices.length})`
+    )))), gapFixResult && /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: "mt-2 font-semibold" }, gapFixResult));
   })(), preloadedWords.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12 text-slate-600" }, /* @__PURE__ */ React.createElement("div", { className: "text-4xl mb-2" }, "\u23F3"), isLoading ? /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: "animate-pulse motion-reduce:animate-none" }, t("word_sounds.generating_new_words") || "Generating new words... this may take a moment") : /* @__PURE__ */ React.createElement("p", null, t("word_sounds.no_words_preloaded") || "No words preloaded yet. Start the activity to generate words.")) : (preloadedWords || []).map((word, idx) => /* @__PURE__ */ React.createElement(
     "div",
     {
@@ -780,7 +890,7 @@ const WordSoundsReviewPanel = ({
       "button",
       {
         type: "button",
-        onClick: () => onRegenerateWord && onRegenerateWord(idx),
+        onClick: () => (onCheckPhonemes || onRegenerateWord) && (onCheckPhonemes || onRegenerateWord)(idx),
         disabled: regeneratingIndex === idx,
         "aria-busy": regeneratingIndex === idx,
         className: `text-[11px] px-2 py-0.5 rounded-full flex items-center gap-1 font-bold transition-colors motion-reduce:transition-none ${regeneratingIndex === idx ? "bg-slate-100 text-slate-600" : "bg-violet-100 text-violet-600 hover:bg-violet-200"}`,
