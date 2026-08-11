@@ -19807,7 +19807,36 @@ test('no a11y violations', async () => {
       };
 
       var renderQuizEngine = function() {
-        var ALL_Q = [].concat(typeof QUIZ_QUESTIONS !== 'undefined' ? QUIZ_QUESTIONS : [], typeof QUIZ_QUESTIONS_EXTENDED !== 'undefined' ? QUIZ_QUESTIONS_EXTENDED : []);
+        // The two banks use different schemas, and neither matches what this
+        // renderer expects ({options: [string], answer: text}). QUIZ_QUESTIONS
+        // holds {text, correct, explanation} option OBJECTS (rendered as
+        // [object Object] and never gradable as correct), and
+        // QUIZ_QUESTIONS_EXTENDED holds a1..a4 fields with no options array
+        // at all (no buttons rendered). Normalize both here — and rotate each
+        // question's options deterministically while at it, since both banks
+        // author the correct answer in a stacked position. Deterministic
+        // because this runs on every render.
+        var ALL_Q = [].concat(typeof QUIZ_QUESTIONS !== 'undefined' ? QUIZ_QUESTIONS : [], typeof QUIZ_QUESTIONS_EXTENDED !== 'undefined' ? QUIZ_QUESTIONS_EXTENDED : []).map(function (raw, qi) {
+          var opts, correctText, explanation;
+          if (Array.isArray(raw.options)) {
+            opts = raw.options.map(function (o) { return o && typeof o === 'object' ? o.text : o; });
+            var co = null;
+            raw.options.forEach(function (o) { if (o && typeof o === 'object' && o.correct) co = o; });
+            correctText = co ? co.text : (raw.answer || raw.correct || '');
+            explanation = (co && co.explanation) || raw.explanation;
+          } else {
+            opts = [raw.a1, raw.a2, raw.a3, raw.a4].filter(function (x) { return x !== undefined; });
+            // In this bank `correct` is a 1-BASED index into a1..a4 (q31:
+            // correct is 3 and the answer is a3), and the explanation lives
+            // in `why`. Resolve the text before the rotation below moves it.
+            correctText = typeof raw.correct === 'number' ? (opts[raw.correct - 1] || '') : (raw.correct || raw.answer || '');
+            explanation = raw.explanation || raw.why;
+          }
+          var len = opts.length;
+          var shift = len > 1 ? (qi * 7 + 3) % len : 0;
+          if (shift) opts = opts.slice(shift).concat(opts.slice(0, shift));
+          return { id: raw.id, domain: raw.domain, difficulty: raw.difficulty, question: raw.question || raw.q || '', options: opts, answer: correctText, explanation: explanation };
+        });
         if (ALL_Q.length === 0) return h('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.applab.no_quiz_questions_loaded', 'No quiz questions loaded.'));
         var safeIdx = ((quizIdx % ALL_Q.length) + ALL_Q.length) % ALL_Q.length;
         var q = ALL_Q[safeIdx];

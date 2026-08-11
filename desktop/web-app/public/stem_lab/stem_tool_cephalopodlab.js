@@ -8224,6 +8224,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         },
       ];
 
+      // The authored bank put 28 of 40 correct choices at option B (70%
+      // blind-guessable). Options carry their own correct flag and
+      // explanation, so rotating the array is safe with no index remap.
+      // Deterministic (stable across renders) so `answered` indices persisted
+      // per question stay valid.
+      QUIZ_QUESTIONS.forEach(function (q, i) {
+        if (!Array.isArray(q.options)) return;
+        var len = q.options.length;
+        var shift = (i * 7 + 3) % len;
+        if (!shift) return;
+        q.options = q.options.slice(shift).concat(q.options.slice(0, shift));
+      });
+
       // ─── Ambient ecological events (in-sim variety + teaching moments)
       // Random events that fire during a sim run to bring the ocean to
       // life AND teach an ecology concept. Each event has a probability,

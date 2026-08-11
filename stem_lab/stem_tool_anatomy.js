@@ -1035,7 +1035,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       challenge: {
         id: region + '-' + plane,
         prompt: regionProfile.prompt,
-        options: regionProfile.options.map(function(option) { return { id: option.id, label: option.label, correct: option.correct }; }),
+        // Every region authored its correct option FIRST, so rotate by an
+        // FNV-1a hash of region+plane — deterministic per challenge (options
+        // must not move between renders), different across regions, and
+        // non-separable so the seed actually changes the order. Grading is
+        // by option id, so nothing needs remapping.
+        options: (function () {
+          var mapped = regionProfile.options.map(function(option) { return { id: option.id, label: option.label, correct: option.correct }; });
+          var seedStr = region + '|' + plane;
+          var hsh = 2166136261;
+          for (var ci = 0; ci < seedStr.length; ci++) hsh = Math.imul(hsh ^ seedStr.charCodeAt(ci), 16777619) >>> 0;
+          var shift = mapped.length > 1 ? hsh % mapped.length : 0;
+          return shift ? mapped.slice(shift).concat(mapped.slice(0, shift)) : mapped;
+        })(),
         answerWhy: regionProfile.answerWhy
       }
     };
@@ -2826,6 +2838,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             ]
           }
         };
+
+        // Two of this feature's banks authored the correct answer in a fixed
+        // slot: every intervention put it FIRST (4 of 4) and 11 of 16 step
+        // checkpoints put it at index 0. Rotate deterministically —
+        // interventions grade by option id (no remap); step checkpoints grade
+        // by index, so `correct` is remapped. The scenarios object is rebuilt
+        // each render, and the shifts are the same every time, so selections
+        // held in state stay valid.
+        (function () {
+          var counter = 0;
+          Object.keys(SYSTEMS_IN_MOTION_SCENARIOS).forEach(function (scenarioKey) {
+            var sc = SYSTEMS_IN_MOTION_SCENARIOS[scenarioKey];
+            if (sc.intervention && Array.isArray(sc.intervention.options) && sc.intervention.options.length > 1) {
+              var iOpts = sc.intervention.options;
+              var iShift = (counter++ * 7 + 3) % iOpts.length;
+              if (iShift) sc.intervention.options = iOpts.slice(iShift).concat(iOpts.slice(0, iShift));
+            }
+            (sc.steps || []).forEach(function (step) {
+              if (!Array.isArray(step.options) || typeof step.correct !== 'number' || step.options.length < 2) return;
+              var len = step.options.length;
+              var shift = (counter++ * 7 + 3) % len;
+              if (!shift) return;
+              step.options = step.options.slice(shift).concat(step.options.slice(0, shift));
+              step.correct = (step.correct - shift + len) % len;
+            });
+          });
+        })();
         var ANATOMY_LENS_ITEMS = [
           { id: 'heart', structureId: 'heart', system: 'circulatory', view: 'anterior', title: 'Heart circulation', kicker: 'Circulatory', desc: 'Trace chambers, valves, lungs, and systemic flow.', accent: '#be123c' },
           { id: 'kidneys', structureId: 'kidneys', system: 'organs', view: 'posterior', title: 'Kidney Filtration Scale Bridge', kicker: 'Urinary physiology', desc: 'Zoom from posterior body location to kidney regions and nephron processing.', accent: '#047857' },

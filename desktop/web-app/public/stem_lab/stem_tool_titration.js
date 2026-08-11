@@ -1546,6 +1546,17 @@ var incidentScenarios = [
   }
 ];
 
+// Every incident scenario authored its correct response FIRST (5 of 5), so
+// the drill rendered "always pick A" — a bad habit to teach for lab safety.
+// Rotate each scenario's options deterministically; grading is by option id
+// and the correct id lives on the scenario, so nothing needs remapping.
+incidentScenarios.forEach(function (sc, i) {
+  if (!Array.isArray(sc.options) || sc.options.length < 2) return;
+  var shift = (i * 7 + 3) % sc.options.length;
+  if (!shift) return;
+  sc.options = sc.options.slice(shift).concat(sc.options.slice(0, shift));
+});
+
 // ── Lab Equipment Guide Data ──
 var labEquipment = [
   { id: 'burette', name: __alloT('stem.titration.burette', 'Burette'), icon: '\uD83E\uDDEA', desc: __alloT('stem.titration.delivers_precise_volumes_of_titrant', 'Delivers precise volumes of titrant.'),

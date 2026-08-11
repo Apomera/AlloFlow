@@ -6,9 +6,10 @@
 //      the first pass and hid the astronomy / dinolab / microbiology /
 //      nutritionlab stacked banks entirely.
 //   B) string schema: a: '<text>'   paired with an opts/options array
-// KNOWN BLIND SPOT: flag schema (`correct: true` on choice OBJECTS, e.g.
-// evolab, bakingscience) spans too many lines for these regexes — check those
-// banks by hand with `grep -n "correct: true"`.
+//   C) flag schema:   `correct: true` on a choice OBJECT — found by a bracket
+//      walk (regexes can't span these), recording each flagged object's index
+//      among its array siblings. This blind spot hid the stacked cephalopod
+//      (28/40 at B), applab, anatomy, and titration banks.
 // For each tool it reports the distribution of correct-answer positions, and
 // whether the file neutralises authored order — either a shuffle or the
 // deterministic per-question rotation fix (fingerprint: `* 7 + 3) %`).
@@ -27,6 +28,56 @@ function splitOptions(raw) {
   let m;
   while ((m = re.exec(raw))) out.push((m[1] !== undefined ? m[1] : m[2]).replace(/\\'/g, "'"));
   return out;
+}
+
+// Schema C: bracket walk. For every `correct: true`, find the object it lives
+// in and that object's index among its parent array's direct object children.
+// Skips strings and comments; returns {idx, arity} pairs (arity = the parent
+// array's total object-child count).
+function flagSchemaHits(src) {
+  const stack = [];
+  const arityByPos = {};
+  const rawHits = []; // {siblingIdx, arrayPos}
+  let i = 0;
+  const n = src.length;
+  while (i < n) {
+    const c = src[i];
+    if (c === '/' && src[i + 1] === '/') { while (i < n && src[i] !== '\n') i++; continue; }
+    if (c === '/' && src[i + 1] === '*') { i += 2; while (i < n && !(src[i] === '*' && src[i + 1] === '/')) i++; i += 2; continue; }
+    if (c === "'" || c === '"' || c === '`') {
+      const q = c; i++;
+      while (i < n && src[i] !== q) { if (src[i] === '\\') i++; i++; }
+      i++; continue;
+    }
+    if (c === '[' || c === '{' || c === '(') {
+      const rec = { ch: c, pos: i, childObjIdx: 0 };
+      if (c === '{') {
+        const parent = stack[stack.length - 1];
+        rec.siblingIdx = parent && parent.ch === '[' ? parent.childObjIdx++ : -1;
+        rec.parentArrayPos = parent && parent.ch === '[' ? parent.pos : -1;
+      }
+      stack.push(rec);
+      i++; continue;
+    }
+    if (c === ']' || c === '}' || c === ')') {
+      const closed = stack.pop();
+      if (closed && closed.ch === '[') arityByPos[closed.pos] = closed.childObjIdx;
+      i++; continue;
+    }
+    if (src.startsWith('correct: true', i)) {
+      for (let k = stack.length - 1; k >= 0; k--) {
+        if (stack[k].ch === '{') {
+          if (stack[k].siblingIdx >= 0) rawHits.push({ siblingIdx: stack[k].siblingIdx, arrayPos: stack[k].parentArrayPos });
+          break;
+        }
+      }
+      i += 13; continue;
+    }
+    i++;
+  }
+  return rawHits
+    .map(h2 => ({ idx: h2.siblingIdx, arity: arityByPos[h2.arrayPos] || 0 }))
+    .filter(h2 => h2.arity >= 2 && h2.arity <= 6 && h2.idx < h2.arity);
 }
 
 const rows = [];
@@ -65,6 +116,12 @@ for (const f of files) {
     if (idx < 0 || opts.length < 2 || opts.length > 6) continue;
     counts[opts.length] = counts[opts.length] || new Array(opts.length).fill(0);
     counts[opts.length][idx]++; total++;
+  }
+
+  // Schema C: flag objects
+  for (const hit of flagSchemaHits(src)) {
+    counts[hit.arity] = counts[hit.arity] || new Array(hit.arity).fill(0);
+    counts[hit.arity][hit.idx]++; total++;
   }
 
   if (total < 8) continue; // too few to judge
