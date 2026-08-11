@@ -3562,8 +3562,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 10, fontSize: 15 } }, t('stem.fireecology.fire_dependent_species_gallery', '\uD83C\uDF3A Fire-Dependent Species Gallery')),
               SMOKE_ECOLOGY.fireSeeds.map(function(seed, si) {
                 var expanded = selectedSeed === si;
+                var toggleSeed = (function(index, isOpen, sp) {
+                  return function() {
+                    upd('selectedSeed', isOpen ? null : index);
+                    if (!isOpen) { awardStemXP('fire_seed_' + index, 5, sp.species); checkBadge('seedSprouter'); }
+                  };
+                })(si, expanded, seed);
                 return h('div', { key: si, style: { background: expanded ? 'var(--allo-stem-panel, #1e293b)' : 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: expanded ? 16 : 12, marginBottom: 8, border: '1px solid var(--allo-stem-border, #334155)44', cursor: 'pointer', transition: 'all 0.2s' },
-                  onClick: function() { upd('selectedSeed', expanded ? null : si); if (!expanded) { awardStemXP('fire_seed_' + si, 5, seed.species); checkBadge('seedSprouter'); } }
+                  // Disclosure, and it was mouse-only: the expanded detail for each
+                  // fire-dependent species could not be opened by keyboard at all, so the
+                  // content simply did not exist without a pointer. aria-expanded matters
+                  // as much as focusability here — a disclosure that does not report its
+                  // state leaves a screen-reader user pressing blind.
+                  role: 'button',
+                  tabIndex: 0,
+                  'aria-expanded': expanded ? 'true' : 'false',
+                  'data-fe-seed': si,
+                  // Both paths call ONE function. A first version had the key handler
+                  // call ev.currentTarget.click() to reuse the click path, and the
+                  // activation tests failed while the attribute tests passed — which is
+                  // the Class A shape exactly: correct ARIA, nothing happens.
+                  onKeyDown: function(ev) {
+                    if (ev.key !== 'Enter' && ev.key !== ' ' && ev.key !== 'Spacebar') return;
+                    ev.preventDefault();
+                    toggleSeed();
+                  },
+                  onClick: toggleSeed
                 },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
                     h('span', { style: { fontSize: 22 } }, seed.icon),
