@@ -1749,6 +1749,27 @@ var _alloOcrAccuracy = function (text) {
   var _result = { score: score, band: band, confidence: confidence, basis: basis, mathContext: mathContext, metrics: { alphaTokens: nAlpha, dictHitRate: Math.round(dictHitRate * 100) / 100, junkRatio: Math.round(junkRatio * 100) / 100, junkRatioForBlend: Math.round(junkForBlend * 100) / 100, noVowelRatio: Math.round(noVowelRatio * 100) / 100, fragmentRatio: Math.round(fragmentRatio * 100) / 100, mashRatio: Math.round(mashRatio * 100) / 100, replacementRatio: Math.round(replacementRatio * 1000) / 1000 }, suspectSamples: suspect.slice(0, 8) };
   return _result;
 };
+// _alloOcrQualityUaVerdict (2026-08-11, audit finding #2): should an OCR-quality
+// estimate BLOCK the PDF/UA-1 declaration? PDF/UA-1 requires text to carry a
+// meaningful Unicode representation of the content; a searchable layer that is
+// ~1-in-3 characters wrong does not, so stamping conformance over it is a false
+// claim on exactly the documents with the highest access need (scanned ELL
+// worksheets, older IEP scans). This intentionally mirrors the SAME trigger the
+// "Estimated OCR quality is POOR" fidelity note uses (band 'poor' + numeric
+// score) so the report note and the withheld stamp can never disagree — a user
+// never sees one without the other. Coverage (missing text) is a separate gate:
+// _alloOcrTextLayerVerdict. Unknown/insufficient-text estimates never withhold.
+var _alloOcrQualityUaVerdict = function (acc) {
+  var _ok = { ok: true, reason: '' };
+  if (!acc || typeof acc !== 'object') return _ok;
+  if (acc.band !== 'poor' || typeof acc.score !== 'number') return _ok;
+  var scopeNote = acc.scope === 'ocr-sourced-pages' && Array.isArray(acc.pageNums) && acc.pageNums.length
+    ? ' on re-scanned page(s) ' + acc.pageNums.join(', ')
+    : '';
+  var _bad = { ok: false, reason: 'the scanned text layer is too garbled to represent the content (estimated OCR quality ~' + acc.score + '%' + scopeNote + '), so a PDF/UA-1 claim would be unfounded — re-scan at higher quality, or use the HTML/Word export' };
+  return _bad;
+};
+
 // _textLayerLooksGarbage: HIGH-PRECISION "broken text layer" detector. Fires ONLY on replacement-char
 // (U+FFFD) + C0/C1 control-char density >= 2% AND an absolute count >= 3 — the unambiguous broken-encoding
 // tell. Deliberately NO junk-ratio branch: reconcile's 0.45 is a RELATIVE (winner-vs-alt) threshold and,
@@ -31732,6 +31753,18 @@ tr { page-break-inside: avoid; }
     // modifies the byte tree, which breaks the /Sig ByteRange hash and
     // invalidates the signature in Acrobat. For parent-signed IEPs this is a
     // real legal/trust issue, so the conservative default is skip + visible toast.
+    //
+    // HONESTY CORRECTION (2026-08-11, audit finding #5): skipping annotation
+    // tagging does NOT preserve the signature, and the old toast said it did.
+    // Remediation rewrites the Catalog and ends in a full doc.save() (pdf-lib
+    // has no incremental/append-only save), so the /Sig ByteRange hash is
+    // broken no matter what we skip here — and the remediated document is a
+    // derivative anyway (rewritten HTML, added alt text, contrast fixes,
+    // optional image crops), not the signed bytes with tags bolted on. The
+    // signature can only survive on the user's ORIGINAL file. So: skip the
+    // annotation tagging (it buys real fidelity — form/link structures stay
+    // byte-identical for anyone re-signing), but tell the truth about the
+    // signature and disclose it in the exported report.
     let _pdfHasSignature = false;
     try {
       const _acroSig = doc.catalog.get(PDFName.of('AcroForm'));
@@ -31749,8 +31782,8 @@ tr { page-break-inside: avoid; }
       let _signedFormSkip = false;
       if (_pdfHasSignature) {
         _signedFormSkip = true;
-        try { warnLog('[Stage3-AcroForm] /SigFlags SignaturesExist set — skipping form tagging to preserve existing digital signatures (re-sign after remediation if signatures must be retained)'); } catch (_) {}
-        try { if (typeof addToast === 'function') addToast('PDF contains digital signatures — form-field tagging skipped to preserve signature validity.', 'info'); } catch (_) {}
+        try { warnLog('[Stage3-AcroForm] /SigFlags SignaturesExist set — skipping form-field tagging so the form structure stays byte-faithful for whoever re-signs. NOTE: the remediated PDF cannot carry a valid signature (the full doc.save() rewrite breaks the /Sig ByteRange hash) — the ORIGINAL file remains the signed copy.'); } catch (_) {}
+        try { if (typeof addToast === 'function') addToast('This PDF is digitally signed. The remediated copy will NOT keep a valid signature — remediation rewrites the file. Keep your original as the signed copy, or have the remediated version re-signed.', 'warning'); } catch (_) {}
       }
       let form = null;
       if (!_signedFormSkip) { try { form = doc.getForm(); } catch(_) { form = null; } }
@@ -31840,7 +31873,7 @@ tr { page-break-inside: avoid; }
     let _linkAnnotsTagged = 0;
     try {
       if (_pdfHasSignature) {
-        try { warnLog('[Stage3b-LinkAnnots] signed PDF — skipping link-annotation tagging to preserve signature validity'); } catch (_) {}
+        try { warnLog('[Stage3b-LinkAnnots] signed PDF — skipping link-annotation tagging to keep the annotation bytes faithful for re-signing (the signature itself does NOT survive remediation; see the Stage-3 note)'); } catch (_) {}
       } else {
         for (let pi = 0; pi < pages.length; pi++) {
           const page = pages[pi];
@@ -32523,12 +32556,15 @@ tr { page-break-inside: avoid; }
       pagesIncomplete: _ocrPagesIncomplete,
       pagesEmpty: _ocrPagesEmpty,
     } });
-    _uaDeclared = !_orphanWalkCrashed && _fontsUnrepairable.length === 0 && !meta.contentDropped && (_reachableLeafCountAtStamp > 0
+    // Quality gate (finding #2): complete-but-garbled OCR used to pass, because
+    // _ocrUaVerdict only asks whether text is MISSING, not whether it is readable.
+    const _ocrQualityUaVerdict = _alloOcrQualityUaVerdict(fixResult && fixResult.ocrAccuracy);
+    _uaDeclared = _ocrQualityUaVerdict.ok && !_orphanWalkCrashed && _fontsUnrepairable.length === 0 && !meta.contentDropped && (_reachableLeafCountAtStamp > 0
       ? _orphanedLeafCountAtStamp === 0
       : /tesseract|vision|ocr/i.test(String((fixResult && fixResult.groundTruthMethod) || ''))) && _ocrUaVerdict.ok;
     const _uaWithheldReason = meta.contentDropped
       ? 'non-Latin / shaping-required text was dropped from this typeset PDF (use the HTML or Word export, which keep it)'
-      : (!_ocrUaVerdict.ok ? _ocrUaVerdict.reason : _orphanedLeafCountAtStamp + ' semantic leaf(s) remain without content linkage');
+      : (!_ocrQualityUaVerdict.ok ? _ocrQualityUaVerdict.reason : (!_ocrUaVerdict.ok ? _ocrUaVerdict.reason : _orphanedLeafCountAtStamp + ' semantic leaf(s) remain without content linkage'));
     // Observability: surface the linkage outcome in the summary so the
     // download toast and reports can show real-world per-leaf match rates
     // (the open question for born-digital docs whose HTML the AI rewrote).
@@ -32546,6 +32582,14 @@ tr { page-break-inside: avoid; }
         _summary.fontsRepaired = _fontsRepaired;
         _summary.fontsSubset = _fontsSubset;
         _summary.fontsUnrepairable = _fontsUnrepairable.slice(0, 12);
+        // Audit finding #5: disclose the signature outcome instead of implying
+        // it survived. Remediation always invalidates it (full rewrite), so a
+        // signed input means the ORIGINAL is the only valid signed artifact.
+        _summary.hadDigitalSignature = !!_pdfHasSignature;
+        if (_pdfHasSignature) {
+          _summary.signatureInvalidated = true;
+          _summary.signatureNote = 'The source PDF was digitally signed. Remediation rewrites the file, so the signature on this remediated copy is no longer valid. Keep the original file as the signed record, or have this copy re-signed. Form-field and link-annotation tagging were skipped so those structures stay faithful for re-signing.';
+        }
       }
     } catch (_) {}
     try {
