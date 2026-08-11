@@ -15466,7 +15466,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'text-sm text-violet-100/90 leading-relaxed' },
               __alloT('stem.raptorhunt.acuity_multipliers_are_abstract_until_', 'Acuity multipliers are abstract until you '),
               h('span', { className: 'font-bold text-amber-300' }, 'see'),
-              __alloT('stem.raptorhunt.what_they_feel_like_the_snellen_style_', ' what they feel like. The Snellen-style chart below starts at human-scale (1×). Slide the zoom or click a species to scale the text up to raptor vision. A peregrine reads the bottom line at 52 ft instead of 20. A golden eagle reads it at 110 ft. The numbers don\'t mean much until you watch the text grow.')
+              __alloT('stem.raptorhunt.what_they_feel_like_the_snellen_style_', ' what they feel like. The Snellen-style chart below starts at human-scale (1×). Slide the zoom or click a species to scale the text up to raptor vision. A peregrine reads the bottom line at 52 ft instead of 20. A golden eagle reads it at 110 ft. The numbers don\'t mean much until you watch the text grow. (One honest caveat: the big-eagle multipliers above ~3× come from photoreceptor-density estimates — direct behavioral tests on large eagles measure closer to 2-3× human.)')
             )
           ),
 

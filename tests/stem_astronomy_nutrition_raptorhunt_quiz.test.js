@@ -310,6 +310,14 @@ describe('Raptor Hunt contested-science softening', () => {
     expect(rh.american_kestrels_falco_sparverius_can).toContain('Lind et al. 2013');
     expect(rh.american_kestrels_falco_sparverius_can).toContain('debated');
   });
+
+  it('the acuity demo hedges big-eagle multipliers in both the fallback and ui_strings', () => {
+    // 5×+ eagle acuity comes from photoreceptor-density extrapolation;
+    // behavioral psychophysics on large eagles measures ~2-3× human.
+    const strings = JSON.parse(fs.readFileSync('ui_strings.js', 'utf8'));
+    expect(strings.stem.raptorhunt.what_they_feel_like_the_snellen_style_).toContain('behavioral tests on large eagles');
+    expect(rap).toContain('behavioral tests on large eagles measure closer to 2-3');
+  });
 });
 
 describe('Raptor Hunt owl hearing lab interaction', () => {
