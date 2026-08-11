@@ -96,6 +96,39 @@ function check(name, ok, detail) { results.push({ name, ok: !!ok, detail: String
   check('the largest wall preset still renders in a frame',
         keep.median < BUDGET_MS, 'median ' + keep.median.toFixed(1) + 'ms');
 
+  // A button is allowed to be slower than a render, but not so slow that the
+  // page stops responding. The best-stone sweep is ~120 flight integrations
+  // behind one click, so it is the only handler in this tool that could.
+  //
+  // Measure it here rather than in Node: a vm sandbox does not JIT the
+  // integrator the way Chrome does, and reported 5 s for work that takes 120 ms
+  // in the browser. The browser is the environment the student is in.
+  await pg.evaluate((s) => window.__mount(s, {}), S({ view: 'compare' }));
+  await pg.waitForTimeout(500);
+  const clickMs = await pg.evaluate(() => {
+    const out = [];
+    for (let i = 0; i < 5; i++) {
+      const btns = Array.prototype.slice.call(document.querySelectorAll('button'));
+      const hit = btns.filter((b) => (b.textContent || '').indexOf('Find the best stone') !== -1)[0];
+      if (!hit) return null;
+      const t0 = performance.now();
+      hit.click();
+      out.push(performance.now() - t0);
+    }
+    out.sort((a, b) => a - b);
+    return { median: out[2], worst: out[4] };
+  });
+  check('the best-stone button exists to be timed', clickMs !== null);
+  // 300 ms is the edge of feeling like a response rather than a hang. The first
+  // press is the slow one, before the integrator is warm, so the worst case is
+  // held to a looser bar than the median.
+  check('the best-stone sweep does not freeze the page',
+        clickMs && clickMs.median < 300,
+        clickMs && ('median ' + clickMs.median.toFixed(0) + 'ms'));
+  check('even a cold first press stays under half a second',
+        clickMs && clickMs.worst < 500,
+        clickMs && ('worst ' + clickMs.worst.toFixed(0) + 'ms'));
+
   await b.close();
   const failed = results.filter((x) => !x.ok);
   results.forEach((x) => console.log((x.ok ? '  ok   ' : '  FAIL ') + x.name + (x.detail ? '   [' + x.detail + ']' : '')));

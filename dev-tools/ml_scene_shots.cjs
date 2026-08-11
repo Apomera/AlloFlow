@@ -89,10 +89,10 @@ window.__batter = function (preset, shots, aimRow) {
 const BASE = {
   view: 'machines', bench: 'lever', machine: 'trebuchet',
   cwMass: 1200, cwDrop: 3.2, beamLong: 4.5, beamShort: 1.2, slingLength: 2.0, armMass: 60,
-  projMass: 25, projDiameter: 0.24, releaseAngle: 45, launchElevation: 2,
+  projMass: 25, projDiameter: 0.26, releaseAngle: 45, launchElevation: 2,
   winchHandleR: 0.45, winchDrumR: 0.08, winchPulleys: 2,
   gravity: 9.81, drag: true, windZ: 0,
-  torsionTurns: 12, torsionArmLength: 1.1, torsionDraw: 0.85, torsionArmMass: 6,
+  torsionTurns: 18, torsionArmLength: 1.1, torsionDraw: 1.0, torsionArmMass: 3,
   ballistaStringMass: 0.35, onagerSling: 1.0,
   loadDistance: 0.5, leverEffortArm: 2.0, leverLoadArm: 1.0, leverLoad: 400,
   pulleySegments: 2, pulleyLoad: 400,
@@ -105,6 +105,24 @@ const BASE = {
 const S = (o) => Object.assign({}, BASE, o);
 
 // [label, state, opts, waitMs]
+// What a real sweep returns at the shipped defaults, so the shot shows the
+// numbers a student would actually see. The signature is the one the tool
+// builds from BASE, so this fixture renders as fresh rather than stale.
+const BEST_RESULTS = {
+  trebuchet: { m: 2.48, dia: 0.12, range: 132.3, eta: 0.048, v: 38.4, ke: 926, nowKE: 12810, atBound: false },
+  ballista: { m: 0.30, dia: 0.06, range: 145.1, eta: 0.122, v: 44.2, ke: 141, nowKE: 2185, atBound: false },
+  onager: { m: 0.14, dia: 0.05, range: 256.2, eta: 0.337, v: 76.5, ke: 96, nowKE: 1188, atBound: false }
+};
+const BEST_SIG = [
+  9.81, true, 45, 2, 0,
+  25, 0.26,
+  1200, 3.2, 4.5, 1.2, 2.0, 60,
+  18, 1.1, 1.0, 3,
+  0.35, 1.0
+].join('|');
+const BEST_FIXTURE = { density: 2717, sig: BEST_SIG, results: BEST_RESULTS };
+const STALE_FIXTURE = { density: 2717, sig: 'moved-since', results: BEST_RESULTS };
+
 const SHOTS = [
   ['01-machines-lever', S({ view: 'machines', bench: 'lever' }), {}, 400],
   ['02-machines-pulley', S({ view: 'machines', bench: 'pulley' }), {}, 400],
@@ -113,11 +131,16 @@ const SHOTS = [
   ['05-build-trebuchet', S({ view: 'build', machine: 'trebuchet' }), {}, 2600],
   ['06-build-ballista', S({ view: 'build', machine: 'ballista' }), {}, 2600],
   ['07-build-onager', S({ view: 'build', machine: 'onager' }), {}, 2600],
+  // A 1 kg stone 0.8 m across is 4 kg per cubic metre, lighter than balsa. The
+  // warning has its own colours in all three palettes, so it needs its own shot.
+  ['07b-build-odd-stone', S({ view: 'build', projMass: 1, projDiameter: 0.8 }), {}, 2600],
   ['08-range-fresh', S({ view: 'range' }), {}, 500],
   ['09-siege-fresh', S({ view: 'siege', wallPreset: 'curtain' }), {}, 2600],
   ['10-siege-gatehouse', S({ view: 'siege', wallPreset: 'gatehouse' }), {}, 2600],
   ['11-siege-motte', S({ view: 'siege', wallPreset: 'motte' }), {}, 2600],
   ['12-compare', S({ view: 'compare' }), {}, 500],
+  ['12b-compare-beststone', S({ view: 'compare', bestStones: BEST_FIXTURE }), {}, 500],
+  ['12c-compare-beststone-stale', S({ view: 'compare', bestStones: STALE_FIXTURE }), {}, 500],
   ['13-manual-history', S({ view: 'learn', manualTopic: 'history' }), {}, 500],
   ['14-manual-model', S({ view: 'learn', manualTopic: 'model' }), {}, 500]
 ];

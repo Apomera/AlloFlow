@@ -90,10 +90,10 @@ window.__click = function (text) {
 const BASE = {
   view: 'machines', bench: 'lever', machine: 'trebuchet',
   cwMass: 1200, cwDrop: 3.2, beamLong: 4.5, beamShort: 1.2, slingLength: 2.0, armMass: 60,
-  projMass: 25, projDiameter: 0.24, releaseAngle: 45, launchElevation: 2,
+  projMass: 25, projDiameter: 0.26, releaseAngle: 45, launchElevation: 2,
   winchHandleR: 0.45, winchDrumR: 0.08, winchPulleys: 2,
   gravity: 9.81, drag: true, windZ: 0,
-  torsionTurns: 12, torsionArmLength: 1.1, torsionDraw: 0.85, torsionArmMass: 6,
+  torsionTurns: 18, torsionArmLength: 1.1, torsionDraw: 1.0, torsionArmMass: 3,
   ballistaStringMass: 0.35, onagerSling: 1.0,
   loadDistance: 0.5, leverEffortArm: 2.0, leverLoadArm: 1.0, leverLoad: 400,
   pulleySegments: 2, pulleyLoad: 400,

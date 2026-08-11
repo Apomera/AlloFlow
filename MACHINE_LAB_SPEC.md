@@ -272,6 +272,68 @@ carrier. A text line states the comparison outright, "Dashed arcs are earlier sh
 One thing it has to tolerate: history rows saved before traces were kept have no `path`.
 They are skipped rather than throwing or drawing a broken line, and that is tested.
 
+## The impossible stone (defects 18 and 19)
+
+**Defect 18. Stone mass and stone diameter are separate sliders, and nothing said so.**
+The shipped default was 25 kg at 0.24 m across, which is 3454 kg/m³: denser than any rock,
+about iron, in a tool that calls it granite. A student could just as easily build a 1 kg
+boulder or a 300 kg orange. This is not cosmetic. Drag depends on frontal area and inertia
+on mass, so the implied density silently decided every range number the Compare view
+invited a student to reason about, and it was invisible.
+
+Three changes:
+
+- The default diameter is 0.26 m, which puts 25 kg at ~2717 kg/m³, genuine granite.
+- `density()`, `diameterFor()` and `densityNote()` in `_machineMath`. The Build screen
+  now prints the implied density under the two sliders it comes from, in words the student
+  can check against the world ("about stone", "about iron", "lighter than dry wood"), and
+  says plainly when the object could not exist.
+- The torsion defaults were also wrong, and the density fix exposed it. 12 turns at 0.85 m
+  of draw with a 6 kg arm stored 1210 J and threw 8.6 m, which made both torsion engines
+  look like toys next to the trebuchet's 102 m. 18 turns, 1.0 m draw, 3 kg arm: 2420 J,
+  and a best-stone range around 145 m, which is in the historically plausible band for a
+  bolt-shooter.
+
+**Defect 19, in the fix itself: "best" is not one question.** The first cut of the
+best-stone sweep reported the stone that flies furthest and called it best. Every answer
+was a pebble: 2.5 kg for the trebuchet, 0.1 kg for the onager. That is what the model says
+and it is correct, but presented as "best" it teaches a student to throw gravel at a
+castle. The panel now asks *"Which stone flies furthest?"*, prints impact energy beside
+range, and sets the found stone's impact against the student's own. At the shipped
+defaults the onager's furthest-flying stone travels 256 m and lands with 96 J, while the
+25 kg stone travels 11 m and lands with 1.2 kJ. Range and delivered energy are competing
+objectives, and that tension is the lesson rather than a footnote to it.
+
+Three things the sweep had to get right before it could be believed:
+
+- **The peak is real, not a search artifact.** Launch speed saturates at `sqrt(2E/m_eff)`
+  once the payload is light against the machine's own inertia, while drag deceleration goes
+  as area over mass and keeps rising as the stone shrinks, so range genuinely turns over in
+  between. A test asserts range falls off on both sides of the reported peak.
+- **The search can still hit its own edge**, and when it does it says so with a footnote
+  instead of quoting the boundary as if it were a maximum. The first floor of 0.3 kg
+  clipped the onager, whose true optimum is 0.1 kg.
+- **Density is held constant across the sweep**, so every candidate is a real object.
+  Without that the "best" stone is just the same ball made implausibly light, and the
+  answer is a drag artifact.
+
+**Cost.** ~120 flight integrations behind one click, so it is a button, not a render. The
+bracketing pass runs at 10 ms steps (it only has to pick a grid cell); the refining pass
+runs at the real 1 ms, so the number on screen is one the tool stands behind. Measured in
+Chrome: 21-35 ms median to run, 66-80 ms on a cold first press. `ml_render_cost.cjs` now
+pins both.
+
+A stored answer goes stale the moment a slider moves, which is worse than no answer, so
+the settings that produced it are stored alongside and a mismatch is called out in the
+warning colour with the table dimmed. Proven in the browser harness, where the button
+actually runs; the SSR tests cannot build a matching signature because it is derived from
+live state.
+
+**A tooling note worth keeping.** Timing this in a Node `vm` sandbox reported 5-8 seconds
+for work that takes 120 ms in Chrome, because the sandbox does not JIT the integrator the
+way a browser does. It nearly bought a redesign for a problem that did not exist. Time
+main-thread work in the environment the student is in.
+
 ## The reachability audit
 
 The crosswind find prompted a sweep of every field in `defaultState()` against whether a

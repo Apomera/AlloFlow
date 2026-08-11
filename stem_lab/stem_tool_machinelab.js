@@ -375,6 +375,104 @@ window.StemLab = window.StemLab || {
       };
     },
 
+    // ── Is that stone a real object? ──
+    //
+    // Mass and diameter are separate controls, so nothing stopped a student
+    // building a 1 kg boulder or a 300 kg orange. Drag depends on frontal area
+    // and inertia on mass, so an impossible density quietly dominates every
+    // range comparison. Showing the implied density makes that visible and is
+    // worth knowing anyway.
+    density: function (mass, diameter) {
+      if (!pos(mass) || !pos(diameter)) return null;
+      var r = diameter / 2;
+      return mass / ((4 / 3) * Math.PI * r * r * r);
+    },
+
+    diameterFor: function (mass, density) {
+      if (!pos(mass) || !pos(density)) return null;
+      return 2 * Math.cbrt((3 * mass) / (4 * Math.PI * density));
+    },
+
+    // Rough bands, for telling a student whether their stone could exist.
+    // Deliberately wide: this is a plausibility check, not a materials table.
+    densityNote: function (rho) {
+      if (!pos(rho)) return null;
+      if (rho < 400) return 'lighter than dry wood';
+      if (rho < 1400) return 'about wood';
+      if (rho < 1900) return 'about packed earth';
+      if (rho < 3200) return 'about stone';
+      if (rho < 9000) return 'about iron';
+      return 'denser than lead';
+    },
+
+    // The stone that flies furthest from a given machine, holding DENSITY
+    // constant so each candidate is a real object rather than the same ball
+    // made implausibly heavy or light. Returns null if nothing flies.
+    //
+    // The peak is real, not a search artifact: launch speed is sqrt(2E/(m+m_eff)),
+    // so it stops rising once the payload is light against the machine's own
+    // inertia, while drag deceleration goes as area over mass and keeps growing
+    // as the stone shrinks. Range therefore turns over somewhere in between.
+    //
+    // Two passes. A coarse log sweep spans four orders of magnitude, which is
+    // enough to bracket the peak but far too coarse to quote: at 26 steps each
+    // one is a 40% jump in mass. A second sweep inside the bracket earns the
+    // decimal place the panel prints. `atBound` is set when the argmax sits on
+    // an end of the search, because then the answer is the edge of the search
+    // rather than a peak, and saying so beats quoting it as if it were one.
+    bestStone: function (inputs, opts) {
+      opts = opts || {};
+      var self = this;
+      var rho = pos(opts.density) ? opts.density
+        : this.density(inputs.projMass, inputs.projDiameter);
+      if (!pos(rho)) return null;
+      var lo = pos(opts.min) ? opts.min : 0.05;
+      var hi = pos(opts.max) ? opts.max : 400;
+      var steps = (opts.steps && opts.steps > 4) ? opts.steps : 26;
+
+      function sweep(a, b, n, dt) {
+        var out = null, idx = -1, ratio = Math.pow(b / a, 1 / (n - 1)), m = a;
+        for (var i = 0; i < n; i++) {
+          var dia = self.diameterFor(m, rho);
+          var s = self.shot(Object.assign({}, inputs, { projMass: m, projDiameter: dia, dt: dt }));
+          if (s && (out === null || s.range > out.range)) {
+            out = {
+              projMass: m, projDiameter: dia, range: s.range,
+              eta: s.eta, muzzleV: s.muzzleV, impactKE: s.impactKE
+            };
+            idx = i;
+          }
+          m *= ratio;
+        }
+        return out ? { best: out, index: idx, ratio: ratio, count: n } : null;
+      }
+
+      // The bracketing pass runs at 10 ms steps, ~10x cheaper, because all it
+      // has to do is pick a grid cell. The refining pass runs at the real 1 ms,
+      // so the number that reaches the screen is one the tool stands behind.
+      var coarse = sweep(lo, hi, steps, 0.01);
+      if (!coarse) return null;
+      var atBound = (coarse.index === 0 || coarse.index === coarse.count - 1);
+      // Refine between the neighbours that bracket the coarse winner, clamped
+      // to the search span so a peak found at an end still gets refined inward.
+      var r = coarse.ratio;
+      var fa = Math.max(lo, coarse.best.projMass / r);
+      var fb = Math.min(hi, coarse.best.projMass * r);
+      var fine = (fb > fa) ? sweep(fa, fb, 15, opts.dt) : null;
+      if (fine) { fine.best.atBound = atBound; return fine.best; }
+      // No refinement was possible, so re-run the winner at full precision
+      // rather than handing back a coarse-grid number as if it were exact.
+      var exact = self.shot(Object.assign({}, inputs, {
+        projMass: coarse.best.projMass, projDiameter: coarse.best.projDiameter, dt: opts.dt
+      }));
+      var win = exact ? {
+        projMass: coarse.best.projMass, projDiameter: coarse.best.projDiameter,
+        range: exact.range, eta: exact.eta, muzzleV: exact.muzzleV, impactKE: exact.impactKE
+      } : coarse.best;
+      win.atBound = atBound;
+      return win;
+    },
+
     // Closed-form vacuum solution from level ground. The reference the
     // integrator is tested against: an identity, not a second implementation.
     vacuum: function (v0, angleDeg, g) {
@@ -794,10 +892,15 @@ window.StemLab = window.StemLab || {
       var travel = (kind === 'ballista' || kind === 'onager') ? s.drawLength : s.cwDrop;
       var crank = (ma === null || workNeeded === null) ? null
         : this.crankDetail(workNeeded, travel, ma, s.winchHandleR);
+      // dt is normally left alone: 1 ms is what the closed-form check is pinned
+      // against. bestStone's bracketing pass raises it, because locating a peak
+      // to within one grid step does not need the precision that quoting a
+      // range does, and 120 full-precision integrations behind one click is a
+      // second and a half of frozen page.
       var flight = this.integrateFlight({
         v0: tr.v, angleDeg: s.releaseAngle, g: g, y0: s.launchElevation,
         drag: s.drag !== false, mass: s.projMass, diameter: s.projDiameter,
-        windX: s.windX, windZ: s.windZ
+        windX: s.windX, windZ: s.windZ, dt: s.dt
       });
       if (flight === null) return null;
       // Launching from height is an ENERGY INPUT, not part of the machine's
@@ -1806,7 +1909,10 @@ window.StemLab = window.StemLab || {
       machine: 'trebuchet',          // trebuchet | ballista | onager
       cwMass: 1200, cwDrop: 3.2,
       beamLong: 4.5, beamShort: 1.2, slingLength: 2.0, armMass: 60,
-      projMass: 25, projDiameter: 0.24,
+      // 25 kg at 0.26 m across is ~2700 kg/m3: granite. At the old 0.24 m it was
+      // 3454 kg/m3, denser than most rock, and drag on an impossible object was
+      // quietly deciding every range comparison.
+      projMass: 25, projDiameter: 0.26,
       releaseAngle: 45, launchElevation: 2,
       winchHandleR: 0.45, winchDrumR: 0.08, winchPulleys: 2,
       gravity: 9.81, drag: true, windZ: 0,
@@ -1818,7 +1924,7 @@ window.StemLab = window.StemLab || {
 
       // Torsion machines. Turns, arm and draw are the same idea on both, so
       // they are shared; the sling and the string belong to one machine each.
-      torsionTurns: 12, torsionArmLength: 1.1, torsionDraw: 0.85, torsionArmMass: 6,
+      torsionTurns: 18, torsionArmLength: 1.1, torsionDraw: 1.0, torsionArmMass: 3,
       ballistaStringMass: 0.35, onagerSling: 1.0,
 
       lastShot: null,
@@ -2886,6 +2992,30 @@ window.StemLab = window.StemLab || {
         }, '🔊');
       }
 
+      // Mass and diameter are independent sliders, so a student can build a 1 kg
+      // boulder or a 300 kg orange without noticing. Drag depends on frontal
+      // area and inertia on mass, so an impossible density silently decides
+      // every range comparison. Naming it turns a hidden trap into a lesson.
+      function stonePanel() {
+        var rho = _machineMath.density(d.projMass, d.projDiameter);
+        if (rho === null) return null;
+        var note = _machineMath.densityNote(rho);
+        var odd = rho < 1400 || rho > 4200;   // not a rock by any reading
+        return h('div', {
+          key: 'stone',
+          style: {
+            marginTop: 6, padding: '7px 9px', borderRadius: 8,
+            background: T.bg, border: '1px solid ' + (odd ? T.warn : T.border)
+          }
+        }, [
+          h('div', { key: 'a', style: { fontSize: 12, color: T.text } },
+            __alloT('stem.machinelab.stone_density', 'That stone works out at ') +
+            fmt(rho, 0) + __alloT('stem.machinelab.stone_density2', ' kg per cubic metre, ') + note + '.'),
+          odd ? h('div', { key: 'b', style: { fontSize: 12, color: T.warn, marginTop: 3, lineHeight: 1.45 } },
+            __alloT('stem.machinelab.stone_odd', 'No rock is that. Mass and size are separate sliders here, so it is easy to build something that could not exist. Air resistance depends on how big it is and inertia on how heavy, so an impossible stone will give you an impossible range.')) : null
+        ]);
+      }
+
       // ── Saving a design ──
       //
       // The host already renders a Tool Snapshots panel and a Load button for
@@ -3145,7 +3275,14 @@ window.StemLab = window.StemLab || {
                 pick(MACHINE_COPY[machineId] || MACHINE_COPY.trebuchet, band))
             ], 'buildcopy'),
             partsPanel(),
-            card(machineControls().map(slider), 'machinectl')
+            // The density note belongs against the two sliders it is about, not
+            // appended after the whole panel, where it reads as a footnote to
+            // the release angle.
+            card(machineControls().reduce(function (acc, c) {
+              acc.push(slider(c));
+              if (c.key === 'projDiameter') acc.push(stonePanel());
+              return acc;
+            }, []), 'machinectl')
           ]),
           h('div', { key: 'r' }, [
             ledger(preview, 'buildledger'),
@@ -4012,6 +4149,146 @@ window.StemLab = window.StemLab || {
       }
 
       // ── Compare view: three ways to store energy, one ledger ──
+      // ── "Which stone should this machine throw?" ──
+      //
+      // A sweep is ~40 integrations per machine, ~120 in total, so it cannot
+      // live in the render path: ml_render_cost.cjs holds every view under 12 ms
+      // and this alone would blow that on every slider drag. So it is a button,
+      // and the answer is stored. A stored answer goes stale the moment a slider
+      // moves, which is worse than no answer, so the settings that fed it are
+      // stored alongside and a mismatch is said out loud rather than ignored.
+      function bestStoneSignature() {
+        return [
+          d.gravity, d.drag !== false, d.releaseAngle, d.launchElevation, d.windZ,
+          d.projMass, d.projDiameter,
+          d.cwMass, d.cwDrop, d.beamLong, d.beamShort, d.slingLength, d.armMass,
+          d.torsionTurns, d.torsionArmLength, d.torsionDraw, d.torsionArmMass,
+          d.ballistaStringMass, d.onagerSling
+        ].join('|');
+      }
+
+      function runBestStoneSweep() {
+        var rho = _machineMath.density(d.projMass, d.projDiameter);
+        if (rho === null) {
+          addToast(__alloT('stem.machinelab.sweep_nostone', 'Set a stone mass and size first.'));
+          return;
+        }
+        var out = {};
+        MACHINES.forEach(function (mm) {
+          var b = _machineMath.bestStone(inputsFor(mm.id), { density: rho });
+          var now = _machineMath.shot(inputsFor(mm.id));
+          if (b) out[mm.id] = {
+            m: b.projMass, dia: b.projDiameter, range: b.range, eta: b.eta, v: b.muzzleV,
+            ke: b.impactKE, atBound: !!b.atBound,
+            nowRange: now ? now.range : null, nowKE: now ? now.impactKE : null
+          };
+        });
+        updMulti({ bestStones: { density: rho, sig: bestStoneSignature(), results: out } });
+        var found = Object.keys(out).length;
+        var msg = found
+          ? __alloT('stem.machinelab.sweep_done', 'Best stone found for ') + found +
+            __alloT('stem.machinelab.sweep_done2', ' of the three machines, at the rock density you are already using.')
+          : __alloT('stem.machinelab.sweep_none', 'None of the three machines can throw anything at these settings.');
+        addToast(found ? '🪨 ' + msg : msg);
+        announceToSR(msg);
+      }
+
+      // The whole point of this column is the gap between what the furthest
+      // stone delivers and what a heavy one does. In kilojoules to one decimal
+      // that gap collapses: 96 J and 141 J both print as "0.1 kJ", which reads
+      // as "the same" when it is the contrast being taught.
+      function energyText(j) {
+        if (j == null || !isFinite(j)) return '—';
+        if (j < 1000) return fmt(j, 0) + ' J';
+        return fmt(j / 1000, 1) + ' kJ';
+      }
+
+      function bestStonePanel() {
+        var saved = d.bestStones || null;
+        var stale = !!(saved && saved.sig !== bestStoneSignature());
+        var kids = [
+          h('h4', { key: 'h', style: { margin: '0 0 6px', fontSize: 14, color: T.text } },
+            __alloT('stem.machinelab.best_title', 'Which stone flies furthest?')),
+          h('p', { key: 'p', style: { margin: '0 0 10px', fontSize: 13, color: T.muted, lineHeight: 1.55 } },
+            pick({
+              k2: __alloT('stem.machinelab.best_k2', 'A stone can be too heavy to throw far. It can also be too light. Press the button and each machine will try lots of stones and keep the one that goes furthest. Watch how hard it hits, though.'),
+              g35: __alloT('stem.machinelab.best_g35', 'Each machine throws one size of stone furthest. Too heavy and it barely moves. Too light and the air stops it. But the stone that goes furthest is not the one that hits hardest, so look at both columns.'),
+              g68: __alloT('stem.machinelab.best_g68', 'This tries many stones for each machine, keeping the rock density the same so every one of them is a real object, and reports the one that flies furthest. Furthest is not hardest: a light stone leaves fast and lands with very little energy. A siege crew wanted both, which is why they did not simply throw the furthest-flying stone.'),
+              g912: __alloT('stem.machinelab.best_g912', 'The search sweeps payload mass geometrically and derives diameter from a fixed density, so mass and frontal area stay physically linked. An optimum exists because launch speed saturates at sqrt(2E/m_eff) once the payload is light against the machine inertia, while drag deceleration scales as area over mass and keeps rising as the stone shrinks. Range peaks between those limits. Impact energy does not: it falls monotonically with payload mass here, so range and delivered energy are competing objectives rather than one optimum.')
+            }, band)),
+          h('button', {
+            key: 'go',
+            type: 'button',
+            onClick: runBestStoneSweep,
+            style: {
+              padding: '8px 14px', borderRadius: 8, border: '1px solid ' + T.accent,
+              background: T.accent, color: T.accentInk, fontSize: 13, fontWeight: 700, cursor: 'pointer'
+            }
+          }, __alloT('stem.machinelab.best_run', 'Find the best stone for each machine'))
+        ];
+
+        if (saved && saved.results) {
+          if (stale) {
+            kids.push(h('p', {
+              key: 'stale',
+              style: { margin: '10px 0 0', fontSize: 12, color: T.warn, lineHeight: 1.5 }
+            }, __alloT('stem.machinelab.best_stale', 'A setting has changed since this ran, so these numbers describe the old machines. Run it again to bring them up to date.')));
+          }
+          kids.push(h('div', { key: 'wrap', style: { overflowX: 'auto', marginTop: 10, opacity: stale ? 0.55 : 1 } },
+            h('table', { style: { width: '100%', minWidth: 420, borderCollapse: 'collapse', fontSize: 13, color: T.text } }, [
+              h('caption', { key: 'c', style: srOnlyStyle },
+                __alloT('stem.machinelab.best_caption', 'Best stone mass, diameter and range for each machine')),
+              h('thead', { key: 'th' }, h('tr', null, [
+                h('th', { key: '1', scope: 'col', style: { textAlign: 'left', padding: 6, borderBottom: '1px solid ' + T.border } }, __alloT('stem.machinelab.col_machine', 'Machine')),
+                h('th', { key: '2', scope: 'col', style: { textAlign: 'right', padding: 6, borderBottom: '1px solid ' + T.border } }, __alloT('stem.machinelab.col_beststone', 'Best stone')),
+                h('th', { key: '3', scope: 'col', style: { textAlign: 'right', padding: 6, borderBottom: '1px solid ' + T.border } }, __alloT('stem.machinelab.col_across', 'Across')),
+                h('th', { key: '4', scope: 'col', style: { textAlign: 'right', padding: 6, borderBottom: '1px solid ' + T.border } }, __alloT('stem.machinelab.col_range2', 'Range')),
+                h('th', { key: '5', scope: 'col', style: { textAlign: 'right', padding: 6, borderBottom: '1px solid ' + T.border } }, __alloT('stem.machinelab.col_hits', 'Lands with')),
+                h('th', { key: '6', scope: 'col', style: { textAlign: 'right', padding: 6, borderBottom: '1px solid ' + T.border } }, __alloT('stem.machinelab.col_yours', 'Your stone lands with'))
+              ])),
+              h('tbody', { key: 'tb' }, MACHINES.map(function (mm) {
+                var r = saved.results[mm.id];
+                if (!r) {
+                  return h('tr', { key: mm.id }, [
+                    h('th', { key: '1', scope: 'row', style: { textAlign: 'left', padding: 6, borderBottom: '1px solid ' + T.border } },
+                      mm.icon + ' ' + machineLabel(mm.id)),
+                    h('td', { key: '2', colSpan: 5, style: { padding: 6, borderBottom: '1px solid ' + T.border, color: T.dim } },
+                      __alloT('stem.machinelab.cmp_unbuildable', 'not a working machine at these settings'))
+                  ]);
+                }
+                var numStyle = { padding: 6, textAlign: 'right', borderBottom: '1px solid ' + T.border, fontVariantNumeric: 'tabular-nums' };
+                return h('tr', { key: mm.id }, [
+                  h('th', { key: '1', scope: 'row', style: { textAlign: 'left', padding: 6, borderBottom: '1px solid ' + T.border, fontWeight: 700 } },
+                    mm.icon + ' ' + machineLabel(mm.id)),
+                  h('td', { key: '2', style: numStyle }, fmt(r.m, 1) + ' kg'),
+                  h('td', { key: '3', style: numStyle }, fmt(r.dia, 2) + ' m'),
+                  h('td', { key: '4', style: numStyle },
+                    fmt(r.range, 1) + ' m' + (r.atBound ? ' *' : '')),
+                  h('td', { key: '5', style: numStyle }, energyText(r.ke)),
+                  h('td', { key: '6', style: Object.assign({}, numStyle, { color: T.dim }) },
+                    energyText(r.nowKE))
+                ]);
+              }))
+            ])));
+          var anyBound = MACHINES.some(function (mm) {
+            var r = saved.results[mm.id]; return r && r.atBound;
+          });
+          if (anyBound) {
+            kids.push(h('p', {
+              key: 'bound',
+              style: { margin: '8px 0 0', fontSize: 12, color: T.muted, lineHeight: 1.5 }
+            }, __alloT('stem.machinelab.best_bound', '* This machine was still improving at the lightest stone the search would try, so that row is where the search stopped rather than a real best. Treat it as "lighter than anything here".')));
+          }
+          kids.push(h('p', {
+            key: 'rho',
+            style: { margin: '8px 0 0', fontSize: 12, color: T.dim, lineHeight: 1.5 }
+          }, __alloT('stem.machinelab.best_rho', 'Every stone in that table is the same rock: ') +
+             fmt(saved.density, 0) + __alloT('stem.machinelab.best_rho2', ' kg per cubic metre. Only the size changes, and the mass follows from it. Your current stone is ') +
+             fmt(d.projMass, 1) + ' kg.'));
+        }
+        return card(kids, 'beststone');
+      }
+
       function renderCompare() {
         var rows = MACHINES.map(function (mm) {
           return { meta: mm, s: _machineMath.shot(inputsFor(mm.id)) };
@@ -4092,6 +4369,7 @@ window.StemLab = window.StemLab || {
               h('li', { key: '4' }, __alloT('stem.machinelab.cmp_try4', 'Wind more turns into the bundles. Does range grow as fast as stored energy does?'))
             ])
           ], 'cmptry'),
+          bestStonePanel(),
           inquiryWidget()
         ]);
       }

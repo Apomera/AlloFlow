@@ -85,10 +85,10 @@ window.__type = function (ariaLabel, value) {
 const BASE = {
   view: 'machines', bench: 'lever', machine: 'trebuchet',
   cwMass: 1200, cwDrop: 3.2, beamLong: 4.5, beamShort: 1.2, slingLength: 2.0, armMass: 60,
-  projMass: 25, projDiameter: 0.24, releaseAngle: 45, launchElevation: 2,
+  projMass: 25, projDiameter: 0.26, releaseAngle: 45, launchElevation: 2,
   winchHandleR: 0.45, winchDrumR: 0.08, winchPulleys: 2,
   gravity: 9.81, drag: true, windZ: 0,
-  torsionTurns: 12, torsionArmLength: 1.1, torsionDraw: 0.85, torsionArmMass: 6,
+  torsionTurns: 18, torsionArmLength: 1.1, torsionDraw: 1.0, torsionArmMass: 3,
   ballistaStringMass: 0.35, onagerSling: 1.0,
   loadDistance: 0.5, leverEffortArm: 2.0, leverLoadArm: 1.0, leverLoad: 400,
   pulleySegments: 2, pulleyLoad: 400,
@@ -327,6 +327,62 @@ function check(name, cond, detail) {
   check('a hanging call marks itself in flight', st && st.aiLoading === true);
   check('a hanging call relabels the button', noExplain === 'no-button:Explain', noExplain);
   check('a hanging call disables the button until it settles', whileHung.indexOf('disabled') === 0, whileHung);
+
+  // ── The best-stone sweep in Compare ──
+  // ~120 flight integrations behind one click. It writes its answer to state
+  // along with the settings that produced it, so a later slider move can be
+  // called out instead of leaving stale numbers looking live.
+  await pg.evaluate((s) => window.__mount(s, {}), S({ view: 'compare' }));
+  await pg.waitForTimeout(300);
+  const beforeSweep = await pg.evaluate(() => document.body.innerText.indexOf('Best stone') !== -1);
+  const sweepClick = await pg.evaluate(() => window.__click('Find the best stone'));
+  await pg.waitForTimeout(400);
+  st = await pg.evaluate(() => window.__state());
+  const sweepTxt = await pg.evaluate(() => document.body.innerText);
+  check('the best-stone table is absent until the search is run', beforeSweep === false);
+  check('the best-stone button runs', sweepClick === 'ok', sweepClick);
+  check('the sweep answers for all three machines',
+        st && st.bestStones && Object.keys(st.bestStones.results).length === 3,
+        st && st.bestStones ? Object.keys(st.bestStones.results).join(',') : 'none');
+  check('the sweep records the density it held constant',
+        st && st.bestStones && st.bestStones.density > 2400 && st.bestStones.density < 3000,
+        st && st.bestStones && st.bestStones.density);
+  check('every stone it found is that same rock',
+        st && st.bestStones && Object.keys(st.bestStones.results).every(function (k) {
+          var r = st.bestStones.results[k];
+          var rho = r.m / ((4 / 3) * Math.PI * Math.pow(r.dia / 2, 3));
+          return Math.abs(rho - st.bestStones.density) < 1;
+        }));
+  check('a fresh answer is not called stale', sweepTxt.indexOf('A setting has changed') === -1);
+  const sweepSaid = await pg.evaluate(() => window.__announced.join(' | '));
+  check('the sweep tells a screen reader what it found',
+        sweepSaid.indexOf('Best stone found for 3') !== -1, sweepSaid.slice(-90));
+
+  // The stale path: move a slider the sweep depended on and the stored answer
+  // must own up to being out of date.
+  const swept = st.bestStones;
+  await pg.evaluate((s) => window.__mount(s, {}), S({ view: 'compare', bestStones: swept, cwMass: 1800 }));
+  await pg.waitForTimeout(300);
+  const staleTxt = await pg.evaluate(() => document.body.innerText);
+  check('moving a slider marks the stored answer stale', staleTxt.indexOf('A setting has changed') !== -1);
+  check('the stale answer is still shown rather than blanked', staleTxt.indexOf('Best stone') !== -1);
+
+  // Re-running from the same state must clear the warning again.
+  await pg.evaluate(() => window.__click('Find the best stone'));
+  await pg.waitForTimeout(400);
+  const freshTxt = await pg.evaluate(() => document.body.innerText);
+  check('running it again clears the stale warning', freshTxt.indexOf('A setting has changed') === -1);
+
+  // The impossible-stone warning, which is the whole point of showing density.
+  await pg.evaluate((s) => window.__mount(s, {}), S({ view: 'build', projMass: 1, projDiameter: 0.8 }));
+  await pg.waitForTimeout(600);
+  const sillyTxt = await pg.evaluate(() => document.body.innerText);
+  await pg.evaluate((s) => window.__mount(s, {}), S({ view: 'build' }));
+  await pg.waitForTimeout(600);
+  const sensibleTxt = await pg.evaluate(() => document.body.innerText);
+  check('an impossible stone is called out on the Build screen', sillyTxt.indexOf('No rock is that') !== -1);
+  check('the shipped stone is not called out', sensibleTxt.indexOf('No rock is that') === -1);
+  check('the shipped stone is named as stone', sensibleTxt.indexOf('about stone') !== -1);
 
   check('no page errors during any interaction', errors.length === 0, errors.slice(0, 3).join(' | '));
 
