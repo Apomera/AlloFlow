@@ -33,11 +33,13 @@ const tool = read('stem_lab/stem_tool_machinelab.js');
 // trusting a single zero.
 const COUNTER = `
 window.__frames = 0;
+window.__renderers = 0;
 (function () {
   var T = window.THREE;
   if (!T || !T.WebGLRenderer) { window.__counterFailed = 'no-THREE'; return; }
   var Real = T.WebGLRenderer;
   T.WebGLRenderer = function (opts) {
+    window.__renderers++;
     var inst = new Real(opts);
     if (typeof inst.render === 'function') {
       var real = inst.render.bind(inst);
@@ -192,6 +194,37 @@ function check(name, ok, detail) { results.push({ name, ok: !!ok, detail: String
   });
   f = await framesOver(WINDOW);
   check('a backgrounded tab draws nothing', f === 0, f + ' frames while hidden');
+
+  // 7. Context churn. Two module-scope viewers attach and detach as the view
+  //    changes. A browser caps live WebGL contexts (commonly ~16), so a
+  //    teardown that leaks one per switch kills 3D after a handful of view
+  //    changes and looks like "the 3D just stopped working" much later.
+  await pg.evaluate(() => {
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => false });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  const before = await pg.evaluate(() => window.__renderers);
+  for (let i = 0; i < 12; i++) {
+    await pg.evaluate((s) => window.__mount(s, {}), S({ view: 'build', machine: 'trebuchet' }));
+    await pg.waitForTimeout(240);
+    await pg.evaluate((s) => window.__mount(s, {}), S({ view: 'siege', wallPreset: 'keep' }));
+    await pg.waitForTimeout(240);
+  }
+  await pg.waitForTimeout(1500);
+  const built = (await pg.evaluate(() => window.__renderers)) - before;
+  const canvases = await pg.evaluate(() => document.querySelectorAll('canvas').length);
+  check('24 view switches leave no pile of canvases behind', canvases <= 2, canvases + ' canvas elements in the DOM');
+  check('renderers are not created without bound', built <= 26, built + ' renderers built across 24 switches');
+
+  // The decisive one: after all that churn, is 3D still alive? A leaked-context
+  // failure shows up here as a bay that silently never draws again.
+  await pg.evaluate((s) => window.__mount(s, {}), S({ view: 'build', machine: 'trebuchet' }));
+  await pg.waitForTimeout(2500);
+  await pg.evaluate(() => window.__resetFrames());
+  await pg.evaluate(() => window.__click('Test fire'));
+  await pg.waitForTimeout(1200);
+  const aliveAfter = await pg.evaluate(() => window.__frames);
+  check('3D still draws after all that churning', aliveAfter > 20, aliveAfter + ' frames on a shot after 24 switches');
 
   await b.close();
   const failed = results.filter((x) => !x.ok);

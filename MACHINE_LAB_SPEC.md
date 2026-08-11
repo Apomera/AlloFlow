@@ -51,6 +51,22 @@ Note on the harness: `dark` and `contrast` are pushed as SEPARATE flags. A viewe
 infers one from the other cannot render high contrast correctly, which is exactly how
 defect 7 arose.
 
+## WebGL context churn
+
+Two module-scope viewers attach and detach as the view changes, and a browser caps live
+WebGL contexts at roughly sixteen. A teardown that leaked one per switch would kill 3D after
+a handful of view changes, and it would surface much later as "the 3D just stopped working"
+with no obvious cause.
+
+Measured rather than reasoned about, in `ml_frame_budget.cjs`: **24 view switches leave one
+canvas in the DOM**, renderer construction stays bounded at one per attach, and — the
+decisive check — **3D still draws 73 frames on a shot afterwards**. So the host's teardown
+(`forceContextLoss`, `dispose`, `removeChild`, observers disconnected) does run, and this
+tool's stable module-scope ref triggers it correctly on unmount.
+
+A verified non-issue, but the check stays: the failure mode is silent, delayed, and would be
+very hard to attribute to a view switch after the fact.
+
 ## Render cost
 
 `dev-tools/ml_render_cost.cjs`, 8 checks. Sliders re-render on every drag, and some views do
