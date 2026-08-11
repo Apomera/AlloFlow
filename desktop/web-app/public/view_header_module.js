@@ -338,7 +338,7 @@ function HeaderBar(props) {
       className: "inline-flex items-center gap-1 rounded-xl border border-white/25 bg-white/10 px-2.5 py-0.5 text-[11px] font-bold text-white/90 hover:bg-white/20"
     },
     headerCollapsed ? t("header.expand_short") || "More" : t("header.collapse_short") || "Less"
-  ))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-stretch sm:items-end gap-4 w-full lg:w-auto min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "w-full flex items-center gap-2 sm:gap-4 flex-wrap justify-start sm:justify-end relative min-w-0" }, /* @__PURE__ */ React.createElement(
+  ))), !headerCollapsed && /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-stretch sm:items-end gap-4 w-full lg:w-auto min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "w-full flex items-center gap-2 sm:gap-4 flex-wrap justify-start sm:justify-end relative min-w-0" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

@@ -300,6 +300,12 @@ function HeaderBar(props) {
                 </button>
               </div>
             </div>
+            {/* Collapsed = truly minimal: the whole control cluster (XP badge +
+                settings strip) unmounts, leaving one slim title row. Field ask
+                2026-08-11: the full bar "gets in the way on a smaller screen".
+                Every control returns via the persisted More/Less toggle, and
+                the command palette / FAB stack keep their own entry points. */}
+            {!headerCollapsed && (
             <div className="flex flex-col items-stretch sm:items-end gap-4 w-full lg:w-auto min-w-0">
                 <div className="w-full flex items-center gap-2 sm:gap-4 flex-wrap justify-start sm:justify-end relative min-w-0">
                     <button type="button"
@@ -1197,6 +1203,7 @@ function HeaderBar(props) {
                     </div>
                 </div>
             </div>
+            )}
           </div>
         </div>
         {showSetupPathMenu && (
