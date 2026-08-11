@@ -165,7 +165,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       amax: 2.95, respRate: 0.085, barkThick: 0.25, droughtTol: 0.15, shadeTol: 0.2,
       woodDensity: 350, slenderness: 45, crownWidth: 1.08, tiers: 4,
       modes: ['seed_wind', 'fragment', 'layering', 'basal_resprout'],
-      note: 'Willow snaps easily on purpose. Broken branches wash downstream, lodge in wet gravel and root, so the flood that breaks the tree also plants it.'
+      note: 'Willow wood is brittle and its twigs break away easily. Broken pieces wash downstream, lodge in wet gravel and root, so the flood that breaks the tree is also what plants it.'
     },
     {
       id: 'pine', name: 'Eastern White Pine', emoji: '🌲',
@@ -522,7 +522,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     {
       id: 'seed_animal', name: 'Animal-planted seed', icon: '🐿️',
       cost: 1.4, establish: 0.13, distance: 0.75, diversity: 1,
-      blurb: 'Expensive to build, but a jay buries it at the right depth in the open. Being eaten is the delivery system.',
+      blurb: 'Expensive to build, but a jay buries it at the right depth in the open. An eaten acorn is gone; the ones that grow are the ones cached and never dug up again.',
       strongAgainst: ['pathogen'], weakAgainst: ['browsing']
     },
     {
@@ -658,8 +658,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       why: 'Pollination is part of making seeds. The other three make a new stem from the parent tree itself, with no seed involved.' },
     { q: 'A pine keeps its needles through winter. What advantage does that give over a bare oak in February?', a: ['It can fix carbon on a mild winter day', 'It needs no water', 'It cannot freeze', 'It grows only in winter'], correct: 0, band: 'g35',
       why: 'Leaves already built and in place mean the pine can work whenever conditions allow, instead of spending the first weeks of spring rebuilding a canopy.' },
-    { q: 'Raising ' + CO2 + ' boosts a tree that is CO2-limited but does little for one that is water-limited. Why?', a: ['CO2 damages dry trees', 'A closed stoma admits no CO2 regardless of how much is outside', 'Water-limited trees do not photosynthesise', 'CO2 only helps needles'], correct: 1, band: 'g912',
-      why: 'The limiting factor is whichever term is smallest. Adding more of an abundant input does nothing until it becomes the one in short supply.' }
+    { q: 'Raising ' + CO2 + ' boosts a tree that is CO2-limited but does little for one that is water-limited. Why?', a: ['CO2 damages dry trees', 'A stoma that is mostly shut admits very little CO2, so the extra buys almost nothing', 'Water-limited trees do not photosynthesise', 'CO2 only helps needles'], correct: 1, band: 'g912',
+      why: 'The PERCENTAGE gain from extra CO2 is about the same at any water status. What drought changes is the rate that percentage applies to: a tree with its stomata mostly shut gains a large share of almost nothing. Absolute gain, not percentage, is the honest measure.' }
   ];
   // Rotate once, at module scope, deterministically.
   var QUIZ = QUIZ_RAW.map(function (item, i) {
@@ -1733,7 +1733,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           bar(__alloT('stem.treelab.water', 'Water'), live.factors.water, tone('#38bdf8')),
           h('div', { key: 'note', style: { marginTop: 6, fontSize: 12, color: T.dim, lineHeight: 1.55 } },
             __alloT('stem.treelab.liebig',
-              'This is why enriching ' + CO2 + ' does little for a tree that is short of water: a closed stoma admits no ' + CO2 + ' however much of it is outside.'))
+              'This is why enriching ' + CO2 + ' does little for a tree that is short of water. A stoma pulled most of the way shut admits very little ' + CO2 + ' however much is outside, so the extra arrives as a large share of almost nothing.'))
         ]));
 
         if (atLeast(band, 'g68')) {
@@ -1937,7 +1937,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             statTile('r', __alloT('stem.treelab.left', 'Left'), remaining + ' kg C', remaining >= 0 ? T.good : T.bad)
           ]),
           budget <= 0 ? h('div', { key: 'nb', style: { fontSize: 13, color: T.warn, lineHeight: 1.55 } },
-            __alloT('stem.treelab.no_budget', 'No reproduction carbon banked yet. Go back to Grow, put some of the surplus into Reproduction, and run some years.')) : null
+            __alloT('stem.treelab.no_budget', 'No reproduction carbon banked yet. Go back to Grow, put some of the surplus into Reproduction, and run some years.')) : null,
+          modelNote(__alloT('stem.treelab.spread_model_note',
+            'The take rates below are tuned so that one decade is playable, not measured. What is real is the ORDER: a clonal shoot establishes far more reliably than a seed, and a wind-carried seed in the wild succeeds far more rarely than the figure here suggests. Compare the strategies against each other, not against the world.'))
         ]));
 
         legal.forEach(function (s) {

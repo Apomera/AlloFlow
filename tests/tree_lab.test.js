@@ -873,6 +873,53 @@ describe('Tree Life Lab — banks and mirrors', () => {
     expect(html).not.toMatch(/0 kg C/);
   });
 
+  it('does not teach a cruder rule than its own engine models', () => {
+    // Q9 said a closed stoma admits NO CO2, and the Chemistry tab said the same. The
+    // engine disagrees: a drought-stressed oak sits at aperture 0.65, and the CO2
+    // saturation curve gives the SAME relative gain at every water status — what
+    // collapses is the absolute amount. The quiz would have marked the careful answer
+    // wrong.
+    const E = engine();
+    const oak = E.speciesById('oak');
+    const droughtAperture = E.stomatalAperture(0.75 * 0.35, oak.droughtTol, false);
+    expect(droughtAperture, 'the engine models PARTIAL closure').toBeGreaterThan(0.1);
+
+    const src = readFileSync(resolve(process.cwd(), SOURCE), 'utf8');
+    expect(/closed stoma admits no/i.test(src), 'an absolute-closure claim came back').toBe(false);
+
+    const q9 = E.QUIZ.find((q) => /Raising CO/.test(q.q));
+    expect(q9, 'the CO2-limitation question').toBeTruthy();
+    expect(q9.a[q9.correct]).toMatch(/mostly shut/);
+    expect(q9.why).toMatch(/PERCENTAGE|absolute/i);
+  });
+
+  it('flags the reproduction take rates as tuned, not measured', () => {
+    // The Grow tab has carried a model-limitations note from the start. Spread showed
+    // "Takes 13%" and "Takes 72%" as bare figures with no such note, and a student
+    // would reasonably read them as measurements. The ordering is real; the numbers
+    // are tuned so one decade is playable.
+    const E = engine();
+    let tree = E.newTree('oak');
+    for (let i = 0; i < 40; i += 1) tree = E.simulateYear(tree, E.speciesById('oak'), GOOD_ENV, ALLOC);
+    const html = render({ treeLab: { view: 'spread', tree } });
+    expect(html).toMatch(/tuned so that one decade is playable, not measured/);
+    // And the claim it makes about the ordering has to hold in the data.
+    const seed = E.strategyById('seed_wind');
+    const clonal = E.strategyById('root_sucker');
+    expect(clonal.establish).toBeGreaterThan(seed.establish * 5);
+  });
+
+  it('states adaptations mechanistically, not as intent', () => {
+    // "Willow snaps easily on purpose" is the misconception science teaching works
+    // hardest against: organisms do not act with intent. The mechanism was right and
+    // the framing was wrong.
+    const E = engine();
+    const prose = E.SPECIES.map((s) => s.note).concat(E.STRATEGIES.map((s) => s.blurb)).join(' ');
+    expect(/on purpose|in order to survive|wants to|tries to/i.test(prose), 'teleological framing').toBe(false);
+    // Acorns are destroyed by digestion; caching is what disperses them.
+    expect(E.strategyById('seed_animal').blurb).toMatch(/cached/);
+  });
+
   it('leaves no user-visible string a language pack cannot reach', () => {
     // Static greps cannot answer this and never could: a string routed through a
     // module-scope data table reaches __alloT at RENDER time and looks hardcoded to a
