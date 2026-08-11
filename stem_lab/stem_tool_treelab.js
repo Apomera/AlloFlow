@@ -1179,11 +1179,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       // ── Theme tokens. Plain hex so the same token is safe in a style object, an SVG
       //    presentation attribute and a THREE material. High contrast flattens to
       //    black/white/yellow. ──
+      // onAccent is the ink for anything FILLED with the accent (a selected tab, a
+      // pressed button). White on the accent measured 3.76:1 light and 1.92:1 dark,
+      // both below AA. A near-black green clears it comfortably in both.
       var T = isContrast
-        ? { bg: '#000000', card: '#000000', cardAlt: '#0a0a0a', border: '#ffffff', text: '#ffffff', dim: '#e5e5e5', accent: '#ffff00', good: '#00ff00', bad: '#ff6666', warn: '#ffcc00' }
+        ? { bg: '#000000', card: '#000000', cardAlt: '#0a0a0a', border: '#ffffff', text: '#ffffff', dim: '#e5e5e5', accent: '#ffff00', onAccent: '#000000', good: '#00ff00', bad: '#ff6666', warn: '#ffcc00' }
         : (isDark
-          ? { bg: '#0f172a', card: '#1e293b', cardAlt: '#172033', border: '#334155', text: '#e2e8f0', dim: '#94a3b8', accent: '#34d399', good: '#4ade80', bad: '#f87171', warn: '#fbbf24' }
-          : { bg: '#f8fafc', card: '#ffffff', cardAlt: '#f1f5f9', border: '#cbd5e1', text: '#0f172a', dim: '#475569', accent: '#059669', good: '#16a34a', bad: '#dc2626', warn: '#b45309' });
+          ? { bg: '#0f172a', card: '#1e293b', cardAlt: '#172033', border: '#334155', text: '#e2e8f0', dim: '#94a3b8', accent: '#34d399', onAccent: '#04241a', good: '#4ade80', bad: '#f87171', warn: '#fbbf24' }
+          : { bg: '#f8fafc', card: '#ffffff', cardAlt: '#f1f5f9', border: '#cbd5e1', text: '#0f172a', dim: '#475569', accent: '#059669', onAccent: '#00150e', good: '#15803d', bad: '#dc2626', warn: '#b45309' });
 
       var view = d.view || 'grow';
       var sp = speciesById(d.speciesId || 'oak');
@@ -1234,10 +1237,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           sub ? h('div', { key: 's', style: { fontSize: 12, color: T.dim, marginTop: 3, lineHeight: 1.5 } }, sub) : null
         ]);
       }
+      // opts.ariaLabel names a button whose visible content is a glyph. The six
+      // 3D view controls read as "◀ ▶ ▲ ▼ + −", which a screen reader announces
+      // as punctuation or nothing at all, so the accessible name has to come
+      // from somewhere other than the label text.
       function btn(key, labelTxt, onClick, opts) {
         var o = opts || {};
         return h('button', {
           key: key, type: 'button', onClick: onClick, disabled: !!o.disabled,
+          'aria-label': o.ariaLabel || undefined,
+          title: o.ariaLabel || undefined,
           'aria-pressed': o.pressed == null ? undefined : !!o.pressed,
           style: {
             padding: o.small ? '5px 10px' : '8px 14px',
@@ -1245,7 +1254,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             fontSize: o.small ? 12 : 13, fontWeight: 600,
             border: '1px solid ' + (o.pressed ? T.accent : T.border),
             background: o.pressed ? T.accent : (o.tone === 'ghost' ? 'transparent' : T.cardAlt),
-            color: o.pressed ? (isContrast ? '#000000' : '#ffffff') : T.text,
+            color: o.pressed ? T.onAccent : T.text,
             opacity: o.disabled ? 0.5 : 1,
             marginRight: 6, marginBottom: 6
           }
@@ -1405,12 +1414,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           status === 'failed' ? h('div', { key: 'fb', style: { fontSize: 12, color: T.warn, marginTop: 8, lineHeight: 1.5 } },
             __alloT('stem.treelab.threed_failed', 'The 3D engine could not load, which school network filters sometimes cause. Every number and control on this page still works.')) : null,
           h('div', { key: 'ctl', style: { marginTop: 8, display: 'flex', flexWrap: 'wrap', alignItems: 'center' } }, [
-            btn('l', '◀', function () { TREE3D.nudge(-0.25, 0); }, { small: true }),
-            btn('r', '▶', function () { TREE3D.nudge(0.25, 0); }, { small: true }),
-            btn('u', '▲', function () { TREE3D.nudge(0, -0.12); }, { small: true }),
-            btn('dn', '▼', function () { TREE3D.nudge(0, 0.12); }, { small: true }),
-            btn('zi', '+', function () { TREE3D.zoom(-0.6); }, { small: true }),
-            btn('zo', '−', function () { TREE3D.zoom(0.6); }, { small: true }),
+            btn('l', '◀', function () { TREE3D.nudge(-0.25, 0); }, { small: true, ariaLabel: __alloT('stem.treelab.rotate_left', 'Rotate view left') }),
+            btn('r', '▶', function () { TREE3D.nudge(0.25, 0); }, { small: true, ariaLabel: __alloT('stem.treelab.rotate_right', 'Rotate view right') }),
+            btn('u', '▲', function () { TREE3D.nudge(0, -0.12); }, { small: true, ariaLabel: __alloT('stem.treelab.tilt_up', 'Tilt view up') }),
+            btn('dn', '▼', function () { TREE3D.nudge(0, 0.12); }, { small: true, ariaLabel: __alloT('stem.treelab.tilt_down', 'Tilt view down') }),
+            btn('zi', '+', function () { TREE3D.zoom(-0.6); }, { small: true, ariaLabel: __alloT('stem.treelab.zoom_in', 'Zoom in') }),
+            btn('zo', '−', function () { TREE3D.zoom(0.6); }, { small: true, ariaLabel: __alloT('stem.treelab.zoom_out', 'Zoom out') }),
             btn('rs', __alloT('stem.treelab.reset_view', 'Reset view'), function () { TREE3D.reset(); }, { small: true, tone: 'ghost' })
           ])
         ]);
@@ -1988,25 +1997,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           ])
         ]),
         h('div', { key: 'tabs', role: 'tablist', 'aria-label': 'Tree Life Lab sections', style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 12 } },
-          TABS.map(function (t) {
+          TABS.map(function (t, ti) {
+            var selected = view === t.id;
             return h('button', {
-              key: t.id, type: 'button', role: 'tab', 'aria-selected': view === t.id,
+              key: t.id, type: 'button', role: 'tab',
+              id: 'treelab-tab-' + t.id,
+              'aria-selected': selected,
+              'aria-controls': 'treelab-panel',
+              // Roving tabindex: one Tab press reaches the tab strip, then the arrows
+              // move within it. Without this a keyboard user has to Tab through every
+              // section header to get past the strip, which is the whole reason the
+              // tab pattern exists.
+              tabIndex: selected ? 0 : -1,
               onClick: function () { sfxTick(); updMulti({ view: t.id, quizPick: null }); },
+              onKeyDown: function (e) {
+                var k = e.key;
+                if (k !== 'ArrowRight' && k !== 'ArrowLeft' && k !== 'Home' && k !== 'End') return;
+                e.preventDefault();
+                var next = ti;
+                if (k === 'ArrowRight') next = (ti + 1) % TABS.length;
+                else if (k === 'ArrowLeft') next = (ti - 1 + TABS.length) % TABS.length;
+                else if (k === 'Home') next = 0;
+                else next = TABS.length - 1;
+                sfxTick();
+                updMulti({ view: TABS[next].id, quizPick: null });
+                srSay(TABS[next].label + ' section.');
+                // Follow the selection with focus, as the tab pattern requires.
+                try {
+                  var el = document.getElementById('treelab-tab-' + TABS[next].id);
+                  if (el && el.focus) setTimeout(function () { el.focus(); }, 0);
+                } catch (err) {}
+              },
               style: {
                 padding: '7px 12px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                border: '1px solid ' + (view === t.id ? T.accent : T.border),
-                background: view === t.id ? T.accent : T.cardAlt,
-                color: view === t.id ? (isContrast ? '#000000' : '#ffffff') : T.text
+                border: '1px solid ' + (selected ? T.accent : T.border),
+                background: selected ? T.accent : T.cardAlt,
+                color: selected ? T.onAccent : T.text
               }
             }, t.icon + ' ' + t.label);
           })),
-        h('div', { key: 'body' }, Array.isArray(body)
+        h('div', {
+          key: 'body',
+          role: 'tabpanel',
+          id: 'treelab-panel',
+          'aria-labelledby': 'treelab-tab-' + view,
+          tabIndex: 0
+        }, Array.isArray(body)
           ? body.map(function (node, i) {
             if (!node || typeof node !== 'object' || node.key != null) return node;
             return ctx.React.cloneElement(node, { key: 'card' + i });
           })
           : body),
-        h('p', { key: 'sp-note', style: { fontSize: 11, color: T.dim, lineHeight: 1.55, marginTop: 4 } }, sp.note)
+        h('div', {
+          key: 'sp-note',
+          style: {
+            marginTop: 4, padding: '10px 12px', borderRadius: 10,
+            background: T.card, border: '1px solid ' + T.border,
+            borderLeft: '4px solid ' + T.accent
+          }
+        }, [
+          h('div', { key: 'n', style: { fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 3 } },
+            sp.emoji + ' ' + sp.name),
+          h('p', { key: 'b', style: { fontSize: 11, color: T.dim, lineHeight: 1.55, margin: 0 } }, sp.note)
+        ])
       ]);
     }
   });

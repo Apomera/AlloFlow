@@ -53,14 +53,18 @@ test('Play advances the tree, Pause stops it', async ({ page }) => {
   const start = await age(page);
 
   await page.getByRole('button', { name: /Play/ }).click();
-  await page.waitForTimeout(2500);
-  const running = await age(page);
-  expect(running, 'the clock did not advance the tree').toBeGreaterThan(start);
+  // Poll rather than sleep a fixed span: this is the first test in the file, so it
+  // pays the harness cold start, and a fixed wait made it flake there while passing
+  // in isolation. What is being asserted is that the clock advances at all, not how
+  // fast it does so on a loaded machine.
+  await expect
+    .poll(() => age(page), { timeout: 20000, message: 'the clock never advanced the tree' })
+    .toBeGreaterThan(start);
 
   await page.getByRole('button', { name: /Pause/ }).click();
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(500);      // let any tick already in flight land
   const atPause = await age(page);
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(2500);
   const afterPause = await age(page);
   expect(afterPause, 'the clock kept running after Pause').toBe(atPause);
 });
