@@ -224,11 +224,23 @@ green, including the ambiguous-reply and educator-unrestricted paths).
 ## 8. Still open
 
 - **P0 live smoke.** Unchanged and still owed, section 6. Nobody has watched any of this run.
-- **P4 discoverability.** Nothing links to the page yet; it is reachable by URL only. Where it
-  belongs (Educator Hub card, a student surface, or a teacher-issued link) is open question 3
-  below, and wiring it touches ANTI, so it wants a deliberate pass rather than a drive-by.
-- **Desktop mirror.** Not mirrored into `desktop/web-app/public`, because nothing links to it
-  yet and an unreachable page is dead weight in the bundle. Do it with P4.
+- **P4 discoverability: half done.** `open_it_coach` (`a285da646`) puts the page in the palette,
+  chat, and voice under the phrases people actually use when stuck, and is where the app decides
+  posture: teacher gets educator, everything else including a parent surface with the teacher
+  flag set gets learner. Still open: a **hub card**, which is question 3 below and touches ANTI,
+  so it wants a deliberate pass rather than a drive-by.
+- **Desktop mirror.** Not mirrored into `desktop/web-app/public`. The command opens an absolute
+  CDN URL, exactly as `STUDIO_URL` does for the popup, so the desktop app reaches the same copy.
+  A local mirror would only matter for an offline desktop story, which the popup does not have
+  either.
+- **Registry duplication (pre-existing, not mine, not fixed).** `buildAlloCommands` returns 172
+  commands of which about 26 ids appear twice, including `open_screen_coach`, `print_page`, and
+  `read_page_aloud`. Root cause looks like the 2026-08-04 drift port: the recovered entries were
+  pasted in from the *generated* module, which writes `{ id: "x" }` with double quotes, alongside
+  the originals which use `{ id: 'x' }`. That also explains why the CMD_GROUP gate never caught
+  them: its regex only matches the single-quoted form. Duplicated commands show twice in the
+  palette and give alias scoring two identical candidates. `open_it_coach` is pinned to exactly
+  one entry so it cannot join them.
 - **i18n.** The page is English-only, like the popup.
 
 ## 9. Open questions
